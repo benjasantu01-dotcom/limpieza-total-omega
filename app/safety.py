@@ -221,6 +221,8 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 def _check_file_integrity_cached(path_str: str) -> bool:
     """Ejecuta el conjunto de reglas de integridad y retorna un estado booleano."""
     path = Path(path_str)
+    if not path.exists():
+        return False
     try:
         file_stat = path.stat()
         if not (file_stat.st_mode & stat.S_IWRITE):

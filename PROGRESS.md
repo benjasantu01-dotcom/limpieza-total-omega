@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 104 | 4 | 17 | 8 | 119 |
-| 2026-09-04 | 114 | 13 | 21 | 6 | 98 |
+| 2026-09-03 | 104 | 4 | 17 | 8 | 115 |
+| 2026-09-04 | 116 | 14 | 21 | 6 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **43**
 - seguridad defensiva: **39**
 - rendimiento: **37**
 
@@ -32,13 +32,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **19**
 - `organizer.py`: **19**
 - `scanner.py`: **18**
+- `settings.py`: **18**
 - `healthscore.py`: **18**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
-- `settings.py`: **17**
+- `safety.py`: **16**
 - `quarantine.py`: **16**
 - `browser.py`: **15**
-- `safety.py`: **15**
 - `branding.py`: **12**
 - `main.py`: **12**
 - `diskreport.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T10:48:38` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante condiciones de carrera y fallos de escritura mediante la implementación de `os.replace` (que ya estaba presente pero ahora se asegura de que el descriptor de archivo esté cerrado correctamente antes de operar) y añadiendo una verificación explícita de `OSError` al crear directorios padres para manejar situaciones donde el sistema de archivos es de solo lectura o está bloqueado.
+- `2026-09-04T10:47:39` **safety.py** (robustez ante casos límite): Se introdujo una comprobación de existencia antes de invocar `path.stat()` en `_check_file_integrity_cached` para prevenir `FileNotFoundError` si un archivo es eliminado por un proceso externo entre la validación inicial y la verificación de integridad, mejorando la resiliencia ante condiciones de carrera.
 - `2026-09-04T10:38:31` **quarantine.py** (robustez ante casos límite): Se ha mejorado `_check_windows_file_attributes` para prevenir condiciones de carrera y fallos de acceso mediante el uso de `pathlib.Path.exists()` antes de la llamada nativa a `ctypes`, asegurando mayor robustez ante archivos inexistentes o bloqueados transitoriamente por el sistema operativo.
 - `2026-09-04T10:37:53` **organizer.py** (robustez ante casos límite): Mejora la robustez ante estados inconsistentes del sistema de archivos al añadir validaciones de existencia física y de tipo (archivo vs directorio) en las iteraciones de `stage_for_review` y `delete_reviewed`, evitando que `Path.stat()` o `shutil.move` fallen al encontrar entradas borradas o modificadas por otros procesos durante la ejecución del bucle.
 - `2026-09-04T10:37:23` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita mediante `PROCESS_QUERY_LIMITED_INFORMATION` para abrir el handle, evitando el uso de privilegios innecesarios y garantizando que el acceso al proceso no sea bloqueado por falta de permisos administrativos, siguiendo el principio de menor privilegio al manipular handles.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T09:57:07` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución del proceso de PowerShell mediante `subprocess.run` (que es costosa y pesada) por una llamada directa vía `os.popen` o, mejor aún, manteniendo `subprocess` pero asegurando que la recolección de datos sea más eficiente al reducir la cantidad de procesos recuperados de 200 a un límite ajustado (limit * 2) y eliminando la sobrecarga de `powershell` dentro del bucle principal mediante un manejo de caché más estricto.
 - `2026-09-04T09:46:48` **healthscore.py** (rendimiento): Optimicé el bucle principal de `compute_score` eliminando la llamada a `_SCORERS.get(area)` dentro de la iteración, pre-vinculando el `scorer` directamente en `_OPTIMIZED_PIPELINE` para evitar búsquedas repetitivas en el diccionario.
 - `2026-09-04T09:46:14` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para evitar recrear diccionarios y realizar múltiples pasadas, consolidando la lógica de recolección de métricas en una única iteración eficiente sobre el generador de archivos.
-- `2026-09-04T09:38:20` **branding.py** (rendimiento): Optimicé el cálculo de `gradient_colors` al cachear solo el resultado de la interpolación lineal, evitando regenerar la lógica interna de los colores en cada llamada y reduciendo la presión sobre la memoria en operaciones intensivas de renderizado del canvas.
-- `2026-09-04T09:36:06` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings más precisos en los métodos de `StartupEntry` y agregué `type hints` adicionales en `parse_registry_csv`, clarificando el propósito de la validación de seguridad de cada etapa.
