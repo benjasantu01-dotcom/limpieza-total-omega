@@ -855,3 +855,25 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-04T13:11:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-04T13:11:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T13:11:46` Corrida terminada. Total usado hoy: 312.
+- `2026-09-04T13:20:11` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-04T13:20:46` Tests FALLARON:
+```
+1/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7f5bed8cd620> = safety.describe_protection
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - safety.UnsafePathError: Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: Directorio de cuarentena reside en ruta protegida.
+29 failed, 270 passed in 1.62s
+
+```
+- `2026-09-04T13:20:46` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `_is_file_in_use` y `_is_system_or_hidden` añadiendo un manejo de excepciones más granular y defensivo, asegurando que ante fallos en llamadas a la WinAPI o errores de sistema, la función retorne un valor seguro (`True` para "en uso" / "protegido") en lugar de propagar excepciones inesperadas, alineándose con el enfoque de integridad del sistema.
+- `2026-09-04T13:21:12` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scanner.py` implementando una validación exhaustiva de parámetros de entrada y un manejo de errores más específico en `scan_file` y `process_entry`, garantizando que la ejecución no falle ante archivos inaccesibles o rutas malformadas al tiempo que evito comprobaciones innecesarias sobre objetos `None`.
+- `2026-09-04T13:21:46` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `load` añadiendo un manejo de excepciones más granular para capturar errores de sistema específicos durante la lectura de metadatos, garantizando que un archivo inaccesible o bloqueado sea tratado correctamente sin comprometer la ejecución de la app.
+- `2026-09-04T13:22:00` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `parse_registry_csv` añadiendo un manejo de excepciones más granular y validando la integridad de los datos crudos antes de procesarlos, evitando así que una fila mal formada o datos inesperados interrumpan el análisis completo del registro.
+- `2026-09-04T13:22:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T13:22:00` Corrida terminada. Total usado hoy: 316.

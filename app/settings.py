@@ -272,7 +272,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta_str = str(ruta)
     
     try:
-        stats = os.stat(ruta)
+        stats = ruta.stat()
         mtime = float(stats.st_mtime)
         if (cached := _CACHE.get(ruta_str)) and cached[0] == mtime:
             return cached[1].copy()
@@ -283,7 +283,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             data = validate(content) if _is_dict(content) else DEFAULTS.copy()
             _CACHE[ruta_str] = (mtime, data)
             return data.copy()
-    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
+    except (OSError, PermissionError, FileNotFoundError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
         pass
     return DEFAULTS.copy()
 

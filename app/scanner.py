@@ -151,16 +151,17 @@ class Scanner:
         if not entry.path:
             return
         
-        # Clasificación rápida antes de chequeos pesados
-        if entry.is_dir(follow_symlinks=False):
-            if self._is_safe_entry(entry):
-                self._handle_directory(entry, stack)
-            return
+        try:
+            if entry.is_dir(follow_symlinks=False):
+                if self._is_safe_entry(entry):
+                    self._handle_directory(entry, stack)
+                return
 
-        # Es un archivo, verificar extensiones en set constante para O(1)
-        ext_low = Path(entry.name).suffix.lower() if entry.name else ""
-        if ext_low in SUSPICIOUS_ALL_EXTS and self._is_safe_entry(entry):
-            self._run_file_heuristics(Path(entry.path), entry, ext_low)
+            ext_low = Path(entry.name).suffix.lower() if entry.name else ""
+            if ext_low in SUSPICIOUS_ALL_EXTS and self._is_safe_entry(entry):
+                self._run_file_heuristics(Path(entry.path), entry, ext_low)
+        except (OSError, PermissionError):
+            return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """Aplica las reglas registradas al archivo y registra hallazgos en el estado del objeto."""
@@ -170,7 +171,7 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """Orquestador de reglas para evaluar la peligrosidad de un archivo dado."""
-    if not path: return []
+    if not isinstance(path, Path): return []
     findings: ScanResult = []
     
     if (double_ext := check_double_extension(path, entry, now_ts)):
@@ -186,8 +187,9 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
             pass
 
         for check_fn in EXECUTABLE_CHECK_REGISTRY:
-            if (result := check_fn(path, entry, now_ts)):
-                findings.append(result)
+            if callable(check_fn):
+                if (result := check_fn(path, entry, now_ts)):
+                    findings.append(result)
         
     return findings
 
