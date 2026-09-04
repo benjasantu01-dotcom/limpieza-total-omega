@@ -1022,3 +1022,9 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-04T14:45:06` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante rutas malformadas o peligrosas, añadiendo una limpieza de caracteres de control, validación explícita de caracteres inválidos en Windows y una verificación de longitud más estricta antes de cualquier operación de I/O.
 - `2026-09-04T14:45:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T14:45:06` Corrida terminada. Total usado hoy: 348.
+- `2026-09-04T14:52:41` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-04T14:53:08` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha robustecido el escaneo de directorios `_sum_directory_recursive` implementando un manejo defensivo ante errores de acceso (como archivos en uso o acceso denegado) que anteriormente podían interrumpir la recursión, y asegurando que las rutas de los archivos procesados sean validadas explícitamente mediante `is_safe_to_modify` antes de su lectura.
+- `2026-09-04T14:53:38` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `walk_files` ante errores de entrada y condiciones de carrera en el sistema de archivos al añadir validaciones adicionales contra rutas no existentes o inaccesibles dentro del bucle de iteración, evitando el aborto silencioso de la operación.
+- `2026-09-04T14:53:38` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-09-04T14:53:38` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T14:53:38` Corrida terminada. Total usado hoy: 350.

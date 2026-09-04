@@ -254,19 +254,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Realiza un recorrido profundo (DFS) del sistema de archivos mediante `os.scandir`.
-    
-    Técnicas de seguridad aplicadas:
-    - Uso de `is_protected_path` para evitar escaneo de directorios críticos.
-    - Detección de `REPARSE_POINT` en Windows para evitar seguir junctions o symlinks
-      que podrían causar bucles infinitos o escaneos redundantes.
-    - Seguimiento de inodos/dispositivos para evitar ciclos en sistemas de archivos.
-
-    Args:
-        directory: Raíz desde donde comenzar el escaneo.
-        skip_protected: Si se deben ignorar carpetas del sistema.
-        
-    Yields:
-        Tuple[Path, int]: Una tupla conteniendo la ruta al archivo y su tamaño en bytes.
     """
     root_path = _validate_root(directory)
     if root_path is None or not root_path.exists():
@@ -279,6 +266,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     while stack:
         current_dir = stack.pop()
         
+        # Validar existencia antes de cada iteración del stack para manejar cambios externos
+        if not current_dir.exists():
+            continue
+            
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -289,7 +280,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         
                         st = entry.stat(follow_symlinks=False)
                         
-                        # Evitar seguir puntos de reanálisis y symlinks para prevenir ciclos
                         if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
                             continue
                         
