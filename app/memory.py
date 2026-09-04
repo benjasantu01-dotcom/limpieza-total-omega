@@ -356,13 +356,17 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
     try:
         if kernel32.GetProcessId(proc_handle) != pid: return False, "Mismatch de PID."
         exit_code = ctypes.c_ulong()
-        if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
+        if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
+            return False, "Imposible obtener estado del proceso."
+        if exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso no está activo."
+            
         exec_path = _get_process_path(proc_handle)
         if not exec_path or is_protected_path(exec_path) or not is_safe_to_modify(exec_path):
             return False, "Operación denegada por política de seguridad."
+            
         return True, None
-    except (OSError, ctypes.ArgumentError, Exception):
+    except Exception:
         return False, "Error interno durante la verificación de integridad."
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
@@ -377,26 +381,23 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "PID no válido."
 
+    if _is_system_process(target_pid) or not is_safe_to_modify(str(target_pid)): 
+        return False, "Proceso protegido o inválido."
+
     kernel32 = ctypes.windll.kernel32
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
-        
-    if _is_system_process(target_pid) or not is_safe_to_modify(str(target_pid)): 
-        return False, "Proceso protegido o inválido."
     
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
-        err = kernel32.GetLastError()
-        return False, f"Acceso denegado (código {err})." if err == ERROR_ACCESS_DENIED else "Acceso denegado al proceso."
+        return False, f"Acceso denegado (código {kernel32.GetLastError()})."
     
     try:
         is_safe, error_reason = _is_safe_to_trim(proc_handle, target_pid)
         if not is_safe: 
             return False, error_reason or "Verificación de seguridad fallida."
         if not psapi.EmptyWorkingSet(proc_handle): 
-            return False, "El sistema denegó la operación (EmptyWorkingSet falló)."
+            return False, "El sistema denegó la operación."
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except (OSError, ctypes.ArgumentError, Exception) as e:
-        return False, f"Error sistémico: {e.__class__.__name__}"
     finally:
         kernel32.CloseHandle(proc_handle)

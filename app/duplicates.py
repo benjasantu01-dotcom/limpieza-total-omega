@@ -195,7 +195,6 @@ def _collect_candidates(
 
     def _scan_recursive(current_dir: Path) -> None:
         try:
-            # Re-verificar seguridad al entrar en un directorio
             if is_protected_path(current_dir):
                 return
             st = current_dir.stat()
@@ -208,7 +207,6 @@ def _collect_candidates(
                 for entry in it:
                     if entry.is_dir(follow_symlinks=False):
                         p_dir = Path(entry.path)
-                        # Validar seguridad antes de recursión
                         if not is_protected_path(p_dir) and not is_junction(p_dir):
                             _scan_recursive(p_dir)
                     else:
@@ -262,6 +260,7 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
 
 def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
     """Orquestador principal: escanea directorios y agrupa duplicados encontrados."""
+    # Validación estricta para evitar iterar accidentalmente sobre cadenas o paths únicos
     if not isinstance(directories, Iterable) or isinstance(directories, (str, Path)): 
         return []
     if not isinstance(min_size, int) or min_size < 0: 
@@ -290,7 +289,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
         
-    # Estructura de metadatos para ordenamiento: (mtime, longitud_ruta, objeto_path)
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         if not isinstance(p, Path): continue
@@ -304,7 +302,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     if not candidates:
         return None
         
-    # Ordenar por fecha (primero) y longitud de cadena (segundo)
     candidates.sort(key=lambda x: (x[0], x[1]))
     return candidates[0][2]
 

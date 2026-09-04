@@ -119,7 +119,7 @@ def validated_ui_operation(func: Callable) -> Callable:
     """Valida estado de la app y captura errores inesperados en callbacks de la UI."""
     @wraps(func)
     def wrapper(self, *args, **kwargs):
-        if hasattr(self, '_closing') and self._closing:
+        if getattr(self, '_closing', False):
             return None
         try:
             return func(self, *args, **kwargs)
@@ -206,8 +206,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @validated_ui_operation
     def _on_closing(self) -> None:
         """Cierra el pool de hilos y destruye la ventana de manera segura."""
-        if self._closing:
-            return
         self._closing = True
         
         with self._task_lock:
@@ -584,7 +582,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @safe_ui_operation
     def _render_gauge(self, score: int, grade: str) -> None:
         """Dibuja el gráfico de gauge (medidor de salud) en el lienzo."""
-        if self._closing or not hasattr(self, 'gauge') or not self.gauge.winfo_exists():
+        if not hasattr(self, 'gauge') or not self.gauge.winfo_exists():
             return
         
         self.gauge.delete("all")
@@ -831,15 +829,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _safe_get_entry_value(self, entry_widget: ctk.CTkEntry, default: Any, numeric: bool = False) -> Any:
         """Extrae el valor de un widget de entrada de forma segura."""
-        if not entry_widget or not entry_widget.winfo_exists():
+        if entry_widget is None or not entry_widget.winfo_exists():
             return default
         try:
-            val = entry_widget.get().strip()
-            if not val: return default
-            val = "".join(c for c in val if c.isprintable())
+            raw = entry_widget.get().strip()
+            if not raw:
+                return default
+            val = "".join(c for c in raw if c.isprintable())
             if numeric:
-                val_int = int(val)
-                return val_int if val_int >= 0 else default
+                return int(val)
             return val
         except (ValueError, TypeError):
             return default
