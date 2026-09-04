@@ -119,7 +119,7 @@ class Scanner:
             return False
         
         name = entry.name
-        if name and (RTL_CHAR_RE.search(name) or RESERVED_NAMES_RE.match(name)):
+        if not name or RTL_CHAR_RE.search(name) or RESERVED_NAMES_RE.match(name):
             return False
         
         if self._is_reparse_point(entry) or not self._is_inside_base_root(path_str):
@@ -145,6 +145,8 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """Clasifica la entrada: si es directorio, lo encola; si es archivo, aplica heurísticas."""
+        if not entry.path:
+            return
         try:
             if not self._is_safe_entry(entry):
                 return

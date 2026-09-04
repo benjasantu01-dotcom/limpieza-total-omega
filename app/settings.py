@@ -279,9 +279,10 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
                 content = json.load(f)
-                data = validate(content) if _is_dict(content) else DEFAULTS.copy()
-                _CACHE[ruta_str] = (mtime, data)
-                return data.copy()
+            # Validación separada para asegurar que errores de formato no rompan la lectura
+            data = validate(content) if _is_dict(content) else DEFAULTS.copy()
+            _CACHE[ruta_str] = (mtime, data)
+            return data.copy()
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
         pass
     return DEFAULTS.copy()

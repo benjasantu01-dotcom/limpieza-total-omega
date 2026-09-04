@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 17
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 126 | 7 | 20 | 12 | 131 |
-| 2026-09-04 | 86 | 10 | 14 | 5 | 93 |
+| 2026-09-03 | 123 | 7 | 20 | 11 | 131 |
+| 2026-09-04 | 90 | 10 | 14 | 5 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **47**
 - seguridad defensiva: **46**
-- legibilidad y documentación: **46**
+- manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **41**
-- rendimiento: **38**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **19**
-- `duplicates.py`: **18**
+- `settings.py`: **19**
+- `assistant.py`: **19**
 - `quarantine.py`: **18**
-- `settings.py`: **18**
-- `assistant.py`: **18**
+- `scanner.py`: **18**
+- `healthscore.py`: **18**
 - `memory.py`: **17**
-- `scanner.py`: **17**
+- `duplicates.py`: **17**
 - `organizer.py`: **17**
 - `browser.py`: **15**
 - `safety.py`: **15**
 - `main.py`: **11**
-- `diskreport.py`: **10**
 - `branding.py`: **10**
-- `startup.py`: **9**
+- `startup.py`: **10**
+- `diskreport.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T08:56:05` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_call_gemini` para separar la construcción de la petición HTTP del manejo de la respuesta, reduciendo el anidamiento y haciendo explícita la validación de cada etapa.
+- `2026-09-04T08:55:42` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita de `reader.fieldnames` y protegiendo el acceso a los valores del diccionario `row` mediante `dict.get()`, evitando posibles `KeyError` o errores de tipo en caso de datos inesperados del registro.
+- `2026-09-04T08:55:14` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de archivos `load` al separar explícitamente la lectura del contenido de la validación del JSON, asegurando que cualquier error de formato en el disco sea capturado y manejado de forma segura sin abortar la ejecución, cumpliendo con la regla de tolerancia a fallos.
+- `2026-09-04T08:54:44` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_entry` y `process_entry` al agregar validaciones de tipo `None` y asegurar que `os.scandir` se gestione con mayor resiliencia ante entradas inaccesibles, evitando que `Path(entry.path)` reciba valores inválidos.
 - `2026-09-04T08:45:46` **safety.py** (manejo de errores y validación de entradas): Se refactorizó la lógica de chequeo de integridad para evitar el uso de `os.access(path, os.W_OK)` en `_check_file_integrity_cached`, ya que dicha función es poco fiable en Windows (especialmente en contextos de red o ACLs complejas), reemplazándola por una validación directa del estado de los metadatos y captura de excepciones específicas para evitar fallos silenciosos.
 - `2026-09-04T08:45:10` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `purge_all` y la carga de manifiestos mediante una validación estricta de rutas y tipos, evitando posibles excepciones por archivos inesperados en el directorio de cuarentena y asegurando que `_is_item_purgable` maneje correctamente rutas fuera del sandbox o nombres de archivos protegidos.
 - `2026-09-04T08:36:14` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes reemplazando chequeos genéricos por validaciones de estado explícitas, asegurando que los `handles` de procesos se cierren correctamente ante cualquier excepción y validando la integridad del PID antes de iniciar operaciones de riesgo.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T06:44:45` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_directory` al reemplazar `os.path.splitext` (que no maneja correctamente nombres de archivo complejos) por `pathlib.Path.suffix`, asegurando consistencia con las reglas de `JUNK_EXTENSIONS` y añadiendo validaciones de seguridad de ruta antes de procesar cada entrada del sistema de archivos.
 - `2026-09-04T06:41:44` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del sistema contra entradas inesperadas agregando validación de tipo y rango en las funciones de puntuación (`score_*`) y protegí la ejecución del pipeline ante posibles errores en los `message_factory` mediante un bloque `try-except` más granular.
 - `2026-09-04T06:32:46` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para garantizar que, durante el recorrido recursivo, cada nueva subcarpeta sea validada explícitamente mediante `is_protected_path` antes de intentar acceder a su contenido, evitando seguir rutas que podrían haber sido movidas o alteradas durante el escaneo.
-- `2026-09-04T06:32:03` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva al integrar `is_protected_path` directamente dentro de la función de escaneo recursivo `_sum_directory_recursive`, asegurando que cada subdirectorio y archivo visitado sea validado explícitamente contra la lista negra del sistema antes de procesar sus atributos, evitando así la posible lectura de áreas restringidas incluso si el sistema operativo permite el acceso nominal.
-- `2026-09-04T06:31:35` **branding.py** (seguridad defensiva): Se endureció la validación en `save_logo_svg` al verificar la existencia del directorio padre mediante `ensure_safe_to_modify` y evitar el uso de `mkdir` sin antes confirmar la seguridad de la ruta completa, previniendo posibles ataques de *path traversal* o escrituras en áreas críticas.
-- `2026-09-04T06:22:27` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta de estructura antes de acceder a los datos, garantizando que cualquier respuesta inesperada de la API sea descartada en lugar de procesada, alineado con las reglas de integridad de datos del proyecto.
-- `2026-09-04T06:22:07` **startup.py** (robustez ante casos límite): Se ha robustecido el método `_resolve_and_cache_path` para gestionar archivos que se encuentran bloqueados por el sistema operativo (mediante `PermissionError` y `OSError`), evitando que el escaneo se interrumpa prematuramente al intentar acceder a descriptores de archivo en uso.
