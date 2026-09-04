@@ -234,8 +234,9 @@ def _check_file_integrity_cached(path_str: str) -> bool:
     """Realiza un chequeo exhaustivo de integridad y cachea el resultado."""
     path = Path(path_str)
     try:
-        file_stat = path.lstat()
-        if not os.access(path, os.W_OK):
+        file_stat = path.stat()
+        # Verificamos escritura mediante el modo devuelto por stat, evitando os.access
+        if not (file_stat.st_mode & stat.S_IWRITE):
             return False
     except (PermissionError, OSError):
         return False

@@ -614,11 +614,9 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
     """Helper interno para validar si un ítem cumple los requisitos para borrado seguro."""
     try:
-        if not _is_within_quarantine_sandbox(file_path, base_path):
+        if not file_path.is_file() or not _is_within_quarantine_sandbox(file_path, base_path):
             return False
         return (
-            file_path.exists() and
-            file_path.is_file() and
             item.verify_integrity(file_path) and
             not _is_file_locked(file_path) and
             is_safe_to_modify(file_path)
@@ -637,18 +635,20 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     kept_items = []
     
     for stored_path in quarantine_root.iterdir():
+        # Saltamos manifiesto o directorios
+        if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
+            continue
+            
         if stored_path.name in item_map:
             item = item_map[stored_path.name]
-            try:
-                if _is_item_purgable(stored_path, item, quarantine_root):
-                    if _safe_unlink(stored_path):
-                        purged_count += 1
-                        continue
-            except (OSError, PermissionError):
-                pass
+            if _is_item_purgable(stored_path, item, quarantine_root):
+                if _safe_unlink(stored_path):
+                    purged_count += 1
+                    continue
             kept_items.append(item)
-        elif stored_path.name != MANIFEST_NAME and not stored_path.is_dir():
-            pass
+        else:
+            # Archivo extraño no en manifiesto, omitir por seguridad
+            continue
                 
     if purged_count > 0:
         save_manifest(kept_items, base)

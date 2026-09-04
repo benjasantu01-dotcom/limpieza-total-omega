@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **212** (42.1% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 127 | 7 | 21 | 12 | 133 |
-| 2026-09-04 | 84 | 10 | 13 | 5 | 92 |
+| 2026-09-03 | 126 | 7 | 20 | 12 | 131 |
+| 2026-09-04 | 86 | 10 | 14 | 5 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
 - legibilidad y documentación: **46**
 - robustez ante casos límite: **41**
-- rendimiento: **39**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **41**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **19**
 - `duplicates.py`: **18**
+- `quarantine.py`: **18**
 - `settings.py`: **18**
 - `assistant.py`: **18**
 - `memory.py`: **17**
-- `quarantine.py`: **17**
 - `scanner.py`: **17**
 - `organizer.py`: **17**
-- `browser.py`: **16**
-- `safety.py`: **14**
+- `browser.py`: **15**
+- `safety.py`: **15**
 - `main.py`: **11**
 - `diskreport.py`: **10**
 - `branding.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T08:45:46` **safety.py** (manejo de errores y validación de entradas): Se refactorizó la lógica de chequeo de integridad para evitar el uso de `os.access(path, os.W_OK)` en `_check_file_integrity_cached`, ya que dicha función es poco fiable en Windows (especialmente en contextos de red o ACLs complejas), reemplazándola por una validación directa del estado de los metadatos y captura de excepciones específicas para evitar fallos silenciosos.
+- `2026-09-04T08:45:10` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `purge_all` y la carga de manifiestos mediante una validación estricta de rutas y tipos, evitando posibles excepciones por archivos inesperados en el directorio de cuarentena y asegurando que `_is_item_purgable` maneje correctamente rutas fuera del sandbox o nombres de archivos protegidos.
 - `2026-09-04T08:36:14` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes reemplazando chequeos genéricos por validaciones de estado explícitas, asegurando que los `handles` de procesos se cierren correctamente ante cualquier excepción y validando la integridad del PID antes de iniciar operaciones de riesgo.
 - `2026-09-04T08:35:58` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de los callbacks de la UI al introducir `_safe_run_ui_callback` de forma consistente, evitando que errores de widgets (por ejemplo, si el usuario cierra la app mientras una tarea asíncrona intenta actualizar un control) provoquen fallos silenciosos o logs innecesarios; además, refiné `_safe_get_entry_value` para tratar entradas vacías o mal formadas de manera predecible en lugar de ignorarlas o propiciar errores de tipo.
 - `2026-09-04T08:34:18` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `find_duplicates` añadiendo una validación explícita para asegurar que la entrada no sea una cadena o un objeto `Path` solitario, evitando errores de iteración y mejorando la consistencia con las reglas de manejo de errores.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T06:31:35` **branding.py** (seguridad defensiva): Se endureció la validación en `save_logo_svg` al verificar la existencia del directorio padre mediante `ensure_safe_to_modify` y evitar el uso de `mkdir` sin antes confirmar la seguridad de la ruta completa, previniendo posibles ataques de *path traversal* o escrituras en áreas críticas.
 - `2026-09-04T06:22:27` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta de estructura antes de acceder a los datos, garantizando que cualquier respuesta inesperada de la API sea descartada en lugar de procesada, alineado con las reglas de integridad de datos del proyecto.
 - `2026-09-04T06:22:07` **startup.py** (robustez ante casos límite): Se ha robustecido el método `_resolve_and_cache_path` para gestionar archivos que se encuentran bloqueados por el sistema operativo (mediante `PermissionError` y `OSError`), evitando que el escaneo se interrumpa prematuramente al intentar acceder a descriptores de archivo en uso.
-- `2026-09-04T06:21:39` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `save()` implementando una verificación de espacio en disco previa a la escritura y manejando explícitamente el caso de colisiones o archivos bloqueados durante la operación atómica de reemplazo.
-- `2026-09-04T06:12:35` **safety.py** (robustez ante casos límite): Se ha robustecido la validación de rutas mediante la incorporación de una verificación estricta de componentes de trayectoria con `path.name` en `_validate_structural_safety`, asegurando que archivos con nombres nulos, espacios en blanco iniciales o caracteres ocultos sean rechazados antes de cualquier interacción con el disco, mejorando la resiliencia ante entradas mal formadas.
