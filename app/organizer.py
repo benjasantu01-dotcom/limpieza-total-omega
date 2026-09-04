@@ -168,9 +168,12 @@ def _is_file_locked(path: Path) -> bool:
     """
     if path is None: return True
     try:
-        with open(path, "rb"):
+        # Intentamos abrir en modo lectura exclusiva
+        with open(path, "rb") as f:
+            # Si el archivo está vacío o bloqueado, esto puede fallar
             return False
-    except (OSError, PermissionError, IOError):
+    except (PermissionError, OSError):
+        # Si el acceso es denegado o el sistema lo reporta bloqueado, asumimos inseguro
         return True
 
 

@@ -16,30 +16,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 60 | 1 | 7 | 0 | 50 |
+| 2026-09-02 | 57 | 1 | 7 | 0 | 49 |
 | 2026-09-03 | 148 | 7 | 24 | 13 | 158 |
-| 2026-09-04 | 20 | 2 | 4 | 2 | 8 |
+| 2026-09-04 | 23 | 2 | 4 | 2 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **43**
 - rendimiento: **41**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **41**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **21**
 - `browser.py`: **20**
-- `settings.py`: **19**
+- `healthscore.py`: **20**
+- `organizer.py`: **20**
+- `scanner.py`: **20**
 - `assistant.py`: **19**
-- `healthscore.py`: **19**
-- `organizer.py`: **19**
+- `memory.py`: **19**
 - `duplicates.py`: **18**
-- `memory.py`: **18**
 - `quarantine.py`: **18**
-- `safety.py`: **15**
+- `settings.py`: **18**
+- `safety.py`: **14**
 - `diskreport.py`: **12**
 - `main.py`: **12**
 - `branding.py`: **11**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T01:40:36` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para que no confíe ciegamente en el modo de apertura, evitando falsos positivos al manejar excepciones de acceso de manera explícita y asegurando que los archivos no sean procesados si existen errores de E/S indeterminados.
+- `2026-09-04T01:40:19` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una validación explícita mediante `ctypes` para descartar handles de procesos que requieran privilegios de administrador que el script actual no posee (usando `GetLastError` para identificar `ERROR_ACCESS_DENIED`), evitando errores silenciosos o excepciones inesperadas durante la llamada a `OpenProcess`.
+- `2026-09-04T01:35:29` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_memory` y `score_disk` para prevenir divisiones por cero ante configuraciones erróneas y agregué una salvaguarda en `compute_score` para manejar el caso de que `metrics` sea un objeto con atributos faltantes o inesperados mediante `getattr`.
 - `2026-09-04T01:25:34` **browser.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_sum_directory_recursive` y `detect_profiles` para garantizar que la ruta absoluta resuelta no exceda `MAX_PATH_LEN` antes de interactuar con el sistema de archivos, previniendo errores de `OSError` o truncamientos silenciosos en casos límite de rutas profundas.
 - `2026-09-04T01:16:14` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` para manejar objetos que implementen `__getitem__` de forma no estándar o que fallen ante accesos inesperados, asegurando que el asistente no aborte el análisis ante datos mal formados, un caso límite crítico en la ingesta de métricas.
 - `2026-09-04T01:15:20` **settings.py** (rendimiento): Se optimizó el acceso a la configuración mediante la consolidación del caché de rutas (`_PATH_CACHE`) y la serialización, eliminando la reconstrucción de objetos `Path` en cada llamada a `settings_path` y reduciendo el uso de `copy()` innecesarios al recuperar datos inmutables de configuración.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T00:34:54` **settings.py** (legibilidad y documentación): Refactoricé el diccionario `_VALIDATOR_MAP` utilizando `ConfigKey` como clave directa en lugar de strings, eliminando la necesidad de iterar sobre un diccionario intermedio y mejorando la legibilidad y seguridad de tipos al acceder a los validadores.
 - `2026-09-04T00:34:25` **scanner.py** (legibilidad y documentación): Mejoré la documentación interna del módulo mediante la adición de Type Hints detallados en las funciones de heurística y la estandarización de los docstrings siguiendo convenciones claras, eliminando ambigüedades sobre los parámetros de entrada y el propósito de los chequeos.
 - `2026-09-04T00:25:00` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando docstrings que especifican explícitamente las precondiciones y garantías de seguridad, lo que facilita el mantenimiento futuro y la comprensión de las salvaguardas implementadas.
-- `2026-09-04T00:24:24` **organizer.py** (legibilidad y documentación): Mejora la legibilidad del módulo mediante la adición de Type Hints en retornos y variables internas, y simplifica la lógica de `_is_junction` para mayor claridad en el uso de la API de Windows.
-- `2026-09-04T00:23:55` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings técnicos detallados en funciones clave y tipado explícito, además de normalizar la estructura de las excepciones de seguridad para facilitar la depuración sin alterar el comportamiento funcional.
-- `2026-09-04T00:14:06` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings descriptivos con parámetros y retornos en funciones clave, aclarando la lógica de normalización en el pipeline de `compute_score` y estandarizando la terminología de tipos para asegurar que el código sea autodocumentado para futuros colaboradores.

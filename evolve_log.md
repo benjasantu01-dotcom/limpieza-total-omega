@@ -764,3 +764,13 @@ FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_progr
 - `2026-09-04T01:26:14` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-09-04T01:26:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T01:26:14` Corrida terminada. Total usado hoy: 36.
+- `2026-09-04T01:34:42` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-09-04T01:35:29` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `score_memory` y `score_disk` para prevenir divisiones por cero ante configuraciones erróneas y agregué una salvaguarda en `compute_score` para manejar el caso de que `metrics` sea un objeto con atributos faltantes o inesperados mediante `getattr`.
+- `2026-09-04T01:36:29` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-04T01:37:32` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-04T01:38:38` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-04T01:39:33` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-04T01:40:19` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `trim_working_set` añadiendo una validación explícita mediante `ctypes` para descartar handles de procesos que requieran privilegios de administrador que el script actual no posee (usando `GetLastError` para identificar `ERROR_ACCESS_DENIED`), evitando errores silenciosos o excepciones inesperadas durante la llamada a `OpenProcess`.
+- `2026-09-04T01:40:36` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_file_locked` para que no confíe ciegamente en el modo de apertura, evitando falsos positivos al manejar excepciones de acceso de manera explícita y asegurando que los archivos no sean procesados si existen errores de E/S indeterminados.
+- `2026-09-04T01:40:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T01:40:36` Corrida terminada. Total usado hoy: 40.

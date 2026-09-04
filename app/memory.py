@@ -51,6 +51,7 @@ SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_Q
 
 STILL_ACTIVE_EXIT_CODE: Final[int] = 259
 SYSTEM_CRITICAL_PIDS: Set[int] = {0, 4}
+ERROR_ACCESS_DENIED: Final[int] = 5
 
 __all__ = [
     "MemorySnapshot",
@@ -386,7 +387,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
-        return False, "Acceso denegado."
+        err = kernel32.GetLastError()
+        return False, f"Acceso denegado (código {err})." if err == ERROR_ACCESS_DENIED else "Acceso denegado."
     
     try:
         is_safe, error_reason = _is_safe_to_trim(proc_handle, target_pid)

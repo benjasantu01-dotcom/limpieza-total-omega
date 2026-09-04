@@ -129,7 +129,7 @@ class SystemMetrics:
 
     def is_finite(self) -> bool:
         """Retorna True si todos los campos de datos contienen valores numéricos finitos."""
-        return all(math.isfinite(getattr(self, f)) for f in self._NUMERIC_FIELDS)
+        return all(math.isfinite(getattr(self, f, 0.0)) for f in self._NUMERIC_FIELDS)
 
 @dataclass
 class HealthResult:
@@ -168,11 +168,13 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud de memoria RAM basado en el porcentaje disponible."""
-    return _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT) if _LIMIT_RAM_PERCENT > 0 else 0.0
+    if _LIMIT_RAM_PERCENT <= 0: return 0.0
+    return _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud de espacio en disco basado en porcentaje libre."""
-    return _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT) if _LIMIT_DISK_PERCENT > 0 else 0.0
+    if _LIMIT_DISK_PERCENT <= 0: return 0.0
+    return _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud basado en el peso total de archivos duplicados."""
@@ -204,12 +206,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Pipeline principal: normaliza métricas brutas a un rango [0.0, 1.0], 
     aplica pesos ponderados y genera recomendaciones basadas en umbrales.
-
-    Args:
-        metrics: Objeto SystemMetrics validado con datos del sistema.
-    
-    Returns:
-        HealthResult: Objeto con el puntaje final, desglose y lista de recomendaciones.
     """
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o corruptos."])
@@ -239,7 +235,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
                         continue
         
         final_score: int = int(_clamp(total_pts, 0.0, 100.0))
-        if metrics.quarantined_count > 0:
+        if hasattr(metrics, 'quarantined_count') and metrics.quarantined_count > 0:
             recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
         
         return HealthResult(
