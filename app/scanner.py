@@ -34,11 +34,10 @@ class Suspicion:
     severity: str
 
 # Alias para funciones de chequeo heurístico.
-# now_ts: Timestamp (float) obtenido al inicio del escaneo para consistencia.
-# entry: Objeto os.DirEntry opcional para evitar syscalls innecesarias.
+# La firma espera la ruta, un objeto DirEntry opcional (para rendimiento) y el timestamp actual.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 
-# Representa una lista acumulativa de hallazgos durante el proceso de escaneo.
+# Lista acumulativa de hallazgos durante el proceso de escaneo.
 ScanResult: TypeAlias = List[Suspicion]
 
 # Expresiones regulares para detección de ofuscación
