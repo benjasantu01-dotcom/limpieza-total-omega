@@ -105,7 +105,7 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, path_str: str) -> bool:
-        """Verifica que la ruta resuelta esté contenida en la jerarquía del directorio raíz."""
+        """Verifica mediante resolución de ruta absoluta que el objetivo sea hijo del directorio raíz."""
         if not path_str: return False
         try:
             target = Path(path_str).resolve(strict=False)
@@ -115,7 +115,8 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida criterios de seguridad antes de procesar una entrada de sistema de archivos.
+        Valida que la entrada no exceda límites de longitud, no sea un punto de reparse,
+        no contenga caracteres de ofuscación y no esté protegida por seguridad.
         """
         if not entry or not entry.path or len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
             return False
@@ -132,7 +133,7 @@ class Scanner:
         return not is_protected_path(Path(entry.path))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si la entrada es un punto de reparse mediante atributos de archivo."""
+        """Detecta si un archivo es un punto de reparse (Junction/Symlink) para evitar bucles o escaneos infinitos."""
         try:
             if entry.is_symlink():
                 return True
@@ -142,13 +143,13 @@ class Scanner:
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
-        """Gestiona el apilamiento de directorios para evitar ciclos y repeticiones."""
+        """Añade un directorio a la pila de escaneo si no ha sido visitado previamente."""
         if entry and entry.path and entry.path not in self.seen:
             self.seen.add(entry.path)
             stack.append(entry.path)
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
-        """Clasifica una entrada para su procesamiento."""
+        """Clasifica la entrada: si es directorio, lo encola; si es archivo, aplica heurísticas."""
         try:
             if not self._is_safe_entry(entry):
                 return
@@ -163,7 +164,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
-        """Ejecuta el conjunto de heurísticas registradas sobre un archivo sospechoso."""
+        """Aplica las reglas registradas al archivo y registra hallazgos en el estado del objeto."""
         if path.name and RTL_CHAR_RE.search(path.name):
             self.results.append(Suspicion(path, "Nombre contiene caracteres de ofuscación (RTL)", "critical"))
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))

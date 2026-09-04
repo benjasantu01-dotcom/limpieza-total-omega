@@ -152,11 +152,12 @@ def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
 class _Validators:
     @staticmethod
     def _run_safety_checks(path_obj: Path) -> bool:
-        """Verifica recursivamente si una ruta está protegida o es insegura."""
+        """Verifica recursivamente si una ruta está protegida o es insegura usando `safety.py`."""
         try:
             resolved = path_obj.resolve(strict=False)
             if resolved.is_symlink(): return False
             if hasattr(resolved, 'is_junction') and resolved.is_junction(): return False
+            # Se utiliza is_safe_to_modify para asegurar que la ruta no sea de sistema
             return not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
         except (OSError, PermissionError):
             return False
