@@ -195,11 +195,14 @@ _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
-    Procesa métricas mediante una pipeline de normalización y ponderación.
+    Pipeline principal: normaliza métricas brutas a un rango [0.0, 1.0], 
+    aplica pesos ponderados y genera recomendaciones basadas en umbrales.
+
+    Args:
+        metrics: Objeto SystemMetrics validado con datos del sistema.
     
-    Aplica los pesos definidos en `WEIGHTS` a los ratios obtenidos por cada
-    módulo (`_SCORERS`) y genera recomendaciones dinámicas basadas en reglas
-    de umbrales predefinidas.
+    Returns:
+        HealthResult: Objeto con el puntaje final, desglose y lista de recomendaciones.
     """
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o corruptos."])
@@ -212,11 +215,14 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         for area, weight in _WEIGHT_ITEMS_INT:
             scorer = _SCORERS.get(area)
             if not scorer: continue
+            
+            # Normalización y ponderación: el ratio [0,1] se escala al peso del área
             ratio: NormalizedRatio = scorer(metrics)
             pts: int = int(round(ratio * weight))
             metric_breakdown[area] = pts
             total_pts += float(pts)
             
+            # Evaluación de reglas heurísticas para generar sugerencias
             rules: List[RecommendationRule] = _RULES_BY_AREA.get(area, [])
             for rule in rules:
                 if rule.check(metrics, ratio):
@@ -245,7 +251,7 @@ def _render_bar(pts: int, maximo: int) -> str:
     return ('#' * puntos) + ('.' * (maximo - puntos))
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera una representación textual del informe de salud para la interfaz."""
+    """Genera una representación textual formateada del informe de salud para la interfaz."""
     if not isinstance(result, HealthResult):
         return ["Error: Informe no disponible o formato inválido."]
     

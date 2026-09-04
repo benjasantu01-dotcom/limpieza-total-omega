@@ -149,6 +149,19 @@ def _is_valid_candidate(path: Path) -> bool:
         return False
 
 
+def _is_candidate_file(entry: os.DirEntry, min_size: int) -> bool:
+    """Verifica si una entrada de directorio es un archivo candidato para procesar."""
+    try:
+        return (
+            entry.is_file(follow_symlinks=False) and
+            not is_junction(Path(entry.path)) and
+            entry.stat(follow_symlinks=False).st_size >= min_size and
+            not is_protected_path(Path(entry.path))
+        )
+    except (OSError, PermissionError):
+        return False
+
+
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """Agrupa rutas por su tamaño en bytes (Paso 1)."""
     groups: Dict[int, List[Path]] = defaultdict(list)
@@ -197,21 +210,13 @@ def _collect_candidates(
 
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    try:
-                        if entry.is_dir(follow_symlinks=False):
-                            p_dir = Path(entry.path)
-                            if not is_protected_path(p_dir) and not is_junction(p_dir):
-                                _scan_recursive(p_dir)
-                        elif entry.is_file(follow_symlinks=False):
-                            if is_junction(Path(entry.path)):
-                                continue
-                            info = entry.stat(follow_symlinks=False)
-                            if info.st_size >= min_size:
-                                p = Path(entry.path)
-                                if not is_protected_path(p):
-                                    temp_map[int(info.st_size)].append(p)
-                    except (OSError, PermissionError):
-                        continue
+                    if entry.is_dir(follow_symlinks=False):
+                        p_dir = Path(entry.path)
+                        if not is_protected_path(p_dir) and not is_junction(p_dir):
+                            _scan_recursive(p_dir)
+                    elif _is_candidate_file(entry, min_size):
+                        p = Path(entry.path)
+                        temp_map[int(entry.stat(follow_symlinks=False).st_size)].append(p)
         except (OSError, PermissionError):
             pass
 

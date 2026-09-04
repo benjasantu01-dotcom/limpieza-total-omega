@@ -269,7 +269,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Usar stat para detectar atributos y tipo de archivo de forma eficiente.
                         st = entry.stat(follow_symlinks=False)
                         
                         # Evitar seguir symlinks o puntos de reanálisis para no salir del árbol objetivo.
@@ -285,7 +284,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file():
                             yield Path(entry.path), max(0, int(st.st_size))
                     except (PermissionError, OSError):
-                        # Ignorar individualmente errores de acceso o rutas largas.
                         continue
         except (PermissionError, OSError):
             continue
@@ -373,7 +371,10 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
-    """Realiza una pasada única sobre el directorio para calcular estadísticas agregadas."""
+    """
+    Ejecuta un recorrido único por el árbol para recolectar métricas agregadas
+    y los archivos más grandes encontrados, minimizando la carga de I/O.
+    """
     total_bytes: int = 0
     total_files: int = 0
     ext_sizes: Dict[str, int] = defaultdict(int)

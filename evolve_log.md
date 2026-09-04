@@ -638,3 +638,13 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-04T00:04:30` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica y la precisión de los type hints en `browser.py` para explicitar el uso de `os.DirEntry` y las restricciones de las APIs de Windows, facilitando la comprensión del flujo de escaneo seguro.
 - `2026-09-04T00:04:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T00:04:30` Corrida terminada. Total usado hoy: 4.
+- `2026-09-04T00:12:33` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-09-04T00:13:08` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de Type Hints detallados, docstrings que clarifican las intenciones de las funciones de alto nivel y la extracción de la lógica de "pasada única" para mejorar la calidad del código, sin alterar el comportamiento.
+- `2026-09-04T00:13:38` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `_collect_candidates` mediante la extracción de la lógica de evaluación de archivos a una función auxiliar `_is_candidate_file`, reduciendo el anidamiento y aclarando los criterios de filtrado.
+- `2026-09-04T00:14:06` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings descriptivos con parámetros y retornos en funciones clave, aclarando la lógica de normalización en el pipeline de `compute_score` y estandarizando la terminología de tipos para asegurar que el código sea autodocumentado para futuros colaboradores.
+- `2026-09-04T00:15:06` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-04T00:16:09` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-04T00:17:15` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-04T00:18:27` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-04T00:18:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T00:18:27` Corrida terminada. Total usado hoy: 8.
