@@ -380,28 +380,26 @@ def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
     return _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))
 
 @lru_cache(maxsize=16)
-def _generate_context_lines_cached(score: Optional[int], grade: str, junk: float, susp: int, ram: float, disk: float, dup: float, start: int) -> tuple[str, ...]:
-    score_val = _fmt_metric_sanitized(score) if score is not None else "N/A"
-    grade_val = str(grade)[:5] if grade else ""
-    return (
-        f"Puntaje de salud: {score_val}{f' nota {grade_val}' if grade_val else ''}",
+def _generate_context_lines_cached(score: Optional[int], grade: str, junk: float, susp: int, ram: float, disk: float, dup: float, start: int) -> str:
+    lines = [
+        f"Puntaje de salud: {_fmt_metric_sanitized(score) if score is not None else 'N/A'}{f' nota {str(grade)[:5]}' if grade else ''}",
         f"Basura: {_fmt_metric_sanitized(junk, ' MB')}",
         f"Sospechosos: {_fmt_metric_sanitized(susp)}",
         f"RAM disponible: {_fmt_metric_sanitized(ram, ' percent')}",
         f"Disco libre: {_fmt_metric_sanitized(disk, ' percent')}",
         f"Duplicados: {_fmt_metric_sanitized(dup, ' MB')}",
         f"Inicio: {_fmt_metric_sanitized(start)} items"
-    )
+    ]
+    return "\n".join(lines)
 
 def context_as_text(context: SystemContext) -> str:
     if not isinstance(context, SystemContext) or not context.analyzed or not context.is_valid_structure:
         return "No hay métricas disponibles todavía."
     try:
-        lines = _generate_context_lines_cached(
+        texto_unificado = _generate_context_lines_cached(
             context.score, context.grade, context.junk_mb, context.suspicious_count,
             context.memory_available_percent, context.disk_free_percent, context.duplicate_mb, context.startup_count
         )
-        texto_unificado = "\n".join(lines)
         if not _ensure_safe_text(texto_unificado):
             return "Error: el contexto generado no cumple los estándares de seguridad."
         return texto_unificado
