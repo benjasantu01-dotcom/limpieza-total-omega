@@ -103,8 +103,13 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae la ruta contenida entre comillas. Realiza saneamiento básico contra 
-        inyección de metacaracteres de shell y valida contra rutas protegidas.
+        Extrae la ruta contenida entre comillas y valida contra inyección.
+
+        Args:
+            raw_command: Línea de comando original.
+
+        Returns:
+            Ruta limpia si es válida y no protegida, de lo contrario un string vacío.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 2:
             return ""
@@ -125,12 +130,10 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Verifica existencia, accesibilidad y si el objeto es un archivo real (excluye symlinks y reparse points)."""
+        """Verifica existencia y excluye puntos de reparseo (reparse points) para seguridad."""
         try:
             if not p.exists() or p.is_dir():
                 return False
-            # 0x00000400 identifica ReParsePoints (puntos de unión/reparseo NTFS)
-            # Evitamos procesar archivos que residan tras un reparse point para mayor seguridad
             stats = p.lstat()
             return not p.is_symlink() and not (stats.st_file_attributes & 0x00000400)
         except (OSError, PermissionError):
@@ -138,8 +141,13 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
-        Normaliza una ruta de sistema, aplica chequeos de seguridad (path traversal, 
-        nombres reservados, rutas protegidas) y cachea el resultado.
+        Normaliza, valida y cachea la ruta del archivo ejecutable.
+
+        Args:
+            path_string: Ruta candidata a resolver.
+
+        Returns:
+            Ruta absoluta normalizada o string vacío si es insegura.
         """
         if not isinstance(path_string, str) or not path_string:
             return ""
@@ -166,7 +174,6 @@ class StartupEntry:
                 return path_string
             
             try:
-                # Resolvemos evitando seguir puntos de reparseo ocultos
                 real_path_str: str = os.path.realpath(abs_path)
             except (OSError, PermissionError):
                 return abs_path 
@@ -183,7 +190,7 @@ class StartupEntry:
             return path_string
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Limpia la línea de comando de operadores de shell y extrae el binario ejecutable."""
+        """Limpia la línea de comando y extrae el binario ejecutable."""
         if not command_line or not isinstance(command_line, str):
             return ""
         if any(char in command_line for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
@@ -217,7 +224,7 @@ class StartupEntry:
 
 
 def startup_folders() -> List[Path]:
-    """Retorna las rutas locales de las carpetas de inicio del usuario y del sistema."""
+    """Retorna las rutas locales de las carpetas de inicio del sistema (NT solamente)."""
     if os.name != "nt":
         return []
     candidates: List[Path] = []
@@ -234,7 +241,15 @@ def startup_folders() -> List[Path]:
 
 
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
-    """Escanea el sistema de archivos buscando ejecutables en carpetas de inicio."""
+    """
+    Escanea carpetas de inicio buscando archivos ejecutables.
+
+    Args:
+        folders: Lista opcional de carpetas a escanear.
+
+    Returns:
+        Lista de objetos StartupEntry encontrados.
+    """
     found_entries: List[StartupEntry] = []
     scan_folders = folders if folders is not None else startup_folders()
     
@@ -264,8 +279,14 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Convierte el CSV proveniente de PowerShell en objetos StartupEntry.
-    Valida la integridad de las columnas y limpia caracteres maliciosos.
+    Parsea la salida de PowerShell (formato CSV) para extraer entradas de registro.
+
+    Args:
+        csv_text: String crudo proveniente de PowerShell.
+        source: Etiqueta de origen para el reporte.
+
+    Returns:
+        Lista de StartupEntry validados contra inyección.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -336,7 +357,7 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 
 
 def list_startup_entries() -> List[StartupEntry]:
-    """Lista programas de inicio consolidando fuentes con caché de sesión para evitar I/O repetitivo."""
+    """Consolida las entradas de inicio del sistema usando caché de sesión."""
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None:
         return _FULL_SCAN_CACHE

@@ -374,18 +374,17 @@ def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
     return _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))
 
 @lru_cache(maxsize=16)
-def _generate_context_lines_cached(score: Optional[int], grade: str, junk: float, susp: int, ram: float, disk: float, dup: float, start: int) -> str:
+def _generate_context_lines_cached(score_s: str, grade: str, junk_s: str, susp_s: str, ram_s: str, disk_s: str, dup_s: str, start_s: str) -> str:
     """Genera la representación textual del contexto para el prompt del LLM."""
-    lines = [
-        f"Puntaje de salud: {_fmt_metric_sanitized(score) if score is not None else 'N/A'}{f' nota {str(grade)[:5]}' if grade else ''}",
-        f"Basura: {_fmt_metric_sanitized(junk, ' MB')}",
-        f"Sospechosos: {_fmt_metric_sanitized(susp)}",
-        f"RAM disponible: {_fmt_metric_sanitized(ram, ' percent')}",
-        f"Disco libre: {_fmt_metric_sanitized(disk, ' percent')}",
-        f"Duplicados: {_fmt_metric_sanitized(dup, ' MB')}",
-        f"Inicio: {_fmt_metric_sanitized(start)} items"
-    ]
-    return "\n".join(lines)
+    return (
+        f"Puntaje de salud: {score_s}{f' nota {grade}' if grade else ''}\n"
+        f"Basura: {junk_s}\n"
+        f"Sospechosos: {susp_s}\n"
+        f"RAM disponible: {ram_s}\n"
+        f"Disco libre: {disk_s}\n"
+        f"Duplicados: {dup_s}\n"
+        f"Inicio: {start_s} items"
+    )
 
 def context_as_text(context: SystemContext) -> str:
     """Serializa el contexto a un formato seguro y estandarizado para la IA."""
@@ -393,8 +392,14 @@ def context_as_text(context: SystemContext) -> str:
         return "No hay métricas disponibles todavía."
     try:
         texto_unificado = _generate_context_lines_cached(
-            context.score, context.grade, context.junk_mb, context.suspicious_count,
-            context.memory_available_percent, context.disk_free_percent, context.duplicate_mb, context.startup_count
+            _fmt_metric_sanitized(context.score) if context.score is not None else "N/A",
+            str(context.grade)[:5],
+            _fmt_metric_sanitized(context.junk_mb, " MB"),
+            _fmt_metric_sanitized(context.suspicious_count),
+            _fmt_metric_sanitized(context.memory_available_percent, " percent"),
+            _fmt_metric_sanitized(context.disk_free_percent, " percent"),
+            _fmt_metric_sanitized(context.duplicate_mb, " MB"),
+            _fmt_metric_sanitized(context.startup_count)
         )
         if not _ensure_safe_text(texto_unificado):
             return "Error: el contexto generado no cumple los estándares de seguridad."

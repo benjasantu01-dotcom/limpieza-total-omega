@@ -60,13 +60,19 @@ MAX_PATH_LENGTH: Final[int] = 260
 WIN_FILE_ATTR_REPARSE_POINT: Final[int] = 0x400
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Evalúa si el nombre del archivo contiene una doble extensión engañosa."""
+    """
+    Verifica si el nombre de archivo emplea extensiones compuestas para ofuscar el ejecutable.
+    Retorna una instancia de Suspicion si se detecta un patrón prohibido, caso contrario None.
+    """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Determina si un ejecutable en carpetas de usuario ha sido modificado en el último umbral de tiempo."""
+    """
+    Evalúa si un archivo ejecutable en directorios críticos ha sido modificado recientemente.
+    Requiere que 'now_ts' sea un timestamp Unix válido para comparar contra el mtime del archivo.
+    """
     if not path or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     
@@ -79,7 +85,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Identifica archivos que emulan nombres de procesos críticos del sistema fuera de su ubicación legítima."""
+    """
+    Detecta ejecutables que intentan suplantar procesos críticos de sistema.
+    Excluye automáticamente rutas protegidas y subdirectorios de System32.
+    """
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if not is_protected_path(path) and SYSTEM32_LOWER not in str(path).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
@@ -170,7 +179,10 @@ class Scanner:
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
-    """Orquestador de reglas para evaluar la peligrosidad de un archivo dado."""
+    """
+    Orquestador de reglas para evaluar la peligrosidad de un archivo dado.
+    Ejecuta heurísticas específicas basándose en la extensión y los metadatos del archivo.
+    """
     if not isinstance(path, Path): return []
     findings: ScanResult = []
     
