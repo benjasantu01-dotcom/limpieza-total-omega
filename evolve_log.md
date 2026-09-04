@@ -669,3 +669,46 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-04T00:45:29` ➖ Sin cambios en diskreport.py (enfoque: rendimiento). Motivo: Optimicé el bucle de recorrido en `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y `str.lower()`, consolidando las operaciones dentro de una única iteración del generador y reduciendo la carga de CPU durante el análisis.
 - `2026-09-04T00:45:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T00:45:29` Corrida terminada. Total usado hoy: 20.
+- `2026-09-04T00:54:00` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-09-04T00:54:46` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-04T00:55:13` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el método `is_finite` de `SystemMetrics` reemplazando la iteración completa sobre `__dataclass_fields__` (que ocurría cada vez que se verificaba la salud) por una tupla estática de campos numéricos, evitando la sobrecarga de reflexión en tiempo de ejecución.
+- `2026-09-04T00:56:25` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._is_safe_disk_operation, LimpiezaTotalOmegaApp._is_safe_file_access, LimpiezaTotalOmegaApp._is_valid_dir, LimpiezaTotalOmegaApp._update_cards, LimpiezaTotalOmegaApp._verify_disk_path
+- `2026-09-04T00:56:39` Tests FALLARON:
+```
+
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:105: SyntaxWarning: invalid escape sequence '\P'
+    """Extrae rutas de comandos tipo "C:\Path\App.exe" validando seguridad."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed, 7 warnings in 1.34s
+
+```
+- `2026-09-04T00:56:39` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se ha optimizado `parse_windows_process_csv` para eliminar la creación de listas intermedias y el uso de `str.strip()` repetitivo, reemplazándolos por un generador y un procesamiento más eficiente del CSV, mejorando el rendimiento en sistemas con gran cantidad de procesos activos.
+- `2026-09-04T00:56:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T00:56:39` Corrida terminada. Total usado hoy: 24.

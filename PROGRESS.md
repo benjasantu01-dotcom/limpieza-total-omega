@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
-- Rechazadas por tests: 8
+- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 213
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 68 | 1 | 10 | 3 | 52 |
+| 2026-09-02 | 66 | 1 | 9 | 2 | 52 |
 | 2026-09-03 | 148 | 7 | 24 | 13 | 158 |
-| 2026-09-04 | 13 | 0 | 2 | 2 | 3 |
+| 2026-09-04 | 14 | 1 | 3 | 2 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **38**
-- rendimiento: **36**
+- rendimiento: **37**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **21**
 - `browser.py`: **20**
+- `scanner.py`: **20**
 - `assistant.py`: **19**
 - `memory.py`: **19**
 - `organizer.py`: **19**
+- `healthscore.py`: **19**
 - `quarantine.py`: **18**
 - `settings.py`: **18**
 - `duplicates.py`: **18**
-- `healthscore.py`: **18**
-- `safety.py`: **16**
+- `safety.py`: **15**
 - `diskreport.py`: **13**
 - `main.py`: **12**
 - `branding.py`: **11**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T00:55:13` **healthscore.py** (rendimiento): Optimicé el método `is_finite` de `SystemMetrics` reemplazando la iteración completa sobre `__dataclass_fields__` (que ocurría cada vez que se verificaba la salud) por una tupla estática de campos numéricos, evitando la sobrecarga de reflexión en tiempo de ejecución.
 - `2026-09-04T00:44:20` **assistant.py** (rendimiento): Optimicé el renderizado del contexto del asistente usando una lista por comprensión y una sola unión de strings, evitando la creación intermedia de tuplas y llamadas redundantes a funciones de formateo, reduciendo así la carga de CPU en cada refresco de la UI.
 - `2026-09-04T00:35:06` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la inclusión de type hints precisos en los retornos de funciones y la actualización de docstrings para clarificar la lógica de resolución de rutas (el "porqué" de la validación defensiva).
 - `2026-09-04T00:34:54` **settings.py** (legibilidad y documentación): Refactoricé el diccionario `_VALIDATOR_MAP` utilizando `ConfigKey` como clave directa en lugar de strings, eliminando la necesidad de iterar sobre un diccionario intermedio y mejorando la legibilidad y seguridad de tipos al acceder a los validadores.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T00:04:14` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en las funciones de manipulación de color y dibujo para clarificar la lógica de transformación geométrica y cromática, facilitando el mantenimiento técnico.
 - `2026-09-04T00:03:37` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_call_gemini` hacia un diseño de "fallo rápido" (guard clauses) y la limpieza del flujo de ejecución del asistente en línea, clarificando la separación entre la validación de seguridad y la lógica de red.
 - `2026-09-03T15:00:40` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_Validators.int` y `_Validators.str` implementando una validación estricta de tipos previo a la conversión y procesamiento, evitando que valores inesperados (como `None` o listas) causen comportamientos erráticos, además de asegurar que los límites numéricos sean manejados de forma defensiva dentro del decorador `type_check`.
-- `2026-09-03T14:51:24` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `is_file_in_use` y `_is_junction` ante fallos de permisos o entornos no Windows, y optimicé el flujo de `_validate_structural_safety` para evitar que rutas inválidas avancen a chequeos más costosos, cumpliendo estrictamente con el enfoque de validación de entradas y manejo de excepciones.

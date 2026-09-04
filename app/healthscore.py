@@ -106,6 +106,13 @@ class SystemMetrics:
     startup_count: int = 0
     quarantined_count: int = 0
 
+    # Campos que deben ser numéricos para el cálculo de salud
+    _NUMERIC_FIELDS: Final[Tuple[str, ...]] = (
+        'junk_mb', 'suspicious_count', 'suspicious_warnings', 
+        'memory_available_percent', 'disk_free_percent', 'duplicate_mb', 
+        'startup_count', 'quarantined_count'
+    )
+
     def __post_init__(self) -> None:
         self.validate()
 
@@ -122,7 +129,7 @@ class SystemMetrics:
 
     def is_finite(self) -> bool:
         """Retorna True si todos los campos de datos contienen valores numéricos finitos."""
-        return all(math.isfinite(getattr(self, f)) for f in self.__dataclass_fields__ if isinstance(getattr(self, f), (int, float)))
+        return all(math.isfinite(getattr(self, f)) for f in self._NUMERIC_FIELDS)
 
 @dataclass
 class HealthResult:
