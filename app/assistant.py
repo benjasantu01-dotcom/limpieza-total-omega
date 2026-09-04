@@ -335,10 +335,13 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _get_source_value(source: Any, key: str) -> Any:
+    """Extrae valores de forma robusta ante estructuras de datos no estándar."""
     try:
         if source is None: return None
-        if isinstance(source, dict):
-            return source.get(key)
+        # Intenta acceso dict-like si aplica, o mediante getattr para objetos
+        if hasattr(source, "__getitem__"):
+            try: return source[key]
+            except (KeyError, TypeError, IndexError): pass
         return getattr(source, key, None)
     except Exception:
         return None

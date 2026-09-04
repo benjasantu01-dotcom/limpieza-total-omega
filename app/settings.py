@@ -99,7 +99,7 @@ MAX_SETTINGS_SIZE: Final = 1024 * 64
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
 _CACHE: dict[str, tuple[float, AppSettings]] = {}
-_PATH_CACHE: dict[str, Path] = {}
+_PATH_CACHE: dict[str, Path] = { "default": SETTINGS_DIR / SETTINGS_FILE }
 
 VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
 VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))
@@ -242,7 +242,7 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Resuelve la ruta completa del archivo de configuración, validando el directorio base."""
-    if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
+    if custom_base is None: return _PATH_CACHE["default"]
     
     cache_key = str(custom_base)
     if cache_key in _PATH_CACHE:
@@ -256,7 +256,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
             return res
     except (OSError, RuntimeError):
         pass
-    return SETTINGS_DIR / SETTINGS_FILE
+    return _PATH_CACHE["default"]
 
 def validate(raw_values: Any) -> AppSettings:
     """Valida un objeto arbitrario contra `AppSettings`, rellenando faltantes con `DEFAULTS`."""
@@ -280,14 +280,14 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         stats = ruta.stat()
         mtime = float(stats.st_mtime)
         if ruta_str in _CACHE and _CACHE[ruta_str][0] == mtime:
-            return _CACHE[ruta_str][1].copy()
+            return _CACHE[ruta_str][1]
             
         if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
                 content = json.load(f)
                 data = validate(content) if _is_dict(content) else DEFAULTS.copy()
                 _CACHE[ruta_str] = (mtime, data)
-                return data.copy()
+                return data
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
         pass
     return DEFAULTS.copy()

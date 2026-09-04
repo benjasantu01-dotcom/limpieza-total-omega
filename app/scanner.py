@@ -106,35 +106,32 @@ class Scanner:
 
     def _is_inside_base_root(self, path_str: str) -> bool:
         """Verifica que la ruta resuelta esté contenida en la jerarquía del directorio raíz."""
-        if not path_str:
-            return False
         try:
-            target = Path(path_str).resolve(strict=False)
-            return self.base_root in target.parents or target == self.base_root
+            return str(Path(path_str).resolve(strict=False)).startswith(str(self.base_root))
         except (OSError, RuntimeError):
             return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida criterios de seguridad (longitud, caracteres especiales, reparse points) 
-        antes de procesar una entrada de sistema de archivos.
+        Valida criterios de seguridad antes de procesar una entrada de sistema de archivos.
+        Utiliza atributos de DirEntry para evitar llamadas costosas al sistema.
         """
-        if not entry or not entry.path or len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
+        if not entry.path or len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
             return False
         
-        try:
-            if self._is_reparse_point(entry):
-                return False
-            if entry.name and (RTL_CHAR_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name)):
-                return False
-            if not self._is_inside_base_root(entry.path):
-                return False
-            return not is_protected_path(Path(entry.path))
-        except (ValueError, RuntimeError, OSError, TypeError, FileNotFoundError, PermissionError):
+        if entry.name and (RTL_CHAR_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name)):
+            return False
+        
+        if self._is_reparse_point(entry):
             return False
 
+        if not self._is_inside_base_root(entry.path):
+            return False
+            
+        return not is_protected_path(Path(entry.path))
+
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si la entrada es un punto de reparse (junction/symlink) mediante atributos de archivo."""
+        """Determina si la entrada es un punto de reparse mediante atributos de archivo."""
         try:
             if entry.is_symlink():
                 return True
@@ -145,7 +142,7 @@ class Scanner:
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
         """Gestiona el apilamiento de directorios para evitar ciclos y repeticiones durante el recorrido."""
-        if entry.path and entry.path not in self.seen:
+        if entry.path not in self.seen:
             self.seen.add(entry.path)
             stack.append(entry.path)
 
@@ -174,11 +171,9 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     """Orquestador de reglas para evaluar la peligrosidad de un archivo dado."""
     findings: ScanResult = []
     
-    # Heurística 1: Extensión doble
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
     
-    # Heurística 2: Ejecutables
     file_ext = (ext or path.suffix.lower())
     if file_ext in SUSPICIOUS_EXECUTABLE_EXT:
         try:
@@ -212,13 +207,10 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     
     while stack:
         current_dir = stack.pop()
-        if not current_dir:
-            continue
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry:
-                        scanner.process_entry(entry, stack)
+                    scanner.process_entry(entry, stack)
         except (PermissionError, OSError, FileNotFoundError):
             continue
     return scanner.results

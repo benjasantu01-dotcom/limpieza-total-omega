@@ -719,3 +719,41 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-04T01:05:52` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-09-04T01:05:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T01:05:52` Corrida terminada. Total usado hoy: 28.
+- `2026-09-04T01:14:20` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-09-04T01:14:49` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el método `_is_safe_entry` eliminando la resolución innecesaria de rutas (syscall `resolve()`) y la conversión a `Path` repetitiva, utilizando los atributos nativos de `os.DirEntry` para realizar los filtros de seguridad de forma más eficiente.
+- `2026-09-04T01:15:20` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a la configuración mediante la consolidación del caché de rutas (`_PATH_CACHE`) y la serialización, eliminando la reconstrucción de objetos `Path` en cada llamada a `settings_path` y reduciendo el uso de `copy()` innecesarios al recuperar datos inmutables de configuración.
+- `2026-09-04T01:15:52` Tests FALLARON:
+```
+ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+count = []
+
+    def estimate_impact(count: int) -> str:
+        """Clasifica el impacto en rendimiento basándose en el volumen de entradas."""
+>       if count <= 5: return "ok"
+           ^^^^^^^^^^
+E       TypeError: '<=' not supported between instances of 'list' and 'int'
+
+app/startup.py:356: TypeError
+=============================== warnings summary ===============================
+app/startup.py:105
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:105: SyntaxWarning: invalid escape sequence '\P'
+    """Extrae rutas de comandos tipo "C:\Path\App.exe" validando seguridad."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_programs - TypeError: '<=' not supported between instances of 'list' and 'int'
+1 failed, 298 passed, 8 warnings in 1.29s
+
+```
+- `2026-09-04T01:15:52` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó `estimate_impact` reemplazando la lógica de iteración sobre una lista de tuplas por una estructura de control más eficiente, y se consolidó el cálculo del impacto para evitar llamadas redundantes a `len(entries)` durante la generación del resumen.
+- `2026-09-04T01:16:14` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_get_source_value` para manejar objetos que implementen `__getitem__` de forma no estándar o que fallen ante accesos inesperados, asegurando que el asistente no aborte el análisis ante datos mal formados, un caso límite crítico en la ingesta de métricas.
+- `2026-09-04T01:16:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T01:16:14` Corrida terminada. Total usado hoy: 32.

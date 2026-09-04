@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
-- Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 37
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 214
+- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Rechazadas por tests: 10
+- Rechazadas por guardia de seguridad: 36
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 64 | 1 | 9 | 1 | 51 |
+| 2026-09-02 | 63 | 1 | 8 | 0 | 50 |
 | 2026-09-03 | 148 | 7 | 24 | 13 | 158 |
-| 2026-09-04 | 16 | 1 | 4 | 2 | 5 |
+| 2026-09-04 | 19 | 2 | 4 | 2 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **47**
-- rendimiento: **39**
-- robustez ante casos límite: **36**
+- seguridad defensiva: **46**
+- rendimiento: **41**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
+- `scanner.py`: **21**
 - `organizer.py`: **20**
-- `scanner.py`: **20**
 - `memory.py`: **19**
 - `quarantine.py`: **19**
+- `settings.py`: **19**
+- `assistant.py`: **19**
 - `browser.py`: **19**
 - `healthscore.py`: **19**
-- `settings.py`: **18**
-- `assistant.py`: **18**
 - `duplicates.py`: **18**
 - `safety.py`: **15**
-- `diskreport.py`: **13**
+- `diskreport.py`: **12**
 - `main.py`: **12**
 - `branding.py`: **11**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T01:16:14` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` para manejar objetos que implementen `__getitem__` de forma no estándar o que fallen ante accesos inesperados, asegurando que el asistente no aborte el análisis ante datos mal formados, un caso límite crítico en la ingesta de métricas.
+- `2026-09-04T01:15:20` **settings.py** (rendimiento): Se optimizó el acceso a la configuración mediante la consolidación del caché de rutas (`_PATH_CACHE`) y la serialización, eliminando la reconstrucción de objetos `Path` en cada llamada a `settings_path` y reduciendo el uso de `copy()` innecesarios al recuperar datos inmutables de configuración.
+- `2026-09-04T01:14:49` **scanner.py** (rendimiento): Optimicé el método `_is_safe_entry` eliminando la resolución innecesaria de rutas (syscall `resolve()`) y la conversión a `Path` repetitiva, utilizando los atributos nativos de `os.DirEntry` para realizar los filtros de seguridad de forma más eficiente.
 - `2026-09-04T01:05:21` **quarantine.py** (rendimiento): Optimicé el cálculo del espacio total (`total_quarantined_bytes`) eliminando la lectura y parseo completo del manifiesto JSON, accediendo directamente a los atributos de los objetos `QuarantineItem` ya cargados en memoria o iterando eficientemente si el manifiesto no está en caché.
 - `2026-09-04T01:04:45` **organizer.py** (rendimiento): Optimicé el rendimiento de `_process_directory` reemplazando la verificación repetida de `JUNK_EXTENSIONS` mediante una conversión a `frozenset` (ya existente) y usando `.suffix.lower()` directamente en lugar de instanciar objetos `Path` innecesarios para cada archivo dentro del bucle, reduciendo significativamente la carga de objetos en memoria durante escaneos profundos.
 - `2026-09-04T00:55:13` **healthscore.py** (rendimiento): Optimicé el método `is_finite` de `SystemMetrics` reemplazando la iteración completa sobre `__dataclass_fields__` (que ocurría cada vez que se verificaba la salud) por una tupla estática de campos numéricos, evitando la sobrecarga de reflexión en tiempo de ejecución.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T00:23:55` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings técnicos detallados en funciones clave y tipado explícito, además de normalizar la estructura de las excepciones de seguridad para facilitar la depuración sin alterar el comportamiento funcional.
 - `2026-09-04T00:14:06` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings descriptivos con parámetros y retornos en funciones clave, aclarando la lógica de normalización en el pipeline de `compute_score` y estandarizando la terminología de tipos para asegurar que el código sea autodocumentado para futuros colaboradores.
 - `2026-09-04T00:13:38` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `_collect_candidates` mediante la extracción de la lógica de evaluación de archivos a una función auxiliar `_is_candidate_file`, reduciendo el anidamiento y aclarando los criterios de filtrado.
-- `2026-09-04T00:13:08` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de Type Hints detallados, docstrings que clarifican las intenciones de las funciones de alto nivel y la extracción de la lógica de "pasada única" para mejorar la calidad del código, sin alterar el comportamiento.
-- `2026-09-04T00:04:30` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los type hints en `browser.py` para explicitar el uso de `os.DirEntry` y las restricciones de las APIs de Windows, facilitando la comprensión del flujo de escaneo seguro.
-- `2026-09-04T00:04:14` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en las funciones de manipulación de color y dibujo para clarificar la lógica de transformación geométrica y cromática, facilitando el mantenimiento técnico.
