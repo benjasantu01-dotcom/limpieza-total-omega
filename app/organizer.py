@@ -217,6 +217,8 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
     if src is None or dest is None: return False
     if _is_unc_path(src) or _is_unc_path(dest): return False
     if _has_forbidden_chars(src): return False
+    # Validación extra: prevenir rutas de longitud excesiva antes de procesar
+    if len(str(src)) > 260 or len(str(dest)) > 260: return False
     if is_protected_path(src.resolve()) or is_protected_path(dest.resolve()): return False
     return True
 
@@ -239,9 +241,6 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     
-    # Longitud de ruta máxima para evitar excepciones de sistema en Windows
-    if len(str(src)) >= 255 or len(str(dest)) >= 255: return False
-    
     if not _validate_path_security(src, dest): return False
     
     try:
@@ -251,7 +250,8 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if _is_recursive_violation(s_res, dest): return False
         
         target_dir: Path = dest.parent if dest.is_file() else dest
-        if not (os.access(s_res, os.W_OK) and os.access(target_dir, os.W_OK)): return False
+        # Verificar existencia del padre antes de comprobar acceso
+        if not target_dir.exists(): return False
         
         return _validate_file_attributes(s_res)
     except (OSError, RuntimeError, AttributeError):

@@ -184,12 +184,12 @@ def _safe_unlink(path: Path) -> bool:
     Borra un archivo previa validación de seguridad y bloqueo.
     Solo borra si el archivo no está en uso, es propiedad del usuario y reside en una zona permitida.
     """
-    if not isinstance(path, Path) or path is None or not path.exists() or not path.is_file():
+    if not isinstance(path, Path) or path is None:
         return False
     try:
-        if path.is_symlink():
+        # Re-chequeo atómico antes de unlink
+        if not path.exists() or not path.is_file() or path.is_symlink():
             return False
-        # Validar propiedad (solo en plataformas POSIX/Windows moderno)
         if hasattr(os, 'getuid') and path.stat().st_uid != os.getuid():
             return False
             

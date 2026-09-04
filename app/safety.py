@@ -339,6 +339,8 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("La ruta contiene caracteres inválidos.")
     
     for part in target_path.parts:
+        if not part or part.strip() != part:
+            raise UnsafePathError("Componente de ruta inválido o con espacios no permitidos.")
         if _is_reserved_device_name(part):
             raise UnsafePathError(f"Nombre '{part}' reservado por el sistema.")
 
