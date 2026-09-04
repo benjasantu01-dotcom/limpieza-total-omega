@@ -365,7 +365,8 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """Dibuja una barra de degradado horizontal de ancho variable sobre el canvas."""
     try:
-        for seg in _get_grouped_segments(gradient_colors(max(1, width), stops)):
+        segments = _get_grouped_segments(gradient_colors(max(1, width), stops))
+        for seg in segments:
             canvas.create_line(canvas_x + seg.start_index, canvas_y, canvas_x + seg.end_index, canvas_y, fill=seg.hex_color, width=max(1, height))
     except (ValueError, TypeError, AttributeError): pass
 

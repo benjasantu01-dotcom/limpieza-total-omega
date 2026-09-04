@@ -197,20 +197,13 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo del sistema de archivos para identificar archivos candidatos.
-    
-    Para evitar el procesamiento redundante y bucles infinitos en sistemas con 
-    puntos de reparse o montajes cíclicos, utiliza un conjunto de inodos (`visited_inodes`) 
-    que almacena la tupla (dispositivo, número de inodo). Cada directorio visitado 
-    se valida primero contra `is_protected_path` e `is_junction`.
     """
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Set[Tuple[int, int]] = set()
 
     def _scan_directory_recursive(current_dir: Path) -> None:
         try:
-            if is_protected_path(current_dir) or is_junction(current_dir):
-                return
-            
+            # Obtener identidad única del nodo para evitar ciclos
             st = current_dir.stat()
             inode_key = (st.st_dev, st.st_ino)
             if inode_key in visited_inodes:
@@ -219,19 +212,23 @@ def _collect_candidates(
 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    if entry.is_dir(follow_symlinks=False):
-                        subdir_path = Path(entry.path)
-                        if not is_protected_path(subdir_path) and not is_junction(subdir_path):
-                            _scan_directory_recursive(subdir_path)
-                    else:
-                        file_size = _get_file_stat_if_valid(entry, min_size)
-                        if file_size is not None:
-                            size_map[file_size].append(Path(entry.path))
+                    try:
+                        if entry.is_dir(follow_symlinks=False):
+                            subdir_path = Path(entry.path)
+                            if not is_protected_path(subdir_path) and not is_junction(subdir_path):
+                                _scan_directory_recursive(subdir_path)
+                        else:
+                            file_size = _get_file_stat_if_valid(entry, min_size)
+                            if file_size is not None:
+                                size_map[file_size].append(Path(entry.path))
+                    except (OSError, PermissionError):
+                        continue
         except (OSError, PermissionError):
             pass
 
     if directories and isinstance(directories, Iterable):
-        roots = {r for item in directories if item and (r := _resolve_and_verify_root(item))}
+        # Normalizar raíces de búsqueda para evitar duplicados en el punto de entrada
+        roots = {Path(r).resolve() for item in directories if (r := _resolve_and_verify_root(item))}
         for root in roots:
             _scan_directory_recursive(root)
             

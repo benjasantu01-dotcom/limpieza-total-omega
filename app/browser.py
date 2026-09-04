@@ -190,24 +190,17 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula recursivamente el tamaño en bytes de un directorio mediante os.scandir.
-    
-    Args:
-        root_abs: Ruta absoluta del directorio a sumar.
-        is_junction_fn: Función inyectada para detectar junctions (OS-dependiente).
-        kernel32: Instancia de ctypes.WinDLL para lectura de atributos de Windows.
-        memo: Diccionario compartido para caché de resultados de subdirectorios.
-        base_check_path: Raíz opcional para limitar el alcance del escaneo.
-        depth: Profundidad actual de recursión para evitar desbordamiento.
+    Utiliza un diccionario 'memo' para evitar re-escaneo de subdirectorios ya calculados.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
     
+    if root_abs in memo:
+        return memo[root_abs]
+    
     root_path = Path(root_abs)
     if not _is_safe_to_traverse(root_path, base_check_path):
         return 0
-    
-    if root_abs in memo:
-        return memo[root_abs]
     
     total: int = 0
     try:
