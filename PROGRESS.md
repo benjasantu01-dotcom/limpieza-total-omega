@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 123 | 7 | 20 | 11 | 131 |
-| 2026-09-04 | 90 | 10 | 14 | 5 | 93 |
+| 2026-09-03 | 121 | 7 | 19 | 11 | 130 |
+| 2026-09-04 | 94 | 10 | 14 | 5 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **47**
+- legibilidad y documentación: **51**
 - seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **41**
-- rendimiento: **35**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **19**
 - `assistant.py`: **19**
-- `quarantine.py`: **18**
 - `scanner.py`: **18**
 - `healthscore.py`: **18**
-- `memory.py`: **17**
-- `duplicates.py`: **17**
+- `duplicates.py`: **18**
+- `quarantine.py`: **17**
 - `organizer.py`: **17**
-- `browser.py`: **15**
+- `browser.py`: **16**
+- `memory.py`: **16**
 - `safety.py`: **15**
+- `branding.py`: **11**
 - `main.py`: **11**
-- `branding.py`: **10**
 - `startup.py`: **10**
-- `diskreport.py`: **9**
+- `diskreport.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T09:06:09` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando `type hints` adicionales, simplificando la lógica de validación mediante una función de ayuda unificada y estructurando los docstrings para cumplir con los estándares de legibilidad exigidos.
+- `2026-09-04T09:05:57` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` mediante la adición de docstrings estructurados (estándar Google/NumPy) y la inclusión de type hints precisos en los parámetros de entrada de las funciones principales, facilitando la comprensión del flujo de datos en un análisis de disco.
+- `2026-09-04T09:05:27` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `browser.py` extrayendo la lógica compleja de cálculo de tamaño y validación en un método de clase, añadiendo type hints faltantes y mejorando la documentación de los parámetros de escaneo recursivo.
+- `2026-09-04T09:05:00` **branding.py** (legibilidad y documentación): Documenté con docstrings claros las funciones de dibujo y utilidades de color para clarificar el flujo de trabajo de la UI y corregir la ambigüedad en los parámetros de entrada.
 - `2026-09-04T08:56:05` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_call_gemini` para separar la construcción de la petición HTTP del manejo de la respuesta, reduciendo el anidamiento y haciendo explícita la validación de cada etapa.
 - `2026-09-04T08:55:42` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita de `reader.fieldnames` y protegiendo el acceso a los valores del diccionario `row` mediante `dict.get()`, evitando posibles `KeyError` o errores de tipo en caso de datos inesperados del registro.
 - `2026-09-04T08:55:14` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de archivos `load` al separar explícitamente la lectura del contenido de la validación del JSON, asegurando que cualquier error de formato en el disco sea capturado y manejado de forma segura sin abortar la ejecución, cumpliendo con la regla de tolerancia a fallos.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T08:34:18` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `find_duplicates` añadiendo una validación explícita para asegurar que la entrada no sea una cadena o un objeto `Path` solitario, evitando errores de iteración y mejorando la consistencia con las reglas de manejo de errores.
 - `2026-09-04T08:25:27` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `walk_files` incorporando validaciones de tipo explícitas y manejo defensivo de estados inexistentes, asegurando que ante errores de acceso o rutas mal formadas la aplicación devuelva mensajes claros en lugar de fallos silenciosos o excepciones no capturadas.
 - `2026-09-04T08:24:18` **assistant.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `ingest` mediante la adición de un chequeo explícito de tipos y bloques `try-except` más granulares en `_get_source_value` para evitar capturar excepciones inesperadas que podrían ocultar errores de lógica.
-- `2026-09-04T07:02:05` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` añadiendo una validación explícita mediante `is_safe_to_modify` sobre la ruta final del archivo de configuración antes de cualquier escritura, asegurando que el archivo no pueda ser redirigido accidentalmente fuera del directorio base permitido.
-- `2026-09-04T06:44:45` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_directory` al reemplazar `os.path.splitext` (que no maneja correctamente nombres de archivo complejos) por `pathlib.Path.suffix`, asegurando consistencia con las reglas de `JUNK_EXTENSIONS` y añadiendo validaciones de seguridad de ruta antes de procesar cada entrada del sistema de archivos.
-- `2026-09-04T06:41:44` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del sistema contra entradas inesperadas agregando validación de tipo y rango en las funciones de puntuación (`score_*`) y protegí la ejecución del pipeline ante posibles errores en los `message_factory` mediante un bloque `try-except` más granular.
-- `2026-09-04T06:32:46` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para garantizar que, durante el recorrido recursivo, cada nueva subcarpeta sea validada explícitamente mediante `is_protected_path` antes de intentar acceder a su contenido, evitando seguir rutas que podrían haber sido movidas o alteradas durante el escaneo.

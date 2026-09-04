@@ -155,21 +155,17 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     Evalúa si una entrada (os.DirEntry) del sistema de archivos debe omitirse.
     Usa la metadata del objeto DirEntry para evitar llamadas excesivas al disco.
     """
-    # 1. Chequeos de nombre rápido (lista negra)
     if _is_excluded_file(entry.name):
         return True
         
-    # 2. Validación de longitud y tipos de enlace
     try:
         path = entry.path
         if not path or len(path) >= MAX_PATH_LEN:
             return True
         
-        # is_symlink() cubre enlaces simbólicos. is_junction_fn cubre puntos de unión.
         if entry.is_symlink() or is_junction_fn(path) or os.path.ismount(path):
             return True
             
-        # 3. Chequeo de atributos de sistema (solo en Windows)
         if __is_system_hidden(path, kernel32):
             return True
             
@@ -204,6 +200,15 @@ def _sum_directory_recursive(
     """
     Calcula recursivamente el tamaño en bytes de un directorio mediante os.scandir.
     'memo' almacena resultados de carpetas para evitar re-procesamiento innecesario.
+    
+    Args:
+        root_abs: Ruta absoluta a procesar.
+        is_junction_fn: Función para detectar enlaces simbólicos o reparse points.
+        kernel32: DLL opcional para acceso a APIs de bajo nivel en Windows.
+        memo: Diccionario para almacenamiento en caché de resultados parciales.
+        base_check_path: Ruta raíz permitida para validar jerarquía.
+        path_cache: Caché de objetos Path resueltos.
+        depth: Profundidad actual de la recursión.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
@@ -211,7 +216,6 @@ def _sum_directory_recursive(
     if path_cache is None: path_cache = {}
     
     root_path = Path(root_abs)
-    # Seguridad: no entrar si la ruta es protegida o no es segura de modificar
     if is_protected_path(root_path) or not is_safe_to_modify(root_path):
         return 0
     

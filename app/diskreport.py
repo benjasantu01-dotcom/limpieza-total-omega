@@ -85,14 +85,16 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
     Normaliza y valida una ruta raíz antes de iniciar cualquier escaneo.
     
-    Verifica que la ruta exista, sea un directorio y no esté marcada como
-    protegida en safety.py.
+    Args:
+        directory: La ruta a validar (string, Path o PathLike).
+        
+    Returns:
+        Optional[Path]: Objeto Path absoluto si es válida y segura, None en caso contrario.
     """
     try:
         if directory is None:
             return None
         p = Path(os.fspath(directory)).resolve(strict=True)
-        # Refuerzo: verificar que la ruta sea absoluta para evitar contextos ambiguos.
         if p.is_dir() and p.is_absolute() and not is_protected_path(p):
             return p
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
@@ -198,19 +200,20 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
     Consulta el estado de una unidad de disco mediante `shutil.disk_usage`.
     
-    Nota: Se rechazan rutas UNC (ej. \\servidor\recurso) por políticas de 
-    seguridad y estabilidad de red, limitando el escaneo a unidades locales.
+    Args:
+        mount: Ruta de la unidad a analizar.
+        
+    Returns:
+        Optional[DriveUsage]: Objeto con estadísticas de espacio o None si no es accesible.
     """
     if mount is None:
         return None
         
     try:
         p = Path(os.fspath(mount)).resolve()
-        # Rechazar rutas UNC o de red explícitamente para evitar bloqueos por latencia.
         if not p.is_absolute() or str(p).startswith(("\\\\", "//")):
             return None
         
-        # Validar existencia y permisos básicos.
         if not p.exists() or not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
             
@@ -249,9 +252,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Recorrido profundo (DFS iterativo) del sistema de archivos.
 
-    Implementa seguridad saltando reparse points (junctions/symlinks) y 
-    carpetas protegidas (si skip_protected=True). El uso de `visited_inodes` 
-    evita ciclos infinitos ante enlaces simbólicos.
+    Args:
+        directory: Raíz desde donde comenzar el escaneo.
+        skip_protected: Si se deben ignorar carpetas del sistema.
+        
+    Yields:
+        Tuple[Path, int]: El path del archivo encontrado y su tamaño en bytes.
     """
     root_path = _validate_root(directory)
     if root_path is None or not root_path.exists():
@@ -271,10 +277,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Recuperar atributos ignorando errores de acceso parcial
                         st = entry.stat(follow_symlinks=False)
                         
-                        # Evitar seguir symlinks o puntos de reanálisis para no salir del árbol objetivo.
                         if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
                             continue
                         
