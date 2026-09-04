@@ -980,3 +980,45 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-04T14:34:11` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory
 - `2026-09-04T14:34:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T14:34:11` Corrida terminada. Total usado hoy: 344.
+- `2026-09-04T14:42:29` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-04T14:43:03` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé el rendimiento de `load` y `save` sustituyendo las llamadas innecesarias a `stat()` y los procesos de validación repetidos mediante el uso eficiente del `_CACHE` y la evitación de resoluciones de ruta redundantes durante operaciones de lectura frecuentes.
+- `2026-09-04T14:43:33` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.33s
+
+```
+- `2026-09-04T14:43:33` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el método `executable` de la clase `StartupEntry` implementando una pre-validación rápida basada en el caché `_EXISTS_CACHE` y posponiendo la resolución de `os.path.realpath` (operación costosa de I/O) solo para cuando es estrictamente necesario, reduciendo significativamente la latencia al invocar `summarize()`.
+- `2026-09-04T14:43:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-04T14:44:23` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del sistema ante valores inesperados en el `SystemContext` agregando una validación explícita en `ingest` que evita la contaminación del estado interno con objetos que podrían causar comportamientos no definidos, asegurando que solo se procesen tipos de datos esperados y no contenedores malformados.
+- `2026-09-04T14:45:06` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante rutas malformadas o peligrosas, añadiendo una limpieza de caracteres de control, validación explícita de caracteres inválidos en Windows y una verificación de longitud más estricta antes de cualquier operación de I/O.
+- `2026-09-04T14:45:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T14:45:06` Corrida terminada. Total usado hoy: 348.

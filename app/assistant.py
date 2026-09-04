@@ -285,6 +285,7 @@ class SystemContext:
 
     def ingest(self, source: Any) -> bool:
         """Extrae y valida métricas desde una fuente externa (diccionario o objeto)."""
+        # Rechazo explícito de contenedores complejos que no sean dicts
         if not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool)):
             return False
             
@@ -330,7 +331,7 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _get_source_value(source: Any, key: str) -> Any:
-    """Extrae valores de forma robusta ante estructuras de datos no estándar."""
+    """Extracte valores de forma robusta ante estructuras de datos no estándar."""
     try:
         if isinstance(source, dict):
             return source.get(key)

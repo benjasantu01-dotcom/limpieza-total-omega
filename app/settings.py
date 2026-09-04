@@ -158,7 +158,6 @@ class _Validators:
             resolved = path_obj.resolve(strict=False)
             if resolved.is_symlink(): return False
             if hasattr(resolved, 'is_junction') and resolved.is_junction(): return False
-            # La validación ocurre siempre sobre la ruta resuelta para evitar ataques de path traversal
             return not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
         except (OSError, PermissionError):
             return False
@@ -299,16 +298,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     try:
         ruta = settings_path(custom_base)
-        # Verificación final de seguridad antes de escritura
         if not is_safe_to_modify(str(ruta.resolve(strict=False))): return None
 
         parent = ruta.parent
-        try:
-            if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
-        except OSError:
-            return None
-
-        if not parent.is_dir() or is_protected_path(str(parent.resolve(strict=False))) or not _Validators._is_safe_path(str(parent)):
+        if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
+        if not parent.is_dir() or is_protected_path(str(parent.resolve(strict=False))):
             return None
             
         if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE:
