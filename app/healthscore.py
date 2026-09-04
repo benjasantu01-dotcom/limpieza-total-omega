@@ -77,88 +77,6 @@ if sum(WEIGHTS.values()) != 100:
 
 _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
 
-_RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
-    RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),
-    RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW),
-    RecommendationRule("memoria", WARN_THRESHOLD_LOW, lambda m: "Memoria disponible baja: cerrá procesos innecesarios.", lambda m, r: r < WARN_THRESHOLD_LOW),
-    RecommendationRule("basura", WARN_THRESHOLD_MED, lambda m: f"Hay {m.junk_mb:.0f} MB de archivos temporales.", lambda m, r: r < WARN_THRESHOLD_MED),
-    RecommendationRule("duplicados", WARN_THRESHOLD_MED, lambda m: f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados.", lambda m, r: r < WARN_THRESHOLD_MED),
-    RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),
-)
-
-# Precomputación de reglas vinculadas por área para evitar búsquedas en bucle
-_RULES_BY_AREA: Final[Dict[MetricKey, List[RecommendationRule]]] = {}
-for rule in _RECOMMENDATION_RULES:
-    _RULES_BY_AREA.setdefault(rule.area, []).append(rule)
-
-# Estructura precomputada para iteración óptima en compute_score
-_OPTIMIZED_PIPELINE: Final[List[Tuple[MetricKey, int, List[RecommendationRule]]]] = [
-    (area, weight, _RULES_BY_AREA.get(area, [])) for area, weight in _WEIGHT_ITEMS_INT
-]
-
-@dataclass
-class SystemMetrics:
-    """
-    Contenedor de datos inmutable para el estado del sistema.
-    Realiza saneamiento automático en __post_init__ para evitar valores fuera de rango.
-    """
-    junk_mb: float = 0.0
-    suspicious_count: int = 0
-    suspicious_warnings: int = 0
-    memory_available_percent: float = 100.0
-    disk_free_percent: float = 100.0
-    duplicate_mb: float = 0.0
-    startup_count: int = 0
-    quarantined_count: int = 0
-
-    _NUMERIC_FIELDS: Final[Tuple[str, ...]] = (
-        'junk_mb', 'suspicious_count', 'suspicious_warnings', 
-        'memory_available_percent', 'disk_free_percent', 'duplicate_mb', 
-        'startup_count', 'quarantined_count'
-    )
-
-    def __post_init__(self) -> None:
-        self.validate()
-
-    def validate(self) -> None:
-        """Aplica límites físicos y sanitiza tipos evitando NaN o infinitos."""
-        self.junk_mb = _clamp(_to_float(self.junk_mb), 0.0, float('inf'))
-        self.suspicious_count = int(_clamp(_to_float(self.suspicious_count), 0.0, 10000.0))
-        self.suspicious_warnings = int(_clamp(_to_float(self.suspicious_warnings), 0.0, 10000.0))
-        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent), 0.0, 100.0)
-        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent), 0.0, 100.0)
-        self.duplicate_mb = _clamp(_to_float(self.duplicate_mb), 0.0, float('inf'))
-        self.startup_count = int(_clamp(_to_float(self.startup_count), 0.0, 1000.0))
-        self.quarantined_count = int(_clamp(_to_float(self.quarantined_count), 0.0, 10000.0))
-
-    def is_finite(self) -> bool:
-        """Retorna True si todos los campos de datos contienen valores numéricos finitos."""
-        return all(math.isfinite(getattr(self, f, 0.0)) for f in self._NUMERIC_FIELDS)
-
-@dataclass
-class HealthResult:
-    """Resultado final del análisis de salud, incluyendo desglose y recomendaciones."""
-    score: int
-    grade: str
-    breakdown: Dict[MetricKey, int] = field(default_factory=dict)
-    recommendations: List[str] = field(default_factory=list)
-
-    @property
-    def is_healthy(self) -> bool:
-        """Determina si el sistema es saludable basándose en un puntaje >= 80."""
-        return 80 <= self.score <= 100
-
-def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    """Asegura que un valor numérico esté dentro del rango inclusivo [low, high]."""
-    return max(low, min(high, value))
-
-def _to_float(value: Any, default: float = 0.0) -> float:
-    """Intenta convertir a float, manejando errores de tipo o valores no finitos."""
-    try:
-        val = float(value)
-        return val if math.isfinite(val) else default
-    except (TypeError, ValueError): return default
-
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud (0-1) basado en la cantidad de MB basura."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
@@ -185,15 +103,6 @@ def score_startup(startup_count: int) -> NormalizedRatio:
     """Calcula el ratio de salud basado en la cantidad de elementos en inicio."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
-def grade_for_score(score: float | int) -> str:
-    """Asigna una letra de calificación (A-F) según el puntaje numérico."""
-    s = _to_float(score)
-    if s >= 90: return "A"
-    if s >= 80: return "B"
-    if s >= 65: return "C"
-    if s >= 50: return "D"
-    return "F"
-
 _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
     "seguridad": lambda m: score_security(m.suspicious_count, m.suspicious_warnings),
     "disco": lambda m: score_disk(m.disk_free_percent),
@@ -203,11 +112,86 @@ _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
     "arranque": lambda m: score_startup(m.startup_count)
 }
 
+_RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
+    RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),
+    RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW),
+    RecommendationRule("memoria", WARN_THRESHOLD_LOW, lambda m: "Memoria disponible baja: cerrá procesos innecesarios.", lambda m, r: r < WARN_THRESHOLD_LOW),
+    RecommendationRule("basura", WARN_THRESHOLD_MED, lambda m: f"Hay {m.junk_mb:.0f} MB de archivos temporales.", lambda m, r: r < WARN_THRESHOLD_MED),
+    RecommendationRule("duplicados", WARN_THRESHOLD_MED, lambda m: f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados.", lambda m, r: r < WARN_THRESHOLD_MED),
+    RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),
+)
+
+_RULES_BY_AREA: Final[Dict[MetricKey, List[RecommendationRule]]] = {}
+for rule in _RECOMMENDATION_RULES:
+    _RULES_BY_AREA.setdefault(rule.area, []).append(rule)
+
+# Pipeline optimizado que vincula directamente el scorer
+_OPTIMIZED_PIPELINE: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], List[RecommendationRule]]]] = [
+    (area, weight, _SCORERS[area], _RULES_BY_AREA.get(area, [])) for area, weight in _WEIGHT_ITEMS_INT
+]
+
+@dataclass
+class SystemMetrics:
+    junk_mb: float = 0.0
+    suspicious_count: int = 0
+    suspicious_warnings: int = 0
+    memory_available_percent: float = 100.0
+    disk_free_percent: float = 100.0
+    duplicate_mb: float = 0.0
+    startup_count: int = 0
+    quarantined_count: int = 0
+
+    _NUMERIC_FIELDS: Final[Tuple[str, ...]] = (
+        'junk_mb', 'suspicious_count', 'suspicious_warnings', 
+        'memory_available_percent', 'disk_free_percent', 'duplicate_mb', 
+        'startup_count', 'quarantined_count'
+    )
+
+    def __post_init__(self) -> None:
+        self.validate()
+
+    def validate(self) -> None:
+        self.junk_mb = _clamp(_to_float(self.junk_mb), 0.0, float('inf'))
+        self.suspicious_count = int(_clamp(_to_float(self.suspicious_count), 0.0, 10000.0))
+        self.suspicious_warnings = int(_clamp(_to_float(self.suspicious_warnings), 0.0, 10000.0))
+        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent), 0.0, 100.0)
+        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent), 0.0, 100.0)
+        self.duplicate_mb = _clamp(_to_float(self.duplicate_mb), 0.0, float('inf'))
+        self.startup_count = int(_clamp(_to_float(self.startup_count), 0.0, 1000.0))
+        self.quarantined_count = int(_clamp(_to_float(self.quarantined_count), 0.0, 10000.0))
+
+    def is_finite(self) -> bool:
+        return all(math.isfinite(getattr(self, f, 0.0)) for f in self._NUMERIC_FIELDS)
+
+@dataclass
+class HealthResult:
+    score: int
+    grade: str
+    breakdown: Dict[MetricKey, int] = field(default_factory=dict)
+    recommendations: List[str] = field(default_factory=list)
+
+    @property
+    def is_healthy(self) -> bool:
+        return 80 <= self.score <= 100
+
+def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
+    return max(low, min(high, value))
+
+def _to_float(value: Any, default: float = 0.0) -> float:
+    try:
+        val = float(value)
+        return val if math.isfinite(val) else default
+    except (TypeError, ValueError): return default
+
+def grade_for_score(score: float | int) -> str:
+    s = _to_float(score)
+    if s >= 90: return "A"
+    if s >= 80: return "B"
+    if s >= 65: return "C"
+    if s >= 50: return "D"
+    return "F"
+
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """
-    Pipeline principal que normaliza métricas brutas, calcula el puntaje ponderado
-    y extrae recomendaciones mediante heurísticas predefinidas.
-    """
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o corruptos."])
     
@@ -216,10 +200,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         total_pts: float = 0.0
         recommendations: List[str] = []
         
-        for area, weight, rules in _OPTIMIZED_PIPELINE:
-            scorer = _SCORERS.get(area)
-            if scorer is None: continue
-            
+        for area, weight, scorer, rules in _OPTIMIZED_PIPELINE:
             ratio: NormalizedRatio = scorer(metrics)
             pts: int = int(round(ratio * weight))
             metric_breakdown[area] = pts
@@ -248,13 +229,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error inesperado al calcular métricas."])
 
 def _render_bar(pts: int, maximo: int) -> str:
-    """Genera una representación visual tipo barra de progreso."""
     if maximo <= 0: return ""
     puntos = max(0, min(pts, maximo))
     return ('#' * puntos) + ('.' * (maximo - puntos))
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera el reporte de texto formateado para la interfaz de usuario."""
     if not isinstance(result, HealthResult):
         return ["Error: Informe no disponible o formato inválido."]
     
