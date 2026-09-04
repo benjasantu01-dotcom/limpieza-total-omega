@@ -916,3 +916,60 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-04T14:13:35` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el proceso `_collect_candidates` utilizando un set de `Path` normalizadas como caché de escaneo inicial, evitando re-procesar los mismos nodos de directorio de forma redundante y reduciendo la presión sobre el sistema de archivos mediante el uso de `os.scandir` de forma más eficiente.
 - `2026-09-04T14:13:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T14:13:35` Corrida terminada. Total usado hoy: 336.
+- `2026-09-04T14:22:03` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-04T14:22:28` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.is_finite, SystemMetrics.validate
+- `2026-09-04T14:23:28` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-04T14:23:35` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-04T14:24:41` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-04T14:25:02` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-04T14:25:52` Tests FALLARON:
+```
+          '"grande","11","104857600"\n'
+            '"medio","12","10485760"\n'
+        )
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.38s
+
+```
+- `2026-09-04T14:25:52` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `top_memory_processes` al eliminar el procesamiento innecesario de `strings` y conversiones de tipo dentro del bucle de parseo, y reduje la carga sobre el subproceso eliminando la lógica de selección (`Select-Object -First`) en PowerShell, delegando el filtrado y ordenamiento eficiente a Python.
+- `2026-09-04T14:26:11` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se ha optimizado la función `_process_directory` reemplazando la creación repetitiva de objetos `Path` y las llamadas costosas al sistema de archivos mediante el uso de los atributos de `os.DirEntry` (que ya contiene el nombre y el tipo del archivo), reduciendo drásticamente las syscalls innecesarias durante el escaneo recursivo.
+- `2026-09-04T14:26:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T14:26:11` Corrida terminada. Total usado hoy: 340.

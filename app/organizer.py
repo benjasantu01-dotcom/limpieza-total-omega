@@ -279,8 +279,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
     Recorre recursivamente directorios buscando candidatos a limpieza.
     Se limita la profundidad (max 50) para evitar desbordamientos de pila.
     """
-    if not isinstance(current_dir, Path) or not current_dir.exists() or depth > 50:
-        return
+    if depth > 50: return
     try:
         with os.scandir(current_dir) as it:
             for entry in it:
@@ -289,12 +288,12 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
                         if _should_scan_directory(entry):
                             _process_directory(Path(entry.path), found, depth + 1)
                     elif entry.is_file(follow_symlinks=False):
-                        file_path = Path(entry.path)
-                        if _is_junk_path(file_path):
-                            if not is_protected_path(file_path.resolve()):
-                                stats: os.stat_result = entry.stat()
-                                if stats.st_size > 0:
-                                    found.append(JunkFile(file_path, stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
+                        if _is_junk_path(Path(entry.name)):
+                            stats = entry.stat()
+                            if stats.st_size > 0:
+                                p = Path(entry.path)
+                                if not is_protected_path(p.resolve()):
+                                    found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (OSError, PermissionError):
                     continue
     except (OSError, PermissionError, RuntimeError):
