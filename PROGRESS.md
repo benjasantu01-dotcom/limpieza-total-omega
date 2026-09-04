@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 217
+- Rechazadas por guardia de seguridad: 35
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 39 | 1 | 6 | 0 | 16 |
+| 2026-09-02 | 36 | 1 | 5 | 0 | 16 |
 | 2026-09-03 | 148 | 7 | 24 | 13 | 158 |
-| 2026-09-04 | 36 | 4 | 6 | 3 | 43 |
+| 2026-09-04 | 37 | 4 | 6 | 4 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **51**
 - seguridad defensiva: **50**
+- legibilidad y documentación: **48**
 - robustez ante casos límite: **43**
 - rendimiento: **41**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `organizer.py`: **20**
 - `scanner.py`: **20**
-- `quarantine.py`: **19**
 - `assistant.py`: **19**
 - `browser.py`: **19**
-- `memory.py`: **18**
+- `organizer.py`: **19**
 - `healthscore.py`: **18**
+- `quarantine.py`: **18**
 - `settings.py`: **18**
-- `duplicates.py`: **17**
+- `duplicates.py`: **18**
+- `memory.py`: **17**
 - `safety.py`: **15**
 - `branding.py`: **11**
 - `main.py`: **11**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T03:59:33` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de hash y validación mediante la adición de chequeos de tipo explícitos y manejo de excepciones ante rutas inexistentes o inaccesibles, evitando que la aplicación falle silenciosamente cuando el sistema de archivos deniega el acceso a un archivo.
 - `2026-09-04T03:51:27` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` y `_call_gemini` mediante la adición de chequeos de tipo explícitos y manejo de errores más específico, evitando que el procesado de JSON externo pueda propagar excepciones o fallos de lógica al intentar acceder a estructuras anidadas potencialmente malformadas.
 - `2026-09-04T02:27:14` **settings.py** (seguridad defensiva): He mejorado la robustez de `save()` al verificar explícitamente que el directorio de configuración sea un directorio real antes de proceder, protegiendo contra posibles colisiones donde una ruta de configuración sea sobrescrita por un archivo malicioso, y reforzando la integridad de las operaciones de escritura mediante un chequeo de existencia más estricto.
 - `2026-09-04T02:26:58` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escáner implementando una validación estricta de rutas mediante `path.resolve()` antes de realizar cualquier operación de análisis, asegurando que las comparaciones de `base_root` no se vean afectadas por enlaces simbólicos o inconsistencias en la resolución de rutas de Windows.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T01:46:25` **safety.py** (robustez ante casos límite): Se ha robustecido `_is_file_in_use` para manejar correctamente rutas inexistentes sin lanzar excepciones innecesarias, y se ha añadido una validación temprana contra `PermissionError` en `normalize` para prevenir bloqueos en accesos a directorios restringidos del sistema operativo antes de intentar operaciones de resolución.
 - `2026-09-04T01:45:34` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación de integridad en `quarantine_file` que verifica el espacio libre tras la operación, asegurando que el archivo no haya sido truncado o dañado durante la transferencia antes de proceder con el borrado de la fuente, fortaleciendo la robustez ante interrupciones de sistema.
 - `2026-09-04T01:40:36` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para que no confíe ciegamente en el modo de apertura, evitando falsos positivos al manejar excepciones de acceso de manera explícita y asegurando que los archivos no sean procesados si existen errores de E/S indeterminados.
-- `2026-09-04T01:40:19` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una validación explícita mediante `ctypes` para descartar handles de procesos que requieran privilegios de administrador que el script actual no posee (usando `GetLastError` para identificar `ERROR_ACCESS_DENIED`), evitando errores silenciosos o excepciones inesperadas durante la llamada a `OpenProcess`.

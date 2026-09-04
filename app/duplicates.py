@@ -47,6 +47,8 @@ FILE_ATTRIBUTE_REPARSE_POINT: int = 0x400
 
 def is_junction(path: Path) -> bool:
     """Verifica si una ruta es un punto de reparse mediante atributos de sistema."""
+    if not isinstance(path, Path):
+        return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT))
@@ -80,13 +82,6 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo mediante bloques de memoria constante.
-    
-    Args:
-        path: Ruta al archivo.
-        chunk_size: Bytes por bloque para lectura incremental.
-    
-    Returns:
-        Hex del hash o None si el archivo es inaccesible.
     """
     if not path or chunk_size <= 0:
         return None
@@ -104,20 +99,13 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                     break
                 digest.update(buffer)
         return digest.hexdigest()
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError, TypeError, ValueError):
         return None
 
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Genera una huella rápida leyendo solo el inicio del archivo.
-    
-    Args:
-        path: Ruta al archivo.
-        read_bytes: Límite de bytes a leer.
-        
-    Returns:
-        Hex del hash del fragmento o None si el archivo es inaccesible.
     """
     if not path or read_bytes <= 0:
         return None
@@ -132,15 +120,16 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
             if not content:
                 return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError, TypeError, ValueError):
         return None
 
 
 def _is_valid_candidate(path: Path) -> bool:
     """Valida que la ruta sea un archivo real, legible y no protegido."""
+    if not isinstance(path, Path):
+        return False
     try:
         return (
-            isinstance(path, Path) and 
             path.is_file() and 
             not is_protected_path(path) and 
             os.access(path, os.R_OK)
@@ -152,13 +141,14 @@ def _is_valid_candidate(path: Path) -> bool:
 def _is_candidate_file(entry: os.DirEntry, min_size: int) -> bool:
     """Verifica si una entrada de directorio es un archivo candidato para procesar."""
     try:
-        return (
-            entry.is_file(follow_symlinks=False) and
-            not is_junction(Path(entry.path)) and
-            entry.stat(follow_symlinks=False).st_size >= min_size and
-            not is_protected_path(Path(entry.path))
-        )
-    except (OSError, PermissionError):
+        if not entry.is_file(follow_symlinks=False):
+            return False
+        stat_info = entry.stat(follow_symlinks=False)
+        if stat_info.st_size < min_size:
+            return False
+        p = Path(entry.path)
+        return not is_junction(p) and not is_protected_path(p)
+    except (OSError, PermissionError, ValueError, TypeError):
         return False
 
 
@@ -168,6 +158,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     if paths is None or not isinstance(paths, Iterable): return groups
     
     for p in paths:
+        if not isinstance(p, (str, Path)): continue
         path_obj = Path(p)
         if _is_valid_candidate(path_obj):
             try:
@@ -287,7 +278,6 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Selecciona el archivo candidato para conservar (heurística: más antiguo).
-    En caso de empate en antigüedad, se prefiere la ruta más corta.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
@@ -307,7 +297,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Genera una representación en texto del grupo para su visualización en UI."""
-    if not isinstance(group, DuplicateGroup) or not hasattr(group, 'paths') or group.paths is None:
+    if not isinstance(group, DuplicateGroup) or group.paths is None:
         return []
         
     keeper = suggest_keeper(group)

@@ -1077,3 +1077,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-04T03:51:27` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_extract_text_from_gemini_json` y `_call_gemini` mediante la adición de chequeos de tipo explícitos y manejo de errores más específico, evitando que el procesado de JSON externo pueda propagar excepciones o fallos de lógica al intentar acceder a estructuras anidadas potencialmente malformadas.
 - `2026-09-04T03:51:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T03:51:27` Corrida terminada. Total usado hoy: 92.
+- `2026-09-04T03:57:54` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-09-04T03:58:28` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-04T03:58:54` ➖ Sin cambios en browser.py (enfoque: manejo de errores y validación de entradas). Motivo: Reforcé la robustez de `directory_size` y `_sum_directory_recursive` mediante la validación explícita de `None` y tipos en los parámetros críticos, asegurando que ante una entrada de datos mal formada (ej. `None` o una ruta inválida) la función retorne 0 en lugar de propagar un error o intentar procesar memoria inválida.
+- `2026-09-04T03:59:22` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-04T03:59:33` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de hash y validación mediante la adición de chequeos de tipo explícitos y manejo de excepciones ante rutas inexistentes o inaccesibles, evitando que la aplicación falle silenciosamente cuando el sistema de archivos deniega el acceso a un archivo.
+- `2026-09-04T03:59:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T03:59:33` Corrida terminada. Total usado hoy: 96.
