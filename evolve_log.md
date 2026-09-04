@@ -583,3 +583,44 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-04T11:09:51` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
 - `2026-09-04T11:09:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T11:09:51` Corrida terminada. Total usado hoy: 264.
+- `2026-09-04T11:17:42` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-09-04T11:18:13` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó `stage_for_review` para prevenir ataques de manipulación de rutas (`path traversal`) al verificar que la ruta destino resuelta esté efectivamente contenida dentro del directorio de revisión (`review_dir`), asegurando que no se escape de la zona de cuarentena antes de realizar la operación de movimiento.
+- `2026-09-04T11:18:50` Tests FALLARON:
+```
+[ 72%]
+.......................................................................F [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_____________ test_purge_item_cannot_delete_outside_the_quarantine _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_purge_item_cannot_delete_0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-2/test_purge_item_cannot_delete_0/_Cuarentena')
+
+    def test_purge_item_cannot_delete_outside_the_quarantine(tmp_path, cuarentena):
+        victima = tmp_path / "no-tocar.txt"
+        victima.write_text("importante")
+    
+        origen = tmp_path / "cualquiera.txt"
+        origen.write_text("x")
+        item = quarantine.quarantine_file(origen, base=cuarentena)
+    
+        # Manifiesto manipulado para apuntar afuera de la cuarentena.
+        items = quarantine.load_manifest(cuarentena)
+        items[0].stored_name = "../no-tocar.txt"
+        quarantine.save_manifest(items, cuarentena)
+    
+>       with pytest.raises(safety.UnsafePathError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE UnsafePathError
+
+evolve/tests/test_safety.py:255: Failed
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+1 failed, 298 passed in 1.34s
+
+```
+- `2026-09-04T11:18:50` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad en `purge_all` y `restore_item` al asegurar que las operaciones de manipulación de archivos validen que el objetivo sea un archivo regular y esté estrictamente dentro del sandbox, evitando seguir enlaces simbólicos maliciosos que podrían redirigir la operación a rutas fuera del control de la app.
+- `2026-09-04T11:19:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-04T11:19:25` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `is_protected_path` integrando `os.path.commonpath` para detectar si una ruta reside jerárquicamente dentro de directorios de sistema, evitando el uso de comparaciones frágiles de prefijos de cadena que podían ser eludidas con rutas relativas o mal formadas.
+- `2026-09-04T11:19:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T11:19:25` Corrida terminada. Total usado hoy: 268.

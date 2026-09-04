@@ -357,6 +357,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         
         safe_name: str = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
         target: Path = (_generate_unique_target(dest_base / safe_name)).resolve()
+        # Verificación final de contención para evitar path traversal
         return target if target.is_relative_to(dest_base_res) else None
     except (OSError, ValueError, AttributeError):
         return None

@@ -287,9 +287,15 @@ def is_protected_path(path: PathLike) -> bool:
     if not path: return True
     try:
         p = normalize(path)
-        norm_case = os.path.normcase(str(p))
-        if any(norm_case.startswith(root) for root in _SYSTEM_ROOT_PATHS):
-            return True
+        path_str = str(p)
+        
+        # Check against system root paths using commonpath
+        for root in _SYSTEM_ROOT_PATHS:
+            try:
+                if os.path.commonpath([path_str, root]) == root:
+                    return True
+            except ValueError: continue
+            
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
         return p == Path(p.anchor)
