@@ -200,43 +200,39 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de entrada de métricas inválido."])
     
-    # Asegurar integridad de los datos antes de operar
     metrics.validate()
     if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Datos de sistema corruptos."])
     
-    try:
-        metric_breakdown: Dict[MetricKey, int] = {}
-        total_pts: float = 0.0
-        recommendations: List[str] = []
+    metric_breakdown: Dict[MetricKey, int] = {}
+    total_pts: float = 0.0
+    recommendations: List[str] = []
+    
+    for area, weight, scorer, rules in _OPTIMIZED_PIPELINE:
+        ratio = scorer(metrics)
+        pts = int(round(ratio * weight))
+        metric_breakdown[area] = pts
+        total_pts += float(pts)
         
-        for area, weight, scorer, rules in _OPTIMIZED_PIPELINE:
-            ratio: NormalizedRatio = scorer(metrics)
-            pts: int = int(round(ratio * weight))
-            metric_breakdown[area] = pts
-            total_pts += float(pts)
-            
-            for rule in rules:
-                if rule.check(metrics, ratio):
-                    try:
-                        msg = rule.message_factory(metrics)
-                        if isinstance(msg, str):
-                            recommendations.append(msg)
-                    except Exception:
-                        continue
-        
-        final_score: int = int(_clamp(total_pts, 0.0, 100.0))
-        if metrics.quarantined_count > 0:
-            recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
-        
-        return HealthResult(
-            score=final_score, 
-            grade=grade_for_score(final_score), 
-            breakdown=metric_breakdown, 
-            recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
-        )
-    except Exception:
-        return HealthResult(0, "F", {}, ["Error inesperado al calcular métricas."])
+        for rule in rules:
+            if rule.check(metrics, ratio):
+                try:
+                    msg = rule.message_factory(metrics)
+                    if isinstance(msg, str) and msg:
+                        recommendations.append(msg)
+                except Exception:
+                    continue
+    
+    final_score = int(_clamp(total_pts, 0.0, 100.0))
+    if metrics.quarantined_count > 0:
+        recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
+    
+    return HealthResult(
+        score=final_score, 
+        grade=grade_for_score(final_score), 
+        breakdown=metric_breakdown, 
+        recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
+    )
 
 def _render_bar(pts: int, maximo: int) -> str:
     if maximo <= 0: return ""
@@ -247,15 +243,11 @@ def summarize(result: HealthResult | None) -> List[str]:
     if not isinstance(result, HealthResult):
         return ["Error: Informe no disponible o formato inválido."]
     
-    try:
-        lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-        
-        for area, maximo in _WEIGHT_ITEMS_INT:
-            puntos = result.breakdown.get(area, 0)
-            bar = _render_bar(int(puntos), maximo)
-            lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{bar}]")
-        
-        lines.extend(["", "Recomendaciones:", *[f"  - {r}" for r in result.recommendations]])
-        return lines
-    except Exception:
-        return ["Error grave al renderizar el informe de salud."]
+    lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+    
+    for area, maximo in _WEIGHT_ITEMS_INT:
+        puntos = result.breakdown.get(area, 0)
+        lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{_render_bar(puntos, maximo)}]")
+    
+    lines.extend(["", "Recomendaciones:", *[f"  - {r}" for r in result.recommendations]])
+    return lines

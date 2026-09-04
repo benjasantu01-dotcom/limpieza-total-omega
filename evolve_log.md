@@ -838,3 +838,13 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-04T12:52:17` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-04T12:52:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T12:52:17` Corrida terminada. Total usado hoy: 304.
+- `2026-09-04T12:59:52` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-04T13:00:27` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `drive_usage` capturando posibles `AttributeError` o `OSError` al acceder a metadatos de archivos (como `st_dev` o `st_file_attributes`) y añadí validaciones de tipo explícitas para asegurar que las entradas de disco se procesen solo si tienen atributos legibles, evitando fallos en sistemas de archivos heterogéneos o dispositivos desconectados.
+- `2026-09-04T13:00:54` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-04T13:01:21` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y `summarize` reemplazando los bloques `try-except` genéricos que ocultaban errores por validaciones específicas, y encapsulé la lógica de generación de recomendaciones para evitar fallos si un `message_factory` falla, manteniendo la integridad del informe.
+- `2026-09-04T13:01:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-04T13:01:28` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-04T13:01:39` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-04T13:02:47` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `on_target_choice_changed` añadiendo una validación explícita mediante `_is_safe_target_dir` antes de actualizar el estado de `self.scan_target`, asegurando que ninguna ruta arbitraria del sistema pueda ser seleccionada inadvertidamente como objetivo de escaneo.
+- `2026-09-04T13:02:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T13:02:47` Corrida terminada. Total usado hoy: 308.
