@@ -145,14 +145,16 @@ def _get_file_stat_if_valid(entry: os.DirEntry, min_size: int) -> Optional[int]:
     Usa DirEntry.stat() para evitar llamadas extras al sistema de archivos.
     """
     try:
-        if not entry.is_file(follow_symlinks=False):
+        # Se verifica symlink/junction antes de llamar a stat para no seguir referencias
+        if entry.is_symlink() or is_junction(Path(entry.path)):
             return None
-        stat_info = entry.stat(follow_symlinks=False)
+        if not entry.is_file():
+            return None
+        stat_info = entry.stat()
         if stat_info.st_size < min_size:
             return None
         p = Path(entry.path)
-        # Se verifica explícitamente protección y junctions.
-        if is_junction(p) or is_protected_path(p):
+        if is_protected_path(p):
             return None
         return int(stat_info.st_size)
     except (OSError, PermissionError, ValueError, TypeError):
@@ -202,11 +204,13 @@ def _collect_candidates(
 
     def _scan_recursive(current_dir: Path) -> None:
         try:
-            if is_protected_path(current_dir):
+            # Chequeos de seguridad defensiva previos al acceso
+            if is_protected_path(current_dir) or is_junction(current_dir):
                 return
+            
             st = current_dir.stat()
             inode = (st.st_dev, st.st_ino)
-            if inode in visited_inodes or is_junction(current_dir):
+            if inode in visited_inodes:
                 return
             visited_inodes.add(inode)
 
@@ -214,6 +218,7 @@ def _collect_candidates(
                 for entry in it:
                     if entry.is_dir(follow_symlinks=False):
                         p_dir = Path(entry.path)
+                        # Filtrado estricto antes de recursión
                         if not is_protected_path(p_dir) and not is_junction(p_dir):
                             _scan_recursive(p_dir)
                     else:

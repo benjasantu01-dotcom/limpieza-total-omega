@@ -1571,6 +1571,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 return
             
             # Chequeo adicional de seguridad antes de operar
+            safety.ensure_safe_to_modify(Path(".").resolve())
             if not safety.is_safe_to_modify(Path(".")):
                 self.log("Error: Operación no permitida en este contexto.", "Memoria")
                 return

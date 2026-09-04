@@ -197,8 +197,13 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
-        return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o corruptos."])
+    if not isinstance(metrics, SystemMetrics):
+        return HealthResult(0, "F", {}, ["Error: Tipo de entrada de métricas inválido."])
+    
+    # Asegurar integridad de los datos antes de operar
+    metrics.validate()
+    if not metrics.is_finite():
+        return HealthResult(0, "F", {}, ["Error: Datos de sistema corruptos."])
     
     try:
         metric_breakdown: Dict[MetricKey, int] = {}
@@ -230,7 +235,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             breakdown=metric_breakdown, 
             recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
         )
-    except (AttributeError, ValueError, TypeError):
+    except Exception:
         return HealthResult(0, "F", {}, ["Error inesperado al calcular métricas."])
 
 def _render_bar(pts: int, maximo: int) -> str:

@@ -576,3 +576,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-04T10:59:09` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del escaneo en `walk_files` y `drive_usage` incorporando una validación explícita mediante `is_protected_path` sobre las rutas resultantes de `pathlib`, previniendo así el acceso accidental a directorios sensibles durante el recorrido iterativo o la consulta de unidades.
 - `2026-09-04T10:59:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T10:59:09` Corrida terminada. Total usado hoy: 260.
+- `2026-09-04T11:07:33` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-09-04T11:08:02` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` para asegurar que el escaneo recursivo no siga enlaces simbólicos o puntos de reparse, incluso en directorios intermedios, garantizando que el `is_protected_path` se aplique estrictamente antes de intentar cualquier acceso al sistema de archivos.
+- `2026-09-04T11:08:29` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la robustez de `compute_score` implementando una validación de entrada temprana más estricta para evitar que valores inesperados en el objeto `SystemMetrics` propaguen estados inconsistentes, reforzando la integridad del cálculo de salud.
+- `2026-09-04T11:09:39` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `on_trim_process` añadiendo una validación explícita mediante `safety.ensure_safe_to_modify` antes de intentar ejecutar cualquier operación de memoria potencialmente arriesgada, protegiendo contra posibles manipulaciones de PIDs críticos del sistema.
+- `2026-09-04T11:09:51` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-09-04T11:09:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T11:09:51` Corrida terminada. Total usado hoy: 264.
