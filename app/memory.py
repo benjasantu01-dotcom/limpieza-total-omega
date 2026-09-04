@@ -207,12 +207,15 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             pid_val = int(parts[1])
             ws_val = int(parts[2])
             
-            if not name_val: continue
+            # Validación robusta de límites de sistema y tipo
+            if not name_val or pid_val <= 0 or ws_val < 0:
+                continue
             
-            if is_protected_path(name_val): continue
-            
-            if pid_val > 0 and ws_val >= 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
-                proc_list.append(ProcessMemory(name=name_val, pid=pid_val, working_set=BytesValue(ws_val)))
+            # Chequeo de seguridad: verificamos si el nombre o el PID son protegidos
+            if is_protected_path(name_val) or pid_val in SYSTEM_CRITICAL_PIDS:
+                continue
+                
+            proc_list.append(ProcessMemory(name=name_val, pid=pid_val, working_set=BytesValue(ws_val)))
         except (ValueError, TypeError):
             continue
     

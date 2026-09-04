@@ -169,13 +169,11 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud de memoria comparando disponibilidad vs límite."""
-    if _LIMIT_RAM_PERCENT <= 0: return 0.0
-    return _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT)
+    return _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT) if _LIMIT_RAM_PERCENT > 0 else 1.0
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud de disco comparando porcentaje libre vs límite."""
-    if _LIMIT_DISK_PERCENT <= 0: return 0.0
-    return _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT)
+    return _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT) if _LIMIT_DISK_PERCENT > 0 else 1.0
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud basado en el impacto en MB de los duplicados."""
@@ -256,12 +254,15 @@ def summarize(result: HealthResult | None) -> List[str]:
     if not isinstance(result, HealthResult):
         return ["Error: Informe no disponible o formato inválido."]
     
-    lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-    
-    for area, maximo in _WEIGHT_ITEMS_INT:
-        puntos = result.breakdown.get(area, 0)
-        bar = _render_bar(int(puntos), maximo)
-        lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{bar}]")
-    
-    lines.extend(["", "Recomendaciones:", *[f"  - {r}" for r in result.recommendations]])
-    return lines
+    try:
+        lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+        
+        for area, maximo in _WEIGHT_ITEMS_INT:
+            puntos = result.breakdown.get(area, 0)
+            bar = _render_bar(int(puntos), maximo)
+            lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{bar}]")
+        
+        lines.extend(["", "Recomendaciones:", *[f"  - {r}" for r in result.recommendations]])
+        return lines
+    except Exception:
+        return ["Error grave al renderizar el informe de salud."]

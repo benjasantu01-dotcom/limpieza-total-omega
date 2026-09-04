@@ -1249,7 +1249,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.scan_target = None
             update_label("")
         else:
-            if self._is_safe_target_dir(choice):
+            # Validación proactiva de la ruta seleccionada de la lista
+            target_path = Path(choice)
+            if target_path.exists() and self._is_safe_target_dir(target_path):
                 self.scan_target = choice
                 update_label(f"Unidad completa: {choice}")
             else:
