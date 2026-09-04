@@ -208,11 +208,8 @@ def _sum_directory_recursive(
     
     if path_cache is None: path_cache = {}
     
-    p_obj = Path(root_abs)
-    try:
-        if not p_obj.exists() or not is_safe_to_modify(p_obj):
-            return 0
-    except (OSError, PermissionError):
+    root_path = Path(root_abs)
+    if not is_safe_to_modify(root_path):
         return 0
     
     if root_abs in memo:
@@ -226,8 +223,13 @@ def _sum_directory_recursive(
                     continue
                 
                 try:
+                    # Validar seguridad de la entrada antes de intentar acceder o recursar
+                    entry_path_obj = Path(entry.path)
+                    if not is_safe_to_modify(entry_path_obj):
+                        continue
+
                     if entry.is_dir(follow_symlinks=False):
-                        if len(entry.path) < MAX_PATH_LEN and is_safe_to_modify(Path(entry.path)):
+                        if len(entry.path) < MAX_PATH_LEN:
                             total += _sum_directory_recursive(
                                 entry.path, is_junction_fn, kernel32, memo, base_check_path, path_cache, depth + 1
                             )

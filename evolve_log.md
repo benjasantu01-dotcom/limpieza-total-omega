@@ -819,3 +819,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-04T01:57:08` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha restringido `save_logo_svg` para prevenir ataques de *path traversal* o escritura en ubicaciones prohibidas, asegurando que la ruta destino no solo pase el chequeo de seguridad, sino que también se valide que no se intente escribir en archivos existentes sensibles mediante `is_protected_path`.
 - `2026-09-04T01:57:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T01:57:08` Corrida terminada. Total usado hoy: 48.
+- `2026-09-04T02:05:20` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-09-04T02:05:49` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_sum_directory_recursive` mediante el uso de `os.scandir` de forma que la validación de seguridad de la ruta (`is_safe_to_modify`) se aplique sobre el resultado de `entry.path` antes de la recursión, garantizando que el escaneo no siga enlaces simbólicos o rutas peligrosas detectadas dinámicamente durante el recorrido.
+- `2026-09-04T02:06:17` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-09-04T02:06:48` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_collect_candidates` para prevenir la recursión infinita en sistemas de archivos que contienen bucles (ciclos de directorios) mediante la validación estricta de `st_ino` y `st_dev` antes de intentar cualquier operación de acceso, asegurando que no se sigan enlaces simbólicos o puntos de reparse accidentalmente.
+- `2026-09-04T02:07:00` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-09-04T02:07:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T02:07:00` Corrida terminada. Total usado hoy: 52.

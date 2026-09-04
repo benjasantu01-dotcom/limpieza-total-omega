@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 57 | 1 | 7 | 0 | 41 |
+| 2026-09-02 | 57 | 1 | 7 | 0 | 37 |
 | 2026-09-03 | 148 | 7 | 24 | 13 | 158 |
-| 2026-09-04 | 27 | 3 | 5 | 3 | 10 |
+| 2026-09-04 | 29 | 3 | 5 | 3 | 12 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **49**
+- seguridad defensiva: **44**
 - robustez ante casos límite: **43**
-- seguridad defensiva: **42**
 - rendimiento: **41**
 
 ## Mejoras aceptadas por archivo
 
+- `browser.py`: **21**
 - `assistant.py`: **20**
-- `browser.py`: **20**
 - `healthscore.py`: **20**
 - `organizer.py`: **20**
 - `scanner.py`: **20**
+- `duplicates.py`: **19**
 - `memory.py`: **19**
 - `quarantine.py`: **19**
-- `duplicates.py`: **18**
 - `settings.py`: **18**
 - `safety.py`: **15**
 - `diskreport.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T02:06:48` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_collect_candidates` para prevenir la recursión infinita en sistemas de archivos que contienen bucles (ciclos de directorios) mediante la validación estricta de `st_ino` y `st_dev` antes de intentar cualquier operación de acceso, asegurando que no se sigan enlaces simbólicos o puntos de reparse accidentalmente.
+- `2026-09-04T02:05:49` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_sum_directory_recursive` mediante el uso de `os.scandir` de forma que la validación de seguridad de la ruta (`is_safe_to_modify`) se aplique sobre el resultado de `entry.path` antes de la recursión, garantizando que el escaneo no siga enlaces simbólicos o rutas peligrosas detectadas dinámicamente durante el recorrido.
 - `2026-09-04T01:57:08` **branding.py** (seguridad defensiva): Se ha restringido `save_logo_svg` para prevenir ataques de *path traversal* o escritura en ubicaciones prohibidas, asegurando que la ruta destino no solo pase el chequeo de seguridad, sino que también se valide que no se intente escribir en archivos existentes sensibles mediante `is_protected_path`.
 - `2026-09-04T01:56:49` **assistant.py** (seguridad defensiva): Mejoré la seguridad de la función `_call_gemini` añadiendo una validación explícita mediante `is_protected_path` sobre la respuesta final de la IA antes de retornarla, asegurando que el modelo no pueda inyectar accidentalmente rutas de archivos o directorios protegidos en el texto de la respuesta.
 - `2026-09-04T01:46:25` **safety.py** (robustez ante casos límite): Se ha robustecido `_is_file_in_use` para manejar correctamente rutas inexistentes sin lanzar excepciones innecesarias, y se ha añadido una validación temprana contra `PermissionError` en `normalize` para prevenir bloqueos en accesos a directorios restringidos del sistema operativo antes de intentar operaciones de resolución.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T01:14:49` **scanner.py** (rendimiento): Optimicé el método `_is_safe_entry` eliminando la resolución innecesaria de rutas (syscall `resolve()`) y la conversión a `Path` repetitiva, utilizando los atributos nativos de `os.DirEntry` para realizar los filtros de seguridad de forma más eficiente.
 - `2026-09-04T01:05:21` **quarantine.py** (rendimiento): Optimicé el cálculo del espacio total (`total_quarantined_bytes`) eliminando la lectura y parseo completo del manifiesto JSON, accediendo directamente a los atributos de los objetos `QuarantineItem` ya cargados en memoria o iterando eficientemente si el manifiesto no está en caché.
 - `2026-09-04T01:04:45` **organizer.py** (rendimiento): Optimicé el rendimiento de `_process_directory` reemplazando la verificación repetida de `JUNK_EXTENSIONS` mediante una conversión a `frozenset` (ya existente) y usando `.suffix.lower()` directamente en lugar de instanciar objetos `Path` innecesarios para cada archivo dentro del bucle, reduciendo significativamente la carga de objetos en memoria durante escaneos profundos.
-- `2026-09-04T00:55:13` **healthscore.py** (rendimiento): Optimicé el método `is_finite` de `SystemMetrics` reemplazando la iteración completa sobre `__dataclass_fields__` (que ocurría cada vez que se verificaba la salud) por una tupla estática de campos numéricos, evitando la sobrecarga de reflexión en tiempo de ejecución.
-- `2026-09-04T00:44:20` **assistant.py** (rendimiento): Optimicé el renderizado del contexto del asistente usando una lista por comprensión y una sola unión de strings, evitando la creación intermedia de tuplas y llamadas redundantes a funciones de formateo, reduciendo así la carga de CPU en cada refresco de la UI.

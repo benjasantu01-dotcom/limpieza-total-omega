@@ -202,8 +202,8 @@ def _collect_candidates(
 
     def _scan_recursive(current_dir: Path) -> None:
         try:
-            stat_root = current_dir.stat()
-            inode = (stat_root.st_dev, stat_root.st_ino)
+            st = current_dir.stat()
+            inode = (st.st_dev, st.st_ino)
             if inode in visited_inodes or is_junction(current_dir):
                 return
             visited_inodes.add(inode)
