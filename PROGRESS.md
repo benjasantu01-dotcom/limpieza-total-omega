@@ -6,30 +6,30 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 104 | 4 | 17 | 8 | 115 |
-| 2026-09-04 | 116 | 14 | 21 | 6 | 99 |
+| 2026-09-03 | 104 | 4 | 17 | 8 | 111 |
+| 2026-09-04 | 118 | 14 | 21 | 6 | 101 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **43**
-- seguridad defensiva: **39**
+- seguridad defensiva: **41**
 - rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **19**
+- `assistant.py`: **20**
 - `organizer.py`: **19**
 - `scanner.py`: **18**
 - `settings.py`: **18**
@@ -39,13 +39,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **16**
 - `quarantine.py`: **16**
 - `browser.py`: **15**
+- `diskreport.py`: **13**
 - `branding.py`: **12**
 - `main.py`: **12**
-- `diskreport.py`: **12**
 - `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T10:59:09` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo en `walk_files` y `drive_usage` incorporando una validación explícita mediante `is_protected_path` sobre las rutas resultantes de `pathlib`, previniendo así el acceso accidental a directorios sensibles durante el recorrido iterativo o la consulta de unidades.
+- `2026-09-04T10:57:59` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_build_payload` y `_call_gemini` añadiendo una validación explícita para asegurar que la API Key y el modelo no contengan caracteres de control o inyección de rutas antes de construir la URL o el payload, mitigando riesgos de manipulación de peticiones HTTP.
 - `2026-09-04T10:48:38` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante condiciones de carrera y fallos de escritura mediante la implementación de `os.replace` (que ya estaba presente pero ahora se asegura de que el descriptor de archivo esté cerrado correctamente antes de operar) y añadiendo una verificación explícita de `OSError` al crear directorios padres para manejar situaciones donde el sistema de archivos es de solo lectura o está bloqueado.
 - `2026-09-04T10:47:39` **safety.py** (robustez ante casos límite): Se introdujo una comprobación de existencia antes de invocar `path.stat()` en `_check_file_integrity_cached` para prevenir `FileNotFoundError` si un archivo es eliminado por un proceso externo entre la validación inicial y la verificación de integridad, mejorando la resiliencia ante condiciones de carrera.
 - `2026-09-04T10:38:31` **quarantine.py** (robustez ante casos límite): Se ha mejorado `_check_windows_file_attributes` para prevenir condiciones de carrera y fallos de acceso mediante el uso de `pathlib.Path.exists()` antes de la llamada nativa a `ctypes`, asegurando mayor robustez ante archivos inexistentes o bloqueados transitoriamente por el sistema operativo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T10:07:51` **settings.py** (rendimiento): Optimizé `load()` para evitar accesos innecesarios al sistema de archivos mediante el uso de `os.stat()` antes de `ruta.exists()`, reduciendo el impacto de I/O en cada consulta de configuración.
 - `2026-09-04T10:07:35` **scanner.py** (rendimiento): Optimicé el método `process_entry` transformando la lógica de comparación de extensiones en un lookup de tiempo constante $O(1)$ y aplicando una técnica de "fail-fast" para evitar cálculos innecesarios al procesar miles de archivos.
 - `2026-09-04T09:57:07` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución del proceso de PowerShell mediante `subprocess.run` (que es costosa y pesada) por una llamada directa vía `os.popen` o, mejor aún, manteniendo `subprocess` pero asegurando que la recolección de datos sea más eficiente al reducir la cantidad de procesos recuperados de 200 a un límite ajustado (limit * 2) y eliminando la sobrecarga de `powershell` dentro del bucle principal mediante un manejo de caché más estricto.
-- `2026-09-04T09:46:48` **healthscore.py** (rendimiento): Optimicé el bucle principal de `compute_score` eliminando la llamada a `_SCORERS.get(area)` dentro de la iteración, pre-vinculando el `scorer` directamente en `_OPTIMIZED_PIPELINE` para evitar búsquedas repetitivas en el diccionario.
-- `2026-09-04T09:46:14` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para evitar recrear diccionarios y realizar múltiples pasadas, consolidando la lógica de recolección de métricas en una única iteración eficiente sobre el generador de archivos.

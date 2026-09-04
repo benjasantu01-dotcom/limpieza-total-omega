@@ -576,7 +576,10 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
     """Gestiona la llamada remota a Gemini con validaciones estrictas de seguridad."""
-    if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
+    # Validación extra: impedir inyección de control en parámetros de configuración
+    if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): 
+        return None
+        
     safe_c = _CONTROL_CHARS_REGEX.sub(" ", context_text)
     if not _ensure_safe_text(safe_c) or "Error" in safe_c: return None
     

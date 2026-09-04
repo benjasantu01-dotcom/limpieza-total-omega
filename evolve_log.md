@@ -569,3 +569,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-04T10:48:51` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la resiliencia ante rutas inexistentes o inaccesibles mediante un manejo de excepciones más robusto en `_validate_file_access` y `_resolve_and_cache_path`, garantizando que el bucle no aborte ante archivos bloqueados o con nombres corruptos.
 - `2026-09-04T10:48:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T10:48:51` Corrida terminada. Total usado hoy: 256.
+- `2026-09-04T10:57:19` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-09-04T10:57:59` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_build_payload` y `_call_gemini` añadiendo una validación explícita para asegurar que la API Key y el modelo no contengan caracteres de control o inyección de rutas antes de construir la URL o el payload, mitigando riesgos de manipulación de peticiones HTTP.
+- `2026-09-04T10:58:31` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-04T10:58:56` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-09-04T10:59:09` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del escaneo en `walk_files` y `drive_usage` incorporando una validación explícita mediante `is_protected_path` sobre las rutas resultantes de `pathlib`, previniendo así el acceso accidental a directorios sensibles durante el recorrido iterativo o la consulta de unidades.
+- `2026-09-04T10:59:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T10:59:09` Corrida terminada. Total usado hoy: 260.

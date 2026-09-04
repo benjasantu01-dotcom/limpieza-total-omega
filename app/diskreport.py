@@ -270,14 +270,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     while stack:
         current_dir = stack.pop()
         
-        if skip_protected and is_protected_path(current_dir):
-            continue
-
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Usamos stat directamente sobre la entrada (sin resolver symlinks)
+                        path_entry = Path(entry.path)
+                        if skip_protected and is_protected_path(path_entry):
+                            continue
+                        
                         st = entry.stat(follow_symlinks=False)
                         
                         if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
@@ -287,15 +287,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             inode_key = (st.st_dev, st.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
-                                stack.append(Path(entry.path))
+                                stack.append(path_entry)
                                     
                         elif entry.is_file():
-                            yield Path(entry.path), max(0, int(st.st_size))
+                            yield path_entry, max(0, int(st.st_size))
                     except (PermissionError, OSError, UnicodeDecodeError):
-                        # Ignorar archivos bloqueados o que cambiaron de estado durante el escaneo
                         continue
         except (PermissionError, OSError):
-            # Ignorar carpetas donde no se tiene acceso de lectura
             continue
 
 
