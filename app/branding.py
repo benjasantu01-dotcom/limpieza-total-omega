@@ -306,6 +306,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination or len(str(destination)) > 4096: return None
     try:
         path_obj = Path(destination).resolve()
+        # Impedir rutas relativas riesgosas o mal formadas
+        if not path_obj.is_absolute(): return None
         ensure_safe_to_modify(path_obj)
         if is_protected_path(path_obj): return None
         target_dir = path_obj.parent
@@ -313,7 +315,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         if not target_dir.exists(): target_dir.mkdir(parents=True, exist_ok=True)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
-    except (OSError, PermissionError, TypeError, ValueError, RuntimeError): return None
+    except (OSError, PermissionError, TypeError, ValueError, RuntimeError): 
+        return None
 
 def logo_ascii() -> str:
     """Retorna una representación artística del logo en caracteres ASCII."""

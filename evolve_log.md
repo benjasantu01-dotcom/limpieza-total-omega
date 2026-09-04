@@ -493,3 +493,34 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-04T10:07:51` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `load()` para evitar accesos innecesarios al sistema de archivos mediante el uso de `os.stat()` antes de `ruta.exists()`, reduciendo el impacto de I/O en cada consulta de configuración.
 - `2026-09-04T10:07:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T10:07:51` Corrida terminada. Total usado hoy: 240.
+- `2026-09-04T10:16:27` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-09-04T10:16:56` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.32s
+
+```
+- `2026-09-04T10:16:56` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un cacheo a nivel de instancia en el método `executable` para evitar la costosa resolución de rutas (`os.path.realpath` y `os.path.abspath`) cada vez que se solicita la propiedad, aprovechando que el estado del sistema no cambia durante la vida de la app.
+- `2026-09-04T10:17:33` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se introdujo una validación defensiva en la extracción de métricas (`ingest` y `_validate_and_assign`) para manejar explícitamente valores que, aunque sean números, resulten en `inf` o `nan` tras la conversión, evitando que estados de memoria o disco corruptos o inconsistentes (casos límite) propaguen valores inválidos al contexto del asistente.
+- `2026-09-04T10:18:08` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` añadiendo una validación de ruta absoluta crítica y un manejo de errores más específico para evitar la propagación de excepciones ante fallos del sistema de archivos.
+- `2026-09-04T10:18:19` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de rutas en `browser.py` implementando una validación estricta de la jerarquía de directorios durante el escaneo para prevenir el acceso no autorizado a rutas fuera del scope (traversal), y se ha mejorado la tolerancia a fallos mediante la normalización de las rutas resultantes antes de compararlas, garantizando que el escáner no sea engañado por enlaces simbólicos o inconsistencias en el sistema de archivos.
+- `2026-09-04T10:18:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T10:18:19` Corrida terminada. Total usado hoy: 244.

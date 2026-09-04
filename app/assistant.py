@@ -350,7 +350,7 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
             return False
         
         clean_val = _safe_float(val, -1.0)
-        if clean_val < spec.min_val or clean_val > spec.max_val:
+        if clean_val < spec.min_val or clean_val > spec.max_val or math.isnan(clean_val) or math.isinf(clean_val):
             return False
         
         setattr(ctx, key, spec.cast_func(clean_val))
