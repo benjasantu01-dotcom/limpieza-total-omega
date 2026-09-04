@@ -781,3 +781,41 @@ FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_progr
 - `2026-09-04T01:46:34` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-09-04T01:46:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T01:46:34` Corrida terminada. Total usado hoy: 44.
+- `2026-09-04T01:55:11` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-09-04T01:55:42` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `save()` implementando una comprobación explícita para evitar la sobreescritura accidental de enlaces simbólicos o junctions que puedan apuntar a ubicaciones fuera de control, mitigando riesgos ante manipulaciones inesperadas del sistema de archivos.
+- `2026-09-04T01:56:11` Tests FALLARON:
+```
+d_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:105
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:105: SyntaxWarning: invalid escape sequence '\P'
+    """Extrae rutas de comandos tipo "C:\Path\App.exe" validando seguridad."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 8 warnings in 1.43s
+
+```
+- `2026-09-04T01:56:11` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez de `_validate_file_access` y `_resolve_and_cache_path` añadiendo un manejo explícito para `OSError` durante la lectura de atributos de archivo y normalización de rutas, evitando que archivos inaccesibles o bloqueados por el sistema interrumpan el proceso de escaneo.
+- `2026-09-04T01:56:49` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad de la función `_call_gemini` añadiendo una validación explícita mediante `is_protected_path` sobre la respuesta final de la IA antes de retornarla, asegurando que el modelo no pueda inyectar accidentalmente rutas de archivos o directorios protegidos en el texto de la respuesta.
+- `2026-09-04T01:57:08` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha restringido `save_logo_svg` para prevenir ataques de *path traversal* o escritura en ubicaciones prohibidas, asegurando que la ruta destino no solo pase el chequeo de seguridad, sino que también se valide que no se intente escribir en archivos existentes sensibles mediante `is_protected_path`.
+- `2026-09-04T01:57:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T01:57:08` Corrida terminada. Total usado hoy: 48.

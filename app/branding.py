@@ -308,8 +308,9 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination or len(str(destination)) > 4096: return None
     try:
         path_obj = Path(destination).resolve()
-        # Verificación estricta de seguridad mediante la función auxiliar
+        # Verificación estricta: debe ser seguro para modificar y no un archivo protegido
         ensure_safe_to_modify(path_obj)
+        if is_protected_path(path_obj): return None
         
         target_dir = path_obj.parent
         if not target_dir.exists():

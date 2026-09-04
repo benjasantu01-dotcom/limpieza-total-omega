@@ -597,7 +597,10 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             # 4. Limpieza final de respuesta
             clean = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             final = _validate_response_length(clean)
-            return final if _ensure_safe_text(final) and not is_protected_path(final) else None
+            # Asegurar que el modelo no inyecte rutas prohibidas en su respuesta final
+            if _ensure_safe_text(final) and not is_protected_path(final):
+                return final
+            return None
     except (urllib.error.URLError, OSError, json.JSONDecodeError, UnicodeDecodeError):
         return None
 
