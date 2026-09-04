@@ -566,21 +566,22 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     if not isinstance(data, dict):
         return None
     try:
+        # Validación estructural jerárquica obligatoria
         candidates = data.get("candidates")
-        if not isinstance(candidates, list) or not candidates: return None
+        if not isinstance(candidates, list) or len(candidates) == 0 or not isinstance(candidates[0], dict):
+            return None
         
-        first_candidate = candidates[0]
-        if not isinstance(first_candidate, dict): return None
-        
-        content = first_candidate.get("content")
-        if not isinstance(content, dict): return None
+        content = candidates[0].get("content")
+        if not isinstance(content, dict):
+            return None
         
         parts = content.get("parts")
-        if not isinstance(parts, list) or not parts: return None
+        if not isinstance(parts, list) or len(parts) == 0 or not isinstance(parts[0], dict):
+            return None
         
         text_val = parts[0].get("text")
         return str(text_val) if isinstance(text_val, str) else None
-    except (KeyError, AttributeError, TypeError):
+    except (KeyError, AttributeError, TypeError, IndexError):
         return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:

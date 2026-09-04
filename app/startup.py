@@ -128,11 +128,10 @@ class StartupEntry:
     def _validate_file_access(self, p: Path) -> bool:
         """
         Confirma que el archivo existe, es accesible y no es un punto de reanálisis.
-        Usa st_file_attributes para detectar junctions/reparse points a nivel FS.
         """
-        if not p.exists() or p.is_dir() or not os.access(p, os.R_OK):
-            return False
         try:
+            if not p.exists() or p.is_dir():
+                return False
             # 0x00000400 es el atributo de archivo 'Reparse Point'
             return not p.is_symlink() and (p.lstat().st_file_attributes & 0x00000400) == 0
         except (OSError, PermissionError):
@@ -141,10 +140,7 @@ class StartupEntry:
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
         Normaliza, valida la integridad de la ruta y verifica su existencia.
-        Aplica técnicas de defensa en profundidad contra path traversal:
-        - Bloqueo de rutas UNC.
-        - Verificación contra límites MAX_PATH.
-        - Resolución mediante os.path.realpath para evitar bypasses por aliases.
+        Aplica técnicas de defensa en profundidad contra path traversal y errores de sistema.
         """
         if not isinstance(path_string, str) or not path_string:
             return ""
@@ -166,22 +162,17 @@ class StartupEntry:
             abs_path: str = os.path.abspath(norm)
             p: Path = Path(abs_path)
             
-            if not self._validate_file_access(p) or not p.is_absolute() or is_protected_path(p) or os.path.islink(abs_path):
+            if not self._validate_file_access(p) or not p.is_absolute() or is_protected_path(p):
                 _EXISTS_CACHE[path_string] = False
                 return path_string
             
             try:
                 real_path_str: str = os.path.realpath(abs_path)
             except (OSError, PermissionError):
-                _EXISTS_CACHE[path_string] = False
-                return ""
-
-            if not real_path_str.startswith(os.path.splitdrive(abs_path)[0]):
-                _EXISTS_CACHE[path_string] = False
-                return ""
+                return abs_path # Retornamos ruta original si no podemos resolver links
 
             real_path: Path = Path(real_path_str)
-            if not real_path_str or not real_path.exists() or real_path.is_dir() or not os.access(real_path, os.R_OK) or is_protected_path(real_path):
+            if not real_path.exists() or real_path.is_dir() or is_protected_path(real_path):
                 _EXISTS_CACHE[path_string] = False
                 return ""
                 

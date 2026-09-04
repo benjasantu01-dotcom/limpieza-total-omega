@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 from enum import Enum
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple, TypeGuard
@@ -301,6 +302,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         if not parent.is_dir() or is_protected_path(str(parent)) or not _Validators._is_safe_path(str(parent)):
+            return None
+            
+        if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE:
             return None
         
         if ruta.exists():

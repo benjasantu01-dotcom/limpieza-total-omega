@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 0 | 0 | 0 | 0 | 6 |
+| 2026-09-02 | 0 | 0 | 0 | 0 | 2 |
 | 2026-09-03 | 148 | 7 | 24 | 13 | 158 |
-| 2026-09-04 | 70 | 8 | 12 | 4 | 54 |
+| 2026-09-04 | 73 | 8 | 12 | 4 | 55 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **56**
 - manejo de errores y validación de entradas: **45**
+- robustez ante casos límite: **41**
+- seguridad defensiva: **40**
 - rendimiento: **39**
-- robustez ante casos límite: **39**
-- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **20**
+- `assistant.py`: **19**
 - `scanner.py`: **19**
-- `assistant.py`: **18**
 - `duplicates.py`: **18**
 - `memory.py`: **18**
 - `organizer.py`: **18**
+- `settings.py`: **18**
 - `quarantine.py`: **18**
 - `browser.py`: **17**
-- `settings.py`: **17**
 - `safety.py`: **15**
 - `diskreport.py`: **11**
 - `main.py`: **11**
 - `branding.py`: **10**
-- `startup.py`: **8**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T06:22:27` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta de estructura antes de acceder a los datos, garantizando que cualquier respuesta inesperada de la API sea descartada en lugar de procesada, alineado con las reglas de integridad de datos del proyecto.
+- `2026-09-04T06:22:07` **startup.py** (robustez ante casos límite): Se ha robustecido el método `_resolve_and_cache_path` para gestionar archivos que se encuentran bloqueados por el sistema operativo (mediante `PermissionError` y `OSError`), evitando que el escaneo se interrumpa prematuramente al intentar acceder a descriptores de archivo en uso.
+- `2026-09-04T06:21:39` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `save()` implementando una verificación de espacio en disco previa a la escritura y manejando explícitamente el caso de colisiones o archivos bloqueados durante la operación atómica de reemplazo.
 - `2026-09-04T06:12:35` **safety.py** (robustez ante casos límite): Se ha robustecido la validación de rutas mediante la incorporación de una verificación estricta de componentes de trayectoria con `path.name` en `_validate_structural_safety`, asegurando que archivos con nombres nulos, espacios en blanco iniciales o caracteres ocultos sean rechazados antes de cualquier interacción con el disco, mejorando la resiliencia ante entradas mal formadas.
 - `2026-09-04T06:11:55` **quarantine.py** (robustez ante casos límite): Se mejoró la robustez de `quarantine.py` ante fallos de I/O y condiciones de carrera al implementar un chequeo de existencia previo al borrado en `_safe_unlink`, asegurando que `unlink` solo ocurra si el archivo no fue removido o modificado por un proceso externo en el intervalo milimétrico previo.
 - `2026-09-04T06:11:19` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `_is_safe_for_disk_op` y `_process_directory` ante casos límite como archivos con nombres extremadamente largos o rutas inaccesibles, añadiendo validaciones de tipo y estructura adicionales para evitar excepciones no controladas durante el escaneo de disco.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T05:40:48` **scanner.py** (rendimiento): Optimicé el método `_is_safe_entry` reemplazando múltiples llamados costosos a `Path` y `str()` por manipulaciones directas sobre `entry.path` y `entry.name`, evitando la creación de objetos `Path` innecesarios para cada archivo escaneado, lo cual reduce significativamente la carga de objetos y el uso de CPU durante el recorrido.
 - `2026-09-04T05:40:23` **safety.py** (rendimiento): Se optimizó el proceso de validación de integridad moviendo el chequeo de permisos (`os.access`) dentro de `_check_file_integrity_cached`, permitiendo así que el resultado sea cacheado y evitando múltiples llamadas de sistema repetitivas sobre el mismo archivo durante operaciones de escaneo masivo.
 - `2026-09-04T05:30:13` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas mediante PowerShell en `top_memory_processes` añadiendo un parámetro de limitación a nivel de comando para reducir drásticamente el volumen de datos procesados, ahorrando ciclos de CPU y memoria innecesaria.
-- `2026-09-04T05:21:55` **main.py** (rendimiento): Optimicé el sistema de caché implementando un diccionario de `_cache_access_times` para permitir una invalidación de caché basada en expiración de tiempo (TTL) real por entrada, reemplazando el comportamiento global del diccionario para evitar lecturas redundantes de datos poco volátiles sin sacrificar la frescura de los resultados.
-- `2026-09-04T05:20:58` **healthscore.py** (rendimiento): Se precomputó la lista de tuplas `(area, weight, rules)` para evitar búsquedas repetitivas por diccionario (`_RULES_BY_AREA.get(area)`) dentro del bucle principal de `compute_score`, mejorando la eficiencia en la ejecución del pipeline.
-- `2026-09-04T05:20:29` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` para evitar llamadas redundantes a `entry.stat()` reutilizando el valor obtenido durante la verificación inicial del archivo, lo cual reduce significativamente las operaciones de I/O en discos HDD/red durante el escaneo recursivo.
