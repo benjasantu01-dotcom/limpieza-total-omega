@@ -290,22 +290,19 @@ class SystemContext:
 
     def ingest(self, source: Any) -> bool:
         """Intenta extraer y validar métricas desde una fuente externa."""
-        if source is None or not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool)):
+        if not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool)):
             return False
             
         found_data = False
-        try:
-            for key, spec in _VALIDATORS.items():
-                if _validate_and_assign(self, source, key, spec):
-                    found_data = True
-            
-            grade_val = _get_source_value(source, "grade")
-            if isinstance(grade_val, str):
-                clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
-                if _is_safe_text_structure(clean_grade):
-                    self.grade = clean_grade
-        except (AttributeError, ValueError, TypeError):
-            pass
+        for key, spec in _VALIDATORS.items():
+            if _validate_and_assign(self, source, key, spec):
+                found_data = True
+        
+        grade_val = _get_source_value(source, "grade")
+        if isinstance(grade_val, str):
+            clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
+            if _is_safe_text_structure(clean_grade):
+                self.grade = clean_grade
         return found_data
 
 @dataclass
@@ -337,13 +334,10 @@ def _ensure_safe_text(text: Any) -> bool:
 def _get_source_value(source: Any, key: str) -> Any:
     """Extrae valores de forma robusta ante estructuras de datos no estándar."""
     try:
-        if source is None: return None
-        # Intenta acceso dict-like si aplica, o mediante getattr para objetos
-        if hasattr(source, "__getitem__"):
-            try: return source[key]
-            except (KeyError, TypeError, IndexError): pass
+        if isinstance(source, dict):
+            return source.get(key)
         return getattr(source, key, None)
-    except Exception:
+    except (AttributeError, TypeError, KeyError):
         return None
 
 def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: MetricSpec) -> bool:
@@ -371,11 +365,8 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
                and not isinstance(s, (list, tuple, str, int, float, bool))]
     
     for src in sources:
-        try:
-            if ctx.ingest(src):
-                ctx.analyzed = True
-        except (AttributeError, TypeError, ValueError):
-            continue
+        if ctx.ingest(src):
+            ctx.analyzed = True
     return ctx
 
 def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:

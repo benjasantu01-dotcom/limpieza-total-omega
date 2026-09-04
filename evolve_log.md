@@ -1600,3 +1600,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-04T08:17:24` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-04T08:17:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T08:17:25` Corrida terminada. Total usado hoy: 196.
+- `2026-09-04T08:23:30` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-09-04T08:24:18` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora el manejo de errores en `ingest` mediante la adición de un chequeo explícito de tipos y bloques `try-except` más granulares en `_get_source_value` para evitar capturar excepciones inesperadas que podrían ocultar errores de lógica.
+- `2026-09-04T08:24:49` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-04T08:25:14` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-04T08:25:27` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y `walk_files` incorporando validaciones de tipo explícitas y manejo defensivo de estados inexistentes, asegurando que ante errores de acceso o rutas mal formadas la aplicación devuelva mensajes claros en lugar de fallos silenciosos o excepciones no capturadas.
+- `2026-09-04T08:25:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T08:25:27` Corrida terminada. Total usado hoy: 200.

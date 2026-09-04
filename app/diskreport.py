@@ -354,7 +354,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
                     continue
                 sums[top_folder] += size
                 counts[top_folder] += 1
-        except ValueError:
+        except (ValueError, OSError):
             continue
 
     results: List[FolderUsage] = [FolderUsage(p, sums[p], counts[p]) for p in sums]
@@ -413,16 +413,16 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
         List[str]: Informe formateado como lista de líneas de texto.
     """
     p_input = _validate_root(directory)
-    if p_input is None or not p_input.exists():
-        return ["Error: Ruta inaccesible, inexistente o prohibida."]
+    if p_input is None:
+        return ["Error: Ruta especificada no es válida, no existe o está prohibida."]
             
     try:
         data = _collect_summary_data(p_input, skip_protected)
-    except (OSError, PermissionError):
-        return ["Error: El análisis se interrumpió por falta de permisos."]
+    except (OSError, PermissionError, RuntimeError):
+        return ["Error: El análisis se interrumpió inesperadamente por falta de permisos o error de E/S."]
     
     if data.total_files == 0:
-        return ["Aviso: No se encontraron archivos accesibles."]
+        return ["Aviso: No se encontraron archivos accesibles en la ruta indicada."]
 
     lines = [
         f"Carpeta analizada: {p_input}", 
