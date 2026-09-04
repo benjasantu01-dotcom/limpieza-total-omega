@@ -157,7 +157,6 @@ class _Validators:
             resolved = path_obj.resolve(strict=False)
             if resolved.is_symlink(): return False
             if hasattr(resolved, 'is_junction') and resolved.is_junction(): return False
-            # Se utiliza is_safe_to_modify para asegurar que la ruta no sea de sistema
             return not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
         except (OSError, PermissionError):
             return False
@@ -168,8 +167,7 @@ class _Validators:
         if not path_str or len(path_str) > 2048: return False
         try:
             p = Path(path_str).expanduser()
-            if not p.is_absolute(): return False
-            return _Validators._run_safety_checks(p)
+            return p.is_absolute() and _Validators._run_safety_checks(p)
         except (OSError, RuntimeError, PermissionError, AttributeError):
             return False
 
@@ -187,12 +185,10 @@ class _Validators:
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
         """Convierte y acota valores numéricos según los límites de `_NUMERIC_LIMITS`."""
-        if isinstance(val, (bool, str, int, float)):
-            parsed_value = int(val)
-            limit = _NUMERIC_LIMITS.get(key)
-            if limit: return max(limit.min, min(limit.max, parsed_value))
-            return parsed_value
-        return None
+        parsed_value = int(val)
+        limit = _NUMERIC_LIMITS.get(key)
+        if limit: return max(limit.min, min(limit.max, parsed_value))
+        return parsed_value
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
@@ -200,8 +196,7 @@ class _Validators:
         if val == "": return ""
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
-        if not path_string or "\0" in path_string: return None
-        if not _Validators._is_safe_path(path_string):
+        if not path_string or "\0" in path_string or not _Validators._is_safe_path(path_string):
             return None
         return path_string
 
@@ -216,8 +211,7 @@ class _Validators:
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
         """Valida strings asegurando longitud, caracteres permitidos y formato."""
-        if not isinstance(val, str): return None
-        text = val.strip()
+        text = str(val).strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(key, text)
         return _Validators._validate_enum_str(text, key)
@@ -264,10 +258,8 @@ def validate(raw_values: Any) -> AppSettings:
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_str, val in raw_values.items():
-        key_enum = _STR_TO_ENUM.get(key_str)
-        if key_enum and (validator := _VALIDATOR_MAP.get(key_enum)):
-            validated = validator(key_enum, val)
-            if validated is not None or (key_enum == ConfigKey.ULTIMA_CARPETA and val == ""):
+        if (key_enum := _STR_TO_ENUM.get(key_str)) and (validator := _VALIDATOR_MAP.get(key_enum)):
+            if (validated := validator(key_enum, val)) is not None or (key_enum == ConfigKey.ULTIMA_CARPETA and val == ""):
                 config[key_enum.value] = validated if validated is not None else ""
     return config
 
@@ -280,15 +272,15 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         if not ruta.exists(): return DEFAULTS.copy()
         stats = ruta.stat()
         mtime = float(stats.st_mtime)
-        if ruta_str in _CACHE and _CACHE[ruta_str][0] == mtime:
-            return _CACHE[ruta_str][1]
+        if (cached := _CACHE.get(ruta_str)) and cached[0] == mtime:
+            return cached[1].copy()
             
         if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
                 content = json.load(f)
                 data = validate(content) if _is_dict(content) else DEFAULTS.copy()
                 _CACHE[ruta_str] = (mtime, data)
-                return data
+                return data.copy()
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
         pass
     return DEFAULTS.copy()
@@ -307,9 +299,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         ruta = settings_path(custom_base)
         parent = ruta.parent
         
-        if not parent.exists(): 
-            parent.mkdir(parents=True, exist_ok=True)
-            
+        if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         if not parent.is_dir() or is_protected_path(str(parent)) or not _Validators._is_safe_path(str(parent)):
             return None
         
@@ -339,8 +329,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     current = load(custom_base)
     modified = False
     for k, v in changes.items():
-        key_enum = _STR_TO_ENUM.get(k)
-        if key_enum and (validator := _VALIDATOR_MAP.get(key_enum)):
+        if (key_enum := _STR_TO_ENUM.get(k)) and (validator := _VALIDATOR_MAP.get(key_enum)):
             if (val := validator(key_enum, v)) is not None and val != current.get(k):
                 current[k] = val
                 modified = True

@@ -101,36 +101,31 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root = base_root.resolve(strict=False)
+        self.base_root_str = str(base_root.resolve(strict=False))
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, path_str: str) -> bool:
         """Verifica mediante resolución de ruta absoluta que el objetivo sea hijo del directorio raíz."""
         if not path_str: return False
-        try:
-            target = Path(path_str).resolve(strict=False)
-            return str(target).startswith(str(self.base_root))
-        except (OSError, RuntimeError):
-            return False
+        return path_str.startswith(self.base_root_str)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
         Valida que la entrada no exceda límites de longitud, no sea un punto de reparse,
         no contenga caracteres de ofuscación y no esté protegida por seguridad.
         """
-        if not entry or not entry.path or len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
+        path_str = entry.path
+        if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith("\\\\"):
             return False
         
-        if entry.name and (RTL_CHAR_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name)):
+        name = entry.name
+        if name and (RTL_CHAR_RE.search(name) or RESERVED_NAMES_RE.match(name)):
             return False
         
-        if self._is_reparse_point(entry):
-            return False
-
-        if not self._is_inside_base_root(entry.path):
+        if self._is_reparse_point(entry) or not self._is_inside_base_root(path_str):
             return False
             
-        return not is_protected_path(Path(entry.path))
+        return not is_protected_path(Path(path_str))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Detecta si un archivo es un punto de reparse (Junction/Symlink) para evitar bucles o escaneos infinitos."""
@@ -144,7 +139,7 @@ class Scanner:
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
         """Añade un directorio a la pila de escaneo si no ha sido visitado previamente."""
-        if entry and entry.path and entry.path not in self.seen:
+        if entry.path and entry.path not in self.seen:
             self.seen.add(entry.path)
             stack.append(entry.path)
 

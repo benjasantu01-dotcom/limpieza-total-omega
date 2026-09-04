@@ -235,6 +235,8 @@ def _check_file_integrity_cached(path_str: str) -> bool:
     path = Path(path_str)
     try:
         file_stat = path.lstat()
+        if not os.access(path, os.W_OK):
+            return False
     except (PermissionError, OSError):
         return False
         
@@ -377,8 +379,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if os.path.lexists(p):
         if not (p.is_file() or p.is_dir()):
             raise UnsafePathError("Objeto no soportado para modificación.")
-        if not os.access(p, os.W_OK):
-            raise UnsafePathError("Sin permisos de escritura.")
         _check_file_integrity(p)
     elif p.parent and is_protected_path(p.parent):
         raise UnsafePathError("Directorio contenedor protegido.")

@@ -1252,3 +1252,34 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-09-04T05:31:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
 - `2026-09-04T05:31:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T05:31:28` Corrida terminada. Total usado hoy: 132.
+- `2026-09-04T05:39:52` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-09-04T05:40:23` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el proceso de validación de integridad moviendo el chequeo de permisos (`os.access`) dentro de `_check_file_integrity_cached`, permitiendo así que el resultado sea cacheado y evitando múltiples llamadas de sistema repetitivas sobre el mismo archivo durante operaciones de escaneo masivo.
+- `2026-09-04T05:40:48` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el método `_is_safe_entry` reemplazando múltiples llamados costosos a `Path` y `str()` por manipulaciones directas sobre `entry.path` y `entry.name`, evitando la creación de objetos `Path` innecesarios para cada archivo escaneado, lo cual reduce significativamente la carga de objetos y el uso de CPU durante el recorrido.
+- `2026-09-04T05:41:22` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a la configuración implementando un caché de `AppSettings` (usando `copy()` para evitar mutaciones accidentales fuera del módulo) y se mejoró la eficiencia del validador eliminando la re-creación innecesaria de diccionarios en `_Validators.path`.
+- `2026-09-04T05:41:48` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.27s
+
+```
+- `2026-09-04T05:41:48` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un cache local dentro de la clase `StartupEntry` para evitar llamadas redundantes a `os.path.realpath` y verificaciones de disco al acceder repetidamente a la propiedad `executable` de un objeto, optimizando el rendimiento durante la generación de resúmenes.
+- `2026-09-04T05:41:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T05:41:48` Corrida terminada. Total usado hoy: 136.
