@@ -138,18 +138,20 @@ def _is_valid_candidate(path: Path) -> bool:
         return False
 
 
-def _is_candidate_file(entry: os.DirEntry, min_size: int) -> bool:
-    """Verifica si una entrada de directorio es un archivo candidato para procesar."""
+def _get_file_stat_if_valid(entry: os.DirEntry, min_size: int) -> Optional[int]:
+    """Verifica si es un archivo válido y devuelve su tamaño (optimiza llamadas stat)."""
     try:
         if not entry.is_file(follow_symlinks=False):
-            return False
+            return None
         stat_info = entry.stat(follow_symlinks=False)
         if stat_info.st_size < min_size:
-            return False
+            return None
         p = Path(entry.path)
-        return not is_junction(p) and not is_protected_path(p)
+        if is_junction(p) or is_protected_path(p):
+            return None
+        return int(stat_info.st_size)
     except (OSError, PermissionError, ValueError, TypeError):
-        return False
+        return None
 
 
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
@@ -205,9 +207,10 @@ def _collect_candidates(
                         p_dir = Path(entry.path)
                         if not is_protected_path(p_dir) and not is_junction(p_dir):
                             _scan_recursive(p_dir)
-                    elif _is_candidate_file(entry, min_size):
-                        p = Path(entry.path)
-                        temp_map[int(entry.stat(follow_symlinks=False).st_size)].append(p)
+                    else:
+                        size = _get_file_stat_if_valid(entry, min_size)
+                        if size is not None:
+                            temp_map[size].append(Path(entry.path))
         except (OSError, PermissionError):
             pass
 

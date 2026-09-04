@@ -86,9 +86,15 @@ _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
     RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),
 )
 
+# Precomputación de reglas vinculadas por área para evitar búsquedas en bucle
 _RULES_BY_AREA: Final[Dict[MetricKey, List[RecommendationRule]]] = {}
 for rule in _RECOMMENDATION_RULES:
     _RULES_BY_AREA.setdefault(rule.area, []).append(rule)
+
+# Estructura precomputada para iteración óptima en compute_score
+_OPTIMIZED_PIPELINE: Final[List[Tuple[MetricKey, int, List[RecommendationRule]]]] = [
+    (area, weight, _RULES_BY_AREA.get(area, [])) for area, weight in _WEIGHT_ITEMS_INT
+]
 
 @dataclass
 class SystemMetrics:
@@ -210,7 +216,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         total_pts: float = 0.0
         recommendations: List[str] = []
         
-        for area, weight in _WEIGHT_ITEMS_INT:
+        for area, weight, rules in _OPTIMIZED_PIPELINE:
             scorer = _SCORERS.get(area)
             if scorer is None: continue
             
@@ -219,8 +225,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             metric_breakdown[area] = pts
             total_pts += float(pts)
             
-            # Evaluación de reglas heurísticas para generar sugerencias
-            rules: List[RecommendationRule] = _RULES_BY_AREA.get(area, [])
             for rule in rules:
                 if rule.check(metrics, ratio):
                     try:
