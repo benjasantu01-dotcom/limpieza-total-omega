@@ -1318,3 +1318,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-04T06:32:46` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` para garantizar que, durante el recorrido recursivo, cada nueva subcarpeta sea validada explícitamente mediante `is_protected_path` antes de intentar acceder a su contenido, evitando seguir rutas que podrían haber sido movidas o alteradas durante el escaneo.
 - `2026-09-04T06:32:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T06:32:46` Corrida terminada. Total usado hoy: 156.
+- `2026-09-04T06:41:14` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-09-04T06:41:44` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez del sistema contra entradas inesperadas agregando validación de tipo y rango en las funciones de puntuación (`score_*`) y protegí la ejecución del pipeline ante posibles errores en los `message_factory` mediante un bloque `try-except` más granular.
+- `2026-09-04T06:42:44` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-04T06:44:00` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva implementando una validación explícita mediante `safety.ensure_safe_to_modify` en todas las operaciones que involucran la selección de directorios por parte del usuario, asegurando que `_ask_folder` y el callback de selección de objetivo validen la integridad de la ruta antes de permitir cualquier interacción posterior.
+- `2026-09-04T06:44:29` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-09-04T06:44:45` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_process_directory` al reemplazar `os.path.splitext` (que no maneja correctamente nombres de archivo complejos) por `pathlib.Path.suffix`, asegurando consistencia con las reglas de `JUNK_EXTENSIONS` y añadiendo validaciones de seguridad de ruta antes de procesar cada entrada del sistema de archivos.
+- `2026-09-04T06:44:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T06:44:45` Corrida terminada. Total usado hoy: 160.

@@ -169,11 +169,13 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud de memoria comparando disponibilidad vs límite."""
-    return _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT) if _LIMIT_RAM_PERCENT > 0 else 1.0
+    val = _to_float(available_percent)
+    return _clamp(val / _LIMIT_RAM_PERCENT) if _LIMIT_RAM_PERCENT > 0 else 1.0
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud de disco comparando porcentaje libre vs límite."""
-    return _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT) if _LIMIT_DISK_PERCENT > 0 else 1.0
+    val = _to_float(free_percent)
+    return _clamp(val / _LIMIT_DISK_PERCENT) if _LIMIT_DISK_PERCENT > 0 else 1.0
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud basado en el impacto en MB de los duplicados."""
@@ -226,8 +228,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             for rule in rules:
                 if rule.check(metrics, ratio):
                     try:
-                        recommendations.append(rule.message_factory(metrics))
-                    except (AttributeError, TypeError, ValueError):
+                        msg = rule.message_factory(metrics)
+                        if isinstance(msg, str):
+                            recommendations.append(msg)
+                    except Exception:
                         continue
         
         final_score: int = int(_clamp(total_pts, 0.0, 100.0))
