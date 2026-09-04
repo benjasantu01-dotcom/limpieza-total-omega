@@ -270,8 +270,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta_str = str(ruta)
     
     try:
-        if not ruta.exists(): return DEFAULTS.copy()
-        stats = ruta.stat()
+        stats = os.stat(ruta)
         mtime = float(stats.st_mtime)
         if (cached := _CACHE.get(ruta_str)) and cached[0] == mtime:
             return cached[1].copy()
@@ -279,7 +278,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
                 content = json.load(f)
-            # Validación separada para asegurar que errores de formato no rompan la lectura
             data = validate(content) if _is_dict(content) else DEFAULTS.copy()
             _CACHE[ruta_str] = (mtime, data)
             return data.copy()
@@ -299,7 +297,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     try:
         ruta = settings_path(custom_base)
-        # Validación final de seguridad antes de proceder a la escritura
         if not is_safe_to_modify(str(ruta)): return None
 
         parent = ruta.parent

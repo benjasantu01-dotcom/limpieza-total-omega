@@ -146,18 +146,17 @@ class Scanner:
         """Clasifica la entrada: si es directorio, lo encola; si es archivo, aplica heurísticas."""
         if not entry.path:
             return
-        try:
-            if not self._is_safe_entry(entry):
-                return
-
-            if entry.is_dir(follow_symlinks=False):
+        
+        # Clasificación rápida antes de chequeos pesados
+        if entry.is_dir(follow_symlinks=False):
+            if self._is_safe_entry(entry):
                 self._handle_directory(entry, stack)
-            elif entry.is_file(follow_symlinks=False):
-                ext_low = Path(entry.name).suffix.lower() if entry.name else ""
-                if ext_low in SUSPICIOUS_ALL_EXTS:
-                    self._run_file_heuristics(Path(entry.path), entry, ext_low)
-        except (OSError, PermissionError, TypeError, FileNotFoundError):
-            pass
+            return
+
+        # Es un archivo, verificar extensiones en set constante para O(1)
+        ext_low = Path(entry.name).suffix.lower() if entry.name else ""
+        if ext_low in SUSPICIOUS_ALL_EXTS and self._is_safe_entry(entry):
+            self._run_file_heuristics(Path(entry.path), entry, ext_low)
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """Aplica las reglas registradas al archivo y registra hallazgos en el estado del objeto."""

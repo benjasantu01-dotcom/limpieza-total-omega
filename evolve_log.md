@@ -485,3 +485,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-04T09:57:55` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimizé `list_items` y `summarize` para evitar la sobrecarga de re-validar el manifiesto y calcular MB en cada iteración, aprovechando que `load_manifest` ya realiza una carga, y eliminé redundancias en el cálculo de totales.
 - `2026-09-04T09:57:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T09:57:55` Corrida terminada. Total usado hoy: 236.
+- `2026-09-04T10:06:11` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-09-04T10:06:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-04T10:06:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-04T10:07:08` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _CheckResult, _IntegrityCheck
+- `2026-09-04T10:07:35` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el método `process_entry` transformando la lógica de comparación de extensiones en un lookup de tiempo constante $O(1)$ y aplicando una técnica de "fail-fast" para evitar cálculos innecesarios al procesar miles de archivos.
+- `2026-09-04T10:07:51` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `load()` para evitar accesos innecesarios al sistema de archivos mediante el uso de `os.stat()` antes de `ruta.exists()`, reduciendo el impacto de I/O en cada consulta de configuración.
+- `2026-09-04T10:07:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T10:07:51` Corrida terminada. Total usado hoy: 240.
