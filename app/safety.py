@@ -11,7 +11,6 @@ import os
 import stat
 import re
 import ctypes
-import time
 from enum import Enum, auto
 from pathlib import Path
 from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, TypeGuard
@@ -172,7 +171,6 @@ def _is_junction(path: Path) -> bool:
     """
     if os.name != 'nt': return False
     try:
-        # GetFileAttributesW devuelve -1 (INVALID_FILE_ATTRIBUTES) en error
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         if attrs == 0xFFFFFFFF: return False
         return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT)
@@ -200,11 +198,10 @@ def _is_file_in_use(path_str: str) -> bool:
     """
     if os.name != 'nt' or not isinstance(path_str, str):
         return False
-    if not os.path.exists(path_str):
+    if not os.path.lexists(path_str):
         return False
     try:
         kernel32 = ctypes.windll.kernel32
-        # FILE_READ_ATTRIBUTES (0x0080), Sharing Mode (0x7), Open Existing (3)
         handle = kernel32.CreateFileW(path_str, 0x0080, 0x00000007, None, 3, 0x00000080, None)
         if handle == -1 or handle == 0xFFFFFFFF: 
             return True
@@ -281,7 +278,7 @@ def normalize(path: PathLike) -> Path:
                 raise ValueError(f"Acceso restringido: componente {current} es un punto de reparse.")
                 
         return p.resolve()
-    except (OSError, RuntimeError, TypeError) as e:
+    except (OSError, RuntimeError, TypeError, PermissionError) as e:
         raise ValueError(f"Error irrecuperable al normalizar {path_str}: {e}")
 
 

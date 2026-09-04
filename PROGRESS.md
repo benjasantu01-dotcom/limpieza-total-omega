@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 57 | 1 | 7 | 0 | 49 |
+| 2026-09-02 | 57 | 1 | 7 | 0 | 45 |
 | 2026-09-03 | 148 | 7 | 24 | 13 | 158 |
-| 2026-09-04 | 23 | 2 | 4 | 2 | 9 |
+| 2026-09-04 | 25 | 2 | 5 | 2 | 10 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **49**
+- robustez ante casos límite: **43**
 - rendimiento: **41**
-- robustez ante casos límite: **41**
 - seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
@@ -36,10 +36,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **20**
 - `assistant.py`: **19**
 - `memory.py`: **19**
+- `quarantine.py`: **19**
 - `duplicates.py`: **18**
-- `quarantine.py`: **18**
 - `settings.py`: **18**
-- `safety.py`: **14**
+- `safety.py`: **15**
 - `diskreport.py`: **12**
 - `main.py`: **12**
 - `branding.py`: **11**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T01:46:25` **safety.py** (robustez ante casos límite): Se ha robustecido `_is_file_in_use` para manejar correctamente rutas inexistentes sin lanzar excepciones innecesarias, y se ha añadido una validación temprana contra `PermissionError` en `normalize` para prevenir bloqueos en accesos a directorios restringidos del sistema operativo antes de intentar operaciones de resolución.
+- `2026-09-04T01:45:34` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación de integridad en `quarantine_file` que verifica el espacio libre tras la operación, asegurando que el archivo no haya sido truncado o dañado durante la transferencia antes de proceder con el borrado de la fuente, fortaleciendo la robustez ante interrupciones de sistema.
 - `2026-09-04T01:40:36` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para que no confíe ciegamente en el modo de apertura, evitando falsos positivos al manejar excepciones de acceso de manera explícita y asegurando que los archivos no sean procesados si existen errores de E/S indeterminados.
 - `2026-09-04T01:40:19` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una validación explícita mediante `ctypes` para descartar handles de procesos que requieran privilegios de administrador que el script actual no posee (usando `GetLastError` para identificar `ERROR_ACCESS_DENIED`), evitando errores silenciosos o excepciones inesperadas durante la llamada a `OpenProcess`.
 - `2026-09-04T01:35:29` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_memory` y `score_disk` para prevenir divisiones por cero ante configuraciones erróneas y agregué una salvaguarda en `compute_score` para manejar el caso de que `metrics` sea un objeto con atributos faltantes o inesperados mediante `getattr`.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T00:44:20` **assistant.py** (rendimiento): Optimicé el renderizado del contexto del asistente usando una lista por comprensión y una sola unión de strings, evitando la creación intermedia de tuplas y llamadas redundantes a funciones de formateo, reduciendo así la carga de CPU en cada refresco de la UI.
 - `2026-09-04T00:35:06` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la inclusión de type hints precisos en los retornos de funciones y la actualización de docstrings para clarificar la lógica de resolución de rutas (el "porqué" de la validación defensiva).
 - `2026-09-04T00:34:54` **settings.py** (legibilidad y documentación): Refactoricé el diccionario `_VALIDATOR_MAP` utilizando `ConfigKey` como clave directa en lugar de strings, eliminando la necesidad de iterar sobre un diccionario intermedio y mejorando la legibilidad y seguridad de tipos al acceder a los validadores.
-- `2026-09-04T00:34:25` **scanner.py** (legibilidad y documentación): Mejoré la documentación interna del módulo mediante la adición de Type Hints detallados en las funciones de heurística y la estandarización de los docstrings siguiendo convenciones claras, eliminando ambigüedades sobre los parámetros de entrada y el propósito de los chequeos.
-- `2026-09-04T00:25:00` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando docstrings que especifican explícitamente las precondiciones y garantías de seguridad, lo que facilita el mantenimiento futuro y la comprensión de las salvaguardas implementadas.

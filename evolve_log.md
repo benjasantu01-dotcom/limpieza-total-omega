@@ -774,3 +774,10 @@ FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_progr
 - `2026-09-04T01:40:36` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_file_locked` para que no confíe ciegamente en el modo de apertura, evitando falsos positivos al manejar excepciones de acceso de manera explícita y asegurando que los archivos no sean procesados si existen errores de E/S indeterminados.
 - `2026-09-04T01:40:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T01:40:36` Corrida terminada. Total usado hoy: 40.
+- `2026-09-04T01:44:56` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-09-04T01:45:34` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una comprobación de integridad en `quarantine_file` que verifica el espacio libre tras la operación, asegurando que el archivo no haya sido truncado o dañado durante la transferencia antes de proceder con el borrado de la fuente, fortaleciendo la robustez ante interrupciones de sistema.
+- `2026-09-04T01:45:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-04T01:46:25` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha robustecido `_is_file_in_use` para manejar correctamente rutas inexistentes sin lanzar excepciones innecesarias, y se ha añadido una validación temprana contra `PermissionError` en `normalize` para prevenir bloqueos en accesos a directorios restringidos del sistema operativo antes de intentar operaciones de resolución.
+- `2026-09-04T01:46:34` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-04T01:46:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T01:46:34` Corrida terminada. Total usado hoy: 44.

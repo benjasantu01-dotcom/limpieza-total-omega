@@ -423,6 +423,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
             os.close(fd)
             raise e
 
+        # Verificación de post-copia: integridad física
         if temp_path.stat().st_size != original_size:
             raise OSError("Error de integridad: el tamaño del archivo copiado no coincide.")
             
@@ -437,6 +438,10 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)
         
+        # Última validación post-reemplazo
+        if destination.stat().st_size != original_size:
+            raise OSError("Error crítico: el archivo se corrompió tras el reemplazo atómico.")
+            
         file_hash = _get_sha256(destination)
         if not file_hash:
             raise OSError("Falla de integridad: no se pudo verificar el hash.")
