@@ -61,14 +61,13 @@ MAX_PATH_LENGTH: Final[int] = 260
 WIN_FILE_ATTR_REPARSE_POINT: Final[int] = 0x400
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Valida si el nombre del archivo sugiere una extensión oculta tras una extensión de documento."""
+    """Evalúa si el nombre del archivo contiene una doble extensión engañosa."""
     if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Evalúa si un ejecutable ha sido modificado recientemente en directorios de usuario de alto riesgo."""
-    # O(1) Check: Verificar si el nombre del padre está en el set de carpetas observadas
+    """Determina si un ejecutable en carpetas de usuario ha sido modificado en el último umbral de tiempo."""
     if path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     
@@ -81,7 +80,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta ejecutables con nombres de servicios críticos del sistema fuera de system32."""
+    """Identifica archivos que emulan nombres de procesos críticos del sistema fuera de su ubicación legítima."""
     if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if not is_protected_path(path) and SYSTEM32_LOWER not in str(path).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
@@ -117,8 +116,8 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida criterios de seguridad antes de procesar una entrada.
-        Verifica: longitud de ruta, caracteres inválidos, puntos de reparse y zonas protegidas.
+        Valida criterios de seguridad (longitud, caracteres especiales, reparse points) 
+        antes de procesar una entrada de sistema de archivos.
         """
         if not entry or not entry.path or len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
             return False
@@ -135,18 +134,17 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si la entrada apunta a un junction o symlink usando atributos de archivo de Windows."""
+        """Determina si la entrada es un punto de reparse (junction/symlink) mediante atributos de archivo."""
         try:
             if entry.is_symlink():
                 return True
-            # Usar lstat evita resolver el enlace; verificamos los atributos crudos de Windows
             stats = entry.stat(follow_symlinks=False)
             return bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError, PermissionError):
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
-        """Añade un directorio validado a la pila de búsqueda si no ha sido visitado previamente."""
+        """Gestiona el apilamiento de directorios para evitar ciclos y repeticiones durante el recorrido."""
         if entry.path and entry.path not in self.seen:
             self.seen.add(entry.path)
             stack.append(entry.path)

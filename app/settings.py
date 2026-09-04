@@ -263,7 +263,8 @@ def validate(raw_values: Any) -> AppSettings:
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_str, val in raw_values.items():
-        if (key_enum := _STR_TO_ENUM.get(key_str)) and (validator := _VALIDATOR_MAP.get(key_enum)):
+        key_enum = _STR_TO_ENUM.get(key_str)
+        if key_enum and (validator := _VALIDATOR_MAP.get(key_enum)):
             validated = validator(key_enum, val)
             if validated is not None or (key_enum == ConfigKey.ULTIMA_CARPETA and val == ""):
                 config[key_enum.value] = validated if validated is not None else ""
@@ -305,11 +306,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         ruta = settings_path(custom_base)
         parent = ruta.parent
         
-        # Validaciones preventivas de estado
         if not parent.exists(): 
             parent.mkdir(parents=True, exist_ok=True)
             
-        # Refuerzo: impedir escritura si el padre es una ruta protegida del sistema
         if is_protected_path(str(parent)) or not _Validators._is_safe_path(str(parent)) or not parent.is_dir():
             return None
         
@@ -323,7 +322,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None
         
-        # Escritura atómica mediante archivo temporal y fsync
         with open(temp_path, "wb") as f:
             f.write(data)
             f.flush()
@@ -340,7 +338,8 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     current = load(custom_base)
     modified = False
     for k, v in changes.items():
-        if (key_enum := _STR_TO_ENUM.get(k)) and (validator := _VALIDATOR_MAP.get(key_enum)):
+        key_enum = _STR_TO_ENUM.get(k)
+        if key_enum and (validator := _VALIDATOR_MAP.get(key_enum)):
             if (val := validator(key_enum, v)) is not None and val != current.get(k):
                 current[k] = val
                 modified = True

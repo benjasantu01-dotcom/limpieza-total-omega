@@ -655,3 +655,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-04T00:25:05` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-04T00:25:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T00:25:05` Corrida terminada. Total usado hoy: 12.
+- `2026-09-04T00:33:32` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-09-04T00:34:01` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult, is_sensitive_file
+- `2026-09-04T00:34:25` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación interna del módulo mediante la adición de Type Hints detallados en las funciones de heurística y la estandarización de los docstrings siguiendo convenciones claras, eliminando ambigüedades sobre los parámetros de entrada y el propósito de los chequeos.
+- `2026-09-04T00:34:54` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Refactoricé el diccionario `_VALIDATOR_MAP` utilizando `ConfigKey` como clave directa en lugar de strings, eliminando la necesidad de iterar sobre un diccionario intermedio y mejorando la legibilidad y seguridad de tipos al acceder a los validadores.
+- `2026-09-04T00:35:06` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la inclusión de type hints precisos en los retornos de funciones y la actualización de docstrings para clarificar la lógica de resolución de rutas (el "porqué" de la validación defensiva).
+- `2026-09-04T00:35:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T00:35:06` Corrida terminada. Total usado hoy: 16.

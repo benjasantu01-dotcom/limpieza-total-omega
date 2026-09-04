@@ -42,9 +42,6 @@ __all__ = [
 ]
 
 # Claves del registro donde los programas se registran para inicio automático:
-# HKCU (Current User): Programas específicos del usuario logueado.
-# HKLM (Local Machine): Programas que arrancan para todos los usuarios.
-# WOW6432Node: Claves para aplicaciones de 32 bits en sistemas de 64 bits.
 REGISTRY_RUN_KEYS: Tuple[str, ...] = (
     r"HKCU:\Software\Microsoft\Windows\CurrentVersion\Run",
     r"HKLM:\Software\Microsoft\Windows\CurrentVersion\Run",
@@ -55,18 +52,14 @@ REGISTRY_RUN_KEYS: Tuple[str, ...] = (
 EXECUTABLE_EXTS: Set[str] = {'.exe', '.bat', '.cmd', '.scr', '.lnk'}
 
 # Caché global para evitar operaciones de I/O redundantes durante la sesión.
-# _EXISTS_CACHE: Mapeo de rutas (str) a su validez como ejecutable (bool).
 _EXISTS_CACHE: Dict[str, bool] = {}
-# _FULL_SCAN_CACHE: Lista consolidada de entradas recuperadas en el escaneo completo.
 _FULL_SCAN_CACHE: Optional[List[StartupEntry]] = None
 
 # Mensaje estandarizado para deshabilitar programas sin tocar el registro.
 HOW_TO_DISABLE: str = (
     "Para deshabilitar un programa de inicio, usá el Administrador de tareas "
-    "de Windows (Ctrl+Shift+Esc) → pestaña 'Inicio'. Ahí Windows lleva "
-    "registro del cambio y se puede revertir. Esta app no modifica el "
-    "registro de arranque a propósito: un error ahí puede dejar el sistema "
-    "sin programas esenciales."
+    "de Windows (Ctrl+Shift+Esc) → pestaña 'Inicio'. Esta app no modifica el "
+    "registro de arranque a propósito por seguridad."
 )
 
 
@@ -84,12 +77,11 @@ class StartupEntry:
     command: str
     source: str
     
-    # Atributos internos para la resolución diferida (lazy evaluation).
     _exec_cache: Optional[str] = field(default=None, init=False)
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
-        """Verifica si la ruta coincide con nombres de dispositivo reservados de Windows."""
+        """Determina si el nombre de archivo es reservado por el kernel de Windows."""
         reserved = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
         try:
             return Path(path_str).stem.upper() in reserved
@@ -97,20 +89,20 @@ class StartupEntry:
             return True
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Valida si el archivo tiene extensión ejecutable y no es un enlace simbólico."""
+        """Verifica extensión ejecutable omitiendo enlaces simbólicos (riesgo de bypass)."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Elimina caracteres de control no imprimibles (ASCII < 32) de la línea de comandos."""
+        """Filtra caracteres de control para evitar inyección en el parseo."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Extrae la ruta de un comando entrecomillado, filtrando caracteres prohibidos."""
+        """Extrae rutas de comandos tipo "C:\Path\App.exe" validando seguridad."""
         if not isinstance(raw_command, str) or len(raw_command) < 2:
             return ""
         end_quote: int = raw_command.find('"', 1)
@@ -130,18 +122,19 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Verifica existencia, permisos básicos y ausencia de reparse points."""
+        """Verifica existencia, legibilidad y ausencia de reparse points."""
         if not p.exists() or p.is_dir() or not os.access(p, os.R_OK):
             return False
         try:
+            # 0x00000400 es el atributo de archivo 'Reparse Point'
             return not p.is_symlink() and (p.lstat().st_file_attributes & 0x00000400) == 0
         except (OSError, PermissionError):
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
-        Normaliza, valida la existencia y seguridad de la ruta en disco, 
-        usando caché para evitar llamadas repetidas al sistema de archivos.
+        Normaliza rutas y valida integridad para evitar exposición de archivos protegidos.
+        Usa caché de resultados para minimizar llamadas síncronas al disco.
         """
         if not isinstance(path_string, str) or not path_string:
             return ""
@@ -189,7 +182,7 @@ class StartupEntry:
             return path_string
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Aisla el ejecutable principal de una línea de comando compleja."""
+        """Aísla el binario principal de una línea de comando compleja."""
         if not command_line or not isinstance(command_line, str):
             return ""
         if any(char in command_line for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
@@ -208,7 +201,7 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Devuelve la ruta absoluta validada del ejecutable, calculada bajo demanda."""
+        """Ruta validada del ejecutable calculada mediante resolución diferida."""
         if self._checked_exists:
             return self._exec_cache or ""
             
@@ -223,7 +216,7 @@ class StartupEntry:
 
 
 def startup_folders() -> List[Path]:
-    """Obtiene las rutas del sistema para accesos directos de inicio (solo Windows)."""
+    """Retorna rutas de carpetas de Inicio de Windows si el sistema operativo es NT."""
     if os.name != "nt":
         return []
     candidates: List[Path] = []
@@ -269,12 +262,14 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
-    """Convierte el CSV de salida de PowerShell en objetos StartupEntry, validando datos."""
+    """
+    Convierte el CSV de PowerShell en objetos StartupEntry.
+    Limpia strings de caracteres de control para evitar inyección.
+    """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
     parsed_entries: List[StartupEntry] = []
-    # Usar set para filtrar comandos duplicados antes de instanciar objetos
     seen_commands: Set[str] = set()
     
     try:
@@ -317,7 +312,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
 
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
-    """Consulta PowerShell para extraer programas desde claves Run del Registro."""
+    """Ejecuta consulta PowerShell para extraer entradas desde el Registro."""
     if os.name != "nt":
         return []
     
@@ -338,7 +333,7 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 
 
 def list_startup_entries() -> List[StartupEntry]:
-    """Lista programas de inicio, eliminando duplicados mediante un cache global."""
+    """Lista programas de inicio consolidando fuentes con caché de sesión."""
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None:
         return _FULL_SCAN_CACHE
@@ -357,7 +352,7 @@ def list_startup_entries() -> List[StartupEntry]:
 
 
 def estimate_impact(entries: Sequence[StartupEntry]) -> str:
-    """Clasifica el impacto en el rendimiento basado en la cantidad de elementos."""
+    """Clasifica el impacto en rendimiento basándose en el volumen de entradas."""
     count: int = len(entries)
     thresholds: List[Tuple[int, str]] = [(5, "ok"), (10, "info"), (18, "warning")]
     for limit, label in thresholds:
@@ -367,7 +362,7 @@ def estimate_impact(entries: Sequence[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera un reporte de texto con los programas de inicio detectados."""
+    """Genera un resumen textual reportando programas de inicio y nivel de impacto."""
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         
