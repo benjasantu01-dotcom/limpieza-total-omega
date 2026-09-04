@@ -621,12 +621,8 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Calcula el espacio total ocupado en el sandbox (vía manifiesto)."""
-    base_path = quarantine_dir(base)
-    m_path = _manifest_path(base_path)
-    mtime = m_path.stat().st_mtime if m_path.exists() else 0.0
-    raw_data = _load_manifest_raw(str(base_path), mtime)
-    return sum(int(d.get("size_bytes", 0)) for d in raw_data if isinstance(d, dict))
+    """Calcula el espacio total ocupado en el sandbox (vía objetos cargados)."""
+    return sum(item.size_bytes for item in load_manifest(base))
 
 
 def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:

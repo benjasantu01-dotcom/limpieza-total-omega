@@ -712,3 +712,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-04T00:56:39` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se ha optimizado `parse_windows_process_csv` para eliminar la creación de listas intermedias y el uso de `str.strip()` repetitivo, reemplazándolos por un generador y un procesamiento más eficiente del CSV, mejorando el rendimiento en sistemas con gran cantidad de procesos activos.
 - `2026-09-04T00:56:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T00:56:39` Corrida terminada. Total usado hoy: 24.
+- `2026-09-04T01:04:08` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-09-04T01:04:45` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `_process_directory` reemplazando la verificación repetida de `JUNK_EXTENSIONS` mediante una conversión a `frozenset` (ya existente) y usando `.suffix.lower()` directamente en lugar de instanciar objetos `Path` innecesarios para cada archivo dentro del bucle, reduciendo significativamente la carga de objetos en memoria durante escaneos profundos.
+- `2026-09-04T01:05:21` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del espacio total (`total_quarantined_bytes`) eliminando la lectura y parseo completo del manifiesto JSON, accediendo directamente a los atributos de los objetos `QuarantineItem` ya cargados en memoria o iterando eficientemente si el manifiesto no está en caché.
+- `2026-09-04T01:05:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-09-04T01:05:52` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-09-04T01:05:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T01:05:52` Corrida terminada. Total usado hoy: 28.

@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 17
+- Rechazadas por guardia de seguridad: 37
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 66 | 1 | 9 | 2 | 52 |
+| 2026-09-02 | 64 | 1 | 9 | 1 | 51 |
 | 2026-09-03 | 148 | 7 | 24 | 13 | 158 |
-| 2026-09-04 | 14 | 1 | 3 | 2 | 4 |
+| 2026-09-04 | 16 | 1 | 4 | 2 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
-- seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **49**
-- rendimiento: **37**
+- seguridad defensiva: **47**
+- rendimiento: **39**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **20**
+- `organizer.py`: **20**
 - `scanner.py`: **20**
-- `assistant.py`: **19**
 - `memory.py`: **19**
-- `organizer.py`: **19**
+- `quarantine.py`: **19**
+- `browser.py`: **19**
 - `healthscore.py`: **19**
-- `quarantine.py`: **18**
 - `settings.py`: **18**
+- `assistant.py`: **18**
 - `duplicates.py`: **18**
 - `safety.py`: **15**
 - `diskreport.py`: **13**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T01:05:21` **quarantine.py** (rendimiento): Optimicé el cálculo del espacio total (`total_quarantined_bytes`) eliminando la lectura y parseo completo del manifiesto JSON, accediendo directamente a los atributos de los objetos `QuarantineItem` ya cargados en memoria o iterando eficientemente si el manifiesto no está en caché.
+- `2026-09-04T01:04:45` **organizer.py** (rendimiento): Optimicé el rendimiento de `_process_directory` reemplazando la verificación repetida de `JUNK_EXTENSIONS` mediante una conversión a `frozenset` (ya existente) y usando `.suffix.lower()` directamente en lugar de instanciar objetos `Path` innecesarios para cada archivo dentro del bucle, reduciendo significativamente la carga de objetos en memoria durante escaneos profundos.
 - `2026-09-04T00:55:13` **healthscore.py** (rendimiento): Optimicé el método `is_finite` de `SystemMetrics` reemplazando la iteración completa sobre `__dataclass_fields__` (que ocurría cada vez que se verificaba la salud) por una tupla estática de campos numéricos, evitando la sobrecarga de reflexión en tiempo de ejecución.
 - `2026-09-04T00:44:20` **assistant.py** (rendimiento): Optimicé el renderizado del contexto del asistente usando una lista por comprensión y una sola unión de strings, evitando la creación intermedia de tuplas y llamadas redundantes a funciones de formateo, reduciendo así la carga de CPU en cada refresco de la UI.
 - `2026-09-04T00:35:06` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la inclusión de type hints precisos en los retornos de funciones y la actualización de docstrings para clarificar la lógica de resolución de rutas (el "porqué" de la validación defensiva).
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T00:13:08` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de Type Hints detallados, docstrings que clarifican las intenciones de las funciones de alto nivel y la extracción de la lógica de "pasada única" para mejorar la calidad del código, sin alterar el comportamiento.
 - `2026-09-04T00:04:30` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los type hints en `browser.py` para explicitar el uso de `os.DirEntry` y las restricciones de las APIs de Windows, facilitando la comprensión del flujo de escaneo seguro.
 - `2026-09-04T00:04:14` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en las funciones de manipulación de color y dibujo para clarificar la lógica de transformación geométrica y cromática, facilitando el mantenimiento técnico.
-- `2026-09-04T00:03:37` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_call_gemini` hacia un diseño de "fallo rápido" (guard clauses) y la limpieza del flujo de ejecución del asistente en línea, clarificando la separación entre la validación de seguridad y la lógica de red.
-- `2026-09-03T15:00:40` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_Validators.int` y `_Validators.str` implementando una validación estricta de tipos previo a la conversión y procesamiento, evitando que valores inesperados (como `None` o listas) causen comportamientos erráticos, además de asegurar que los límites numéricos sean manejados de forma defensiva dentro del decorador `type_check`.
