@@ -27,7 +27,7 @@ from safety import is_safe_to_modify, ensure_safe_to_modify, is_protected_path
 
 # Configuración de log para seguimiento de errores no críticos
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 # Definiciones de tipo para claridad en firmas complejas
 SortKey: TypeAlias = Union[int, datetime]
@@ -106,13 +106,18 @@ class JunkFile:
 def _is_junction(entry: os.DirEntry | Path) -> bool:
     """
     Verifica si la entrada es un punto de reparse (Junction/Symlink).
-    Es crítico para evitar que el escaneo siga recursivamente enlaces que 
-    podrían llevar a bucles infinitos o fuera de las zonas permitidas.
+    Utiliza atributos de archivo de Windows (0x400) para identificar puntos de montaje.
     """
     try:
         if isinstance(entry, os.DirEntry):
-            return entry.is_symlink() or (os.name == "nt" and bool(entry.stat().st_file_attributes & 0x400))
-        return entry.is_symlink() or (os.name == "nt" and bool(entry.lstat().st_file_attributes & 0x400))
+            is_sym = entry.is_symlink()
+            is_junction_attr = os.name == "nt" and bool(entry.stat().st_file_attributes & 0x400)
+            return is_sym or is_junction_attr
+        
+        path_p = Path(entry)
+        is_sym = path_p.is_symlink()
+        is_junction_attr = os.name == "nt" and bool(path_p.lstat().st_file_attributes & 0x400)
+        return is_sym or is_junction_attr
     except (OSError, AttributeError):
         return True # Asumir inseguro ante errores de lectura
 
@@ -126,7 +131,7 @@ def _is_unc_path(path: Path) -> bool:
     """Detecta si una ruta corresponde a una ruta UNC de red (formato \\servidor\recurso)."""
     if path is None: return True
     try:
-        p_str = str(path.absolute())
+        p_str: str = str(path.absolute())
         return p_str.startswith(("\\\\", "//"))
     except Exception:
         return True
@@ -191,7 +196,7 @@ def _passes_system_checks(src: Path) -> bool:
     """
     if os.name != "nt" or src is None: return True
     try:
-        stat = src.stat()
+        stat: os.stat_result = src.stat()
         # Máscara binaria: 0x4 (SYSTEM), 0x2 (HIDDEN), 0x1 (READONLY)
         return not (stat.st_file_attributes & 0x407)
     except OSError:
@@ -201,8 +206,8 @@ def _passes_system_checks(src: Path) -> bool:
 def _has_forbidden_chars(path: Path) -> bool:
     """Valida la ausencia de caracteres o nombres reservados en el sistema de archivos de Windows."""
     if path is None: return True
-    path_str = str(path).lower()
-    reserved = {"con", "prn", "aux", "nul", "com1", "lpt1"}
+    path_str: str = str(path).lower()
+    reserved: List[str] = ["con", "prn", "aux", "nul", "com1", "lpt1"]
     if any(path_str.startswith(r) for r in reserved): return True
     return any(c in str(path) for c in ["<", ">", "|", "\0"])
 
@@ -241,12 +246,12 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     if not _validate_path_security(src, dest): return False
     
     try:
-        s_res = src.resolve()
+        s_res: Path = src.resolve()
         
         if dest.exists() and (_is_junction(dest) or dest.is_symlink()): return False
         if _is_recursive_violation(s_res, dest): return False
         
-        target_dir = dest.parent if dest.is_file() else dest
+        target_dir: Path = dest.parent if dest.is_file() else dest
         if not (os.access(s_res, os.W_OK) and os.access(target_dir, os.W_OK)): return False
         
         return _validate_file_attributes(s_res)
@@ -275,7 +280,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
         with os.scandir(current_dir) as it:
             for entry in it:
                 try:
-                    entry_path = Path(entry.path)
+                    entry_path: Path = Path(entry.path)
                     if is_protected_path(entry_path.resolve()):
                         continue
                     if entry.is_dir(follow_symlinks=False):
@@ -283,7 +288,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
                             _process_directory(entry_path, found, depth + 1)
                     elif entry.is_file(follow_symlinks=False):
                         if Path(entry.name).suffix.lower() in JUNK_EXTENSIONS:
-                            stats = entry.stat()
+                            stats: os.stat_result = entry.stat()
                             if stats.st_size > 0:
                                 found.append(JunkFile(entry_path, stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (OSError, PermissionError):
@@ -305,9 +310,9 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     for d in search_dirs:
         try:
             if not isinstance(d, Path): continue
-            path_obj = d.expanduser()
+            path_obj: Path = d.expanduser()
             if path_obj.exists() and path_obj.is_dir() and not _is_unc_path(path_obj):
-                resolved = path_obj.resolve()
+                resolved: Path = path_obj.resolve()
                 if not is_protected_path(resolved):
                     _process_directory(resolved, found)
         except (OSError, RuntimeError, TypeError):
@@ -339,8 +344,8 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
             
         if not _is_safe_to_move(junk_file, dest_base): return None
         
-        src_res = junk_file.path.resolve()
-        dest_base_res = dest_base.resolve()
+        src_res: Path = junk_file.path.resolve()
+        dest_base_res: Path = dest_base.resolve()
         if src_res.is_relative_to(dest_base_res): return None
         
         safe_name: str = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"

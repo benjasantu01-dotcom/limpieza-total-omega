@@ -131,7 +131,10 @@ class ProcessMemory:
         return MegabytesValue(round(self.working_set / BYTES_IN_MB, 1))
 
 def format_bytes(num: Optional[int | float]) -> str:
-    """Convierte bytes a una representación legible (ej. 1.2 MB) mediante logaritmo base 1024."""
+    """
+    Convierte bytes a una representación legible (ej. 1.2 MB) mediante logaritmo base 1024.
+    Maneja entradas nulas o negativas devolviendo '0 B'.
+    """
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
     idx: int = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
@@ -182,8 +185,10 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Convierte la salida de consola de PowerShell en una lista de objetos ProcessMemory.
-    Implementa filtros de seguridad contra procesos críticos y rutas protegidas.
+    Analiza la salida CSV de PowerShell y filtra procesos según políticas de seguridad.
+    
+    Se descartan automáticamente procesos con nombres en la lista protegida,
+    PID cero, o errores de formato en el CSV.
     """
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
@@ -214,7 +219,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     return proc_list[:max(0, int(limit))]
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Invoca la API de Windows GlobalMemoryStatusEx mediante ctypes para lectura de estado global."""
+    """Invoca la API de Windows GlobalMemoryStatusEx mediante ctypes."""
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "GlobalMemoryStatusEx"):
         return MemorySnapshot(BytesValue(0), BytesValue(0))
@@ -232,8 +237,8 @@ _snap_cache_data: Optional[MemorySnapshot] = None
 
 def read_snapshot() -> MemorySnapshot:
     """
-    Lee el estado actual de la memoria. Utiliza caché por 5 segundos para evitar 
-    sobrecarga en el acceso a APIs de sistema o lectura de archivos proc.
+    Lee el estado actual de la memoria. 
+    Cachea el resultado durante 5 segundos para reducir el overhead en llamadas al sistema.
     """
     global _snap_cache_time, _snap_cache_data
     now = time.time()
@@ -338,7 +343,9 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
     """
     Validación de seguridad antes de modificar el working set.
-    Verifica estado activo, mismatches de PID y exclusión de rutas protegidas.
+    
+    Verifica estado de ejecución del proceso, coincidencia de PID y que la ruta 
+    del ejecutable no esté protegida por las políticas de la aplicación.
     """
     if not proc_handle: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
@@ -358,7 +365,10 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta liberar páginas de memoria física del working set de un proceso.
-    Requiere permisos de administrador y validaciones de seguridad previas.
+    
+    Esta operación requiere validaciones de seguridad estrictas, acceso de 
+    administrador y se realiza solo bajo demanda manual debido a su impacto 
+    potencialmente negativo en el rendimiento.
     """
     if os.name != "nt": return False, "Operación solo soportada en Windows."
     
