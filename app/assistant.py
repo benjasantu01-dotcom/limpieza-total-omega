@@ -151,20 +151,15 @@ class AreaExplanation(NamedTuple):
 MetricSource: TypeAlias = dict[str, Any] | object
 ScoreSource: TypeAlias = dict[str, Any] | object
 
-# Constantes de configuración de seguridad y límites
+# Constantes de seguridad y límites operativos
 _MAX_TEXT_LENGTH: Final[int] = 1000
 _MAX_RESPONSE_BYTES: Final[int] = 32768
 _MAX_MSG_CHUNK: Final[int] = 200 
 _MAX_PROMPT_LIMIT: Final[int] = 4000 
 
 SENSITIVE_KEYS_NEVER_SENT: Final[tuple[str, ...]] = (
-    "rutas de archivos",
-    "nombres de archivos",
-    "contenido de archivos",
-    "nombres de procesos",
-    "nombre de usuario",
-    "nombre del equipo",
-    "números de serie",
+    "rutas de archivos", "nombres de archivos", "contenido de archivos",
+    "nombres de procesos", "nombre de usuario", "nombre del equipo", "números de serie",
 )
 
 PRIVACY_NOTICE: Final[str] = (
@@ -259,9 +254,7 @@ def _validate_response_length(text: str) -> str:
 
 @dataclass
 class SystemContext:
-    """
-    Contenedor de estado del sistema. Mantiene únicamente métricas agregadas.
-    """
+    """Contenedor de estado del sistema que almacena únicamente métricas agregadas."""
     score: Optional[int] = None
     grade: str = ""
     junk_mb: float = 0.0
@@ -282,14 +275,16 @@ class SystemContext:
         return _safe_float(val, default)
 
     def __hash__(self) -> int:
-        return hash((self.score, self.junk_mb, self.suspicious_count, self.startup_count, self.memory_available_percent, self.disk_free_percent))
+        return hash((self.score, self.junk_mb, self.suspicious_count, self.startup_count, 
+                     self.memory_available_percent, self.disk_free_percent))
 
     @property
     def is_valid_structure(self) -> bool:
+        """Valida que los campos de texto no contengan estructuras de riesgo."""
         return _ensure_safe_text(self.grade) if self.grade else True
 
     def ingest(self, source: Any) -> bool:
-        """Intenta extraer y validar métricas desde una fuente externa."""
+        """Extrae y valida métricas desde una fuente externa (diccionario o objeto)."""
         if not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool)):
             return False
             
@@ -307,6 +302,7 @@ class SystemContext:
 
 @dataclass
 class Answer:
+    """Representa una respuesta del asistente, sea local o remota."""
     text: str
     source: str = "local"
     notice: str = ""
@@ -317,12 +313,14 @@ class Answer:
         return self.source == "gemini"
 
 def _is_safe_text_structure(text: str) -> bool:
+    """Verifica si un texto contiene patrones de inyección o rutas sensibles."""
     if not text: return True
     if _PATH_INJECTION_REGEX.search(text) or is_protected_path(text):
         return False
     return True
 
 def _ensure_safe_text(text: Any) -> bool:
+    """Valida que el contenido de texto sea seguro para su procesamiento interno."""
     if not isinstance(text, str) or not text:
         return False
     if len(text) > _MAX_TEXT_LENGTH:
@@ -341,7 +339,7 @@ def _get_source_value(source: Any, key: str) -> Any:
         return None
 
 def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: MetricSpec) -> bool:
-    """Valida y asigna una métrica específica de forma segura."""
+    """Valida y asigna una métrica al contexto siguiendo el contrato MetricSpec."""
     if not isinstance(spec, MetricSpec):
         return False
     try:
@@ -359,6 +357,7 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
         return False
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
+    """Fabrica un SystemContext a partir de fuentes de datos dispersas."""
     ctx = SystemContext()
     sources = [s for s in [metrics, health, extra] 
                if s is not None and isinstance(s, (dict, object)) 
@@ -370,11 +369,13 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     return ctx
 
 def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
+    """Formatea una métrica limpiando caracteres de control o inyección."""
     raw = _fmt_metric(val, unit, decimal)
     return _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))
 
 @lru_cache(maxsize=16)
 def _generate_context_lines_cached(score: Optional[int], grade: str, junk: float, susp: int, ram: float, disk: float, dup: float, start: int) -> str:
+    """Genera la representación textual del contexto para el prompt del LLM."""
     lines = [
         f"Puntaje de salud: {_fmt_metric_sanitized(score) if score is not None else 'N/A'}{f' nota {str(grade)[:5]}' if grade else ''}",
         f"Basura: {_fmt_metric_sanitized(junk, ' MB')}",
@@ -387,6 +388,7 @@ def _generate_context_lines_cached(score: Optional[int], grade: str, junk: float
     return "\n".join(lines)
 
 def context_as_text(context: SystemContext) -> str:
+    """Serializa el contexto a un formato seguro y estandarizado para la IA."""
     if not isinstance(context, SystemContext) or not context.analyzed or not context.is_valid_structure:
         return "No hay métricas disponibles todavía."
     try:
@@ -401,6 +403,7 @@ def context_as_text(context: SystemContext) -> str:
         return "Error crítico al procesar métricas de seguridad."
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
+    """Convierte un valor a string formateado con unidad."""
     f = _safe_float(val, -1.0)
     if f < 0:
         return "N/A"
@@ -410,15 +413,18 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
         return "N/A"
 
 def explain_area(area: Any) -> str:
+    """Retorna una breve explicación pedagógica sobre un área específica del sistema."""
     if not isinstance(area, str):
         return "No tengo una explicación para esa área."
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
 @lru_cache(maxsize=8)
 def _get_active_problems(ctx: SystemContext) -> list[str]:
+    """Identifica problemas activos basándose en los criterios de salud."""
     return [msg for crit in _CRITERIOS_SALUD if (msg := crit.format_if_triggered(ctx))]
 
 def _format_problem_message(problems: list[str], score: int | str) -> str:
+    """Crea una oración descriptiva con los problemas encontrados."""
     if not problems:
         return f"Tu sistema está en buen estado ({score}/100). No hay nada urgente."
     return f"Con un puntaje de {score}/100, por orden de prioridad: {', '.join(problems)}."
@@ -501,11 +507,13 @@ _KEYWORD_TO_HANDLER: Final[dict[str, Callable[[SystemContext, str], Answer]]] = 
 }
 
 def _sanitize_query(question: str) -> str:
+    """Limpia el input del usuario eliminando caracteres de control y truncando."""
     if not isinstance(question, str): return ""
     clean = _CONTROL_CHARS_REGEX.sub('', question)
     return clean.strip()[:100].lower()
 
 def local_answer(question: str, context: SystemContext) -> Answer:
+    """Motor de inferencia local: analiza el input y redirige a la respuesta adecuada."""
     q_sanitized = _sanitize_query(question)
     if not _ensure_safe_text(q_sanitized):
         return Answer("Entrada no válida.")
@@ -526,12 +534,14 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     return Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
 
 def available(base: Union[str, Path, None] = None) -> bool:
+    """Verifica si la configuración permite el uso del asistente remoto."""
     try:
         return settings.assistant_enabled(base)
     except Exception:
         return False
 
 def _parse_config(raw_cfg: Any) -> AssistantConfig:
+    """Parsea el diccionario de settings en un objeto AssistantConfig."""
     if not isinstance(raw_cfg, dict):
         return AssistantConfig("", "gemini-3.1-flash-lite", True)
     return AssistantConfig(
@@ -541,6 +551,7 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
     )
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
+    """Crea el cuerpo JSON para la petición a la API de Google."""
     try:
         q = _sanitize_query(question)
         if not _ensure_safe_text(q): return None
@@ -557,7 +568,6 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     if not isinstance(data, dict):
         return None
     try:
-        # Validación defensiva profunda para evitar cualquier IndexError o KeyError
         candidates = data.get("candidates")
         if not isinstance(candidates, list) or not candidates:
             return None
@@ -580,8 +590,7 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
-    """Gestiona la llamada remota a Gemini con validaciones estrictas de seguridad."""
-    # Validación extra: impedir inyección de control en parámetros de configuración
+    """Gestiona la comunicación con la API externa de forma segura."""
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): 
         return None
         
@@ -616,6 +625,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
 
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Union[str, Path, None] = None) -> Answer:
+    """Punto de entrada principal para realizar consultas al asistente."""
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()

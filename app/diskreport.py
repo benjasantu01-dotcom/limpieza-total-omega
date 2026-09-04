@@ -85,6 +85,9 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
     Normaliza y valida una ruta raíz antes de iniciar cualquier escaneo.
     
+    Asegura que la ruta sea absoluta, un directorio existente y que no esté
+    bloqueada por las reglas de seguridad (`is_protected_path`).
+    
     Args:
         directory: La ruta a validar (string, Path o PathLike).
         
@@ -250,14 +253,20 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorrido profundo (DFS iterativo) del sistema de archivos.
+    Realiza un recorrido profundo (DFS) del sistema de archivos mediante `os.scandir`.
+    
+    Técnicas de seguridad aplicadas:
+    - Uso de `is_protected_path` para evitar escaneo de directorios críticos.
+    - Detección de `REPARSE_POINT` en Windows para evitar seguir junctions o symlinks
+      que podrían causar bucles infinitos o escaneos redundantes.
+    - Seguimiento de inodos/dispositivos para evitar ciclos en sistemas de archivos.
 
     Args:
         directory: Raíz desde donde comenzar el escaneo.
         skip_protected: Si se deben ignorar carpetas del sistema.
         
     Yields:
-        Tuple[Path, int]: El path del archivo encontrado y su tamaño en bytes.
+        Tuple[Path, int]: Una tupla conteniendo la ruta al archivo y su tamaño en bytes.
     """
     root_path = _validate_root(directory)
     if root_path is None or not root_path.exists():
@@ -280,6 +289,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         
                         st = entry.stat(follow_symlinks=False)
                         
+                        # Evitar seguir puntos de reanálisis y symlinks para prevenir ciclos
                         if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
                             continue
                         
