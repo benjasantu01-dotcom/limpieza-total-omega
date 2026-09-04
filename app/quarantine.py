@@ -306,7 +306,13 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
 
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
-    """Pre-validación de sintaxis, atributos y espacio disponible."""
+    """
+    Ejecuta el protocolo de pre-validación de seguridad.
+    
+    Verifica la sintaxis, atributos de sistema, disponibilidad de espacio 
+    en disco y la seguridad lógica (evitar bucles o rutas protegidas) 
+    antes de iniciar cualquier operación de I/O.
+    """
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
     
@@ -416,7 +422,14 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
-    """Copia física del archivo, validando su integridad tras la operación."""
+    """
+    Realiza la copia física de un archivo al sandbox mediante un buffer temporal.
+    
+    Utiliza `tempfile` para asegurar que el archivo no aparezca en destino 
+    hasta estar completamente escrito y sincronizado al disco (fsync). 
+    Incluye validación final de tamaño y hash SHA-256 para garantizar 
+    la integridad bit a bit.
+    """
     if not source.exists():
         raise FileNotFoundError("El archivo de origen no existe.")
 

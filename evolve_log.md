@@ -1146,3 +1146,36 @@ FAILED evolve/tests/test_assistant.py::test_a_protected_folder_is_never_remember
 - `2026-09-04T04:40:33` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna incluyendo docstrings detallados en funciones críticas y normalizadores, y se ha encapsulado la lógica de pesos en un método de clase para mejorar la legibilidad y mantenibilidad del cálculo de puntajes.
 - `2026-09-04T04:40:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T04:40:33` Corrida terminada. Total usado hoy: 112.
+- `2026-09-04T04:48:53` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-09-04T04:49:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 42% del original (posible pérdida de código)
+- `2026-09-04T04:50:11` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el tipado de las estructuras de datos, explicitando el uso de `wintypes` para las funciones de Win32 y añadiendo docstrings descriptivos a los métodos internos de `trim_working_set`, facilitando la auditoría del código conforme al enfoque de legibilidad.
+- `2026-09-04T04:50:38` Tests FALLARON:
+```
+ True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-2/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+
+evolve/tests/test_basic.py:144: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:105: SyntaxWarning: invalid escape sequence '\P'
+    """Extrae rutas de comandos tipo "C:\Path\App.exe" validando seguridad."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AssertionError: el archivo debe salir de su lugar original
+assert not True
+ +  where True = exists()
+ +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-2/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+1 failed, 298 passed, 7 warnings in 1.28s
+
+```
+- `2026-09-04T04:50:38` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `organizer.py` añadiendo Type Hints precisos, renombrando funciones para mayor claridad (ej. `_is_junk_path` a `_matches_junk_extension`), y estructurando el `_process_directory` para que la lógica de filtrado sea explícita y fácil de leer.
+- `2026-09-04T04:50:59` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la documentación de `_atomic_isolate_file` y `_validate_isolation_request` mediante docstrings detallados que explican el contrato de seguridad y los pasos de verificación, clarificando el propósito de las operaciones de E/S atómicas.
+- `2026-09-04T04:50:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T04:50:59` Corrida terminada. Total usado hoy: 116.
