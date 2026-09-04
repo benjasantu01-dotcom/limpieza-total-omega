@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 36
+- Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 75 | 3 | 12 | 5 | 85 |
-| 2026-09-04 | 141 | 16 | 24 | 7 | 136 |
+| 2026-09-03 | 73 | 3 | 12 | 5 | 83 |
+| 2026-09-04 | 144 | 16 | 25 | 7 | 136 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
+- legibilidad y documentación: **55**
 - seguridad defensiva: **49**
-- robustez ante casos límite: **43**
 - manejo de errores y validación de entradas: **43**
+- robustez ante casos límite: **41**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **20**
 - `healthscore.py`: **20**
-- `organizer.py`: **18**
+- `organizer.py`: **19**
+- `assistant.py`: **19**
 - `settings.py`: **18**
+- `quarantine.py`: **17**
 - `scanner.py`: **17**
-- `quarantine.py`: **16**
 - `duplicates.py`: **16**
 - `memory.py`: **15**
-- `browser.py`: **14**
-- `safety.py`: **14**
+- `safety.py`: **15**
+- `browser.py`: **13**
 - `diskreport.py`: **13**
 - `startup.py`: **12**
 - `branding.py`: **12**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T13:53:35` **safety.py** (legibilidad y documentación): Se introdujo un `IntEnum` llamado `SafetyValidationErrorCode` para centralizar y documentar los motivos específicos de rechazo de una ruta, permitiendo que las excepciones `UnsafePathError` sean más informativas y estructuradas, facilitando el diagnóstico sin alterar el flujo lógico.
+- `2026-09-04T13:52:06` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la implementación de type hints más precisos, la documentación clara de los contratos en las funciones de validación crítica y la corrección de una inconsistencia en el manejo de excepciones, garantizando que el flujo de seguridad sea más explícito para futuros colaboradores.
+- `2026-09-04T13:51:23` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_is_junction` y `_is_file_locked`, extrayendo la lógica de chequeo de atributos a un método de apoyo que clarifica el flujo de datos y reduce la duplicidad lógica en las validaciones de seguridad.
 - `2026-09-04T13:45:38` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica y la tipificación de `MemorySnapshot` y `ProcessMemory` para asegurar que el comportamiento del módulo sea predecible y auto-explicativo, reforzando la seguridad semántica mediante el uso consistente de los tipos `BytesValue` y `MegabytesValue`.
 - `2026-09-04T13:41:35` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los factores de normalización y umbrales globales, clarificando el propósito de cada constante dentro del cálculo de salud.
 - `2026-09-04T13:41:09` **duplicates.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en el docstring de `_collect_candidates` para explicar la lógica de recursión segura (prevención de bucles mediante inodos) y se clarificaron los nombres de variables internas en el proceso de escaneo para mejorar la mantenibilidad del motor de búsqueda de duplicados.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T13:21:12` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scanner.py` implementando una validación exhaustiva de parámetros de entrada y un manejo de errores más específico en `scan_file` y `process_entry`, garantizando que la ejecución no falle ante archivos inaccesibles o rutas malformadas al tiempo que evito comprobaciones innecesarias sobre objetos `None`.
 - `2026-09-04T13:11:41` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita para evitar que `source_path` sea un directorio, garantizando que el aislamiento solo procese archivos individuales como lo exige la lógica de seguridad del módulo.
 - `2026-09-04T13:01:21` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` reemplazando los bloques `try-except` genéricos que ocultaban errores por validaciones específicas, y encapsulé la lógica de generación de recomendaciones para evitar fallos si un `message_factory` falla, manteniendo la integridad del informe.
-- `2026-09-04T13:00:27` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `drive_usage` capturando posibles `AttributeError` o `OSError` al acceder a metadatos de archivos (como `st_dev` o `st_file_attributes`) y añadí validaciones de tipo explícitas para asegurar que las entradas de disco se procesen solo si tienen atributos legibles, evitando fallos en sistemas de archivos heterogéneos o dispositivos desconectados.
-- `2026-09-04T12:51:56` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` implementando una validación de parámetros más estricta y un manejo de errores más específico para evitar comportamientos inesperados ante entradas malformadas.
-- `2026-09-04T12:51:22` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez de `_extract_text_from_gemini_json` al implementar una validación defensiva basada en excepciones específicas, asegurando que la estructura esperada de la respuesta de la API sea verificada en cada nivel de profundidad sin riesgo de errores de ejecución (`IndexError`, `KeyError` o `AttributeError`).

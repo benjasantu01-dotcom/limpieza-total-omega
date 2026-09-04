@@ -103,24 +103,25 @@ class JunkFile:
         return _is_junk_path(self.path)
 
 
+def _get_win_attributes(path_or_entry: Union[os.DirEntry, Path]) -> int:
+    """Extrae los atributos de archivo de Windows (Win32 API bits) de forma segura."""
+    try:
+        if isinstance(path_or_entry, os.DirEntry):
+            return path_or_entry.stat().st_file_attributes
+        return path_or_entry.stat().st_file_attributes
+    except (OSError, AttributeError):
+        return 0
+
+
 def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
     """
     Determina si la entrada es un punto de reparse (Junction/Symlink) de Windows.
     El chequeo de seguridad es crítico para evitar bucles infinitos durante 
     la recursión del escáner de archivos.
     """
-    try:
-        if isinstance(entry, os.DirEntry):
-            is_sym = entry.is_symlink()
-            is_junction_attr = os.name == "nt" and bool(entry.stat().st_file_attributes & 0x400)
-            return is_sym or is_junction_attr
-        
-        path_p = Path(entry)
-        is_sym = path_p.is_symlink()
-        is_junction_attr = os.name == "nt" and bool(path_p.lstat().st_file_attributes & 0x400)
-        return is_sym or is_junction_attr
-    except (OSError, AttributeError):
-        return True # Default fail-safe: asumir inseguro ante errores de lectura
+    is_sym = entry.is_symlink() if hasattr(entry, 'is_symlink') else Path(entry.path).is_symlink()
+    is_junction_attr = os.name == "nt" and bool(_get_win_attributes(entry) & 0x400)
+    return is_sym or is_junction_attr
 
 
 def _is_junk_path(path: Path) -> bool:
@@ -170,11 +171,11 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """
     Prueba de apertura exclusiva de archivo para determinar si está en uso.
-    Si el SO deniega el acceso, se considera el archivo como 'en uso' o bloqueado.
+    Intenta abrir en modo lectura binaria; si falla, el archivo está bloqueado.
     """
     if path is None: return True
     try:
-        with open(path, "rb") as f:
+        with open(path, "rb"):
             return False
     except (PermissionError, OSError, IOError):
         return True 
@@ -201,11 +202,8 @@ def _passes_system_checks(src: Path) -> bool:
     en configuraciones protegidas del Sistema Operativo.
     """
     if os.name != "nt" or src is None: return True
-    try:
-        stat: os.stat_result = src.stat()
-        return not (stat.st_file_attributes & 0x407)
-    except OSError:
-        return False
+    # 0x400 (Reparse), 0x004 (System), 0x002 (Hidden), 0x001 (ReadOnly)
+    return not (_get_win_attributes(src) & 0x407)
 
 
 def _has_forbidden_chars(path: Path) -> bool:

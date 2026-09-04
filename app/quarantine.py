@@ -187,7 +187,6 @@ def _safe_unlink(path: Path) -> bool:
     if not isinstance(path, Path) or path is None:
         return False
     try:
-        # Re-chequeo atómico antes de unlink
         if not path.exists() or not path.is_file() or path.is_symlink():
             return False
         if hasattr(os, 'getuid') and path.stat().st_uid != os.getuid():
@@ -240,7 +239,7 @@ def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
 
 
 def _manifest_path(base_dir: Path) -> Path:
-    """Retorna la ubicación del manifiesto."""
+    """Retorna la ubicación del archivo de manifiesto JSON."""
     return (base_dir / MANIFEST_NAME).resolve()
 
 
@@ -250,7 +249,7 @@ def _is_within_quarantine_sandbox(path: Path, root: Path) -> bool:
 
 
 def _check_windows_file_attributes(path_str: str) -> None:
-    """Validación específica para el sistema de archivos de Windows."""
+    """Validación específica para el sistema de archivos de Windows (ctypes)."""
     if os.name != 'nt':
         return
     path_obj = Path(path_str)
@@ -268,7 +267,7 @@ def _check_windows_file_attributes(path_str: str) -> None:
 
 
 def _check_path_syntax_integrity(path: Path) -> None:
-    """Filtro de seguridad contra ataques de path traversal."""
+    """Filtro de seguridad contra ataques de path traversal y caracteres maliciosos."""
     path_str = str(path)
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
         raise UnsafePathError("Ruta con caracteres de control prohibida.")
@@ -283,7 +282,7 @@ def _check_path_syntax_integrity(path: Path) -> None:
 
 
 def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
-    """Validación de seguridad antes de aislar (coherencia de rutas)."""
+    """Validación de seguridad antes de aislar (coherencia de rutas y estados)."""
     resolved_source = source_path.resolve(strict=True)
     resolved_dest_dir = dest_dir.resolve()
     
@@ -309,11 +308,7 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """
-    Ejecuta el protocolo de pre-validación de seguridad.
-    
-    Verifica la sintaxis, atributos de sistema, disponibilidad de espacio 
-    en disco y la seguridad lógica (evitar bucles o rutas protegidas) 
-    antes de iniciar cualquier operación de I/O.
+    Ejecuta el protocolo de pre-validación de seguridad antes de iniciar I/O.
     """
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
@@ -332,7 +327,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 @lru_cache(maxsize=4)
 def _load_manifest_raw(base_str: str, _mtime: float = 0.0) -> List[Dict[str, Any]]:
-    """Carga de bajo nivel (cacheada) del manifiesto."""
+    """Carga de bajo nivel (cacheada) del archivo manifiesto JSON."""
     path = _manifest_path(Path(base_str))
     if not path.is_file():
         return []
@@ -351,11 +346,11 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
     
     if force_reload:
         _load_manifest_raw.cache_clear()
-        
-    raw_data = _load_manifest_raw(str(base_path), mtime)
     
-    validated = []
+    raw_data = _load_manifest_raw(str(base_path), mtime)
+    validated: List[QuarantineItem] = []
     dirty = False
+    
     for d in raw_data:
         item = QuarantineItem.from_dict(d)
         if item:
@@ -371,7 +366,7 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persistencia atómica (JSON) para evitar corrupción por fallos durante la escritura."""
+    """Persistencia atómica (vía archivo temporal) para evitar corrupción del manifiesto."""
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
     
@@ -383,7 +378,6 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
     temp_path: Optional[Path] = None
     
     try:
-        # Serializar antes de abrir el temporal para validar estructura
         content = json.dumps([item.to_dict() for item in items], indent=2, ensure_ascii=False)
         
         with tempfile.NamedTemporaryFile("w", dir=base_path, encoding="utf-8", delete=False) as tf:
@@ -392,7 +386,6 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
             tf.flush()
             os.fsync(tf.fileno())
             
-        # Validación post-escritura: verificar que el archivo temporal no esté corrupto
         if temp_path.stat().st_size != len(content.encode('utf-8')):
              raise OSError("Integridad del archivo temporal fallida.")
 
@@ -412,7 +405,7 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 
 
 def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
-    """Verifica que el disco destino tenga espacio suficiente (margen de seguridad)."""
+    """Verifica que el disco destino tenga espacio suficiente (margen del 5% o 5MB)."""
     if not dest_dir.exists():
         raise FileNotFoundError(f"Directorio inexistente: {dest_dir}")
     if not os.access(dest_dir, os.W_OK):
@@ -425,12 +418,8 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
     """
-    Realiza la copia física de un archivo al sandbox mediante un buffer temporal.
-    
-    Utiliza `tempfile` para asegurar que el archivo no aparezca en destino 
-    hasta estar completamente escrito y sincronizado al disco (fsync). 
-    Incluye validación final de tamaño y hash SHA-256 para garantizar 
-    la integridad bit a bit.
+    Realiza la copia física de un archivo al sandbox mediante un buffer temporal
+    con garantía de integridad (fsync y hash).
     """
     if not source.exists():
         raise FileNotFoundError("El archivo de origen no existe.")
@@ -455,7 +444,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
             os.close(fd)
             raise e
 
-        # Verificación de post-copia: integridad física
         if temp_path.stat().st_size != original_size:
             raise OSError("Error de integridad: el tamaño del archivo copiado no coincide.")
             
@@ -470,7 +458,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)
         
-        # Última validación post-reemplazo
         if destination.stat().st_size != original_size:
             raise OSError("Error crítico: el archivo se corrompió tras el reemplazo atómico.")
             
@@ -490,7 +477,7 @@ def quarantine_file(
     reason: str = "Marcado como sospechoso",
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
-    """Ciclo completo: valida, aísla y registra el archivo en cuarentena."""
+    """Ciclo completo: valida, aísla y registra el archivo en el manifiesto."""
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
@@ -499,7 +486,6 @@ def quarantine_file(
         raise UnsafePathError("Solo se pueden aislar archivos individuales, no directorios.")
         
     original_size = source_path.stat().st_size
-    
     dest_dir = quarantine_dir(base)
     
     if _is_within_quarantine_sandbox(source_path, dest_dir.resolve()):
@@ -532,7 +518,7 @@ def quarantine_file(
         )
         
         items_list = [QuarantineItem.from_dict(d) for d in raw_items if d.get("item_id")]
-        items_list = [i for i in items_list if i]
+        items_list = [i for i in items_list if i is not None]
         items_list.append(quarantine_item)
         save_manifest(items_list, base)
         
@@ -593,7 +579,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
-    """Borra permanentemente un ítem del sandbox tras verificar su estado."""
+    """Borra permanentemente un ítem del sandbox tras verificar su integridad."""
     if not isinstance(item_id, str) or not item_id.strip():
         return False
     base_path = quarantine_dir(base)
@@ -631,7 +617,7 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
 
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Limpia el sandbox de archivos verificables."""
+    """Limpia el sandbox de todos los archivos que superen las validaciones de seguridad."""
     quarantine_root = quarantine_dir(base)
     items = load_manifest(base)
     
@@ -640,7 +626,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     kept_items = []
     
     for stored_path in quarantine_root.iterdir():
-        # Saltamos manifiesto o directorios
         if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
             continue
             
@@ -651,9 +636,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                     purged_count += 1
                     continue
             kept_items.append(item)
-        else:
-            # Archivo extraño no en manifiesto, omitir por seguridad
-            continue
                 
     if purged_count > 0:
         save_manifest(kept_items, base)
@@ -661,12 +643,12 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Calcula el espacio total ocupado en el sandbox (vía objetos cargados)."""
+    """Calcula el espacio total ocupado en el sandbox a partir del manifiesto."""
     return sum(item.size_bytes for item in load_manifest(base))
 
 
 def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
-    """Genera reporte resumen del estado del sandbox."""
+    """Genera reporte resumen del estado actual de la cuarentena."""
     items = list_items(base)
     if not items:
         return ["La cuarentena está vacía."]

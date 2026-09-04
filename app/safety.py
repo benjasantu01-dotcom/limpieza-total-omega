@@ -11,7 +11,7 @@ import os
 import stat
 import re
 import ctypes
-from enum import Enum, auto
+from enum import Enum, auto, IntEnum
 from pathlib import Path
 from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, TypeGuard
 from functools import lru_cache
@@ -43,9 +43,26 @@ FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x400
 MAX_PATH_LENGTH: Final[int] = 260
 MAX_FILE_SIZE: Final[int] = 2 * 1024 * 1024 * 1024  # 2GB límite de seguridad
 
+class SafetyValidationErrorCode(IntEnum):
+    """Códigos de error para diagnósticos específicos en fallos de seguridad."""
+    GENERIC = 0
+    NULL_CHAR = 1
+    INVALID_CHARS = 2
+    RESERVED_NAME = 3
+    UNC_PATH = 4
+    PATH_TOO_LONG = 5
+    OUT_OF_BOUNDS = 6
+    ROOT_ACCESS = 7
+    PROTECTED_SYSTEM_PATH = 8
+    REPARSE_POINT_DETECTED = 9
+    FILE_IN_USE = 10
+    SENSITIVE_EXTENSION = 11
+
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
-
+    def __init__(self, message: str, code: SafetyValidationErrorCode = SafetyValidationErrorCode.GENERIC):
+        super().__init__(message)
+        self.code = code
 
 class ProtectionReason(Enum):
     """Categorías de riesgo detectadas durante la validación de integridad."""
@@ -330,34 +347,34 @@ def is_sensitive_file(path: PathLike) -> bool:
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """Realiza validaciones estructurales de la ruta antes de tocar el disco."""
     if "\0" in path_string:
-        raise UnsafePathError("Inyección de carácter nulo detectada.")
+        raise UnsafePathError("Inyección de carácter nulo detectada.", SafetyValidationErrorCode.NULL_CHAR)
     if _has_invalid_chars(path_string):
-        raise UnsafePathError("La ruta contiene caracteres inválidos.")
+        raise UnsafePathError("La ruta contiene caracteres inválidos.", SafetyValidationErrorCode.INVALID_CHARS)
     
     for part in target_path.parts:
         if not part or part.strip() != part:
-            raise UnsafePathError("Componente de ruta inválido o con espacios no permitidos.")
+            raise UnsafePathError("Componente de ruta inválido.", SafetyValidationErrorCode.INVALID_CHARS)
         if _is_reserved_device_name(part):
-            raise UnsafePathError(f"Nombre '{part}' reservado por el sistema.")
+            raise UnsafePathError(f"Nombre '{part}' reservado.", SafetyValidationErrorCode.RESERVED_NAME)
 
     if path_string.startswith(("\\\\", "//")):
-        raise UnsafePathError("Operación en rutas de red (UNC) bloqueada.")
+        raise UnsafePathError("Operación en rutas de red (UNC) bloqueada.", SafetyValidationErrorCode.UNC_PATH)
     if len(str(target_path)) >= MAX_PATH_LENGTH:
-        raise UnsafePathError("Ruta demasiado larga.")
+        raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG)
 
 
 def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | None) -> None:
     """Valida si la ruta está dentro de los límites operativos permitidos."""
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
-        raise UnsafePathError("La ruta objetivo está fuera del alcance permitido.")
+        raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     if is_within_directory(target_path, Path.cwd(), allow_equal=True):
-        raise UnsafePathError("No se permite modificar archivos en la app raíz.")
+        raise UnsafePathError("No se permite modificar archivos en la app raíz.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     if is_drive_root(target_path):
-        raise UnsafePathError("Intento de acceso a la raíz de unidad.")
+        raise UnsafePathError("Intento de acceso a la raíz de unidad.", SafetyValidationErrorCode.ROOT_ACCESS)
     if is_protected_path(target_path):
-        raise UnsafePathError("Ruta en directorio de sistema protegido.")
+        raise UnsafePathError("Ruta en directorio protegido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
     if _is_reparse_point(target_path):
-        raise UnsafePathError("Nodo de reparse detectado.")
+        raise UnsafePathError("Nodo de reparse detectado.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
@@ -376,13 +393,13 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     
     if os.path.lexists(p):
         if not (p.is_file() or p.is_dir()):
-            raise UnsafePathError("Objeto no soportado para modificación.")
+            raise UnsafePathError("Objeto no soportado.")
         _check_file_integrity(p)
     elif p.parent and is_protected_path(p.parent):
-        raise UnsafePathError("Directorio contenedor protegido.")
+        raise UnsafePathError("Directorio contenedor protegido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
     
     if not allow_sensitive and _is_sensitive_extension(p):
-        raise UnsafePathError(f"La extensión '{p.suffix}' es sensible.")
+        raise UnsafePathError(f"Extensión sensible '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
             
     return p
 
