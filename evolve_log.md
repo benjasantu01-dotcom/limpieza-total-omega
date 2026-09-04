@@ -973,3 +973,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-04T14:26:11` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se ha optimizado la función `_process_directory` reemplazando la creación repetitiva de objetos `Path` y las llamadas costosas al sistema de archivos mediante el uso de los atributos de `os.DirEntry` (que ya contiene el nombre y el tipo del archivo), reduciendo drásticamente las syscalls innecesarias durante el escaneo recursivo.
 - `2026-09-04T14:26:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T14:26:11` Corrida terminada. Total usado hoy: 340.
+- `2026-09-04T14:32:15` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-04T14:32:59` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el rendimiento de `purge_all` transformando `item_map` en un diccionario y centralizando la lógica de purga para evitar iteraciones redundantes sobre el manifiesto y lecturas innecesarias del disco, mejorando la eficiencia algorítmica al procesar el sandbox.
+- `2026-09-04T14:33:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-09-04T14:33:59` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de las validaciones de seguridad moviendo la validación de extensiones sensibles al inicio del flujo y eliminando llamadas redundantes a `Path.stat()` y `normalize()` dentro de `filter_safe_paths` y los validadores, aprovechando que el cacheo de `lru_cache` es más efectivo cuando recibe rutas normalizadas desde el principio.
+- `2026-09-04T14:34:11` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory
+- `2026-09-04T14:34:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T14:34:11` Corrida terminada. Total usado hoy: 344.

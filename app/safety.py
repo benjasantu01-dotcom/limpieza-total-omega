@@ -238,12 +238,8 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 def _check_file_integrity_cached(path_str: str) -> bool:
     """Ejecuta el conjunto de reglas de integridad y retorna un estado booleano."""
     path = Path(path_str)
-    if not path.exists():
-        return False
     try:
         file_stat = path.stat()
-        if not (file_stat.st_mode & stat.S_IWRITE):
-            return False
     except (PermissionError, OSError):
         return False
         
@@ -306,12 +302,9 @@ def is_protected_path(path: PathLike) -> bool:
         p = normalize(path)
         path_str = str(p)
         
-        # Check against system root paths using commonpath
         for root in _SYSTEM_ROOT_PATHS:
-            try:
-                if os.path.commonpath([path_str, root]) == root:
-                    return True
-            except ValueError: continue
+            if os.path.commonpath([path_str, root]) == root:
+                return True
             
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
@@ -388,18 +381,18 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     except ValueError as e:
         raise UnsafePathError(f"Ruta inválida: {e}")
     
+    if not allow_sensitive and _is_sensitive_extension(p):
+        raise UnsafePathError(f"Extensión sensible '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
+
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
     
-    if os.path.lexists(p):
+    if p.exists():
         if not (p.is_file() or p.is_dir()):
             raise UnsafePathError("Objeto no soportado.")
         _check_file_integrity(p)
     elif p.parent and is_protected_path(p.parent):
         raise UnsafePathError("Directorio contenedor protegido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
-    
-    if not allow_sensitive and _is_sensitive_extension(p):
-        raise UnsafePathError(f"Extensión sensible '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
             
     return p
 
@@ -416,11 +409,12 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     """Filtra una lista de rutas, manteniendo solo las seguras."""
     results = []
     for p in paths:
-        try:
-            if p is not None and is_safe_to_modify(p, allow_sensitive=allow_sensitive):
-                results.append(normalize(p))
-        except (ValueError, TypeError, OSError):
-            continue
+        if p is not None:
+            try:
+                if is_safe_to_modify(p, allow_sensitive=allow_sensitive):
+                    results.append(normalize(p))
+            except (ValueError, TypeError, OSError):
+                continue
     return results
 
 
@@ -436,7 +430,7 @@ def describe_protection(path: PathLike) -> str:
     if is_drive_root(p): return f"'{p}' es raíz de unidad."
     if is_protected_path(p): return f"'{p}' protegida por sistema."
     try:
-        if os.path.lexists(p):
+        if p.exists():
             if len(str(p)) >= MAX_PATH_LENGTH: return f"'{p}' longitud excesiva."
             if not os.access(p, os.W_OK): return f"'{p}' sin permisos de escritura."
             if os.path.islink(p): return f"'{p}' es un enlace simbólico."

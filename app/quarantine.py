@@ -621,20 +621,23 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     quarantine_root = quarantine_dir(base)
     items = load_manifest(base)
     
+    # Mapeo O(1) para lookups rápidos
     item_map = {item.stored_name: item for item in items}
     purged_count = 0
     kept_items = []
     
+    # Procesar solo una vez los archivos del directorio
     for stored_path in quarantine_root.iterdir():
         if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
             continue
             
-        if stored_path.name in item_map:
-            item = item_map[stored_path.name]
-            if _is_item_purgable(stored_path, item, quarantine_root):
-                if _safe_unlink(stored_path):
-                    purged_count += 1
-                    continue
+        item = item_map.get(stored_path.name)
+        if item and _is_item_purgable(stored_path, item, quarantine_root):
+            if _safe_unlink(stored_path):
+                purged_count += 1
+                continue
+        # Si tiene registro pero no se pudo purgar, lo conservamos en la lista
+        if item:
             kept_items.append(item)
                 
     if purged_count > 0:

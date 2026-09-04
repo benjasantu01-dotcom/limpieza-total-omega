@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 38
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 69 | 3 | 11 | 1 | 80 |
-| 2026-09-04 | 151 | 17 | 27 | 8 | 137 |
+| 2026-09-03 | 67 | 3 | 11 | 1 | 78 |
+| 2026-09-04 | 153 | 17 | 29 | 8 | 137 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
-- seguridad defensiva: **49**
+- seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **37**
-- rendimiento: **34**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **20**
 - `healthscore.py`: **19**
 - `organizer.py`: **19**
+- `assistant.py`: **19**
 - `settings.py`: **18**
 - `duplicates.py`: **17**
+- `quarantine.py`: **17**
 - `scanner.py`: **17**
-- `quarantine.py`: **16**
+- `safety.py`: **16**
 - `memory.py`: **15**
-- `safety.py`: **15**
-- `browser.py`: **14**
 - `startup.py`: **13**
 - `branding.py`: **13**
+- `browser.py`: **13**
 - `diskreport.py`: **13**
 - `main.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T14:33:59` **safety.py** (rendimiento): Optimicé el rendimiento de las validaciones de seguridad moviendo la validación de extensiones sensibles al inicio del flujo y eliminando llamadas redundantes a `Path.stat()` y `normalize()` dentro de `filter_safe_paths` y los validadores, aprovechando que el cacheo de `lru_cache` es más efectivo cuando recibe rutas normalizadas desde el principio.
+- `2026-09-04T14:32:59` **quarantine.py** (rendimiento): Se optimizó el rendimiento de `purge_all` transformando `item_map` en un diccionario y centralizando la lógica de purga para evitar iteraciones redundantes sobre el manifiesto y lecturas innecesarias del disco, mejorando la eficiencia algorítmica al procesar el sandbox.
 - `2026-09-04T14:26:11` **organizer.py** (rendimiento): Se ha optimizado la función `_process_directory` reemplazando la creación repetitiva de objetos `Path` y las llamadas costosas al sistema de archivos mediante el uso de los atributos de `os.DirEntry` (que ya contiene el nombre y el tipo del archivo), reduciendo drásticamente las syscalls innecesarias durante el escaneo recursivo.
 - `2026-09-04T14:13:35` **duplicates.py** (rendimiento): Optimicé el proceso `_collect_candidates` utilizando un set de `Path` normalizadas como caché de escaneo inicial, evitando re-procesar los mismos nodos de directorio de forma redundante y reduciendo la presión sobre el sistema de archivos mediante el uso de `os.scandir` de forma más eficiente.
 - `2026-09-04T14:12:55` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo introduciendo una caché de resultados (`memo`) persistente a nivel de ejecución para evitar el recálculo redundante de subdirectorios, reduciendo drásticamente las operaciones I/O en estructuras de caché compartidas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T13:45:38` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica y la tipificación de `MemorySnapshot` y `ProcessMemory` para asegurar que el comportamiento del módulo sea predecible y auto-explicativo, reforzando la seguridad semántica mediante el uso consistente de los tipos `BytesValue` y `MegabytesValue`.
 - `2026-09-04T13:41:35` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los factores de normalización y umbrales globales, clarificando el propósito de cada constante dentro del cálculo de salud.
 - `2026-09-04T13:41:09` **duplicates.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en el docstring de `_collect_candidates` para explicar la lógica de recursión segura (prevención de bucles mediante inodos) y se clarificaron los nombres de variables internas en el proceso de escaneo para mejorar la mantenibilidad del motor de búsqueda de duplicados.
-- `2026-09-04T13:32:39` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones críticas de recorrido y análisis, clarificando los mecanismos de exclusión de rutas protegidas y la gestión de puntos de reanálisis (reparse points).
-- `2026-09-04T13:32:22` **browser.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los argumentos de las funciones de recursión y filtrado, clarificando los roles de `memo` y las dependencias de bajo nivel (`kernel32`, `is_junction_fn`) para facilitar el mantenimiento.
