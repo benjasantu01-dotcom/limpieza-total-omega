@@ -32,6 +32,7 @@ import os
 import shutil
 from enum import Enum
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple, TypeGuard
 
 from safety import is_safe_to_modify, is_protected_path
@@ -127,17 +128,17 @@ DEFAULTS: Final[AppSettings] = {
     "asistente_modelo": "gemini-3.1-flash-lite",
 }
 
-_NUMERIC_LIMITS: Final[dict[ConfigKey, _NumericRange]] = {
+_NUMERIC_LIMITS: Final[MappingProxyType[ConfigKey, _NumericRange]] = MappingProxyType({
     ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: _NumericRange(0, 1024 * 1024),
     ConfigKey.TOP_ARCHIVOS: _NumericRange(1, 500),
     ConfigKey.TOP_PROCESOS: _NumericRange(1, 500),
-}
+})
 
-_ENUM_VALS: Final[dict[ConfigKey, frozenset[str]]] = {
+_ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyType({
     ConfigKey.TEMA: VALID_THEMES,
     ConfigKey.ACENTO: VALID_ACCENTS,
     ConfigKey.ASISTENTE_MODELO: VALID_MODELS
-}
+})
 
 def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
     """Decorador: Filtra llamadas y captura excepciones en la validación."""
@@ -156,8 +157,8 @@ class _Validators:
         """Verifica recursivamente si una ruta está protegida o es insegura usando `safety.py`."""
         try:
             resolved = path_obj.resolve(strict=False)
-            if resolved.is_symlink(): return False
-            if hasattr(resolved, 'is_junction') and resolved.is_junction(): return False
+            if resolved.is_symlink() or (hasattr(resolved, 'is_junction') and resolved.is_junction()):
+                return False
             return not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
         except (OSError, PermissionError):
             return False
@@ -168,8 +169,7 @@ class _Validators:
         if not path_str or len(path_str) > 2048 or "\0" in path_str: return False
         try:
             p = Path(path_str).expanduser()
-            if not p.is_absolute(): return False
-            return _Validators._run_safety_checks(p)
+            return p.is_absolute() and _Validators._run_safety_checks(p)
         except (OSError, RuntimeError, PermissionError, AttributeError, ValueError):
             return False
 
@@ -198,15 +198,14 @@ class _Validators:
         if val == "": return ""
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
-        if not _Validators._is_safe_path(path_string):
-            return None
-        return path_string
+        return path_string if _Validators._is_safe_path(path_string) else None
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
         """Verifica que el string pertenezca a un conjunto permitido (enum)."""
         val = text.lower()
-        if key in _ENUM_VALS: return val if val in _ENUM_VALS[key] else None
+        allowed = _ENUM_VALS.get(key)
+        if allowed: return val if val in allowed else None
         return text if len(text) <= 512 else None
 
     @staticmethod
@@ -218,7 +217,7 @@ class _Validators:
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(key, text)
         return _Validators._validate_enum_str(text, key)
 
-_VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
+_VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, Callable[[ConfigKey, Any], Any]]] = MappingProxyType({
     ConfigKey.TEMA: _Validators.str,
     ConfigKey.ACENTO: _Validators.str,
     ConfigKey.ABRIR_EN: _Validators.str,
@@ -235,33 +234,32 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
     ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: _Validators.int,
     ConfigKey.TOP_ARCHIVOS: _Validators.int,
     ConfigKey.TOP_PROCESOS: _Validators.int
-}
+})
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Resuelve la ruta completa del archivo de configuración, validando el directorio base."""
     if custom_base is None: return _PATH_CACHE["default"]
     
     cache_key = str(custom_base)
-    if cache_key in _PATH_CACHE:
-        return _PATH_CACHE[cache_key]
-        
-    try:
-        base = Path(custom_base).expanduser()
-        if _Validators._is_safe_path(str(base)):
-            res = base.resolve(strict=False) / SETTINGS_FILE
-            _PATH_CACHE[cache_key] = res
-            return res
-    except (OSError, RuntimeError):
-        pass
-    return _PATH_CACHE["default"]
+    if cache_key not in _PATH_CACHE:
+        try:
+            base = Path(custom_base).expanduser()
+            if _Validators._is_safe_path(str(base)):
+                _PATH_CACHE[cache_key] = base.resolve(strict=False) / SETTINGS_FILE
+        except (OSError, RuntimeError):
+            pass
+    return _PATH_CACHE.get(cache_key, _PATH_CACHE["default"])
 
 def validate(raw_values: Any) -> AppSettings:
     """Valida un objeto arbitrario contra `AppSettings`, rellenando faltantes con `DEFAULTS`."""
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_str, val in raw_values.items():
-        if (key_enum := _STR_TO_ENUM.get(key_str)) and (validator := _VALIDATOR_MAP.get(key_enum)):
-            if (validated := validator(key_enum, val)) is not None or (key_enum == ConfigKey.ULTIMA_CARPETA and val == ""):
+        key_enum = _STR_TO_ENUM.get(key_str)
+        validator = _VALIDATOR_MAP.get(key_enum) if key_enum else None
+        if validator:
+            validated = validator(key_enum, val)
+            if validated is not None or (key_enum == ConfigKey.ULTIMA_CARPETA and val == ""):
                 config[key_enum.value] = validated if validated is not None else ""
     return config
 
@@ -301,15 +299,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         ruta = settings_path(custom_base).absolute()
         parent = ruta.parent
         
-        # Validaciones de seguridad y entorno
-        if not _Validators._is_safe_path(str(parent)): return None
-        if not is_safe_to_modify(str(ruta)): return None
+        if not _Validators._is_safe_path(str(parent)) or not is_safe_to_modify(str(ruta)): return None
 
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
-        
-        # Validar espacio antes de escribir
-        if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE:
-            return None
+        if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE: return None
         
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
@@ -331,8 +324,11 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     current = load(custom_base)
     modified = False
     for k, v in changes.items():
-        if (key_enum := _STR_TO_ENUM.get(k)) and (validator := _VALIDATOR_MAP.get(key_enum)):
-            if (val := validator(key_enum, v)) is not None and val != current.get(k):
+        key_enum = _STR_TO_ENUM.get(k)
+        validator = _VALIDATOR_MAP.get(key_enum) if key_enum else None
+        if validator:
+            val = validator(key_enum, v)
+            if val is not None and val != current.get(k):
                 current[k] = val
                 modified = True
     if modified: save(current, custom_base)

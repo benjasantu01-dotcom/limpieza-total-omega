@@ -109,18 +109,16 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root = base_root.resolve(strict=False)
+        self.base_root_str = str(base_root.resolve(strict=False))
+        if not self.base_root_str.endswith(os.sep):
+            self.base_root_str += os.sep
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, path_str: str) -> bool:
-        """Verifica mediante resolución de ruta absoluta que el objetivo sea hijo del directorio raíz."""
+        """Verifica mediante comparación de cadenas si el objetivo es hijo del directorio raíz."""
         if not path_str or not isinstance(path_str, str): 
             return False
-        try:
-            target = Path(path_str).resolve(strict=False)
-            return self.base_root in target.parents or target == self.base_root
-        except (OSError, RuntimeError):
-            return False
+        return path_str.startswith(self.base_root_str) or path_str == self.base_root_str.rstrip(os.sep)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """

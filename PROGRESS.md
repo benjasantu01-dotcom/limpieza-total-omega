@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 19 | 1 | 2 | 0 | 36 |
+| 2026-09-03 | 17 | 1 | 2 | 0 | 34 |
 | 2026-09-04 | 158 | 18 | 29 | 8 | 137 |
-| 2026-09-05 | 41 | 4 | 6 | 4 | 41 |
+| 2026-09-05 | 44 | 4 | 7 | 4 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
-- seguridad defensiva: **48**
+- seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **38**
-- rendimiento: **34**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **19**
 - `healthscore.py`: **18**
 - `organizer.py`: **18**
-- `safety.py`: **17**
-- `settings.py`: **17**
-- `duplicates.py`: **16**
-- `scanner.py`: **16**
+- `safety.py`: **18**
+- `settings.py`: **18**
+- `scanner.py`: **17**
 - `diskreport.py`: **16**
 - `memory.py`: **15**
 - `quarantine.py`: **15**
+- `duplicates.py`: **15**
 - `branding.py`: **15**
-- `browser.py`: **14**
+- `browser.py`: **13**
 - `main.py`: **12**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T04:11:01` **settings.py** (rendimiento): Optimizé la gestión de caché de rutas y validadores mediante la pre-compilación de estructuras (`_CACHE` de `Path`, `_VALIDATOR_MAP` como `MappingProxyType` y resolución dinámica eficiente) para reducir la carga de procesamiento en cada lectura de configuración.
+- `2026-09-05T04:10:47` **scanner.py** (rendimiento): Optimicé el rendimiento de `_is_inside_base_root` convirtiendo `base_root` a una cadena absoluta y pre-calculando el prefijo de ruta, evitando así las llamadas costosas a `.resolve()` y `.parents` en cada iteración del bucle.
+- `2026-09-05T04:10:22` **safety.py** (rendimiento): Se optimizó el rendimiento del filtrado de rutas mediante `filter_safe_paths` evitando la ejecución redundante de `normalize` dentro del loop y utilizando una lógica de corto circuito, reduciendo drásticamente las llamadas a funciones costosas del sistema de archivos.
 - `2026-09-05T04:01:42` **main.py** (rendimiento): Se implementó un mecanismo de caché con invalidación selectiva para los datos de análisis del panel de Salud, evitando consultas redundantes a `memory.py` y `diskreport.py` en cada redibujado de la interfaz y acelerando la respuesta del panel.
 - `2026-09-05T03:50:27` **duplicates.py** (rendimiento): Optimizé la performance del escaneo de duplicados evitando múltiples llamadas redundantes a `is_protected_path` y `is_junction` al consolidar las validaciones dentro de la lógica del iterador de `os.scandir`, reduciendo drásticamente la carga de I/O en directorios grandes.
 - `2026-09-05T03:50:00` **diskreport.py** (rendimiento): Optimicé el método `_collect_summary_data` para evitar el costo de ordenamiento completo (`sorted`) y la creación de diccionarios intermedios innecesarios, manteniendo el heap como la estructura de datos primaria para el top-10.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-05T03:18:57` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `healthscore.py` mediante la refactorización de `compute_score`, extrayendo la lógica de procesamiento de reglas en un método auxiliar para reducir la complejidad ciclomática y clarificar el flujo de datos.
 - `2026-09-05T03:09:50` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando `type hints` adicionales y `docstrings` descriptivos para los métodos privados de procesamiento, clarificando el flujo de los tres pasos de detección de duplicados.
 - `2026-09-05T03:09:40` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando docstrings más descriptivos y tipo *hinting* en las estructuras de control dentro de `walk_files` y `_collect_summary_data`, aclarando el propósito de la gestión de inodos y el uso de colas de prioridad (heaps) para optimizar la legibilidad del código crítico de escaneo.
-- `2026-09-05T03:09:13` **browser.py** (legibilidad y documentación): Documenté el propósito técnico de las funciones de alto nivel y ajusté la firma de los métodos internos para asegurar que la intención de cada parámetro (como el uso de `kernel32` o `is_junction_fn`) sea explícita y coherente, facilitando la auditoría del código.
-- `2026-09-05T03:08:48` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad del módulo `branding.py` mediante la adición de docstrings técnicos específicos y la tipificación estricta de constantes complejas para facilitar la mantenibilidad, asegurando que las funciones de renderizado expliquen sus dependencias de estado (Canvas, coordenadas).
-- `2026-09-05T02:59:53` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_assign` y la documentación del contrato de los `ProblemCriterion`, eliminando redundancias en la lógica de validación de métricas.

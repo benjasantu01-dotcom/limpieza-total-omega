@@ -1539,3 +1539,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-05T04:03:01` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `load_manifest` eliminando la recreación innecesaria de objetos `QuarantineItem` y reduciendo las operaciones de I/O mediante una verificación de existencia basada en el cache, lo que acelera significativamente las consultas recurrentes.
 - `2026-09-05T04:03:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T04:03:01` Corrida terminada. Total usado hoy: 96.
+- `2026-09-05T04:09:31` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-09-05T04:09:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-09-05T04:10:22` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento del filtrado de rutas mediante `filter_safe_paths` evitando la ejecución redundante de `normalize` dentro del loop y utilizando una lógica de corto circuito, reduciendo drásticamente las llamadas a funciones costosas del sistema de archivos.
+- `2026-09-05T04:10:47` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `_is_inside_base_root` convirtiendo `base_root` a una cadena absoluta y pre-calculando el prefijo de ruta, evitando así las llamadas costosas a `.resolve()` y `.parents` en cada iteración del bucle.
+- `2026-09-05T04:11:01` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la gestión de caché de rutas y validadores mediante la pre-compilación de estructuras (`_CACHE` de `Path`, `_VALIDATOR_MAP` como `MappingProxyType` y resolución dinámica eficiente) para reducir la carga de procesamiento en cada lectura de configuración.
+- `2026-09-05T04:11:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T04:11:01` Corrida terminada. Total usado hoy: 100.
