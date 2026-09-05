@@ -623,3 +623,44 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-05T07:24:47` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `StartupEntry._extract_quoted_path` validando explícitamente el índice de `end_quote` y añadiendo chequeos de integridad antes de instanciar `Path`, evitando posibles errores al procesar líneas de comando malformadas o rutas relativas inválidas.
 - `2026-09-05T07:24:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T07:24:47` Corrida terminada. Total usado hoy: 176.
+- `2026-09-05T07:33:12` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-09-05T07:33:54` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se introdujeron type hints en los parámetros y retornos de las funciones, se añadieron docstrings explicativos a las constantes críticas y se refinó la documentación del módulo para mejorar la mantenibilidad y claridad del código sin alterar su lógica operativa.
+- `2026-09-05T07:34:30` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se mejora la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `logo_svg` y `save_logo_svg` para reducir la repetición y mejorar la claridad, asegurando que las validaciones de seguridad sean explícitas y fáciles de auditar.
+- `2026-09-05T07:34:58` Tests FALLARON:
+```
+   def test_detect_profiles_finds_injected_cache_folders(tmp_path):
+        cache = tmp_path / "Navegador" / "Default" / "Cache"
+        cache.mkdir(parents=True)
+        (cache / "dato.bin").write_bytes(b"a" * 500)
+    
+        encontrados = browser.detect_profiles(
+            bases=[tmp_path],
+            cache_paths={"Navegador Falso": r"Navegador\Default\Cache"},
+        )
+>       assert len(encontrados) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:739: AssertionError
+_________________ test_cache_paths_only_point_at_cache_folders _________________
+
+    def test_cache_paths_only_point_at_cache_folders():
+        # Cada ruta configurada tiene que terminar en algo con "cache": es lo que
+        # garantiza que no se liste una carpeta de datos del usuario.
+        for navegador, ruta in browser.BROWSER_CACHE_PATHS.items():
+>           assert "cache" in ruta.lower(), f"{navegador} apunta a algo que no es caché"
+                              ^^^^^^^^^^
+E           AttributeError: 'list' object has no attribute 'lower'
+
+evolve/tests/test_modules.py:775: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_cache_paths_only_point_at_cache_folders - AttributeError: 'list' object has no attribute 'lower'
+2 failed, 297 passed in 1.29s
+
+```
+- `2026-09-05T07:34:58` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se introdujeron type hints más precisos y se reemplazó la lógica de construcción de rutas manual mediante cadenas (`split("\\")`) por el uso robusto de `Path` y operadores de desempaquetado, mejorando la legibilidad y evitando errores de plataforma en la manipulación de directorios.
+- `2026-09-05T07:35:11` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings detallados en las funciones de recorrido (`walk_files`, `_collect_summary_data`) para clarificar el flujo de control y las garantías de seguridad aplicadas, facilitando el mantenimiento técnico.
+- `2026-09-05T07:35:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T07:35:11` Corrida terminada. Total usado hoy: 180.

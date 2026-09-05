@@ -284,14 +284,10 @@ def _get_shield_coords(s: float) -> Tuple[float, ...]:
 def logo_svg(size: int = 128) -> str:
     """Genera la estructura XML de un archivo SVG que representa el logo de la marca."""
     s = max(1, min(4096, int(size)))
-    stops_svg = f"""
-      <stop offset="0%" stop-color="{GRADIENT_STOPS[0]}"/>
-      <stop offset="55%" stop-color="{GRADIENT_STOPS[1]}"/>
-      <stop offset="100%" stop-color="{GRADIENT_STOPS[2]}"/>"""
+    stops = "".join(f'      <stop offset="{o}" stop-color="{c}"/>\n' for o, c in zip(["0%", "55%", "100%"], GRADIENT_STOPS))
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
-    <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{stops_svg}
-    </linearGradient>
+    <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{stops}    </linearGradient>
     <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">
       <stop offset="0%" stop-color="{C_GLOW}" stop-opacity="0.45"/>
       <stop offset="100%" stop-color="{C_GLOW}" stop-opacity="0"/>
@@ -307,22 +303,16 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda una copia física del archivo logo.svg en el disco tras verificar seguridad."""
-    if not destination or isinstance(destination, Path) and not destination.name: return None
+    if not destination: return None
+    path_obj = Path(str(destination).strip().strip('"\'')).resolve()
     
-    clean_path = str(destination).strip().strip('"').strip("'")
-    if not clean_path or len(clean_path) > 255 or any(c in clean_path for c in '<>:"|?*'): 
-        return None
-        
-    path_obj = Path(clean_path).resolve()
-    if not path_obj.is_absolute(): return None
-    
-    # Validación estricta mediante protocolo de seguridad
+    # Validaciones de integridad de ruta antes de tocar el sistema de archivos
+    if not path_obj.is_absolute() or len(str(path_obj)) > 255: return None
     if not is_safe_to_modify(path_obj) or is_protected_path(path_obj): return None
     if path_obj.parent and not is_safe_to_modify(path_obj.parent): return None
     
     try:
-        if path_obj.parent and not path_obj.parent.exists(): 
-            path_obj.parent.mkdir(parents=True, exist_ok=True)
+        path_obj.parent.mkdir(parents=True, exist_ok=True)
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj

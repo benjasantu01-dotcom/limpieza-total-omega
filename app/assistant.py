@@ -1,5 +1,5 @@
 """
-assistant.py — asistente que explica el estado del sistema y qué conviene hace.
+assistant.py — asistente que explica el estado del sistema y qué conviene hacer.
 
 Tiene DOS motores, y el orden importa:
 
@@ -69,9 +69,7 @@ __all__ = [
 ]
 
 class AssistantConfig(NamedTuple):
-    """
-    Configuración persistida del asistente cargada desde settings.
-    """
+    """Configuración persistida del asistente cargada desde settings."""
     api_key: str
     model: str
     allow_metrics: bool
@@ -143,7 +141,7 @@ class AreaExplanation(NamedTuple):
 MetricSource: TypeAlias = dict[str, Any] | object
 ScoreSource: TypeAlias = dict[str, Any] | object
 
-# Constantes de seguridad y límites operativos
+# Constantes de seguridad: límites de caracteres para evitar buffer overflow o logs gigantes
 _MAX_TEXT_LENGTH: Final[int] = 1000
 _MAX_RESPONSE_BYTES: Final[int] = 32768
 _MAX_MSG_CHUNK: Final[int] = 200 
@@ -323,11 +321,10 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _get_source_value(source: Any, key: str) -> Any:
-    """Extracte valores de forma robusta ante estructuras de datos no estándar."""
+    """Extrae valores de forma robusta ante estructuras de datos no estándar."""
     try:
         if isinstance(source, dict):
             return source.get(key)
-        # Solo acceder a atributos que no sean métodos o protegidos
         if hasattr(source, key) and not key.startswith('_'):
             return getattr(source, key)
         return None
@@ -355,7 +352,6 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Fabrica un SystemContext a partir de fuentes de datos dispersas."""
     ctx = SystemContext()
-    # Filtrar estrictamente solo tipos aceptados: dict o instancias de clase (pero no tipos base)
     sources = [s for s in [metrics, health, extra] 
                if s is not None and (isinstance(s, dict) or (not isinstance(s, (list, tuple, str, int, float, bool, type))))]
     
@@ -563,7 +559,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
         return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Extracte la respuesta textual del payload JSON de la API con validación estricta."""
+    """Extrae la respuesta textual del payload JSON de la API con validación estricta."""
     if not isinstance(data, dict): return None
     try:
         candidates = data.get("candidates")
@@ -602,11 +598,9 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             raw_text = _extract_text_from_gemini_json(data)
             if not raw_text: return None
             
-            # Verificación defensiva contra inyección de rutas en la respuesta del modelo
             clean = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             final = _validate_response_length(clean)
             
-            # Validación estricta final: impedir cualquier respuesta que parezca una ruta de sistema
             if _ensure_safe_text(final) and not is_protected_path(final) and not _PATH_INJECTION_REGEX.search(final):
                 return final
             return None
