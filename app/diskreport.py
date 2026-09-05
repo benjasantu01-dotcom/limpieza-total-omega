@@ -250,7 +250,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                 for entry in iterator:
                     try:
                         # Obtenemos stat sin seguir enlaces para identificar puntos de montaje/reparse
-                        st = entry.stat(follow_symlinks=False)
+                        try:
+                            st = entry.stat(follow_symlinks=False)
+                        except (PermissionError, OSError):
+                            continue
                         
                         if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
                             continue

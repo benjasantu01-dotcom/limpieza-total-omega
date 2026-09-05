@@ -139,32 +139,20 @@ class SystemMetrics:
     startup_count: int = 0
     quarantined_count: int = 0
 
-    _NUMERIC_FIELDS: Final[Tuple[str, ...]] = (
-        'junk_mb', 'suspicious_count', 'suspicious_warnings', 
-        'memory_available_percent', 'disk_free_percent', 'duplicate_mb', 
-        'startup_count', 'quarantined_count'
-    )
-
     def __post_init__(self) -> None:
         self.validate()
 
     def validate(self) -> None:
-        for field_name in self._NUMERIC_FIELDS:
-            val = getattr(self, field_name)
-            if val is None or not math.isfinite(_to_float(val)):
-                setattr(self, field_name, 0.0)
-        
-        self.junk_mb = _clamp(float(self.junk_mb), 0.0, float('inf'))
-        self.suspicious_count = int(_clamp(float(self.suspicious_count), 0.0, 10000.0))
-        self.suspicious_warnings = int(_clamp(float(self.suspicious_warnings), 0.0, 10000.0))
-        self.memory_available_percent = _clamp(float(self.memory_available_percent), 0.0, 100.0)
-        self.disk_free_percent = _clamp(float(self.disk_free_percent), 0.0, 100.0)
-        self.duplicate_mb = _clamp(float(self.duplicate_mb), 0.0, float('inf'))
-        self.startup_count = int(_clamp(float(self.startup_count), 0.0, 1000.0))
-        self.quarantined_count = int(_clamp(float(self.quarantined_count), 0.0, 10000.0))
+        # Normalización profunda: asegura que cualquier dato de entrada sea coherente y finito
+        for attr in ['junk_mb', 'duplicate_mb']:
+            setattr(self, attr, max(0.0, _to_float(getattr(self, attr))))
+        for attr in ['suspicious_count', 'suspicious_warnings', 'startup_count', 'quarantined_count']:
+            setattr(self, attr, int(max(0, _to_float(getattr(self, attr)))))
+        for attr in ['memory_available_percent', 'disk_free_percent']:
+            setattr(self, attr, _clamp(_to_float(getattr(self, attr)), 0.0, 100.0))
 
     def is_finite(self) -> bool:
-        return all(math.isfinite(_to_float(getattr(self, f, 0.0))) for f in self._NUMERIC_FIELDS)
+        return all(math.isfinite(_to_float(getattr(self, f, 0.0))) for f in self.__dict__)
 
 @dataclass
 class HealthResult:

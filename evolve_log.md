@@ -1553,3 +1553,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-05T04:21:32` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de entrada y estados inválidos en `_sum_directory_recursive` mediante una validación estricta de tipos y un control más granular de las excepciones en las operaciones de I/O, evitando que el escaneo se detenga silenciosamente ante directorios inaccesibles.
 - `2026-09-05T04:21:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T04:21:32` Corrida terminada. Total usado hoy: 104.
+- `2026-09-05T04:29:54` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-09-05T04:30:22` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular dentro del bucle de iteración, evitando que errores de `OSError` al obtener atributos de archivo (como `st_size`) aborten prematuramente el recorrido.
+- `2026-09-05T04:30:46` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-05T04:31:11` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha robustecido el sistema ante entradas inválidas o nulas mediante una validación más estricta en el método `__post_init__` y `validate`, garantizando que valores fuera de rango o tipos incompatibles no provoquen estados de error silenciosos al calcular el score.
+- `2026-09-05T04:32:02` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez ante fallos de hilos (worker) añadiendo un bloque `try...finally` garantizado que siempre re-habilita la UI, incluso ante excepciones no previstas en el código de ejecución, evitando que la aplicación quede "congelada" en un estado ocupado tras un error.
+- `2026-09-05T04:32:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T04:32:02` Corrida terminada. Total usado hoy: 108.
