@@ -1008,3 +1008,36 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_ignores_desktop_i
 - `2026-09-05T11:31:14` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-05T11:31:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T11:31:14` Corrida terminada. Total usado hoy: 272.
+- `2026-09-05T11:40:00` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-09-05T11:41:18` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `on_target_choice_changed` encapsulando la validación de la ruta seleccionada en un bloque `try-except` sólido y aplicando el chequeo `_is_safe_target_dir` antes de actualizar el estado, evitando que rutas inválidas o protegidas contaminen el estado interno de la aplicación.
+- `2026-09-05T11:41:47` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `parse_windows_process_csv` al implementar una validación de seguridad proactiva y un manejo de errores más específico, evitando operaciones con datos malformados o PIDs inexistentes mediante la captura explícita de casos borde antes de procesar el listado.
+- `2026-09-05T11:42:16` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de `review_dir` en `stage_for_review` y `delete_reviewed` para evitar que el uso de rutas externas (`expanduser`) o mal formadas pudiera derivar en manipulaciones fuera del entorno seguro, añadiendo un chequeo explícito de jerarquía contra el directorio de base.
+- `2026-09-05T11:42:35` Tests FALLARON:
+```
+source:
+            raise ValueError("Ruta de origen vacía.")
+    
+        try:
+            source_path = Path(source).expanduser().resolve(strict=True)
+        except (OSError, RuntimeError) as e:
+>           raise UnsafePathError(f"Ruta origen inaccesible: {e}")
+E           safety.UnsafePathError: Ruta origen inaccesible: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-4/test_quarantine_missing_file_r0/no-existe.txt'
+
+app/quarantine.py:480: UnsafePathError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:307: SyntaxWarning: invalid escape sequence '\)'
+    """Determina si la ruta normalizada corresponde a la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - safety.UnsafePathError: Ruta origen inaccesible: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-4/test_quarantine_missing_file_r0/no-existe.txt'
+1 failed, 298 passed, 4 warnings in 1.35s
+
+```
+- `2026-09-05T11:42:35` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `quarantine_file` envolviendo la llamada a `_atomic_isolate_file` en un bloque `try-finally` para asegurar que el registro de manifiesto solo se actualice si la operación de E/S física fue exitosa, y refiné la validación de `source_path` usando `try-except` explícitos en lugar de confiar en la evaluación booleana, evitando así errores de ejecución ante rutas inaccesibles.
+- `2026-09-05T11:42:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T11:42:35` Corrida terminada. Total usado hoy: 276.

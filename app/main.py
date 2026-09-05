@@ -1261,7 +1261,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     self.scan_target = str(target_path)
                     update_label(f"Unidad completa: {choice}")
                 else:
-                    raise Exception
+                    raise Exception("Ruta no segura")
             except Exception:
                 self.log(f"Error: La ruta {choice} no es válida o es insegura.", "Limpieza")
                 self.target_choice.set("Por defecto (Temp + Descargas)")
