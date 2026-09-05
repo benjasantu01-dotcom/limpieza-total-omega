@@ -1223,3 +1223,28 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-05T14:04:08` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad del pipeline de datos integrando `metrics.is_finite()` como una verificación de pre-condición estricta en cada entrada al pipeline, y se mejoró la resiliencia ante excepciones durante la evaluación de reglas mediante un manejo de errores más específico y preventivo.
 - `2026-09-05T14:04:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T14:04:08` Corrida terminada. Total usado hoy: 332.
+- `2026-09-05T14:12:50` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-05T14:13:52` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-05T14:14:55` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-05T14:16:01` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-05T14:17:13` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-05T14:18:35` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_is_safe_to_trim` implementando una validación estricta del handle de proceso para asegurar que solo se intente interactuar con procesos cuyo ejecutable pueda ser resuelto y verificado, evitando operaciones ciegas sobre procesos inaccesibles o privilegiados que pudieran eludir las listas de protección mediante inyección o estados transitorios.
+- `2026-09-05T14:19:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-05T14:19:46` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-05T14:20:46` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-05T14:21:11` Tests FALLARON:
+```
+ento: 'in <string>' requires string as left operand, not NoneType
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - RuntimeError: Fallo en operación de aislamiento: 'in <string>' requires string as left operand, not NoneType
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - RuntimeError: Fallo en operación de aislamiento: 'in <string>' requires string as left operand, not NoneType
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Fallo en operación de aislamiento: 'in <string>' requires string as left operand, not NoneType
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Fallo en operación de aislamiento: 'in <string>' requires string as left operand, not NoneType
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Fallo en operación de aislamiento: 'in <string>' requires string as left operand, not NoneType
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Fallo en operación de aislamiento: 'in <string>' requires string as left operand, not NoneType
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Fallo en operación de aislamiento: 'in <string>' requires string as left operand, not NoneType
+8 failed, 291 passed, 4 warnings in 1.17s
+
+```
+- `2026-09-05T14:21:11` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se endureció la seguridad defensiva al validar estrictamente que el nombre de archivo almacenado no contenga caracteres de escape o secuencias de escape de trayectoria (`..`, `\`, `/`) mediante una limpieza de nombre basada en lista blanca absoluta, evitando posibles ataques de "path traversal" en el almacenamiento del sandbox.
+- `2026-09-05T14:21:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T14:21:11` Corrida terminada. Total usado hoy: 336.

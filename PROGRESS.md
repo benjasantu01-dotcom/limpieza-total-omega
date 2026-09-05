@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **239** (47.4% de aceptación)
-- Rechazadas por tests: 20
+- Mejoras aceptadas: **240** (47.6% de aceptación)
+- Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 189
+- Sin respuesta de la IA (error o límite): 187
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-04 | 79 | 8 | 16 | 3 | 66 |
-| 2026-09-05 | 160 | 12 | 23 | 14 | 123 |
+| 2026-09-04 | 79 | 8 | 16 | 3 | 62 |
+| 2026-09-05 | 161 | 13 | 23 | 14 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - robustez ante casos límite: **51**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **46**
+- seguridad defensiva: **47**
 - rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **22**
 - `diskreport.py`: **22**
+- `memory.py`: **19**
 - `safety.py`: **19**
 - `scanner.py`: **19**
 - `branding.py`: **19**
 - `duplicates.py`: **18**
-- `memory.py`: **18**
 - `settings.py`: **18**
 - `organizer.py`: **17**
 - `healthscore.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T14:18:35` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_safe_to_trim` implementando una validación estricta del handle de proceso para asegurar que solo se intente interactuar con procesos cuyo ejecutable pueda ser resuelto y verificado, evitando operaciones ciegas sobre procesos inaccesibles o privilegiados que pudieran eludir las listas de protección mediante inyección o estados transitorios.
 - `2026-09-05T14:04:08` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del pipeline de datos integrando `metrics.is_finite()` como una verificación de pre-condición estricta en cada entrada al pipeline, y se mejoró la resiliencia ante excepciones durante la evaluación de reglas mediante un manejo de errores más específico y preventivo.
 - `2026-09-05T14:03:57` **duplicates.py** (seguridad defensiva): Se ha implementado un chequeo adicional en `_collect_candidates` para verificar que los archivos no sean enlaces simbólicos o puntos de reparse, usando `lstat` implícito en `entry.is_file(follow_symlinks=False)`, garantizando que el escáner no siga enlaces que podrían llevar fuera del árbol de directorios permitido o causar bucles infinitos.
 - `2026-09-05T13:54:22` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita mediante `is_protected_path` sobre el directorio padre antes de intentar su creación, asegurando que el proceso no pueda crear estructuras de archivos en zonas restringidas del sistema.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-05T13:22:51` **browser.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar recursiones infinitas y bloqueos en rutas con errores de formato o excesiva longitud, normalizando la resolución de rutas en el inicio de `_sum_directory_recursive` para asegurar que el `memo` funcione correctamente incluso si la ruta llega con inconsistencias de formato.
 - `2026-09-05T13:13:33` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_validate_and_assign` mediante la validación explícita de tipos numéricos y un manejo de errores más estricto ante valores `None` o malformados, asegurando que el asistente nunca procese datos que puedan corromper sus estados internos.
 - `2026-09-05T13:12:09` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando las validaciones recurrentes de `Path` mediante el uso directo de las propiedades de `os.DirEntry` y optimizando la resolución de rutas, evitando instanciar objetos `Path` innecesarios dentro de los bucles críticos.
-- `2026-09-05T12:53:47` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas mediante la implementación de `functools.lru_cache` con un `maxsize` adecuado en la función `pressure_level` y, fundamentalmente, se reorganizó la lógica de caché en `read_snapshot` para evitar llamadas redundantes a `os.name` y `Path.exists()` dentro del bucle de ejecución, consolidando las verificaciones de sistema en una estructura más eficiente.
