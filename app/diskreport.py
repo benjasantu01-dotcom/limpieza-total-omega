@@ -96,6 +96,23 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     return None
 
 
+def _is_excluded_path(entry: os.DirEntry) -> bool:
+    """
+    Determina si un nodo debe ser excluido para evitar seguir enlaces 
+    simbólicos, puntos de unión (junctions) o bucles de reparse en Windows.
+    """
+    REPARSE_POINT_ATTR = 0x400
+    try:
+        if entry.is_symlink():
+            return True
+        if os.name == 'nt':
+            st = entry.stat(follow_symlinks=False)
+            return bool(getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)
+    except (OSError, PermissionError, AttributeError):
+        pass
+    return False
+
+
 def _get_local_windows_drives() -> List[str]:
     """
     Detecta unidades físicas/lógicas disponibles en Windows.
@@ -231,7 +248,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     if root_path is None:
         return
 
-    REPARSE_POINT_ATTR = 0x400
     visited_inodes: set[Tuple[int, int]] = set()
     stack: List[Path] = [root_path]
     
@@ -248,19 +264,19 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
+                    if _is_excluded_path(entry):
+                        continue
+                    
                     try:
-                        st = entry.stat(follow_symlinks=False)
-                        
-                        if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
-                            continue
-                        
                         if entry.is_dir():
+                            st = entry.stat(follow_symlinks=False)
                             inode_key = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
                             if inode_key[0] != 0 and inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
                                 stack.append(Path(entry.path))
                                     
                         elif entry.is_file():
+                            st = entry.stat(follow_symlinks=False)
                             yield Path(entry.path), max(0, int(getattr(st, 'st_size', 0)))
                     except (PermissionError, OSError, AttributeError):
                         continue

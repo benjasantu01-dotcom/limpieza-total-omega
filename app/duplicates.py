@@ -20,9 +20,11 @@ from collections import defaultdict
 from collections.abc import Sequence, Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Union, Tuple, Set, Callable
+from typing import Dict, List, Optional, Union, Tuple, Set, Callable, TypeAlias
 
 from safety import is_protected_path
+
+PathLike: TypeAlias = Union[str, Path]
 
 __all__ = [
     "DuplicateGroup",
@@ -79,18 +81,18 @@ class DuplicateGroup:
         return (self.count - 1) * self.size_bytes
 
 
-def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
+def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo del archivo. 
-    Usa un buffer intermedio para mantener el consumo de RAM constante independientemente del tamaño del archivo.
+    Calcula el hash SHA256 completo. 
+    Lee mediante buffers para evitar picos de memoria en archivos grandes.
+    Retorna None si el archivo es ilegible, vacío o protegido.
     """
-    path_obj = Path(path) if isinstance(path, str) else path
+    path_obj = Path(path)
     
     if not _is_valid_candidate(path_obj) or chunk_size <= 0:
         return None
         
     try:
-        # Verificación adicional antes de abrir para asegurar legibilidad
         if path_obj.stat().st_size == 0:
             return None
             
@@ -106,18 +108,17 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         return None
 
 
-def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
+def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Genera una huella rápida leyendo el inicio del archivo.
-    Es la primera barrera de filtrado para optimizar el tiempo de escaneo.
+    Genera un hash SHA256 solo de los primeros 'read_bytes'.
+    Utilizado como filtro rápido (heurística) para reducir E/S en archivos masivos.
     """
-    path_obj = Path(path) if isinstance(path, str) else path
+    path_obj = Path(path)
 
     if not _is_valid_candidate(path_obj) or read_bytes <= 0:
         return None
 
     try:
-        # Asegurar que el archivo no esté vacío antes de intentar la lectura
         if path_obj.stat().st_size == 0:
             return None
 
@@ -152,7 +153,7 @@ def _get_entry_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         return None
 
 
-def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
+def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa rutas por su tamaño en bytes para identificar potenciales candidatos."""
     groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None or not isinstance(paths, Iterable): return groups
@@ -169,7 +170,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     return groups
 
 
-def _resolve_and_verify_root(item: Union[str, Path]) -> Optional[Path]:
+def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
     """Normaliza y valida que una ruta sea un directorio raíz válido para escaneo."""
     try:
         if not item: return None
@@ -182,7 +183,7 @@ def _resolve_and_verify_root(item: Union[str, Path]) -> Optional[Path]:
 
 
 def _collect_candidates(
-    directories: Iterable[Union[str, Path]], 
+    directories: Iterable[PathLike], 
     min_size: int, 
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
@@ -200,7 +201,6 @@ def _collect_candidates(
                     try:
                         if entry.is_dir(follow_symlinks=False):
                             subdir_path = Path(entry.path)
-                            # Defensa: Validar si la ruta real sigue estando bajo el origen o es reparse point
                             if not is_protected_path(subdir_path) and not is_junction(subdir_path):
                                 _scan_directory_recursive(subdir_path)
                         else:
@@ -263,7 +263,7 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     return [DuplicateGroup(digest, size, sorted(confirmed_paths)) for digest, confirmed_paths in results.items()]
 
 
-def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
+def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
     """Punto de entrada principal para detectar archivos duplicados."""
     if not isinstance(directories, Iterable) or isinstance(directories, (str, Path)): 
         return []

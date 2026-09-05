@@ -1,15 +1,17 @@
 """
-healthscore.py — el panel que combina todos los módulos en un solo número.
+healthscore.py — El motor analítico de salud del sistema.
 
-Toma las métricas de limpieza, seguridad, memoria, disco, duplicados y
-arranque, y las convierte en un puntaje de 0 a 100 con una nota de A a F y
-recomendaciones concretas.
+Este módulo implementa un motor de puntuación (scoring) de arquitectura funcional.
+Toma un objeto 'SystemMetrics' y, mediante un pipeline de normalización y 
+ponderación, lo transforma en un 'HealthResult' comprensible para el usuario.
 
-DECISIÓN DE DISEÑO: `compute_score` es una función pura — recibe un objeto
-con las métricas y no toca el disco ni el sistema. Eso permite testear
-todos los casos límite (sistema impecable, sistema desastre, datos
-faltantes) sin necesitar una PC sucia de verdad. La recolección de datos
-vive en los otros módulos; acá solo se puntúa.
+DISEÑO:
+- `compute_score` es una función pura: no tiene efectos secundarios, facilitando
+  la verificabilidad y los tests unitarios.
+- El pipeline utiliza una estrategia de 'Clamping' para asegurar que cualquier
+  entrada de métrica, sin importar su origen, resulte en un valor entre 0 y 1.
+- La extensión del puntaje a nuevos módulos se realiza agregando una entrada 
+  en el diccionario `_SCORERS` y ajustando la constante `WEIGHTS`.
 """
 
 from __future__ import annotations
@@ -17,13 +19,21 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Any, Final, Tuple, TypeAlias, NamedTuple, Annotated, Callable
 import math
 
-# Tipos para mejorar la claridad en el flujo de datos
+# Tipos semánticos para mejorar la legibilidad de la firma de funciones.
 ScoreMap: TypeAlias = Dict[str, float]
 NormalizedRatio: TypeAlias = Annotated[float, "Un valor entre 0.0 y 1.0 representando salud"]
 MetricKey: TypeAlias = str
 
 class RecommendationRule(NamedTuple):
-    """Define una condición bajo la cual mostrar una sugerencia al usuario."""
+    """
+    Define una regla de inferencia para generar recomendaciones.
+    
+    Attributes:
+        area: Identificador del módulo afectado.
+        threshold: Valor límite de ratio bajo el cual la regla se activa.
+        message_factory: Callable que recibe métricas para generar un string.
+        check: Función booleana para evaluar si se cumplen las condiciones.
+    """
     area: MetricKey
     threshold: float
     message_factory: Callable[[SystemMetrics], str]
@@ -77,29 +87,29 @@ if sum(WEIGHTS.values()) != 100:
 _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud (0-1) basado en la cantidad de MB basura."""
+    """Transforma el volumen de basura en un ratio de salud (0.0 a 1.0)."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula el ratio de salud de seguridad penalizando hallazgos y advertencias."""
+    """Calcula el ratio de seguridad penalizando eventos detectados."""
     return _clamp(1.0 - ((_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud de memoria comparando disponibilidad vs límite."""
+    """Evalúa la salud de la memoria RAM según el margen de disponibilidad."""
     val = _to_float(available_percent)
     return _clamp(val / _LIMIT_RAM_PERCENT) if _LIMIT_RAM_PERCENT > 0 else 1.0
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud de disco comparando porcentaje libre vs límite."""
+    """Evalúa la salud del disco según el porcentaje de espacio libre disponible."""
     val = _to_float(free_percent)
     return _clamp(val / _LIMIT_DISK_PERCENT) if _LIMIT_DISK_PERCENT > 0 else 1.0
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud basado en el impacto en MB de los duplicados."""
+    """Calcula el ratio de duplicados basado en el espacio desperdiciado."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Calcula el ratio de salud basado en la cantidad de elementos en inicio."""
+    """Evalúa la carga de inicio según la cantidad de programas registrados."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
 _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
@@ -155,7 +165,7 @@ class SystemMetrics:
         self.disk_free_percent = _clamp(_to_float(self.disk_free_percent), 0.0, 100.0)
 
     def is_finite(self) -> bool:
-        """Verifica que todos los atributos numéricos sean finitos."""
+        """Verifica que todos los atributos numéricos sean matemáticamente finitos."""
         return (math.isfinite(self.junk_mb) and math.isfinite(self.suspicious_count) and
                 math.isfinite(self.suspicious_warnings) and math.isfinite(self.memory_available_percent) and
                 math.isfinite(self.disk_free_percent) and math.isfinite(self.duplicate_mb) and
@@ -171,20 +181,22 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
-        """Retorna True si el sistema se encuentra en un estado óptimo."""
+        """Determina si la salud general se encuentra en un estado óptimo."""
         return 80 <= self.score <= 100
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
+    """Limita un valor a un rango específico [low, high]."""
     return max(low, min(high, value))
 
 def _to_float(value: Any, default: float = 0.0) -> float:
+    """Conversor seguro de tipos a float con validación de finitud."""
     try:
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError): return default
 
 def grade_for_score(score: float | int) -> str:
-    """Traduce el puntaje numérico a una letra de clasificación (A-F)."""
+    """Clasifica el puntaje (0-100) según una escala de letras."""
     s = _to_float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -193,7 +205,7 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float) -> List[str]:
-    """Procesa una lista de reglas de recomendación para un área específica."""
+    """Filtra y ejecuta recomendaciones basadas en el estado del sistema."""
     findings = []
     for rule in rules:
         if rule.check(metrics, ratio):
@@ -206,7 +218,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
     return findings
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Motor principal: calcula el puntaje final y recopila recomendaciones."""
+    """Ejecuta el pipeline de evaluación completo sobre las métricas provistas."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de entrada de métricas inválido."])
     
@@ -241,13 +253,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(pts: int, maximo: int) -> str:
-    """Visualización en texto de la barra de progreso (usada en reportes)."""
+    """Renderiza una barra de progreso textual simple."""
     if maximo <= 0: return ""
     puntos = max(0, min(pts, maximo))
     return ('#' * puntos) + ('.' * (maximo - puntos))
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera un reporte legible en texto plano a partir de un HealthResult."""
+    """Serializa un HealthResult en una lista de líneas legible para el usuario."""
     if not isinstance(result, HealthResult):
         return ["Error: Informe no disponible o formato inválido."]
     
