@@ -267,8 +267,9 @@ class SystemContext:
         return _safe_float(val, default)
 
     def __hash__(self) -> int:
-        return hash((self.score, self.junk_mb, self.suspicious_count, self.startup_count, 
-                     self.memory_available_percent, self.disk_free_percent))
+        return hash((self.score, self.grade, self.junk_mb, self.suspicious_count, 
+                     self.memory_available_percent, self.disk_free_percent,
+                     self.duplicate_mb, self.startup_count))
 
     @property
     def is_valid_structure(self) -> bool:
@@ -388,9 +389,7 @@ def context_as_text(context: SystemContext) -> str:
             _fmt_metric_sanitized(context.duplicate_mb, " MB"),
             _fmt_metric_sanitized(context.startup_count)
         )
-        if not _ensure_safe_text(texto_unificado):
-            return "Error: el contexto generado no cumple los estándares de seguridad."
-        return texto_unificado
+        return texto_unificado if _ensure_safe_text(texto_unificado) else "Error: el contexto generado no cumple los estándares de seguridad."
     except Exception:
         return "Error crítico al procesar métricas de seguridad."
 
