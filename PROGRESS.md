@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 39
-- Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 212
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 59 | 3 | 9 | 1 | 74 |
+| 2026-09-03 | 59 | 3 | 9 | 1 | 70 |
 | 2026-09-04 | 158 | 18 | 29 | 8 | 137 |
-| 2026-09-05 | 5 | 0 | 1 | 1 | 1 |
+| 2026-09-05 | 8 | 0 | 1 | 2 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
-- robustez ante casos límite: **46**
+- robustez ante casos límite: **48**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **39**
+- seguridad defensiva: **40**
 - rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **20**
+- `assistant.py`: **21**
 - `healthscore.py`: **19**
 - `organizer.py`: **19**
 - `settings.py`: **18**
 - `quarantine.py`: **17**
 - `safety.py`: **17**
+- `scanner.py`: **17**
 - `duplicates.py`: **17**
-- `scanner.py`: **16**
 - `branding.py`: **14**
 - `browser.py`: **14**
 - `diskreport.py`: **14**
 - `memory.py`: **14**
-- `startup.py`: **12**
+- `startup.py`: **13**
 - `main.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T00:26:08` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta de los tipos de datos en la respuesta JSON recibida desde la API, evitando errores de ejecución si la respuesta no cumple con el esquema esperado.
+- `2026-09-05T00:25:43` **startup.py** (robustez ante casos límite): Se mejora la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un manejo explícito de errores para el caso de `os.path.realpath`, permitiendo que la resolución continúe degradándose a la ruta absoluta en lugar de abortar silenciosamente ante un `PermissionError` inesperado.
+- `2026-09-05T00:24:48` **scanner.py** (robustez ante casos límite): Se ha mejorado `_is_reparse_point` para manejar correctamente rutas que desaparecen durante el escaneo (Race Conditions) y se ha endurecido la detección de archivos inaccesibles, evitando que la app ignore errores críticos de permisos o falta de metadatos en sistemas de archivos complejos.
 - `2026-09-05T00:15:47` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `is_protected_path` ante rutas inexistentes o mal formadas mediante el uso de `Path.parts` y la verificación explícita de `p.anchor`, previniendo excepciones no controladas durante la normalización de rutas inválidas que podrían detener el bucle principal.
 - `2026-09-05T00:15:11` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de redundancia de sistema de archivos en `_atomic_isolate_file` para detectar casos donde la ruta destino ya existe pero no fue capturada por la verificación inicial, evitando así condiciones de carrera (TOCTOU) durante el proceso de aislamiento atómico.
 - `2026-09-05T00:14:34` **organizer.py** (robustez ante casos límite): Se ha añadido un chequeo de redundancia en `stage_for_review` para evitar procesar archivos que ya residen en el directorio de destino, y se robusteció la función `_can_move_file` para evitar colisiones lógicas y fallos por permisos denegados al calcular rutas de destino, mejorando la resiliencia ante errores de sistema.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T14:43:03` **settings.py** (rendimiento): Optimizé el rendimiento de `load` y `save` sustituyendo las llamadas innecesarias a `stat()` y los procesos de validación repetidos mediante el uso eficiente del `_CACHE` y la evitación de resoluciones de ruta redundantes durante operaciones de lectura frecuentes.
 - `2026-09-04T14:33:59` **safety.py** (rendimiento): Optimicé el rendimiento de las validaciones de seguridad moviendo la validación de extensiones sensibles al inicio del flujo y eliminando llamadas redundantes a `Path.stat()` y `normalize()` dentro de `filter_safe_paths` y los validadores, aprovechando que el cacheo de `lru_cache` es más efectivo cuando recibe rutas normalizadas desde el principio.
 - `2026-09-04T14:32:59` **quarantine.py** (rendimiento): Se optimizó el rendimiento de `purge_all` transformando `item_map` en un diccionario y centralizando la lógica de purga para evitar iteraciones redundantes sobre el manifiesto y lecturas innecesarias del disco, mejorando la eficiencia algorítmica al procesar el sandbox.
-- `2026-09-04T14:26:11` **organizer.py** (rendimiento): Se ha optimizado la función `_process_directory` reemplazando la creación repetitiva de objetos `Path` y las llamadas costosas al sistema de archivos mediante el uso de los atributos de `os.DirEntry` (que ya contiene el nombre y el tipo del archivo), reduciendo drásticamente las syscalls innecesarias durante el escaneo recursivo.
-- `2026-09-04T14:13:35` **duplicates.py** (rendimiento): Optimicé el proceso `_collect_candidates` utilizando un set de `Path` normalizadas como caché de escaneo inicial, evitando re-procesar los mismos nodos de directorio de forma redundante y reduciendo la presión sobre el sistema de archivos mediante el uso de `os.scandir` de forma más eficiente.
-- `2026-09-04T14:12:55` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo introduciendo una caché de resultados (`memo`) persistente a nivel de ejecución para evitar el recálculo redundante de subdirectorios, reduciendo drásticamente las operaciones I/O en estructuras de caché compartidas.

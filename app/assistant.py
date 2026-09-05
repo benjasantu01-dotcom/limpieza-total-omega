@@ -285,7 +285,6 @@ class SystemContext:
 
     def ingest(self, source: Any) -> bool:
         """Extrae y valida métricas desde una fuente externa (diccionario o objeto)."""
-        # Rechazo explícito de contenedores complejos que no sean dicts
         if not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool)):
             return False
             
@@ -571,29 +570,19 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     """Extrae la respuesta textual del payload JSON de la API con validación estricta."""
-    if not isinstance(data, dict):
-        return None
+    if not isinstance(data, dict): return None
     try:
         candidates = data.get("candidates")
-        if not isinstance(candidates, list) or not candidates:
-            return None
-        
-        first_candidate = candidates[0]
-        if not isinstance(first_candidate, dict):
-            return None
-            
-        content = first_candidate.get("content")
-        if not isinstance(content, dict):
-            return None
-            
+        if not isinstance(candidates, list) or not candidates: return None
+        c1 = candidates[0]
+        if not isinstance(c1, dict): return None
+        content = c1.get("content")
+        if not isinstance(content, dict): return None
         parts = content.get("parts")
-        if not isinstance(parts, list) or not parts:
-            return None
-            
+        if not isinstance(parts, list) or not parts: return None
         text_val = parts[0].get("text")
         return str(text_val) if isinstance(text_val, str) else None
-    except (AttributeError, TypeError):
-        return None
+    except (AttributeError, TypeError): return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
     """Gestiona la comunicación con la API externa de forma segura."""

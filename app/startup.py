@@ -103,13 +103,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae la ruta contenida entre comillas y valida contra inyección.
-
-        Args:
-            raw_command: Línea de comando original.
-
-        Returns:
-            Ruta limpia si es válida y no protegida, de lo contrario un string vacío.
+        Extracts the path enclosed in quotes and validates against injection.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 2:
             return ""
@@ -142,12 +136,6 @@ class StartupEntry:
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
         Normaliza, valida y cachea la ruta del archivo ejecutable.
-
-        Args:
-            path_string: Ruta candidata a resolver.
-
-        Returns:
-            Ruta absoluta normalizada o string vacío si es insegura.
         """
         if not isinstance(path_string, str) or not path_string:
             return ""
@@ -174,9 +162,10 @@ class StartupEntry:
                 return path_string
             
             try:
+                # Intento de resolución real, pero fallar gracefully si no se puede acceder
                 real_path_str: str = os.path.realpath(abs_path)
             except (OSError, PermissionError):
-                return abs_path 
+                real_path_str = abs_path
 
             real_path: Path = Path(real_path_str)
             if not real_path.exists() or real_path.is_dir() or is_protected_path(real_path):
@@ -243,12 +232,6 @@ def startup_folders() -> List[Path]:
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
     """
     Escanea carpetas de inicio buscando archivos ejecutables.
-
-    Args:
-        folders: Lista opcional de carpetas a escanear.
-
-    Returns:
-        Lista de objetos StartupEntry encontrados.
     """
     found_entries: List[StartupEntry] = []
     scan_folders = folders if folders is not None else startup_folders()
@@ -280,13 +263,6 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
     """
     Parsea la salida de PowerShell (formato CSV) para extraer entradas de registro.
-
-    Args:
-        csv_text: String crudo proveniente de PowerShell.
-        source: Etiqueta de origen para el reporte.
-
-    Returns:
-        Lista de StartupEntry validados contra inyección.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []

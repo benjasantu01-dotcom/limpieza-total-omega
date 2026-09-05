@@ -144,9 +144,11 @@ class Scanner:
         try:
             if entry.is_symlink():
                 return True
+            # Usamos stat sin follow_symlinks para inspeccionar atributos del nodo actual
             stats = entry.stat(follow_symlinks=False)
             return bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError, PermissionError):
+            # Si no podemos acceder al archivo por permisos o porque desapareció, asumimos el criterio más restrictivo
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
