@@ -309,6 +309,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     try:
         ruta = settings_path(custom_base).absolute()
         parent = ruta.parent
+        
+        # Validación de seguridad: debe ser escribible Y no estar en ruta bloqueada
+        if is_protected_path(str(ruta)): return None
         ensure_safe_to_modify(str(ruta))
         
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)

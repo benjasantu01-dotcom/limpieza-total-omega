@@ -760,3 +760,37 @@ FAILED evolve/tests/test_modules.py::test_cache_paths_only_point_at_cache_folder
 - `2026-09-05T09:48:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-05T09:48:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T09:48:35` Corrida terminada. Total usado hoy: 232.
+- `2026-09-05T09:55:51` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-09-05T09:56:29` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la defensa frente a ataques de "Time-of-Check to Time-of-Use" (TOCTOU) y manipulación de rutas al asegurar que `ensure_safe_to_modify` realice la validación de integridad (`_check_file_integrity`) sobre el objeto Path *después* de confirmar su existencia real en disco, y añadiendo una comprobación adicional para evitar archivos que posean múltiples flujos de datos (ADS) ocultos en su estructura física.
+- `2026-09-05T09:56:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-05T09:57:28` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-05T09:58:23` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha endurecido la lógica de validación en `Scanner` añadiendo una comprobación explícita mediante `is_protected_path` sobre la ruta real resuelta antes de cualquier interacción, evitando así que manipulaciones simbólicas o de enlaces externos burlen la restricción de `base_root`.
+- `2026-09-05T09:58:54` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita de `is_protected_path` antes de cualquier operación de escritura, asegurando que la ruta destino no sea un archivo del sistema, incluso si `ensure_safe_to_modify` (que verifica permisos de escritura) pasara la validación.
+- `2026-09-05T09:59:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-05T10:00:27` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-05T10:00:48` Tests FALLARON:
+```
+ts = entry.stat(follow_symlinks=False)
+>                           if entry.is_file(follow_symlinks=False) and not (stats.st_file_attributes & 0x00000400):
+                                                                             ^^^^^^^^^^^^^^^^^^^^^^^^
+E                           AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+
+app/startup.py:254: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:307: SyntaxWarning: invalid escape sequence '\)'
+    """Determina si la ruta normalizada corresponde a la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_ignores_desktop_ini - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+2 failed, 297 passed, 4 warnings in 1.33s
+
+```
+- `2026-09-05T10:00:48` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad del escaneo de carpetas añadiendo una verificación robusta de atributos de reparseo (junctions/symlinks) mediante `lstat` y validación de permisos en `entries_from_folders`, replicando la lógica defensiva de `StartupEntry` para evitar que el escaneo siga rutas que podrían llevar fuera del ámbito seguro.
+- `2026-09-05T10:00:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T10:00:48` Corrida terminada. Total usado hoy: 236.

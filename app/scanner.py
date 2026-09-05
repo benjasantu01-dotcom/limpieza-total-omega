@@ -116,6 +116,15 @@ class Scanner:
         """Verifica que el objetivo sea hijo del directorio raíz mediante comparación de cadenas."""
         if not path_str or not isinstance(path_str, str): 
             return False
+        
+        # Validación de seguridad defensiva: comprobamos la ruta resuelta
+        try:
+            resolved_path = Path(path_str).resolve(strict=False)
+            if is_protected_path(resolved_path):
+                return False
+        except (OSError, RuntimeError):
+            return False
+
         return path_str.startswith(self.base_root_str) or path_str == self.base_root_str.rstrip(os.sep)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
