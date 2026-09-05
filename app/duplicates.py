@@ -145,14 +145,12 @@ def _get_file_stat_if_valid(entry: os.DirEntry, min_size: int) -> Optional[int]:
     Descarta hard links (st_nlink > 1) para evitar conteos redundantes del mismo inodo.
     """
     try:
-        # Pre-filtro rápido usando métodos de DirEntry para evitar llamadas a os.stat() y Path
         if entry.is_symlink():
             return None
         if not entry.is_file():
             return None
         
         stat_info = entry.stat()
-        # Si st_nlink > 1, el archivo es un hard link a un mismo inodo
         if stat_info.st_nlink > 1:
             return None
         if stat_info.st_size < min_size:
@@ -221,6 +219,7 @@ def _collect_candidates(
                     try:
                         if entry.is_dir(follow_symlinks=False):
                             subdir_path = Path(entry.path)
+                            # Seguridad Defensiva: No entrar en subcarpetas si están protegidas
                             if not is_protected_path(subdir_path) and not is_junction(subdir_path):
                                 _scan_directory_recursive(subdir_path)
                         else:

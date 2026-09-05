@@ -143,13 +143,15 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        # Normalización profunda: asegura que cualquier dato de entrada sea coherente y finito
-        for attr in ['junk_mb', 'duplicate_mb']:
-            setattr(self, attr, max(0.0, _to_float(getattr(self, attr))))
-        for attr in ['suspicious_count', 'suspicious_warnings', 'startup_count', 'quarantined_count']:
-            setattr(self, attr, int(max(0, _to_float(getattr(self, attr)))))
-        for attr in ['memory_available_percent', 'disk_free_percent']:
-            setattr(self, attr, _clamp(_to_float(getattr(self, attr)), 0.0, 100.0))
+        # Normalización y saneamiento defensivo de entradas
+        self.junk_mb = max(0.0, _to_float(self.junk_mb))
+        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
+        self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
+        self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings)))
+        self.startup_count = int(max(0, _to_float(self.startup_count)))
+        self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
+        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent), 0.0, 100.0)
+        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent), 0.0, 100.0)
 
     def is_finite(self) -> bool:
         return all(math.isfinite(_to_float(getattr(self, f, 0.0))) for f in self.__dict__)

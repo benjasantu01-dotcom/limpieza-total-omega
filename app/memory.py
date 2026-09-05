@@ -46,8 +46,9 @@ BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 
 # Máscaras de acceso para operaciones de proceso seguro en Win32
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
-PROCESS_SET_QUOTA: Final[int] = 0x0100
-SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
+PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
+# Solo necesitamos leer información y realizar el ajuste de memoria
+SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_QUERY_INFORMATION
 
 STILL_ACTIVE_EXIT_CODE: Final[int] = 259
 SYSTEM_CRITICAL_PIDS: Set[int] = {0, 4}
@@ -382,6 +383,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
+    # Abrimos con permisos mínimos necesarios para lectura y el ajuste de memoria
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         return False, f"Acceso denegado (código {kernel32.GetLastError()})."

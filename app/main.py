@@ -247,6 +247,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 raise
             raise RuntimeError(f"Entorno no válido para operación segura: {e}")
 
+    def _ensure_path_writable_and_clean(self, path: Union[str, Path]) -> None:
+        """Verifica que la ruta sea un directorio existente, no simbólico y segura."""
+        p = Path(path).resolve(strict=True)
+        if p.is_symlink():
+            raise safety.UnsafePathError("Ruta no permitida: enlace simbólico detectado.")
+        safety.ensure_safe_to_modify(p)
+
     def _init_window_properties(self) -> None:
         """Aplica la configuración de geometría y colores base desde branding."""
         self.title(branding.app_title())
@@ -1043,9 +1050,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """
         if self._closing: return
         try:
-            safety.ensure_safe_to_modify(Path(".").resolve())
-            if target and not self._is_safe_path(target):
-                raise safety.UnsafePathError(f"Operación no permitida en destino: {target}")
+            self._ensure_path_writable_and_clean(".")
+            if target:
+                self._ensure_path_writable_and_clean(target)
             
             if not self._closing:
                 self._safe_run(fn, tab)
@@ -1066,7 +1073,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         target_path = target
         if check_safety and target_path:
             try:
-                safety.ensure_safe_to_modify(Path(target_path).resolve(strict=True))
+                self._ensure_path_writable_and_clean(target_path)
             except Exception:
                 self.log(f"Operación cancelada: destino inseguro ({target_path})", self._current_tab())
                 return
@@ -1099,9 +1106,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if not folder:
                 return None
             
-            p = Path(folder).resolve(strict=True)
-            safety.ensure_safe_to_modify(p)
-            return str(p)
+            self._ensure_path_writable_and_clean(folder)
+            return str(Path(folder).resolve())
         except (safety.UnsafePathError, OSError, PermissionError, FileNotFoundError, ValueError):
             messagebox.showwarning("Ruta no segura", "Operación no permitida en esta ruta.")
             return None
@@ -1248,11 +1254,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             update_label("")
         else:
             # Validación proactiva de la ruta seleccionada de la lista
-            target_path = Path(choice)
-            if target_path.exists() and self._is_safe_target_dir(target_path):
-                self.scan_target = choice
-                update_label(f"Unidad completa: {choice}")
-            else:
+            try:
+                target_path = Path(choice).resolve(strict=True)
+                if self._is_safe_target_dir(target_path):
+                    self.scan_target = str(target_path)
+                    update_label(f"Unidad completa: {choice}")
+                else:
+                    raise Exception
+            except Exception:
                 self.log(f"Error: La ruta {choice} no es válida o es insegura.", "Limpieza")
                 self.target_choice.set("Por defecto (Temp + Descargas)")
                 self.scan_target = None
@@ -1262,12 +1271,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_scan_junk(self) -> None:
         """Busca archivos basura según la configuración actual."""
         def task() -> None:
-            # Validar objetivo actual antes de proceder
             target = self.scan_target
-            if target and not self._is_safe_target_dir(target):
-                self.log("Error: Objetivo configurado inválido o no seguro.", "Limpieza")
-                return
-
             destino = target or "carpetas por defecto"
             self.set_status(f"Buscando basura en {destino}...")
             self.clear("Limpieza")
@@ -1284,7 +1288,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log(f"Encontrados {len(junk)} candidatos ({total_mb} MB).", "Limpieza")
             self._safe_run_ui_callback(self.refresh_list)
 
-        # Usamos "." como placeholder seguro para la validación de hilo si target es None
         self.run_async(task, check_safety=True, target=self.scan_target or ".")
 
     @safe_ui_operation
@@ -1321,13 +1324,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            movidos = [jf for jf in aptos if self._is_safe_path(jf.path)]
-            if not movidos:
-                self.log("Error: Los archivos seleccionados ya no son seguros para mover.", "Limpieza")
-                return
             self.set_status("Moviendo a revisión...")
-            dest = stage_for_review(movidos)
-            self.log(f"Movidos {len(movidos)} archivos a: {dest}", "Limpieza")
+            dest = stage_for_review(aptos)
+            self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")
             self._invalidate_cache("junk")
 
         self.run_async(task, check_safety=True, target=".")
@@ -1343,9 +1342,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            if not self._is_safe_path("."):
-                self.log("Error: La carpeta de revisión no es segura para operar.", "Limpieza")
-                return
             try:
                 self.set_status("Vaciando la carpeta de revisión...")
                 n = delete_reviewed()
@@ -1397,7 +1393,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Escanea una carpeta elegida por el usuario."""
         folder = self._ask_folder()
         if folder:
-            self.scan_target = folder
             self._run_heuristic_scan(folder)
 
     @validated_ui_operation
@@ -1571,11 +1566,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 return
             
             # Chequeo adicional de seguridad antes de operar
-            safety.ensure_safe_to_modify(Path(".").resolve())
-            if not safety.is_safe_to_modify(Path(".")):
-                self.log("Error: Operación no permitida en este contexto.", "Memoria")
-                return
-
+            self._ensure_path_writable_and_clean(".")
             try:
                 ok, mensaje = memory_mod.trim_working_set(pid)
                 self._safe_run_ui_callback(lambda: self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria"))
@@ -1618,10 +1609,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.analysis_folder = folder
 
         def task() -> None:
-            if not Path(folder).exists():
-                self.log(f"Error: La carpeta {folder} ya no existe.", "Disco")
-                return
-            
             self.set_status(f"Analizando {folder}...")
             self.clear("Disco")
             self.log(f"Analizando {folder} (solo lectura, puede tardar)...", "Disco")
@@ -1637,10 +1624,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            if not self._is_safe_path(folder):
-                self.log(f"Error: La ruta {folder} no es segura para escanear.", "Duplicados")
-                return
-
             self.set_status(f"Buscando duplicados en {folder}...")
             self.clear("Duplicados")
             self.log(f"Buscando duplicados en {folder} (solo lectura, puede tardar)...",
