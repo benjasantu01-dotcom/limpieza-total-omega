@@ -300,15 +300,16 @@ def logo_svg(size: int = 128) -> str:
 </svg>"""
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
-    """Guarda una copia física del archivo logo.svg en el disco tras verificar seguridad."""
+    """Guarda una copia física del archivo logo.svg tras verificar integridad y seguridad."""
     if not destination: return None
     try:
-        path_obj = Path(str(destination).strip().strip('"\'')).resolve()
-        if not path_obj.is_absolute() or len(str(path_obj)) > 255: return None
+        path_obj = Path(str(destination)).resolve()
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj): return None
-        if path_obj.parent and not is_safe_to_modify(path_obj.parent): return None
         
-        path_obj.parent.mkdir(parents=True, exist_ok=True)
+        parent = path_obj.parent
+        if not is_safe_to_modify(parent): return None
+        
+        parent.mkdir(parents=True, exist_ok=True)
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj

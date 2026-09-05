@@ -556,6 +556,7 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Crea el cuerpo JSON para la petición a la API de Google."""
+    if not _ensure_safe_text(context_text): return None
     try:
         q = _sanitize_query(question)
         if not _ensure_safe_text(q): return None
@@ -592,7 +593,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     if not _ensure_safe_text(safe_c) or "Error" in safe_c: return None
     
     payload = _build_payload(question, safe_c)
-    if not payload or len(payload) > _MAX_PROMPT_LIMIT: return None
+    if not payload: return None
     
     try:
         url = _ENDPOINT.format(model=model) + f"?key={api_key}"

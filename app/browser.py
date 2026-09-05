@@ -153,6 +153,11 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         if not path or len(path) >= MAX_PATH_LEN:
             return True
         
+        # Validar seguridad antes de seguir
+        path_obj = Path(path)
+        if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+            return True
+        
         if entry.is_symlink() or is_junction_fn(path) or os.path.ismount(path):
             return True
             
@@ -253,6 +258,9 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
         if not candidate.exists() or len(str(candidate)) >= MAX_PATH_LEN:
             return False
         real_candidate = candidate.resolve(strict=True)
+        # Check safety before resolution logic
+        if not is_safe_to_modify(real_candidate) or is_protected_path(real_candidate):
+            return False
         if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or 
             os.path.ismount(str(real_candidate)) or not real_candidate.is_dir() or 
             not _is_safe_to_traverse(real_candidate, base_path) or
