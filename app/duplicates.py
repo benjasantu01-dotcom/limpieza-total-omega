@@ -192,7 +192,6 @@ def _collect_candidates(
     Usa `os.scandir` para minimizar llamadas a sistema (stat) por archivo.
     """
     size_map: Dict[int, List[Path]] = defaultdict(list)
-    visited_inodes: Set[Tuple[int, int]] = set()
 
     def _scan_directory_recursive(current_dir: Path) -> None:
         try:
@@ -205,10 +204,10 @@ def _collect_candidates(
                                 _scan_directory_recursive(subdir_path)
                         else:
                             st = _get_entry_stat(entry)
-                            p = Path(entry.path)
-                            if st and st.st_size >= min_size and st.st_nlink == 1 and _is_valid_candidate(p):
-                                size_map[st.st_size].append(p)
-                                visited_inodes.add((st.st_dev, st.st_ino))
+                            if st and st.st_size >= min_size and st.st_nlink == 1:
+                                p = Path(entry.path)
+                                if _is_valid_candidate(p):
+                                    size_map[st.st_size].append(p)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

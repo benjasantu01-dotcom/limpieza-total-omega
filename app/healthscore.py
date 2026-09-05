@@ -236,7 +236,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             pts = int(round(ratio * weight))
             metric_breakdown[area] = pts
             total_pts += float(pts)
-            recommendations.extend(_evaluate_rules(metrics, rules, ratio))
+            if rules:
+                recommendations.extend(_evaluate_rules(metrics, rules, ratio))
         except Exception:
             metric_breakdown[area] = 0
             continue

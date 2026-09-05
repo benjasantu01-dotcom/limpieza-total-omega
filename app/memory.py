@@ -245,6 +245,8 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 _snap_cache_time: float = 0.0
 _snap_cache_data: Optional[MemorySnapshot] = None
+_is_windows: bool = os.name == "nt"
+_linux_mem_path: Path = Path("/proc/meminfo")
 
 def read_snapshot() -> MemorySnapshot:
     """Lee el estado actual de la memoria. Cachea resultado por 5 segundos."""
@@ -253,13 +255,12 @@ def read_snapshot() -> MemorySnapshot:
     if (now - _snap_cache_time) < 5 and _snap_cache_data:
         return _snap_cache_data
 
-    if os.name == "nt": 
+    if _is_windows: 
         _snap_cache_data = _read_windows_snapshot()
     else:
         try:
-            mem_path = Path("/proc/meminfo")
-            if mem_path.exists():
-                content = mem_path.read_text(encoding="utf-8")
+            if _linux_mem_path.exists():
+                content = _linux_mem_path.read_text(encoding="utf-8")
                 _snap_cache_data = parse_linux_meminfo(content) if content else MemorySnapshot(BytesValue(0), BytesValue(0))
             else:
                 _snap_cache_data = MemorySnapshot(BytesValue(0), BytesValue(0))
@@ -275,7 +276,7 @@ _proc_cache_data: List[ProcessMemory] = []
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Consulta procesos pesados mediante PowerShell. Cachea resultados por 60s."""
     global _proc_cache_time, _proc_cache_data
-    if os.name != "nt": return []
+    if not _is_windows: return []
     
     now = time.time()
     if (now - _proc_cache_time) > 60:
@@ -294,7 +295,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             
     return _proc_cache_data[:limit]
 
-@lru_cache(maxsize=2)
+@lru_cache(maxsize=8)
 def pressure_level(snapshot: MemorySnapshot) -> str:
     """Clasifica el nivel de presión de memoria en cuatro estados semánticos."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0: return "info"
@@ -378,7 +379,7 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Intenta liberar páginas de memoria física del working set de un proceso."""
-    if os.name != "nt": return False, "Operación solo soportada en Windows."
+    if not _is_windows: return False, "Operación solo soportada en Windows."
     
     try:
         target_pid = int(pid)

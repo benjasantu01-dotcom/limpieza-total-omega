@@ -173,7 +173,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     """
 
     def __init__(self) -> None:
-        """Inicializa la estructura de la aplicación, el pool de hilos y el layout inicial."""
+        """Initializa la estructura de la aplicación, el pool de hilos y el layout inicial."""
         super().__init__()
         self.tabs: Dict[str, ctk.CTkFrame] = {}
         self._initialized_tabs: Dict[str, bool] = {name: False for name in TABS}
@@ -285,7 +285,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 logging.warning("Configuración inválida (no es dict), reseteando.")
                 self.settings = settings_mod.reset()
         except Exception as e:
-            logging.error("Fallo al cargar ajustes, reseteando: %s", e)
+            logging.error("Fallo al cargar ajustes, reseteando: %e", e)
             self.settings = settings_mod.reset()
             
         self.setting_vars: Dict[str, Any] = {}
