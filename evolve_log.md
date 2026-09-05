@@ -1090,3 +1090,42 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-05T12:53:47` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de métricas mediante la implementación de `functools.lru_cache` con un `maxsize` adecuado en la función `pressure_level` y, fundamentalmente, se reorganizó la lógica de caché en `read_snapshot` para evitar llamadas redundantes a `os.name` y `Path.exists()` dentro del bucle de ejecución, consolidando las verificaciones de sistema en una estructura más eficiente.
 - `2026-09-05T12:53:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T12:53:47` Corrida terminada. Total usado hoy: 304.
+- `2026-09-05T13:01:31` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-05T13:02:03` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-05T13:02:42` Tests FALLARON:
+```
+ma.write_text("importante")
+    
+        origen = tmp_path / "cualquiera.txt"
+        origen.write_text("x")
+        item = quarantine.quarantine_file(origen, base=cuarentena)
+    
+        # Manifiesto manipulado para apuntar afuera de la cuarentena.
+        items = quarantine.load_manifest(cuarentena)
+        items[0].stored_name = "../no-tocar.txt"
+        quarantine.save_manifest(items, cuarentena)
+    
+>       with pytest.raises(safety.UnsafePathError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE UnsafePathError
+
+evolve/tests/test_safety.py:255: Failed
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:293: SyntaxWarning: invalid escape sequence '\)'
+    """Determina si la ruta normalizada corresponde a la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+1 failed, 298 passed, 4 warnings in 1.38s
+
+```
+- `2026-09-05T13:02:42` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `purge_all` y `load_manifest` mediante el uso de conjuntos (`set`) para las búsquedas de archivos y el reemplazo del escaneo completo del directorio por la iteración sobre los ítems del manifiesto, evitando comparaciones innecesarias O(N*M).
+- `2026-09-05T13:03:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-09-05T13:03:17` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-09-05T13:03:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T13:03:17` Corrida terminada. Total usado hoy: 308.
