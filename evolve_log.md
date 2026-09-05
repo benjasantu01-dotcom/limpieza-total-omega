@@ -1126,3 +1126,20 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-05T00:56:29` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se endureció la validación de seguridad en `_is_safe_entry` y `scan_directory` incorporando una verificación explícita de rutas UNC y puntos de reparse antes de realizar cualquier operación sobre el sistema de archivos, asegurando que las rutas de red no sean procesadas inadvertidamente y manteniendo la integridad de las jerarquías de directorios.
 - `2026-09-05T00:56:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T00:56:29` Corrida terminada. Total usado hoy: 24.
+- `2026-09-05T01:04:55` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-09-05T01:05:26` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `save()` y `_Validators._is_safe_path` para evitar condiciones de carrera (TOCTOU) y asegurar que las rutas se verifiquen de forma consistente antes de cualquier operación de I/O, evitando el uso de `resolve()` en rutas que aún no existen y fortaleciendo la validación de `path_str` contra entradas maliciosas antes de expandir el `~`.
+- `2026-09-05T01:05:53` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-09-05T01:05:53` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-05T01:05:53` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-05T01:06:13` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-05T01:06:13` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-05T01:06:43` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-05T01:06:43` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-05T01:06:59` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-05T01:06:59` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-05T01:07:19` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-05T01:07:19` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-05T01:07:49` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-05T01:07:49` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-05T01:07:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T01:07:49` Corrida terminada. Total usado hoy: 28.

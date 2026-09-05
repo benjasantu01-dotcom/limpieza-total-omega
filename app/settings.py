@@ -155,6 +155,7 @@ class _Validators:
     def _run_safety_checks(path_obj: Path) -> bool:
         """Verifica recursivamente si una ruta está protegida o es insegura usando `safety.py`."""
         try:
+            # Usamos exist_ok para evitar errores innecesarios si la ruta no existe aún
             resolved = path_obj.resolve(strict=False)
             if resolved.is_symlink(): return False
             if hasattr(resolved, 'is_junction') and resolved.is_junction(): return False
@@ -165,12 +166,12 @@ class _Validators:
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
         """Valida que la cadena de ruta sea absoluta y supere las pruebas de `safety.py`."""
-        if not path_str or len(path_str) > 2048: return False
+        if not path_str or len(path_str) > 2048 or "\0" in path_str: return False
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
             return _Validators._run_safety_checks(p)
-        except (OSError, RuntimeError, PermissionError, AttributeError):
+        except (OSError, RuntimeError, PermissionError, AttributeError, ValueError):
             return False
 
     @staticmethod
@@ -198,7 +199,7 @@ class _Validators:
         if val == "": return ""
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
-        if not path_string or "\0" in path_string or not _Validators._is_safe_path(path_string):
+        if not _Validators._is_safe_path(path_string):
             return None
         return path_string
 
@@ -246,9 +247,9 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
         return _PATH_CACHE[cache_key]
         
     try:
-        base = Path(custom_base).expanduser().resolve(strict=False)
+        base = Path(custom_base).expanduser()
         if _Validators._is_safe_path(str(base)):
-            res = base / SETTINGS_FILE
+            res = base.resolve(strict=False) / SETTINGS_FILE
             _PATH_CACHE[cache_key] = res
             return res
     except (OSError, RuntimeError):
@@ -271,6 +272,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta_str = str(ruta)
     
     try:
+        if not ruta.exists(): return DEFAULTS.copy()
         stats = ruta.stat()
         mtime = float(stats.st_mtime)
         if (cached := _CACHE.get(ruta_str)) and cached[0] == mtime:
@@ -282,7 +284,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             data = validate(content) if _is_dict(content) else DEFAULTS.copy()
             _CACHE[ruta_str] = (mtime, data)
             return data.copy()
-    except (OSError, PermissionError, FileNotFoundError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
+    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
         pass
     return DEFAULTS.copy()
 
@@ -298,21 +300,16 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     try:
         ruta = settings_path(custom_base)
-        if not is_safe_to_modify(str(ruta.resolve(strict=False))): return None
+        # Verificación de seguridad previa a cualquier operación
+        if not _Validators._is_safe_path(str(ruta.parent)): return None
+        if not is_safe_to_modify(str(ruta.absolute())): return None
 
         parent = ruta.parent
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
-        if not parent.is_dir() or is_protected_path(str(parent.resolve(strict=False))):
-            return None
-            
+        
+        # Validar espacio antes de escribir
         if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE:
             return None
-        
-        if ruta.exists():
-            if not ruta.is_file(): return None
-            resolved = ruta.resolve(strict=False)
-            if resolved.is_symlink() or (hasattr(resolved, 'is_junction') and resolved.is_junction()):
-                return None
         
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")

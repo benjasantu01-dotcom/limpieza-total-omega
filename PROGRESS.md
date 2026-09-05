@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 59 | 3 | 9 | 1 | 58 |
+| 2026-09-03 | 59 | 3 | 9 | 1 | 54 |
 | 2026-09-04 | 158 | 18 | 29 | 8 | 137 |
-| 2026-09-05 | 16 | 0 | 2 | 2 | 4 |
+| 2026-09-05 | 17 | 0 | 2 | 2 | 7 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
+- seguridad defensiva: **49**
 - robustez ante casos límite: **48**
-- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **37**
 
@@ -33,9 +33,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **21**
 - `organizer.py`: **20**
 - `healthscore.py`: **19**
+- `settings.py`: **19**
 - `safety.py`: **18**
 - `scanner.py`: **18**
-- `settings.py`: **18**
 - `quarantine.py`: **17**
 - `duplicates.py`: **17**
 - `branding.py`: **15**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T01:05:26` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` y `_Validators._is_safe_path` para evitar condiciones de carrera (TOCTOU) y asegurar que las rutas se verifiquen de forma consistente antes de cualquier operación de I/O, evitando el uso de `resolve()` en rutas que aún no existen y fortaleciendo la validación de `path_str` contra entradas maliciosas antes de expandir el `~`.
 - `2026-09-05T00:56:29` **scanner.py** (seguridad defensiva): Se endureció la validación de seguridad en `_is_safe_entry` y `scan_directory` incorporando una verificación explícita de rutas UNC y puntos de reparse antes de realizar cualquier operación sobre el sistema de archivos, asegurando que las rutas de red no sean procesadas inadvertidamente y manteniendo la integridad de las jerarquías de directorios.
 - `2026-09-05T00:56:17` **safety.py** (seguridad defensiva): Se introdujo una comprobación explícita para evitar que `normalize` (que resuelve rutas mediante `path.resolve()`) convierta inadvertidamente una ruta inexistente pero potencialmente insegura en una ruta absoluta que podría evadir los filtros de `is_protected_path` al normalizar directorios inexistentes.
 - `2026-09-05T00:46:56` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_can_move_file` y `stage_for_review` para evitar ataques de manipulación de rutas (path traversal) y garantizar que `shutil.move` nunca sea invocado fuera de los límites estrictos validados por `safety.py`.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-05T00:15:47` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `is_protected_path` ante rutas inexistentes o mal formadas mediante el uso de `Path.parts` y la verificación explícita de `p.anchor`, previniendo excepciones no controladas durante la normalización de rutas inválidas que podrían detener el bucle principal.
 - `2026-09-05T00:15:11` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de redundancia de sistema de archivos en `_atomic_isolate_file` para detectar casos donde la ruta destino ya existe pero no fue capturada por la verificación inicial, evitando así condiciones de carrera (TOCTOU) durante el proceso de aislamiento atómico.
 - `2026-09-05T00:14:34` **organizer.py** (robustez ante casos límite): Se ha añadido un chequeo de redundancia en `stage_for_review` para evitar procesar archivos que ya residen en el directorio de destino, y se robusteció la función `_can_move_file` para evitar colisiones lógicas y fallos por permisos denegados al calcular rutas de destino, mejorando la resiliencia ante errores de sistema.
-- `2026-09-05T00:04:45` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a casos donde las métricas podrían contener valores `None` o inconsistentes que rompan el pipeline, asegurando que el proceso de normalización siempre tenga un valor numérico seguro.
