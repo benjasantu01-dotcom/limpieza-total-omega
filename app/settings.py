@@ -306,17 +306,15 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     ):
         cleaned_settings["asistente_activado"] = False
     
+    temp_path = None
     try:
         ruta = settings_path(custom_base).absolute()
-        parent = ruta.parent
-        
-        # Validación de seguridad: debe ser escribible Y no estar en ruta bloqueada
         if is_protected_path(str(ruta)): return None
         ensure_safe_to_modify(str(ruta))
         
+        parent = ruta.parent
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         
-        # Validar espacio disponible antes de intentar la escritura atómica
         if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE * 2:
             return None
         
@@ -330,16 +328,14 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             os.fsync(f.fileno())
         
         os.replace(temp_path, ruta)
-        try:
-            _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
-        except OSError:
-            pass
+        _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError):
-        if 'temp_path' in locals() and os.path.exists(temp_path):
+        return None
+    finally:
+        if temp_path and os.path.exists(temp_path):
             try: os.remove(temp_path)
             except OSError: pass
-        return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     """Fusiona cambios incrementales validados en la configuración persistida."""

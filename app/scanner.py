@@ -114,10 +114,9 @@ class Scanner:
 
     def _is_inside_base_root(self, path_str: str) -> bool:
         """Verifica que el objetivo sea hijo del directorio raíz mediante comparación de cadenas."""
-        if not path_str or not isinstance(path_str, str): 
+        if not isinstance(path_str, str) or not path_str: 
             return False
         
-        # Validación de seguridad defensiva: comprobamos la ruta resuelta
         try:
             resolved_path = Path(path_str).resolve(strict=False)
             if is_protected_path(resolved_path):
@@ -153,7 +152,6 @@ class Scanner:
             stats = entry.stat(follow_symlinks=False)
             return bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError, PermissionError):
-            # Ante error al leer atributos, tratamos como inseguro (omitimos)
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
@@ -201,7 +199,6 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     file_ext = (ext or path.suffix.lower())
     if file_ext in SUSPICIOUS_EXECUTABLE_EXT:
         try:
-            # Reutilizamos el objeto DirEntry para obtener stats sin llamada adicional al disco
             stats = entry.stat(follow_symlinks=False) if entry else path.stat()
             if stats.st_size == 0:
                 findings.append(Suspicion(path, "Archivo vacío sospechoso", "warning"))
@@ -216,11 +213,11 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Punto de entrada principal para escaneo recursivo de una ruta."""
-    if not directory:
+    if not directory or not isinstance((d := Path(directory)), Path):
         return []
         
     try:
-        path_input = Path(directory).resolve(strict=False)
+        path_input = d.resolve(strict=False)
         if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
             return []
         if str(path_input).startswith(("\\\\", "//")):

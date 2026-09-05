@@ -61,7 +61,7 @@ class SafetyValidationErrorCode(IntEnum):
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
     def __init__(self, message: str, code: SafetyValidationErrorCode = SafetyValidationErrorCode.GENERIC):
-        super().__init__(message)
+        super().__init__(f"[{code.name}] {message}")
         self.code = code
 
 class ProtectionReason(Enum):
@@ -203,7 +203,6 @@ def _is_file_in_use(path_str: str) -> bool:
     """Verifica si un archivo está siendo usado exclusivamente por otro proceso."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str:
         return False
-    # Verificación temprana de existencia antes de intentar abrir
     if not os.path.exists(path_str):
         return False
     try:
@@ -237,10 +236,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 
 @lru_cache(maxsize=1024)
 def _check_file_integrity_cached(path_str: str) -> bool:
-    """
-    Ejecuta el conjunto de reglas de integridad sobre el archivo.
-    Retorna True si todas las reglas pasan, False en caso contrario.
-    """
+    """Ejecuta el conjunto de reglas de integridad sobre el archivo."""
     path = Path(path_str)
     try:
         file_stat = path.stat()
@@ -255,7 +251,6 @@ def _check_file_integrity_cached(path_str: str) -> bool:
 
 def _check_file_integrity(path: Path) -> None:
     """Wrapper para verificar integridad: lanza UnsafePathError si alguna regla falla."""
-    # Validación directa sin caché para mitigar TOCTOU parcial
     if not _check_file_integrity_cached(str(path)):
         raise UnsafePathError("Operación denegada por reglas de integridad.")
 
@@ -271,16 +266,7 @@ def _is_readonly(path: Path) -> bool:
 
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
-    """
-    Estandariza rutas, resolviendo enlaces y validando posibles traversals.
-    
-    Args:
-        path: La ruta a normalizar.
-    Returns:
-        Path absoluto normalizado.
-    Raises:
-        ValueError: Si la ruta es nula, vacía, mal formada o intenta un traversal.
-    """
+    """Estandariza rutas, resolviendo enlaces y validando posibles traversals."""
     if path is None: raise ValueError("Ruta nula recibida.")
     path_str = str(path).strip()
     if not path_str: raise ValueError("Entrada de ruta vacía.")
@@ -388,13 +374,9 @@ def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | 
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
-    """
-    Valida una ruta para modificación, lanzando excepción si es insegura.
-    """
+    """Valida una ruta para modificación, lanzando excepción si es insegura."""
     if path is None: raise UnsafePathError("Ruta nula recibida.")
-    if not isinstance(path, (str, Path)) or not str(path).strip():
-        raise UnsafePathError("Ruta inválida o vacía.")
-
+    
     try:
         p = normalize(path)
     except ValueError as e:
@@ -406,11 +388,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
     
-    # Verificación de existencia real para integridad (TOCTOU)
     if p.exists():
         if not (p.is_file() or p.is_dir()):
-            raise UnsafePathError("Objeto no soportado.")
-        # Verificación de integridad post-existencia
+            raise UnsafePathError("Objeto no soportado.", SafetyValidationErrorCode.GENERIC)
         _check_file_integrity(p)
     elif p.parent and is_protected_path(p.parent):
         raise UnsafePathError("Directorio contenedor protegido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
