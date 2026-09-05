@@ -87,18 +87,12 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     
     Asegura que la ruta sea absoluta, un directorio existente y que no esté
     bloqueada por las reglas de seguridad (`is_protected_path`).
-    
-    Args:
-        directory: La ruta a validar (string, Path o PathLike).
-        
-    Returns:
-        Optional[Path]: Objeto Path absoluto si es válida y segura, None en caso contrario.
     """
     try:
         if directory is None:
             return None
         p = Path(os.fspath(directory)).resolve(strict=True)
-        if p.is_dir() and p.is_absolute() and not is_protected_path(p):
+        if p.is_dir() and not is_protected_path(p):
             return p
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
         pass
@@ -177,12 +171,6 @@ class DriveUsage:
 def format_size(num: Union[int, float, None]) -> str:
     """
     Formatea bytes a una representación legible (ej: '1.2 GB').
-    
-    Args:
-        num: Tamaño en bytes a formatear.
-        
-    Returns:
-        str: Representación formateada con la unidad correspondiente (B, KB, MB, GB, TB).
     """
     if num is None or not isinstance(num, (int, float)):
         return "0 B"
@@ -202,22 +190,14 @@ def format_size(num: Union[int, float, None]) -> str:
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
     Consulta el estado de una unidad de disco mediante `shutil.disk_usage`.
-    
-    Args:
-        mount: Ruta de la unidad a analizar.
-        
-    Returns:
-        Optional[DriveUsage]: Objeto con estadísticas de espacio o None si no es accesible.
     """
     if mount is None:
         return None
         
     try:
         p = Path(os.fspath(mount)).resolve()
-        if not p.is_absolute() or str(p).startswith(("\\\\", "//")):
-            return None
-        
-        if not p.exists() or not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
+        # Verificar protección antes de consultar el disco
+        if is_protected_path(p) or not p.exists() or not p.is_dir():
             return None
             
         usage = shutil.disk_usage(p)
@@ -229,12 +209,6 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
     """
     Obtiene métricas de todas las unidades locales o de una lista provista.
-    
-    Args:
-        mounts: Opcional, lista de rutas a unidades para analizar.
-        
-    Returns:
-        List[DriveUsage]: Lista de objetos con las métricas de las unidades.
     """
     target_mounts: Iterable[str]
     if mounts is None:
@@ -256,7 +230,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     Realiza un recorrido profundo (DFS) del sistema de archivos mediante `os.scandir`.
     """
     root_path = _validate_root(directory)
-    if root_path is None or not root_path.exists():
+    if root_path is None:
         return
 
     REPARSE_POINT_ATTR = 0x400
@@ -266,8 +240,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     while stack:
         current_dir = stack.pop()
         
-        # Validar existencia antes de cada iteración del stack para manejar cambios externos
-        if not current_dir.exists():
+        # Validar seguridad tras resolución dinámica
+        if skip_protected and is_protected_path(current_dir):
             continue
             
         try:
@@ -275,8 +249,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                 for entry in iterator:
                     try:
                         path_entry = Path(entry.path)
-                        if skip_protected and is_protected_path(path_entry):
-                            continue
                         
                         st = entry.stat(follow_symlinks=False)
                         
@@ -284,6 +256,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         if entry.is_dir():
+                            # Validar que la subcarpeta sea segura antes de agregar al stack
+                            if skip_protected and is_protected_path(path_entry):
+                                continue
                             inode_key = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
                             if inode_key[0] != 0 and inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
@@ -291,7 +266,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                     
                         elif entry.is_file():
                             yield path_entry, max(0, int(getattr(st, 'st_size', 0)))
-                    except (PermissionError, OSError, AttributeError, UnicodeDecodeError):
+                    except (PermissionError, OSError, AttributeError):
                         continue
         except (PermissionError, OSError):
             continue
@@ -414,13 +389,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
     """
     Genera un informe textual resumen con las métricas principales.
-    
-    Args:
-        directory: Directorio raíz a analizar.
-        skip_protected: Si es True, ignora rutas de sistema.
-        
-    Returns:
-        List[str]: Informe formateado como lista de líneas de texto.
     """
     p_input = _validate_root(directory)
     if p_input is None:

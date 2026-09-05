@@ -1105,3 +1105,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-05T00:26:08` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta de los tipos de datos en la respuesta JSON recibida desde la API, evitando errores de ejecución si la respuesta no cumple con el esquema esperado.
 - `2026-09-05T00:26:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T00:26:08` Corrida terminada. Total usado hoy: 12.
+- `2026-09-05T00:34:27` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-09-05T00:35:02` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva de `save_logo_svg` implementando una validación estricta del directorio destino mediante `ensure_safe_to_modify` antes de cualquier operación, asegurando que el proceso de escritura no pueda ser redirigido fuera de los directorios permitidos.
+- `2026-09-05T00:35:29` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en la recursión de `_sum_directory_recursive` validando el estado del archivo mediante `is_safe_to_modify` antes de procesar su tamaño, evitando riesgos al interactuar con rutas que podrían haber cambiado de estado o permisos durante la iteración.
+- `2026-09-05T00:35:58` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se endureció la seguridad defensiva de `walk_files` y `drive_usage` verificando la resolución de rutas contra `is_protected_path` después de normalizarlas, asegurando que no se pueda acceder a carpetas prohibidas mediante maniobras de `..` en rutas relativas o cambios de estado durante la ejecución.
+- `2026-09-05T00:36:10` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-09-05T00:36:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T00:36:10` Corrida terminada. Total usado hoy: 16.
