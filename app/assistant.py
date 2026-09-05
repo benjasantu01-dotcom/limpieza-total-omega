@@ -558,7 +558,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
         return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Extrae la respuesta textual del payload JSON de la API con validación estricta."""
+    """Extracte la respuesta textual del payload JSON de la API con validación estricta."""
     if not isinstance(data, dict): return None
     try:
         candidates = data.get("candidates")
@@ -597,10 +597,12 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             raw_text = _extract_text_from_gemini_json(data)
             if not raw_text: return None
             
+            # Verificación defensiva contra inyección de rutas en la respuesta del modelo
             clean = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             final = _validate_response_length(clean)
             
-            if _ensure_safe_text(final) and not is_protected_path(final):
+            # Validación estricta final: impedir cualquier respuesta que parezca una ruta de sistema
+            if _ensure_safe_text(final) and not is_protected_path(final) and not _PATH_INJECTION_REGEX.search(final):
                 return final
             return None
             

@@ -105,8 +105,16 @@ def _get_local_windows_drives() -> List[str]:
     de letras de unidad estándar (A-Z).
     """
     import string
-    return [f"{letter}:\\" for letter in string.ascii_uppercase
-            if os.path.exists(f"{letter}:\\")]
+    drives = []
+    for letter in string.ascii_uppercase:
+        drive = f"{letter}:\\"
+        try:
+            # os.path.exists puede bloquearse en unidades removibles sin medio
+            if os.path.exists(drive):
+                drives.append(drive)
+        except (OSError, PermissionError):
+            continue
+    return drives
 
 
 @dataclass
