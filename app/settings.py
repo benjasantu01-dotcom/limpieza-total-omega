@@ -35,7 +35,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple, TypeGuard
 
-from safety import is_safe_to_modify, is_protected_path
+from safety import is_safe_to_modify, is_protected_path, ensure_safe_to_modify
 
 PathLike: TypeAlias = str | Path
 T = TypeVar("T")
@@ -299,8 +299,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         ruta = settings_path(custom_base).absolute()
         parent = ruta.parent
         
-        if not _Validators._is_safe_path(str(parent)) or not is_safe_to_modify(str(ruta)): return None
-
+        # Validar ruta antes de intentar escribir
+        ensure_safe_to_modify(str(ruta))
+        
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE: return None
         

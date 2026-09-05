@@ -122,8 +122,8 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida que la entrada no exceda límites de longitud, no sea un punto de reparse,
-        no sea una ruta UNC, no contenga caracteres de ofuscación y no esté protegida por seguridad.
+        Valida que la entrada no exceda límites de longitud, no contenga caracteres 
+        de ofuscación y no esté protegida por seguridad.
         """
         path_str = entry.path
         if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
@@ -133,7 +133,7 @@ class Scanner:
         if not name or RTL_CHAR_RE.search(name) or RESERVED_NAMES_RE.match(name):
             return False
         
-        if self._is_reparse_point(entry) or not self._is_inside_base_root(path_str):
+        if not self._is_inside_base_root(path_str):
             return False
             
         return not is_protected_path(Path(path_str))
@@ -156,17 +156,17 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """Clasifica la entrada: si es directorio, lo encola; si es archivo, aplica heurísticas."""
-        if not entry.path:
+        if not entry.path or not self._is_safe_entry(entry):
             return
         
         try:
             if entry.is_dir(follow_symlinks=False):
-                if self._is_safe_entry(entry):
+                if not self._is_reparse_point(entry):
                     self._handle_directory(entry, stack)
                 return
 
             ext_low = Path(entry.name).suffix.lower() if entry.name else ""
-            if ext_low in SUSPICIOUS_ALL_EXTS and self._is_safe_entry(entry):
+            if ext_low in SUSPICIOUS_ALL_EXTS:
                 self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError):
             return

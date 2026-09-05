@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 24
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 8 | 1 | 1 | 0 | 16 |
+| 2026-09-03 | 8 | 1 | 1 | 0 | 12 |
 | 2026-09-04 | 158 | 18 | 29 | 8 | 137 |
-| 2026-09-05 | 62 | 5 | 9 | 7 | 45 |
+| 2026-09-05 | 65 | 5 | 9 | 7 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
+- seguridad defensiva: **49**
 - robustez ante casos límite: **47**
-- seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **37**
 
@@ -33,20 +33,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **21**
 - `healthscore.py`: **19**
 - `safety.py`: **19**
+- `settings.py`: **19**
 - `diskreport.py`: **18**
 - `organizer.py`: **18**
-- `settings.py`: **18**
+- `scanner.py`: **17**
 - `duplicates.py`: **16**
 - `memory.py`: **16**
 - `branding.py`: **16**
-- `scanner.py`: **16**
 - `quarantine.py`: **15**
 - `browser.py`: **14**
 - `main.py`: **12**
-- `startup.py`: **10**
+- `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T05:32:18` **startup.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `StartupEntry` al implementar un chequeo de existencia más estricto que utiliza `os.path.lexists` en lugar de `path.exists()` para prevenir el seguimiento involuntario de enlaces simbólicos o junctions (reparse points) durante la validación inicial de rutas, alineándose con las mejores prácticas de seguridad defensiva.
+- `2026-09-05T05:31:51` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la escritura de archivos al integrar `ensure_safe_to_modify` antes de la creación del archivo temporal, garantizando que si la ruta de destino es bloqueada por las políticas de seguridad (`safety.py`), la operación se aborte antes de realizar cualquier cambio en disco.
+- `2026-09-05T05:31:23` **scanner.py** (seguridad defensiva): He refactorizado la validación de rutas en `_is_safe_entry` y `process_entry` para centralizar la verificación de puntos de reparse, evitando el procesamiento de nodos simbólicos y junctions de forma consistente, y aplicando `is_protected_path` de manera estricta antes de realizar cualquier operación de acceso a atributos.
 - `2026-09-05T05:22:31` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "file lock" preventiva mediante la apertura exclusiva con `FILE_SHARE_READ` en `_is_file_in_use`, garantizando que si el archivo no puede ser abierto de forma compartida, se considere bloqueado para evitar operaciones de escritura fallidas o corruptoras.
 - `2026-09-05T05:21:18` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad en `_process_directory` implementando un control de profundidad más robusto y validando la existencia de la ruta antes de intentar resolverla o acceder a sus atributos, evitando así posibles errores de IO en el recorrido recursivo.
 - `2026-09-05T05:13:00` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva al invocar `OpenProcess` con un filtro de acceso más restrictivo, asegurando que el proceso objetivo no solo sea validado por ruta, sino que el handle abierto no tenga privilegios innecesarios de escritura antes de intentar cualquier operación de gestión de memoria.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-05T04:51:53` **startup.py** (robustez ante casos límite): Se mejoró la robustez de `_validate_file_access` añadiendo un chequeo explícito de la existencia del archivo mediante `os.path.exists()` previo a la obtención de atributos, evitando que `lstat()` falle innecesariamente ante rutas con enlaces rotos o accesos restringidos durante la recolección de métricas de inicio.
 - `2026-09-05T04:51:40` **settings.py** (robustez ante casos límite): Mejoré la robustez de `load` y `save` ante archivos bloqueados o procesos de lectura interrumpidos implementando un manejo explícito de `OSError` que evita fallas catastróficas al intentar acceder a descriptores de archivo en uso.
 - `2026-09-05T04:50:44` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_in_use` añadiendo una comprobación previa mediante `os.access(path_str, os.F_OK)` para evitar llamadas innecesarias a la API de Windows en rutas inexistentes y se ha encapsulado el manejo de `path.stat()` en `_check_file_integrity_cached` para capturar errores de acceso ("Access Denied") de forma específica, evitando que excepciones de sistema no controladas interrumpan el escaneo.
-- `2026-09-05T04:41:40` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `is_safe_to_modify` dentro de `purge_all` y un chequeo de `PermissionError` en el iterador de archivos para garantizar que el bucle de limpieza sea robusto ante archivos inaccesibles o permisos denegados en el sistema de archivos.
-- `2026-09-05T04:40:34` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `parse_windows_process_csv` para gestionar procesos "zombies" o incompletos que devuelven valores negativos o nulos en su Working Set, evitando que el cálculo de presión y el reporte final se basen en datos corruptos o fuera de rango.
-- `2026-09-05T04:31:11` **healthscore.py** (robustez ante casos límite): Se ha robustecido el sistema ante entradas inválidas o nulas mediante una validación más estricta en el método `__post_init__` y `validate`, garantizando que valores fuera de rango o tipos incompatibles no provoquen estados de error silenciosos al calcular el score.
