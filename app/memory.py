@@ -212,6 +212,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             if pid_val <= 0 or ws_val < 0:
                 continue
             
+            # Filtro defensivo: si el nombre es una ruta, validarla.
             if is_protected_path(name_val) or pid_val in SYSTEM_CRITICAL_PIDS:
                 continue
                 

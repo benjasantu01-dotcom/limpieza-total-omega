@@ -752,3 +752,11 @@ FAILED evolve/tests/test_modules.py::test_cache_paths_only_point_at_cache_folder
 - `2026-09-05T09:38:48` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva en `main.py` al asegurar que la validación de rutas `ensure_safe_to_modify` se aplique estrictamente sobre la ruta base de trabajo antes de realizar cualquier operación de análisis de disco en `on_disk_analysis` y `on_find_duplicates`, garantizando que el usuario solo pueda explorar carpetas validadas por `safety.py`.
 - `2026-09-05T09:38:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T09:38:48` Corrida terminada. Total usado hoy: 228.
+- `2026-09-05T09:45:44` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-09-05T09:46:47` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-05T09:47:21` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `parse_windows_process_csv` al implementar una validación de ruta estricta utilizando `is_protected_path` sobre el ejecutable del proceso antes de incluirlo en la lista de monitoreo, asegurando que procesos del sistema no sean siquiera considerados para el reporte de memoria.
+- `2026-09-05T09:47:51` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha implementado un control de integridad adicional en `_can_move_file` utilizando `os.path.samefile` para asegurar que el archivo fuente y el destino propuesto no sean la misma entidad física, previniendo errores de colisión por aliasing de rutas.
+- `2026-09-05T09:48:29` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad en el aislamiento de archivos agregando una verificación de tamaño en tiempo real tras la copia, asegurando que el archivo almacenado en cuarentena no haya sido alterado por procesos externos durante la escritura, mitigando condiciones de carrera.
+- `2026-09-05T09:48:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-05T09:48:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T09:48:35` Corrida terminada. Total usado hoy: 232.

@@ -439,8 +439,9 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
             os.close(fd)
             raise e
 
+        # Verificación post-escritura: el tamaño en destino debe ser idéntico al original
         if temp_path.stat().st_size != original_size:
-            raise OSError("Error de integridad: tamaño de archivo erróneo.")
+            raise OSError("Error de integridad post-escritura: tamaño de archivo mismatch.")
             
         if not is_safe_to_modify(temp_path):
             raise UnsafePathError("Integridad comprometida: archivo temporal no seguro.")

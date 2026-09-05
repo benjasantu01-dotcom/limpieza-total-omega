@@ -370,8 +370,11 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         safe_name: str = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
         target: Path = _generate_unique_target(dest_base_res / safe_name)
         
-        # Verificación final de contención para evitar path traversal
-        return target if target.parent.resolve() == dest_base_res else None
+        # Verificación final de contención y aliasing
+        if target.parent.resolve() != dest_base_res: return None
+        if target.exists() and os.path.samefile(src_res, target): return None
+            
+        return target
     except (OSError, ValueError, AttributeError):
         return None
 
