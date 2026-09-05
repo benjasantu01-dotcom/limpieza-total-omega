@@ -435,12 +435,11 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     """Filtra una lista de rutas, manteniendo solo las seguras."""
     results = []
     for p in paths:
-        if p is not None:
-            if is_safe_to_modify(p, allow_sensitive=allow_sensitive):
-                try:
-                    results.append(normalize(p))
-                except (ValueError, TypeError, OSError):
-                    continue
+        if p is None: continue
+        try:
+            results.append(ensure_safe_to_modify(p, allow_sensitive=allow_sensitive))
+        except (UnsafePathError, ValueError, TypeError, OSError):
+            continue
     return results
 
 

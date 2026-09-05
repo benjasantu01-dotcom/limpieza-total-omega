@@ -75,7 +75,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
     
     try:
-        stats = entry.stat(follow_symlinks=False) if (entry and hasattr(entry, 'path')) else path.stat()
+        stats = entry.stat(follow_symlinks=False) if entry else path.stat()
         if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     except (OSError, AttributeError, ValueError, PermissionError):
@@ -188,7 +188,8 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     file_ext = (ext or path.suffix.lower())
     if file_ext in SUSPICIOUS_EXECUTABLE_EXT:
         try:
-            stats = entry.stat(follow_symlinks=False) if (entry and hasattr(entry, 'path')) else path.stat()
+            # Reutilizamos el objeto DirEntry para obtener stats sin llamada adicional al disco
+            stats = entry.stat(follow_symlinks=False) if entry else path.stat()
             if stats.st_size == 0:
                 findings.append(Suspicion(path, "Archivo vacío sospechoso", "warning"))
         except (OSError, PermissionError, AttributeError, FileNotFoundError):

@@ -701,3 +701,10 @@ FAILED evolve/tests/test_modules.py::test_cache_paths_only_point_at_cache_folder
 - `2026-09-05T08:26:34` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_for_junk` y `_process_directory` transformando la lista de extensiones `JUNK_EXTENSIONS` en un conjunto (`frozenset`) y pre-compilando la comparación de extensiones para evitar múltiples accesos a disco y llamadas innecesarias a `Path.suffix`.
 - `2026-09-05T08:26:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T08:26:34` Corrida terminada. Total usado hoy: 200.
+- `2026-09-05T08:34:19` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-09-05T08:34:56` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: rendimiento).
+- `2026-09-05T08:35:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 99): unterminated string literal (detected at line 99)
+- `2026-09-05T08:35:54` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el proceso de filtrado en `filter_safe_paths` evitando la ejecución redundante de `ensure_safe_to_modify` al integrar el chequeo de integridad y la normalización en una sola pasada, reduciendo drásticamente las llamadas costosas al sistema de archivos y el uso de caché.
+- `2026-09-05T08:36:06` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el flujo de escaneo eliminando la recolección innecesaria de `stats` (archivo `stat()`) para cada archivo, priorizando el uso de `entry.stat()` cuando el escaneo ya dispone de la instancia `os.DirEntry`, evitando llamadas al sistema redundantes en el bucle principal.
+- `2026-09-05T08:36:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T08:36:06` Corrida terminada. Total usado hoy: 204.
