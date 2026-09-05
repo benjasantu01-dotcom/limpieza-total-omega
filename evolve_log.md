@@ -1119,3 +1119,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-05T00:46:56` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_can_move_file` y `stage_for_review` para evitar ataques de manipulación de rutas (path traversal) y garantizar que `shutil.move` nunca sea invocado fuera de los límites estrictos validados por `safety.py`.
 - `2026-09-05T00:46:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T00:46:56` Corrida terminada. Total usado hoy: 20.
+- `2026-09-05T00:54:47` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-09-05T00:55:25` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: seguridad defensiva).
+- `2026-09-05T00:55:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-05T00:56:17` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se introdujo una comprobación explícita para evitar que `normalize` (que resuelve rutas mediante `path.resolve()`) convierta inadvertidamente una ruta inexistente pero potencialmente insegura en una ruta absoluta que podría evadir los filtros de `is_protected_path` al normalizar directorios inexistentes.
+- `2026-09-05T00:56:29` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se endureció la validación de seguridad en `_is_safe_entry` y `scan_directory` incorporando una verificación explícita de rutas UNC y puntos de reparse antes de realizar cualquier operación sobre el sistema de archivos, asegurando que las rutas de red no sean procesadas inadvertidamente y manteniendo la integridad de las jerarquías de directorios.
+- `2026-09-05T00:56:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T00:56:29` Corrida terminada. Total usado hoy: 24.

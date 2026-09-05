@@ -275,12 +275,17 @@ def normalize(path: PathLike) -> Path:
         p = Path(path_str)
         if ".." in p.parts: raise ValueError("Path traversal detectado.")
         
+        # Validar existencia parcial antes de resolver totalmente
         current = Path(p.anchor)
         for part in p.parts[1:]:
             current = current / part
             if _is_reparse_point(current):
                 raise ValueError(f"Acceso restringido: componente {current} es un punto de reparse.")
-                
+        
+        # .resolve() no debe ser usado en rutas que no existen para prevenir desvíos
+        if not p.exists():
+            return Path(os.path.abspath(path_str))
+            
         return p.resolve()
     except (OSError, RuntimeError, TypeError, PermissionError) as e:
         raise ValueError(f"Error irrecuperable al normalizar {path_str}: {e}")
@@ -300,7 +305,7 @@ def is_protected_path(path: PathLike) -> bool:
     if not path: return True
     try:
         p = Path(path)
-        path_str = str(p.resolve())
+        path_str = str(p.absolute())
         
         for root in _SYSTEM_ROOT_PATHS:
             if os.path.commonpath([path_str, root]) == root:

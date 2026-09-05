@@ -124,10 +124,10 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
         Valida que la entrada no exceda límites de longitud, no sea un punto de reparse,
-        no contenga caracteres de ofuscación y no esté protegida por seguridad.
+        no sea una ruta UNC, no contenga caracteres de ofuscación y no esté protegida por seguridad.
         """
         path_str = entry.path
-        if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith("\\\\"):
+        if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
             return False
         
         name = entry.name
@@ -144,11 +144,9 @@ class Scanner:
         try:
             if entry.is_symlink():
                 return True
-            # Usamos stat sin follow_symlinks para inspeccionar atributos del nodo actual
             stats = entry.stat(follow_symlinks=False)
             return bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError, PermissionError):
-            # Si no podemos acceder al archivo por permisos o porque desapareció, asumimos el criterio más restrictivo
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
@@ -208,11 +206,14 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Punto de entrada principal para escaneo recursivo de una ruta."""
+    """Punto de entrada principal para escaneo recursivo de una ruta, rechazando rutas UNC."""
     if not directory:
         return []
         
     try:
+        str_dir = str(directory)
+        if str_dir.startswith(("\\\\", "//")):
+            return []
         path_input = Path(directory).resolve(strict=False)
         if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
             return []
