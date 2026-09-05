@@ -314,7 +314,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             os.fsync(f.fileno())
         os.replace(temp_path, ruta)
         
-        _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
+        try:
+            _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
+        except OSError:
+            pass
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError):
         return None

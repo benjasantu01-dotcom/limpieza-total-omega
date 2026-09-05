@@ -203,7 +203,7 @@ def _is_file_in_use(path_str: str) -> bool:
     """Verifica mediante un handle si un archivo está bloqueado por otro proceso."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str:
         return False
-    if not os.path.lexists(path_str):
+    if not os.access(path_str, os.F_OK):
         return False
     try:
         kernel32 = ctypes.windll.kernel32
@@ -241,7 +241,7 @@ def _check_file_integrity_cached(path_str: str) -> bool:
     path = Path(path_str)
     try:
         file_stat = path.stat()
-    except (PermissionError, OSError):
+    except (PermissionError, OSError, FileNotFoundError):
         return False
         
     for rule in _VALIDATORS:

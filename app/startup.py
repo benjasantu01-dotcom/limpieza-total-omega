@@ -126,7 +126,11 @@ class StartupEntry:
     def _validate_file_access(self, p: Path) -> bool:
         """Verifica existencia y excluye puntos de reparseo (reparse points) para seguridad."""
         try:
-            if not p.exists() or p.is_dir():
+            # Primero verificar existencia basica
+            if not p.exists():
+                return False
+            # Excluir directorios y verificar atributos de sistema/reparse
+            if p.is_dir():
                 return False
             stats = p.lstat()
             return not p.is_symlink() and not (stats.st_file_attributes & 0x00000400)
