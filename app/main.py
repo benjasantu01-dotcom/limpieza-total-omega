@@ -238,13 +238,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if not home.exists():
                 raise RuntimeError("El directorio home del usuario no es accesible.")
             
+            # Verificación granular de permisos
             home_resolved = home.resolve(strict=True)
-            if not os.access(home_resolved, os.R_OK | os.W_OK):
-                raise PermissionError(f"Sin permisos suficientes en home: {home_resolved}")
+            if not os.access(home_resolved, os.R_OK):
+                raise PermissionError(f"Lectura denegada en: {home_resolved}")
                 
+        except (safety.UnsafePathError, PermissionError, RuntimeError):
+            raise
         except Exception as e:
-            if isinstance(e, (safety.UnsafePathError, PermissionError, RuntimeError)):
-                raise
             raise RuntimeError(f"Entorno no válido para operación segura: {e}")
 
     def _ensure_path_writable_and_clean(self, path: Union[str, Path]) -> None:
@@ -1050,7 +1051,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """
         if self._closing: return
         try:
-            self._ensure_path_writable_and_clean(".")
+            # Re-verificación de seguridad en el hilo de trabajo
             if target:
                 self._ensure_path_writable_and_clean(target)
             

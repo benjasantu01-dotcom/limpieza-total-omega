@@ -188,8 +188,6 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
     Analiza la salida CSV de PowerShell y filtra procesos según políticas de seguridad.
-    Esta función es el punto de entrada para sanitizar datos que vienen de fuera del espacio
-    de memoria del proceso actual de Python, evitando la inyección de PIDs críticos.
     """
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
@@ -203,16 +201,13 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         if len(parts) < 3: continue
         
         try:
-            name_val = parts[0]
-            pid_str = parts[1]
-            ws_str = parts[2]
+            name_val, pid_str, ws_str = parts[0], parts[1], parts[2]
             
-            # Validación de integridad de tipos y existencia
-            if not name_val or not pid_str or not ws_str:
+            # Validación estricta para evitar inyección o errores de formato
+            if not name_val or not pid_str.isdigit() or not ws_str.isdigit():
                 continue
             
-            pid_val = int(pid_str)
-            ws_val = int(ws_str)
+            pid_val, ws_val = int(pid_str), int(ws_str)
             
             if pid_val <= 0 or ws_val < 0:
                 continue
@@ -278,7 +273,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     now = time.time()
     if (now - _proc_cache_time) > 60:
         fetch_limit = limit + 5
-        # Optimización: Consultar solo las columnas necesarias para no cargar objetos full de WMI/Cim
         cmd = [
             'powershell', '-NoProfile', '-NonInteractive', '-Command', 
             f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {fetch_limit} -Property Name, Id, WorkingSet | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
@@ -354,8 +348,6 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
     """
     Realiza una auditoría de seguridad del proceso objetivo antes de modificar su estado.
-    Verifica que el handle pertenezca al PID, que el proceso esté vivo, y que su 
-    ubicación en disco no esté marcada como sensible por la política de seguridad.
     """
     if not proc_handle: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
@@ -392,7 +384,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
-    # Abrimos con permisos mínimos necesarios para lectura y el ajuste de memoria
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         return False, f"Acceso denegado (código {kernel32.GetLastError()})."

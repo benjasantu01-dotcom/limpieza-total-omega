@@ -219,8 +219,10 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
     if _is_unc_path(src) or _is_unc_path(dest): return False
     if _has_forbidden_chars(src): return False
     if len(str(src)) > 260 or len(str(dest)) > 260: return False
-    if is_protected_path(src.resolve()) or is_protected_path(dest.resolve()): return False
-    return True
+    try:
+        return not (is_protected_path(src.resolve()) or is_protected_path(dest.resolve()))
+    except (OSError, RuntimeError):
+        return False
 
 
 def _validate_file_attributes(src: Path) -> bool:
