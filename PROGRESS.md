@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
-- Rechazadas por tests: 21
+- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Rechazadas por tests: 23
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 21 | 1 | 2 | 0 | 38 |
+| 2026-09-03 | 19 | 1 | 2 | 0 | 36 |
 | 2026-09-04 | 158 | 18 | 29 | 8 | 137 |
-| 2026-09-05 | 40 | 2 | 6 | 4 | 40 |
+| 2026-09-05 | 41 | 4 | 6 | 4 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
-- seguridad defensiva: **49**
+- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **39**
-- rendimiento: **33**
+- robustez ante casos límite: **38**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **20**
-- `settings.py`: **18**
+- `assistant.py`: **19**
 - `healthscore.py`: **18**
 - `organizer.py`: **18**
 - `safety.py`: **17**
+- `settings.py`: **17**
 - `duplicates.py`: **16**
 - `scanner.py`: **16**
 - `diskreport.py`: **16**
@@ -42,11 +42,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **15**
 - `branding.py`: **15**
 - `browser.py`: **14**
-- `main.py`: **11**
+- `main.py`: **12**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T04:01:42` **main.py** (rendimiento): Se implementó un mecanismo de caché con invalidación selectiva para los datos de análisis del panel de Salud, evitando consultas redundantes a `memory.py` y `diskreport.py` en cada redibujado de la interfaz y acelerando la respuesta del panel.
 - `2026-09-05T03:50:27` **duplicates.py** (rendimiento): Optimizé la performance del escaneo de duplicados evitando múltiples llamadas redundantes a `is_protected_path` y `is_junction` al consolidar las validaciones dentro de la lógica del iterador de `os.scandir`, reduciendo drásticamente la carga de I/O en directorios grandes.
 - `2026-09-05T03:50:00` **diskreport.py** (rendimiento): Optimicé el método `_collect_summary_data` para evitar el costo de ordenamiento completo (`sorted`) y la creación de diccionarios intermedios innecesarios, manteniendo el heap como la estructura de datos primaria para el top-10.
 - `2026-09-05T03:40:42` **branding.py** (rendimiento): Optimicé el cálculo de `gradient_colors` eliminando la creación innecesaria de una lista intermedia y reduciendo la complejidad del bucle principal mediante un generador más eficiente.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-05T03:09:13` **browser.py** (legibilidad y documentación): Documenté el propósito técnico de las funciones de alto nivel y ajusté la firma de los métodos internos para asegurar que la intención de cada parámetro (como el uso de `kernel32` o `is_junction_fn`) sea explícita y coherente, facilitando la auditoría del código.
 - `2026-09-05T03:08:48` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad del módulo `branding.py` mediante la adición de docstrings técnicos específicos y la tipificación estricta de constantes complejas para facilitar la mantenibilidad, asegurando que las funciones de renderizado expliquen sus dependencias de estado (Canvas, coordenadas).
 - `2026-09-05T02:59:53` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_assign` y la documentación del contrato de los `ProblemCriterion`, eliminando redundancias en la lógica de validación de métricas.
-- `2026-09-05T02:59:00` **settings.py** (manejo de errores y validación de entradas): Reforcé la validación en la función `save` para manejar explícitamente posibles errores de escritura de disco y asegurar que la ruta a persistir esté correctamente normalizada antes de intentar la operación, siguiendo el enfoque de manejo robusto de excepciones.

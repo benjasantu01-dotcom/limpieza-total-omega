@@ -1449,3 +1449,93 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-05T03:50:39` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
 - `2026-09-05T03:50:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T03:50:39` Corrida terminada. Total usado hoy: 92.
+- `2026-09-05T03:59:18` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-09-05T04:00:20` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-05T04:00:24` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-05T04:01:42` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un mecanismo de caché con invalidación selectiva para los datos de análisis del panel de Salud, evitando consultas redundantes a `memory.py` y `diskreport.py` en cada redibujado de la interfaz y acelerando la respuesta del panel.
+- `2026-09-05T04:02:11` Tests FALLARON:
+```
+          '"grande","11","104857600"\n'
+            '"medio","12","10485760"\n'
+        )
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.34s
+
+```
+- `2026-09-05T04:02:11` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se optimizó `parse_windows_process_csv` para reducir el uso de memoria y mejorar la eficiencia al evitar el uso de `str.strip()` repetido sobre partes de la cadena y reemplazando `proc_list.sort()` con una operación `heapq.nlargest` para obtener los N procesos más pesados, evitando ordenar toda la lista de procesos recuperados.
+- `2026-09-05T04:02:40` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-05T04:03:01` Tests FALLARON:
+```
+[ 72%]
+.......................................................................F [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_____________ test_purge_item_cannot_delete_outside_the_quarantine _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_purge_item_cannot_delete_0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-3/test_purge_item_cannot_delete_0/_Cuarentena')
+
+    def test_purge_item_cannot_delete_outside_the_quarantine(tmp_path, cuarentena):
+        victima = tmp_path / "no-tocar.txt"
+        victima.write_text("importante")
+    
+        origen = tmp_path / "cualquiera.txt"
+        origen.write_text("x")
+        item = quarantine.quarantine_file(origen, base=cuarentena)
+    
+        # Manifiesto manipulado para apuntar afuera de la cuarentena.
+        items = quarantine.load_manifest(cuarentena)
+        items[0].stored_name = "../no-tocar.txt"
+        quarantine.save_manifest(items, cuarentena)
+    
+>       with pytest.raises(safety.UnsafePathError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE UnsafePathError
+
+evolve/tests/test_safety.py:255: Failed
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+1 failed, 298 passed in 1.34s
+
+```
+- `2026-09-05T04:03:01` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `load_manifest` eliminando la recreación innecesaria de objetos `QuarantineItem` y reduciendo las operaciones de I/O mediante una verificación de existencia basada en el cache, lo que acelera significativamente las consultas recurrentes.
+- `2026-09-05T04:03:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T04:03:01` Corrida terminada. Total usado hoy: 96.
