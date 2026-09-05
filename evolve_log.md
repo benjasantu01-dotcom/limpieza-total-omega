@@ -1560,3 +1560,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-05T04:32:02` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez ante fallos de hilos (worker) añadiendo un bloque `try...finally` garantizado que siempre re-habilita la UI, incluso ante excepciones no previstas en el código de ejecución, evitando que la aplicación quede "congelada" en un estado ocupado tras un error.
 - `2026-09-05T04:32:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T04:32:02` Corrida terminada. Total usado hoy: 108.
+- `2026-09-05T04:40:02` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-09-05T04:40:34` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `parse_windows_process_csv` para gestionar procesos "zombies" o incompletos que devuelven valores negativos o nulos en su Working Set, evitando que el cálculo de presión y el reporte final se basen en datos corruptos o fuera de rango.
+- `2026-09-05T04:41:04` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-05T04:41:40` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita de `is_safe_to_modify` dentro de `purge_all` y un chequeo de `PermissionError` en el iterador de archivos para garantizar que el bucle de limpieza sea robusto ante archivos inaccesibles o permisos denegados en el sistema de archivos.
+- `2026-09-05T04:41:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-05T04:41:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T04:41:46` Corrida terminada. Total usado hoy: 112.

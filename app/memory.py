@@ -204,6 +204,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             pid_val = int(parts[1])
             ws_val = int(parts[2])
             
+            # Validación de integridad para casos donde el proceso esté terminando o corrompido
             if not name_val or pid_val <= 0 or ws_val < 0:
                 continue
             
