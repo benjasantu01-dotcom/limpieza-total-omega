@@ -321,7 +321,7 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _get_source_value(source: Any, key: str) -> Any:
-    """Extrae valores de forma robusta ante estructuras de datos no estándar."""
+    """Extracts values from source objects, strictly ignoring private/protected members."""
     try:
         if isinstance(source, dict):
             return source.get(key)
@@ -336,18 +336,22 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
     if not hasattr(ctx, key):
         return False
     val = _get_source_value(source, key)
+    # Validar tipo numérico básico y descartar contenedores o booleanos
     if val is None or not spec.is_valid_type(val):
         return False
     
-    clean_val = _safe_float(val, -1.0)
-    if not (spec.min_val <= clean_val <= spec.max_val):
+    # Normalizar valor y verificar rangos físicos
+    f_val = _safe_float(val, -999.0)
+    if f_val < -1.0 or not (spec.min_val <= f_val <= spec.max_val):
         return False
     
-    final_val = spec.cast_func(clean_val)
-    if isinstance(final_val, (int, float)):
+    # Conversión final según el tipo esperado
+    try:
+        final_val = spec.cast_func(f_val)
         setattr(ctx, key, final_val)
         return True
-    return False
+    except (ValueError, TypeError):
+        return False
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Fabrica un SystemContext a partir de fuentes de datos dispersas."""

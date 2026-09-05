@@ -102,6 +102,7 @@ API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
 _CACHE: dict[str, tuple[float, AppSettings]] = {}
 _PATH_CACHE: dict[str, Path] = { "default": SETTINGS_DIR / SETTINGS_FILE }
+_SAFETY_CACHE: dict[str, bool] = {}
 
 VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
 VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))
@@ -155,12 +156,21 @@ class _Validators:
     @staticmethod
     def _run_safety_checks(path_obj: Path) -> bool:
         """Verifica recursivamente si una ruta está protegida o es insegura usando `safety.py`."""
+        path_str = str(path_obj)
+        if path_str in _SAFETY_CACHE:
+            return _SAFETY_CACHE[path_str]
+        
         try:
             resolved = path_obj.resolve(strict=False)
             if resolved.is_symlink() or (hasattr(resolved, 'is_junction') and resolved.is_junction()):
+                _SAFETY_CACHE[path_str] = False
                 return False
-            return not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
+            
+            is_safe = not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
+            _SAFETY_CACHE[path_str] = is_safe
+            return is_safe
         except (OSError, PermissionError):
+            _SAFETY_CACHE[path_str] = False
             return False
 
     @staticmethod

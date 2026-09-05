@@ -708,3 +708,10 @@ FAILED evolve/tests/test_modules.py::test_cache_paths_only_point_at_cache_folder
 - `2026-09-05T08:36:06` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el flujo de escaneo eliminando la recolección innecesaria de `stats` (archivo `stat()`) para cada archivo, priorizando el uso de `entry.stat()` cuando el escaneo ya dispone de la instancia `os.DirEntry`, evitando llamadas al sistema redundantes en el bucle principal.
 - `2026-09-05T08:36:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T08:36:06` Corrida terminada. Total usado hoy: 204.
+- `2026-09-05T08:44:27` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-09-05T08:44:58` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `settings.py` implementando una caché de validación en `_Validators._run_safety_checks`, evitando llamadas repetitivas y costosas al sistema de archivos (`resolve`, `is_symlink`, `is_junction`) para rutas que ya han sido verificadas recientemente.
+- `2026-09-05T08:45:23` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-05T08:46:00` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez del manejo de métricas en `SystemContext.ingest` y `_validate_and_assign` para prevenir fallos silenciosos o comportamiento inesperado ante tipos de datos no numéricos o `NaN/Inf` provenientes de fuentes externas.
+- `2026-09-05T08:46:18` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de entrada, garantizando que si `Path.resolve()` encuentra una ruta inexistente o con permisos inaccesibles, el proceso sea interceptado mediante la validación de `ensure_safe_to_modify` dentro de un bloque de seguridad robusto, evitando excepciones no controladas durante operaciones de I/O.
+- `2026-09-05T08:46:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T08:46:18` Corrida terminada. Total usado hoy: 208.
