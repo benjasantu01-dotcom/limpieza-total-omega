@@ -239,6 +239,9 @@ def _check_file_integrity_cached(path_str: str) -> bool:
     """Ejecuta el conjunto de reglas de integridad sobre el archivo."""
     path = Path(path_str)
     try:
+        # Verificación de accesibilidad básica antes de los predicados
+        if not os.access(path, os.W_OK):
+            return False
         file_stat = path.stat()
     except (PermissionError, OSError, FileNotFoundError):
         return False

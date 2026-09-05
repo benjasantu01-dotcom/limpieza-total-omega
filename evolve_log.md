@@ -1179,3 +1179,10 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-09-05T13:35:37` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). He mejorado `_process_directory` y `_try_collect_junk` para manejar robustamente errores de acceso denegado (frecuentes en sistemas Windows al escanear carpetas de usuario) y prevenir estados inconsistentes, añadiendo una validación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier procesamiento de entrada.
 - `2026-09-05T13:35:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T13:35:37` Corrida terminada. Total usado hoy: 320.
+- `2026-09-05T13:42:15` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-05T13:42:51` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_file_locked` para manejar archivos inexistentes o bloqueados por permisos de forma más determinista, evitando excepciones innecesarias en entornos con alta actividad de E/S.
+- `2026-09-05T13:43:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-09-05T13:43:41` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una verificación de integridad física del volumen y del estado del sistema de archivos mediante `os.access(..., os.W_OK)` como capa de defensa adicional en `_check_file_integrity_cached`, mitigando casos donde archivos bloqueados por políticas de grupo o permisos de lectura denegados a nivel de sistema operativo fallaban silenciosamente o causaban excepciones no controladas durante la manipulación.
+- `2026-09-05T13:43:50` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-05T13:43:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T13:43:50` Corrida terminada. Total usado hoy: 324.

@@ -155,17 +155,15 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_locked(path: Path) -> bool:
     """Intenta abrir un archivo en modo lectura para detectar exclusividad."""
-    if not isinstance(path, Path) or path is None:
-        return True
-    if not path.exists() or not path.is_file():
+    if not isinstance(path, Path) or not path.exists():
         return False
     try:
-        with open(path, "rb") as f:
+        # Abrir en modo append (a+b) permite verificar si el sistema permite
+        # acceso sin truncar ni modificar el contenido, capturando el lock.
+        with open(path, "ab") as f:
             return False
-    except (PermissionError, IOError):
+    except (PermissionError, IOError, OSError):
         return True
-    except OSError:
-        return False
 
 
 def _safe_unlink(path: Path) -> bool:
