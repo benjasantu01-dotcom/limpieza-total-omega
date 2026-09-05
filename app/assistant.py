@@ -519,9 +519,14 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             notice=OFFLINE_NOTICE,
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
-    for token in _TOKEN_REGEX.findall(q_sanitized):
-        if token in _KEYWORD_TO_HANDLER:
-            return _KEYWORD_TO_HANDLER[token](context, question)
+    
+    # Búsqueda optimizada por token
+    tokens = _TOKEN_REGEX.findall(q_sanitized)
+    for token in tokens:
+        handler = _KEYWORD_TO_HANDLER.get(token)
+        if handler:
+            return handler(context, question)
+            
     cuerpo = _format_problem_message(
         _identify_active_problems(context), 
         str(context.score) if context.score is not None else "N/A"
