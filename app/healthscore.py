@@ -130,6 +130,7 @@ _OPTIMIZED_PIPELINE: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], 
 
 @dataclass
 class SystemMetrics:
+    """Contenedor inmutable y validado de métricas extraídas del sistema."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -143,7 +144,7 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        # Normalización y saneamiento defensivo de entradas
+        """Aplica normalización defensiva para asegurar integridad de datos."""
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
         self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
@@ -155,14 +156,11 @@ class SystemMetrics:
 
     def is_finite(self) -> bool:
         """Verifica que todos los atributos numéricos sean finitos."""
-        for field_name in self.__annotations__:
-            val = getattr(self, field_name, 0.0)
-            if not isinstance(val, (int, float)) or not math.isfinite(float(val)):
-                return False
-        return True
+        return all(math.isfinite(float(getattr(self, f.name, 0.0))) for f in self.__dataclass_fields__.values())
 
 @dataclass
 class HealthResult:
+    """Resultado del cálculo de salud con desglose y recomendaciones."""
     score: int
     grade: str
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
@@ -170,6 +168,7 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
+        """Retorna True si el sistema se encuentra en un estado óptimo."""
         return 80 <= self.score <= 100
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
@@ -182,6 +181,7 @@ def _to_float(value: Any, default: float = 0.0) -> float:
     except (TypeError, ValueError): return default
 
 def grade_for_score(score: float | int) -> str:
+    """Traduce el puntaje numérico a una letra de clasificación (A-F)."""
     s = _to_float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -193,7 +193,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
     """Procesa una lista de reglas de recomendación para un área específica."""
     findings = []
     for rule in rules:
-        if not callable(getattr(rule, 'check', None)): continue
         if rule.check(metrics, ratio):
             try:
                 msg = rule.message_factory(metrics)
@@ -204,6 +203,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
     return findings
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
+    """Motor principal: calcula el puntaje final y recopila recomendaciones."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de entrada de métricas inválido."])
     
@@ -238,11 +238,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(pts: int, maximo: int) -> str:
+    """Visualización en texto de la barra de progreso (usada en reportes)."""
     if maximo <= 0: return ""
     puntos = max(0, min(pts, maximo))
     return ('#' * puntos) + ('.' * (maximo - puntos))
 
 def summarize(result: HealthResult | None) -> List[str]:
+    """Genera un reporte legible en texto plano a partir de un HealthResult."""
     if not isinstance(result, HealthResult):
         return ["Error: Informe no disponible o formato inválido."]
     

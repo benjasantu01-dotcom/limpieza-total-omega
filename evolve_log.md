@@ -664,3 +664,11 @@ FAILED evolve/tests/test_modules.py::test_cache_paths_only_point_at_cache_folder
 - `2026-09-05T07:35:11` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings detallados en las funciones de recorrido (`walk_files`, `_collect_summary_data`) para clarificar el flujo de control y las garantías de seguridad aplicadas, facilitando el mantenimiento técnico.
 - `2026-09-05T07:35:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T07:35:11` Corrida terminada. Total usado hoy: 180.
+- `2026-09-05T07:43:21` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-09-05T07:43:52` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el tipado de `duplicates.py` mediante docstrings precisos que explican el "porqué" de las decisiones de diseño (especialmente en la jerarquía de hashes) y se han añadido type hints más específicos para clarificar las estructuras de datos que manejan los grupos de duplicados.
+- `2026-09-05T07:44:23` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y la robustez de los `dataclasses` mediante la adición de docstrings técnicos, `field(repr=False)` para evitar fugas de información accidental en logs y la centralización de la validación, garantizando que `SystemMetrics` sea siempre un objeto íntegro.
+- `2026-09-05T07:44:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-05T07:45:37` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._setup_application
+- `2026-09-05T07:45:52` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se introdujo documentación explicativa de alto nivel en los métodos de diagnóstico y de gestión de procesos para aclarar el propósito de las métricas y la cautela necesaria con las operaciones de bajo nivel (Win32), mejorando la mantenibilidad sin cambiar la lógica funcional.
+- `2026-09-05T07:45:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T07:45:52` Corrida terminada. Total usado hoy: 184.

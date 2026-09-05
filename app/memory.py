@@ -188,6 +188,8 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
     Analiza la salida CSV de PowerShell y filtra procesos según políticas de seguridad.
+    Esta función es el punto de entrada para sanitizar datos que vienen de fuera del espacio
+    de memoria del proceso actual de Python, evitando la inyección de PIDs críticos.
     """
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
