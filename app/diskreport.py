@@ -364,6 +364,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
     # top_files_heap: Mantiene una estructura (size, path) de tamaño fijo (10 elementos)
+    # Usamos heap de min-top para mantener solo los 10 más grandes
     top_files_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
@@ -384,7 +385,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
         total_files, 
         dict(ext_sizes), 
         dict(ext_counts), 
-        sorted(top_files_heap, key=lambda x: x[0], reverse=True)
+        heapq.nlargest(len(top_files_heap), top_files_heap, key=lambda x: x[0])
     )
 
 

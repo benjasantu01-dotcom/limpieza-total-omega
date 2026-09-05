@@ -145,19 +145,23 @@ def _get_file_stat_if_valid(entry: os.DirEntry, min_size: int) -> Optional[int]:
     Descarta hard links (st_nlink > 1) para evitar conteos redundantes del mismo inodo.
     """
     try:
-        if entry.is_symlink() or is_junction(Path(entry.path)):
+        # Pre-filtro rápido usando métodos de DirEntry para evitar llamadas a os.stat() y Path
+        if entry.is_symlink():
             return None
         if not entry.is_file():
             return None
+        
         stat_info = entry.stat()
         # Si st_nlink > 1, el archivo es un hard link a un mismo inodo
         if stat_info.st_nlink > 1:
             return None
         if stat_info.st_size < min_size:
             return None
+            
         p = Path(entry.path)
-        if is_protected_path(p):
+        if is_protected_path(p) or is_junction(p):
             return None
+            
         return int(stat_info.st_size)
     except (OSError, PermissionError, ValueError, TypeError):
         return None

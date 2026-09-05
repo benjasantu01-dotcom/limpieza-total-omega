@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 38
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 214
+- Rechazadas por guardia de seguridad: 37
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 24 | 1 | 3 | 0 | 38 |
+| 2026-09-03 | 21 | 1 | 2 | 0 | 38 |
 | 2026-09-04 | 158 | 18 | 29 | 8 | 137 |
-| 2026-09-05 | 38 | 2 | 6 | 3 | 39 |
+| 2026-09-05 | 40 | 2 | 6 | 4 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **42**
-- rendimiento: **31**
+- robustez ante casos límite: **39**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **20**
-- `organizer.py`: **19**
-- `safety.py`: **18**
 - `settings.py`: **18**
 - `healthscore.py`: **18**
-- `quarantine.py`: **16**
+- `organizer.py`: **18**
+- `safety.py`: **17**
+- `duplicates.py`: **16**
 - `scanner.py`: **16**
-- `duplicates.py`: **15**
+- `diskreport.py`: **16**
 - `memory.py`: **15**
-- `diskreport.py`: **15**
+- `quarantine.py`: **15**
 - `branding.py`: **15**
 - `browser.py`: **14**
 - `main.py`: **11**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T03:50:27` **duplicates.py** (rendimiento): Optimizé la performance del escaneo de duplicados evitando múltiples llamadas redundantes a `is_protected_path` y `is_junction` al consolidar las validaciones dentro de la lógica del iterador de `os.scandir`, reduciendo drásticamente la carga de I/O en directorios grandes.
+- `2026-09-05T03:50:00` **diskreport.py** (rendimiento): Optimicé el método `_collect_summary_data` para evitar el costo de ordenamiento completo (`sorted`) y la creación de diccionarios intermedios innecesarios, manteniendo el heap como la estructura de datos primaria para el top-10.
 - `2026-09-05T03:40:42` **branding.py** (rendimiento): Optimicé el cálculo de `gradient_colors` eliminando la creación innecesaria de una lista intermedia y reduciendo la complejidad del bucle principal mediante un generador más eficiente.
 - `2026-09-05T03:40:24` **assistant.py** (rendimiento): Optimicé el rendimiento de `_generate_context_lines_cached` y el flujo de `context_as_text` reemplazando múltiples conversiones a string y formateos repetitivos por una pre-serialización más eficiente, reduciendo la carga del `lru_cache` y evitando cálculos redundantes en cada llamada.
 - `2026-09-05T03:30:09` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de validación añadiendo docstrings descriptivos a los parámetros y retornos en funciones clave, y renombrando variables internas para clarificar su intención sin alterar la funcionalidad.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-05T03:08:48` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad del módulo `branding.py` mediante la adición de docstrings técnicos específicos y la tipificación estricta de constantes complejas para facilitar la mantenibilidad, asegurando que las funciones de renderizado expliquen sus dependencias de estado (Canvas, coordenadas).
 - `2026-09-05T02:59:53` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_assign` y la documentación del contrato de los `ProblemCriterion`, eliminando redundancias en la lógica de validación de métricas.
 - `2026-09-05T02:59:00` **settings.py** (manejo de errores y validación de entradas): Reforcé la validación en la función `save` para manejar explícitamente posibles errores de escritura de disco y asegurar que la ruta a persistir esté correctamente normalizada antes de intentar la operación, siguiendo el enfoque de manejo robusto de excepciones.
-- `2026-09-05T02:58:31` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del método `_is_inside_base_root` y `scan_directory` mediante la validación explícita de tipos y el manejo de excepciones al resolver rutas, evitando comportamientos indefinidos ante entradas malformadas.
-- `2026-09-05T02:49:37` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use` y `is_protected_path` centralizando el manejo de excepciones y validaciones de entrada, evitando que errores inesperados en llamadas a `ctypes` o `pathlib` silencien problemas de seguridad o aborten procesos críticos.
