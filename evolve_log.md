@@ -616,3 +616,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-05T07:15:39` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-09-05T07:15:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T07:15:39` Corrida terminada. Total usado hoy: 172.
+- `2026-09-05T07:23:01` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-09-05T07:23:34` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-05T07:24:03` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las heurísticas en `scan_file` y `check_system_lookalike` validando explícitamente la integridad de los parámetros (`path` y `entry`) y asegurando que las comparaciones de `st_size` no fallen ante archivos inaccesibles o eliminados durante el escaneo.
+- `2026-09-05T07:24:35` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la validación al añadir una verificación explícita para valores `None` en la función `validate`, evitando que errores de lógica en las llamadas al validador propaguen estados inconsistentes hacia `config`.
+- `2026-09-05T07:24:47` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `StartupEntry._extract_quoted_path` validando explícitamente el índice de `end_quote` y añadiendo chequeos de integridad antes de instanciar `Path`, evitando posibles errores al procesar líneas de comando malformadas o rutas relativas inválidas.
+- `2026-09-05T07:24:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T07:24:47` Corrida terminada. Total usado hoy: 176.

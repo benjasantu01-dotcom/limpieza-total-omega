@@ -255,6 +255,7 @@ def validate(raw_values: Any) -> AppSettings:
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_str, val in raw_values.items():
+        if val is None: continue
         key_enum = _STR_TO_ENUM.get(key_str)
         validator = _VALIDATOR_MAP.get(key_enum) if key_enum else None
         if validator:
@@ -328,6 +329,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     current = load(custom_base)
     modified = False
     for k, v in changes.items():
+        if v is None: continue
         key_enum = _STR_TO_ENUM.get(k)
         validator = _VALIDATOR_MAP.get(key_enum) if key_enum else None
         if validator:

@@ -105,11 +105,14 @@ class StartupEntry:
         """
         Extracts the path enclosed in quotes and validates against injection.
         """
-        if not isinstance(raw_command, str) or len(raw_command) < 2:
+        if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
+        
+        # Busca el cierre de la comilla tras la primera posición
         end_quote: int = raw_command.find('"', 1)
         if end_quote == -1:
             return ""
+            
         path_str: str = raw_command[1:end_quote].strip()
         
         if not path_str or any(c in path_str for c in '<>|?*'):
@@ -117,6 +120,9 @@ class StartupEntry:
         
         try:
             p: Path = Path(path_str)
+            # Validación adicional: asegurarse de que no sea una ruta relativa vacía o maliciosa
+            if not p.parts:
+                return ""
             if is_protected_path(p):
                 return ""
             return str(p)

@@ -77,7 +77,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
     
     try:
-        stats = entry.stat(follow_symlinks=False) if (entry and entry.path) else path.stat()
+        stats = entry.stat(follow_symlinks=False) if (entry and hasattr(entry, 'path')) else path.stat()
         if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     except (OSError, AttributeError, ValueError, PermissionError):
@@ -90,7 +90,9 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     Excluye automáticamente rutas protegidas y subdirectorios de System32.
     """
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
-        if not is_protected_path(path) and SYSTEM32_LOWER not in str(path).lower():
+        # Validación robusta de ruta para evitar errores con nombres de archivo vacíos o tipos inesperados
+        path_str = str(path).lower()
+        if not is_protected_path(path) and SYSTEM32_LOWER not in path_str:
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 
@@ -182,7 +184,9 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     Orquestador de reglas para evaluar la peligrosidad de un archivo dado.
     Ejecuta heurísticas específicas basándose en la extensión y los metadatos del archivo.
     """
-    if not isinstance(path, Path): return []
+    if not isinstance(path, Path): 
+        return []
+        
     findings: ScanResult = []
     
     if (double_ext := check_double_extension(path, entry, now_ts)):
@@ -191,10 +195,10 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     file_ext = (ext or path.suffix.lower())
     if file_ext in SUSPICIOUS_EXECUTABLE_EXT:
         try:
-            stats = entry.stat(follow_symlinks=False) if (entry and entry.path) else path.stat()
+            stats = entry.stat(follow_symlinks=False) if (entry and hasattr(entry, 'path')) else path.stat()
             if stats.st_size == 0:
                 findings.append(Suspicion(path, "Archivo vacío sospechoso", "warning"))
-        except (OSError, PermissionError, AttributeError):
+        except (OSError, PermissionError, AttributeError, FileNotFoundError):
             pass
 
         for check_fn in EXECUTABLE_CHECK_REGISTRY:
