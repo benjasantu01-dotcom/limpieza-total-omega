@@ -144,6 +144,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     """
     Evalúa si una entrada (os.DirEntry) del sistema de archivos debe omitirse.
     Usa la metadata del objeto DirEntry para evitar llamadas excesivas al disco.
+    Retorna True si el archivo debe ignorarse, False si es seguro procesarlo.
     """
     if _is_excluded_file(entry.name):
         return True
@@ -193,7 +194,8 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula recursivamente el tamaño en bytes de un directorio mediante os.scandir.
-    Utiliza un diccionario 'memo' para evitar re-escaneo de subdirectorios ya calculados.
+    Requiere que la ruta raíz sea validada previamente por 'is_safe_to_traverse'.
+    Si ocurre un error de acceso o se excede el límite de profundidad, retorna 0.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0

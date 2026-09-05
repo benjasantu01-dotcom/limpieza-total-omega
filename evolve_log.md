@@ -1048,3 +1048,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-05T11:51:43` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `save` mediante el uso de `try...finally` para garantizar la limpieza de archivos temporales ante cualquier interrupción, y se añadió una validación explícita para evitar que la escritura ocurra si el archivo de configuración existente (o el directorio) es una ruta protegida o inaccesible.
 - `2026-09-05T11:51:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T11:51:43` Corrida terminada. Total usado hoy: 280.
+- `2026-09-05T12:00:25` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-09-05T12:00:53` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-05T12:01:31` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de Type Hints en la firma de las funciones y la inclusión de docstrings detallados en funciones críticas, clarificando los contratos de datos y las intenciones de seguridad.
+- `2026-09-05T12:02:02` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-09-05T12:02:13` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica agregando type hints explícitos en los retornos de funciones críticas (como `_is_system_hidden` y `_should_skip_entry`) y detallando las precondiciones de seguridad en el docstring de `_sum_directory_recursive`, aclarando su comportamiento ante errores de sistema para prevenir malentendidos durante el mantenimiento.
+- `2026-09-05T12:02:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T12:02:13` Corrida terminada. Total usado hoy: 284.

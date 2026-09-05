@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **229** (45.4% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-04 | 102 | 11 | 19 | 4 | 88 |
-| 2026-09-05 | 128 | 9 | 17 | 12 | 114 |
+| 2026-09-04 | 99 | 11 | 19 | 4 | 87 |
+| 2026-09-05 | 130 | 9 | 17 | 12 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **51**
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **47**
-- legibilidad y documentación: **45**
-- rendimiento: **37**
+- legibilidad y documentación: **47**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
+- `assistant.py`: **22**
 - `safety.py`: **20**
 - `settings.py`: **20**
 - `diskreport.py`: **20**
 - `scanner.py`: **18**
 - `branding.py`: **18**
-- `memory.py`: **17**
 - `organizer.py`: **17**
-- `healthscore.py`: **16**
+- `memory.py`: **16**
+- `healthscore.py`: **15**
+- `browser.py`: **15**
 - `duplicates.py`: **15**
-- `browser.py`: **14**
-- `main.py`: **12**
+- `main.py`: **11**
 - `quarantine.py`: **11**
 - `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T12:02:13` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando type hints explícitos en los retornos de funciones críticas (como `_is_system_hidden` y `_should_skip_entry`) y detallando las precondiciones de seguridad en el docstring de `_sum_directory_recursive`, aclarando su comportamiento ante errores de sistema para prevenir malentendidos durante el mantenimiento.
+- `2026-09-05T12:01:31` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en la firma de las funciones y la inclusión de docstrings detallados en funciones críticas, clarificando los contratos de datos y las intenciones de seguridad.
 - `2026-09-05T11:51:43` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save` mediante el uso de `try...finally` para garantizar la limpieza de archivos temporales ante cualquier interrupción, y se añadió una validación explícita para evitar que la escritura ocurra si el archivo de configuración existente (o el directorio) es una ruta protegida o inaccesible.
 - `2026-09-05T11:51:28` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `Scanner._is_inside_base_root` y `scan_directory` añadiendo validaciones de tipo y estructura para prevenir excepciones inesperadas al procesar rutas malformadas o permisos denegados, centralizando la lógica de "falla silenciosa" necesaria para un escáner.
 - `2026-09-05T11:51:03` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` implementando una validación explícita para evitar la manipulación de directorios que no existen pero cuyo padre está protegido, unificando la lógica de manejo de errores mediante el uso consistente de `SafetyValidationErrorCode` para diagnósticos precisos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-05T11:22:30` **assistant.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `_get_source_value` y `_validate_and_assign` mediante la captura explícita de excepciones y el chequeo de tipos para prevenir fallos silenciosos cuando `source` contiene objetos malformados o inesperados, evitando comportamientos impredecibles durante la ingestión de datos.
 - `2026-09-05T09:58:54` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita de `is_protected_path` antes de cualquier operación de escritura, asegurando que la ruta destino no sea un archivo del sistema, incluso si `ensure_safe_to_modify` (que verifica permisos de escritura) pasara la validación.
 - `2026-09-05T09:58:23` **scanner.py** (seguridad defensiva): Se ha endurecido la lógica de validación en `Scanner` añadiendo una comprobación explícita mediante `is_protected_path` sobre la ruta real resuelta antes de cualquier interacción, evitando así que manipulaciones simbólicas o de enlaces externos burlen la restricción de `base_root`.
-- `2026-09-05T09:56:29` **safety.py** (seguridad defensiva): Se ha mejorado la defensa frente a ataques de "Time-of-Check to Time-of-Use" (TOCTOU) y manipulación de rutas al asegurar que `ensure_safe_to_modify` realice la validación de integridad (`_check_file_integrity`) sobre el objeto Path *después* de confirmar su existencia real en disco, y añadiendo una comprobación adicional para evitar archivos que posean múltiples flujos de datos (ADS) ocultos en su estructura física.
-- `2026-09-05T09:48:29` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en el aislamiento de archivos agregando una verificación de tamaño en tiempo real tras la copia, asegurando que el archivo almacenado en cuarentena no haya sido alterado por procesos externos durante la escritura, mitigando condiciones de carrera.

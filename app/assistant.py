@@ -227,7 +227,7 @@ _VALIDATORS: Final[dict[str, MetricSpec]] = {
 }
 
 def _safe_float(val: Any, default: float = 0.0) -> float:
-    """Conversión segura a float que maneja tipos inesperados, NaN e infinitos."""
+    """Convierte cualquier valor a float de forma segura, descartando NaN/Inf."""
     try:
         if val is None or isinstance(val, bool) or not isinstance(val, (int, float, str)):
             return default
@@ -275,7 +275,10 @@ class SystemContext:
         return _ensure_safe_text(self.grade) if self.grade else True
 
     def ingest(self, source: Any) -> bool:
-        """Extrae y valida métricas desde una fuente externa (diccionario o objeto)."""
+        """
+        Extrae y valida métricas desde una fuente externa (diccionario o objeto).
+        Devuelve True si al menos una métrica válida fue procesada.
+        """
         if not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool)):
             return False
             
@@ -321,7 +324,7 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _get_source_value(source: Any, key: str) -> Any:
-    """Extracts values from source objects, strictly ignoring private/protected members."""
+    """Extrae valores de fuentes evitando miembros privados o protegidos."""
     try:
         if isinstance(source, dict):
             return source.get(key)
@@ -333,7 +336,7 @@ def _get_source_value(source: Any, key: str) -> Any:
         return None
 
 def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: MetricSpec) -> bool:
-    """Valida el valor de la métrica según MetricSpec y lo asigna al contexto de forma segura."""
+    """Valida el valor de la métrica según MetricSpec y lo asigna de forma segura."""
     try:
         if not hasattr(ctx, key):
             return False
@@ -363,7 +366,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     return ctx
 
 def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
-    """Formatea una métrica limpiando caracteres de control o inyección."""
+    """Formatea una métrica eliminando caracteres de control o inyección."""
     raw = _fmt_metric(val, unit, decimal)
     return _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))
 
