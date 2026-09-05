@@ -238,9 +238,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     while stack:
         current_dir = stack.pop()
         
-        # Validar ruta canónica contra lista de protección
         try:
-            resolved_dir = current_dir.resolve()
+            resolved_dir = current_dir.resolve(strict=True)
             if skip_protected and is_protected_path(resolved_dir):
                 continue
         except (OSError, RuntimeError):
@@ -332,10 +331,10 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Tuple[int, int]:
     """Calcula el tamaño total y número de archivos."""
-    total_bytes, file_count = 0, 0
     if directory is None:
         return (0, 0)
         
+    total_bytes, file_count = 0, 0
     for _, size in walk_files(directory, skip_protected):
         total_bytes += size
         file_count += 1
@@ -376,7 +375,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     try:
         data = _collect_summary_data(p_input, skip_protected)
     except (OSError, PermissionError, RuntimeError):
-        return ["Error: Fallo durante el análisis de disco."]
+        return ["Error: Fallo crítico durante el análisis de disco."]
     
     if data.total_files == 0:
         return ["Aviso: No se encontraron archivos accesibles."]

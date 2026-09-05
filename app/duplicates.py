@@ -90,6 +90,10 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         return None
         
     try:
+        # Verificación adicional antes de abrir para asegurar legibilidad
+        if path_obj.stat().st_size == 0:
+            return None
+            
         digest = hashlib.sha256()
         with open(path_obj, "rb") as f:
             while True:
@@ -113,6 +117,10 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         return None
 
     try:
+        # Asegurar que el archivo no esté vacío antes de intentar la lectura
+        if path_obj.stat().st_size == 0:
+            return None
+
         with open(path_obj, "rb") as f:
             content = f.read(read_bytes)
             if not content:

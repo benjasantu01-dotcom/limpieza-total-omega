@@ -172,7 +172,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
     """Valida que la ruta sea segura (no protegida) y opcionalmente descienda de la base permitida."""
     try:
-        if len(str(path_obj)) >= MAX_PATH_LEN:
+        if not isinstance(path_obj, Path) or len(str(path_obj)) >= MAX_PATH_LEN:
             return False
         if not path_obj.exists() or is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return False
@@ -254,11 +254,12 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """Verifica si una ruta candidata es una carpeta válida de caché antes de escanear."""
+    if not isinstance(candidate, Path) or not isinstance(base_path, Path):
+        return False
     try:
         if not candidate.exists() or len(str(candidate)) >= MAX_PATH_LEN:
             return False
         real_candidate = candidate.resolve(strict=True)
-        # Check safety before resolution logic
         if not is_safe_to_modify(real_candidate) or is_protected_path(real_candidate):
             return False
         if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or 
@@ -315,7 +316,7 @@ def detect_profiles(
 
 def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
     """Calcula el acumulado total de bytes de una lista de objetos BrowserCache."""
-    if caches is None:
+    if caches is None or not isinstance(caches, Iterable):
         return 0
     return sum(cache.size_bytes for cache in caches)
 
