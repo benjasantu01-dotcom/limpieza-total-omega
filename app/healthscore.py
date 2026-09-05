@@ -208,13 +208,13 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
     """Filtra y ejecuta recomendaciones basadas en el estado del sistema."""
     findings = []
     for rule in rules:
-        if rule.check(metrics, ratio):
-            try:
+        try:
+            if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str) and msg.strip():
                     findings.append(msg.strip())
-            except Exception:
-                continue
+        except (AttributeError, ValueError, TypeError, ZeroDivisionError):
+            continue
     return findings
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -240,7 +240,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             total_pts += float(pts)
             if rules:
                 recommendations.extend(_evaluate_rules(metrics, rules, ratio))
-        except Exception:
+        except (AttributeError, ValueError, TypeError, ZeroDivisionError):
             metric_breakdown[area] = 0
             continue
     

@@ -1216,3 +1216,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-05T13:54:22` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita mediante `is_protected_path` sobre el directorio padre antes de intentar su creación, asegurando que el proceso no pueda crear estructuras de archivos en zonas restringidas del sistema.
 - `2026-09-05T13:54:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T13:54:23` Corrida terminada. Total usado hoy: 328.
+- `2026-09-05T14:02:38` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-05T14:03:05` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-09-05T14:03:31` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-09-05T14:03:57` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha implementado un chequeo adicional en `_collect_candidates` para verificar que los archivos no sean enlaces simbólicos o puntos de reparse, usando `lstat` implícito en `entry.is_file(follow_symlinks=False)`, garantizando que el escáner no siga enlaces que podrían llevar fuera del árbol de directorios permitido o causar bucles infinitos.
+- `2026-09-05T14:04:08` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad del pipeline de datos integrando `metrics.is_finite()` como una verificación de pre-condición estricta en cada entrada al pipeline, y se mejoró la resiliencia ante excepciones durante la evaluación de reglas mediante un manejo de errores más específico y preventivo.
+- `2026-09-05T14:04:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T14:04:08` Corrida terminada. Total usado hoy: 332.
