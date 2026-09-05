@@ -88,6 +88,11 @@ class StartupEntry:
         except (ValueError, TypeError):
             return True
 
+    def _is_path_suspicious(self, path_string: str) -> bool:
+        """Determina si una cadena de ruta contiene caracteres maliciosos o bloqueados."""
+        suspicious_chars = '<>|?*\0&;%'
+        return any(c in path_string for c in suspicious_chars) or path_string.startswith(r"\\")
+
     def _is_valid_executable(self, path: Path) -> bool:
         """Valida si la extensión es ejecutable y descarta symlinks para evitar recursión/redirección."""
         try:
@@ -120,9 +125,7 @@ class StartupEntry:
         
         try:
             p: Path = Path(path_str)
-            if not p.parts:
-                return ""
-            if is_protected_path(p):
+            if not p.parts or is_protected_path(p):
                 return ""
             return str(p)
         except (OSError, ValueError, RuntimeError, TypeError):
@@ -131,9 +134,7 @@ class StartupEntry:
     def _validate_file_access(self, p: Path) -> bool:
         """Verifica existencia física y descarta rutas con atributos de reparseo (junctions)."""
         try:
-            if not os.path.lexists(p):
-                return False
-            if p.is_dir():
+            if not os.path.lexists(p) or p.is_dir():
                 return False
             stats = p.lstat()
             # 0x400 es el bitmask para FILE_ATTRIBUTE_REPARSE_POINT
@@ -146,10 +147,7 @@ class StartupEntry:
         Normaliza, valida contra `is_protected_path` y resuelve la ruta absoluta.
         Usa una caché local para evitar múltiples llamadas al sistema operativo.
         """
-        if not isinstance(path_string, str) or not path_string:
-            return ""
-        
-        if any(c in path_string for c in '<>|?*\0&;%') or path_string.startswith(r"\\"):
+        if not path_string or self._is_path_suspicious(path_string):
             return ""
         
         try:

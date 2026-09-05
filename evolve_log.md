@@ -1069,3 +1069,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-05T12:22:32` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
 - `2026-09-05T12:22:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T12:22:32` Corrida terminada. Total usado hoy: 292.
+- `2026-09-05T12:30:58` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-09-05T12:31:26` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult
+- `2026-09-05T12:31:50` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos, se mejoró el tipado con `TypeAlias` y se renombraron variables internas (como `d` o `path_input`) para clarificar el propósito de las funciones y mejorar la mantenibilidad, sin alterar la lógica de escaneo.
+- `2026-09-05T12:32:17` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._is_safe_path, _Validators._run_safety_checks
+- `2026-09-05T12:32:31` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del módulo `startup.py` mediante la refactorización de `StartupEntry._resolve_and_cache_path`, extrayendo la lógica de validación de rutas en una función auxiliar `_is_path_suspicious` y utilizando un flujo de control más claro que reduce la anidación excesiva.
+- `2026-09-05T12:32:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T12:32:31` Corrida terminada. Total usado hoy: 296.

@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 36
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-04 | 95 | 10 | 18 | 4 | 85 |
-| 2026-09-05 | 136 | 9 | 18 | 13 | 116 |
+| 2026-09-04 | 93 | 10 | 18 | 4 | 83 |
+| 2026-09-05 | 138 | 9 | 20 | 13 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **53**
-- robustez ante casos límite: **50**
+- legibilidad y documentación: **55**
 - seguridad defensiva: **50**
+- robustez ante casos límite: **48**
 - manejo de errores y validación de entradas: **47**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
 - `assistant.py`: **21**
+- `diskreport.py`: **20**
 - `safety.py`: **19**
 - `settings.py`: **19**
 - `organizer.py`: **18**
 - `branding.py`: **18**
+- `scanner.py`: **18**
 - `memory.py`: **17**
-- `scanner.py`: **17**
-- `healthscore.py`: **16**
 - `duplicates.py`: **16**
 - `browser.py`: **15**
+- `healthscore.py`: **15**
 - `quarantine.py`: **12**
+- `startup.py`: **12**
 - `main.py`: **11**
-- `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T12:32:31` **startup.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo `startup.py` mediante la refactorización de `StartupEntry._resolve_and_cache_path`, extrayendo la lógica de validación de rutas en una función auxiliar `_is_path_suspicious` y utilizando un flujo de control más claro que reduce la anidación excesiva.
+- `2026-09-05T12:31:50` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos, se mejoró el tipado con `TypeAlias` y se renombraron variables internas (como `d` o `path_input`) para clarificar el propósito de las funciones y mejorar la mantenibilidad, sin alterar la lógica de escaneo.
 - `2026-09-05T12:22:24` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo `quarantine.py` mediante la refactorización de `_atomic_isolate_file` para encapsular la lógica de copia de seguridad en una función interna más limpia y la estandarización de los `docstrings` para cumplir con las guías de estilo senior, facilitando la comprensión de los protocolos de integridad sin alterar el comportamiento.
 - `2026-09-05T12:21:48` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos (como `Sequence` y `Iterator`) y se mejoró la documentación en los docstrings de funciones clave, aclarando las precondiciones de seguridad y el comportamiento ante errores, facilitando la comprensión del flujo de datos sin alterar la lógica.
 - `2026-09-05T12:21:18` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando docstrings detallados en las funciones de bajo nivel y refiné los comentarios en los filtros de seguridad, explicitando la relación entre los permisos de Win32 y la integridad del sistema.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-05T11:51:03` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` implementando una validación explícita para evitar la manipulación de directorios que no existen pero cuyo padre está protegido, unificando la lógica de manejo de errores mediante el uso consistente de `SafetyValidationErrorCode` para diagnósticos precisos.
 - `2026-09-05T11:42:16` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la validación de `review_dir` en `stage_for_review` y `delete_reviewed` para evitar que el uso de rutas externas (`expanduser`) o mal formadas pudiera derivar en manipulaciones fuera del entorno seguro, añadiendo un chequeo explícito de jerarquía contra el directorio de base.
 - `2026-09-05T11:41:47` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_windows_process_csv` al implementar una validación de seguridad proactiva y un manejo de errores más específico, evitando operaciones con datos malformados o PIDs inexistentes mediante la captura explícita de casos borde antes de procesar el listado.
-- `2026-09-05T11:41:18` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `on_target_choice_changed` encapsulando la validación de la ruta seleccionada en un bloque `try-except` sólido y aplicando el chequeo `_is_safe_target_dir` antes de actualizar el estado, evitando que rutas inválidas o protegidas contaminen el estado interno de la aplicación.
-- `2026-09-05T11:31:05` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `hash_file` y `partial_hash` implementando un chequeo previo del tamaño del archivo para evitar intentar leer archivos que, aunque inicialmente aparecieron como candidatos, pudieron haber sido bloqueados o alterados, previniendo excepciones innecesarias durante la apertura.
