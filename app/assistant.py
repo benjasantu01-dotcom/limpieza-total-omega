@@ -335,7 +335,9 @@ def _get_source_value(source: Any, key: str) -> Any:
         return None
 
 def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: MetricSpec) -> bool:
-    """Valida el valor de la métrica según MetricSpec y lo asigna al contexto."""
+    """Valida el valor de la métrica según MetricSpec y lo asigna al contexto de forma segura."""
+    if not hasattr(ctx, key):
+        return False
     val = _get_source_value(source, key)
     if val is None or not spec.is_valid_type(val):
         return False
@@ -344,8 +346,11 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
     if not (spec.min_val <= clean_val <= spec.max_val):
         return False
     
-    setattr(ctx, key, spec.cast_func(clean_val))
-    return True
+    final_val = spec.cast_func(clean_val)
+    if isinstance(final_val, (int, float)):
+        setattr(ctx, key, final_val)
+        return True
+    return False
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Fabrica un SystemContext a partir de fuentes de datos dispersas."""

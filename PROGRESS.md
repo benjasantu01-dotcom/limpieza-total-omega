@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-04 | 153 | 18 | 29 | 8 | 136 |
-| 2026-09-05 | 65 | 5 | 9 | 7 | 74 |
+| 2026-09-04 | 150 | 18 | 29 | 8 | 135 |
+| 2026-09-05 | 68 | 5 | 9 | 7 | 75 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **50**
 - seguridad defensiva: **49**
+- legibilidad y documentación: **47**
 - robustez ante casos límite: **47**
+- manejo de errores y validación de entradas: **38**
 - rendimiento: **37**
-- manejo de errores y validación de entradas: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **20**
-- `healthscore.py`: **18**
+- `assistant.py`: **21**
 - `settings.py`: **18**
 - `safety.py`: **18**
-- `organizer.py`: **17**
 - `scanner.py`: **17**
+- `healthscore.py`: **17**
+- `organizer.py`: **16**
+- `branding.py`: **16**
 - `diskreport.py`: **16**
-- `memory.py`: **15**
 - `quarantine.py`: **15**
-- `branding.py`: **15**
+- `browser.py`: **14**
+- `memory.py`: **14**
 - `duplicates.py`: **14**
-- `browser.py`: **13**
 - `startup.py`: **11**
 - `main.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T06:55:05` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `detect_profiles` y `_sum_directory_recursive` mediante la validación explícita de tipos, chequeos de presencia de elementos en iterables y manejo de errores ante entradas malformadas en `browser_map`, evitando excepciones silenciosas al iterar sobre rutas de caché.
+- `2026-09-05T06:54:51` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` reemplazando los `try-except` genéricos por validaciones tempranas de tipos y rangos, asegurando que las funciones fallen de forma controlada sin opacar errores de lógica.
+- `2026-09-05T06:54:17` **assistant.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_validate_and_assign` mediante una verificación de tipos más estricta (`isinstance(clean_val, (int, float))`) y se ha encapsulado el acceso a `setattr` con una validación explícita de seguridad, evitando posibles comportamientos inesperados si se intentaran inyectar nombres de atributos no permitidos.
 - `2026-09-05T05:32:18` **startup.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `StartupEntry` al implementar un chequeo de existencia más estricto que utiliza `os.path.lexists` en lugar de `path.exists()` para prevenir el seguimiento involuntario de enlaces simbólicos o junctions (reparse points) durante la validación inicial de rutas, alineándose con las mejores prácticas de seguridad defensiva.
 - `2026-09-05T05:31:51` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la escritura de archivos al integrar `ensure_safe_to_modify` antes de la creación del archivo temporal, garantizando que si la ruta de destino es bloqueada por las políticas de seguridad (`safety.py`), la operación se aborte antes de realizar cualquier cambio en disco.
 - `2026-09-05T05:31:23` **scanner.py** (seguridad defensiva): He refactorizado la validación de rutas en `_is_safe_entry` y `process_entry` para centralizar la verificación de puntos de reparse, evitando el procesamiento de nodos simbólicos y junctions de forma consistente, y aplicando `is_protected_path` de manera estricta antes de realizar cualquier operación de acceso a atributos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-05T05:02:15` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez ante rutas inválidas o dispositivos desconectados durante la enumeración de `_get_local_windows_drives`, asegurando que `os.path.exists` no sea la única verificación y protegiendo contra errores de acceso (`OSError`) al consultar unidades, manteniendo la consistencia con las reglas de seguridad defensiva.
 - `2026-09-05T05:01:36` **branding.py** (seguridad defensiva): Se reforzó la seguridad en `save_logo_svg` reemplazando la validación manual por `ensure_safe_to_modify` antes de cualquier operación de escritura para cumplir estrictamente con el protocolo de seguridad del proyecto y evitar la creación de directorios en rutas bloqueadas.
 - `2026-09-05T05:01:04` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva al procesar las respuestas de la API de Gemini, añadiendo un chequeo explícito de contenido "malicioso" (tokens que podrían ser rutas o inyecciones) antes de considerar la respuesta como válida, asegurando que el LLM no pueda "engañar" al sistema mediante respuestas que parezcan rutas de archivo locales.
-- `2026-09-05T04:51:53` **startup.py** (robustez ante casos límite): Se mejoró la robustez de `_validate_file_access` añadiendo un chequeo explícito de la existencia del archivo mediante `os.path.exists()` previo a la obtención de atributos, evitando que `lstat()` falle innecesariamente ante rutas con enlaces rotos o accesos restringidos durante la recolección de métricas de inicio.
-- `2026-09-05T04:51:40` **settings.py** (robustez ante casos límite): Mejoré la robustez de `load` y `save` ante archivos bloqueados o procesos de lectura interrumpidos implementando un manejo explícito de `OSError` que evita fallas catastróficas al intentar acceder a descriptores de archivo en uso.
-- `2026-09-05T04:50:44` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_in_use` añadiendo una comprobación previa mediante `os.access(path_str, os.F_OK)` para evitar llamadas innecesarias a la API de Windows en rutas inexistentes y se ha encapsulado el manejo de `path.stat()` en `_check_file_integrity_cached` para capturar errores de acceso ("Access Denied") de forma específica, evitando que excepciones de sistema no controladas interrumpan el escaneo.

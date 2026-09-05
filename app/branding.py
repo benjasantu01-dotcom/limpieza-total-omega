@@ -212,8 +212,9 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"): 
         return (0, 0, 0)
     try:
-        return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
-    except (ValueError, IndexError, TypeError): 
+        r, g, b = int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16)
+        return (r, g, b)
+    except ValueError: 
         return (0, 0, 0)
 
 def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
@@ -306,22 +307,26 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda una copia física del archivo logo.svg en el disco tras verificar seguridad."""
-    if not destination: return None
+    if not destination or isinstance(destination, Path) and not destination.name: return None
+    
     clean_path = str(destination).strip().strip('"').strip("'")
-    if not clean_path or len(clean_path) > 255: return None
-    if any(c in clean_path for c in '<>:"|?*'): return None
-    try:
-        path_obj = Path(clean_path).resolve()
-        if not path_obj.is_absolute(): return None
-        # Validación estricta mediante protocolo de seguridad
-        if not is_safe_to_modify(path_obj) or is_protected_path(path_obj): return None
-        if not is_safe_to_modify(path_obj.parent): return None
+    if not clean_path or len(clean_path) > 255 or any(c in clean_path for c in '<>:"|?*'): 
+        return None
         
-        if not path_obj.parent.exists(): path_obj.parent.mkdir(parents=True, exist_ok=True)
+    path_obj = Path(clean_path).resolve()
+    if not path_obj.is_absolute(): return None
+    
+    # Validación estricta mediante protocolo de seguridad
+    if not is_safe_to_modify(path_obj) or is_protected_path(path_obj): return None
+    if path_obj.parent and not is_safe_to_modify(path_obj.parent): return None
+    
+    try:
+        if path_obj.parent and not path_obj.parent.exists(): 
+            path_obj.parent.mkdir(parents=True, exist_ok=True)
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
-    except (OSError, PermissionError, TypeError, ValueError, RuntimeError): 
+    except (OSError, PermissionError): 
         return None
 
 def logo_ascii() -> str:

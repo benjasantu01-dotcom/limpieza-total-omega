@@ -132,7 +132,6 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
-        # GetFileAttributesW devuelve un dword o 0xFFFFFFFF en caso de error
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False 
@@ -197,8 +196,11 @@ def _sum_directory_recursive(
     if root_abs in memo:
         return memo[root_abs]
     
-    root_path = Path(root_abs)
-    if not root_path.exists() or not _is_safe_to_traverse(root_path, base_check_path):
+    try:
+        root_path = Path(root_abs)
+        if not root_path.exists() or not _is_safe_to_traverse(root_path, base_check_path):
+            return 0
+    except (OSError, RuntimeError):
         return 0
     
     total: int = 0
@@ -278,7 +280,8 @@ def detect_profiles(
                 if not isinstance(rel_str, str) or not rel_str:
                     continue
                 
-                candidate = real_base.joinpath(*rel_str.split("\\"))
+                parts = rel_str.split("\\")
+                candidate = real_base.joinpath(*parts)
                 
                 if not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                     continue
