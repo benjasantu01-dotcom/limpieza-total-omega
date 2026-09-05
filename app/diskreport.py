@@ -226,12 +226,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Realiza un recorrido profundo (DFS) iterativo para obtener archivos y tamaños.
-    
-    Implementa:
-      - Validación de seguridad contra carpetas protegidas.
-      - Detección de puntos de reparse (Junctions/Symlinks) para evitar bucles.
-      - Seguimiento de inodos visitados para manejar atajos circulares.
-      - Recuperación de excepciones ante errores de acceso (permisos/sistema).
     """
     root_path = _validate_root(directory)
     if root_path is None:
@@ -253,12 +247,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         st = entry.stat(follow_symlinks=False)
                         
-                        # Evitar seguir symlinks o puntos de reparse de Windows (Junctions)
                         if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
                             continue
                         
                         if entry.is_dir():
-                            # Identificación única de directorio para evitar ciclos
                             inode_key = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
                             if inode_key[0] != 0 and inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
@@ -348,10 +340,6 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
     Ejecuta un único recorrido para capturar todas las métricas globales del directorio.
-    
-    Esta función centraliza la lógica de agregación (tamaño, conteo, extensión y
-    top 10 archivos) para minimizar las pasadas de disco y mantener la consistencia
-    de los datos en un solo estado.
     """
     total_bytes = 0
     total_files = 0
@@ -366,7 +354,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
         ext_sizes[ext] += size
         ext_counts[ext] += 1
         
-        # Mantenimiento de heap para conservar solo los N archivos más pesados en memoria
         if len(top_files_heap) < 10:
             heapq.heappush(top_files_heap, (size, path))
         elif size > top_files_heap[0][0]:

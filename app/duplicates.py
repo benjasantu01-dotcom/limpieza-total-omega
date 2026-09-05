@@ -196,12 +196,11 @@ def _collect_candidates(
                                 _scan_directory_recursive(subdir_path)
                         else:
                             st = _get_entry_stat(entry)
-                            if st and st.st_size >= min_size and st.st_nlink == 1:
-                                p = Path(entry.path)
-                                if not is_protected_path(p):
-                                    size_map[st.st_size].append(p)
-                                    # Rastreo de inodos para evitar recursión circular
-                                    visited_inodes.add((st.st_dev, st.st_ino))
+                            # Verificamos existencia y accesibilidad antes de considerar
+                            p = Path(entry.path)
+                            if st and st.st_size >= min_size and st.st_nlink == 1 and _is_valid_candidate(p):
+                                size_map[st.st_size].append(p)
+                                visited_inodes.add((st.st_dev, st.st_ino))
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

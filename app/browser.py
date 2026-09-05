@@ -206,18 +206,25 @@ def _sum_directory_recursive(
     total: int = 0
     try:
         with os.scandir(root_abs) as it:
-            for entry in it:
-                if _should_skip_entry(entry, kernel32, is_junction_fn):
-                    continue
-                
+            while True:
                 try:
+                    entry = next(it, None)
+                    if entry is None:
+                        break
+                    
+                    if _should_skip_entry(entry, kernel32, is_junction_fn):
+                        continue
+                    
                     if entry.is_dir(follow_symlinks=False):
                         total += _sum_directory_recursive(
                             entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                         )
                     elif entry.is_file(follow_symlinks=False):
-                        stats = entry.stat(follow_symlinks=False)
-                        total += stats.st_size
+                        try:
+                            stats = entry.stat(follow_symlinks=False)
+                            total += stats.st_size
+                        except (OSError, PermissionError):
+                            continue
                 except (OSError, PermissionError):
                     continue
     except (PermissionError, OSError):
