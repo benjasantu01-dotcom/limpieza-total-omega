@@ -307,7 +307,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj): return None
         
         parent = path_obj.parent
-        if not is_safe_to_modify(parent): return None
+        if not is_safe_to_modify(parent) or is_protected_path(parent): return None
         
         parent.mkdir(parents=True, exist_ok=True)
         ensure_safe_to_modify(path_obj)

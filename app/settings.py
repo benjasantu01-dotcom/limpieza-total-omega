@@ -314,6 +314,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         
         parent = ruta.parent
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
+        if not parent.is_dir(): return None
         
         if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE * 2:
             return None
@@ -327,6 +328,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.flush()
             os.fsync(f.fileno())
         
+        if not parent.exists(): return None
         os.replace(temp_path, ruta)
         _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta

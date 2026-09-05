@@ -1186,3 +1186,33 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-09-05T13:43:50` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-09-05T13:43:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T13:43:50` Corrida terminada. Total usado hoy: 324.
+- `2026-09-05T13:52:28` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-05T13:53:01` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save` frente a la concurrencia de archivos agregando un chequeo `os.path.exists` antes de la escritura, y se protegió la integridad de la configuración mediante una validación de escritura atómica más rigurosa que impide la sobreescritura si el directorio padre ha sido bloqueado o eliminado inesperadamente entre la validación y el `open`.
+- `2026-09-05T13:53:26` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-05T13:54:05` Tests FALLARON:
+```
+ not in enviado["texto"]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: argument of type 'SystemContext' is not iterable
+
+evolve/tests/test_assistant.py:418: TypeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:296: SyntaxWarning: invalid escape sequence '\)'
+    """Determina si la ruta normalizada corresponde a la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_extras - AssertionError: assert 0.0 == 8.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - TypeError: argument of type 'SystemContext' is not iterable
+2 failed, 297 passed, 4 warnings in 1.09s
+
+```
+- `2026-09-05T13:54:05` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad del motor Gemini limitando los tipos de entrada en `build_context` para prevenir inyecciones a través de argumentos inesperados y asegurando que `_call_gemini` valide explícitamente la estructura del contexto antes de cualquier serialización.
+- `2026-09-05T13:54:22` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita mediante `is_protected_path` sobre el directorio padre antes de intentar su creación, asegurando que el proceso no pueda crear estructuras de archivos en zonas restringidas del sistema.
+- `2026-09-05T13:54:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T13:54:23` Corrida terminada. Total usado hoy: 328.

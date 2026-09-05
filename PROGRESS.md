@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
-- Rechazadas por tests: 19
+- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 194
+- Sin respuesta de la IA (error o límite): 191
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-04 | 79 | 8 | 16 | 3 | 74 |
-| 2026-09-05 | 156 | 11 | 23 | 14 | 120 |
+| 2026-09-04 | 79 | 8 | 16 | 3 | 70 |
+| 2026-09-05 | 158 | 12 | 23 | 14 | 121 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
-- robustez ante casos límite: **50**
+- robustez ante casos límite: **51**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **43**
+- seguridad defensiva: **44**
 - rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
@@ -33,10 +33,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **22**
 - `safety.py`: **19**
 - `scanner.py`: **19**
+- `branding.py`: **19**
 - `memory.py`: **18**
-- `branding.py`: **18**
+- `settings.py`: **18**
 - `duplicates.py`: **17**
-- `settings.py`: **17**
 - `organizer.py`: **17**
 - `browser.py`: **16**
 - `healthscore.py`: **16**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T13:54:22` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita mediante `is_protected_path` sobre el directorio padre antes de intentar su creación, asegurando que el proceso no pueda crear estructuras de archivos en zonas restringidas del sistema.
+- `2026-09-05T13:53:01` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save` frente a la concurrencia de archivos agregando un chequeo `os.path.exists` antes de la escritura, y se protegió la integridad de la configuración mediante una validación de escritura atómica más rigurosa que impide la sobreescritura si el directorio padre ha sido bloqueado o eliminado inesperadamente entre la validación y el `open`.
 - `2026-09-05T13:43:41` **safety.py** (robustez ante casos límite): Se introdujo una verificación de integridad física del volumen y del estado del sistema de archivos mediante `os.access(..., os.W_OK)` como capa de defensa adicional en `_check_file_integrity_cached`, mitigando casos donde archivos bloqueados por políticas de grupo o permisos de lectura denegados a nivel de sistema operativo fallaban silenciosamente o causaban excepciones no controladas durante la manipulación.
 - `2026-09-05T13:42:51` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_locked` para manejar archivos inexistentes o bloqueados por permisos de forma más determinista, evitando excepciones innecesarias en entornos con alta actividad de E/S.
 - `2026-09-05T13:35:37` **organizer.py** (robustez ante casos límite): He mejorado `_process_directory` y `_try_collect_junk` para manejar robustamente errores de acceso denegado (frecuentes en sistemas Windows al escanear carpetas de usuario) y prevenir estados inconsistentes, añadiendo una validación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier procesamiento de entrada.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-05T12:53:47` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas mediante la implementación de `functools.lru_cache` con un `maxsize` adecuado en la función `pressure_level` y, fundamentalmente, se reorganizó la lógica de caché en `read_snapshot` para evitar llamadas redundantes a `os.name` y `Path.exists()` dentro del bucle de ejecución, consolidando las verificaciones de sistema en una estructura más eficiente.
 - `2026-09-05T12:53:32` **main.py** (rendimiento): Se implementó un mecanismo de caché con invalidación selectiva para los resultados del escaneo de duplicados (`dups`), evitando reinvocaciones innecesarias del algoritmo de hash costoso al navegar entre pestañas o redibujar la UI.
 - `2026-09-05T12:52:17` **healthscore.py** (rendimiento): Optimicé el pipeline de cálculo utilizando un enfoque de pre-cómputo y acceso directo en lugar de realizar búsquedas dinámicas en diccionarios durante la ejecución del bucle, reduciendo la sobrecarga de resolución de llaves en cada iteración.
-- `2026-09-05T12:51:50` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar redundancia en el cálculo de `stat` y el uso de memoria, eliminando el re-cálculo de `Path(entry.path)` y centralizando la validación para reducir el tráfico de llamadas al sistema durante el escaneo recursivo.
-- `2026-09-05T12:43:04` **diskreport.py** (rendimiento): Optimicé el método `walk_files` reemplazando `path.relative_to` por una estrategia de caché de rutas resueltas y minimizando las llamadas a `resolve(strict=True)` dentro del bucle, reduciendo significativamente la carga de I/O en cada iteración.
