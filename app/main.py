@@ -409,11 +409,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         constructor = getattr(self, method_name, None)
         tab_frame = self.tabs.get(name)
         
-        if constructor and tab_frame:
+        if constructor and tab_frame and tab_frame.winfo_exists():
             try:
-                if tab_frame.winfo_exists():
-                    constructor()
-                    self._initialized_tabs[name] = True
+                constructor()
+                self._initialized_tabs[name] = True
             except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
 
@@ -445,9 +444,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Dispara la inicialización de la pestaña seleccionada."""
         for original_name in TABS:
             if branding.tab_label(original_name) == tab_label:
-                tab_frame = self.tabs.get(original_name)
-                if tab_frame and tab_frame.winfo_exists():
-                    self._tab_factory(original_name)
+                self._tab_factory(original_name)
                 break
 
     def _build_header(self) -> None:

@@ -52,13 +52,11 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
 # Factores de normalización: escalan valores brutos a un ratio [0.0, 1.0].
-# Se calculan como el inverso del límite superior aceptable (donde el ratio llega a 0).
 _INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB if _LIMIT_JUNK_MB > 0 else 0.0
 _INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB if _LIMIT_DUPLICATE_MB > 0 else 0.0
 _INV_STARTUP: Final[float] = 1.0 / float(_LIMIT_STARTUP_COUNT) if _LIMIT_STARTUP_COUNT > 0 else 0.0
 
 # Niveles de severidad para activar reglas de recomendación (heurística).
-# Representan el ratio (0-1) debajo del cual se dispara la advertencia.
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
@@ -126,7 +124,6 @@ _RULES_BY_AREA: Final[Dict[MetricKey, List[RecommendationRule]]] = {}
 for rule in _RECOMMENDATION_RULES:
     _RULES_BY_AREA.setdefault(rule.area, []).append(rule)
 
-# Pipeline optimizado que vincula directamente el scorer
 _OPTIMIZED_PIPELINE: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], List[RecommendationRule]]]] = [
     (area, weight, _SCORERS[area], _RULES_BY_AREA.get(area, [])) for area, weight in _WEIGHT_ITEMS_INT
 ]
@@ -197,6 +194,19 @@ def grade_for_score(score: float | int) -> str:
     if s >= 50: return "D"
     return "F"
 
+def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float) -> List[str]:
+    """Procesa una lista de reglas de recomendación para un área específica."""
+    findings = []
+    for rule in rules:
+        if rule.check(metrics, ratio):
+            try:
+                msg = rule.message_factory(metrics)
+                if isinstance(msg, str) and msg.strip():
+                    findings.append(msg.strip())
+            except (AttributeError, TypeError, ValueError):
+                continue
+    return findings
+
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de entrada de métricas inválido."])
@@ -215,15 +225,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             pts = int(round(ratio * weight))
             metric_breakdown[area] = pts
             total_pts += float(pts)
-            
-            for rule in rules:
-                if rule.check(metrics, ratio):
-                    try:
-                        msg = rule.message_factory(metrics)
-                        if isinstance(msg, str) and msg.strip():
-                            recommendations.append(msg.strip())
-                    except (AttributeError, TypeError, ValueError):
-                        continue
+            recommendations.extend(_evaluate_rules(metrics, rules, ratio))
         except Exception:
             metric_breakdown[area] = 0
             continue

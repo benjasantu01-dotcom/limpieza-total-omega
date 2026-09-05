@@ -323,7 +323,10 @@ def _is_system_process(pid: int) -> bool:
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
-    """Recupera la ruta absoluta del ejecutable usando QueryFullProcessImageNameW."""
+    """
+    Recupera la ruta absoluta del ejecutable mediante QueryFullProcessImageNameW.
+    Requiere un handle con permisos PROCESS_QUERY_LIMITED_INFORMATION o superior.
+    """
     if not proc_handle: return None
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "QueryFullProcessImageNameW"): return None
@@ -331,7 +334,6 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
     buf = ctypes.create_unicode_buffer(4096)
     size = ctypes.c_ulong(4096)
     try:
-        # Se invoca directamente la función desde el módulo kernel32
         if kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size)) > 0:
             return str(buf.value)
     except (OSError, ctypes.ArgumentError, ValueError, BufferError): 
@@ -339,7 +341,11 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
     return None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
-    """Valida la integridad y seguridad del proceso antes de solicitar un Trim."""
+    """
+    Realiza una auditoría de seguridad del proceso objetivo antes de modificar su estado.
+    Verifica que el handle pertenezca al PID, que el proceso esté vivo, y que su 
+    ubicación en disco no esté marcada como sensible por la política de seguridad.
+    """
     if not proc_handle: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
     
