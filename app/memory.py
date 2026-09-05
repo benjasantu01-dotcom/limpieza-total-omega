@@ -278,9 +278,10 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     now = time.time()
     if (now - _proc_cache_time) > 60:
         fetch_limit = limit + 5
+        # Optimización: Consultar solo las columnas necesarias para no cargar objetos full de WMI/Cim
         cmd = [
             'powershell', '-NoProfile', '-NonInteractive', '-Command', 
-            f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {fetch_limit} | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
+            f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {fetch_limit} -Property Name, Id, WorkingSet | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
         ]
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)

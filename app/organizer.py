@@ -100,7 +100,7 @@ class JunkFile:
     @property
     def is_junk_extension(self) -> bool:
         """Verifica si la extensión del archivo está en JUNK_EXTENSIONS."""
-        return _is_junk_path(self.path)
+        return self.path.suffix.lower() in JUNK_EXTENSIONS
 
 
 def _get_win_attributes(path_or_entry: Union[os.DirEntry, Path]) -> int:
@@ -123,9 +123,9 @@ def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
     return is_sym or is_junction_attr
 
 
-def _is_junk_path(path: Path) -> bool:
+def _is_junk_path(path_str: str) -> bool:
     """Comprueba si la extensión del archivo coincide con las extensiones de basura definidas."""
-    return path.suffix.lower() in JUNK_EXTENSIONS
+    return os.path.splitext(path_str)[1].lower() in JUNK_EXTENSIONS
 
 
 def _is_unc_path(path: Path) -> bool:
@@ -276,7 +276,7 @@ def _try_collect_junk(entry: os.DirEntry, found: List[JunkFile]) -> None:
     Valida un archivo individual y lo agrega a la lista si es basura confirmada 
     y pasa los chequeos de seguridad.
     """
-    if not _is_junk_path(Path(entry.name)):
+    if not _is_junk_path(entry.name):
         return
         
     try:

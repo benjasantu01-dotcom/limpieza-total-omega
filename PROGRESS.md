@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
-- Rechazadas por tests: 23
+- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-04 | 134 | 16 | 24 | 6 | 128 |
-| 2026-09-05 | 89 | 7 | 13 | 7 | 80 |
+| 2026-09-04 | 133 | 15 | 24 | 5 | 127 |
+| 2026-09-05 | 92 | 7 | 13 | 8 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **41**
-- rendimiento: **34**
+- robustez ante casos límite: **40**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
-- `safety.py`: **19**
 - `branding.py`: **18**
+- `safety.py`: **18**
 - `settings.py`: **18**
+- `healthscore.py`: **18**
 - `diskreport.py`: **18**
 - `scanner.py`: **17**
-- `healthscore.py`: **17**
 - `duplicates.py`: **16**
-- `organizer.py`: **15**
-- `memory.py`: **15**
+- `organizer.py`: **16**
+- `memory.py`: **16**
 - `browser.py`: **13**
 - `quarantine.py`: **13**
 - `startup.py`: **12**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T08:26:34` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` y `_process_directory` transformando la lista de extensiones `JUNK_EXTENSIONS` en un conjunto (`frozenset`) y pre-compilando la comparación de extensiones para evitar múltiples accesos a disco y llamadas innecesarias a `Path.suffix`.
+- `2026-09-05T08:26:17` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria de los procesos (top_memory_processes) reemplazando la llamada completa a `Get-Process` (que carga todos los objetos de proceso en PowerShell) por una consulta optimizada que extrae solo las propiedades necesarias (`Name, Id, WorkingSet`) directamente desde el provider, reduciendo drásticamente el tiempo de ejecución y el uso de CPU/memoria del proceso de diagnóstico.
+- `2026-09-05T08:24:35` **healthscore.py** (rendimiento): Optimicé el método `SystemMetrics.is_finite` sustituyendo el uso de `getattr` en un loop (`all` sobre los campos de la clase) por una verificación directa sobre los atributos, evitando la sobrecarga de reflexión en cada corrida.
 - `2026-09-05T08:16:02` **duplicates.py** (rendimiento): Se optimizó el proceso de detección mediante el uso de `os.scandir` para obtener metadatos (tamaño e inodos) sin realizar llamadas `stat` adicionales para cada archivo, reduciendo drásticamente las operaciones de E/S por cada entrada.
 - `2026-09-05T08:14:30` **branding.py** (rendimiento): Optimicé el cálculo de colores y segmentos mediante el uso de `lru_cache` con un tamaño adecuado y evitando la recreación de objetos `MappingProxyType` o listas en llamadas recurrentes, mejorando así el rendimiento en el renderizado constante del canvas.
 - `2026-09-05T08:05:27` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` eliminando la re-tokenización innecesaria y el bucle de búsqueda en cada consulta, reemplazándolo por una búsqueda directa en diccionario más eficiente.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-05T07:45:52` **memory.py** (legibilidad y documentación): Se introdujo documentación explicativa de alto nivel en los métodos de diagnóstico y de gestión de procesos para aclarar el propósito de las métricas y la cautela necesaria con las operaciones de bajo nivel (Win32), mejorando la mantenibilidad sin cambiar la lógica funcional.
 - `2026-09-05T07:44:23` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación y la robustez de los `dataclasses` mediante la adición de docstrings técnicos, `field(repr=False)` para evitar fugas de información accidental en logs y la centralización de la validación, garantizando que `SystemMetrics` sea siempre un objeto íntegro.
 - `2026-09-05T07:43:52` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `duplicates.py` mediante docstrings precisos que explican el "porqué" de las decisiones de diseño (especialmente en la jerarquía de hashes) y se han añadido type hints más específicos para clarificar las estructuras de datos que manejan los grupos de duplicados.
-- `2026-09-05T07:35:11` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de recorrido (`walk_files`, `_collect_summary_data`) para clarificar el flujo de control y las garantías de seguridad aplicadas, facilitando el mantenimiento técnico.
-- `2026-09-05T07:34:30` **branding.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `logo_svg` y `save_logo_svg` para reducir la repetición y mejorar la claridad, asegurando que las validaciones de seguridad sean explícitas y fáciles de auditar.
-- `2026-09-05T07:33:54` **assistant.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros y retornos de las funciones, se añadieron docstrings explicativos a las constantes críticas y se refinó la documentación del módulo para mejorar la mantenibilidad y claridad del código sin alterar su lógica operativa.
