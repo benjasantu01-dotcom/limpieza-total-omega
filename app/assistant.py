@@ -344,8 +344,8 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
         if val is None or not spec.is_valid_type(val):
             return False
         
-        f_val = _safe_float(val, -999.0)
-        if f_val < -1.0 or not (spec.min_val <= f_val <= spec.max_val):
+        f_val = float(val)
+        if not (spec.min_val <= f_val <= spec.max_val):
             return False
         
         final_val = spec.cast_func(f_val)

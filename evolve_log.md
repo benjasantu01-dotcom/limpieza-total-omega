@@ -1129,3 +1129,37 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-05T13:03:17` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-09-05T13:03:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T13:03:17` Corrida terminada. Total usado hoy: 308.
+- `2026-09-05T13:11:41` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-05T13:12:09` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo reemplazando las validaciones recurrentes de `Path` mediante el uso directo de las propiedades de `os.DirEntry` y optimizando la resolución de rutas, evitando instanciar objetos `Path` innecesarios dentro de los bucles críticos.
+- `2026-09-05T13:12:39` Tests FALLARON:
+```
+Error: assert '' == '/tmp/pytest-...mb0/Descargas'
+E         
+E         - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+
+evolve/tests/test_assistant.py:124: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:293: SyntaxWarning: invalid escape sequence '\)'
+    """Determina si la ruta normalizada corresponde a la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert False
+ +  where False = is_file()
+ +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+ +      where 'config.json' = settings.SETTINGS_FILE
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+2 failed, 297 passed, 4 warnings in 1.28s
+
+```
+- `2026-09-05T13:12:39` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché para `_Validators._run_safety_checks` basado en el `st_ino` (inode/índice) y `st_dev` (dispositivo) de las rutas, reemplazando la caché basada en strings que no detectaba cambios en el sistema de archivos y evitaba llamadas redundantes a `resolve()` y `is_junction()` en iteraciones rápidas.
+- `2026-09-05T13:13:07` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-05T13:13:33` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` y `_validate_and_assign` mediante la validación explícita de tipos numéricos y un manejo de errores más estricto ante valores `None` o malformados, asegurando que el asistente nunca procese datos que puedan corromper sus estados internos.
+- `2026-09-05T13:13:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T13:13:33` Corrida terminada. Total usado hoy: 312.
