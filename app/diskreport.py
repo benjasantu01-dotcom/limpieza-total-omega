@@ -324,7 +324,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             
     sums: Dict[Path, int] = defaultdict(int)
     counts: Dict[Path, int] = defaultdict(int)
-    # Cache para evitar re-resolver la ruta superior en cada archivo
     root_parts_len = len(p_base.parts)
 
     for path, size in walk_files(p_base, skip_protected):
@@ -366,7 +365,11 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     for path, size in walk_files(directory, skip_protected):
         total_bytes += size
         total_files += 1
-        ext = path.suffix.lower() or "(sin extensión)"
+        try:
+            ext = path.suffix.lower() or "(sin extensión)"
+        except (AttributeError, OSError):
+            ext = "(error)"
+            
         ext_sizes[ext] += size
         ext_counts[ext] += 1
         

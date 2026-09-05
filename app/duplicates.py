@@ -202,7 +202,7 @@ def _collect_candidates(
                             subdir_path = Path(entry.path)
                             if not is_protected_path(subdir_path) and not is_junction(subdir_path):
                                 _scan_directory_recursive(subdir_path)
-                        else:
+                        elif entry.is_file(follow_symlinks=False):
                             st = _get_entry_stat(entry)
                             if st and st.st_size >= min_size and st.st_nlink == 1:
                                 p = Path(entry.path)

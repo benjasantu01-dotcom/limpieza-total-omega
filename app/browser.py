@@ -199,12 +199,18 @@ def _sum_directory_recursive(
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
     
-    if root_abs in memo:
-        return memo[root_abs]
+    # Normalizar ruta para el memo y evitar procesamiento redundante en casos de enlaces cíclicos o inconsistencias
+    try:
+        norm_path = str(Path(root_abs).resolve(strict=True))
+    except (OSError, RuntimeError):
+        return 0
+    
+    if norm_path in memo:
+        return memo[norm_path]
     
     total: int = 0
     try:
-        with os.scandir(root_abs) as it:
+        with os.scandir(norm_path) as it:
             while True:
                 try:
                     entry = next(it, None)
@@ -226,7 +232,7 @@ def _sum_directory_recursive(
     except (PermissionError, OSError):
         return 0
     
-    memo[root_abs] = total
+    memo[norm_path] = total
     return total
 
 
