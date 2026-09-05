@@ -339,20 +339,20 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     if not isinstance(junk_file, JunkFile) or junk_file.path is None or not isinstance(dest_base, Path): return None
     if _is_unc_path(dest_base) or is_protected_path(dest_base): return None
     try:
-        if not dest_base.exists() or not dest_base.is_dir(): return None
+        dest_base_res: Path = dest_base.resolve()
+        if not dest_base_res.exists() or not dest_base_res.is_dir(): return None
         
         # Validar espacio disponible + margen de seguridad (50MB)
-        if shutil.disk_usage(dest_base.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): 
+        if shutil.disk_usage(dest_base_res.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): 
             return None
             
-        if not _is_safe_to_move(junk_file, dest_base): return None
+        if not _is_safe_to_move(junk_file, dest_base_res): return None
         
         src_res: Path = junk_file.path.resolve()
-        dest_base_res: Path = dest_base.resolve()
         if src_res.is_relative_to(dest_base_res): return None
         
         safe_name: str = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
-        target: Path = _generate_unique_target(dest_base / safe_name)
+        target: Path = _generate_unique_target(dest_base_res / safe_name)
         
         # Verificación final de contención para evitar path traversal
         return target if target.parent.resolve() == dest_base_res else None

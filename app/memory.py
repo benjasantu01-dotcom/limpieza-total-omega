@@ -267,7 +267,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     
     now = time.time()
     if (now - _proc_cache_time) > 60:
-        # Optimizamos recuperando solo un conjunto manejable de procesos
         fetch_limit = limit + 5
         cmd = [
             'powershell', '-NoProfile', '-NonInteractive', '-Command', 
@@ -332,7 +331,8 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
     buf = ctypes.create_unicode_buffer(4096)
     size = ctypes.c_ulong(4096)
     try:
-        if kernel32(ctypes.windll.kernel32).QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size)) > 0:
+        # Se invoca directamente la función desde el módulo kernel32
+        if kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size)) > 0:
             return str(buf.value)
     except (OSError, ctypes.ArgumentError, ValueError, BufferError): 
         pass
@@ -375,7 +375,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
-    # Primero abrimos con acceso limitado para evitar bloqueos por permisos
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         return False, f"Acceso denegado (código {kernel32.GetLastError()})."
