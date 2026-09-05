@@ -132,6 +132,8 @@ SCORE_THRESHOLDS: Final[Tuple[Tuple[float, HexColor], ...]] = (
     (90.0, C_SUCCESS), (80.0, C_INFO), (65.0, C_WARNING), (50.0, "#ff7b39")
 )
 
+_SEVERITY_MAP: Final[Mapping[str, str]] = MappingProxyType({"ok": "\u2713", "info": "\u2139", "warning": "\u26a0", "danger": "\u2716"})
+
 def app_title() -> str:
     """Retorna el nombre completo de la aplicación y su versión actual."""
     return f"{APP_NAME} v{APP_VERSION}"
@@ -172,8 +174,7 @@ def severity_label(severity: Optional[str]) -> str:
 
 def severity_icon(severity: Optional[str]) -> str:
     """Devuelve el símbolo asociado al nivel de severidad."""
-    simbolos: Final[Mapping[str, str]] = MappingProxyType({"ok": "\u2713", "info": "\u2139", "warning": "\u26a0", "danger": "\u2716"})
-    return simbolos.get(severity.lower(), "\u2022") if isinstance(severity, str) else "\u2022"
+    return _SEVERITY_MAP.get(severity.lower(), "\u2022") if isinstance(severity, str) else "\u2022"
 
 @lru_cache(maxsize=8)
 def grade_color(grade: Optional[str]) -> HexColor:
@@ -206,22 +207,20 @@ def bar(percent: Union[float, int, None], width: int = 24,
     except (TypeError, ValueError):
         return empty * max(1, int(width))
 
-@lru_cache(maxsize=64)
+@lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
     """Convierte color hexadecimal #RRGGBB a tupla RGB (r, g, b)."""
-    if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"): 
-        return (0, 0, 0)
+    if len(value) != 7 or not value.startswith("#"): return (0, 0, 0)
     try:
-        r, g, b = int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16)
-        return (r, g, b)
-    except ValueError: 
-        return (0, 0, 0)
+        return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
+    except ValueError: return (0, 0, 0)
 
+@lru_cache(maxsize=128)
 def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
     """Convierte tupla RGB (0-255) a color hexadecimal #RRGGBB."""
-    return "#{:02x}{:02x}{:02x}".format(max(0, min(255, int(rgb[0]))), max(0, min(255, int(rgb[1]))), max(0, min(255, int(rgb[2]))))
+    return "#{:02x}{:02x}{:02x}".format(*rgb)
 
-@lru_cache(maxsize=32)
+@lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     """Interpolación lineal entre dos colores hexadecimales usando un ratio [0.0, 1.0]."""
     if start == end: return start
@@ -234,7 +233,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
         int(b1 + (b2 - b1) * ratio)
     ))
 
-@lru_cache(maxsize=32)
+@lru_cache(maxsize=64)
 def _interpolate_color(s1: RGBTuple, s2: RGBTuple, delta: float) -> HexColor:
     """Función de ayuda interna para interpolar dos tuplas RGB y retornar HEX."""
     return _rgb_to_hex((
@@ -243,23 +242,22 @@ def _interpolate_color(s1: RGBTuple, s2: RGBTuple, delta: float) -> HexColor:
         int(s1[2] + (s2[2] - s1[2]) * delta)
     ))
 
-@lru_cache(maxsize=16)
+@lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
     """Genera una secuencia de colores interpolados para crear un degradado lineal."""
     n = max(1, int(steps))
     if len(stops) < 2: return (stops[0],) * n
-    rgb_stops = [_hex_to_rgb(s) for s in stops]
+    rgb_stops = tuple(_hex_to_rgb(s) for s in stops)
     tramos = len(stops) - 1
     
-    def get_color_gen():
-        for i in range(n):
-            pos = (i / (n - 1) * tramos) if n > 1 else 0
-            idx = min(int(pos), tramos - 1)
-            yield _interpolate_color(rgb_stops[idx], rgb_stops[idx + 1], pos - idx)
-            
-    return tuple(get_color_gen())
+    res = []
+    for i in range(n):
+        pos = (i / (n - 1) * tramos) if n > 1 else 0
+        idx = min(int(pos), tramos - 1)
+        res.append(_interpolate_color(rgb_stops[idx], rgb_stops[idx + 1], pos - idx))
+    return tuple(res)
 
-@lru_cache(maxsize=16)
+@lru_cache(maxsize=32)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, ...]:
     """Agrupa colores consecutivos idénticos para optimizar el dibujo de elementos en Canvas."""
     if not colors: return ()
@@ -305,19 +303,15 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda una copia física del archivo logo.svg en el disco tras verificar seguridad."""
     if not destination: return None
     path_obj = Path(str(destination).strip().strip('"\'')).resolve()
-    
-    # Validaciones de integridad de ruta antes de tocar el sistema de archivos
     if not path_obj.is_absolute() or len(str(path_obj)) > 255: return None
     if not is_safe_to_modify(path_obj) or is_protected_path(path_obj): return None
     if path_obj.parent and not is_safe_to_modify(path_obj.parent): return None
-    
     try:
         path_obj.parent.mkdir(parents=True, exist_ok=True)
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
-    except (OSError, PermissionError): 
-        return None
+    except (OSError, PermissionError): return None
 
 def logo_ascii() -> str:
     """Retorna una representación artística del logo en caracteres ASCII."""

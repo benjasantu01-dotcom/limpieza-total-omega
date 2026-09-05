@@ -136,29 +136,11 @@ def _is_valid_candidate(path: Path) -> bool:
         return False
 
 
-def _get_file_stat_if_valid(entry: os.DirEntry, min_size: int) -> Optional[int]:
-    """
-    Valida un DirEntry. Filtra hard links para evitar contar el mismo inodo dos veces
-    y descarta archivos que no alcancen el umbral mínimo configurado.
-    """
+def _get_entry_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
+    """Obtiene stat de forma segura usando el objeto DirEntry para evitar llamadas extra a disco."""
     try:
-        if entry.is_symlink():
-            return None
-        if not entry.is_file():
-            return None
-        
-        stat_info = entry.stat()
-        if stat_info.st_nlink > 1:
-            return None
-        if stat_info.st_size < min_size:
-            return None
-            
-        p = Path(entry.path)
-        if is_protected_path(p) or is_junction(p):
-            return None
-            
-        return int(stat_info.st_size)
-    except (OSError, PermissionError, ValueError, TypeError):
+        return entry.stat(follow_symlinks=False)
+    except OSError:
         return None
 
 
@@ -198,19 +180,13 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Recorre el sistema de archivos buscando archivos.
-    Usa `visited_inodes` para detectar ciclos en sistemas de archivos (evitar bucles infinitos).
+    Usa `os.scandir` para minimizar llamadas a sistema (stat) por archivo.
     """
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Set[Tuple[int, int]] = set()
 
     def _scan_directory_recursive(current_dir: Path) -> None:
         try:
-            st = current_dir.stat()
-            inode_key = (st.st_dev, st.st_ino)
-            if inode_key in visited_inodes:
-                return
-            visited_inodes.add(inode_key)
-
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
@@ -219,9 +195,13 @@ def _collect_candidates(
                             if not is_protected_path(subdir_path) and not is_junction(subdir_path):
                                 _scan_directory_recursive(subdir_path)
                         else:
-                            file_size = _get_file_stat_if_valid(entry, min_size)
-                            if file_size is not None:
-                                size_map[file_size].append(Path(entry.path))
+                            st = _get_entry_stat(entry)
+                            if st and st.st_size >= min_size and st.st_nlink == 1:
+                                p = Path(entry.path)
+                                if not is_protected_path(p):
+                                    size_map[st.st_size].append(p)
+                                    # Rastreo de inodos para evitar recursión circular
+                                    visited_inodes.add((st.st_dev, st.st_ino))
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
