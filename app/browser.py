@@ -89,13 +89,11 @@ class BrowserCache:
 
 def _get_kernel32() -> Optional[ctypes.WinDLL]:
     """Carga dinámicamente kernel32.dll para llamadas a la API de Win32, si es Windows."""
-    if os.name != 'nt':
+    if os.name != 'nt' or not hasattr(ctypes, 'WinDLL'):
         return None
     try:
-        if not hasattr(ctypes, 'windll'):
-            return None
         return ctypes.WinDLL('kernel32.dll', use_last_error=True)
-    except (AttributeError, OSError, RuntimeError):
+    except (OSError, RuntimeError):
         return None
 
 
@@ -134,11 +132,12 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
+        # GetFileAttributesW devuelve un dword o 0xFFFFFFFF en caso de error
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False 
         return bool(attrs & SYSTEM_HIDDEN_FLAGS)
-    except (OSError, AttributeError, TypeError, ValueError, MemoryError, ctypes.ArgumentError):
+    except (AttributeError, TypeError, ctypes.ArgumentError):
         return False
 
 

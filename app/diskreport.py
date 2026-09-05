@@ -196,8 +196,8 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         
     try:
         p = Path(os.fspath(mount)).resolve()
-        # Verificar protección antes de consultar el disco
-        if is_protected_path(p) or not p.exists() or not p.is_dir():
+        # Verificar protección, existencia y tipo antes de consultar
+        if not p.exists() or not p.is_dir() or is_protected_path(p):
             return None
             
         usage = shutil.disk_usage(p)
@@ -248,15 +248,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        path_entry = Path(entry.path)
-                        
+                        # Verificar si la entrada es un enlace simbólico o punto de reparse
                         st = entry.stat(follow_symlinks=False)
                         
                         if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
                             continue
                         
                         if entry.is_dir():
-                            # Validar que la subcarpeta sea segura antes de agregar al stack
+                            path_entry = Path(entry.path)
                             if skip_protected and is_protected_path(path_entry):
                                 continue
                             inode_key = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
@@ -265,7 +264,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 stack.append(path_entry)
                                     
                         elif entry.is_file():
-                            yield path_entry, max(0, int(getattr(st, 'st_size', 0)))
+                            yield Path(entry.path), max(0, int(getattr(st, 'st_size', 0)))
                     except (PermissionError, OSError, AttributeError):
                         continue
         except (PermissionError, OSError):

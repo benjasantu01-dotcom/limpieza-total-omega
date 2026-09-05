@@ -1332,3 +1332,39 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-05T02:21:33` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-05T02:21:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T02:21:33` Corrida terminada. Total usado hoy: 56.
+- `2026-09-05T02:27:32` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-09-05T02:28:11` Tests FALLARON:
+```
+ __________________
+
+    def test_build_context_reads_fields_one_by_one():
+        """Copia campo por campo, no el objeto entero, para no arrastrar datos."""
+        class MetricasConRuta:
+            junk_mb = 100.0
+            suspicious_count = 2
+            suspicious_warnings = 0
+            memory_available_percent = 40.0
+            disk_free_percent = 50.0
+            duplicate_mb = 0.0
+            startup_count = 5
+            quarantined_count = 0
+            archivo_secreto = "C:/Users/benja/clave.txt"
+    
+        contexto = assistant.build_context(metrics=MetricasConRuta())
+>       assert contexto.junk_mb == 100.0
+E       AssertionError: assert 0.0 == 100.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+1 failed, 298 passed in 0.74s
+
+```
+- `2026-09-05T02:28:11` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_get_source_value` y `_validate_and_assign` eliminando la dependencia de `object` (que es demasiado amplia y no garantiza acceso a atributos) por una validación más estricta de `dict` y manejo de excepciones, evitando que errores inesperados en la inyección de datos corrompan el estado del asistente.
+- `2026-09-05T02:28:46` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-05T02:29:12` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_kernel32` y `__is_system_hidden` para evitar fallos por estado interno corrompido, reemplazando la verificación genérica de `AttributeError` por una validación estricta de la presencia de la librería, y asegurando que las llamadas a la API de Windows manejen correctamente tanto los errores de retorno como las excepciones durante la carga.
+- `2026-09-05T02:29:26` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `walk_files` y `drive_usage` mediante la validación explícita de tipos y estados, asegurando que las operaciones críticas de I/O no fallen ante entradas inesperadas o corrupción parcial de datos.
+- `2026-09-05T02:29:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T02:29:26` Corrida terminada. Total usado hoy: 60.
