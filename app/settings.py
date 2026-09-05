@@ -309,11 +309,13 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     try:
         ruta = settings_path(custom_base).absolute()
         parent = ruta.parent
-        
         ensure_safe_to_modify(str(ruta))
         
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
-        if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE: return None
+        
+        # Validar espacio disponible antes de intentar la escritura atómica
+        if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE * 2:
+            return None
         
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
@@ -323,14 +325,17 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.write(data)
             f.flush()
             os.fsync(f.fileno())
-        os.replace(temp_path, ruta)
         
+        os.replace(temp_path, ruta)
         try:
             _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
         except OSError:
             pass
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError):
+        if 'temp_path' in locals() and os.path.exists(temp_path):
+            try: os.remove(temp_path)
+            except OSError: pass
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:

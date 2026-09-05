@@ -203,7 +203,8 @@ def _is_file_in_use(path_str: str) -> bool:
     """Verifica si un archivo está siendo usado exclusivamente por otro proceso."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str:
         return False
-    if not os.access(path_str, os.F_OK):
+    # Verificación temprana de existencia antes de intentar abrir
+    if not os.path.exists(path_str):
         return False
     try:
         kernel32 = ctypes.windll.kernel32

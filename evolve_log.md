@@ -729,3 +729,11 @@ FAILED evolve/tests/test_modules.py::test_cache_paths_only_point_at_cache_folder
 - `2026-09-05T09:07:11` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `quarantine.py` ante errores de entrada y casos límite durante el proceso de aislamiento al añadir validaciones explícitas de tipos y estados, además de asegurar que la exclusión de carpetas (`is_safe_to_modify`) se consulte siempre antes de cualquier I/O crítico en `_atomic_isolate_file`.
 - `2026-09-05T09:07:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T09:07:11` Corrida terminada. Total usado hoy: 216.
+- `2026-09-05T09:15:04` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-09-05T09:15:06` Gemini devolvió 500 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-05T09:15:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-05T09:15:59` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se añadió un control de disponibilidad del archivo previo a la validación de integridad (`_is_file_in_use`) para prevenir excepciones inesperadas por archivos bloqueados exclusivamente por el SO que `os.access` no alcanza a capturar de forma atómica.
+- `2026-09-05T09:16:24` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_reparse_point` y `_is_safe_entry` añadiendo manejo explícito de rutas inexistentes o inaccesibles que provocan excepciones de sistema, asegurando que el escáner no se detenga ante errores transitorios de archivo.
+- `2026-09-05T09:16:40` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save()` ante condiciones de carrera y fallos de escritura mediante la implementación de una validación de espacio en disco más estricta y un manejo explícito de errores durante el volcado de datos, asegurando que el estado del archivo nunca quede corrompido si el proceso es interrumpido o el disco no tiene espacio suficiente.
+- `2026-09-05T09:16:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T09:16:40` Corrida terminada. Total usado hoy: 220.

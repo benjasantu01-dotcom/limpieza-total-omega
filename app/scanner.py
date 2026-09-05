@@ -120,18 +120,21 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Valida límites de longitud, caracteres de ofuscación y protección de seguridad."""
-        path_str = entry.path
-        if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
-            return False
-        
-        name = entry.name
-        if not name or RTL_CHAR_RE.search(name) or RESERVED_NAMES_RE.match(name):
-            return False
-        
-        if not self._is_inside_base_root(path_str):
-            return False
+        try:
+            path_str = entry.path
+            if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
+                return False
             
-        return not is_protected_path(Path(path_str))
+            name = entry.name
+            if not name or RTL_CHAR_RE.search(name) or RESERVED_NAMES_RE.match(name):
+                return False
+            
+            if not self._is_inside_base_root(path_str):
+                return False
+                
+            return not is_protected_path(Path(path_str))
+        except (OSError, AttributeError):
+            return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Detecta puntos de reparse (Junction/Symlink) para evitar bucles de escaneo."""
@@ -141,6 +144,7 @@ class Scanner:
             stats = entry.stat(follow_symlinks=False)
             return bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError, PermissionError):
+            # Ante error al leer atributos, tratamos como inseguro (omitimos)
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
