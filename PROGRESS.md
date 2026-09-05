@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 38
+- Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-04 | 150 | 18 | 29 | 8 | 135 |
-| 2026-09-05 | 68 | 5 | 9 | 7 | 75 |
+| 2026-09-04 | 148 | 18 | 27 | 8 | 135 |
+| 2026-09-05 | 70 | 5 | 10 | 7 | 76 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- legibilidad y documentación: **47**
 - robustez ante casos límite: **47**
-- manejo de errores y validación de entradas: **38**
+- legibilidad y documentación: **45**
+- manejo de errores y validación de entradas: **40**
 - rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
 - `settings.py`: **18**
+- `healthscore.py`: **18**
 - `safety.py`: **18**
-- `scanner.py`: **17**
-- `healthscore.py`: **17**
+- `diskreport.py`: **17**
 - `organizer.py`: **16**
+- `scanner.py`: **16**
 - `branding.py`: **16**
-- `diskreport.py`: **16**
-- `quarantine.py`: **15**
+- `quarantine.py`: **14**
 - `browser.py`: **14**
 - `memory.py`: **14**
 - `duplicates.py`: **14**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T07:04:00` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.is_finite` y `_evaluate_rules` mediante chequeos de tipo y contenido más estrictos, previniendo excepciones en tiempo de ejecución al procesar métricas malformadas.
+- `2026-09-05T07:03:09` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` implementando capturas de excepciones más granulares y verificaciones de integridad en los flujos de datos para evitar que valores nulos o estados inesperados del sistema de archivos detengan el procesamiento de manera abrupta.
 - `2026-09-05T06:55:05` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `detect_profiles` y `_sum_directory_recursive` mediante la validación explícita de tipos, chequeos de presencia de elementos en iterables y manejo de errores ante entradas malformadas en `browser_map`, evitando excepciones silenciosas al iterar sobre rutas de caché.
 - `2026-09-05T06:54:51` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` reemplazando los `try-except` genéricos por validaciones tempranas de tipos y rangos, asegurando que las funciones fallen de forma controlada sin opacar errores de lógica.
 - `2026-09-05T06:54:17` **assistant.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_validate_and_assign` mediante una verificación de tipos más estricta (`isinstance(clean_val, (int, float))`) y se ha encapsulado el acceso a `setattr` con una validación explícita de seguridad, evitando posibles comportamientos inesperados si se intentaran inyectar nombres de atributos no permitidos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-05T05:11:28` **healthscore.py** (seguridad defensiva): Se ha robustecido el método `validate` de `SystemMetrics` para asegurar que los valores numéricos no solo sean finitos, sino que cumplan con restricciones de rango lógico (como porcentajes entre 0 y 100), previniendo que valores fuera de escala contaminen el cálculo del puntaje final y garantizando la integridad de la entrada de datos en la frontera del módulo.
 - `2026-09-05T05:11:02` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` agregando una validación estricta que impide que la recursión siga rutas que el usuario pueda haber definido como protegidas, garantizando que el escaneo no escape de los límites previstos incluso en presencia de enlaces simbólicos complejos.
 - `2026-09-05T05:02:15` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez ante rutas inválidas o dispositivos desconectados durante la enumeración de `_get_local_windows_drives`, asegurando que `os.path.exists` no sea la única verificación y protegiendo contra errores de acceso (`OSError`) al consultar unidades, manteniendo la consistencia con las reglas de seguridad defensiva.
-- `2026-09-05T05:01:36` **branding.py** (seguridad defensiva): Se reforzó la seguridad en `save_logo_svg` reemplazando la validación manual por `ensure_safe_to_modify` antes de cualquier operación de escritura para cumplir estrictamente con el protocolo de seguridad del proyecto y evitar la creación de directorios en rutas bloqueadas.
-- `2026-09-05T05:01:04` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva al procesar las respuestas de la API de Gemini, añadiendo un chequeo explícito de contenido "malicioso" (tokens que podrían ser rutas o inyecciones) antes de considerar la respuesta como válida, asegurando que el LLM no pueda "engañar" al sistema mediante respuestas que parezcan rutas de archivo locales.

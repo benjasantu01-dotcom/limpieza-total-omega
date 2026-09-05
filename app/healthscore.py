@@ -154,7 +154,12 @@ class SystemMetrics:
         self.disk_free_percent = _clamp(_to_float(self.disk_free_percent), 0.0, 100.0)
 
     def is_finite(self) -> bool:
-        return all(math.isfinite(_to_float(getattr(self, f, 0.0))) for f in self.__dict__)
+        """Verifica que todos los atributos numéricos sean finitos."""
+        for field_name in self.__annotations__:
+            val = getattr(self, field_name, 0.0)
+            if not isinstance(val, (int, float)) or not math.isfinite(float(val)):
+                return False
+        return True
 
 @dataclass
 class HealthResult:
@@ -188,12 +193,13 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
     """Procesa una lista de reglas de recomendación para un área específica."""
     findings = []
     for rule in rules:
+        if not callable(getattr(rule, 'check', None)): continue
         if rule.check(metrics, ratio):
             try:
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str) and msg.strip():
                     findings.append(msg.strip())
-            except (AttributeError, TypeError, ValueError):
+            except Exception:
                 continue
     return findings
 

@@ -576,3 +576,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-05T06:55:05` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `detect_profiles` y `_sum_directory_recursive` mediante la validación explícita de tipos, chequeos de presencia de elementos en iterables y manejo de errores ante entradas malformadas en `browser_map`, evitando excepciones silenciosas al iterar sobre rutas de caché.
 - `2026-09-05T06:55:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T06:55:05` Corrida terminada. Total usado hoy: 164.
+- `2026-09-05T07:02:40` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-09-05T07:03:09` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` implementando capturas de excepciones más granulares y verificaciones de integridad en los flujos de datos para evitar que valores nulos o estados inesperados del sistema de archivos detengan el procesamiento de manera abrupta.
+- `2026-09-05T07:03:34` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-05T07:04:00` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemMetrics.is_finite` y `_evaluate_rules` mediante chequeos de tipo y contenido más estrictos, previniendo excepciones en tiempo de ejecución al procesar métricas malformadas.
+- `2026-09-05T07:04:58` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._validate_numeric_setting
+- `2026-09-05T07:04:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T07:04:58` Corrida terminada. Total usado hoy: 168.
