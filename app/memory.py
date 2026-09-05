@@ -355,6 +355,7 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
     """
     Realiza una auditoría de seguridad del proceso objetivo antes de modificar su estado.
+    Verifica estado de ejecución, propiedad del handle y restricciones de ruta (safety.py).
     """
     if not proc_handle: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
