@@ -1382,3 +1382,34 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-09-05T02:49:37` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_file_in_use` y `is_protected_path` centralizando el manejo de excepciones y validaciones de entrada, evitando que errores inesperados en llamadas a `ctypes` o `pathlib` silencien problemas de seguridad o aborten procesos críticos.
 - `2026-09-05T02:49:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T02:49:37` Corrida terminada. Total usado hoy: 68.
+- `2026-09-05T02:58:04` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-09-05T02:58:31` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del método `_is_inside_base_root` y `scan_directory` mediante la validación explícita de tipos y el manejo de excepciones al resolver rutas, evitando comportamientos indefinidos ante entradas malformadas.
+- `2026-09-05T02:59:00` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé la validación en la función `save` para manejar explícitamente posibles errores de escritura de disco y asegurar que la ruta a persistir esté correctamente normalizada antes de intentar la operación, siguiendo el enfoque de manejo robusto de excepciones.
+- `2026-09-05T02:59:29` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.27s
+
+```
+- `2026-09-05T02:59:29` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la robustez de `_resolve_and_cache_path` añadiendo validaciones preventivas contra valores `None` o rutas vacías antes de procesarlas y asegurando que las excepciones en `abspath` o `realpath` no interrumpan el flujo, utilizando un manejo de excepciones más granular para evitar errores en llamadas internas del sistema.
+- `2026-09-05T02:59:53` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_assign` y la documentación del contrato de los `ProblemCriterion`, eliminando redundancias en la lógica de validación de métricas.
+- `2026-09-05T02:59:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T02:59:53` Corrida terminada. Total usado hoy: 72.

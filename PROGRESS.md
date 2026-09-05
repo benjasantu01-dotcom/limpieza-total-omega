@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 36 | 2 | 5 | 1 | 42 |
+| 2026-09-03 | 34 | 1 | 5 | 1 | 41 |
 | 2026-09-04 | 158 | 18 | 29 | 8 | 137 |
-| 2026-09-05 | 24 | 1 | 3 | 2 | 38 |
+| 2026-09-05 | 27 | 2 | 3 | 2 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
 - robustez ante casos límite: **48**
-- legibilidad y documentación: **45**
-- manejo de errores y validación de entradas: **41**
-- rendimiento: **35**
+- legibilidad y documentación: **46**
+- manejo de errores y validación de entradas: **43**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **20**
 - `organizer.py`: **19**
-- `assistant.py`: **19**
-- `settings.py`: **18**
+- `settings.py`: **19**
 - `healthscore.py`: **18**
+- `scanner.py`: **17**
 - `safety.py`: **17**
-- `duplicates.py`: **16**
-- `scanner.py`: **16**
 - `quarantine.py`: **16**
 - `diskreport.py`: **15**
+- `duplicates.py`: **15**
 - `branding.py`: **14**
 - `browser.py`: **14**
 - `memory.py`: **14**
-- `main.py`: **11**
 - `startup.py`: **11**
+- `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T02:59:53` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_assign` y la documentación del contrato de los `ProblemCriterion`, eliminando redundancias en la lógica de validación de métricas.
+- `2026-09-05T02:59:00` **settings.py** (manejo de errores y validación de entradas): Reforcé la validación en la función `save` para manejar explícitamente posibles errores de escritura de disco y asegurar que la ruta a persistir esté correctamente normalizada antes de intentar la operación, siguiendo el enfoque de manejo robusto de excepciones.
+- `2026-09-05T02:58:31` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del método `_is_inside_base_root` y `scan_directory` mediante la validación explícita de tipos y el manejo de excepciones al resolver rutas, evitando comportamientos indefinidos ante entradas malformadas.
 - `2026-09-05T02:49:37` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use` y `is_protected_path` centralizando el manejo de excepciones y validaciones de entrada, evitando que errores inesperados en llamadas a `ctypes` o `pathlib` silencien problemas de seguridad o aborten procesos críticos.
 - `2026-09-05T02:49:01` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_manifest` mediante la adición de una validación explícita para asegurar que el manifiesto procesado no esté vacío ni corrompido antes de iniciar la operación de reemplazo atómico, evitando estados inconsistentes tras fallos parciales.
 - `2026-09-05T02:48:25` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` y `_get_win_attributes` mediante la implementación de un manejo de excepciones más granular y defensivo, asegurando que los fallos al acceder a metadatos de archivos bloqueados o bloqueados por permisos del sistema no detengan el flujo del escáner ni propaguen errores inesperados.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-05T00:56:17` **safety.py** (seguridad defensiva): Se introdujo una comprobación explícita para evitar que `normalize` (que resuelve rutas mediante `path.resolve()`) convierta inadvertidamente una ruta inexistente pero potencialmente insegura en una ruta absoluta que podría evadir los filtros de `is_protected_path` al normalizar directorios inexistentes.
 - `2026-09-05T00:46:56` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_can_move_file` y `stage_for_review` para evitar ataques de manipulación de rutas (path traversal) y garantizar que `shutil.move` nunca sea invocado fuera de los límites estrictos validados por `safety.py`.
 - `2026-09-05T00:46:42` **memory.py** (seguridad defensiva): Se ha corregido un error crítico de invocación en `_get_process_path` donde se intentaba llamar a un objeto `ctypes.windll.kernel32` como si fuera una función, y se ha encapsulado la llamada a `QueryFullProcessImageNameW` para mejorar la seguridad defensiva mediante el uso del handle validado, evitando manipulaciones accidentales de rutas fuera de los límites permitidos.
-- `2026-09-05T00:46:12` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `on_trim_process` añadiendo una validación explícita del PID frente a procesos críticos del sistema (PID < 100), previniendo intentos accidentales de manipulación de procesos esenciales del SO que podrían causar inestabilidad.
-- `2026-09-05T00:35:58` **diskreport.py** (seguridad defensiva): Se endureció la seguridad defensiva de `walk_files` y `drive_usage` verificando la resolución de rutas contra `is_protected_path` después de normalizarlas, asegurando que no se pueda acceder a carpetas prohibidas mediante maniobras de `..` en rutas relativas o cambios de estado durante la ejecución.
-- `2026-09-05T00:35:29` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en la recursión de `_sum_directory_recursive` validando el estado del archivo mediante `is_safe_to_modify` antes de procesar su tamaño, evitando riesgos al interactuar con rutas que podrían haber cambiado de estado o permisos durante la iteración.

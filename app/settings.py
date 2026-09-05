@@ -155,7 +155,6 @@ class _Validators:
     def _run_safety_checks(path_obj: Path) -> bool:
         """Verifica recursivamente si una ruta está protegida o es insegura usando `safety.py`."""
         try:
-            # Usamos exist_ok para evitar errores innecesarios si la ruta no existe aún
             resolved = path_obj.resolve(strict=False)
             if resolved.is_symlink(): return False
             if hasattr(resolved, 'is_junction') and resolved.is_junction(): return False
@@ -299,12 +298,13 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         cleaned_settings["asistente_activado"] = False
     
     try:
-        ruta = settings_path(custom_base)
-        # Verificación de seguridad previa a cualquier operación
-        if not _Validators._is_safe_path(str(ruta.parent)): return None
-        if not is_safe_to_modify(str(ruta.absolute())): return None
-
+        ruta = settings_path(custom_base).absolute()
         parent = ruta.parent
+        
+        # Validaciones de seguridad y entorno
+        if not _Validators._is_safe_path(str(parent)): return None
+        if not is_safe_to_modify(str(ruta)): return None
+
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         
         # Validar espacio antes de escribir

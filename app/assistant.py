@@ -71,11 +71,6 @@ __all__ = [
 class AssistantConfig(NamedTuple):
     """
     Configuración persistida del asistente cargada desde settings.
-    
-    Attributes:
-        api_key: String de la clave API de Google Gemini (validada via Regex).
-        model: Identificador del modelo (ej. 'gemini-3.1-flash-lite').
-        allow_metrics: Bandera booleana para autorizar el envío de datos agregados al endpoint.
     """
     api_key: str
     model: str
@@ -84,7 +79,7 @@ class AssistantConfig(NamedTuple):
 @dataclass(frozen=True)
 class MetricSpec:
     """
-    Define el contrato de validación para métricas numéricas entrantes.
+    Define el contrato de validación y conversión para métricas numéricas entrantes.
     
     Attributes:
         cast_func: Función para convertir el valor (ej. float o int).
@@ -126,10 +121,7 @@ class ProblemCriterion(NamedTuple):
         return val >= 0 and self._evaluate_metric(val)
 
     def format_if_triggered(self, ctx: SystemContext) -> str | None:
-        """
-        Retorna una cadena descriptiva si el criterio se cumple, de lo contrario None.
-        Aplica límites de longitud de seguridad para prevenir desbordamientos.
-        """
+        """Retorna una cadena descriptiva si el criterio se cumple, usando límites de seguridad."""
         try:
             if not self.is_triggered_by(ctx):
                 return None
@@ -339,22 +331,17 @@ def _get_source_value(source: Any, key: str) -> Any:
         return None
 
 def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: MetricSpec) -> bool:
-    """Valida y asigna una métrica al contexto siguiendo el contrato MetricSpec."""
-    if not isinstance(spec, MetricSpec):
+    """Valida el valor de la métrica según MetricSpec y lo asigna al contexto."""
+    val = _get_source_value(source, key)
+    if val is None or not spec.is_valid_type(val):
         return False
-    try:
-        val = _get_source_value(source, key)
-        if val is None or not spec.is_valid_type(val):
-            return False
-        
-        clean_val = _safe_float(val, -1.0)
-        if clean_val < spec.min_val or clean_val > spec.max_val or math.isnan(clean_val) or math.isinf(clean_val):
-            return False
-        
-        setattr(ctx, key, spec.cast_func(clean_val))
-        return True
-    except (ValueError, TypeError, AttributeError):
+    
+    clean_val = _safe_float(val, -1.0)
+    if not (spec.min_val <= clean_val <= spec.max_val):
         return False
+    
+    setattr(ctx, key, spec.cast_func(clean_val))
+    return True
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Fabrica un SystemContext a partir de fuentes de datos dispersas."""

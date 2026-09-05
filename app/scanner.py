@@ -114,7 +114,8 @@ class Scanner:
 
     def _is_inside_base_root(self, path_str: str) -> bool:
         """Verifica mediante resolución de ruta absoluta que el objetivo sea hijo del directorio raíz."""
-        if not path_str: return False
+        if not path_str or not isinstance(path_str, str): 
+            return False
         try:
             target = Path(path_str).resolve(strict=False)
             return self.base_root in target.parents or target == self.base_root
@@ -211,11 +212,10 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         return []
         
     try:
-        str_dir = str(directory)
-        if str_dir.startswith(("\\\\", "//")):
-            return []
         path_input = Path(directory).resolve(strict=False)
         if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
+            return []
+        if str(path_input).startswith(("\\\\", "//")):
             return []
     except (OSError, TypeError, ValueError, RuntimeError, PermissionError):
         return []
