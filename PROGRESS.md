@@ -5,38 +5,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **220** (43.8% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 38
-- Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 214
+- Sin cambios (nada sustancial que mejorar): 10
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 62 | 3 | 9 | 1 | 77 |
+| 2026-09-03 | 60 | 3 | 9 | 1 | 77 |
 | 2026-09-04 | 158 | 18 | 29 | 8 | 137 |
+| 2026-09-05 | 2 | 0 | 0 | 1 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **42**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **43**
+- seguridad defensiva: **40**
 - rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **20**
-- `settings.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
 - `organizer.py`: **18**
-- `scanner.py`: **17**
+- `settings.py`: **18**
+- `duplicates.py`: **17**
 - `quarantine.py`: **16**
 - `safety.py`: **16**
-- `duplicates.py`: **16**
+- `scanner.py`: **16**
 - `branding.py`: **14**
 - `browser.py`: **14**
 - `diskreport.py`: **14**
@@ -46,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T00:04:45` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a casos donde las métricas podrían contener valores `None` o inconsistentes que rompan el pipeline, asegurando que el proceso de normalización siempre tenga un valor numérico seguro.
+- `2026-09-05T00:04:19` **duplicates.py** (robustez ante casos límite): Se añadió una verificación de `os.stat().st_nlink` en `_get_file_stat_if_valid` para detectar y descartar enlaces duros (hard links) que apuntan al mismo inodo, evitando así contarlos erróneamente como archivos duplicados distintos y mejorando la precisión del análisis ante sistemas de archivos complejos.
 - `2026-09-04T14:53:38` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante errores de entrada y condiciones de carrera en el sistema de archivos al añadir validaciones adicionales contra rutas no existentes o inaccesibles dentro del bucle de iteración, evitando el aborto silencioso de la operación.
 - `2026-09-04T14:53:08` **browser.py** (robustez ante casos límite): Se ha robustecido el escaneo de directorios `_sum_directory_recursive` implementando un manejo defensivo ante errores de acceso (como archivos en uso o acceso denegado) que anteriormente podían interrumpir la recursión, y asegurando que las rutas de los archivos procesados sean validadas explícitamente mediante `is_safe_to_modify` antes de su lectura.
 - `2026-09-04T14:45:06` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante rutas malformadas o peligrosas, añadiendo una limpieza de caracteres de control, validación explícita de caracteres inválidos en Windows y una verificación de longitud más estricta antes de cualquier operación de I/O.
@@ -59,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T14:12:26` **branding.py** (rendimiento): Optimizé la generación de gradientes en `draw_gradient_bar` y `_draw_shield_stripes` reemplazando los bucles `range` por una lógica basada en segmentos, aprovechando la caché existente para evitar recálculos innecesarios de colores en cada frame.
 - `2026-09-04T14:03:40` **assistant.py** (rendimiento): Optimicé el rendimiento de `_generate_context_lines_cached` eliminando la llamada constante a `_fmt_metric_sanitized` (que realiza múltiples regex y llamadas a funciones) mediante la pre-aplicación de los formatos necesarios antes de la cache, y utilicé una tupla de valores pre-procesados como clave de la caché para reducir drásticamente la sobrecarga de strings largos.
 - `2026-09-04T14:03:16` **startup.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con convenciones de estilo estandarizadas (Google Style) en las funciones principales para clarificar el flujo de datos y las intenciones de seguridad, mejorando la mantenibilidad del módulo.
-- `2026-09-04T14:02:11` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de escaneo, clarificando las precondiciones y el propósito de cada heurística para facilitar el mantenimiento y la auditoría del código.
-- `2026-09-04T13:53:35` **safety.py** (legibilidad y documentación): Se introdujo un `IntEnum` llamado `SafetyValidationErrorCode` para centralizar y documentar los motivos específicos de rechazo de una ruta, permitiendo que las excepciones `UnsafePathError` sean más informativas y estructuradas, facilitando el diagnóstico sin alterar el flujo lógico.

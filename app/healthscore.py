@@ -154,7 +154,7 @@ class SystemMetrics:
     def validate(self) -> None:
         for field_name in self._NUMERIC_FIELDS:
             val = getattr(self, field_name)
-            if not math.isfinite(float(val)):
+            if val is None or not math.isfinite(_to_float(val)):
                 setattr(self, field_name, 0.0)
         
         self.junk_mb = _clamp(float(self.junk_mb), 0.0, float('inf'))
@@ -167,7 +167,7 @@ class SystemMetrics:
         self.quarantined_count = int(_clamp(float(self.quarantined_count), 0.0, 10000.0))
 
     def is_finite(self) -> bool:
-        return all(math.isfinite(float(getattr(self, f, 0.0))) for f in self._NUMERIC_FIELDS)
+        return all(math.isfinite(_to_float(getattr(self, f, 0.0))) for f in self._NUMERIC_FIELDS)
 
 @dataclass
 class HealthResult:
@@ -210,19 +210,23 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     recommendations: List[str] = []
     
     for area, weight, scorer, rules in _OPTIMIZED_PIPELINE:
-        ratio = scorer(metrics)
-        pts = int(round(ratio * weight))
-        metric_breakdown[area] = pts
-        total_pts += float(pts)
-        
-        for rule in rules:
-            if rule.check(metrics, ratio):
-                try:
-                    msg = rule.message_factory(metrics)
-                    if isinstance(msg, str) and msg:
-                        recommendations.append(msg)
-                except Exception:
-                    continue
+        try:
+            ratio = scorer(metrics)
+            pts = int(round(ratio * weight))
+            metric_breakdown[area] = pts
+            total_pts += float(pts)
+            
+            for rule in rules:
+                if rule.check(metrics, ratio):
+                    try:
+                        msg = rule.message_factory(metrics)
+                        if isinstance(msg, str) and msg:
+                            recommendations.append(msg)
+                    except Exception:
+                        continue
+        except Exception:
+            metric_breakdown[area] = 0
+            continue
     
     final_score = int(_clamp(total_pts, 0.0, 100.0))
     if metrics.quarantined_count > 0:

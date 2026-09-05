@@ -1081,3 +1081,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-04T23:33:20` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-04T23:43:29` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-04T23:53:39` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-05T00:03:49` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-09-05T00:04:19` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se añadió una verificación de `os.stat().st_nlink` en `_get_file_stat_if_valid` para detectar y descartar enlaces duros (hard links) que apuntan al mismo inodo, evitando así contarlos erróneamente como archivos duplicados distintos y mejorando la precisión del análisis ante sistemas de archivos complejos.
+- `2026-09-05T00:04:45` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` frente a casos donde las métricas podrían contener valores `None` o inconsistentes que rompan el pipeline, asegurando que el proceso de normalización siempre tenga un valor numérico seguro.
+- `2026-09-05T00:04:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-05T00:05:51` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-05T00:06:57` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-05T00:08:23` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `main.py` ante errores inesperados en el hilo de trabajo (`worker_thread_logic`) asegurando que el estado de "ocupado" (busy) siempre se resetee (bloqueo en `finally`), evitando que la interfaz quede permanentemente deshabilitada tras fallos no controlados.
+- `2026-09-05T00:08:35` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-05T00:08:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T00:08:35` Corrida terminada. Total usado hoy: 4.

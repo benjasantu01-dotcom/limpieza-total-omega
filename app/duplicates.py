@@ -142,15 +142,17 @@ def _is_valid_candidate(path: Path) -> bool:
 def _get_file_stat_if_valid(entry: os.DirEntry, min_size: int) -> Optional[int]:
     """
     Valida un DirEntry y extrae su tamaño si cumple los requisitos mínimos.
-    Usa DirEntry.stat() para evitar llamadas extras al sistema de archivos.
+    Descarta hard links (st_nlink > 1) para evitar conteos redundantes del mismo inodo.
     """
     try:
-        # Se verifica symlink/junction antes de llamar a stat para no seguir referencias
         if entry.is_symlink() or is_junction(Path(entry.path)):
             return None
         if not entry.is_file():
             return None
         stat_info = entry.stat()
+        # Si st_nlink > 1, el archivo es un hard link a un mismo inodo
+        if stat_info.st_nlink > 1:
+            return None
         if stat_info.st_size < min_size:
             return None
         p = Path(entry.path)
@@ -203,7 +205,6 @@ def _collect_candidates(
 
     def _scan_directory_recursive(current_dir: Path) -> None:
         try:
-            # Obtener identidad única del nodo para evitar ciclos
             st = current_dir.stat()
             inode_key = (st.st_dev, st.st_ino)
             if inode_key in visited_inodes:
@@ -227,7 +228,6 @@ def _collect_candidates(
             pass
 
     if directories and isinstance(directories, Iterable):
-        # Normalizar raíces de búsqueda para evitar duplicados en el punto de entrada
         roots = {Path(r).resolve() for item in directories if (r := _resolve_and_verify_root(item))}
         for root in roots:
             _scan_directory_recursive(root)
