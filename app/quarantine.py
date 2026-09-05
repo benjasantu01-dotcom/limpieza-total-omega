@@ -378,6 +378,10 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
     temp_path: Optional[Path] = None
     
     try:
+        # Validación: prevenir volcado de datos si el manifiesto parece corrupto (vacío no intencional)
+        if not items and target_path.exists() and target_path.stat().st_size > 1024:
+             raise RuntimeError("Prevención de corrupción: intento de persistir manifiesto vacío sobre uno existente.")
+
         content = json.dumps([item.to_dict() for item in items], indent=2, ensure_ascii=False)
         
         with tempfile.NamedTemporaryFile("w", dir=base_path, encoding="utf-8", delete=False) as tf:

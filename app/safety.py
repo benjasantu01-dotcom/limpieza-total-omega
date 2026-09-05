@@ -201,13 +201,14 @@ def _is_reparse_point(path: Path) -> bool:
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
     """Verifica mediante un handle si un archivo está bloqueado por otro proceso."""
-    if os.name != 'nt' or not isinstance(path_str, str):
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str:
         return False
     if not os.path.lexists(path_str):
         return False
     try:
         kernel32 = ctypes.windll.kernel32
-        handle = kernel32.CreateFileW(path_str, 0x0080, 0x00000007, None, 3, 0x00000080, None)
+        # GENERIC_READ = 0x80000000, FILE_SHARE_READ|WRITE|DELETE = 0x00000007, OPEN_EXISTING = 3
+        handle = kernel32.CreateFileW(path_str, 0x80000000, 0x00000007, None, 3, 0x00000080, None)
         if handle == -1 or handle == 0xFFFFFFFF: 
             return True
         kernel32.CloseHandle(handle)
@@ -304,8 +305,8 @@ def is_protected_path(path: PathLike) -> bool:
     """Verifica si la ruta reside dentro de directorios de sistema restringidos."""
     if not path: return True
     try:
-        p = Path(path)
-        path_str = str(p.absolute())
+        p = Path(path).absolute()
+        path_str = str(p)
         
         for root in _SYSTEM_ROOT_PATHS:
             if os.path.commonpath([path_str, root]) == root:
@@ -313,7 +314,7 @@ def is_protected_path(path: PathLike) -> bool:
             
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
-        return p.anchor and p == Path(p.anchor)
+        return p.anchor != "" and p == Path(p.anchor)
     except (ValueError, TypeError, OSError, RuntimeError): 
         return True
 

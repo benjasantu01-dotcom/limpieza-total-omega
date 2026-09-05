@@ -1375,3 +1375,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-09-05T02:40:07` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-05T02:40:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T02:40:07` Corrida terminada. Total usado hoy: 64.
+- `2026-09-05T02:47:53` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-09-05T02:48:25` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_locked` y `_get_win_attributes` mediante la implementación de un manejo de excepciones más granular y defensivo, asegurando que los fallos al acceder a metadatos de archivos bloqueados o bloqueados por permisos del sistema no detengan el flujo del escáner ni propaguen errores inesperados.
+- `2026-09-05T02:49:01` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `save_manifest` mediante la adición de una validación explícita para asegurar que el manifiesto procesado no esté vacío ni corrompido antes de iniciar la operación de reemplazo atómico, evitando estados inconsistentes tras fallos parciales.
+- `2026-09-05T02:49:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-05T02:49:37` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_file_in_use` y `is_protected_path` centralizando el manejo de excepciones y validaciones de entrada, evitando que errores inesperados en llamadas a `ctypes` o `pathlib` silencien problemas de seguridad o aborten procesos críticos.
+- `2026-09-05T02:49:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T02:49:37` Corrida terminada. Total usado hoy: 68.

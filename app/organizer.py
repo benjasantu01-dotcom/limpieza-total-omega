@@ -89,7 +89,7 @@ class JunkFile:
             try:
                 # Normaliza rutas para evitar inconsistencias por enlaces simbólicos
                 self.path = self.path.resolve()
-            except OSError:
+            except (OSError, RuntimeError):
                 pass
 
     @property
@@ -106,10 +106,10 @@ class JunkFile:
 def _get_win_attributes(path_or_entry: Union[os.DirEntry, Path]) -> int:
     """Extrae los atributos de archivo de Windows (Win32 API bits) de forma segura."""
     try:
-        if isinstance(path_or_entry, os.DirEntry):
+        if hasattr(path_or_entry, 'stat'):
             return path_or_entry.stat().st_file_attributes
-        return path_or_entry.stat().st_file_attributes
-    except (OSError, AttributeError):
+        return Path(path_or_entry).stat().st_file_attributes
+    except (OSError, AttributeError, ValueError):
         return 0
 
 
@@ -119,7 +119,7 @@ def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
     El chequeo de seguridad es crítico para evitar bucles infinitos durante 
     la recursión del escáner de archivos.
     """
-    is_sym = entry.is_symlink() if hasattr(entry, 'is_symlink') else Path(entry.path).is_symlink()
+    is_sym = entry.is_symlink() if hasattr(entry, 'is_symlink') else Path(str(entry)).is_symlink()
     is_junction_attr = os.name == "nt" and bool(_get_win_attributes(entry) & 0x400)
     return is_sym or is_junction_attr
 
@@ -174,7 +174,7 @@ def _is_file_locked(path: Path) -> bool:
     """
     if path is None: return True
     try:
-        with open(path, "rb"):
+        with open(path, "rb") as f:
             return False
     except (PermissionError, OSError, IOError):
         return True 
