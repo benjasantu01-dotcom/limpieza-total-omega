@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
-- Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 37
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 211
+- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Rechazadas por tests: 24
+- Rechazadas por guardia de seguridad: 38
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-04 | 148 | 18 | 27 | 8 | 135 |
-| 2026-09-05 | 70 | 5 | 10 | 7 | 76 |
+| 2026-09-04 | 145 | 18 | 27 | 7 | 135 |
+| 2026-09-05 | 71 | 6 | 11 | 7 | 77 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
 - robustez ante casos límite: **47**
-- legibilidad y documentación: **45**
-- manejo de errores y validación de entradas: **40**
-- rendimiento: **37**
+- legibilidad y documentación: **43**
+- manejo de errores y validación de entradas: **41**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
-- `settings.py`: **18**
+- `assistant.py`: **20**
 - `healthscore.py`: **18**
 - `safety.py`: **18**
+- `settings.py`: **17**
 - `diskreport.py`: **17**
 - `organizer.py`: **16**
 - `scanner.py`: **16**
 - `branding.py`: **16**
+- `memory.py`: **15**
 - `quarantine.py`: **14**
 - `browser.py`: **14**
-- `memory.py`: **14**
 - `duplicates.py`: **14**
-- `startup.py`: **11**
 - `main.py`: **11**
+- `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T07:13:24` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_windows_process_csv` añadiendo una validación explícita para asegurar que los valores parseados no sean `None` y que el formato de los datos no genere desbordamientos, evitando excepciones no controladas durante la serialización de datos externos desde PowerShell.
 - `2026-09-05T07:04:00` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.is_finite` y `_evaluate_rules` mediante chequeos de tipo y contenido más estrictos, previniendo excepciones en tiempo de ejecución al procesar métricas malformadas.
 - `2026-09-05T07:03:09` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` implementando capturas de excepciones más granulares y verificaciones de integridad en los flujos de datos para evitar que valores nulos o estados inesperados del sistema de archivos detengan el procesamiento de manera abrupta.
 - `2026-09-05T06:55:05` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `detect_profiles` y `_sum_directory_recursive` mediante la validación explícita de tipos, chequeos de presencia de elementos en iterables y manejo de errores ante entradas malformadas en `browser_map`, evitando excepciones silenciosas al iterar sobre rutas de caché.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-05T05:12:47` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de directorios críticos mediante la implementación de `_ensure_path_writable_and_clean`, que verifica tanto la seguridad del sistema (`safety.is_safe_to_modify`) como la ausencia de enlaces simbólicos antes de cualquier operación de escritura o análisis intensivo, mitigando riesgos de manipulación de rutas.
 - `2026-09-05T05:11:28` **healthscore.py** (seguridad defensiva): Se ha robustecido el método `validate` de `SystemMetrics` para asegurar que los valores numéricos no solo sean finitos, sino que cumplan con restricciones de rango lógico (como porcentajes entre 0 y 100), previniendo que valores fuera de escala contaminen el cálculo del puntaje final y garantizando la integridad de la entrada de datos en la frontera del módulo.
 - `2026-09-05T05:11:02` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` agregando una validación estricta que impide que la recursión siga rutas que el usuario pueda haber definido como protegidas, garantizando que el escaneo no escape de los límites previstos incluso en presencia de enlaces simbólicos complejos.
-- `2026-09-05T05:02:15` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez ante rutas inválidas o dispositivos desconectados durante la enumeración de `_get_local_windows_drives`, asegurando que `os.path.exists` no sea la única verificación y protegiendo contra errores de acceso (`OSError`) al consultar unidades, manteniendo la consistencia con las reglas de seguridad defensiva.

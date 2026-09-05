@@ -583,3 +583,36 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-05T07:04:58` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._validate_numeric_setting
 - `2026-09-05T07:04:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T07:04:58` Corrida terminada. Total usado hoy: 168.
+- `2026-09-05T07:12:52` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-09-05T07:13:24` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `parse_windows_process_csv` añadiendo una validación explícita para asegurar que los valores parseados no sean `None` y que el formato de los datos no genere desbordamientos, evitando excepciones no controladas durante la serialización de datos externos desde PowerShell.
+- `2026-09-05T07:13:56` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-05T07:14:33` Tests FALLARON:
+```
+
+_______________ test_quarantine_summary_reports_size_and_origin ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_quarantine_summary_report0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-2/test_quarantine_summary_report0/_Cuarentena')
+
+    def test_quarantine_summary_reports_size_and_origin(tmp_path, cuarentena):
+        origen = tmp_path / "pesado.bin"
+        origen.write_bytes(b"0" * 2048)
+        quarantine.quarantine_file(origen, reason="motivo de prueba", base=cuarentena)
+    
+        texto = "\n".join(quarantine.summarize(cuarentena))
+        assert "pesado.bin" in texto
+        assert "motivo de prueba" in texto
+>       assert "restaurar" in texto
+E       AssertionError: assert 'restaurar' in '1 archivo(s) en cuarentena — 0.0 MB\n\n  [f77fcf5205a3] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba\n      Origen: /tmp/pytest-of-runner/pytest-2/test_quarantine_summary_report0/pesado.bin\n      Aislado: 2026-09-05T07:14:32'
+
+evolve/tests/test_safety.py:311: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - AssertionError: assert 'restaurar' in '1 archivo(s) en cuarentena — 0.0 MB\n\n  [f77fcf5205a3] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba\n      Origen: /tmp/pytest-of-runner/pytest-2/test_quarantine_summary_report0/pesado.bin\n      Aislado: 2026-09-05T07:14:32'
+1 failed, 298 passed in 1.08s
+
+```
+- `2026-09-05T07:14:33` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de la deserialización en `QuarantineItem.from_dict` y el manejo de errores en `save_manifest` para prevenir la pérdida de datos ante entradas malformadas o errores de E/S, utilizando validación de tipos estricta y capturas de excepciones específicas según el enfoque.
+- `2026-09-05T07:15:33` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-05T07:15:39` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-05T07:15:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T07:15:39` Corrida terminada. Total usado hoy: 172.

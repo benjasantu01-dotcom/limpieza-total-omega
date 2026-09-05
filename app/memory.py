@@ -201,12 +201,18 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         if len(parts) < 3: continue
         
         try:
-            name_val = str(parts[0])
-            pid_val = int(parts[1])
-            ws_val = int(parts[2])
+            name_val = parts[0]
+            pid_str = parts[1]
+            ws_str = parts[2]
             
-            # Validación de integridad para casos donde el proceso esté terminando o corrompido
-            if not name_val or pid_val <= 0 or ws_val < 0:
+            # Validación de integridad de tipos y existencia
+            if not name_val or not pid_str or not ws_str:
+                continue
+            
+            pid_val = int(pid_str)
+            ws_val = int(ws_str)
+            
+            if pid_val <= 0 or ws_val < 0:
                 continue
             
             if is_protected_path(name_val) or pid_val in SYSTEM_CRITICAL_PIDS:
