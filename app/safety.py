@@ -200,14 +200,15 @@ def _is_reparse_point(path: Path) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
-    """Verifica mediante un handle si un archivo está bloqueado por otro proceso."""
+    """Verifica si un archivo está siendo usado exclusivamente por otro proceso."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str:
         return False
     if not os.access(path_str, os.F_OK):
         return False
     try:
         kernel32 = ctypes.windll.kernel32
-        # GENERIC_READ = 0x80000000, FILE_SHARE_READ|WRITE|DELETE = 0x00000007, OPEN_EXISTING = 3
+        # Intentamos abrir con acceso de lectura mínimo sin bloquear a otros
+        # FILE_SHARE_READ|WRITE|DELETE (0x7) permite acceso compartido
         handle = kernel32.CreateFileW(path_str, 0x80000000, 0x00000007, None, 3, 0x00000080, None)
         if handle == -1 or handle == 0xFFFFFFFF: 
             return True

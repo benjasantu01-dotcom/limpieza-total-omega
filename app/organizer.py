@@ -276,7 +276,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
     Recorre recursivamente directorios buscando archivos temporales.
     Aplica límite de profundidad (50) para evitar desbordamientos de pila.
     """
-    if depth > 50: return
+    if depth > 50 or not current_dir.exists(): return
     try:
         with os.scandir(current_dir) as it:
             for entry in it:
