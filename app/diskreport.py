@@ -238,7 +238,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     while stack:
         current_dir = stack.pop()
         
-        if skip_protected and is_protected_path(current_dir):
+        # Validar ruta canónica contra lista de protección
+        try:
+            resolved_dir = current_dir.resolve()
+            if skip_protected and is_protected_path(resolved_dir):
+                continue
+        except (OSError, RuntimeError):
             continue
             
         try:
@@ -314,7 +319,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
         try:
             rel = path.relative_to(p_base)
             top_folder = p_base / (rel.parts[0] if rel.parts else "")
-            if skip_protected and is_protected_path(top_folder):
+            if skip_protected and is_protected_path(top_folder.resolve()):
                 continue
             sums[top_folder] += size
             counts[top_folder] += 1

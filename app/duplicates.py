@@ -192,11 +192,11 @@ def _collect_candidates(
                     try:
                         if entry.is_dir(follow_symlinks=False):
                             subdir_path = Path(entry.path)
+                            # Defensa: Validar si la ruta real sigue estando bajo el origen o es reparse point
                             if not is_protected_path(subdir_path) and not is_junction(subdir_path):
                                 _scan_directory_recursive(subdir_path)
                         else:
                             st = _get_entry_stat(entry)
-                            # Verificamos existencia y accesibilidad antes de considerar
                             p = Path(entry.path)
                             if st and st.st_size >= min_size and st.st_nlink == 1 and _is_valid_candidate(p):
                                 size_map[st.st_size].append(p)
