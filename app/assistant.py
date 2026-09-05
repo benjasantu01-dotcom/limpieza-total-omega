@@ -327,7 +327,10 @@ def _get_source_value(source: Any, key: str) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        return getattr(source, key, None)
+        # Solo acceder a atributos que no sean métodos o protegidos
+        if hasattr(source, key) and not key.startswith('_'):
+            return getattr(source, key)
+        return None
     except (AttributeError, TypeError, KeyError):
         return None
 
@@ -347,9 +350,9 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Fabrica un SystemContext a partir de fuentes de datos dispersas."""
     ctx = SystemContext()
+    # Filtrar estrictamente solo tipos aceptados: dict o instancias de clase (pero no tipos base)
     sources = [s for s in [metrics, health, extra] 
-               if s is not None and isinstance(s, (dict, object)) 
-               and not isinstance(s, (list, tuple, str, int, float, bool))]
+               if s is not None and (isinstance(s, dict) or (not isinstance(s, (list, tuple, str, int, float, bool, type))))]
     
     for src in sources:
         if ctx.ingest(src):

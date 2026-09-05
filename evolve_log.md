@@ -1546,3 +1546,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-05T04:11:01` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la gestión de caché de rutas y validadores mediante la pre-compilación de estructuras (`_CACHE` de `Path`, `_VALIDATOR_MAP` como `MappingProxyType` y resolución dinámica eficiente) para reducir la carga de procesamiento en cada lectura de configuración.
 - `2026-09-05T04:11:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T04:11:01` Corrida terminada. Total usado hoy: 100.
+- `2026-09-05T04:19:45` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-09-05T04:20:11` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-05T04:20:48` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante la inyección de fuentes de datos inesperadas (como objetos que no son diccionarios ni clases simples), asegurando que el proceso de ingesta no falle silenciosamente ni procese tipos no deseados.
+- `2026-09-05T04:21:21` ➖ Sin cambios en branding.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una validación robusta de `destination` en `save_logo_svg` utilizando `is_safe_to_modify` antes de cualquier operación de I/O, garantizando que el manejo de rutas sea defensivo ante entradas malformadas o externas.
+- `2026-09-05T04:21:32` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de entrada y estados inválidos en `_sum_directory_recursive` mediante una validación estricta de tipos y un control más granular de las excepciones en las operaciones de I/O, evitando que el escaneo se detenga silenciosamente ante directorios inaccesibles.
+- `2026-09-05T04:21:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T04:21:32` Corrida terminada. Total usado hoy: 104.

@@ -191,14 +191,14 @@ def _sum_directory_recursive(
     Calcula recursivamente el tamaño en bytes de un directorio mediante os.scandir.
     Utiliza un diccionario 'memo' para evitar re-escaneo de subdirectorios ya calculados.
     """
-    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
+    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
     
     if root_abs in memo:
         return memo[root_abs]
     
     root_path = Path(root_abs)
-    if not _is_safe_to_traverse(root_path, base_check_path):
+    if not root_path.exists() or not _is_safe_to_traverse(root_path, base_check_path):
         return 0
     
     total: int = 0
@@ -209,9 +209,6 @@ def _sum_directory_recursive(
                     continue
                 
                 try:
-                    p = Path(entry.path)
-                    if not is_safe_to_modify(p):
-                        continue
                     if entry.is_dir(follow_symlinks=False):
                         total += _sum_directory_recursive(
                             entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
