@@ -253,13 +253,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
-        
-        try:
-            resolved_dir = current_dir.resolve(strict=True)
-            if skip_protected and is_protected_path(resolved_dir):
-                continue
-        except (OSError, RuntimeError):
-            continue
             
         try:
             with os.scandir(current_dir) as iterator:
@@ -272,6 +265,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             st = entry.stat(follow_symlinks=False)
                             inode_key = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
                             if inode_key[0] != 0 and inode_key not in visited_inodes:
+                                if skip_protected and is_protected_path(Path(entry.path)):
+                                    continue
                                 visited_inodes.add(inode_key)
                                 stack.append(Path(entry.path))
                                     
@@ -329,16 +324,17 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             
     sums: Dict[Path, int] = defaultdict(int)
     counts: Dict[Path, int] = defaultdict(int)
+    # Cache para evitar re-resolver la ruta superior en cada archivo
+    root_parts_len = len(p_base.parts)
 
     for path, size in walk_files(p_base, skip_protected):
         try:
-            rel = path.relative_to(p_base)
-            top_folder = p_base / (rel.parts[0] if rel.parts else "")
-            if skip_protected and is_protected_path(top_folder.resolve()):
-                continue
-            sums[top_folder] += size
-            counts[top_folder] += 1
-        except (ValueError, OSError):
+            parts = path.parts
+            if len(parts) > root_parts_len:
+                top_folder = p_base / parts[root_parts_len]
+                sums[top_folder] += size
+                counts[top_folder] += 1
+        except (ValueError, OSError, IndexError):
             continue
 
     results = [FolderUsage(p, sums[p], counts[p]) for p in sums]

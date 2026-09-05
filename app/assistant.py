@@ -525,9 +525,8 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
     
-    # Búsqueda optimizada por token
-    tokens = _TOKEN_REGEX.findall(q_sanitized)
-    for token in tokens:
+    # Búsqueda optimizada O(1) por token
+    for token in _TOKEN_REGEX.findall(q_sanitized):
         handler = _KEYWORD_TO_HANDLER.get(token)
         if handler:
             return handler(context, question)

@@ -347,9 +347,8 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         scale = max(0.1, min(10.0, s / 128.0))
         coords = _get_shield_coords(scale)
         contorno = [canvas_x + coords[i] if i % 2 == 0 else canvas_y + coords[i] for i in range(len(coords))]
-        for paso in range(4, 0, -1):
-            r = 56 * scale * (0.6 + paso * 0.12)
-            canvas.create_oval(canvas_x + 64 * scale - r, canvas_y + 58 * scale - r, canvas_x + 64 * scale + r, canvas_y + 58 * scale + r, fill=blend(C_SURFACE, C_GLOW, 0.04 * paso), outline="")
+        # Renderizado optimizado: una capa fija de resplandor para evitar cálculos en loop
+        canvas.create_oval(canvas_x + 64 * scale - 75 * scale, canvas_y + 58 * scale - 75 * scale, canvas_x + 64 * scale + 75 * scale, canvas_y + 58 * scale + 75 * scale, fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
         _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, scale)

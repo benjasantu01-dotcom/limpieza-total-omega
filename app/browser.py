@@ -195,20 +195,12 @@ def _sum_directory_recursive(
     """
     Calcula recursivamente el tamaño en bytes de un directorio mediante os.scandir.
     Requiere que la ruta raíz sea validada previamente por 'is_safe_to_traverse'.
-    Si ocurre un error de acceso o se excede el límite de profundidad, retorna 0.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
     
     if root_abs in memo:
         return memo[root_abs]
-    
-    try:
-        root_path = Path(root_abs)
-        if not root_path.exists() or not _is_safe_to_traverse(root_path, base_check_path):
-            return 0
-    except (OSError, RuntimeError):
-        return 0
     
     total: int = 0
     try:
@@ -227,11 +219,8 @@ def _sum_directory_recursive(
                             entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                         )
                     elif entry.is_file(follow_symlinks=False):
-                        try:
-                            stats = entry.stat(follow_symlinks=False)
-                            total += stats.st_size
-                        except (OSError, PermissionError):
-                            continue
+                        stats = entry.stat(follow_symlinks=False)
+                        total += stats.st_size
                 except (OSError, PermissionError):
                     continue
     except (PermissionError, OSError):
@@ -286,6 +275,7 @@ def detect_profiles(
         return []
     
     k32: Optional[ctypes.WinDLL] = _get_kernel32()
+    # Cache de resultados para evitar redundancia en subdirectorios
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
