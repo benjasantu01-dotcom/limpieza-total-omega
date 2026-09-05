@@ -301,9 +301,9 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda una copia física del archivo logo.svg tras verificar integridad y seguridad."""
-    if not destination: return None
+    if not isinstance(destination, (str, Path)): return None
     try:
-        path_obj = Path(str(destination)).resolve()
+        path_obj = Path(destination).resolve()
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj): return None
         
         parent = path_obj.parent
@@ -343,7 +343,8 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Renderiza el logo completo en el canvas, escalado a la posición (x, y)."""
     try:
-        scale = max(0.1, min(10.0, size / 128.0))
+        s = float(size)
+        scale = max(0.1, min(10.0, s / 128.0))
         coords = _get_shield_coords(scale)
         contorno = [canvas_x + coords[i] if i % 2 == 0 else canvas_y + coords[i] for i in range(len(coords))]
         for paso in range(4, 0, -1):
@@ -357,9 +358,9 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """Dibuja una barra de degradado horizontal sobre el canvas."""
     try:
-        segments = _get_grouped_segments(gradient_colors(max(1, width), stops))
+        segments = _get_grouped_segments(gradient_colors(max(1, int(width)), stops))
         for seg in segments:
-            canvas.create_line(canvas_x + seg.start_index, canvas_y, canvas_x + seg.end_index, canvas_y, fill=seg.hex_color, width=max(1, height))
+            canvas.create_line(canvas_x + seg.start_index, canvas_y, canvas_x + seg.end_index, canvas_y, fill=seg.hex_color, width=max(1, int(height)))
     except (ValueError, TypeError, AttributeError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[HexColor] = None, fill: Optional[HexColor] = None) -> None:
@@ -367,8 +368,8 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
     try:
         if percent is None: return
         val = float(percent)
-        diam = max(20, size)
-        thick = max(2, min(thickness, (diam // 2) - 1))
+        diam = max(20, int(size))
+        thick = max(2, min(int(thickness), (diam // 2) - 1))
         borde = thick / 2.0
         caja = (canvas_x + borde, canvas_y + borde, canvas_x + diam - borde, canvas_y + diam - borde)
         canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)

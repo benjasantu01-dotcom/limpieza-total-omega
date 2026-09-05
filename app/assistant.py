@@ -325,39 +325,37 @@ def _get_source_value(source: Any, key: str) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        if hasattr(source, key) and not key.startswith('_'):
-            return getattr(source, key)
+        if isinstance(source, object) and hasattr(source, key):
+            if not key.startswith('_'):
+                return getattr(source, key)
         return None
     except (AttributeError, TypeError, KeyError):
         return None
 
 def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: MetricSpec) -> bool:
     """Valida el valor de la métrica según MetricSpec y lo asigna al contexto de forma segura."""
-    if not hasattr(ctx, key):
-        return False
-    val = _get_source_value(source, key)
-    # Validar tipo numérico básico y descartar contenedores o booleanos
-    if val is None or not spec.is_valid_type(val):
-        return False
-    
-    # Normalizar valor y verificar rangos físicos
-    f_val = _safe_float(val, -999.0)
-    if f_val < -1.0 or not (spec.min_val <= f_val <= spec.max_val):
-        return False
-    
-    # Conversión final según el tipo esperado
     try:
+        if not hasattr(ctx, key):
+            return False
+        val = _get_source_value(source, key)
+        if val is None or not spec.is_valid_type(val):
+            return False
+        
+        f_val = _safe_float(val, -999.0)
+        if f_val < -1.0 or not (spec.min_val <= f_val <= spec.max_val):
+            return False
+        
         final_val = spec.cast_func(f_val)
         setattr(ctx, key, final_val)
         return True
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, AttributeError):
         return False
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Fabrica un SystemContext a partir de fuentes de datos dispersas."""
     ctx = SystemContext()
     sources = [s for s in [metrics, health, extra] 
-               if s is not None and (isinstance(s, dict) or (not isinstance(s, (list, tuple, str, int, float, bool, type))))]
+               if s is not None and (isinstance(s, dict) or isinstance(s, object))]
     
     for src in sources:
         if ctx.ingest(src):
