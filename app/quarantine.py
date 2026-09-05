@@ -423,6 +423,10 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     """
     if not source.exists():
         raise FileNotFoundError("El archivo de origen no existe.")
+    
+    # Prevenir condición de carrera post-validación
+    if destination.exists():
+        raise FileExistsError("Colisión de destino inesperada.")
 
     if not _is_within_quarantine_sandbox(destination.resolve(), destination.parent.resolve()):
         raise UnsafePathError("Operación denegada: intento de escritura fuera del sandbox.")
@@ -496,9 +500,7 @@ def quarantine_file(
     item_id = uuid.uuid4().hex[:12]
     destination = dest_dir / _generate_safe_stored_name(source_path, item_id)
     
-    if destination.exists():
-        raise FileExistsError(f"Colisión de nombre en el sandbox: {destination.name}")
-        
+    # _atomic_isolate_file realizará su propia validación de colisión también
     file_hash = _atomic_isolate_file(source_path, destination, original_size)
     
     try:

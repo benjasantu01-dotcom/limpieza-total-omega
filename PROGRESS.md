@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 38
+- Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 60 | 3 | 9 | 1 | 77 |
+| 2026-09-03 | 59 | 3 | 9 | 1 | 74 |
 | 2026-09-04 | 158 | 18 | 29 | 8 | 137 |
-| 2026-09-05 | 2 | 0 | 0 | 1 | 1 |
+| 2026-09-05 | 5 | 0 | 1 | 1 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
+- robustez ante casos límite: **46**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **43**
-- seguridad defensiva: **40**
+- seguridad defensiva: **39**
 - rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **20**
 - `healthscore.py`: **19**
-- `organizer.py`: **18**
+- `organizer.py`: **19**
 - `settings.py`: **18**
+- `quarantine.py`: **17**
+- `safety.py`: **17**
 - `duplicates.py`: **17**
-- `quarantine.py`: **16**
-- `safety.py`: **16**
 - `scanner.py`: **16**
 - `branding.py`: **14**
 - `browser.py`: **14**
 - `diskreport.py`: **14**
 - `memory.py`: **14**
-- `startup.py`: **13**
+- `startup.py`: **12**
 - `main.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T00:15:47` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `is_protected_path` ante rutas inexistentes o mal formadas mediante el uso de `Path.parts` y la verificación explícita de `p.anchor`, previniendo excepciones no controladas durante la normalización de rutas inválidas que podrían detener el bucle principal.
+- `2026-09-05T00:15:11` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de redundancia de sistema de archivos en `_atomic_isolate_file` para detectar casos donde la ruta destino ya existe pero no fue capturada por la verificación inicial, evitando así condiciones de carrera (TOCTOU) durante el proceso de aislamiento atómico.
+- `2026-09-05T00:14:34` **organizer.py** (robustez ante casos límite): Se ha añadido un chequeo de redundancia en `stage_for_review` para evitar procesar archivos que ya residen en el directorio de destino, y se robusteció la función `_can_move_file` para evitar colisiones lógicas y fallos por permisos denegados al calcular rutas de destino, mejorando la resiliencia ante errores de sistema.
 - `2026-09-05T00:04:45` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a casos donde las métricas podrían contener valores `None` o inconsistentes que rompan el pipeline, asegurando que el proceso de normalización siempre tenga un valor numérico seguro.
 - `2026-09-05T00:04:19` **duplicates.py** (robustez ante casos límite): Se añadió una verificación de `os.stat().st_nlink` en `_get_file_stat_if_valid` para detectar y descartar enlaces duros (hard links) que apuntan al mismo inodo, evitando así contarlos erróneamente como archivos duplicados distintos y mejorando la precisión del análisis ante sistemas de archivos complejos.
 - `2026-09-04T14:53:38` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante errores de entrada y condiciones de carrera en el sistema de archivos al añadir validaciones adicionales contra rutas no existentes o inaccesibles dentro del bucle de iteración, evitando el aborto silencioso de la operación.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T14:26:11` **organizer.py** (rendimiento): Se ha optimizado la función `_process_directory` reemplazando la creación repetitiva de objetos `Path` y las llamadas costosas al sistema de archivos mediante el uso de los atributos de `os.DirEntry` (que ya contiene el nombre y el tipo del archivo), reduciendo drásticamente las syscalls innecesarias durante el escaneo recursivo.
 - `2026-09-04T14:13:35` **duplicates.py** (rendimiento): Optimicé el proceso `_collect_candidates` utilizando un set de `Path` normalizadas como caché de escaneo inicial, evitando re-procesar los mismos nodos de directorio de forma redundante y reduciendo la presión sobre el sistema de archivos mediante el uso de `os.scandir` de forma más eficiente.
 - `2026-09-04T14:12:55` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo introduciendo una caché de resultados (`memo`) persistente a nivel de ejecución para evitar el recálculo redundante de subdirectorios, reduciendo drásticamente las operaciones I/O en estructuras de caché compartidas.
-- `2026-09-04T14:12:26` **branding.py** (rendimiento): Optimizé la generación de gradientes en `draw_gradient_bar` y `_draw_shield_stripes` reemplazando los bucles `range` por una lógica basada en segmentos, aprovechando la caché existente para evitar recálculos innecesarios de colores en cada frame.
-- `2026-09-04T14:03:40` **assistant.py** (rendimiento): Optimicé el rendimiento de `_generate_context_lines_cached` eliminando la llamada constante a `_fmt_metric_sanitized` (que realiza múltiples regex y llamadas a funciones) mediante la pre-aplicación de los formatos necesarios antes de la cache, y utilicé una tupla de valores pre-procesados como clave de la caché para reducir drásticamente la sobrecarga de strings largos.
-- `2026-09-04T14:03:16` **startup.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con convenciones de estilo estandarizadas (Google Style) en las funciones principales para clarificar el flujo de datos y las intenciones de seguridad, mejorando la mantenibilidad del módulo.

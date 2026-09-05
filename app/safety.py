@@ -299,8 +299,8 @@ def is_protected_path(path: PathLike) -> bool:
     """Verifica si la ruta reside dentro de directorios de sistema restringidos."""
     if not path: return True
     try:
-        p = normalize(path)
-        path_str = str(p)
+        p = Path(path)
+        path_str = str(p.resolve())
         
         for root in _SYSTEM_ROOT_PATHS:
             if os.path.commonpath([path_str, root]) == root:
@@ -308,7 +308,7 @@ def is_protected_path(path: PathLike) -> bool:
             
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
-        return p == Path(p.anchor)
+        return p.anchor and p == Path(p.anchor)
     except (ValueError, TypeError, OSError, RuntimeError): 
         return True
 

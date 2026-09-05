@@ -1091,3 +1091,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-05T00:08:35` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-09-05T00:08:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T00:08:35` Corrida terminada. Total usado hoy: 4.
+- `2026-09-05T00:14:02` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-09-05T00:14:34` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de redundancia en `stage_for_review` para evitar procesar archivos que ya residen en el directorio de destino, y se robusteció la función `_can_move_file` para evitar colisiones lógicas y fallos por permisos denegados al calcular rutas de destino, mejorando la resiliencia ante errores de sistema.
+- `2026-09-05T00:15:11` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de redundancia de sistema de archivos en `_atomic_isolate_file` para detectar casos donde la ruta destino ya existe pero no fue capturada por la verificación inicial, evitando así condiciones de carrera (TOCTOU) durante el proceso de aislamiento atómico.
+- `2026-09-05T00:15:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-09-05T00:15:47` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `is_protected_path` ante rutas inexistentes o mal formadas mediante el uso de `Path.parts` y la verificación explícita de `p.anchor`, previniendo excepciones no controladas durante la normalización de rutas inválidas que podrían detener el bucle principal.
+- `2026-09-05T00:15:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T00:15:47` Corrida terminada. Total usado hoy: 8.

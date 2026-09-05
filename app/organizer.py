@@ -149,18 +149,17 @@ def _generate_unique_target(target: Path) -> Path:
     Implementa un contador incremental para evitar colisiones si el nombre 
     destino ya existe en el directorio de revisión.
     """
-    if target is None or not target.exists():
+    if target is None:
         return target
         
-    parent: Path = target.parent
-    stem: str = target.stem
-    suffix: str = target.suffix
+    base_target = target
     counter: int = 1
     
-    while (candidate := parent / f"{stem}_{counter}{suffix}").exists():
+    while target.exists() and counter <= 999:
+        target = target.with_name(f"{base_target.stem}_{counter}{base_target.suffix}")
         counter += 1
-        if counter > 999: break 
-    return candidate
+        
+    return target
 
 
 def _is_allowed_directory(name: str) -> bool:
@@ -353,9 +352,10 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         if src_res.is_relative_to(dest_base_res): return None
         
         safe_name: str = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
-        target: Path = (_generate_unique_target(dest_base / safe_name)).resolve()
+        target: Path = _generate_unique_target(dest_base / safe_name)
+        
         # Verificación final de contención para evitar path traversal
-        return target if target.is_relative_to(dest_base_res) else None
+        return target if target.parent.resolve() == dest_base_res else None
     except (OSError, ValueError, AttributeError):
         return None
 
@@ -376,8 +376,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             if not isinstance(junk_file, JunkFile) or junk_file.path is None: continue
             src: Path = junk_file.path.resolve()
-            # Validar existencia física y que siga siendo archivo
-            if not src.exists() or not src.is_file() or src.is_relative_to(dest_base): continue
+            
+            # Evitar reprocesar archivos que ya están en el directorio de revisión
+            if src.is_relative_to(dest_base): continue
+            
+            if not src.exists() or not src.is_file(): continue
             
             target: Optional[Path] = _can_move_file(junk_file, dest_base)
             if target and is_safe_to_modify(src) and is_safe_to_modify(target) and not is_protected_path(target):
