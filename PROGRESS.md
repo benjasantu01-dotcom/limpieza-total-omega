@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 214
+- Rechazadas por guardia de seguridad: 36
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 30 | 1 | 3 | 1 | 39 |
+| 2026-09-03 | 26 | 1 | 3 | 1 | 39 |
 | 2026-09-04 | 158 | 18 | 29 | 8 | 137 |
-| 2026-09-05 | 35 | 2 | 3 | 2 | 38 |
+| 2026-09-05 | 36 | 2 | 4 | 3 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **54**
+- legibilidad y documentación: **55**
 - seguridad defensiva: **49**
-- robustez ante casos límite: **48**
+- robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **20**
 - `healthscore.py`: **19**
 - `organizer.py`: **19**
+- `assistant.py`: **19**
+- `safety.py`: **18**
 - `settings.py`: **18**
-- `safety.py`: **17**
-- `diskreport.py`: **16**
 - `duplicates.py`: **16**
 - `quarantine.py`: **16**
 - `scanner.py`: **16**
-- `branding.py`: **15**
-- `browser.py`: **15**
 - `memory.py`: **15**
+- `diskreport.py`: **15**
+- `browser.py`: **14**
+- `branding.py`: **14**
 - `main.py`: **11**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T03:30:09` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de validación añadiendo docstrings descriptivos a los parámetros y retornos en funciones clave, y renombrando variables internas para clarificar su intención sin alterar la funcionalidad.
 - `2026-09-05T03:20:59` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones críticas mediante docstrings detallados que explican la intención y el uso de las verificaciones de seguridad, además de estandarizar la nomenclatura de las variables internas para mejorar la legibilidad del código.
 - `2026-09-05T03:20:44` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando descripciones detalladas (docstrings) en las funciones que realizan operaciones de bajo nivel (Win32 API) para clarificar sus precondiciones y el uso específico de los handles, facilitando la auditoría de seguridad del código.
 - `2026-09-05T03:20:11` **main.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la clase principal mediante la extracción de la lógica de construcción de las pestañas a métodos privados específicos, eliminando la duplicación en `_tab_factory` y mejorando la auto-documentación del código.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-05T02:49:37` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use` y `is_protected_path` centralizando el manejo de excepciones y validaciones de entrada, evitando que errores inesperados en llamadas a `ctypes` o `pathlib` silencien problemas de seguridad o aborten procesos críticos.
 - `2026-09-05T02:49:01` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_manifest` mediante la adición de una validación explícita para asegurar que el manifiesto procesado no esté vacío ni corrompido antes de iniciar la operación de reemplazo atómico, evitando estados inconsistentes tras fallos parciales.
 - `2026-09-05T02:48:25` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` y `_get_win_attributes` mediante la implementación de un manejo de excepciones más granular y defensivo, asegurando que los fallos al acceder a metadatos de archivos bloqueados o bloqueados por permisos del sistema no detengan el flujo del escáner ni propaguen errores inesperados.
-- `2026-09-05T02:39:54` **main.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `_safe_run_ui_callback` y `_flush_logs` para evitar que caídas en el hilo principal durante el cierre o redibujo provoquen estados inconsistentes, añadiendo verificaciones de `winfo_exists` más rigurosas antes de cualquier interacción con widgets de `customtkinter`.

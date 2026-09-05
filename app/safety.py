@@ -377,7 +377,20 @@ def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | 
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
-    """Valida una ruta para modificación: lanza UnsafePathError si es insegura."""
+    """
+    Valida una ruta para modificación.
+    
+    Args:
+        path: Ruta a verificar.
+        allow_sensitive: Si es True, permite archivos con extensiones críticas.
+        base_dir: Directorio raíz opcional para limitar el alcance.
+        
+    Returns:
+        Path normalizado y validado.
+        
+    Raises:
+        UnsafePathError: Si la ruta no pasa los chequeos de seguridad.
+    """
     if path is None: raise UnsafePathError("Ruta nula recibida.")
     if not isinstance(path, (str, Path)) or not str(path).strip():
         raise UnsafePathError("Ruta inválida o vacía.")
