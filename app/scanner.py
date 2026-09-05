@@ -167,8 +167,6 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """Ejecuta heurísticas específicas y almacena hallazgos encontrados."""
-        if RTL_CHAR_RE.search(path.name):
-            self.results.append(Suspicion(path, "Nombre contiene caracteres de ofuscación (RTL)", "critical"))
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
@@ -204,6 +202,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     base_path = Path(directory)
     try:
         root_input = base_path.resolve(strict=False)
+        # Protección extra contra rutas de red/UNC en la raíz de escaneo
         if not root_input.is_dir() or is_protected_path(root_input) or str(root_input).startswith(("\\\\", "//")):
             return []
     except (OSError, TypeError, ValueError, RuntimeError, PermissionError):

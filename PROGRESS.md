@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **240** (47.6% de aceptación)
+- Mejoras aceptadas: **243** (48.2% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 187
+- Sin respuesta de la IA (error o límite): 183
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-04 | 79 | 8 | 16 | 3 | 62 |
-| 2026-09-05 | 161 | 13 | 23 | 14 | 125 |
+| 2026-09-04 | 79 | 8 | 16 | 3 | 58 |
+| 2026-09-05 | 164 | 13 | 24 | 14 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - robustez ante casos límite: **51**
+- seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **47**
 - rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **22**
 - `diskreport.py`: **22**
+- `safety.py`: **20**
+- `scanner.py`: **20**
 - `memory.py`: **19**
-- `safety.py`: **19**
-- `scanner.py`: **19**
+- `settings.py`: **19**
 - `branding.py`: **19**
 - `duplicates.py`: **18**
-- `settings.py`: **18**
 - `organizer.py`: **17**
 - `healthscore.py`: **17**
 - `browser.py`: **16**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-05T14:24:35` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita para evitar la manipulación de archivos mediante enlaces simbólicos o de unión (`junctions`), asegurando que la ruta destino no sea un punto de reparse antes de realizar la escritura atómica.
+- `2026-09-05T14:24:21` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva al integrar una validación de rutas UNC más estricta en el método `_is_safe_entry` y consolidando la lógica de protección contra caracteres de ofuscación (RTL) para que sea consistente antes de procesar cualquier entrada.
+- `2026-09-05T14:23:57` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_within_directory` incorporando la resolución de `pathlib` mediante `resolve()` antes de comparar, evitando así que rutas con `..` o alias de sistema (que `normalize` podría no capturar totalmente en todos los entornos) permitan realizar un *path traversal* fuera de la carpeta objetivo.
 - `2026-09-05T14:18:35` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_safe_to_trim` implementando una validación estricta del handle de proceso para asegurar que solo se intente interactuar con procesos cuyo ejecutable pueda ser resuelto y verificado, evitando operaciones ciegas sobre procesos inaccesibles o privilegiados que pudieran eludir las listas de protección mediante inyección o estados transitorios.
 - `2026-09-05T14:04:08` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del pipeline de datos integrando `metrics.is_finite()` como una verificación de pre-condición estricta en cada entrada al pipeline, y se mejoró la resiliencia ante excepciones durante la evaluación de reglas mediante un manejo de errores más específico y preventivo.
 - `2026-09-05T14:03:57` **duplicates.py** (seguridad defensiva): Se ha implementado un chequeo adicional en `_collect_candidates` para verificar que los archivos no sean enlaces simbólicos o puntos de reparse, usando `lstat` implícito en `entry.is_file(follow_symlinks=False)`, garantizando que el escáner no siga enlaces que podrían llevar fuera del árbol de directorios permitido o causar bucles infinitos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-05T13:32:33` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de salud ante entradas inesperadas, añadiendo una comprobación de división por cero en los factores de normalización y protegiendo el pipeline contra valores nulos o no finitos en las métricas durante la ejecución.
 - `2026-09-05T13:23:28` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de archivos añadiendo un manejo de excepciones más granular y verificaciones de integridad en las rutas durante la iteración recursiva, evitando que errores de acceso en subdirectorios específicos aborten el escaneo completo del árbol.
 - `2026-09-05T13:23:17` **diskreport.py** (robustez ante casos límite): Mejoré la resiliencia de `walk_files` y `_collect_summary_data` ante el caso límite de rutas con nombres extremadamente largos o caracteres inválidos en el sistema de archivos, asegurando que `Path.parts` y las operaciones sobre rutas no provoquen excepciones no controladas durante el escaneo recursivo.
-- `2026-09-05T13:22:51` **browser.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar recursiones infinitas y bloqueos en rutas con errores de formato o excesiva longitud, normalizando la resolución de rutas en el inicio de `_sum_directory_recursive` para asegurar que el `memo` funcione correctamente incluso si la ruta llega con inconsistencias de formato.
-- `2026-09-05T13:13:33` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_validate_and_assign` mediante la validación explícita de tipos numéricos y un manejo de errores más estricto ante valores `None` o malformados, asegurando que el asistente nunca procese datos que puedan corromper sus estados internos.
-- `2026-09-05T13:12:09` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando las validaciones recurrentes de `Path` mediante el uso directo de las propiedades de `os.DirEntry` y optimizando la resolución de rutas, evitando instanciar objetos `Path` innecesarios dentro de los bucles críticos.

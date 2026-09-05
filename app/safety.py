@@ -323,8 +323,9 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
     """Valida si 'child' es descendiente jerárquica de 'parent'."""
     if child is None or parent is None: return False
     try:
-        c_path = normalize(child)
-        p_path = normalize(parent)
+        # Resolver rutas para evitar bypass por enlaces simbólicos o traversals
+        c_path = Path(child).resolve()
+        p_path = Path(parent).resolve()
         
         if is_drive_root(c_path) or is_protected_path(c_path):
             return False

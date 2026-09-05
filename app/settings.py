@@ -309,7 +309,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     temp_path = None
     try:
         ruta = settings_path(custom_base).absolute()
-        if is_protected_path(str(ruta)): return None
+        if is_protected_path(str(ruta)) or ruta.is_symlink(): return None
+        if hasattr(ruta, 'is_junction') and ruta.is_junction(): return None
         ensure_safe_to_modify(str(ruta))
         
         parent = ruta.parent
