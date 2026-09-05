@@ -219,7 +219,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @safe_ui_operation
     def _safe_run_ui_callback(self, callback: Callable[[], None]) -> None:
         """Ejecuta una actualización de UI de forma segura tras el ciclo de eventos."""
-        if not self._closing:
+        if not self._closing and self.winfo_exists():
             self.after_idle(callback)
 
     def _validate_environment(self) -> None:
@@ -954,7 +954,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _flush_logs(self) -> None:
         """Renderiza los logs encolados en su pestaña correspondiente."""
         self._log_scheduled = False
-        if self._closing: return
+        if self._closing or not self.winfo_exists(): return
         
         with self._log_lock:
             if not self._log_queue: return
@@ -996,7 +996,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _set_busy(self, busy: bool) -> None:
         """Gestiona el indicador de actividad y bloquea la UI."""
-        if self._closing: return
+        if self._closing or not self.winfo_exists(): return
         
         with self._task_lock:
             if busy:
@@ -1064,7 +1064,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         Envía tareas al pool de hilos de forma no bloqueante. Si `check_safety` es True, 
         valida la integridad de la ruta destino antes de poner la tarea en la cola del ejecutor.
         """
-        if self._closing: return
+        if self._closing or not self.winfo_exists(): return
         
         target_path = target
         if check_safety and target_path:
@@ -1192,7 +1192,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @safe_ui_operation
     def _apply_card_updates(self, junk_mb: float, sospechosos: int, ram_libre: float, disco_libre: float) -> None:
         """Aplica cambios a las etiquetas de texto de las tarjetas."""
-        if self._closing: return
+        if self._closing or not self.winfo_exists(): return
         valores = {
             "basura": f"{junk_mb:.0f} MB",
             "sospechosos": str(sospechosos),

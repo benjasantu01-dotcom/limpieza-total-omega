@@ -220,9 +220,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
                 if rule.check(metrics, ratio):
                     try:
                         msg = rule.message_factory(metrics)
-                        if isinstance(msg, str) and msg:
-                            recommendations.append(msg)
-                    except Exception:
+                        if isinstance(msg, str) and msg.strip():
+                            recommendations.append(msg.strip())
+                    except (AttributeError, TypeError, ValueError):
                         continue
         except Exception:
             metric_breakdown[area] = 0

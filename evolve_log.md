@@ -1368,3 +1368,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-09-05T02:29:26` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `walk_files` y `drive_usage` mediante la validación explícita de tipos y estados, asegurando que las operaciones críticas de I/O no fallen ante entradas inesperadas o corrupción parcial de datos.
 - `2026-09-05T02:29:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-05T02:29:26` Corrida terminada. Total usado hoy: 60.
+- `2026-09-05T02:37:43` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-09-05T02:38:10` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-05T02:38:38` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las factorías de recomendaciones capturando errores específicos al generar mensajes y validando los tipos de retorno, evitando que un fallo en una regla individual invalide el reporte completo.
+- `2026-09-05T02:39:54` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `_safe_run_ui_callback` y `_flush_logs` para evitar que caídas en el hilo principal durante el cierre o redibujo provoquen estados inconsistentes, añadiendo verificaciones de `winfo_exists` más rigurosas antes de cualquier interacción con widgets de `customtkinter`.
+- `2026-09-05T02:40:07` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-05T02:40:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-05T02:40:07` Corrida terminada. Total usado hoy: 64.
