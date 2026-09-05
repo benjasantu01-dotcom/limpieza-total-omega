@@ -207,8 +207,6 @@ def _is_file_in_use(path_str: str) -> bool:
         return False
     try:
         kernel32 = ctypes.windll.kernel32
-        # Intentamos abrir con acceso de lectura mínimo sin bloquear a otros
-        # FILE_SHARE_READ|WRITE|DELETE (0x7) permite acceso compartido
         handle = kernel32.CreateFileW(path_str, 0x80000000, 0x00000007, None, 3, 0x00000080, None)
         if handle == -1 or handle == 0xFFFFFFFF: 
             return True
@@ -238,7 +236,10 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 
 @lru_cache(maxsize=1024)
 def _check_file_integrity_cached(path_str: str) -> bool:
-    """Ejecuta el conjunto de reglas de integridad y retorna un estado booleano."""
+    """
+    Ejecuta el conjunto de reglas de integridad sobre el archivo.
+    Retorna True si todas las reglas pasan, False en caso contrario.
+    """
     path = Path(path_str)
     try:
         file_stat = path.stat()
@@ -252,14 +253,14 @@ def _check_file_integrity_cached(path_str: str) -> bool:
 
 
 def _check_file_integrity(path: Path) -> None:
-    """Wrapper para verificar integridad: lanza UnsafePathError si falla."""
+    """Wrapper para verificar integridad: lanza UnsafePathError si alguna regla falla."""
     if not _check_file_integrity_cached(str(path)):
         raise UnsafePathError("Operación denegada por reglas de integridad.")
 
 
 @lru_cache(maxsize=2048)
 def _is_readonly(path: Path) -> bool:
-    """Valida si el archivo carece de permisos de escritura."""
+    """Valida si el archivo carece de permisos de escritura a nivel de sistema."""
     try:
         return not bool(path.stat().st_mode & stat.S_IWRITE)
     except (OSError, PermissionError):
@@ -268,7 +269,16 @@ def _is_readonly(path: Path) -> bool:
 
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
-    """Estandariza rutas, resolviendo enlaces y validando posibles traversals."""
+    """
+    Estandariza rutas, resolviendo enlaces y validando posibles traversals.
+    
+    Args:
+        path: La ruta a normalizar.
+    Returns:
+        Path absoluto normalizado.
+    Raises:
+        ValueError: Si la ruta es nula, vacía, mal formada o intenta un traversal.
+    """
     if path is None: raise ValueError("Ruta nula recibida.")
     path_str = str(path).strip()
     if not path_str: raise ValueError("Entrada de ruta vacía.")
@@ -277,14 +287,12 @@ def normalize(path: PathLike) -> Path:
         p = Path(path_str)
         if ".." in p.parts: raise ValueError("Path traversal detectado.")
         
-        # Validar existencia parcial antes de resolver totalmente
         current = Path(p.anchor)
         for part in p.parts[1:]:
             current = current / part
             if _is_reparse_point(current):
                 raise ValueError(f"Acceso restringido: componente {current} es un punto de reparse.")
         
-        # .resolve() no debe ser usado en rutas que no existen para prevenir desvíos
         if not p.exists():
             return Path(os.path.abspath(path_str))
             
@@ -294,7 +302,7 @@ def normalize(path: PathLike) -> Path:
 
 
 def is_drive_root(path: PathLike) -> bool:
-    """Determina si la ruta normalizada corresponde a la raíz de una unidad."""
+    """Determina si la ruta normalizada corresponde a la raíz de una unidad (ej. C:\)."""
     try:
         p = normalize(path)
         return p == Path(p.anchor)
@@ -321,7 +329,7 @@ def is_protected_path(path: PathLike) -> bool:
 
 
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
-    """Valida si una ruta es descendiente jerárquica de otra."""
+    """Valida si 'child' es descendiente jerárquica de 'parent'."""
     if child is None or parent is None: return False
     try:
         c_path = normalize(child)
@@ -364,7 +372,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
 
 
 def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | None) -> None:
-    """Valida si la ruta está dentro de los límites operativos permitidos."""
+    """Valida si la ruta está dentro de los límites de seguridad configurados."""
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     if is_within_directory(target_path, Path.cwd(), allow_equal=True):
@@ -379,16 +387,14 @@ def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
-    Valida una ruta para modificación.
+    Valida una ruta para modificación, lanzando excepción si es insegura.
     
     Args:
         path: Ruta a verificar.
         allow_sensitive: Si es True, permite archivos con extensiones críticas.
         base_dir: Directorio raíz opcional para limitar el alcance.
-        
     Returns:
-        Path normalizado y validado.
-        
+        Path normalizado.
     Raises:
         UnsafePathError: Si la ruta no pasa los chequeos de seguridad.
     """
@@ -439,7 +445,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
 
 
 def describe_protection(path: PathLike) -> str:
-    """Genera una explicación textual sobre por qué una ruta no superó las validaciones."""
+    """Genera una explicación textual del motivo de bloqueo de una ruta."""
     if path is None: return "Ruta nula."
     try:
         p = normalize(path)

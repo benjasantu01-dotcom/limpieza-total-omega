@@ -271,6 +271,24 @@ def _should_scan_directory(entry: os.DirEntry) -> bool:
     return entry is not None and _is_allowed_directory(entry.name) and not _is_junction(entry)
 
 
+def _try_collect_junk(entry: os.DirEntry, found: List[JunkFile]) -> None:
+    """
+    Valida un archivo individual y lo agrega a la lista si es basura confirmada 
+    y pasa los chequeos de seguridad.
+    """
+    if not _is_junk_path(Path(entry.name)):
+        return
+        
+    try:
+        stats = entry.stat()
+        if stats.st_size > 0:
+            p = Path(entry.path)
+            if not is_protected_path(p.resolve()):
+                found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
+    except (OSError, PermissionError):
+        pass
+
+
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0) -> None:
     """
     Recorre recursivamente directorios buscando archivos temporales.
@@ -285,12 +303,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
                         if _should_scan_directory(entry):
                             _process_directory(Path(entry.path), found, depth + 1)
                     elif entry.is_file(follow_symlinks=False):
-                        if _is_junk_path(Path(entry.name)):
-                            stats = entry.stat()
-                            if stats.st_size > 0:
-                                p = Path(entry.path)
-                                if not is_protected_path(p.resolve()):
-                                    found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
+                        _try_collect_junk(entry, found)
                 except (OSError, PermissionError):
                     continue
     except (OSError, PermissionError, RuntimeError):
