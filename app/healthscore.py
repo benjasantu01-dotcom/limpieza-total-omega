@@ -233,6 +233,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for area, weight, scorer, rules in _OPTIMIZED_PIPELINE:
         try:
             ratio = scorer(metrics)
+            if not math.isfinite(ratio):
+                ratio = 0.0
             pts = int(round(ratio * weight))
             metric_breakdown[area] = pts
             total_pts += float(pts)

@@ -281,11 +281,14 @@ def _try_collect_junk(entry: os.DirEntry, found: List[JunkFile]) -> None:
         return
         
     try:
+        # Validación temprana de la ruta real antes de stat para evitar bloqueos
+        p = Path(entry.path).resolve()
+        if is_protected_path(p):
+            return
+
         stats = entry.stat()
         if stats.st_size > 0:
-            p = Path(entry.path)
-            if not is_protected_path(p.resolve()):
-                found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
+            found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
     except (OSError, PermissionError):
         pass
 

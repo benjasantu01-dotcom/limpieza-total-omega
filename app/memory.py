@@ -203,27 +203,22 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         try:
             name_val, pid_str, ws_str = parts[0], parts[1], parts[2]
             
-            # Validación estricta de tipos de datos de entrada
             if not name_val or not pid_str.isdigit() or not ws_str.isdigit():
                 continue
             
             pid_val, ws_val = int(pid_str), int(ws_str)
             
-            # Filtros de integridad: PID positivos, WorkingSet no negativo
             if pid_val <= 0 or ws_val < 0:
                 continue
             
-            # Filtro defensivo: descartar procesos críticos conocidos
             if pid_val in SYSTEM_CRITICAL_PIDS:
                 continue
 
-            # Filtro de seguridad: evitar rutas prohibidas si el nombre se interpreta como tal
             if is_protected_path(name_val):
                 continue
                 
             proc_list.append(ProcessMemory(name=name_val, pid=pid_val, working_set=BytesValue(ws_val)))
         except (ValueError, TypeError):
-            # Ignorar malformaciones en la línea actual para mantener la resiliencia del bucle
             continue
     
     proc_list.sort(key=lambda p: p.working_set, reverse=True)
