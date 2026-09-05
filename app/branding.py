@@ -312,12 +312,9 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     try:
         path_obj = Path(clean_path).resolve()
         if not path_obj.is_absolute(): return None
-        # Validar ruta y directorio antes de realizar cualquier escritura
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj): return None
         if not is_safe_to_modify(path_obj.parent): return None
-        
         if not path_obj.parent.exists(): path_obj.parent.mkdir(parents=True, exist_ok=True)
-        
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
@@ -329,7 +326,7 @@ def logo_ascii() -> str:
     return "\n   ___  __  __ ___ ___   _\n  / _ \\|  \\/  | __/ __| /_\\\n | (_) | |\\/| | _|| (_ // _ \\\n  \\___/|_|  |_|___\\___/_/ \\_\\\n      Limpieza Total Omega\n"
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Dibuja las franjas decorativas graduadas sobre el icono del escudo."""
+    """Dibuja franjas decorativas graduadas sobre el escudo (CanvasElement)."""
     try:
         franjas_count = max(6, int(28 * scale))
         colores = gradient_colors(franjas_count)
@@ -344,13 +341,13 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Dibuja detalles iconográficos como la marca de corte y la letra Omega."""
+    """Dibuja la marca de corte y letra Omega sobre el canvas."""
     canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, canvas_x + 75 * scale, canvas_y + 41 * scale, fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
     canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, canvas_x + 89 * scale, canvas_y + 38 * scale, canvas_x + 92 * scale, canvas_y + 52 * scale, fill=C_BACKGROUND, outline="")
     canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(UI_FONT_HEADER_SIZE * scale)), UI_FONT_BOLD))
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza el logo completo sobre un objeto Canvas de la interfaz gráfica."""
+    """Renderiza el logo completo en el canvas, escalado a la posición (x, y)."""
     try:
         scale = max(0.1, min(10.0, size / 128.0))
         coords = _get_shield_coords(scale)
@@ -364,7 +361,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (ValueError, TypeError, AttributeError, ZeroDivisionError, OverflowError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una barra de degradado horizontal de ancho variable sobre el canvas."""
+    """Dibuja una barra de degradado horizontal sobre el canvas."""
     try:
         segments = _get_grouped_segments(gradient_colors(max(1, width), stops))
         for seg in segments:
@@ -372,7 +369,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (ValueError, TypeError, AttributeError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[HexColor] = None, fill: Optional[HexColor] = None) -> None:
-    """Dibuja un gráfico circular de progreso (anillo) para visualización de métricas de salud."""
+    """Renderiza un gráfico circular de progreso sobre el canvas proporcionado."""
     try:
         if percent is None: return
         val = float(percent)

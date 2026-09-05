@@ -228,19 +228,20 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Realiza un recorrido profundo (DFS) del sistema de archivos mediante `os.scandir`.
+    Evita ciclos de directorios usando inodos y detecta puntos de reparse en Windows.
     """
     root_path = _validate_root(directory)
     if root_path is None:
         return
 
     REPARSE_POINT_ATTR = 0x400
+    # visited_inodes almacena (dispositivo, inodo) para prevenir recursión infinita en enlaces
     visited_inodes: set[Tuple[int, int]] = set()
     stack: List[Path] = [root_path]
     
     while stack:
         current_dir = stack.pop()
         
-        # Validar seguridad tras resolución dinámica
         if skip_protected and is_protected_path(current_dir):
             continue
             
@@ -248,7 +249,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Verificar si la entrada es un enlace simbólico o punto de reparse
+                        # Obtenemos stat sin seguir enlaces para identificar puntos de montaje/reparse
                         st = entry.stat(follow_symlinks=False)
                         
                         if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
@@ -258,6 +259,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             path_entry = Path(entry.path)
                             if skip_protected and is_protected_path(path_entry):
                                 continue
+                            
                             inode_key = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
                             if inode_key[0] != 0 and inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
@@ -272,7 +274,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Identifica los N archivos más grandes en la jerarquía proporcionada."""
+    """Identifica los N archivos más grandes en la jerarquía proporcionada usando un max-heap."""
     if not isinstance(limit, int) or limit <= 0:
         return []
     
@@ -355,12 +357,13 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
     Ejecuta un recorrido único por el árbol para recolectar métricas agregadas
-    y los archivos más grandes encontrados, minimizando la carga de I/O.
+    usando un heap para mantener el top-10 de archivos más pesados eficientemente.
     """
     total_bytes = 0
     total_files = 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
+    # top_files_heap: Mantiene una estructura (size, path) de tamaño fijo (10 elementos)
     top_files_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):

@@ -199,6 +199,7 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo del sistema de archivos para identificar archivos candidatos.
+    Utiliza una tabla de inodos visitados para evitar ciclos en enlaces simbólicos.
     """
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Set[Tuple[int, int]] = set()
@@ -236,7 +237,10 @@ def _collect_candidates(
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Aplica la función hash indicada y agrupa las rutas por su digest resultante."""
+    """
+    Aplica una función hash específica a una lista de rutas y agrupa por el resultado (digest).
+    Solo retorna grupos que contengan más de un archivo.
+    """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if (digest := hash_func(path)):
@@ -245,7 +249,11 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
-    """Refina los grupos iniciales de tamaño mediante hashes completos (Paso 3)."""
+    """
+    Refina grupos de archivos candidatos mediante dos niveles de validación:
+    1. Hash parcial inicial (filtro rápido).
+    2. Hash SHA256 completo (confirmación absoluta).
+    """
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
     
@@ -258,8 +266,9 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Selecciona la estrategia de comparación según el tamaño del archivo:
-    si es menor al umbral de bytes parciales, confía en el hash parcial.
+    Determina la estrategia de refinamiento según el peso del archivo.
+    Si el archivo es menor a PARTIAL_READ_BYTES, el hash parcial es suficiente.
+    De lo contrario, inicia el proceso de refinamiento profundo.
     """
     if not isinstance(size, int) or size <= 0 or not paths or len(paths) < 2: 
         return []

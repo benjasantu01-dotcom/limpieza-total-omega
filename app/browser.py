@@ -229,7 +229,7 @@ def _sum_directory_recursive(
 
 
 def directory_size(path: Union[str, Path, None]) -> int:
-    """Punto de entrada: obtiene tamaño en bytes de una ruta tras validar acceso seguro."""
+    """Obtiene el tamaño en bytes de una ruta verificada como segura para lectura."""
     if path is None or not isinstance(path, (str, Path)):
         return 0
     try:
