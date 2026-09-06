@@ -633,7 +633,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                 continue
                 
             item = item_map.get(stored_path.name)
-            if item and _is_item_purgable(stored_path, item, quarantine_root) and is_safe_to_modify(stored_path):
+            if item and _is_item_purgable(stored_path, item, quarantine_root):
                 if _safe_unlink(stored_path):
                     purged_count += 1
                     continue

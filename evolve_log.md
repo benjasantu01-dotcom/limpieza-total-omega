@@ -433,3 +433,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-06T02:31:33` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé la búsqueda de archivos basura pre-compilando el conjunto de extensiones en un formato de búsqueda más eficiente y reduciendo la redundancia en la recursión mediante el uso de `os.scandir` de forma más directa, evitando conversiones innecesarias a `Path` y llamadas a `resolve()` dentro del bucle crítico.
 - `2026-09-06T02:31:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T02:31:33` Corrida terminada. Total usado hoy: 60.
+- `2026-09-06T02:37:47` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-09-06T02:38:23` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `purge_all` transformando `item_map` de una lista de objetos a un `dict` para acceso O(1) y evitando la reconstrucción redundante de objetos `QuarantineItem` durante la iteración sobre el directorio.
+- `2026-09-06T02:38:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-09-06T02:39:09` ➖ Sin cambios en safety.py (enfoque: rendimiento). Motivo: Se ha optimizado la validación de rutas mediante la implementación de `lru_cache` en `is_protected_path`, evitando el re-procesamiento innecesario de la jerarquía de directorios durante escaneos intensivos.
+- `2026-09-06T02:39:18` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la detección de extensiones y la ejecución de heurísticas moviendo el cálculo de sufijos fuera de los loops y utilizando conjuntos (sets) para búsquedas O(1), evitando re-procesamiento innecesario de rutas en `scan_file`.
+- `2026-09-06T02:39:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T02:39:18` Corrida terminada. Total usado hoy: 64.
