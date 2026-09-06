@@ -428,9 +428,13 @@ def _get_active_problems(ctx: SystemContext) -> list[str]:
 
 def _format_problem_message(problems: list[str], score: int | str) -> str:
     """Crea una oración descriptiva con los problemas encontrados."""
-    if not problems:
-        return f"Tu sistema está en buen estado ({score}/100). No hay nada urgente."
-    return f"Con un puntaje de {score}/100, por orden de prioridad: {', '.join(problems)}."
+    try:
+        clean_score = str(score)
+        if not problems:
+            return f"Tu sistema está en buen estado ({clean_score}/100). No hay nada urgente."
+        return f"Con un puntaje de {clean_score}/100, por orden de prioridad: {', '.join(problems)}."
+    except (TypeError, ValueError):
+        return "Tu sistema tiene problemas detectados."
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """Obtiene los problemas activos usando caché para evitar re-cálculos costosos."""
@@ -484,13 +488,18 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Provee un resumen ejecutivo de la salud del sistema."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
-    score_val: str = str(ctx.score) if ctx.score is not None else "N/A"
-    grade: str = str(ctx.grade) if ctx.grade else ""
-    score_display = f"Tu puntaje es {score_val}/100{f' (nota {grade})' if grade else ''}."
-    problemas = _identify_active_problems(ctx)
-    resumen = ("Lo que más te está restando: " + ", ".join(problemas[:3]) + ".") if problemas else "No hay nada urgente."
-    explicacion = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio."
-    return Answer(_validate_response_length(f"{score_display} {resumen}{explicacion}"), notice=OFFLINE_NOTICE)
+    
+    score_val = ctx.score if ctx.score is not None else "N/A"
+    grade_str = ctx.grade if ctx.grade else ""
+    score_display = f"Tu puntaje es {score_val}/100{f' (nota {grade_str})' if grade_str else ''}."
+    
+    try:
+        problemas = _identify_active_problems(ctx)
+        resumen = ("Lo que más te está restando: " + ", ".join(problemas[:3]) + ".") if problemas else "No hay nada urgente."
+        explicacion = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio."
+        return Answer(_validate_response_length(f"{score_display} {resumen}{explicacion}"), notice=OFFLINE_NOTICE)
+    except (Exception, TypeError):
+        return Answer(_validate_response_length(f"{score_display} El detalle de problemas no está disponible."), notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     """Evalúa la cantidad de programas de inicio y su impacto en el rendimiento."""
@@ -535,7 +544,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             
     cuerpo = _format_problem_message(
         _identify_active_problems(context), 
-        str(context.score) if context.score is not None else "N/A"
+        context.score if context.score is not None else "N/A"
     )
     return Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
 
