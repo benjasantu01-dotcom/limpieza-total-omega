@@ -31,8 +31,8 @@ class RecommendationRule(NamedTuple):
     Attributes:
         area: Identificador del módulo afectado.
         threshold: Valor límite de ratio bajo el cual la regla se activa.
-        message_factory: Callable que recibe métricas para generar un string.
-        check: Función booleana para evaluar si se cumplen las condiciones.
+        message_factory: Callable que recibe métricas para generar un string explicativo.
+        check: Función booleana (metrics, ratio) -> bool que evalúa si activar la regla.
     """
     area: MetricKey
     threshold: float
@@ -54,21 +54,21 @@ __all__ = [
     "summarize",
 ]
 
-# Umbrales críticos que definen el punto de saturación o riesgo por módulo.
+# Umbrales críticos utilizados para definir el punto de saturación o riesgo.
 _LIMIT_JUNK_MB: Final[float] = 5000.0          
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
 _LIMIT_STARTUP_COUNT: Final[int] = 20          
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-# Factores de normalización pre-calculados para evitar divisiones en tiempo de ejecución.
+# Factores de normalización inversos para transformar métricas crudas a un rango [0.0, 1.0].
 _INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB
 _INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB
 _INV_STARTUP: Final[float] = 1.0 / float(_LIMIT_STARTUP_COUNT)
 _INV_RAM: Final[float] = 1.0 / _LIMIT_RAM_PERCENT
 _INV_DISK: Final[float] = 1.0 / _LIMIT_DISK_PERCENT
 
-# Niveles de severidad para activar reglas de recomendación (heurística).
+# Niveles de severidad para activar reglas de recomendación.
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
@@ -89,7 +89,7 @@ if sum(WEIGHTS.values()) != 100:
 _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Transforma el volumen de basura en un ratio de salud (0.0 a 1.0)."""
+    """Transforma el volumen de basura (MB) en un ratio de salud (0.0 a 1.0)."""
     return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
@@ -105,7 +105,7 @@ def score_disk(free_percent: float | int) -> NormalizedRatio:
     return _clamp(float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de duplicados basado en el espacio desperdiciado."""
+    """Calcula el ratio de duplicados basado en el espacio desperdiciado (MB)."""
     return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int) -> NormalizedRatio:
@@ -219,7 +219,15 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
     return findings
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Ejecuta el pipeline de evaluación completo sobre las métricas provistas."""
+    """
+    Ejecuta el pipeline de evaluación completo sobre las métricas provistas.
+    
+    Args:
+        metrics: Objeto SystemMetrics con datos crudos validados.
+        
+    Returns:
+        HealthResult: Informe detallado conteniendo score final y recomendaciones.
+    """
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de entrada de métricas inválido."])
     
@@ -260,7 +268,15 @@ def _render_bar(pts: int, maximo: int) -> str:
     return ('#' * puntos) + ('.' * (maximo - puntos))
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Serializa un HealthResult en una lista de líneas legible para el usuario."""
+    """
+    Serializa un HealthResult en una lista de líneas legible para el usuario.
+    
+    Args:
+        result: Objeto HealthResult generado por compute_score.
+        
+    Returns:
+        List[str]: Líneas de texto formateadas para visualización en UI o reporte.
+    """
     if not isinstance(result, HealthResult):
         return ["Error: Informe no disponible o formato inválido."]
     

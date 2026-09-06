@@ -173,8 +173,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     """
 
     def __init__(self) -> None:
-        """Initializa la estructura de la aplicación, el pool de hilos y el layout inicial."""
+        """Initializa la estructura de la aplicación y la secuencia de despliegue."""
         super().__init__()
+        self._init_component_registry()
+        self._setup_application()
+
+    def _init_component_registry(self) -> None:
+        """Inicializa los diccionarios de estado, caché y control de concurrencia."""
         self.tabs: Dict[str, ctk.CTkFrame] = {}
         self._initialized_tabs: Dict[str, bool] = {name: False for name in TABS}
         self._health_bars_initialized = False
@@ -188,11 +193,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._tasks_running = 0
         self._last_card_values: Dict[str, str] = {}
         self.settings: AppSettings = {}
-        
-        self._setup_application()
+        self.setting_vars: Dict[str, Any] = {}
+        self.outputs: Dict[str, ctk.CTkTextbox] = {}
+        self.cards: Dict[str, ctk.CTkLabel] = {}
+        self.area_bars: Dict[str, Tuple[ctk.CTkProgressBar, ctk.CTkLabel]] = {}
 
     def _setup_application(self) -> None:
-        """Ejecuta la secuencia de inicialización del entorno y la interfaz."""
+        """Ejecuta la configuración del entorno y construcción de la interfaz."""
         try:
             self._validate_environment()
             self._init_window_properties()
@@ -287,14 +294,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             logging.error("Fallo al cargar ajustes, reseteando: %e", e)
             self.settings = settings_mod.reset()
             
-        self.setting_vars: Dict[str, Any] = {}
-        self.outputs: Dict[str, ctk.CTkTextbox] = {}
-        self.cards: Dict[str, ctk.CTkLabel] = {}
-        self.area_bars: Dict[str, Tuple[ctk.CTkProgressBar, ctk.CTkLabel]] = {}
-        
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
         self._debounces: Dict[str, str] = {}
-        
+            
     @safe_ui_operation
     def _toggle_ui_availability(self, active: bool) -> None:
         """Cambia el estado de los botones entre habilitado y deshabilitado."""
