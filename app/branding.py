@@ -5,7 +5,7 @@ Centraliza nombre, versión, paleta, tipografía, iconografía y logo.
 
 GLOSARIO VISUAL:
   - Surface: Fondos de contenedores y áreas de trabajo.
-  - Accent: Colores de marca para llamados a la acción o elementos destacados.
+  - Accent: Colores de marca para llamados a la carga o elementos destacados.
   - Glow: Efectos de iluminación sutil para resaltar estados de salud.
   - Severity: Código cromático para niveles de riesgo (OK, Info, Warning, Danger).
 """
@@ -306,9 +306,10 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda una copia física del archivo logo.svg tras verificar integridad y seguridad."""
-    if not isinstance(destination, (str, Path)): return None
+    if not destination: return None
     try:
         path_obj = Path(destination).resolve()
+        # Verificar que la ruta no sea el directorio raíz o un sistema crítico indirectamente
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj): return None
         
         parent = path_obj.parent
@@ -349,7 +350,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     """Renderiza el logo completo en el canvas, escalado a la posición (x, y)."""
     try:
         s = float(size)
-        if not math.isfinite(s): return
+        if not math.isfinite(s) or s <= 0: return
         scale = max(0.1, min(10.0, s / 128.0))
         coords = _get_shield_coords(scale)
         contorno = [canvas_x + coords[i] if i % 2 == 0 else canvas_y + coords[i] for i in range(len(coords))]

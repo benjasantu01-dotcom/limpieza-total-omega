@@ -207,6 +207,9 @@ def _sum_directory_recursive(
         return 0
     
     try:
+        # Validación de integridad de nombre de ruta antes de operar
+        if any(c in root_abs for c in '<>|?"*'):
+            return 0
         norm_path = str(Path(root_abs).resolve(strict=True))
     except (OSError, RuntimeError):
         return 0
