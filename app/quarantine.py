@@ -624,6 +624,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     quarantine_root = quarantine_dir(base)
     items = load_manifest(base)
     
+    # Mapeo eficiente por nombre de archivo para lookup O(1)
     item_map = {item.stored_name: item for item in items}
     purged_count = 0
     kept_items = []

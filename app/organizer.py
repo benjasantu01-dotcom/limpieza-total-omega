@@ -293,6 +293,11 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
     Aplica un límite estricto de profundidad (50) para evitar desbordamiento de pila.
     """
     if depth > 50 or current_dir is None or not current_dir.exists(): return
+    
+    # Pre-chequeo único para el directorio actual
+    if is_protected_path(current_dir):
+        return
+
     try:
         with os.scandir(current_dir) as it:
             for entry in it:
@@ -302,7 +307,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
                             _process_directory(Path(entry.path), found, depth + 1)
                     elif entry.is_file(follow_symlinks=False) and _is_junk_path(entry.name):
                         stats = entry.stat()
-                        if stats.st_size > 0 and not is_protected_path(Path(entry.path)):
+                        if stats.st_size > 0:
                             found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (OSError, PermissionError):
                     continue
