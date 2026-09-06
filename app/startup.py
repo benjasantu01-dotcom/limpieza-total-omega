@@ -81,7 +81,10 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
-        """Verifica si el nombre del archivo es un dispositivo reservado (ej. CON, NUL)."""
+        """
+        Detecta nombres de dispositivos de Windows legacy que no son rutas 
+        de archivo reales y podrían causar errores al intentar accederlos.
+        """
         reserved: Set[str] = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
         try:
             return Path(path_str).stem.upper() in reserved
@@ -89,7 +92,10 @@ class StartupEntry:
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:
-        """Determina si una cadena de ruta contiene caracteres maliciosos o bloqueados."""
+        """
+        Filtra cadenas que contienen caracteres de escape de shell o rutas UNC, 
+        previendo inyección de comandos o acceso a recursos de red no seguros.
+        """
         suspicious_chars = '<>|?*\0&;%'
         return any(c in path_string for c in suspicious_chars) or path_string.startswith(r"\\")
 
@@ -101,15 +107,15 @@ class StartupEntry:
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Filtra caracteres de control y asegura una cadena de comando limpia."""
+        """Elimina caracteres de control (ASCII < 32) para evitar nombres de archivos malformados."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae una ruta de una cadena de comandos entrecomillada.
-        Valida que la ruta no contenga caracteres inválidos para el sistema de archivos.
+        Extrae la ruta contenida en comillas en comandos como: "C:\App\ejecutable.exe" /arg.
+        Se asegura de que el contenido no intente escapar el contexto de seguridad actual.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -132,7 +138,10 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Verifica existencia física y descarta rutas con atributos de reparseo (junctions)."""
+        """
+        Valida que un archivo exista y no sea un punto de reparseo (Junction/Symlink),
+        previniendo que el escáner entre en bucles infinitos o acceda a áreas protegidas.
+        """
         try:
             if not os.path.lexists(p) or p.is_dir():
                 return False
@@ -144,8 +153,8 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
-        Normaliza, valida contra `is_protected_path` y resuelve la ruta absoluta.
-        Usa una caché local para evitar múltiples llamadas al sistema operativo.
+        Normaliza una ruta a absoluta y verifica su integridad mediante `is_protected_path`.
+        Usa caché local de resultados para minimizar llamadas costosas al sistema de archivos.
         """
         if not path_string or self._is_path_suspicious(path_string):
             return ""
@@ -185,7 +194,7 @@ class StartupEntry:
             return path_string
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Analiza la línea de comandos para aislar el ejecutable base."""
+        """Descompone una línea de comandos compleja en el ejecutable principal."""
         if not command_line or not isinstance(command_line, str):
             return ""
         if any(char in command_line for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):

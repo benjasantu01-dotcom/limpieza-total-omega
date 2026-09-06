@@ -409,3 +409,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-06T01:57:55` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult
 - `2026-09-06T01:57:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T01:57:55` Corrida terminada. Total usado hoy: 48.
+- `2026-09-06T02:06:37` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-09-06T02:07:07` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo `scanner.py` mediante la adición de docstrings detallados en las funciones de heurística y métodos clave, además de incluir type hints consistentes, permitiendo a otros desarrolladores entender rápidamente el propósito y las restricciones de seguridad (como el manejo de `os.DirEntry` vs `Path`) de cada componente.
+- `2026-09-06T02:07:39` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._is_safe_path, _Validators._run_safety_checks, _Validators._validate_enum_str
+- `2026-09-06T02:08:08` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `startup.py` mediante docstrings detallados en los métodos de la clase `StartupEntry` para aclarar el "porqué" de las validaciones de seguridad y el manejo de rutas, facilitando el mantenimiento y auditoría del código.
+- `2026-09-06T02:08:29` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext.__hash__
+- `2026-09-06T02:08:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T02:08:29` Corrida terminada. Total usado hoy: 52.
