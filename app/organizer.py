@@ -21,7 +21,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Final, Callable, Union, TypeAlias, NamedTuple, Dict, Sequence, Iterator
+from typing import List, Optional, Final, Callable, Union, TypeAlias, NamedTuple, Dict, Sequence
 
 from safety import is_safe_to_modify, ensure_safe_to_modify, is_protected_path
 
@@ -99,7 +99,12 @@ class JunkFile:
     @property
     def is_junk_extension(self) -> bool:
         """Verifica si la extensión del archivo está en JUNK_EXTENSIONS."""
-        return self.path.suffix.lower() in JUNK_EXTENSIONS
+        return is_valid_junk_extension(self.path.name)
+
+
+def is_valid_junk_extension(filename: str) -> bool:
+    """Valida si un nombre de archivo corresponde a una extensión considerada basura."""
+    return os.path.splitext(filename)[1].lower() in JUNK_EXTENSIONS
 
 
 def _get_win_attributes(path_or_entry: Union[os.DirEntry, Path]) -> int:
@@ -124,9 +129,8 @@ def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
 
 
 def _is_junk_path(path_str: str) -> bool:
-    """Comprueba si la extensión del archivo coincide con las definidas en JUNK_EXTENSIONS."""
-    if not path_str: return False
-    return os.path.splitext(path_str)[1].lower() in JUNK_EXTENSIONS
+    """Delegado para verificar extensión mediante `is_valid_junk_extension`."""
+    return is_valid_junk_extension(path_str)
 
 
 def _is_unc_path(path: Path) -> bool:

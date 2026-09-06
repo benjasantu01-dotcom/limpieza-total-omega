@@ -158,8 +158,6 @@ def _is_file_locked(path: Path) -> bool:
     if not isinstance(path, Path) or not path.exists():
         return False
     try:
-        # Abrir en modo append (a+b) permite verificar si el sistema permite
-        # acceso sin truncar ni modificar el contenido, capturando el lock.
         with open(path, "ab") as f:
             return False
     except (PermissionError, IOError, OSError):
@@ -167,7 +165,16 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def _safe_unlink(path: Path) -> bool:
-    """Elimina un archivo solo si es seguro y no está bloqueado."""
+    """
+    Elimina un archivo del sistema de archivos tras verificar su seguridad.
+
+    Args:
+        path: Objeto Path del archivo a eliminar.
+
+    Returns:
+        True si el archivo fue eliminado, False si la ruta no es segura,
+        está bloqueada o no existe.
+    """
     if not isinstance(path, Path) or path is None:
         return False
     try:
@@ -199,7 +206,16 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
 
 
 def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Resuelve y valida que la ruta de cuarentena sea segura."""
+    """
+    Resuelve la ruta absoluta del directorio de cuarentena y asegura su creación.
+
+    Returns:
+        Path: Ruta resuelta y validada del directorio de cuarentena.
+
+    Raises:
+        UnsafePathError: Si el directorio está en una ruta protegida o no segura.
+        OSError: Si falla la creación del directorio.
+    """
     if not base:
         raise ValueError("El directorio base no puede estar vacío.")
     try:
@@ -449,7 +465,21 @@ def quarantine_file(
     reason: str = "Marcado como sospechoso",
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
-    """Ciclo completo: valida, aísla y registra en manifiesto."""
+    """
+    Ciclo completo: valida, aísla y registra en manifiesto un archivo sospechoso.
+
+    Args:
+        source: Ruta del archivo a poner en cuarentena.
+        reason: Motivo por el cual se aísla el archivo.
+        base: Directorio base de la cuarentena.
+
+    Returns:
+        QuarantineItem: El ítem registrado exitosamente en cuarentena.
+
+    Raises:
+        UnsafePathError: Si la operación viola las políticas de seguridad.
+        RuntimeError: Si ocurre un fallo técnico durante el aislamiento.
+    """
     if not source:
         raise ValueError("Ruta de origen vacía.")
     
@@ -503,7 +533,16 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Restaura un archivo de la cuarentena a su ruta original."""
+    """
+    Restaura un archivo de la cuarentena a su ruta original tras validaciones.
+
+    Returns:
+        Path: Ruta donde el archivo fue restaurado.
+
+    Raises:
+        KeyError: Si el ID del ítem no existe en el manifiesto.
+        UnsafePathError: Si la restauración se intenta hacer sobre una ruta protegida.
+    """
     if not item_id or not isinstance(item_id, str):
         raise ValueError("ID inválido.")
     base_path = quarantine_dir(base)
