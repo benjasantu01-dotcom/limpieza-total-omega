@@ -182,7 +182,7 @@ def _collect_candidates(
     """Recorre recursivamente los directorios seleccionados y filtra archivos elegibles."""
     size_map: Dict[int, List[Path]] = defaultdict(list)
 
-    def _scan_directory_recursive(current_dir: Path, root_base: Path) -> None:
+    def _scan_directory_recursive(current_dir: Path) -> None:
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -190,7 +190,7 @@ def _collect_candidates(
                         if entry.is_dir(follow_symlinks=False):
                             entry_path = Path(entry.path).resolve()
                             if not is_protected_path(entry_path) and not is_junction(entry_path):
-                                _scan_directory_recursive(entry_path, root_base)
+                                _scan_directory_recursive(entry_path)
                         elif entry.is_file(follow_symlinks=False):
                             st = _get_entry_stat(entry)
                             if st and st.st_size >= min_size and st.st_nlink == 1:
@@ -205,7 +205,7 @@ def _collect_candidates(
     if directories and isinstance(directories, Iterable):
         roots = {Path(r).resolve() for item in directories if (r := _resolve_and_verify_root(item))}
         for root in roots:
-            _scan_directory_recursive(root, root)
+            _scan_directory_recursive(root)
             
     return {size: files for size, files in size_map.items() if len(files) > 1}
 

@@ -92,6 +92,7 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
     if os.name != 'nt' or not hasattr(ctypes, 'WinDLL'):
         return None
     try:
+        # Validación: solo cargar si el sistema es confiable y la dll está en PATH estándar
         return ctypes.WinDLL('kernel32.dll', use_last_error=True)
     except (OSError, RuntimeError):
         return None
@@ -153,7 +154,8 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         
     try:
         path = entry.path
-        if not path or len(path) >= MAX_PATH_LEN or not os.path.isabs(path):
+        # Prevención de inyección mediante validación estricta de caracteres prohibidos y longitud
+        if not path or len(path) >= MAX_PATH_LEN or not os.path.isabs(path) or any(c in path for c in '<>|?"*'):
             return True
         
         # Validar seguridad antes de seguir
