@@ -242,7 +242,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
-    """Genera una secuencia de colores interpolados eficiente."""
+    """Genera una secuencia de colores interpolados eficiente entre N stops."""
     n = max(1, int(steps))
     if len(stops) < 2: return (stops[0],) * n
     
@@ -309,14 +309,11 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination or not isinstance(destination, (str, Path)): return None
     try:
         path_obj = Path(destination).resolve()
-        # Verificar seguridad antes de evaluar o modificar el sistema de archivos
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj): return None
         
-        # Validar el directorio padre antes de intentar crearlo
         parent = path_obj.parent
         if not is_safe_to_modify(parent) or is_protected_path(parent): return None
         
-        # Solo proceder si la ruta es validada como segura
         ensure_safe_to_modify(path_obj)
         parent.mkdir(parents=True, exist_ok=True)
         path_obj.write_text(logo_svg(), encoding="utf-8")
@@ -371,7 +368,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (ValueError, TypeError, AttributeError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[HexColor] = None, fill: Optional[HexColor] = None) -> None:
-    """Renderiza un gráfico circular de progreso sobre el canvas proporcionado."""
+    """Renderiza un gráfico circular de progreso sobre el canvas con manejo de errores defensivo."""
     try:
         if percent is None: return
         val = float(percent)
@@ -382,4 +379,5 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         caja = (canvas_x + borde, canvas_y + borde, canvas_x + diam - borde, canvas_y + diam - borde)
         canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)
         if val > 0: canvas.create_arc(*caja, start=90, extent=-(max(0.0, min(100.0, val)) / 100 * 359.9), style="arc", outline=fill or score_color(val), width=thick)
-    except (TypeError, ValueError, AttributeError): return
+    except (TypeError, ValueError, AttributeError, ZeroDivisionError): 
+        return

@@ -147,7 +147,7 @@ def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
         if val is None: return None
         try:
             return func(*args, **kwargs)
-        except (ValueError, TypeError, AttributeError, OverflowError):
+        except (ValueError, TypeError, AttributeError, OverflowError, KeyError):
             return None
     return wrapper
 
@@ -289,7 +289,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
                 content = json.load(f)
-            data = validate(content) if _is_dict(content) else DEFAULTS.copy()
+            # Validación adicional: asegurar que el JSON sea un objeto (dict)
+            if not _is_dict(content): return DEFAULTS.copy()
+            data = validate(content)
             _CACHE[ruta_str] = (mtime, data)
             return data.copy()
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
