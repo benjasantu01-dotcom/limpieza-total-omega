@@ -504,3 +504,9 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-06T14:43:33` ➖ Sin cambios en safety.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `ensure_safe_to_modify` ante errores de resolución de archivos y condiciones de carrera, añadiendo un chequeo explícito de existencia mediante `p.exists()` antes de invocar `_check_file_integrity`, lo que evita lanzamientos innecesarios de excepciones `FileNotFoundError` durante la validación.
 - `2026-09-06T14:43:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T14:43:33` Corrida terminada. Total usado hoy: 348.
+- `2026-09-06T14:52:05` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-06T14:52:34` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `scan_directory` y `_is_safe_entry` mediante la validación explícita de `None` y errores de tipo al procesar rutas, evitando posibles `AttributeError` o `ValueError` al interactuar con entradas del sistema de archivos potencialmente corruptas o mal formadas.
+- `2026-09-06T14:53:05` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` capturando excepciones específicas durante la escritura y validando la integridad del archivo resultante antes de realizar el reemplazo atómico, evitando que una escritura parcial o corrupta deje la configuración inaccesible.
+- `2026-09-06T14:53:05` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-09-06T14:53:05` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T14:53:05` Corrida terminada. Total usado hoy: 350.

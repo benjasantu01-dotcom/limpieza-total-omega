@@ -335,7 +335,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not parent.is_dir() or not os.access(parent, os.W_OK): return None
         if ruta.exists() and not os.access(ruta, os.W_OK): return None
         
-        # Validar espacio disponible (dejar al menos 1MB libre en disco)
         usage = shutil.disk_usage(parent)
         if usage.free < 1024 * 1024:
             return None
@@ -349,13 +348,14 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.flush()
             os.fsync(f.fileno())
         
-        if temp_path.stat().st_size != len(data):
-            raise OSError("Error al escribir archivo temporal de configuración.")
-        
+        # Verificar integridad del archivo temporal antes del reemplazo
+        with open(temp_path, "r", encoding="utf-8") as f:
+            json.load(f)
+            
         os.replace(temp_path, ruta)
         _CACHE[ruta_str] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta
-    except (OSError, IOError, PermissionError, RuntimeError, TypeError):
+    except (OSError, IOError, PermissionError, RuntimeError, TypeError, json.JSONDecodeError):
         return None
     finally:
         if temp_path and temp_path.exists():

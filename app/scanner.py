@@ -107,10 +107,11 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Determina si la ruta es descendiente estricta de la raíz de escaneo."""
+        if not entry_path: return False
         try:
             resolved_path = Path(entry_path).resolve(strict=False)
             return str(resolved_path).lower().startswith(self.base_root_str)
-        except OSError:
+        except (OSError, RuntimeError):
             return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
@@ -128,7 +129,7 @@ class Scanner:
                 return False
             
             return not is_protected_path(Path(path_str))
-        except (OSError, AttributeError):
+        except (OSError, AttributeError, TypeError):
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
