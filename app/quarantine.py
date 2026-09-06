@@ -377,7 +377,7 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
         _load_manifest_raw.cache_clear()
         return target_path
     except (OSError, TypeError, IOError) as e:
-        if temp_path and temp_path.exists():
+        if temp_path and isinstance(temp_path, Path) and temp_path.exists():
             try: os.remove(temp_path)
             except OSError: pass
         raise RuntimeError(f"Error crítico al persistir manifiesto: {e}")

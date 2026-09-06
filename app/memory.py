@@ -292,7 +292,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 @lru_cache(maxsize=8)
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """Clasifica el nivel de presión de memoria en cuatro estados semánticos."""
+    """Clasifica el nivel de presión de memoria en cuatro estados semáticos."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0: return "info"
     available = snapshot.available_percent
     if available >= 35: return "ok"
@@ -365,14 +365,13 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
             return False, "El proceso no está activo."
             
         exec_path = _get_process_path(proc_handle)
-        # La seguridad defensiva requiere una ruta validable; si no podemos leer el binario, es sospechoso.
         if not exec_path:
             return False, "No se pudo verificar el origen del proceso."
         if is_protected_path(exec_path) or not is_safe_to_modify(exec_path):
             return False, "Operación denegada por política de seguridad."
             
         return True, None
-    except Exception:
+    except (AttributeError, ValueError, ctypes.ArgumentError):
         return False, "Error interno durante la verificación de integridad."
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
@@ -393,14 +392,17 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
-        return False, f"Acceso denegado (código {kernel32.GetLastError()})."
+        err = kernel32.GetLastError()
+        return False, f"Acceso denegado (código {err})."
     
     try:
         is_safe, error_reason = _is_safe_to_trim(proc_handle, target_pid)
         if not is_safe: 
             return False, error_reason or "Verificación de seguridad fallida."
         if not psapi.EmptyWorkingSet(proc_handle): 
-            return False, "El sistema denegó la operación."
+            return False, "El sistema denegó la operación (EmptyWorkingSet falló)."
         return True, f"Working set liberado. {TRIM_WARNING}"
+    except Exception:
+        return False, "Error inesperado al intentar liberar el proceso."
     finally:
         kernel32.CloseHandle(proc_handle)

@@ -117,6 +117,7 @@ def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
     Determina si la entrada es un punto de reparse (Junction/Symlink).
     Previene bucles infinitos durante la recursión del escáner.
     """
+    if entry is None: return False
     is_sym = entry.is_symlink() if hasattr(entry, 'is_symlink') else Path(str(entry)).is_symlink()
     is_junction_attr = os.name == "nt" and bool(_get_win_attributes(entry) & 0x400)
     return is_sym or is_junction_attr
@@ -124,6 +125,7 @@ def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
 
 def _is_junk_path(path_str: str) -> bool:
     """Comprueba si la extensión del archivo coincide con las definidas en JUNK_EXTENSIONS."""
+    if not path_str: return False
     return os.path.splitext(path_str)[1].lower() in JUNK_EXTENSIONS
 
 
@@ -203,10 +205,13 @@ def _passes_system_checks(src: Path) -> bool:
 def _has_forbidden_chars(path: Path) -> bool:
     """Valida que la ruta no contenga caracteres o nombres de dispositivo reservados."""
     if path is None: return True
-    path_str: str = str(path).lower()
-    reserved: List[str] = ["con", "prn", "aux", "nul", "com1", "lpt1"]
-    if any(path_str.startswith(r) for r in reserved): return True
-    return any(c in str(path) for c in ["<", ">", "|", "\0"])
+    try:
+        path_str: str = str(path).lower()
+        reserved: List[str] = ["con", "prn", "aux", "nul", "com1", "lpt1"]
+        if any(path_str.startswith(r) for r in reserved): return True
+        return any(c in str(path) for c in ["<", ">", "|", "\0"])
+    except (ValueError, TypeError):
+        return True
 
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
@@ -263,7 +268,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """Verifica si el objeto JunkFile es seguro para ser movido a una ruta destino."""
-    if junk_file is None or not isinstance(junk_file, JunkFile): return False
+    if junk_file is None or not isinstance(junk_file, JunkFile) or dest is None: return False
     return junk_file.path is not None and junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
 
 
@@ -277,11 +282,10 @@ def _try_collect_junk(entry: os.DirEntry, found: List[JunkFile]) -> None:
     Valida un archivo individual y lo agrega a la lista si es basura confirmada 
     y pasa los chequeos de seguridad.
     """
-    if not _is_junk_path(entry.name):
+    if entry is None or not _is_junk_path(entry.name):
         return
         
     try:
-        # Validación temprana de la ruta real antes de stat para evitar bloqueos
         p = Path(entry.path).resolve()
         if is_protected_path(p):
             return
@@ -298,7 +302,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
     Recorre recursivamente directorios buscando archivos temporales.
     Aplica límite de profundidad (50) para prevenir desbordamiento de pila.
     """
-    if depth > 50 or not current_dir.exists(): return
+    if depth > 50 or current_dir is None or not current_dir.exists(): return
     try:
         with os.scandir(current_dir) as it:
             for entry in it:
