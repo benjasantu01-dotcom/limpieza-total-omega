@@ -223,7 +223,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de datos inválido."])
     
-    # Verificación de finitud defensiva pre-cálculo
     if not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de sistema corruptos."])
     
@@ -234,12 +233,15 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for area, weight, scorer, rules in _OPTIMIZED_PIPELINE:
         try:
             ratio = scorer(metrics)
+            if not math.isfinite(ratio):
+                ratio = 0.0
             pts = int(round(ratio * weight))
             metric_breakdown[area] = pts
             total_pts += pts
             if rules:
                 recommendations.extend(_evaluate_rules(metrics, rules, ratio))
         except (ValueError, TypeError, ZeroDivisionError):
+            metric_breakdown[area] = 0
             continue
             
     final_score = int(_clamp(float(total_pts), 0.0, 100.0))

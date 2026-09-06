@@ -283,9 +283,9 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path): continue
+        if not isinstance(p, Path) or not p.is_file(): 
+            continue
         try:
-            if not p.is_file(): continue
             stat_info = p.stat()
             candidates.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError):
@@ -307,7 +307,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
     try:
         mb_total = round(group.size_bytes / (1024 * 1024), 2)
         mb_wasted = round(group.wasted_bytes / (1024 * 1024), 2)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, ZeroDivisionError):
         return []
 
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
@@ -318,14 +318,12 @@ def format_group(group: DuplicateGroup) -> List[str]:
         try:
             if not path.exists():
                 lines.append(f"   [desaparecido] {path}")
-                continue
             elif not _is_valid_candidate(path):
                 lines.append(f"   [inaccesible] {path}")
-                continue
+            else:
+                label = 'conservar' if keeper is not None and path == keeper else 'duplicado'
+                lines.append(f"   [{label}] {path}")
         except (OSError, PermissionError):
             lines.append(f"   [error] {path}")
-            continue
-        
-        label = 'conservar' if keeper is not None and path == keeper else 'duplicado'
-        lines.append(f"   [{label}] {path}")
+            
     return lines

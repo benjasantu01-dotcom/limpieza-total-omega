@@ -1157,6 +1157,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             metrics, snapshot, _ = self._compile_metrics()
             resultado = healthscore.compute_score(metrics)
 
+            if not self.assistant_context:
+                self.assistant_context = assistant.SystemContext()
+            
             self.assistant_context = assistant.build_context(
                 metrics=metrics, health=resultado,
                 memory_total_gb=snapshot.total / (1024 ** 3) if (snapshot and snapshot.total) else 0.0,
@@ -1765,7 +1768,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     def _validate_numeric_setting(self, value: Any, default: int) -> int:
-        """Valida que una entrada numérica sea válida."""
+        """Valida que una entrada numérica sea válida y positiva."""
         try:
             if value is None: return default
             val = int(str(value).strip())
