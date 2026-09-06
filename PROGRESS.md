@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **250** (49.6% de aceptación)
+- Mejoras aceptadas: **253** (50.2% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 36
+- Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 187
+- Sin respuesta de la IA (error o límite): 183
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 147 | 13 | 22 | 12 | 114 |
-| 2026-09-06 | 103 | 1 | 14 | 5 | 73 |
+| 2026-09-05 | 147 | 13 | 22 | 12 | 110 |
+| 2026-09-06 | 106 | 1 | 15 | 5 | 73 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - robustez ante casos límite: **55**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **47**
+- seguridad defensiva: **50**
 - rendimiento: **43**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
 - `memory.py`: **22**
+- `scanner.py`: **20**
 - `assistant.py`: **20**
 - `duplicates.py`: **20**
 - `healthscore.py`: **19**
-- `scanner.py`: **19**
+- `safety.py`: **19**
+- `settings.py`: **19**
 - `browser.py`: **18**
 - `organizer.py`: **18**
-- `safety.py`: **18**
-- `settings.py`: **18**
 - `branding.py`: **17**
 - `main.py`: **14**
 - `quarantine.py`: **14**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-06T08:26:00` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` aplicando `ensure_safe_to_modify` sobre el directorio padre antes de realizar operaciones de archivo, asegurando que la estructura de directorios destino sea válida y segura antes de proceder con el reemplazo atómico.
+- `2026-09-06T08:25:45` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva en `scanner.py` implementando una validación estricta de "Path Traversal" antes de procesar cualquier entrada, asegurando que `entry.path` no solo se compare con la raíz base, sino que se resuelva contra `base_root` para prevenir ataques de rutas relativas o simbólicas que apunten fuera del directorio escaneado.
+- `2026-09-06T08:25:20` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_protected_path` al asegurar que la detección de rutas protegidas se realice sobre la ruta absoluta normalizada, evitando brechas de seguridad por resolución inconsistente de rutas relativas o aliases de sistema, cumpliendo estrictamente con el enfoque de seguridad defensiva.
 - `2026-09-06T08:16:47` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `purge_all` mediante una validación de ruta estricta utilizando `is_within_directory` para asegurar que ningún archivo fuera del sandbox de cuarentena sea procesado, incluso en caso de manipulación manual del directorio o errores de iteración del sistema de archivos.
 - `2026-09-06T08:16:01` **memory.py** (seguridad defensiva): Se reforzó la seguridad de `trim_working_set` añadiendo una validación explícita mediante `is_safe_to_modify` sobre el ejecutable del proceso antes de solicitar cualquier cambio de estado, asegurando que no se operen procesos ubicados en rutas restringidas.
 - `2026-09-06T08:15:32` **main.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_worker_thread_logic` moviendo la validación `ensure_path_writable_and_clean` fuera del `try` principal y eliminando el chequeo redundante en `run_async`, garantizando que toda tarea que pase al ejecutor sea validada obligatoriamente antes de procesarse, previniendo errores de concurrencia y acceso a rutas no permitidas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T07:54:28` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante errores de entrada y concurrencia implementando un chequeo de integridad previo al parseo JSON y añadiendo un bloqueo de archivo básico (`os.replace` ya es atómico en Windows/POSIX, pero ahora se asegura que el archivo resultante sea accesible antes de actualizar el caché).
 - `2026-09-06T07:45:20` **scanner.py** (robustez ante casos límite): Se mejora la robustez del escáner ante condiciones de carrera y archivos inconsistentes añadiendo un chequeo explícito en `process_entry` para verificar si un archivo desaparece entre la enumeración (`os.scandir`) y su análisis, evitando excepciones innecesarias.
 - `2026-09-06T07:44:18` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallos en el sistema de archivos durante el aislamiento, asegurando que si ocurre cualquier error (como desconexión de unidad o falta de espacio) entre la creación del archivo temporal y la persistencia del manifiesto, el sistema no deje archivos huérfanos en la cuarentena ni pierda sincronía.
-- `2026-09-06T07:39:20` **organizer.py** (robustez ante casos límite): Se mejora la robustez frente a bloqueos del sistema de archivos al añadir un manejo explícito para el caso en que `shutil.disk_usage` falle (por ejemplo, en unidades de red desconectadas o volúmenes especiales), evitando así que `_can_move_file` retorne `None` erróneamente en entornos donde el espacio es accesible pero la llamada `disk_usage` lanza una excepción.
-- `2026-09-06T07:38:55` **memory.py** (robustez ante casos límite): Se mejora la robustez de `parse_windows_process_csv` agregando una validación explícita para evitar que entradas de procesos con nombres de ruta vacíos o malformados (que podrían surgir de errores en el comando PowerShell) se filtren como objetos `ProcessMemory` válidos.
-- `2026-09-06T07:38:26` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante el cierre inesperado o concurrente de la aplicación, implementando una comprobación de existencia de `self.tabview` y `self.activity` en los métodos de callback asíncronos y de UI para prevenir excepciones `TclError` o `AttributeError` cuando el hilo principal procesa eventos durante el shutdown.

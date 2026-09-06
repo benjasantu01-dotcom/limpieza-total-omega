@@ -320,7 +320,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         ensure_safe_to_modify(ruta_str)
         
         parent = ruta.parent
-        if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
+        if not parent.exists():
+            ensure_safe_to_modify(str(parent))
+            parent.mkdir(parents=True, exist_ok=True)
         if not parent.is_dir(): return None
         
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
