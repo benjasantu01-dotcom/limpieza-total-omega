@@ -563,10 +563,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._health_bars_initialized = True
 
     def _build_single_health_bar(self, container: ctk.CTkFrame, clave: str, etiqueta: str, row_idx: int) -> None:
-        """
-        Renderiza una barra de progreso individual para un área de salud específica,
-        ajustando el color según el puntaje obtenido en `healthscore`.
-        """
+        """Renderiza el layout de una barra de progreso para un área de salud."""
         self._create_styled_label(container, etiqueta, "body", anchor="w", width=150).grid(row=row_idx, column=0, sticky="w", pady=4)
         
         barra = ctk.CTkProgressBar(
@@ -580,6 +577,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         valor_label = self._create_styled_label(container, "-", "caption", width=64, anchor="e")
         valor_label.grid(row=row_idx, column=2, sticky="e", pady=4)
         self.area_bars[clave] = (barra, valor_label)
+
+    def _update_health_bar_ui(self, barra: ctk.CTkProgressBar, label: ctk.CTkLabel, puntos: float, maximo: int) -> None:
+        """Aplica los cambios de estado a los widgets de una barra de salud."""
+        proporcion = puntos / maximo if maximo else 0
+        c = branding.score_color(proporcion * 100)
+        barra.configure(progress_color=c)
+        barra.set(proporcion)
+        label.configure(text=f"{puntos:.0f}/{maximo}", text_color=c)
 
     def _draw_gauge(self, score: int, grade: str) -> None:
         """Solicita el renderizado del indicador circular de salud."""
@@ -1222,11 +1227,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if barra.winfo_exists():
                 puntos = resultado.breakdown.get(clave, 0)
                 maximo = healthscore.WEIGHTS.get(clave, 1)
-                proporcion = puntos / maximo if maximo else 0
-                c = branding.score_color(proporcion * 100)
-                barra.configure(progress_color=c)
-                barra.set(proporcion)
-                label.configure(text=f"{puntos:.0f}/{maximo}", text_color=c)
+                self._update_health_bar_ui(barra, label, puntos, maximo)
 
     @validated_ui_operation
     def on_target_choice_changed(self, choice: str) -> None:

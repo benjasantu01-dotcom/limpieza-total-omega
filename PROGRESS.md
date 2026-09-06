@@ -9,43 +9,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **242** (48.0% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 33
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 202
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 122 | 9 | 17 | 10 | 94 |
-| 2026-09-06 | 120 | 2 | 16 | 6 | 108 |
+| 2026-09-05 | 119 | 9 | 17 | 10 | 93 |
+| 2026-09-06 | 123 | 2 | 16 | 7 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **55**
-- legibilidad y documentación: **51**
+- robustez ante casos límite: **54**
+- legibilidad y documentación: **54**
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **49**
-- rendimiento: **37**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `memory.py`: **21**
-- `scanner.py`: **20**
-- `assistant.py`: **20**
-- `settings.py`: **19**
+- `assistant.py`: **19**
 - `duplicates.py`: **19**
+- `scanner.py`: **19**
 - `healthscore.py`: **18**
+- `settings.py`: **18**
+- `organizer.py`: **18**
 - `browser.py`: **17**
 - `safety.py`: **17**
 - `branding.py`: **17**
-- `organizer.py`: **17**
-- `quarantine.py`: **14**
+- `quarantine.py`: **15**
+- `main.py`: **12**
 - `startup.py`: **11**
-- `main.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-06T10:50:00` **quarantine.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y `_generate_safe_stored_name`, extrayendo la lógica de saneamiento de caracteres a una función auxiliar con nombre claro y documentando explícitamente las restricciones del sistema de archivos.
+- `2026-09-06T10:49:42` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints de retorno explícitos en funciones que carecían de ellos y se añadió una validación defensiva de tipo en `_is_junk_path` para garantizar la robustez ante entradas inesperadas, cumpliendo con el enfoque de legibilidad y tipado estricto.
+- `2026-09-06T10:48:46` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `main.py` mediante la refactorización de `_build_single_health_bar`, extrayendo la lógica de configuración visual a una función auxiliar (`_update_health_bar_ui`) para separar el cálculo del estado de la manipulación directa de la interfaz (widgets).
 - `2026-09-06T10:39:17` **healthscore.py** (legibilidad y documentación): He mejorado la documentación y la expresividad del código mediante la adición de Type Hints más precisos y la conversión de comentarios genéricos en Docstrings estructurados siguiendo estándares de calidad profesional, facilitando la comprensión del flujo de datos en el pipeline.
 - `2026-09-06T10:39:05` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones privadas de escaneo y procesamiento, aclarando las responsabilidades de cada etapa en el flujo de trabajo de deduplicación.
 - `2026-09-06T10:38:39` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de recorrido y análisis mediante docstrings explicativos sobre las limitaciones de acceso y la lógica de exclusión de seguridad, garantizando que un colaborador entienda el "porqué" de las decisiones técnicas en el manejo de errores de disco.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T10:18:26` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y estados del sistema de archivos inconsistentes, asegurando que `_check_file_integrity` no falle al intentar acceder a metadatos de archivos que podrían haber desaparecido entre la verificación de existencia y la obtención de atributos.
 - `2026-09-06T10:17:36` **quarantine.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `quarantine_file` y `restore_item` mediante una validación de `None` y tipos antes de realizar operaciones críticas de archivo, evitando fallos inesperados al procesar rutas, además de centralizar el manejo de errores en `quarantine_dir` para asegurar que retorne siempre un objeto `Path` válido antes de continuar con la lógica de negocio.
 - `2026-09-06T10:09:12` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la validación de los parámetros de entrada en `scan_for_junk` y `stage_for_review` para prevenir ejecuciones con datos malformados, capturando de manera más robusta posibles errores en la expansión de rutas o en la estructura de los directorios, asegurando que el bucle de procesamiento siempre reciba tipos y valores esperados.
-- `2026-09-06T09:56:42` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` al reemplazar el manejo de excepciones genérico por uno específico, validando el tipo de `destination` antes de procesar para evitar errores en tiempo de ejecución al llamar a `Path()`.
-- `2026-09-06T09:49:38` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `handle_score` y `_format_problem_message` añadiendo validaciones específicas de tipos y manejo de errores ante datos ausentes o mal formados, asegurando que la interfaz no falle ante un `SystemContext` con valores inesperados.
-- `2026-09-06T08:26:00` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` aplicando `ensure_safe_to_modify` sobre el directorio padre antes de realizar operaciones de archivo, asegurando que la estructura de directorios destino sea válida y segura antes de proceder con el reemplazo atómico.

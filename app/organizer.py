@@ -133,6 +133,8 @@ def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
 
 def _is_junk_path(path_str: str) -> bool:
     """Delegado para verificar extensión mediante `is_valid_junk_extension`."""
+    if not isinstance(path_str, str):
+        return False
     return is_valid_junk_extension(path_str)
 
 

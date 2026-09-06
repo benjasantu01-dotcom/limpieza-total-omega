@@ -167,7 +167,7 @@ def _is_file_locked(path: Path) -> bool:
 
 def _safe_unlink(path: Path) -> bool:
     """
-    Elimina un archivo del sistema de archivos tras verificar su seguridad.
+    Elimina un archivo tras validaciones de seguridad: propiedad y bloqueo.
     """
     if not isinstance(path, Path) or not path.exists() or not path.is_file():
         return False
@@ -175,6 +175,7 @@ def _safe_unlink(path: Path) -> bool:
         return False
         
     try:
+        # Validación de propiedad en entornos POSIX
         if hasattr(os, 'getuid') and path.stat().st_uid != os.getuid():
             return False
             
@@ -185,14 +186,19 @@ def _safe_unlink(path: Path) -> bool:
     except (OSError, PermissionError):
         return False
 
+def _sanitize_filename(filename: str) -> str:
+    """Extrae caracteres alfanuméricos seguros para nombres de archivos."""
+    return "".join(c for c in filename if c.isalnum() or c in "._-")
+
 def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
-    """Normaliza nombres para evitar caracteres especiales o reservados."""
-    sanitized = "".join(c for c in original_path.name if c.isalnum() or c in "._-")
+    """Normaliza nombres para evitar caracteres especiales o reservados de Windows."""
+    sanitized = _sanitize_filename(original_path.name)
     if not sanitized or sanitized in (".", ".."):
         sanitized = "unknown_file"
         
     parts = sanitized.split('.')
     name_base = parts[0] if parts[0] else "q_file"
+    # Previene colisión con dispositivos reservados de Windows (NUL, CON, etc.)
     if name_base.upper() in WINDOWS_RESERVED_NAMES:
         name_base = f"q_{name_base}"
     
