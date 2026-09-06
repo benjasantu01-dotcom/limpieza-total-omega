@@ -306,7 +306,7 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda una copia física del archivo logo.svg tras verificar integridad y seguridad."""
-    if not destination: return None
+    if not destination or not isinstance(destination, (str, Path)): return None
     try:
         path_obj = Path(destination).resolve()
         # Verificar seguridad antes de evaluar o modificar el sistema de archivos
@@ -321,7 +321,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         parent.mkdir(parents=True, exist_ok=True)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
-    except (OSError, PermissionError, RuntimeError): return None
+    except (OSError, PermissionError): return None
 
 def logo_ascii() -> str:
     """Retorna una representación artística del logo en caracteres ASCII."""

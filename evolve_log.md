@@ -1089,3 +1089,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-06T09:49:38` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `handle_score` y `_format_problem_message` añadiendo validaciones específicas de tipos y manejo de errores ante datos ausentes o mal formados, asegurando que la interfaz no falle ante un `SystemContext` con valores inesperados.
 - `2026-09-06T09:49:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T09:49:38` Corrida terminada. Total usado hoy: 232.
+- `2026-09-06T09:56:08` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-09-06T09:56:42` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` al reemplazar el manejo de excepciones genérico por uno específico, validando el tipo de `destination` antes de procesar para evitar errores en tiempo de ejecución al llamar a `Path()`.
+- `2026-09-06T09:57:08` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-06T09:57:33` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-06T09:57:43` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-06T09:57:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T09:57:43` Corrida terminada. Total usado hoy: 236.

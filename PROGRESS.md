@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **238** (47.2% de aceptación)
+- Mejoras aceptadas: **237** (47.0% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 200
+- Rechazadas por guardia de seguridad: 35
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 131 | 11 | 21 | 12 | 97 |
-| 2026-09-06 | 107 | 2 | 15 | 5 | 103 |
+| 2026-09-05 | 129 | 11 | 20 | 11 | 97 |
+| 2026-09-06 | 108 | 2 | 15 | 5 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **55**
 - seguridad defensiva: **50**
-- legibilidad y documentación: **48**
+- legibilidad y documentación: **46**
 - rendimiento: **43**
-- manejo de errores y validación de entradas: **42**
+- manejo de errores y validación de entradas: **43**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
 - `diskreport.py`: **21**
+- `memory.py`: **21**
 - `assistant.py`: **20**
 - `duplicates.py`: **19**
 - `scanner.py`: **19**
 - `safety.py`: **18**
 - `settings.py`: **18**
-- `organizer.py`: **17**
+- `branding.py`: **17**
 - `healthscore.py`: **17**
-- `branding.py`: **16**
 - `browser.py`: **16**
+- `organizer.py`: **16**
 - `quarantine.py`: **13**
 - `main.py`: **12**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-06T09:56:42` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` al reemplazar el manejo de excepciones genérico por uno específico, validando el tipo de `destination` antes de procesar para evitar errores en tiempo de ejecución al llamar a `Path()`.
 - `2026-09-06T09:49:38` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `handle_score` y `_format_problem_message` añadiendo validaciones específicas de tipos y manejo de errores ante datos ausentes o mal formados, asegurando que la interfaz no falle ante un `SystemContext` con valores inesperados.
 - `2026-09-06T08:26:00` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` aplicando `ensure_safe_to_modify` sobre el directorio padre antes de realizar operaciones de archivo, asegurando que la estructura de directorios destino sea válida y segura antes de proceder con el reemplazo atómico.
 - `2026-09-06T08:25:45` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva en `scanner.py` implementando una validación estricta de "Path Traversal" antes de procesar cualquier entrada, asegurando que `entry.path` no solo se compare con la raíz base, sino que se resuelva contra `base_root` para prevenir ataques de rutas relativas o simbólicas que apunten fuera del directorio escaneado.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T07:56:18` **assistant.py** (seguridad defensiva): Mejoré la seguridad en la gestión de configuraciones del asistente validando estrictamente el campo `model` contra `_MODEL_NAME_REGEX` antes de usarlo para construir URLs, evitando posibles inyecciones de parámetros en el endpoint.
 - `2026-09-06T07:55:08` **startup.py** (robustez ante casos límite): Mejora la robustez ante permisos denegados durante el escaneo de directorios al envolver `entry.is_file()` en una verificación explícita de `entry.path` y añadir un manejo de excepciones más granular, asegurando que un acceso denegado a un solo archivo no interrumpa el inventario de otras entradas legítimas.
 - `2026-09-06T07:54:28` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante errores de entrada y concurrencia implementando un chequeo de integridad previo al parseo JSON y añadiendo un bloqueo de archivo básico (`os.replace` ya es atómico en Windows/POSIX, pero ahora se asegura que el archivo resultante sea accesible antes de actualizar el caché).
-- `2026-09-06T07:45:20` **scanner.py** (robustez ante casos límite): Se mejora la robustez del escáner ante condiciones de carrera y archivos inconsistentes añadiendo un chequeo explícito en `process_entry` para verificar si un archivo desaparece entre la enumeración (`os.scandir`) y su análisis, evitando excepciones innecesarias.
