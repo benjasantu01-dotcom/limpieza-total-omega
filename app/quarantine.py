@@ -168,18 +168,15 @@ def _safe_unlink(path: Path) -> bool:
     """
     Elimina un archivo del sistema de archivos tras verificar su seguridad.
 
-    Args:
-        path: Objeto Path del archivo a eliminar.
-
-    Returns:
-        True si el archivo fue eliminado, False si la ruta no es segura,
-        está bloqueada o no existe.
+    Verifica que el archivo exista, sea un archivo regular, no sea un enlace,
+    pertenezca al usuario actual (en POSIX) y cumpla las políticas de `safety.py`.
     """
-    if not isinstance(path, Path) or path is None:
+    if not isinstance(path, Path) or not path.exists() or not path.is_file():
         return False
+    if path.is_symlink():
+        return False
+        
     try:
-        if not path.exists() or not path.is_file() or path.is_symlink():
-            return False
         if hasattr(os, 'getuid') and path.stat().st_uid != os.getuid():
             return False
             
@@ -605,17 +602,21 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
-    """Verifica si un ítem cumple los requisitos para purga automática."""
-    try:
-        if not file_path.is_file() or not _is_within_quarantine_sandbox(file_path, base_path):
-            return False
-        return (
-            item.verify_integrity(file_path) and
-            not _is_file_locked(file_path) and
-            is_safe_to_modify(file_path)
-        )
-    except (OSError, PermissionError):
+    """
+    Verifica si un ítem cumple los requisitos para purga automática.
+
+    Valida la integridad del archivo y confirma que el archivo esté desbloqueado
+    y dentro de las políticas de seguridad (usando is_safe_to_modify).
+    """
+    if not file_path.is_file() or not _is_within_quarantine_sandbox(file_path, base_path):
         return False
+    
+    # Comprobación de seguridad mediante políticas del sistema
+    if not is_safe_to_modify(file_path):
+        return False
+        
+    # Comprobación de estado técnico e integridad
+    return item.verify_integrity(file_path) and not _is_file_locked(file_path)
 
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:

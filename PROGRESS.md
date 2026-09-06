@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **236** (46.8% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 202
 
@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-04 | 5 | 1 | 0 | 0 | 0 |
+| 2026-09-04 | 2 | 0 | 0 | 0 | 0 |
 | 2026-09-05 | 164 | 13 | 24 | 14 | 135 |
-| 2026-09-06 | 67 | 1 | 10 | 3 | 67 |
+| 2026-09-06 | 70 | 1 | 11 | 3 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **53**
+- legibilidad y documentación: **52**
+- robustez ante casos límite: **51**
 - manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **49**
-- legibilidad y documentación: **49**
-- rendimiento: **35**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `settings.py`: **19**
-- `assistant.py`: **19**
+- `memory.py`: **20**
 - `duplicates.py`: **19**
-- `memory.py`: **19**
 - `browser.py`: **18**
 - `healthscore.py`: **18**
+- `organizer.py`: **18**
 - `safety.py`: **18**
 - `scanner.py`: **18**
-- `branding.py`: **17**
-- `organizer.py`: **17**
+- `assistant.py`: **18**
+- `settings.py`: **18**
+- `branding.py`: **16**
+- `quarantine.py`: **12**
 - `main.py`: **12**
-- `quarantine.py`: **11**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-06T06:23:37` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `quarantine.py` mediante la refactorización de `_safe_unlink` y `_is_item_purgable` para reducir la complejidad ciclomática y mejorar la claridad de los filtros de seguridad, asegurando que sigan cumpliendo estrictamente con las políticas de acceso requeridas.
+- `2026-09-06T06:23:02` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `organizer.py` mediante la adición de docstrings estructuradas en las funciones auxiliares de validación, clarificando las precondiciones, el propósito de seguridad de cada chequeo y los posibles efectos colaterales de las operaciones de disco.
+- `2026-09-06T06:22:33` **memory.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros y retornos de las funciones que faltaban (como `diagnose`, `_read_windows_snapshot`, `_get_process_path`) y se documentaron los parámetros de las funciones de parseo para mejorar la claridad del contrato de datos.
 - `2026-09-06T06:14:10` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de inicialización en `__init__` extrayendo la configuración de estados y componentes a un método dedicado `_init_components`, y añadiendo docstrings descriptivos a los métodos de construcción de la UI.
 - `2026-09-06T06:13:11` **healthscore.py** (legibilidad y documentación): He mejorado la documentación interna y la legibilidad mediante la adición de Type Hints más precisos, documentación de los parámetros en `compute_score` y `summarize`, y la clarificación de las responsabilidades de las constantes de configuración, lo que facilita el mantenimiento del pipeline ante futuros cambios en los pesos de salud.
 - `2026-09-06T06:12:44` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las estrategias de hashing y los criterios de exclusión, añadiendo además type hints en funciones internas para clarificar las expectativas de los datos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T05:52:46` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_safe_entry` y `scan_directory` validando explícitamente que los parámetros de entrada no sean nulos o vacíos antes de realizar operaciones de sistema, mitigando riesgos de errores en tiempo de ejecución.
 - `2026-09-06T05:52:21` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` capturando excepciones específicas durante la verificación de integridad y evitando el uso de bloques `try-except` demasiado genéricos que podrían ocultar errores de programación, asegurando además que `is_safe_to_modify` sea consistente con el manejo de errores de validación de `Path`.
 - `2026-09-06T05:42:30` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_collect_settings` agregando un manejo de errores más específico y defensivo, asegurando que si la interfaz falla al recuperar los valores de los widgets (por ejemplo, durante el cierre de la app o si un widget ha sido destruido), la aplicación no aborte y preserve la integridad de la configuración.
-- `2026-09-06T05:32:41` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `compute_score` implementando una validación explícita para asegurar que las métricas posean valores lógicos (como porcentajes de memoria dentro de rangos válidos) mediante la verificación de `is_finite` antes de procesar el pipeline y capturando errores inesperados durante el cálculo de los scorers.
-- `2026-09-06T05:32:31` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` añadiendo validaciones explícitas de tipo y estado para evitar excepciones innecesarias y mejorar la consistencia con el manejo de errores del resto de la app.
-- `2026-09-06T05:32:06` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas al acceder a los metadatos de archivos y normalizando las entradas de usuario, evitando que errores de acceso (como `FileNotFoundError` o `PermissionError`) interrumpan el análisis completo sin previo aviso.

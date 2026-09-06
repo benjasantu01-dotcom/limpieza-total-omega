@@ -203,7 +203,8 @@ def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[Pr
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Analiza la salida CSV de PowerShell y filtra procesos según políticas de seguridad.
+    Analiza la salida CSV de PowerShell (espera: Name,PID,WorkingSet) 
+    y filtra procesos según políticas de seguridad.
     """
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
@@ -223,7 +224,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     return sorted(process_generator(), key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Invoca la API de Windows GlobalMemoryStatusEx mediante ctypes."""
+    """Invoca la API de Windows GlobalMemoryStatusEx mediante ctypes. Retorna MemorySnapshot."""
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "GlobalMemoryStatusEx"):
         return MemorySnapshot(BytesValue(0), BytesValue(0))
@@ -299,7 +300,10 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
     return "danger"
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Genera reporte textual legible con recomendaciones basadas en el estado de memoria."""
+    """
+    Genera reporte textual legible con recomendaciones basadas en el estado de memoria.
+    Recibe un snapshot de memoria y una lista opcional de procesos observados.
+    """
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
     
