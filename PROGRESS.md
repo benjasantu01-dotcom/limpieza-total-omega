@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Mejoras aceptadas: **235** (46.6% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 202
 
@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-04 | 2 | 0 | 0 | 0 | 0 |
-| 2026-09-05 | 164 | 13 | 24 | 14 | 135 |
-| 2026-09-06 | 70 | 1 | 11 | 3 | 67 |
+| 2026-09-05 | 162 | 13 | 24 | 14 | 135 |
+| 2026-09-06 | 73 | 1 | 12 | 3 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
-- robustez ante casos límite: **51**
+- legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **49**
+- robustez ante casos límite: **47**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **21**
 - `memory.py`: **20**
-- `duplicates.py`: **19**
-- `browser.py`: **18**
-- `healthscore.py`: **18**
+- `safety.py`: **19**
+- `scanner.py`: **19**
 - `organizer.py`: **18**
-- `safety.py`: **18**
-- `scanner.py`: **18**
 - `assistant.py`: **18**
 - `settings.py`: **18**
+- `duplicates.py`: **18**
+- `browser.py`: **17**
+- `healthscore.py`: **17**
 - `branding.py`: **16**
 - `quarantine.py`: **12**
 - `main.py`: **12**
-- `startup.py`: **9**
+- `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-06T06:33:52` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de procesamiento, la estandarización de las descripciones de los métodos en la clase `StartupEntry` para clarificar la lógica de resolución de rutas y la eliminación de redundancias en los comentarios para mejorar la mantenibilidad del código.
+- `2026-09-06T06:33:12` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del módulo `scanner.py` mediante la adición de Type Hints detallados en la clase `Scanner`, la documentación explícita del comportamiento de `_is_reparse_point` (explicando la gestión de errores como medida de seguridad conservadora) y la estandarización de la estructura de las funciones de chequeo mediante una docstring uniforme.
+- `2026-09-06T06:32:47` **safety.py** (legibilidad y documentación): Se introdujo documentación técnica detallada mediante docstrings explicativos en las funciones de validación crítica y se añadieron type hints ausentes para mejorar la claridad del contrato de datos, facilitando el mantenimiento y la auditoría del módulo `safety.py`.
 - `2026-09-06T06:23:37` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `quarantine.py` mediante la refactorización de `_safe_unlink` y `_is_item_purgable` para reducir la complejidad ciclomática y mejorar la claridad de los filtros de seguridad, asegurando que sigan cumpliendo estrictamente con las políticas de acceso requeridas.
 - `2026-09-06T06:23:02` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `organizer.py` mediante la adición de docstrings estructuradas en las funciones auxiliares de validación, clarificando las precondiciones, el propósito de seguridad de cada chequeo y los posibles efectos colaterales de las operaciones de disco.
 - `2026-09-06T06:22:33` **memory.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros y retornos de las funciones que faltaban (como `diagnose`, `_read_windows_snapshot`, `_get_process_path`) y se documentaron los parámetros de las funciones de parseo para mejorar la claridad del contrato de datos.
@@ -59,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T06:02:44` **assistant.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de manejo de respuestas (`handle_*`) para clarificar el flujo de decisión, mejorando la legibilidad y mantenimiento del código sin alterar la funcionalidad.
 - `2026-09-06T06:02:07` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_registry_csv` al implementar un manejo de errores más estricto durante la lectura del CSV, asegurando que los valores faltantes o malformados no detengan el procesamiento de otras entradas válidas y validando explícitamente la integridad de los datos antes de crear objetos `StartupEntry`.
 - `2026-09-06T05:53:01` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save` mediante el uso de `try-finally` para asegurar la limpieza de archivos temporales y se ha reemplazado la validación de `shutil.disk_usage` por una verificación de escritura más segura que evita errores en sistemas sin soporte para esta llamada, además de refactorizar la lógica de `validate` para ser más tolerante a errores en claves desconocidas.
-- `2026-09-06T05:52:46` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_safe_entry` y `scan_directory` validando explícitamente que los parámetros de entrada no sean nulos o vacíos antes de realizar operaciones de sistema, mitigando riesgos de errores en tiempo de ejecución.
-- `2026-09-06T05:52:21` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` capturando excepciones específicas durante la verificación de integridad y evitando el uso de bloques `try-except` demasiado genéricos que podrían ocultar errores de programación, asegurando además que `is_safe_to_modify` sea consistente con el manejo de errores de validación de `Path`.
-- `2026-09-06T05:42:30` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_collect_settings` agregando un manejo de errores más específico y defensivo, asegurando que si la interfaz falla al recuperar los valores de los widgets (por ejemplo, durante el cierre de la app o si un widget ha sido destruido), la aplicación no aborte y preserve la integridad de la configuración.

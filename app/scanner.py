@@ -60,19 +60,13 @@ MAX_PATH_LENGTH: Final[int] = 260
 WIN_FILE_ATTR_REPARSE_POINT: Final[int] = 0x400
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Analiza si el nombre del archivo contiene una extensión de documento 
-    seguida de una de ejecutable, una técnica común de ingeniería social.
-    """
+    """Analiza si el archivo usa extensiones dobles, técnica común para engañar al usuario."""
     if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Evalúa si un archivo ejecutable se creó en directorios de usuario 
-    monitorizados en las últimas 24 horas, indicando potencial actividad reciente.
-    """
+    """Evalúa si un ejecutable reciente (<24h) fue descargado en carpetas de usuario monitorizadas."""
     if path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     
@@ -85,10 +79,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Verifica si un ejecutable intenta suplantar procesos críticos de sistema.
-    Filtra falsos positivos asegurándose de que el archivo real de sistema esté en System32.
-    """
+    """Verifica si el nombre de un archivo intenta suplantar procesos críticos fuera de System32."""
     name_low = path.name.lower()
     if name_low in SYSTEM_LOOKALIKES:
         path_str = str(path).lower()
@@ -105,14 +96,12 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 class Scanner:
     """
     Controlador de estado para el escaneo recursivo del sistema de archivos.
-    Utiliza un conjunto 'seen' para evitar ciclos y una pila para recorrido DFS,
-    asegurando que solo se analicen rutas dentro del 'base_root' configurado.
     """
     
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root_str = str(base_root.resolve(strict=False)).lower()
+        self.base_root_str: str = str(base_root.resolve(strict=False)).lower()
         if not self.base_root_str.endswith(os.sep):
             self.base_root_str += os.sep
         self.now_ts: float = datetime.now().timestamp()
@@ -123,10 +112,7 @@ class Scanner:
         return low_path.startswith(self.base_root_str) or low_path == self.base_root_str.rstrip(os.sep)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """
-        Valida integridad de la entrada: longitud máxima, nombres reservados de Windows,
-        caracteres RTL ofuscadores y restricciones de seguridad de safety.py.
-        """
+        """Valida integridad, nombres reservados, caracteres prohibidos y restricciones de safety.py."""
         try:
             path_str = entry.path
             if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
@@ -145,8 +131,8 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
-        Detecta puntos de reparse (Junctions, Symlinks) consultando atributos de archivo.
-        Es crítico para evitar bucles infinitos en el sistema de archivos.
+        Detecta puntos de reparse (Junctions, Symlinks).
+        Si hay error al consultar atributos, se asume True (evitar recursión por seguridad).
         """
         try:
             if entry.is_symlink():
@@ -156,16 +142,13 @@ class Scanner:
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
-        """Agrega un directorio a la cola si no ha sido visitado previamente."""
+        """Agrega un directorio a la pila de exploración si no ha sido procesado."""
         if entry.path and entry.path not in self.seen:
             self.seen.add(entry.path)
             stack.append(entry.path)
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
-        """
-        Clasifica una entrada. Si es directorio, lo agrega a la cola; 
-        si es archivo, delega el análisis heurístico según su extensión.
-        """
+        """Clasifica una entrada según su tipo y aplica heurísticas si es necesario."""
         if not self._is_safe_entry(entry):
             return
         
@@ -189,10 +172,7 @@ class Scanner:
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
-    """
-    Orquestador de reglas para evaluar la peligrosidad de un archivo.
-    Ejecuta el registro de chequeos heurísticos definidos en EXECUTABLE_CHECK_REGISTRY.
-    """
+    """Orquestador de reglas para evaluar la peligrosidad de un archivo."""
     findings: ScanResult = []
     
     if (double_ext := check_double_extension(path, entry, now_ts)):
@@ -214,10 +194,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """
-    Inicia el escaneo recursivo de directorios. Implementa validaciones iniciales
-    para asegurar que la raíz sea segura y accesible antes de iniciar el bucle.
-    """
+    """Inicia el escaneo recursivo validando la seguridad de la raíz de entrada."""
     if not directory:
         return []
         
