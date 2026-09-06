@@ -1010,7 +1010,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     self._toggle_ui_availability(False)
                     self._safe_run_ui_callback(lambda: (
                         self.activity.pack(side="right") if self.activity.winfo_exists() else None,
-                        self.activity.start() if self.activity.winfo_exists() else None
+                        self.activity.start() if (self.activity.winfo_exists() and self.activity.winfo_ismapped()) else None
                     ))
             else:
                 self._tasks_running = max(0, self._tasks_running - 1)
@@ -1091,6 +1091,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _current_tab(self) -> str:
         """Identifica la pestaña actualmente activa."""
         try:
+            if not hasattr(self, 'tabview') or not self.tabview.winfo_exists():
+                return "Limpieza"
             etiqueta = self.tabview.get()
             if not isinstance(etiqueta, str): return "Limpieza"
         except (Exception, tk.TclError, RuntimeError):

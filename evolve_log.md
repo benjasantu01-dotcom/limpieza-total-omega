@@ -812,3 +812,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-06T07:24:57` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se añadió una validación defensiva en `_collect_candidates` para manejar archivos que desaparecen entre la detección inicial por `os.scandir` y la consulta posterior de metadatos, evitando excepciones no controladas durante el recorrido del árbol.
 - `2026-09-06T07:24:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T07:24:57` Corrida terminada. Total usado hoy: 176.
+- `2026-09-06T07:33:30` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-09-06T07:34:31` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-06T07:35:02` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` ante fallos en el pipeline mediante el uso de nombres de claves explícitas en lugar de índices posicionales, evitando errores de desbordamiento o desalineación si el diccionario `_SCORERS` o el pipeline se modifican en el futuro.
+- `2026-09-06T07:36:02` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-06T07:37:05` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-06T07:38:26` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `main.py` ante el cierre inesperado o concurrente de la aplicación, implementando una comprobación de existencia de `self.tabview` y `self.activity` en los métodos de callback asíncronos y de UI para prevenir excepciones `TclError` o `AttributeError` cuando el hilo principal procesa eventos durante el shutdown.
+- `2026-09-06T07:38:55` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `parse_windows_process_csv` agregando una validación explícita para evitar que entradas de procesos con nombres de ruta vacíos o malformados (que podrían surgir de errores en el comando PowerShell) se filtren como objetos `ProcessMemory` válidos.
+- `2026-09-06T07:39:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-06T07:39:20` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se mejora la robustez frente a bloqueos del sistema de archivos al añadir un manejo explícito para el caso en que `shutil.disk_usage` falle (por ejemplo, en unidades de red desconectadas o volúmenes especiales), evitando así que `_can_move_file` retorne `None` erróneamente en entornos donde el espacio es accesible pero la llamada `disk_usage` lanza una excepción.
+- `2026-09-06T07:39:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T07:39:20` Corrida terminada. Total usado hoy: 180.

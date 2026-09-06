@@ -362,8 +362,11 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         if not dest_base_res.exists() or not dest_base_res.is_dir(): return None
         
         # Validar espacio disponible + margen de seguridad (50MB)
-        if shutil.disk_usage(dest_base_res.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): 
-            return None
+        try:
+            if shutil.disk_usage(dest_base_res.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): 
+                return None
+        except (OSError, ValueError):
+            pass # Fallback: continuar si no se puede verificar espacio de forma precisa
             
         if not _is_safe_to_move(junk_file, dest_base_res): return None
         

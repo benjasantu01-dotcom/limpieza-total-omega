@@ -193,7 +193,7 @@ def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[Pr
     except (ValueError, TypeError):
         return None
     
-    if pid_val <= 0 or ws_val < 0 or pid_val in SYSTEM_CRITICAL_PIDS:
+    if not name.strip() or pid_val <= 0 or ws_val < 0 or pid_val in SYSTEM_CRITICAL_PIDS:
         return None
     
     if is_protected_path(name):
