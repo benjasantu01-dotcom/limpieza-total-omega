@@ -214,10 +214,14 @@ def _sum_directory_recursive(
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
     
+    path_obj = Path(root_abs)
+    if not is_safe_to_modify(path_obj):
+        return 0
+    
     try:
         if any(c in root_abs for c in '<>|?"*'):
             return 0
-        norm_path = str(Path(root_abs).resolve(strict=True))
+        norm_path = str(path_obj.resolve(strict=True))
     except (OSError, RuntimeError):
         return 0
     
@@ -253,8 +257,11 @@ def directory_size(path: Union[str, Path, None]) -> int:
     if path is None or not isinstance(path, (str, Path)):
         return 0
     try:
-        p_res = Path(path).resolve(strict=True)
-        if not p_res.is_dir() or not _is_safe_to_traverse(p_res, None):
+        p = Path(path)
+        if not _is_safe_to_traverse(p, None):
+            return 0
+        p_res = p.resolve(strict=True)
+        if not p_res.is_dir():
             return 0
         return _sum_directory_recursive(str(p_res), _IS_JUNCTION_FN, _get_kernel32(), {}, None)
     except (OSError, PermissionError, RuntimeError, ValueError):

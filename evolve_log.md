@@ -1191,3 +1191,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-06T11:40:10` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-09-06T11:40:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T11:40:10` Corrida terminada. Total usado hoy: 276.
+- `2026-09-06T11:48:44` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-09-06T11:49:21` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `SystemContext.ingest` y `_validate_and_assign` ante valores `NaN` o `Inf` provenientes de fuentes externas (como archivos de configuración corruptos o estados erróneos) para evitar la propagación de datos no numéricos.
+- `2026-09-06T11:49:54` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante casos de error en el sistema de archivos (como errores de escritura o permisos) utilizando un manejo de excepciones explícito y verificaciones de seguridad más estrictas, asegurando que cualquier fallo sea capturado de forma silenciosa pero segura sin interrumpir la ejecución de la UI.
+- `2026-09-06T11:50:21` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha robustecido el escaneo recursivo mediante la validación proactiva de rutas mediante `is_safe_to_modify` antes de invocar `os.scandir` y `resolve`, evitando errores por bloqueos de acceso durante la traversa.
+- `2026-09-06T11:50:32` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-09-06T11:50:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T11:50:32` Corrida terminada. Total usado hoy: 280.
