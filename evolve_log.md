@@ -1536,3 +1536,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-06T01:17:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-09-06T01:17:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T01:17:07` Corrida terminada. Total usado hoy: 32.
+- `2026-09-06T01:25:41` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-09-06T01:26:12` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `ensure_safe_to_modify` refactorizando el chequeo de integridad para evitar una posible carrera de condiciones y garantizando que `_check_file_integrity` siempre opere sobre una ruta resuelta y validada, mejorando la precisión en la captura de errores.
+- `2026-09-06T01:26:36` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se mejora la solidez ante errores de ejecución en `scan_directory` validando la entrada y asegurando que las llamadas a `os.scandir` y el manejo de rutas no aborten por entradas nulas o rutas inválidas inesperadas.
+- `2026-09-06T01:27:08` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `save()` capturando explícitamente posibles excepciones durante la escritura y validación, asegurando que la función retorne `None` (indicando fallo sin romper el flujo) ante cualquier error de entrada o I/O, evitando dejar la aplicación en un estado de inconsistencia.
+- `2026-09-06T01:27:18` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-06T01:27:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T01:27:18` Corrida terminada. Total usado hoy: 36.

@@ -116,7 +116,7 @@ class Scanner:
         """Valida que la entrada cumpla con límites de longitud y políticas de seguridad."""
         try:
             path_str = entry.path
-            if len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
+            if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
                 return False
             
             name = entry.name
@@ -141,7 +141,7 @@ class Scanner:
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
         """Registra directorios visitados y los agrega a la pila de procesamiento."""
-        if entry.path not in self.seen:
+        if entry.path and entry.path not in self.seen:
             self.seen.add(entry.path)
             stack.append(entry.path)
 
@@ -201,8 +201,9 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         
     base_path = Path(directory)
     try:
+        if not base_path.exists():
+            return []
         root_input = base_path.resolve(strict=False)
-        # Protección extra contra rutas de red/UNC en la raíz de escaneo
         if not root_input.is_dir() or is_protected_path(root_input) or str(root_input).startswith(("\\\\", "//")):
             return []
     except (OSError, TypeError, ValueError, RuntimeError, PermissionError):
@@ -214,6 +215,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     
     while stack:
         current_dir = stack.pop()
+        if not current_dir: continue
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:

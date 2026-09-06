@@ -234,28 +234,18 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 ]
 
 
-@lru_cache(maxsize=1024)
-def _check_file_integrity_cached(path_str: str) -> bool:
-    """Ejecuta el conjunto de reglas de integridad sobre el archivo."""
-    path = Path(path_str)
-    try:
-        # Verificación de accesibilidad básica antes de los predicados
-        if not os.access(path, os.W_OK):
-            return False
-        file_stat = path.stat()
-    except (PermissionError, OSError, FileNotFoundError):
-        return False
-        
-    for rule in _VALIDATORS:
-        if rule.predicate(path, file_stat):
-            return False
-    return True
-
-
 def _check_file_integrity(path: Path) -> None:
-    """Wrapper para verificar integridad: lanza UnsafePathError si alguna regla falla."""
-    if not _check_file_integrity_cached(str(path)):
-        raise UnsafePathError("Operación denegada por reglas de integridad.")
+    """Verifica integridad: lanza UnsafePathError si alguna regla falla."""
+    try:
+        file_stat = path.stat()
+        if not os.access(path, os.W_OK):
+            raise UnsafePathError("Acceso de escritura denegado.", SafetyValidationErrorCode.GENERIC)
+        
+        for rule in _VALIDATORS:
+            if rule.predicate(path, file_stat):
+                raise UnsafePathError(f"Violación de integridad: {rule.reason.value}", SafetyValidationErrorCode.GENERIC)
+    except (PermissionError, OSError, FileNotFoundError) as e:
+        raise UnsafePathError(f"No se pudo verificar integridad: {e}", SafetyValidationErrorCode.GENERIC)
 
 
 @lru_cache(maxsize=2048)
@@ -323,7 +313,6 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
     """Valida si 'child' es descendiente jerárquica de 'parent'."""
     if child is None or parent is None: return False
     try:
-        # Resolver rutas para evitar bypass por enlaces simbólicos o traversals
         c_path = Path(child).resolve()
         p_path = Path(parent).resolve()
         
