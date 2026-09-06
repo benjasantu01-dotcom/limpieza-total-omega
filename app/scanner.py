@@ -60,13 +60,13 @@ MAX_PATH_LENGTH: Final[int] = 260
 WIN_FILE_ATTR_REPARSE_POINT: Final[int] = 0x400
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Analiza si el archivo usa extensiones dobles, técnica común para engañar al usuario."""
+    """Valida si el nombre del archivo termina con una extensión 'inocente' seguida de una ejecutable."""
     if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Evalúa si un ejecutable reciente (<24h) fue descargado en carpetas de usuario monitorizadas."""
+    """Verifica si un ejecutable fue creado recientemente en carpetas sensibles (ej. Descargas)."""
     if path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     
@@ -79,7 +79,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Verifica si el nombre de un archivo intenta suplantar procesos críticos fuera de System32."""
+    """Identifica ejecutables con nombres de servicios críticos que se encuentran fuera de system32."""
     name_low = path.name.lower()
     if name_low in SYSTEM_LOOKALIKES:
         path_str = str(path).lower()
@@ -96,6 +96,7 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 class Scanner:
     """
     Controlador de estado para el escaneo recursivo del sistema de archivos.
+    Mantiene el historial de rutas visitadas y los resultados encontrados.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -134,8 +135,8 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
-        Detecta puntos de reparse (Junctions, Symlinks).
-        Si hay error al consultar atributos, se asume True (evitar recursión por seguridad).
+        Detecta puntos de reparse (Junctions, Symlinks) mediante atributos de archivo.
+        Si hay error al consultar, se asume True como medida defensiva para evitar recursión.
         """
         try:
             if entry.is_symlink():
@@ -156,7 +157,6 @@ class Scanner:
             return
         
         try:
-            # Verificación de existencia para evitar race conditions con archivos volátiles
             if not os.path.exists(entry.path):
                 return
 
@@ -179,12 +179,17 @@ class Scanner:
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
-    """Orquestador de reglas para evaluar la peligrosidad de un archivo."""
+    """
+    Orquestador principal de reglas heurísticas.
+    Aplica chequeos básicos (archivos vacíos) y luego ejecuta el registro de reglas complejas.
+    """
     findings: ScanResult = []
     
+    # 1. Chequeo de extensión doble
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
     
+    # 2. Chequeo de ejecutables
     file_ext = ext or path.suffix.lower()
     if file_ext in SUSPICIOUS_EXECUTABLE_EXT:
         try:

@@ -1132,3 +1132,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-06T10:50:00` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se mejora la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y `_generate_safe_stored_name`, extrayendo la lógica de saneamiento de caracteres a una función auxiliar con nombre claro y documentando explícitamente las restricciones del sistema de archivos.
 - `2026-09-06T10:50:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T10:50:00` Corrida terminada. Total usado hoy: 256.
+- `2026-09-06T10:57:52` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-09-06T10:58:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 114): unterminated string literal (detected at line 114)
+- `2026-09-06T10:58:41` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult
+- `2026-09-06T10:59:06` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Documenté con docstrings claros y tipado estricto las funciones de bajo nivel en `scanner.py`, clarificando el propósito de los chequeos de archivos sospechosos y mejorando la mantenibilidad del motor heurístico.
+- `2026-09-06T10:59:23` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a los métodos de `_Validators` y estructurando la lógica de validación para que sea más clara y predecible, alineando la documentación con las reglas de seguridad del proyecto.
+- `2026-09-06T10:59:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T10:59:23` Corrida terminada. Total usado hoy: 260.

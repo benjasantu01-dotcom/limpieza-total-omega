@@ -141,7 +141,7 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 })
 
 def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
-    """Decorador: Filtra llamadas y captura excepciones en la validación."""
+    """Decorador: Filtra llamadas y captura excepciones comunes de conversión."""
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> T | None:
         val = args[1] if len(args) > 1 else kwargs.get("val")
         if val is None: return None
@@ -154,7 +154,9 @@ def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
 class _Validators:
     @staticmethod
     def _run_safety_checks(path_obj: Path) -> bool:
-        """Verifica recursivamente si una ruta está protegida o es insegura usando `safety.py`."""
+        """Determina si la ruta es segura de manipular mediante `safety.py`.
+        Utiliza caché para evitar llamadas repetitivas a I/O. Rechaza symlinks
+        y junctions para prevenir ataques de redirección."""
         path_str = str(path_obj)
         if path_str in _SAFETY_CACHE:
             return _SAFETY_CACHE[path_str]
@@ -174,7 +176,7 @@ class _Validators:
 
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
-        """Valida formato de cadena y profundidad contra directivas de `safety.py`."""
+        """Valida longitud de cadena, formato absoluto y restricciones de seguridad."""
         if not path_str or len(path_str) > 2048 or "\0" in path_str: return False
         try:
             p = Path(path_str).expanduser()
@@ -184,7 +186,7 @@ class _Validators:
 
     @staticmethod
     def bool(key: ConfigKey, val: Any) -> Optional[bool]:
-        """Convierte entradas heterogéneas (str/bool/int) a valor booleano estricto."""
+        """Normaliza entradas (str/bool/int) a booleanos estrictos usando léxico común."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -195,7 +197,7 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
-        """Convierte a entero y aplica recorte basado en `_NUMERIC_LIMITS`."""
+        """Convierte a entero y recorta el valor según los límites definidos en `_NUMERIC_LIMITS`."""
         parsed_value = int(val)
         limit = _NUMERIC_LIMITS.get(key)
         if limit: return max(limit.min, min(limit.max, parsed_value))
@@ -203,7 +205,7 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
-        """Normaliza rutas a strings absolutos tras verificar seguridad del sistema."""
+        """Normaliza rutas a strings absolutos verificando que no comprometan la seguridad."""
         if val == "": return ""
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
@@ -211,7 +213,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
-        """Valida que una cadena coincida con los valores permitidos definidos en `_ENUM_VALS`."""
+        """Valida cadenas contra listas blancas definidas en `_ENUM_VALS`."""
         val = text.lower()
         allowed = _ENUM_VALS.get(key)
         if allowed: return val if val in allowed else None
@@ -220,7 +222,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        """Sanitiza strings de configuración: elimina caracteres de control y valida formato."""
+        """Sanitiza strings: impide caracteres nulos, secuencias de escape de ruta ('..') y control."""
         text = str(val).strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(key, text)
@@ -246,7 +248,7 @@ _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, Callable[[ConfigKey, Any], Any
 })
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
-    """Resuelve la ubicación persistente validando recursivamente el directorio base."""
+    """Resuelve la ubicación persistente del archivo JSON de configuración."""
     if custom_base is None: return _PATH_CACHE["default"]
     
     cache_key = str(custom_base)
@@ -275,7 +277,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Lee el archivo desde disco con caché de solo lectura basado en mtime."""
+    """Lee configuración con caché basado en mtime. Retorna DEFAULTS si falla."""
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     
@@ -289,7 +291,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
                 content = json.load(f)
-            # Validación adicional: asegurar que el JSON sea un objeto (dict)
             if not _is_dict(content): return DEFAULTS.copy()
             data = validate(content)
             _CACHE[ruta_str] = (mtime, data)
@@ -299,7 +300,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Persiste configuración mediante reemplazo atómico tras validar seguridad de ruta."""
+    """Persiste configuración mediante reemplazo atómico tras validaciones de seguridad."""
     if not _is_dict(values): return None
     
     ruta = settings_path(custom_base).absolute()
@@ -336,7 +337,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.flush()
             os.fsync(f.fileno())
         
-        # Verificar integridad del archivo temporal antes de reemplazar
         if temp_path.stat().st_size != len(data):
             raise OSError("Error al escribir archivo temporal de configuración.")
         
@@ -387,7 +387,7 @@ def assistant_enabled(custom_base: PathLike | None = None) -> bool:
     return bool(settings.get("asistente_activado")) and bool(settings.get("asistente_clave_api", "").strip())
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
-    """Genera representación legible de la configuración para propósitos de auditoría."""
+    """Genera representación legible de la configuración para auditoría técnica."""
     current = load(custom_base)
     api_key_env = os.environ.get(API_KEY_ENV_VAR)
     api_key_file = current.get("asistente_clave_api", "").strip()
