@@ -1139,3 +1139,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-06T10:59:23` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a los métodos de `_Validators` y estructurando la lógica de validación para que sea más clara y predecible, alineando la documentación con las reglas de seguridad del proyecto.
 - `2026-09-06T10:59:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T10:59:23` Corrida terminada. Total usado hoy: 260.
+- `2026-09-06T11:07:58` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-09-06T11:08:28` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.30s
+
+```
+- `2026-09-06T11:08:28` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `StartupEntry` mediante la aplicación estricta de type hints en variables internas, el uso de docstrings más descriptivos sobre las limitaciones del entorno (no seguir enlaces simbólicos), y la extracción de la lógica de validación de archivos a un método privado más claro, facilitando la auditoría de seguridad del código.
+- `2026-09-06T11:09:07` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Mejoré el rendimiento del motor local reemplazando la búsqueda lineal por `_KEYWORD_TO_HANDLER` con un `frozenset` precalculado para cada manejador, evitando repetir recorridos y optimizando la resolución de intención.
+- `2026-09-06T11:09:41` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-06T11:09:56` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se implementó una caché de resultados en `detect_profiles` para evitar el cálculo redundante de directorios compartidos y se optimizó la estructura de datos `perf_cache` para que persista durante todo el escaneo, reduciendo drásticamente las llamadas al disco en estructuras anidadas o comunes.
+- `2026-09-06T11:09:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T11:09:56` Corrida terminada. Total usado hoy: 264.

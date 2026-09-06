@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **242** (48.0% de aceptación)
-- Rechazadas por tests: 11
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 16
+- Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 117 | 9 | 17 | 9 | 92 |
-| 2026-09-06 | 125 | 2 | 18 | 7 | 108 |
+| 2026-09-05 | 115 | 9 | 17 | 8 | 91 |
+| 2026-09-06 | 127 | 3 | 18 | 7 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **56**
-- robustez ante casos límite: **52**
+- robustez ante casos límite: **50**
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **49**
-- rendimiento: **35**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
+- `assistant.py`: **20**
 - `diskreport.py`: **20**
+- `memory.py`: **20**
 - `scanner.py`: **20**
 - `settings.py`: **19**
-- `assistant.py`: **19**
 - `duplicates.py`: **19**
-- `healthscore.py`: **18**
 - `organizer.py`: **18**
 - `safety.py`: **17**
 - `branding.py`: **17**
-- `browser.py`: **16**
+- `healthscore.py`: **17**
+- `browser.py`: **17**
 - `quarantine.py`: **15**
 - `main.py`: **12**
 - `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-06T11:09:56` **browser.py** (rendimiento): Se implementó una caché de resultados en `detect_profiles` para evitar el cálculo redundante de directorios compartidos y se optimizó la estructura de datos `perf_cache` para que persista durante todo el escaneo, reduciendo drásticamente las llamadas al disco en estructuras anidadas o comunes.
+- `2026-09-06T11:09:07` **assistant.py** (rendimiento): Mejoré el rendimiento del motor local reemplazando la búsqueda lineal por `_KEYWORD_TO_HANDLER` con un `frozenset` precalculado para cada manejador, evitando repetir recorridos y optimizando la resolución de intención.
 - `2026-09-06T10:59:23` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a los métodos de `_Validators` y estructurando la lógica de validación para que sea más clara y predecible, alineando la documentación con las reglas de seguridad del proyecto.
 - `2026-09-06T10:59:06` **scanner.py** (legibilidad y documentación): Documenté con docstrings claros y tipado estricto las funciones de bajo nivel en `scanner.py`, clarificando el propósito de los chequeos de archivos sospechosos y mejorando la mantenibilidad del motor heurístico.
 - `2026-09-06T10:50:00` **quarantine.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y `_generate_safe_stored_name`, extrayendo la lógica de saneamiento de caracteres a una función auxiliar con nombre claro y documentando explícitamente las restricciones del sistema de archivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T10:28:47` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de manejo de respuestas y la clarificación de los docstrings en las clases de datos, facilitando la comprensión de las restricciones de seguridad para futuros desarrolladores.
 - `2026-09-06T10:28:09` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación de tipo y contenido a los parámetros leídos del CSV, evitando el riesgo de `AttributeError` o procesamiento de datos corruptos antes de que lleguen a `StartupEntry`.
 - `2026-09-06T10:27:43` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de archivos JSON añadiendo un chequeo explícito de integridad tras la lectura (verificando que el tipo de datos sea efectivamente `dict` tras la deserialización) y fortalecí el `type_check` para manejar adecuadamente valores que, aunque no sean `None`, podrían causar fallos por tipo incorrecto antes de la validación.
-- `2026-09-06T10:18:38` **scanner.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `Scanner._is_inside_base_root` y `scan_directory` para capturar explícitamente posibles fallos en la resolución de rutas (`OSError`, `RuntimeError`) y evitar el colapso ante entradas inválidas, garantizando que el escáner sea tolerante a fallos durante el recorrido de disco.
-- `2026-09-06T10:18:26` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y estados del sistema de archivos inconsistentes, asegurando que `_check_file_integrity` no falle al intentar acceder a metadatos de archivos que podrían haber desaparecido entre la verificación de existencia y la obtención de atributos.

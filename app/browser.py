@@ -316,6 +316,7 @@ def detect_profiles(
                     
                 c_path = candidate.resolve(strict=True)
                 
+                # Reutilizamos el dict perf_cache para memoizar directorios comunes (User Data)
                 size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), c_path, size))

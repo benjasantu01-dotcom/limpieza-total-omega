@@ -507,12 +507,16 @@ def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     cierre = " La app los lista, pero desactivalos desde el Administrador de tareas de Windows."
     return Answer(_validate_response_length(f"{estado} {valoracion}{cierre}"), notice=OFFLINE_NOTICE)
 
+_KEYWORD_MAP: Final[dict[frozenset[str], Callable[[SystemContext, str], Answer]]] = {
+    frozenset(["ram", "memoria", "lenta", "lento", "acelerar"]): handle_ram,
+    frozenset(["espacio", "disco", "lleno", "recuperar", "liberar"]): handle_disk,
+    frozenset(["seguro", "virus", "sospechos", "borrar", "peligro"]): handle_security,
+    frozenset(["puntaje", "salud", "nota", "score"]): handle_score,
+    frozenset(["inicio", "arranque", "arranca", "encender"]): handle_startup
+}
+
 _KEYWORD_TO_HANDLER: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
-    "ram": handle_ram, "memoria": handle_ram, "lenta": handle_ram, "lento": handle_ram, "acelerar": handle_ram,
-    "espacio": handle_disk, "disco": handle_disk, "lleno": handle_disk, "recuperar": handle_disk, "liberar": handle_disk,
-    "seguro": handle_security, "virus": handle_security, "sospechos": handle_security, "borrar": handle_security, "peligro": handle_security,
-    "puntaje": handle_score, "salud": handle_score, "nota": handle_score, "score": handle_score,
-    "inicio": handle_startup, "arranque": handle_startup, "arranca": handle_startup, "encender": handle_startup
+    word: handler for keys, handler in _KEYWORD_MAP.items() for word in keys
 }
 
 def _sanitize_query(question: str) -> str:
