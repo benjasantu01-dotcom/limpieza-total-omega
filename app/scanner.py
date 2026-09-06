@@ -109,7 +109,8 @@ class Scanner:
         try:
             target = Path(entry_path).resolve(strict=False)
             return self.base_root in target.parents or target == self.base_root
-        except (OSError, RuntimeError):
+        except (OSError, RuntimeError) as e:
+            logger.debug(f"Error resolviendo ruta {entry_path}: {e}")
             return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
@@ -204,8 +205,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if not directory:
         return []
         
-    base_path = Path(directory)
     try:
+        base_path = Path(directory)
         if not base_path.exists():
             return []
         root_input = base_path.resolve(strict=False)

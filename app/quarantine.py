@@ -122,6 +122,7 @@ class QuarantineItem:
 
     def _validate_integrity(self, stored_path: Path) -> bool:
         """Verifica existencia física y tamaño contra metadatos registrados."""
+        if not stored_path: return False
         try:
             return (
                 stored_path.is_file() and 
@@ -167,9 +168,6 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_unlink(path: Path) -> bool:
     """
     Elimina un archivo del sistema de archivos tras verificar su seguridad.
-
-    Verifica que el archivo exista, sea un archivo regular, no sea un enlace,
-    pertenezca al usuario actual (en POSIX) y cumpla las políticas de `safety.py`.
     """
     if not isinstance(path, Path) or not path.exists() or not path.is_file():
         return False
@@ -203,26 +201,17 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
 
 
 def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """
-    Resuelve la ruta absoluta del directorio de cuarentena y asegura su creación.
-
-    Returns:
-        Path: Ruta resuelta y validada del directorio de cuarentena.
-
-    Raises:
-        UnsafePathError: Si el directorio está en una ruta protegida o no segura.
-        OSError: Si falla la creación del directorio.
-    """
+    """Resuelve la ruta absoluta del directorio de cuarentena."""
     if not base:
         raise ValueError("El directorio base no puede estar vacío.")
     try:
         path = Path(base).expanduser().resolve()
         if not path.name.strip():
-            raise UnsafePathError("Ruta de cuarentena inválida o vacía.")
+            raise UnsafePathError("Ruta de cuarentena inválida.")
         if is_protected_path(path):
             raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
         if not is_safe_to_modify(path):
-            raise UnsafePathError("Directorio de cuarentena no cumple políticas de seguridad.")
+            raise UnsafePathError("Directorio no cumple políticas de seguridad.")
         path.mkdir(parents=True, exist_ok=True)
         return path
     except (OSError, RuntimeError) as e:
@@ -259,6 +248,7 @@ def _check_windows_file_attributes(path_str: str) -> None:
 
 def _check_path_syntax_integrity(path: Path) -> None:
     """Valida la integridad sintáctica de la ruta para prevenir ataques."""
+    if not path: raise UnsafePathError("Ruta vacía.")
     path_str = str(path)
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
         raise UnsafePathError("Ruta con caracteres de control prohibida.")
@@ -464,18 +454,6 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Ciclo completo: valida, aísla y registra en manifiesto un archivo sospechoso.
-
-    Args:
-        source: Ruta del archivo a poner en cuarentena.
-        reason: Motivo por el cual se aísla el archivo.
-        base: Directorio base de la cuarentena.
-
-    Returns:
-        QuarantineItem: El ítem registrado exitosamente en cuarentena.
-
-    Raises:
-        UnsafePathError: Si la operación viola las políticas de seguridad.
-        RuntimeError: Si ocurre un fallo técnico durante el aislamiento.
     """
     if not source:
         raise ValueError("Ruta de origen vacía.")
@@ -508,7 +486,7 @@ def quarantine_file(
             sha256=file_hash,
         )
         
-        items_list = [QuarantineItem.from_dict(d) for d in raw_items if d.get("item_id")]
+        items_list = [QuarantineItem.from_dict(d) for d in raw_items if d and isinstance(d, dict)]
         items_list = [i for i in items_list if i is not None]
         items_list.append(quarantine_item)
         save_manifest(items_list, base)
@@ -532,13 +510,6 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Restaura un archivo de la cuarentena a su ruta original tras validaciones.
-
-    Returns:
-        Path: Ruta donde el archivo fue restaurado.
-
-    Raises:
-        KeyError: Si el ID del ítem no existe en el manifiesto.
-        UnsafePathError: Si la restauración se intenta hacer sobre una ruta protegida.
     """
     if not item_id or not isinstance(item_id, str):
         raise ValueError("ID inválido.")
@@ -604,38 +575,33 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
     """
     Verifica si un ítem cumple los requisitos para purga automática.
-
-    Valida la integridad del archivo y confirma que el archivo esté desbloqueado
-    y dentro de las políticas de seguridad (usando is_safe_to_modify).
     """
-    # Seguridad reforzada: obligatoria contención en sandbox
-    if not file_path.is_file() or not _is_within_quarantine_sandbox(file_path, base_path):
+    if not file_path or not file_path.is_file() or not _is_within_quarantine_sandbox(file_path, base_path):
         return False
     
-    # Comprobación de seguridad mediante políticas del sistema
     if not is_safe_to_modify(file_path):
         return False
         
-    # Comprobación de estado técnico e integridad
     return item.verify_integrity(file_path) and not _is_file_locked(file_path)
 
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Limpia el sandbox de todos los archivos validados."""
-    quarantine_root = quarantine_dir(base)
+    try:
+        quarantine_root = quarantine_dir(base)
+    except Exception:
+        return 0
+        
     items = load_manifest(base)
-    
     item_map = {item.stored_name: item for item in items}
     purged_count = 0
     kept_items = []
     
     try:
         for stored_path in quarantine_root.iterdir():
-            # Filtro adicional para evitar tocar manifiestos o directorios fuera de alcance
             if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
                 continue
             
-            # Verificación de seguridad de sandbox antes de cualquier procesamiento
             if not _is_within_quarantine_sandbox(stored_path.resolve(), quarantine_root):
                 continue
                 

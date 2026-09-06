@@ -237,8 +237,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 def _check_file_integrity(path: Path) -> None:
     """Ejecuta la batería de reglas de validación y lanza UnsafePathError ante cualquier violación."""
     try:
-        if not path.exists():
-            return
+        # Re-verificar existencia y obtener stat de forma atómica para evitar race conditions
         file_stat = path.stat()
         if not os.access(path, os.W_OK):
             raise UnsafePathError("Acceso de escritura denegado.", SafetyValidationErrorCode.GENERIC)
