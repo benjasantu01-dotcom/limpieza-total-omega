@@ -240,7 +240,8 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
             with os.scandir(folder) as it:
                 for entry in it:
                     try:
-                        if entry.is_file(follow_symlinks=False):
+                        # Verificamos acceso explícito al path antes de consultar propiedades
+                        if entry.path and entry.is_file(follow_symlinks=False):
                             _, ext = os.path.splitext(entry.name)
                             if ext.lower() in EXECUTABLE_EXTS:
                                 p_entry = Path(entry.path)

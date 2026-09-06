@@ -631,6 +631,9 @@ def ask(question: str, context: Optional[SystemContext] = None,
     try:
         settings_data = settings.load(base)
         cfg = _parse_config(settings_data)
+        # Validación de seguridad: el modelo debe cumplir con el regex definido
+        if not _MODEL_NAME_REGEX.match(cfg.model):
+            return respaldo
         texto_contexto = context_as_text(ctx) if cfg.allow_metrics else "El usuario no autorizó enviar métricas."
         remoto = _call_gemini(question, texto_contexto, cfg.api_key, cfg.model)
         if not remoto:

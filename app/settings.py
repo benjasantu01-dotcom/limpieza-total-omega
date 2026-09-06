@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import json
 import os
-import shutil
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -332,6 +331,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.write(data)
             f.flush()
             os.fsync(f.fileno())
+        
+        # Verificar integridad del archivo temporal antes de reemplazar
+        if temp_path.stat().st_size != len(data):
+            raise OSError("Error al escribir archivo temporal de configuración.")
         
         os.replace(temp_path, ruta)
         _CACHE[ruta_str] = (float(ruta.stat().st_mtime), cleaned_settings)

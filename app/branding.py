@@ -309,14 +309,16 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination: return None
     try:
         path_obj = Path(destination).resolve()
-        # Verificar que la ruta no sea el directorio raíz o un sistema crítico indirectamente
+        # Verificar seguridad antes de evaluar o modificar el sistema de archivos
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj): return None
         
+        # Validar el directorio padre antes de intentar crearlo
         parent = path_obj.parent
         if not is_safe_to_modify(parent) or is_protected_path(parent): return None
         
-        parent.mkdir(parents=True, exist_ok=True)
+        # Solo proceder si la ruta es validada como segura
         ensure_safe_to_modify(path_obj)
+        parent.mkdir(parents=True, exist_ok=True)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
     except (OSError, PermissionError, RuntimeError): return None
