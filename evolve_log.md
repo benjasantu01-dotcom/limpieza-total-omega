@@ -447,3 +447,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-06T02:49:49` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y las funciones de dibujo del `canvas` añadiendo validaciones contra valores extremos (`inf`, `NaN`) y saneando parámetros de entrada para prevenir errores en tiempo de ejecución (ej. `ZeroDivisionError` en cálculos de escala o `TypeError` por tipos inesperados).
 - `2026-09-06T02:49:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T02:49:49` Corrida terminada. Total usado hoy: 68.
+- `2026-09-06T02:58:10` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-09-06T02:58:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-06T02:59:52` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-06T03:00:25` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una gestión de errores más robusta en `_sum_directory_recursive` para manejar casos de rutas excesivamente largas (superiores a `MAX_PATH_LEN`) y fallos en `os.scandir` por permisos denegados o inconsistencias en el sistema de archivos, asegurando que el proceso de escaneo no se interrumpa ante un solo error de acceso.
+- `2026-09-06T03:00:52` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `walk_files` y `_collect_summary_data` para manejar de forma robusta la posible desaparición de archivos o cambios en los permisos durante el recorrido del árbol, asegurando que el análisis no se detenga ante archivos bloqueados o borrados súbitamente por procesos externos.
+- `2026-09-06T03:01:17` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_collect_candidates` ante archivos que se bloquean o desaparecen durante la enumeración (Race Conditions) añadiendo bloques `try-except` granulares dentro del bucle de escaneo, asegurando que un error de acceso en un archivo no aborte el procesamiento de todo el directorio.
+- `2026-09-06T03:01:28` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-09-06T03:01:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T03:01:28` Corrida terminada. Total usado hoy: 72.

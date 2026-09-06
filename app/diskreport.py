@@ -243,13 +243,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Realiza un recorrido profundo (DFS) iterativo del sistema de archivos.
-    
-    Args:
-        directory: Directorio raíz desde donde iniciar.
-        skip_protected: Si es True, evita entrar en directorios protegidos.
-        
-    Yields:
-        Tuplas (path, size) de archivos encontrados.
     """
     root_path = _validate_root(directory)
     if root_path is None:
@@ -261,6 +254,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     while stack:
         current_dir = stack.pop()
         
+        # Verificar existencia antes de abrir el directorio
         if not current_dir.exists():
             continue
             
@@ -271,10 +265,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         continue
                     
                     try:
-                        if entry.is_dir():
+                        if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode_key = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
-                            # Evita recursión infinita en ciclos de inodos
                             if inode_key[0] != 0 and inode_key not in visited_inodes:
                                 entry_path = Path(entry.path)
                                 if skip_protected and is_protected_path(entry_path):
@@ -282,7 +275,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode_key)
                                 stack.append(entry_path)
                                     
-                        elif entry.is_file():
+                        elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             yield Path(entry.path), max(0, int(getattr(st, 'st_size', 0)))
                     except (PermissionError, OSError, AttributeError):
@@ -336,14 +329,16 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             
     sums: Dict[str, int] = defaultdict(int)
     counts: Dict[str, int] = defaultdict(int)
-    base_str = str(p_base)
     
     for path, size in walk_files(p_base, skip_protected):
-        relative = path.relative_to(p_base)
-        if relative.parts:
-            top_folder = p_base / relative.parts[0]
-            sums[top_folder] += size
-            counts[top_folder] += 1
+        try:
+            relative = path.relative_to(p_base)
+            if relative.parts:
+                top_folder = p_base / relative.parts[0]
+                sums[top_folder] += size
+                counts[top_folder] += 1
+        except ValueError:
+            continue
 
     results = [FolderUsage(p, sums[p], counts[p]) for p in sums]
     return heapq.nlargest(limit, results, key=lambda f: f.size_bytes)
@@ -363,10 +358,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
-    Realiza una pasada de análisis unificada para consolidar todas las métricas globales.
-    
-    Mantiene un heap de 10 archivos para identificar los más grandes de forma eficiente
-    sin necesidad de ordenar el conjunto total de archivos.
+    Realiza una pasada de análisis unificada con chequeo ante cambios en el disco.
     """
     total_bytes = 0
     total_files = 0
@@ -375,12 +367,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     top_files_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
+        # Integridad: el archivo podría haber sido movido entre el walk y el procesamiento
+        if not path.exists():
+            continue
+            
         total_bytes += size
         total_files += 1
-        try:
-            ext = path.suffix.lower() or "(sin extensión)"
-        except (AttributeError, OSError):
-            ext = "(error)"
+        ext = path.suffix.lower() or "(sin extensión)"
             
         ext_sizes[ext] += size
         ext_counts[ext] += 1

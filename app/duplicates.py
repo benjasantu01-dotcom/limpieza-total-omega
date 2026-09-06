@@ -200,13 +200,11 @@ def _collect_candidates(
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Verificamos si es directorio sin seguir enlaces
                         if entry.is_dir(follow_symlinks=False):
                             subdir_path = Path(entry.path)
                             if not is_protected_path(subdir_path) and not is_junction(subdir_path):
                                 _scan_directory_recursive(subdir_path)
-                        # Verificamos si es archivo y descartamos enlaces simbólicos
-                        elif entry.is_file(follow_symlinks=False) and not entry.is_symlink():
+                        elif entry.is_file(follow_symlinks=False):
                             st = _get_entry_stat(entry)
                             if st and st.st_size >= min_size and st.st_nlink == 1:
                                 p = Path(entry.path)

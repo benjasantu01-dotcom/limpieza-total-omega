@@ -143,14 +143,6 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
     Evalúa si una entrada (os.DirEntry) debe omitirse según criterios de seguridad y visibilidad.
-    
-    Args:
-        entry: Objeto DirEntry del sistema de archivos a evaluar.
-        kernel32: Instancia opcional de la API Win32 para verificar atributos.
-        is_junction_fn: Función para detectar puntos de reparse/junctions.
-        
-    Returns:
-        bool: True si el elemento debe ser ignorado, False en caso contrario.
     """
     if _is_excluded_file(entry.name):
         return True
@@ -200,16 +192,8 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula recursivamente el tamaño en bytes de un directorio mediante os.scandir.
-    
-    Args:
-        root_abs: Ruta absoluta del directorio a sumar.
-        is_junction_fn: Función detectora de junctions.
-        kernel32: Referencia a la API Win32 opcional.
-        memo: Diccionario para evitar re-cálculos (cache local).
-        base_check_path: Ruta raíz permitida para validación de contexto.
-        depth: Profundidad actual de la recursión.
     """
-    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
+    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
     
     try:
@@ -223,12 +207,8 @@ def _sum_directory_recursive(
     total: int = 0
     try:
         with os.scandir(norm_path) as it:
-            while True:
+            for entry in it:
                 try:
-                    entry = next(it, None)
-                    if entry is None:
-                        break
-                    
                     if _should_skip_entry(entry, kernel32, is_junction_fn):
                         continue
                     
@@ -287,13 +267,6 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Escanea el sistema buscando perfiles de navegadores y calcula su ocupación.
-    
-    Args:
-        bases: Lista opcional de directorios base de usuario.
-        cache_paths: Mapeo opcional de nombres de navegador a rutas de caché.
-        
-    Returns:
-        List[BrowserCache]: Lista de objetos con información de cada caché detectado.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
