@@ -463,3 +463,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-06T03:11:08` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejora la robustez de `quarantine_file` al introducir una verificación de existencia y consistencia antes de la operación de `unlink` del archivo origen, asegurando que la operación de aislamiento se considere exitosa solo si el archivo fue movido e identificado físicamente en el destino antes de eliminar el original.
 - `2026-09-06T03:11:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T03:11:08` Corrida terminada. Total usado hoy: 76.
+- `2026-09-06T03:18:35` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-09-06T03:18:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-06T03:19:25` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos de archivos inexistentes durante la validación de integridad al agregar un chequeo de `exists()` dentro de `_check_file_integrity`, evitando excepciones innecesarias cuando un archivo es borrado o movido por otro proceso entre la validación inicial y el chequeo detallado.
+- `2026-09-06T03:19:51` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-06T03:20:07` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save()` ante condiciones de carrera y fallos de sistema de archivos al añadir una verificación explícita de `parent.exists()` y `parent.is_dir()` inmediatamente antes de realizar la escritura, evitando excepciones por entornos de ejecución volátiles.
+- `2026-09-06T03:20:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T03:20:07` Corrida terminada. Total usado hoy: 80.

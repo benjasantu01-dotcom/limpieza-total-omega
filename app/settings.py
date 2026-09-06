@@ -304,7 +304,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     ruta_str = str(ruta)
     cleaned_settings = validate(values)
     
-    # Dirty check: evitar escrituras innecesarias
     if (cached := _CACHE.get(ruta_str)) and cached[1] == cleaned_settings:
         return ruta
 
@@ -334,7 +333,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.flush()
             os.fsync(f.fileno())
         
-        if not parent.exists(): return None
+        if not (parent.exists() and parent.is_dir()): return None
         os.replace(temp_path, ruta)
         _CACHE[ruta_str] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta

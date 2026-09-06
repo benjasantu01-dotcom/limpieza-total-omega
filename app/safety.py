@@ -237,6 +237,8 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 def _check_file_integrity(path: Path) -> None:
     """Verifica integridad: lanza UnsafePathError si alguna regla falla."""
     try:
+        if not path.exists():
+            return
         file_stat = path.stat()
         if not os.access(path, os.W_OK):
             raise UnsafePathError("Acceso de escritura denegado.", SafetyValidationErrorCode.GENERIC)
@@ -244,7 +246,7 @@ def _check_file_integrity(path: Path) -> None:
         for rule in _VALIDATORS:
             if rule.predicate(path, file_stat):
                 raise UnsafePathError(f"Violación de integridad: {rule.reason.value}", SafetyValidationErrorCode.GENERIC)
-    except (PermissionError, OSError, FileNotFoundError) as e:
+    except (PermissionError, OSError) as e:
         raise UnsafePathError(f"No se pudo verificar integridad: {e}", SafetyValidationErrorCode.GENERIC)
 
 

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
+- Mejoras aceptadas: **237** (47.0% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 38
+- Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-04 | 32 | 3 | 7 | 2 | 34 |
+| 2026-09-04 | 32 | 3 | 7 | 2 | 30 |
 | 2026-09-05 | 164 | 13 | 24 | 14 | 135 |
-| 2026-09-06 | 39 | 0 | 7 | 2 | 28 |
+| 2026-09-06 | 41 | 0 | 8 | 2 | 29 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
-- robustez ante casos límite: **50**
+- robustez ante casos límite: **52**
 - manejo de errores y validación de entradas: **49**
 - rendimiento: **42**
 - seguridad defensiva: **40**
@@ -35,18 +35,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **19**
 - `scanner.py`: **19**
 - `memory.py`: **19**
+- `settings.py`: **18**
 - `duplicates.py`: **18**
 - `organizer.py`: **18**
+- `safety.py`: **18**
 - `healthscore.py`: **17**
-- `settings.py`: **17**
 - `browser.py`: **17**
-- `safety.py`: **17**
 - `quarantine.py`: **14**
 - `main.py`: **10**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-06T03:20:07` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save()` ante condiciones de carrera y fallos de sistema de archivos al añadir una verificación explícita de `parent.exists()` y `parent.is_dir()` inmediatamente antes de realizar la escritura, evitando excepciones por entornos de ejecución volátiles.
+- `2026-09-06T03:19:25` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos de archivos inexistentes durante la validación de integridad al agregar un chequeo de `exists()` dentro de `_check_file_integrity`, evitando excepciones innecesarias cuando un archivo es borrado o movido por otro proceso entre la validación inicial y el chequeo detallado.
 - `2026-09-06T03:11:08` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` al introducir una verificación de existencia y consistencia antes de la operación de `unlink` del archivo origen, asegurando que la operación de aislamiento se considere exitosa solo si el archivo fue movido e identificado físicamente en el destino antes de eliminar el original.
 - `2026-09-06T03:10:46` **organizer.py** (robustez ante casos límite): Mejoré la robustez ante errores de I/O en `_get_win_attributes` y `_is_file_locked` añadiendo manejo de `OSError` específico y asegurando que las comprobaciones de estado no causen fallos catastróficos en el bucle de escaneo, protegiendo así la integridad de la ejecución ante archivos con permisos cambiantes o bloqueos temporales.
 - `2026-09-06T03:10:17` **memory.py** (robustez ante casos límite): Mejoré `parse_windows_process_csv` para que sea robusto ante entradas malformadas o incompletas (common en entornos con alta carga) añadiendo validación de longitud de columnas y manejo de excepciones durante el parseo de enteros, evitando que un mal dato de PowerShell rompa la recolección de métricas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T02:39:18` **scanner.py** (rendimiento): Optimizé la detección de extensiones y la ejecución de heurísticas moviendo el cálculo de sufijos fuera de los loops y utilizando conjuntos (sets) para búsquedas O(1), evitando re-procesamiento innecesario de rutas en `scan_file`.
 - `2026-09-06T02:38:23` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` transformando `item_map` de una lista de objetos a un `dict` para acceso O(1) y evitando la reconstrucción redundante de objetos `QuarantineItem` durante la iteración sobre el directorio.
 - `2026-09-06T02:31:33` **organizer.py** (rendimiento): Optimizé la búsqueda de archivos basura pre-compilando el conjunto de extensiones en un formato de búsqueda más eficiente y reduciendo la redundancia en la recursión mediante el uso de `os.scandir` de forma más directa, evitando conversiones innecesarias a `Path` y llamadas a `resolve()` dentro del bucle crítico.
-- `2026-09-06T02:31:17` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación de objetos `ProcessMemory` mediante bucles con una búsqueda filtrada más eficiente y directa, reduciendo la carga de CPU y la creación innecesaria de objetos al procesar listados de procesos.
-- `2026-09-06T02:28:36` **healthscore.py** (rendimiento): Optimicé el rendimiento del bucle principal de cálculo (`compute_score`) reemplazando el acceso repetitivo a las constantes `_LIMIT_*` por valores pre-calculados, y eliminando la conversión innecesaria a `float` dentro de las funciones de puntuación gracias a que `SystemMetrics` ya garantiza datos validados en su `__post_init__`.
