@@ -823,3 +823,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-06T07:39:20` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se mejora la robustez frente a bloqueos del sistema de archivos al añadir un manejo explícito para el caso en que `shutil.disk_usage` falle (por ejemplo, en unidades de red desconectadas o volúmenes especiales), evitando así que `_can_move_file` retorne `None` erróneamente en entornos donde el espacio es accesible pero la llamada `disk_usage` lanza una excepción.
 - `2026-09-06T07:39:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T07:39:20` Corrida terminada. Total usado hoy: 180.
+- `2026-09-06T07:43:41` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-09-06T07:44:18` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` ante fallos en el sistema de archivos durante el aislamiento, asegurando que si ocurre cualquier error (como desconexión de unidad o falta de espacio) entre la creación del archivo temporal y la persistencia del manifiesto, el sistema no deje archivos huérfanos en la cuarentena ni pierda sincronía.
+- `2026-09-06T07:44:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-06T07:45:08` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-09-06T07:45:20` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejora la robustez del escáner ante condiciones de carrera y archivos inconsistentes añadiendo un chequeo explícito en `process_entry` para verificar si un archivo desaparece entre la enumeración (`os.scandir`) y su análisis, evitando excepciones innecesarias.
+- `2026-09-06T07:45:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T07:45:20` Corrida terminada. Total usado hoy: 184.

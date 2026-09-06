@@ -517,7 +517,7 @@ def quarantine_file(
             source_path.unlink()
             return quarantine_item
         else:
-            raise RuntimeError("Fallo de integridad post-persistencia: el archivo aislado no es consistente.")
+            raise RuntimeError("Fallo de integridad post-persistencia.")
     except Exception as e:
         if destination.exists():
             _safe_unlink(destination)

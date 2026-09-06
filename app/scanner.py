@@ -154,6 +154,10 @@ class Scanner:
             return
         
         try:
+            # Verificación de existencia para evitar race conditions con archivos volátiles
+            if not os.path.exists(entry.path):
+                return
+
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
                     self._handle_directory(entry, stack)
