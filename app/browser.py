@@ -168,7 +168,9 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
             return True
         
         path_obj = Path(path)
-        if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+        # Se requiere resolución para detectar enlaces/protecciones reales
+        resolved = path_obj.resolve()
+        if not is_safe_to_modify(resolved) or is_protected_path(resolved):
             return True
         
         if entry.is_symlink() or is_junction_fn(path) or os.path.ismount(path):
@@ -190,9 +192,10 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
     try:
         if not isinstance(path_obj, Path) or not path_obj.is_absolute() or len(str(path_obj)) >= MAX_PATH_LEN:
             return False
-        if not path_obj.exists() or is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
+        real_p = path_obj.resolve(strict=True)
+        if not is_safe_to_modify(real_p) or is_protected_path(real_p):
             return False
-        if base_check_path and not _is_path_inside_base(path_obj, base_check_path):
+        if base_check_path and not _is_path_inside_base(real_p, base_check_path):
             return False
         return True
     except (OSError, RuntimeError, PermissionError):
@@ -214,14 +217,13 @@ def _sum_directory_recursive(
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
     
-    path_obj = Path(root_abs)
-    if not is_safe_to_modify(path_obj):
-        return 0
-    
     try:
-        if any(c in root_abs for c in '<>|?"*'):
+        path_obj = Path(root_abs).resolve(strict=True)
+        if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
             return 0
-        norm_path = str(path_obj.resolve(strict=True))
+        if base_check_path and not _is_path_inside_base(path_obj, base_check_path):
+            return 0
+        norm_path = str(path_obj)
     except (OSError, RuntimeError):
         return 0
     

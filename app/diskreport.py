@@ -74,14 +74,14 @@ def _bytes_to_mb(size_bytes: int | float) -> float:
 
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
-    Normaliza y valida una ruta raíz contra políticas de seguridad.
-    Retorna Path absoluto si es seguro, o None.
+    Normaliza y valida una ruta raíz contra políticas de seguridad y permisos de lectura.
+    Retorna Path absoluto si es seguro y legible, o None.
     """
     if directory is None:
         return None
     try:
         path_obj = Path(os.fspath(directory)).resolve(strict=True)
-        if path_obj.is_dir() and not is_protected_path(path_obj):
+        if path_obj.is_dir() and not is_protected_path(path_obj) and os.access(path_obj, os.R_OK):
             return path_obj
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
         pass
@@ -99,7 +99,6 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
         if entry.is_symlink():
             return True
         if os.name == 'nt':
-            # Verificación a nivel de sistema de archivos en Windows para detectar junctions
             st = entry.stat(follow_symlinks=False)
             return bool(getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)
     except (OSError, PermissionError, AttributeError):
@@ -187,7 +186,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
     try:
         p = Path(os.fspath(mount)).resolve()
-        if p.exists() and p.is_dir() and not is_protected_path(p):
+        if p.exists() and p.is_dir() and not is_protected_path(p) and os.access(p, os.R_OK):
             usage = shutil.disk_usage(p)
             return DriveUsage(str(p), usage.total, usage.used, usage.free)
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError):
@@ -215,7 +214,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
-        if not current_dir.exists():
+        if not current_dir.exists() or not os.access(current_dir, os.R_OK):
             continue
             
         try:
