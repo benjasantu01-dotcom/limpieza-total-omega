@@ -331,7 +331,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not parent.exists():
             ensure_safe_to_modify(str(parent))
             parent.mkdir(parents=True, exist_ok=True)
-        if not parent.is_dir(): return None
+        
+        if not parent.is_dir() or not os.access(parent, os.W_OK): return None
+        if ruta.exists() and not os.access(ruta, os.W_OK): return None
         
         # Validar espacio disponible (dejar al menos 1MB libre en disco)
         usage = shutil.disk_usage(parent)

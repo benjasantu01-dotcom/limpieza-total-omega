@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **254** (50.4% de aceptación)
+- Mejoras aceptadas: **255** (50.6% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 187
+- Sin respuesta de la IA (error o límite): 186
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 99 | 8 | 15 | 7 | 71 |
-| 2026-09-06 | 155 | 3 | 22 | 8 | 116 |
+| 2026-09-05 | 99 | 8 | 15 | 7 | 67 |
+| 2026-09-06 | 156 | 3 | 22 | 8 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **56**
 - robustez ante casos límite: **56**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **48**
+- seguridad defensiva: **49**
 - rendimiento: **45**
 
 ## Mejoras aceptadas por archivo
@@ -33,9 +33,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `memory.py`: **21**
 - `assistant.py`: **20**
+- `settings.py`: **20**
 - `browser.py`: **19**
 - `healthscore.py`: **19**
-- `settings.py`: **19**
 - `organizer.py`: **19**
 - `branding.py`: **18**
 - `duplicates.py`: **18**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-06T13:00:33` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` implementando una comprobación de permisos de escritura mediante `os.access` antes de intentar realizar operaciones de E/S, evitando así fallos de acceso denegado en directorios protegidos o de solo lectura que podrían dejar archivos temporales huérfanos.
 - `2026-09-06T12:51:29` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo una validación explícita mediante `pathlib.Path.resolve()` para prevenir ataques de *path traversal* (ej. secuencias `..`) que podrían permitir al escáner escapar de la carpeta raíz designada.
 - `2026-09-06T12:51:13` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la manipulación de archivos que utilizan "Hard Links" (múltiples enlaces al mismo inodo/índice), protegiendo la integridad del sistema de archivos al evitar modificaciones accidentales en archivos que residen fuera de la jerarquía de destino del usuario.
 - `2026-09-06T12:42:09` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones en `stage_for_review` y `delete_reviewed` eliminando el uso de `ensure_safe_to_modify` como condición de control en los `if` (siguiendo las reglas de seguridad), reemplazándolo por `is_safe_to_modify` y verificaciones de ruta `is_relative_to` para evitar fugas de archivos fuera de la zona de cuarentena.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T12:20:14` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` implementando una comprobación de espacio en disco previo a la escritura, evitando posibles excepciones de `OSError` (como `ENOSPC`) que podrían dejar el archivo en un estado inconsistente.
 - `2026-09-06T12:19:45` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en `scanner.py` asegurando que el acceso a metadatos de archivo (stat) maneje correctamente la inexistencia súbita (Race Condition) y archivos bloqueados por el sistema, evitando interrupciones en el flujo de escaneo.
 - `2026-09-06T12:12:45` **safety.py** (robustez ante casos límite): Se introdujo un chequeo de integridad en `ensure_safe_to_modify` para detectar si el archivo es un dispositivo especial o contiene datos corrompidos mediante `os.stat` antes de realizar operaciones de movimiento/borrado, previniendo errores de sistema al intentar manipular archivos bloqueados por el kernel.
-- `2026-09-06T12:10:12` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de `st_nlink` en `_safe_unlink` para prevenir el borrado de archivos que podrían tener múltiples enlaces duros (Hard Links), un escenario común en ataques de enlaces o archivos compartidos que podría causar pérdida de datos inesperada.
