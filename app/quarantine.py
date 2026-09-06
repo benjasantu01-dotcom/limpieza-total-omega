@@ -608,6 +608,7 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
     Valida la integridad del archivo y confirma que el archivo esté desbloqueado
     y dentro de las políticas de seguridad (usando is_safe_to_modify).
     """
+    # Seguridad reforzada: obligatoria contención en sandbox
     if not file_path.is_file() or not _is_within_quarantine_sandbox(file_path, base_path):
         return False
     
@@ -624,14 +625,18 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     quarantine_root = quarantine_dir(base)
     items = load_manifest(base)
     
-    # Mapeo eficiente por nombre de archivo para lookup O(1)
     item_map = {item.stored_name: item for item in items}
     purged_count = 0
     kept_items = []
     
     try:
         for stored_path in quarantine_root.iterdir():
+            # Filtro adicional para evitar tocar manifiestos o directorios fuera de alcance
             if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
+                continue
+            
+            # Verificación de seguridad de sandbox antes de cualquier procesamiento
+            if not _is_within_quarantine_sandbox(stored_path.resolve(), quarantine_root):
                 continue
                 
             item = item_map.get(stored_path.name)

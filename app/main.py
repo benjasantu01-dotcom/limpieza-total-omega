@@ -1051,7 +1051,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """
         if self._closing: return
         try:
-            # Re-verificación de seguridad en el hilo de trabajo
+            # Re-verificación de seguridad obligatoria antes de procesar cualquier tarea
             if target:
                 self._ensure_path_writable_and_clean(target)
             
@@ -1071,20 +1071,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """
         if self._closing or not self.winfo_exists(): return
         
-        target_path = target
-        if check_safety and target_path:
-            try:
-                self._ensure_path_writable_and_clean(target_path)
-            except Exception:
-                self.log(f"Operación cancelada: destino inseguro ({target_path})", self._current_tab())
-                return
-
         self._set_busy(True)
         tab = self._current_tab()
         
         with self._task_lock:
             if not self._closing and self._executor:
-                self._executor.submit(self._worker_thread_logic, fn, tab, target_path if check_safety else None)
+                self._executor.submit(self._worker_thread_logic, fn, tab, target if check_safety else None)
             else:
                 self._set_busy(False)
 

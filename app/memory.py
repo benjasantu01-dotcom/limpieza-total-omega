@@ -370,6 +370,7 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         exec_path = _get_process_path(proc_handle)
         if not exec_path:
             return False, "No se pudo verificar el origen del proceso."
+        # Seguridad defensiva: verificar que la ruta sea segura tanto en protección como en política de modificación
         if is_protected_path(exec_path) or not is_safe_to_modify(exec_path):
             return False, "Operación denegada por política de seguridad."
             
