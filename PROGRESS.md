@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 38
+- Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-04 | 47 | 5 | 9 | 2 | 39 |
+| 2026-09-04 | 44 | 5 | 8 | 2 | 39 |
 | 2026-09-05 | 164 | 13 | 24 | 14 | 135 |
-| 2026-09-06 | 22 | 0 | 5 | 1 | 24 |
+| 2026-09-06 | 24 | 0 | 5 | 1 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **46**
-- rendimiento: **34**
+- robustez ante casos límite: **43**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **21**
 - `assistant.py`: **20**
-- `diskreport.py`: **20**
 - `safety.py`: **19**
 - `scanner.py`: **19**
-- `memory.py`: **18**
-- `organizer.py`: **18**
 - `settings.py`: **18**
 - `duplicates.py`: **18**
+- `branding.py`: **18**
 - `healthscore.py`: **17**
-- `branding.py`: **17**
+- `organizer.py`: **17**
+- `memory.py`: **17**
 - `browser.py`: **16**
-- `quarantine.py`: **13**
+- `quarantine.py`: **12**
 - `main.py`: **10**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-06T02:18:49` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` reduciendo la cantidad de llamadas al sistema y la manipulación de objetos `Path` dentro del bucle de recorrido, usando operaciones de string directamente para identificar carpetas de primer nivel.
+- `2026-09-06T02:17:58` **branding.py** (rendimiento): Optimicé el rendimiento de la generación de gradientes en `branding.py` reemplazando los bucles manuales de interpolación por una lógica basada en segmentos pre-calculados, reduciendo drásticamente la carga de CPU y memoria en cada frame de renderizado.
 - `2026-09-06T02:08:08` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` mediante docstrings detallados en los métodos de la clase `StartupEntry` para aclarar el "porqué" de las validaciones de seguridad y el manejo de rutas, facilitando el mantenimiento y auditoría del código.
 - `2026-09-06T02:07:07` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `scanner.py` mediante la adición de docstrings detallados en las funciones de heurística y métodos clave, además de incluir type hints consistentes, permitiendo a otros desarrolladores entender rápidamente el propósito y las restricciones de seguridad (como el manejo de `os.DirEntry` vs `Path`) de cada componente.
 - `2026-09-06T01:57:25` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad de `quarantine.py` documentando las precondiciones y efectos secundarios de las funciones críticas de manipulación de archivos mediante Google Style Docstrings, además de añadir type hints explícitos en los retornos de las funciones que realizan validaciones de seguridad.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T01:27:08` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save()` capturando explícitamente posibles excepciones durante la escritura y validación, asegurando que la función retorne `None` (indicando fallo sin romper el flujo) ante cualquier error de entrada o I/O, evitando dejar la aplicación en un estado de inconsistencia.
 - `2026-09-06T01:26:36` **scanner.py** (manejo de errores y validación de entradas): Se mejora la solidez ante errores de ejecución en `scan_directory` validando la entrada y asegurando que las llamadas a `os.scandir` y el manejo de rutas no aborten por entradas nulas o rutas inválidas inesperadas.
 - `2026-09-06T01:26:12` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` refactorizando el chequeo de integridad para evitar una posible carrera de condiciones y garantizando que `_check_file_integrity` siempre opere sobre una ruta resuelta y validada, mejorando la precisión en la captura de errores.
-- `2026-09-06T01:17:04` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` añadiendo una validación explícita de `temp_path` antes de intentar el borrado en el bloque `except`, previniendo errores de `AttributeError` o intentos de borrado sobre variables no inicializadas tras fallos tempranos en la apertura de archivos.
-- `2026-09-06T01:16:31` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo `organizer.py` implementando validaciones de tipo y de estado (None/vacío) más estrictas en las funciones críticas de E/S, evitando que excepciones inesperadas o parámetros nulos interrumpan el flujo de procesamiento de archivos.
