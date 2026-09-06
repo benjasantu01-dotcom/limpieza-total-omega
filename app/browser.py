@@ -151,7 +151,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         
     try:
         path = entry.path
-        if not path or len(path) >= MAX_PATH_LEN:
+        if not path or len(path) >= MAX_PATH_LEN or not os.path.isabs(path):
             return True
         
         # Validar seguridad antes de seguir
@@ -173,7 +173,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
     """Valida que la ruta sea segura (no protegida) y opcionalmente descienda de la base permitida."""
     try:
-        if not isinstance(path_obj, Path) or len(str(path_obj)) >= MAX_PATH_LEN:
+        if not isinstance(path_obj, Path) or not path_obj.is_absolute() or len(str(path_obj)) >= MAX_PATH_LEN:
             return False
         if not path_obj.exists() or is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return False
@@ -251,7 +251,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """Verifica si una ruta candidata es una carpeta válida de caché antes de escanear."""
-    if not isinstance(candidate, Path) or not isinstance(base_path, Path):
+    if not isinstance(candidate, Path) or not isinstance(base_path, Path) or not candidate.is_absolute():
         return False
     try:
         if not candidate.exists() or len(str(candidate)) >= MAX_PATH_LEN:

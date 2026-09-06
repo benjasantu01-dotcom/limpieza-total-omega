@@ -284,8 +284,11 @@ class SystemContext:
             
         found_data = False
         for key, spec in _VALIDATORS.items():
-            if _validate_and_assign(self, source, key, spec):
-                found_data = True
+            try:
+                if _validate_and_assign(self, source, key, spec):
+                    found_data = True
+            except Exception:
+                continue
         
         grade_val = _get_source_value(source, "grade")
         if isinstance(grade_val, str):
@@ -345,6 +348,8 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
             return False
         
         f_val = float(val)
+        if math.isnan(f_val) or math.isinf(f_val):
+            return False
         if not (spec.min_val <= f_val <= spec.max_val):
             return False
         
