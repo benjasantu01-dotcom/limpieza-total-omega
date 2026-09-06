@@ -61,7 +61,7 @@ WIN_FILE_ATTR_REPARSE_POINT: Final[int] = 0x400
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Valida si el nombre del archivo termina con una extensión 'inocente' seguida de una ejecutable."""
-    if path.name and DOUBLE_EXTENSION_RE.search(path.name):
+    if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
@@ -80,8 +80,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Identifica ejecutables con nombres de servicios críticos que se encuentran fuera de system32."""
-    name_low = path.name.lower()
-    if name_low in SYSTEM_LOOKALIKES:
+    if path.name.lower() in SYSTEM_LOOKALIKES:
         path_str = str(path).lower()
         if not is_protected_path(path) and SYSTEM32_LOWER not in path_str:
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
@@ -102,17 +101,12 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root = base_root.resolve(strict=False)
+        self.base_root_str = str(base_root.resolve(strict=False)).lower()
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Determina si la ruta es descendiente estricta de la raíz de escaneo resolviendo Path Traversal."""
-        try:
-            target = Path(entry_path).resolve(strict=False)
-            return self.base_root in target.parents or target == self.base_root
-        except (OSError, RuntimeError) as e:
-            logger.debug(f"Error resolviendo ruta {entry_path}: {e}")
-            return False
+        """Determina si la ruta es descendiente estricta de la raíz de escaneo."""
+        return entry_path.lower().startswith(self.base_root_str)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Valida integridad, nombres reservados, caracteres prohibidos y restricciones de safety.py."""
@@ -128,16 +122,12 @@ class Scanner:
             if not self._is_inside_base_root(path_str):
                 return False
             
-            # Solo instanciamos Path si pasamos las validaciones previas de cadena
             return not is_protected_path(Path(path_str))
         except (OSError, AttributeError):
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """
-        Detecta puntos de reparse (Junctions, Symlinks) mediante atributos de archivo.
-        Si hay error al consultar, se asume True como medida defensiva para evitar recursión.
-        """
+        """Detecta puntos de reparse (Junctions, Symlinks)."""
         try:
             if entry.is_symlink():
                 return True
@@ -157,17 +147,13 @@ class Scanner:
             return
         
         try:
-            if not os.path.exists(entry.path):
-                return
-
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
                     self._handle_directory(entry, stack)
                 return
 
-            name = entry.name
-            ext_idx = name.rfind('.')
-            ext_low = name[ext_idx:].lower() if ext_idx != -1 else ""
+            ext_idx = entry.name.rfind('.')
+            ext_low = entry.name[ext_idx:].lower() if ext_idx != -1 else ""
             
             if ext_low in SUSPICIOUS_ALL_EXTS:
                 self._run_file_heuristics(Path(entry.path), entry, ext_low)
@@ -179,17 +165,11 @@ class Scanner:
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
-    """
-    Orquestador principal de reglas heurísticas.
-    Aplica chequeos básicos (archivos vacíos) y luego ejecuta el registro de reglas complejas.
-    """
+    """Orquestador principal de reglas heurísticas."""
     findings: ScanResult = []
-    
-    # 1. Chequeo de extensión doble
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
     
-    # 2. Chequeo de ejecutables
     file_ext = ext or path.suffix.lower()
     if file_ext in SUSPICIOUS_EXECUTABLE_EXT:
         try:
@@ -207,13 +187,11 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Inicia el escaneo recursivo validando la seguridad de la raíz de entrada."""
-    if not directory:
-        return []
+    if not directory: return []
         
     try:
         base_path = Path(directory)
-        if not base_path.exists():
-            return []
+        if not base_path.exists(): return []
         root_input = base_path.resolve(strict=False)
         if not root_input.is_dir() or is_protected_path(root_input) or str(root_input).startswith(("\\\\", "//")):
             return []
@@ -226,12 +204,10 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     
     while stack:
         current_dir = stack.pop()
-        if not current_dir: continue
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry:
-                        scanner.process_entry(entry, stack)
+                    scanner.process_entry(entry, stack)
         except (PermissionError, OSError, FileNotFoundError):
             continue
     return scanner.results

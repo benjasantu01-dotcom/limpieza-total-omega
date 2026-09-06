@@ -1184,3 +1184,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-06T11:29:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-06T11:29:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T11:29:54` Corrida terminada. Total usado hoy: 272.
+- `2026-09-06T11:38:31` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-09-06T11:39:04` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de las validaciones de sistema evitando llamadas repetitivas al sistema de archivos mediante el uso de una lógica de comparación de strings pre-procesada (`_SYSTEM_ROOT_PATHS_STR`) y eliminando redundancias en `_is_system_path_cached`.
+- `2026-09-06T11:39:29` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del proceso de escaneo eliminando el uso redundante de `Path.resolve()` y `Path.name` dentro de los bucles críticos, reemplazándolos por operaciones directas sobre el string de `entry.path` y el nombre proveniente de `os.DirEntry`, lo que reduce drásticamente las llamadas a I/O del sistema de archivos.
+- `2026-09-06T11:39:59` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `settings.py` implementando una pre-validación rápida en el acceso a la caché `_CACHE` y `_SAFETY_CACHE` para evitar operaciones de I/O innecesarias en cada llamada, además de refactorizar las validaciones de `path` para minimizar el uso de `resolve(strict=False)` en rutas ya verificadas.
+- `2026-09-06T11:40:10` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-06T11:40:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T11:40:10` Corrida terminada. Total usado hoy: 276.

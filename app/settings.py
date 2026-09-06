@@ -158,8 +158,8 @@ class _Validators:
         Utiliza caché para evitar llamadas repetitivas a I/O. Rechaza symlinks
         y junctions para prevenir ataques de redirección."""
         path_str = str(path_obj)
-        if path_str in _SAFETY_CACHE:
-            return _SAFETY_CACHE[path_str]
+        if (cached := _SAFETY_CACHE.get(path_str)) is not None:
+            return cached
         
         try:
             resolved = path_obj.resolve(strict=False)
@@ -252,14 +252,18 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     if custom_base is None: return _PATH_CACHE["default"]
     
     cache_key = str(custom_base)
-    if cache_key not in _PATH_CACHE:
-        try:
-            base = Path(custom_base).expanduser()
-            if _Validators._is_safe_path(str(base)):
-                _PATH_CACHE[cache_key] = base.resolve(strict=False) / SETTINGS_FILE
-        except (OSError, RuntimeError):
-            pass
-    return _PATH_CACHE.get(cache_key, _PATH_CACHE["default"])
+    if (cached := _PATH_CACHE.get(cache_key)) is not None:
+        return cached
+        
+    try:
+        base = Path(custom_base).expanduser()
+        if _Validators._is_safe_path(str(base)):
+            resolved = base.resolve(strict=False) / SETTINGS_FILE
+            _PATH_CACHE[cache_key] = resolved
+            return resolved
+    except (OSError, RuntimeError):
+        pass
+    return _PATH_CACHE["default"]
 
 def validate(raw_values: Any) -> AppSettings:
     """Aplica el esquema y validaciones a un objeto crudo; retorna `DEFAULTS` ante errores."""

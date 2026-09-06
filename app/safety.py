@@ -109,6 +109,8 @@ _SYSTEM_ROOT_PATHS: Final[tuple[str, ...]] = tuple(
     if os.environ.get(v)
 )
 
+_SYSTEM_ROOT_PATHS_STR: Final[tuple[str, ...]] = tuple(p.lower() for p in _SYSTEM_ROOT_PATHS)
+
 _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
     r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$', re.IGNORECASE
 )
@@ -237,7 +239,6 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 def _check_file_integrity(path: Path) -> None:
     """Ejecuta la batería de reglas de validación y lanza UnsafePathError ante cualquier violación."""
     try:
-        # Re-verificar existencia y obtener stat de forma atómica para evitar race conditions
         file_stat = path.stat()
         if not os.access(path, os.W_OK):
             raise UnsafePathError("Acceso de escritura denegado.", SafetyValidationErrorCode.GENERIC)
@@ -275,10 +276,7 @@ def normalize(path: PathLike) -> Path:
             if _is_reparse_point(current):
                 raise ValueError(f"Acceso restringido: componente {current} es un punto de reparse.")
         
-        if not p.exists():
-            return Path(os.path.abspath(path_str))
-            
-        return p.resolve()
+        return p.resolve() if p.exists() else Path(os.path.abspath(path_str))
     except (OSError, RuntimeError, TypeError, PermissionError) as e:
         raise ValueError(f"Error irrecuperable al normalizar {path_str}: {e}")
 
@@ -295,14 +293,11 @@ def is_drive_root(path: PathLike) -> bool:
 def _is_system_path_cached(path_str: str) -> bool:
     """Helper interno con cacheo para la validación de rutas del sistema."""
     try:
-        p = Path(path_str).resolve()
-        for root in _SYSTEM_ROOT_PATHS:
-            try:
-                if os.path.commonpath([str(p), root]) == root:
-                    return True
-            except ValueError:
-                continue
-        return any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts)
+        p_str_low = path_str.lower()
+        if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
+            return True
+        p_parts = Path(path_str).parts
+        return any(part.lower() in PROTECTED_DIR_NAMES for part in p_parts)
     except (OSError, RuntimeError):
         return True
 
@@ -368,7 +363,6 @@ def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | 
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     
-    # Prevenir modificación de archivos del propio núcleo de la aplicación
     app_root = Path(os.getcwd()).resolve()
     if target_path == app_root or app_root in target_path.parents:
         raise UnsafePathError("Modificación del directorio de la aplicación denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
