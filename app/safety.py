@@ -358,8 +358,12 @@ def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | 
     """Valida si la ruta está dentro de los límites de seguridad configurados."""
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
-    if is_within_directory(target_path, Path.cwd(), allow_equal=True):
-        raise UnsafePathError("No se permite modificar archivos en la app raíz.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
+    
+    # Prevenir modificación de archivos del propio núcleo de la aplicación
+    app_root = Path(os.getcwd()).resolve()
+    if target_path == app_root or app_root in target_path.parents:
+        raise UnsafePathError("Modificación del directorio de la aplicación denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
+        
     if is_drive_root(target_path):
         raise UnsafePathError("Intento de acceso a la raíz de unidad.", SafetyValidationErrorCode.ROOT_ACCESS)
     if is_protected_path(target_path):

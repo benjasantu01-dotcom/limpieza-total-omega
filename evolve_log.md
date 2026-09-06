@@ -491,3 +491,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-06T03:50:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-09-06T03:50:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T03:50:52` Corrida terminada. Total usado hoy: 92.
+- `2026-09-06T03:59:23` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-09-06T03:59:54` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita para prevenir la eliminación o modificación de archivos críticos si el usuario intenta operar directamente sobre la raíz de la aplicación (la carpeta donde reside el script `main.py`), protegiendo el núcleo de la herramienta contra operaciones de limpieza mal dirigidas.
+- `2026-09-06T04:00:17` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-06T04:00:46` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `save()` aplicando el principio de verificación antes de la operación: ahora se utiliza `is_safe_to_modify` para realizar una validación de seguridad previa, garantizando que no se intentará abrir un archivo para escritura en rutas protegidas, evitando así que el manejo de excepciones de `ensure_safe_to_modify` sea el único mecanismo de control.
+- `2026-09-06T04:00:56` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-09-06T04:00:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T04:00:56` Corrida terminada. Total usado hoy: 96.

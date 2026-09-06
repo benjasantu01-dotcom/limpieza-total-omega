@@ -313,8 +313,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         ):
             cleaned_settings["asistente_activado"] = False
         
-        if is_protected_path(ruta_str) or ruta.is_symlink(): return None
-        if hasattr(ruta, 'is_junction') and ruta.is_junction(): return None
+        # Validación defensiva antes de cualquier operación de escritura
+        if is_protected_path(ruta_str) or not is_safe_to_modify(ruta_str):
+            return None
+            
         ensure_safe_to_modify(ruta_str)
         
         parent = ruta.parent
