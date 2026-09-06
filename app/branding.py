@@ -216,15 +216,17 @@ def bar(percent: Union[float, int, None], width: int = 24,
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
     """Convierte color hexadecimal #RRGGBB a tupla RGB (r, g, b)."""
-    if len(value) != 7 or not value.startswith("#"): return (0, 0, 0)
+    if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"): 
+        return (0, 0, 0)
     try:
         return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
-    except ValueError: return (0, 0, 0)
+    except (ValueError, IndexError): 
+        return (0, 0, 0)
 
 @lru_cache(maxsize=128)
 def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
     """Convierte tupla RGB (0-255) a color hexadecimal #RRGGBB."""
-    return "#{:02x}{:02x}{:02x}".format(*rgb)
+    return "#{:02x}{:02x}{:02x}".format(*[max(0, min(255, c)) for c in rgb])
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
@@ -232,8 +234,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     if start == end: return start
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
-    ratio = max(0.0, min(1.0, float(ratio)))
-    if not math.isfinite(ratio): ratio = 0.0
+    ratio = max(0.0, min(1.0, float(ratio) if math.isfinite(ratio) else 0.0))
     return _rgb_to_hex((
         int(r1 + (r2 - r1) * ratio),
         int(g1 + (g2 - g1) * ratio),
@@ -260,7 +261,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
             int(s1[1] + (s2[1] - s1[1]) * delta),
             int(s1[2] + (s2[2] - s1[2]) * delta)
         ))
-    return tuple(res)
+    return tuple(res) # type: ignore
 
 @lru_cache(maxsize=32)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, ...]:
@@ -306,23 +307,24 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda una copia física del archivo logo.svg tras verificar integridad y seguridad."""
-    if not isinstance(destination, (str, Path)): return None
+    if not destination: return None
     try:
         path_obj = Path(destination).resolve()
-        # Verificación proactiva de seguridad antes de tocar el sistema de archivos
-        if is_protected_path(path_obj) or not is_safe_to_modify(path_obj): 
+        
+        # Validaciones de seguridad previas a la operación de disco
+        if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return None
         
-        # Validar el directorio padre antes de intentar crear
         parent = path_obj.parent
-        if is_protected_path(parent) or not is_safe_to_modify(parent): 
+        if is_protected_path(parent) or not is_safe_to_modify(parent):
             return None
-        
+            
         ensure_safe_to_modify(path_obj)
         parent.mkdir(parents=True, exist_ok=True)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
-    except (OSError, PermissionError, IOError): return None
+    except (OSError, PermissionError, TypeError): 
+        return None
 
 def logo_ascii() -> str:
     """Retorna una representación artística del logo en caracteres ASCII."""

@@ -324,14 +324,16 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _get_source_value(source: Any, key: str) -> Any:
-    """Extrae valores de fuentes de datos de forma segura."""
+    """Extrae valores de fuentes de datos de forma segura, ignorando métodos protegidos."""
     try:
         if isinstance(source, dict):
             return source.get(key)
-        if hasattr(source, key) and not key.startswith('_'):
-            return getattr(source, key)
+        if hasattr(source, key):
+            val = getattr(source, key)
+            if not isinstance(val, Callable) and not key.startswith('_'):
+                return val
         return None
-    except (AttributeError, TypeError, KeyError):
+    except (AttributeError, TypeError):
         return None
 
 def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: MetricSpec) -> bool:
@@ -347,8 +349,7 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
         if not (spec.min_val <= f_val <= spec.max_val):
             return False
         
-        final_val = spec.cast_func(f_val)
-        setattr(ctx, key, final_val)
+        setattr(ctx, key, spec.cast_func(f_val))
         return True
     except (ValueError, TypeError, AttributeError):
         return False

@@ -483,3 +483,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-06T14:15:26` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-06T14:15:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T14:15:26` Corrida terminada. Total usado hoy: 336.
+- `2026-09-06T14:21:25` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-06T14:22:06` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_source_value` y `_validate_and_assign` integrando validaciones de tipo más estrictas y manejo de excepciones ante objetos malformados, evitando que una entrada inesperada (como `None` o tipos incompatibles) interrumpa el proceso de ingesta del contexto.
+- `2026-09-06T14:22:40` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` implementando una validación de parámetros más estricta y evitando la propagación de excepciones mediante el uso de filtros de seguridad explícitos y chequeos de tipo, alineado con el enfoque de manejo de errores y validación.
+- `2026-09-06T14:23:09` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-06T14:23:22` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_collect_summary_data` y las funciones que lo consumen, asegurando que `_collect_summary_data` maneje internamente las excepciones durante la iteración y añadiendo validaciones de tipo para los parámetros de entrada (`limit`) en las funciones públicas, evitando errores inesperados ante valores mal formados.
+- `2026-09-06T14:23:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T14:23:22` Corrida terminada. Total usado hoy: 340.
