@@ -74,7 +74,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         stats = entry.stat(follow_symlinks=False) if entry else path.stat()
         if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
-    except (OSError, AttributeError, ValueError, PermissionError):
+    except (OSError, AttributeError, ValueError, PermissionError, FileNotFoundError):
         pass
     return None
 
@@ -157,7 +157,7 @@ class Scanner:
             
             if ext_low in SUSPICIOUS_ALL_EXTS:
                 self._run_file_heuristics(Path(entry.path), entry, ext_low)
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, FileNotFoundError):
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:

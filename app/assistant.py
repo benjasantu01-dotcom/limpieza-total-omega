@@ -520,9 +520,10 @@ _KEYWORD_TO_HANDLER: Final[dict[str, Callable[[SystemContext, str], Answer]]] = 
 }
 
 def _sanitize_query(question: str) -> str:
-    """Limpia el input del usuario."""
+    """Limpia el input del usuario eliminando caracteres de control y posibles inyecciones."""
     if not isinstance(question, str): return ""
-    clean = _CONTROL_CHARS_REGEX.sub('', question)
+    clean = _CONTROL_CHARS_REGEX.sub(' ', question)
+    clean = _PATH_INJECTION_REGEX.sub(' ', clean)
     return clean.strip()[:100].lower()
 
 def local_answer(question: str, context: SystemContext) -> Answer:

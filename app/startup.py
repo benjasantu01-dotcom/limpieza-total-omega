@@ -84,6 +84,9 @@ class StartupEntry:
         """Verifica si el nombre de archivo es un dispositivo reservado por el kernel de Windows."""
         reserved: Set[str] = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
         try:
+            # Detectar rutas con NUL bytes u otros caracteres de control que confunden a la API de Windows
+            if "\0" in path_str:
+                return True
             return Path(path_str).stem.upper() in reserved
         except (ValueError, TypeError):
             return True
@@ -117,7 +120,7 @@ class StartupEntry:
             
         path_str: str = raw_command[1:end_quote].strip()
         
-        if not path_str or any(c in path_str for c in '<>|?*'):
+        if not path_str or self._is_path_suspicious(path_str):
             return ""
         
         try:
@@ -140,12 +143,12 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """Normaliza rutas a formato absoluto, valida seguridad y gestiona caché de sesión."""
-        if not path_string or self._is_path_suspicious(path_string):
+        if not path_string or self._is_path_suspicious(path_string) or self._is_reserved_device_name(path_string):
             return ""
         
         try:
             norm: str = os.path.normpath(path_string)
-            if len(norm) > 260 or self._is_reserved_device_name(norm):
+            if len(norm) > 260:
                 return ""
         except (ValueError, TypeError):
             return ""
@@ -181,9 +184,7 @@ class StartupEntry:
         """Parsea líneas de comando complejas para obtener el ejecutable primario."""
         if not command_line or not isinstance(command_line, str):
             return ""
-        if any(char in command_line for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
-            return ""
-
+        
         if command_line.startswith('"'):
             return self._extract_quoted_path(command_line)
             
@@ -290,7 +291,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             
             if not name or not cmd or cmd.startswith(r"\\") or cmd in seen_commands:
                 continue
-            if name.upper().startswith("PS") or any(c in cmd for c in '<>|?*&;'):
+            if name.upper().startswith("PS"):
                 continue
             
             p_cmd: Path = Path(cmd)

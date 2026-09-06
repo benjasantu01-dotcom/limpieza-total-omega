@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -331,6 +332,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             ensure_safe_to_modify(str(parent))
             parent.mkdir(parents=True, exist_ok=True)
         if not parent.is_dir(): return None
+        
+        # Validar espacio disponible (dejar al menos 1MB libre en disco)
+        usage = shutil.disk_usage(parent)
+        if usage.free < 1024 * 1024:
+            return None
         
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None
