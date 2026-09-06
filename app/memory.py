@@ -185,6 +185,21 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         cached=BytesValue(max(0, metric_map["Cached"]))
     )
 
+def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[ProcessMemory]:
+    """Valida y convierte datos crudos de proceso, retornando objeto si es seguro."""
+    if not name or not pid_str.isdigit() or not ws_str.isdigit():
+        return None
+    
+    pid_val, ws_val = int(pid_str), int(ws_str)
+    
+    if pid_val <= 0 or ws_val < 0 or pid_val in SYSTEM_CRITICAL_PIDS:
+        return None
+    
+    if is_protected_path(name):
+        return None
+        
+    return ProcessMemory(name=name, pid=pid_val, working_set=BytesValue(ws_val))
+
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
     Analiza la salida CSV de PowerShell y filtra procesos según políticas de seguridad.
@@ -200,26 +215,9 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         parts = [p.strip().strip("'\"") for p in line.split(",", 2)]
         if len(parts) < 3: continue
         
-        try:
-            name_val, pid_str, ws_str = parts[0], parts[1], parts[2]
-            
-            if not name_val or not pid_str.isdigit() or not ws_str.isdigit():
-                continue
-            
-            pid_val, ws_val = int(pid_str), int(ws_str)
-            
-            if pid_val <= 0 or ws_val < 0:
-                continue
-            
-            if pid_val in SYSTEM_CRITICAL_PIDS:
-                continue
-
-            if is_protected_path(name_val):
-                continue
-                
-            proc_list.append(ProcessMemory(name=name_val, pid=pid_val, working_set=BytesValue(ws_val)))
-        except (ValueError, TypeError):
-            continue
+        process = _is_valid_process_entry(parts[0], parts[1], parts[2])
+        if process:
+            proc_list.append(process)
     
     proc_list.sort(key=lambda p: p.working_set, reverse=True)
     return proc_list[:limit]

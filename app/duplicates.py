@@ -20,7 +20,7 @@ from collections import defaultdict
 from collections.abc import Sequence, Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Union, Tuple, Set, Callable, TypeAlias
+from typing import Dict, List, Optional, Union, Tuple, Callable, TypeAlias
 
 from safety import is_protected_path
 
@@ -236,9 +236,10 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
     """
-    Filtra candidatos mediante una estrategia de dos capas:
-    1. Hash parcial para descartar diferencias obvias.
-    2. Hash SHA256 completo para validar identidad absoluta.
+    Refina los candidatos de archivos grandes.
+    Aplica una doble capa: primero hash parcial (rápido, E/S limitada) y luego 
+    hash completo (lento, preciso) sobre los resultados coincidentes, para 
+    asegurar colisiones cero.
     """
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
@@ -250,14 +251,16 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
     return final_groups
 
 
-def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
+def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Selecciona la estrategia de refinamiento según el tamaño:
-    Archivos pequeños (<64KB) se validan con hash parcial, otros requieren hash completo.
+    Selecciona la estrategia de validación de identidad según el tamaño del archivo:
+    - Archivos <= 64KB: Basta con el hash parcial por ser pequeños.
+    - Archivos > 64KB: Requiere validación profunda por probabilidad de colisión.
     """
     if not isinstance(size, int) or size <= 0 or not paths or len(paths) < 2: 
         return []
     
+    # Decisión estratégica: Si el archivo es menor al buffer, el hash parcial es el hash total.
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, partial_hash)
     else:
@@ -276,7 +279,7 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
     groups: List[DuplicateGroup] = []
     size_map = _collect_candidates(directories, min_size, skip_protected)
     for size, paths in size_map.items():
-        groups.extend(_process_size_group(size, paths))
+        groups.extend(_decide_hash_strategy_and_process(size, paths))
         
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
     return groups

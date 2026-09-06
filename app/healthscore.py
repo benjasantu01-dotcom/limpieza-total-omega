@@ -172,12 +172,13 @@ class SystemMetrics:
         self.memory_available_percent = _clamp(_to_float(self.memory_available_percent), 0.0, 100.0)
         self.disk_free_percent = _clamp(_to_float(self.disk_free_percent), 0.0, 100.0)
 
+    @property
     def is_finite(self) -> bool:
         """Verifica que todos los atributos numéricos sean matemáticamente finitos."""
-        return (math.isfinite(self.junk_mb) and math.isfinite(self.suspicious_count) and
-                math.isfinite(self.suspicious_warnings) and math.isfinite(self.memory_available_percent) and
-                math.isfinite(self.disk_free_percent) and math.isfinite(self.duplicate_mb) and
-                math.isfinite(self.startup_count) and math.isfinite(self.quarantined_count))
+        attrs = [self.junk_mb, self.suspicious_count, self.suspicious_warnings, 
+                 self.memory_available_percent, self.disk_free_percent, 
+                 self.duplicate_mb, self.startup_count, self.quarantined_count]
+        return all(math.isfinite(a) for a in attrs)
 
 @dataclass
 class HealthResult:
@@ -214,7 +215,7 @@ def grade_for_score(score: float | int) -> str:
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float) -> List[str]:
     """Filtra y ejecuta recomendaciones basadas en el estado del sistema."""
-    findings = []
+    findings: List[str] = []
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -231,7 +232,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Tipo de entrada de métricas inválido."])
     
     metrics.validate()
-    if not metrics.is_finite():
+    if not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de sistema corruptos."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
