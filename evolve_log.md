@@ -1235,3 +1235,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-06T12:42:09` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las validaciones en `stage_for_review` y `delete_reviewed` eliminando el uso de `ensure_safe_to_modify` como condición de control en los `if` (siguiendo las reglas de seguridad), reemplazándolo por `is_safe_to_modify` y verificaciones de ruta `is_relative_to` para evitar fugas de archivos fuera de la zona de cuarentena.
 - `2026-09-06T12:42:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T12:42:09` Corrida terminada. Total usado hoy: 300.
+- `2026-09-06T12:49:48` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-06T12:50:23` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: seguridad defensiva).
+- `2026-09-06T12:50:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-06T12:51:13` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita para prevenir la manipulación de archivos que utilizan "Hard Links" (múltiples enlaces al mismo inodo/índice), protegiendo la integridad del sistema de archivos al evitar modificaciones accidentales en archivos que residen fuera de la jerarquía de destino del usuario.
+- `2026-09-06T12:51:29` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo una validación explícita mediante `pathlib.Path.resolve()` para prevenir ataques de *path traversal* (ej. secuencias `..`) que podrían permitir al escáner escapar de la carpeta raíz designada.
+- `2026-09-06T12:51:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T12:51:29` Corrida terminada. Total usado hoy: 304.

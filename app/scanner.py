@@ -101,12 +101,17 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root_str = str(base_root.resolve(strict=False)).lower()
+        self.base_root = base_root.resolve(strict=False)
+        self.base_root_str = str(self.base_root).lower()
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Determina si la ruta es descendiente estricta de la raíz de escaneo."""
-        return entry_path.lower().startswith(self.base_root_str)
+        try:
+            resolved_path = Path(entry_path).resolve(strict=False)
+            return str(resolved_path).lower().startswith(self.base_root_str)
+        except OSError:
+            return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Valida integridad, nombres reservados, caracteres prohibidos y restricciones de safety.py."""

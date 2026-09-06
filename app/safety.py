@@ -57,6 +57,7 @@ class SafetyValidationErrorCode(IntEnum):
     REPARSE_POINT_DETECTED = 9
     FILE_IN_USE = 10
     SENSITIVE_EXTENSION = 11
+    HARD_LINK_DETECTED = 12
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
@@ -247,7 +248,8 @@ def _check_file_integrity(path: Path) -> None:
         
         for rule in _VALIDATORS:
             if rule.predicate(path, file_stat):
-                raise UnsafePathError(f"Violación de integridad: {rule.reason.value}", SafetyValidationErrorCode.GENERIC)
+                code = SafetyValidationErrorCode.HARD_LINK_DETECTED if rule.reason == ProtectionReason.HARD_LINK else SafetyValidationErrorCode.GENERIC
+                raise UnsafePathError(f"Violación de integridad: {rule.reason.value}", code)
     except (FileNotFoundError, PermissionError, OSError) as e:
         raise UnsafePathError(f"No se pudo verificar integridad: {e}", SafetyValidationErrorCode.GENERIC)
 
@@ -447,6 +449,7 @@ def describe_protection(path: PathLike) -> str:
             if not (p.is_file() or p.is_dir()): return f"'{p}' tipo de objeto no soportado."
             if p.is_file() and p.stat().st_size == 0: return f"'{p}' archivo vacío."
             if p.is_file() and p.stat().st_size > MAX_FILE_SIZE: return f"'{p}' tamaño excesivo."
+            if p.is_file() and p.stat().st_nlink > 1: return f"'{p}' detectado como hard link."
     except OSError:
         pass
     if _is_sensitive_extension(p): return f"'{p.name}' extensión sensible."
