@@ -9,43 +9,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **235** (46.6% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 202
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 162 | 13 | 24 | 14 | 135 |
-| 2026-09-06 | 73 | 1 | 12 | 3 | 67 |
+| 2026-09-05 | 160 | 13 | 24 | 13 | 134 |
+| 2026-09-06 | 75 | 1 | 12 | 3 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **49**
-- robustez ante casos límite: **47**
-- rendimiento: **34**
+- robustez ante casos límite: **45**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
 - `memory.py`: **20**
 - `safety.py`: **19**
 - `scanner.py`: **19**
-- `organizer.py`: **18**
-- `assistant.py`: **18**
+- `assistant.py`: **19**
 - `settings.py`: **18**
 - `duplicates.py`: **18**
 - `browser.py`: **17**
+- `organizer.py`: **17**
 - `healthscore.py`: **17**
 - `branding.py`: **16**
-- `quarantine.py`: **12**
 - `main.py`: **12**
+- `quarantine.py`: **11**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-06T06:44:11` **diskreport.py** (rendimiento): Optimizé el rendimiento de `summarize` y `_collect_summary_data` evitando llamadas redundantes a `path.exists()` y redundancias en la recolección de estadísticas, lo que reduce drásticamente las llamadas al sistema operativo durante el recorrido del disco.
+- `2026-09-06T06:43:05` **assistant.py** (rendimiento): Optimicé el rendimiento de `context_as_text` reemplazando múltiples llamadas a funciones de formateo con una pre-computación de valores string dentro de una única llamada a la función cacheada, evitando el costo de cómputo redundante en el `lru_cache` cada vez que el contexto es idéntico.
 - `2026-09-06T06:33:52` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de procesamiento, la estandarización de las descripciones de los métodos en la clase `StartupEntry` para clarificar la lógica de resolución de rutas y la eliminación de redundancias en los comentarios para mejorar la mantenibilidad del código.
 - `2026-09-06T06:33:12` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del módulo `scanner.py` mediante la adición de Type Hints detallados en la clase `Scanner`, la documentación explícita del comportamiento de `_is_reparse_point` (explicando la gestión de errores como medida de seguridad conservadora) y la estandarización de la estructura de las funciones de chequeo mediante una docstring uniforme.
 - `2026-09-06T06:32:47` **safety.py** (legibilidad y documentación): Se introdujo documentación técnica detallada mediante docstrings explicativos en las funciones de validación crítica y se añadieron type hints ausentes para mejorar la claridad del contrato de datos, facilitando el mantenimiento y la auditoría del módulo `safety.py`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T06:03:28` **browser.py** (legibilidad y documentación): Mejoré la documentación de los métodos de escaneo y validación mediante docstrings descriptivos que aclaran las restricciones de seguridad (ej. el uso de `follow_symlinks=False` y el motivo de los chequeos de `is_safe_to_modify`), facilitando el mantenimiento y la auditoría del código.
 - `2026-09-06T06:03:16` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando descripciones detalladas (docstrings) a las constantes críticas y estructuras de datos para asegurar que cualquier colaborador comprenda el propósito y restricciones de la identidad visual de la aplicación.
 - `2026-09-06T06:02:44` **assistant.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de manejo de respuestas (`handle_*`) para clarificar el flujo de decisión, mejorando la legibilidad y mantenimiento del código sin alterar la funcionalidad.
-- `2026-09-06T06:02:07` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_registry_csv` al implementar un manejo de errores más estricto durante la lectura del CSV, asegurando que los valores faltantes o malformados no detengan el procesamiento de otras entradas válidas y validando explícitamente la integridad de los datos antes de crear objetos `StartupEntry`.
-- `2026-09-06T05:53:01` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save` mediante el uso de `try-finally` para asegurar la limpieza de archivos temporales y se ha reemplazado la validación de `shutil.disk_usage` por una verificación de escritura más segura que evita errores en sistemas sin soporte para esta llamada, además de refactorizar la lógica de `validate` para ser más tolerante a errores en claves desconocidas.

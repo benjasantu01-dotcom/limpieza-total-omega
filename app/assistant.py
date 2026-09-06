@@ -390,17 +390,19 @@ def context_as_text(context: SystemContext) -> str:
     """Serializa el contexto a un formato seguro y estandarizado para la IA."""
     if not isinstance(context, SystemContext) or not context.analyzed or not context.is_valid_structure:
         return "No hay métricas disponibles todavía."
+    
+    # Pre-calculamos los strings para maximizar el hit rate del lru_cache
+    s_score = _fmt_metric_sanitized(context.score) if context.score is not None else "N/A"
+    s_grade = str(context.grade)[:5]
+    s_junk = _fmt_metric_sanitized(context.junk_mb, " MB")
+    s_susp = _fmt_metric_sanitized(context.suspicious_count)
+    s_ram = _fmt_metric_sanitized(context.memory_available_percent, " percent")
+    s_disk = _fmt_metric_sanitized(context.disk_free_percent, " percent")
+    s_dup = _fmt_metric_sanitized(context.duplicate_mb, " MB")
+    s_start = _fmt_metric_sanitized(context.startup_count)
+    
     try:
-        texto_unificado = _generate_context_lines_cached(
-            _fmt_metric_sanitized(context.score) if context.score is not None else "N/A",
-            str(context.grade)[:5],
-            _fmt_metric_sanitized(context.junk_mb, " MB"),
-            _fmt_metric_sanitized(context.suspicious_count),
-            _fmt_metric_sanitized(context.memory_available_percent, " percent"),
-            _fmt_metric_sanitized(context.disk_free_percent, " percent"),
-            _fmt_metric_sanitized(context.duplicate_mb, " MB"),
-            _fmt_metric_sanitized(context.startup_count)
-        )
+        texto_unificado = _generate_context_lines_cached(s_score, s_grade, s_junk, s_susp, s_ram, s_disk, s_dup, s_start)
         return texto_unificado if _ensure_safe_text(texto_unificado) else "Error: el contexto generado no cumple los estándares de seguridad."
     except Exception:
         return "Error crítico al procesar métricas de seguridad."

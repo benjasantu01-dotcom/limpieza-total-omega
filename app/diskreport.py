@@ -293,21 +293,22 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
-    """Ejecuta pasada unificada con recolección de estadísticas."""
+    """Ejecuta pasada unificada con recolección de estadísticas optimizada."""
     total_bytes, total_files = 0, 0
     ext_sizes, ext_counts = defaultdict(int), defaultdict(int)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        if not path.exists(): continue
         total_bytes += size
         total_files += 1
         ext = path.suffix.lower() or "(sin extensión)"
         ext_sizes[ext] += size
         ext_counts[ext] += 1
         
-        if len(top_heap) < 10: heapq.heappush(top_heap, (size, path))
-        elif size > top_heap[0][0]: heapq.heapreplace(top_heap, (size, path))
+        if len(top_heap) < 10:
+            heapq.heappush(top_heap, (size, path))
+        elif size > top_heap[0][0]:
+            heapq.heapreplace(top_heap, (size, path))
             
     return SummaryData(total_bytes, total_files, dict(ext_sizes), dict(ext_counts), sorted(top_heap, key=lambda x: x[0], reverse=True))
 
