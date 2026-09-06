@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 39
+- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 200
 
@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-04 | 61 | 8 | 15 | 3 | 43 |
+| 2026-09-04 | 59 | 7 | 14 | 3 | 43 |
 | 2026-09-05 | 164 | 13 | 24 | 14 | 135 |
-| 2026-09-06 | 2 | 0 | 0 | 0 | 22 |
+| 2026-09-06 | 6 | 0 | 0 | 0 | 22 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **51**
 - seguridad defensiva: **50**
-- legibilidad y documentación: **47**
+- legibilidad y documentación: **45**
+- manejo de errores y validación de entradas: **43**
 - rendimiento: **40**
-- manejo de errores y validación de entradas: **39**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **21**
 - `assistant.py`: **21**
-- `diskreport.py`: **20**
-- `safety.py`: **19**
-- `scanner.py`: **19**
 - `branding.py`: **18**
+- `healthscore.py`: **18**
+- `scanner.py`: **18**
 - `settings.py`: **18**
-- `healthscore.py`: **17**
+- `safety.py`: **18**
 - `memory.py`: **17**
+- `duplicates.py`: **17**
 - `browser.py`: **16**
 - `organizer.py`: **16**
-- `duplicates.py`: **16**
 - `quarantine.py`: **11**
 - `startup.py`: **10**
-- `main.py`: **9**
+- `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-06T01:07:29` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_target_choice_changed` encapsulando la lógica de validación de rutas en un bloque `try-except` más estricto, asegurando que cualquier entrada de usuario malformada o insegura sea tratada con un mensaje de error y el reseteo del estado de la interfaz, evitando que variables de instancia queden en un estado inconsistente.
+- `2026-09-06T01:06:38` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` validando explícitamente la integridad de los datos de entrada en los `scorers` mediante el uso de `math.isfinite` para evitar valores `NaN` o `inf` que pudieran propagarse tras cálculos aritméticos en el pipeline.
+- `2026-09-06T01:06:11` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante validación estricta de tipos y manejo explícito de errores, evitando que un `DuplicateGroup` parcialmente corrupto (ej. con rutas desaparecidas tras el análisis) cause fallos en la interfaz.
+- `2026-09-06T01:05:47` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de integridad en las rutas procesadas para evitar fallos ante entradas malformadas o inesperadas, y asegurando que las operaciones críticas de `pathlib` no se detengan por errores de acceso parciales.
 - `2026-09-06T00:59:16` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_cache_path` y `_should_skip_entry` validando explícitamente que los parámetros de entrada sean rutas absolutas y no nulas, evitando excepciones en casos de rutas con caracteres no normalizados o desbordamiento de buffer en sistemas Windows.
 - `2026-09-06T00:58:32` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_and_assign` y `SystemContext.ingest` para manejar correctamente errores de tipo o desbordamiento al procesar fuentes de datos externas, asegurando que un valor mal formado no interrumpa la ingesta de las métricas restantes.
 - `2026-09-05T14:24:35` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita para evitar la manipulación de archivos mediante enlaces simbólicos o de unión (`junctions`), asegurando que la ruta destino no sea un punto de reparse antes de realizar la escritura atómica.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-05T13:54:22` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita mediante `is_protected_path` sobre el directorio padre antes de intentar su creación, asegurando que el proceso no pueda crear estructuras de archivos en zonas restringidas del sistema.
 - `2026-09-05T13:53:01` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save` frente a la concurrencia de archivos agregando un chequeo `os.path.exists` antes de la escritura, y se protegió la integridad de la configuración mediante una validación de escritura atómica más rigurosa que impide la sobreescritura si el directorio padre ha sido bloqueado o eliminado inesperadamente entre la validación y el `open`.
 - `2026-09-05T13:43:41` **safety.py** (robustez ante casos límite): Se introdujo una verificación de integridad física del volumen y del estado del sistema de archivos mediante `os.access(..., os.W_OK)` como capa de defensa adicional en `_check_file_integrity_cached`, mitigando casos donde archivos bloqueados por políticas de grupo o permisos de lectura denegados a nivel de sistema operativo fallaban silenciosamente o causaban excepciones no controladas durante la manipulación.
-- `2026-09-05T13:42:51` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_locked` para manejar archivos inexistentes o bloqueados por permisos de forma más determinista, evitando excepciones innecesarias en entornos con alta actividad de E/S.
-- `2026-09-05T13:35:37` **organizer.py** (robustez ante casos límite): He mejorado `_process_directory` y `_try_collect_junk` para manejar robustamente errores de acceso denegado (frecuentes en sistemas Windows al escanear carpetas de usuario) y prevenir estados inconsistentes, añadiendo una validación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier procesamiento de entrada.
-- `2026-09-05T13:35:14` **memory.py** (robustez ante casos límite): Se reforzó la resiliencia del módulo ante fallos de IO y malformaciones de datos, añadiendo una validación de formato de salida más estricta en `parse_windows_process_csv` y protegiendo el cierre de recursos mediante `try/finally` para evitar fugas de handles de procesos.
-- `2026-09-05T13:32:33` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de salud ante entradas inesperadas, añadiendo una comprobación de división por cero en los factores de normalización y protegiendo el pipeline contra valores nulos o no finitos en las métricas durante la ejecución.

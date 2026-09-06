@@ -253,6 +253,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
+        
+        # Validar existencia antes de entrar
+        if not current_dir.exists():
+            continue
             
         try:
             with os.scandir(current_dir) as iterator:
@@ -265,10 +269,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             st = entry.stat(follow_symlinks=False)
                             inode_key = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
                             if inode_key[0] != 0 and inode_key not in visited_inodes:
-                                if skip_protected and is_protected_path(Path(entry.path)):
+                                entry_path = Path(entry.path)
+                                if skip_protected and is_protected_path(entry_path):
                                     continue
                                 visited_inodes.add(inode_key)
-                                stack.append(Path(entry.path))
+                                stack.append(entry_path)
                                     
                         elif entry.is_file():
                             st = entry.stat(follow_symlinks=False)
@@ -333,7 +338,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
                 top_folder = p_base / parts[root_parts_len]
                 sums[top_folder] += size
                 counts[top_folder] += 1
-        except (ValueError, OSError, IndexError):
+        except (AttributeError, TypeError, ValueError, OSError, IndexError):
             continue
 
     results = [FolderUsage(p, sums[p], counts[p]) for p in sums]

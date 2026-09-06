@@ -88,29 +88,37 @@ _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
     """Transforma el volumen de basura en un ratio de salud (0.0 a 1.0)."""
-    return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
+    val = _to_float(junk_mb)
+    return _clamp(1.0 - (val * _INV_JUNK)) if math.isfinite(val) else 0.0
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
     """Calcula el ratio de seguridad penalizando eventos detectados."""
-    return _clamp(1.0 - ((_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)))
+    s = _to_float(suspicious_count)
+    w = _to_float(warnings)
+    if not (math.isfinite(s) and math.isfinite(w)): return 0.0
+    return _clamp(1.0 - ((s * 0.05) + (w * 0.25)))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Evalúa la salud de la memoria RAM según el margen de disponibilidad."""
     val = _to_float(available_percent)
-    return _clamp(val / _LIMIT_RAM_PERCENT) if _LIMIT_RAM_PERCENT > 0 else 1.0
+    if not math.isfinite(val) or _LIMIT_RAM_PERCENT <= 0: return 0.0
+    return _clamp(val / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
     """Evalúa la salud del disco según el porcentaje de espacio libre disponible."""
     val = _to_float(free_percent)
-    return _clamp(val / _LIMIT_DISK_PERCENT) if _LIMIT_DISK_PERCENT > 0 else 1.0
+    if not math.isfinite(val) or _LIMIT_DISK_PERCENT <= 0: return 0.0
+    return _clamp(val / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
     """Calcula el ratio de duplicados basado en el espacio desperdiciado."""
-    return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP))
+    val = _to_float(duplicate_mb)
+    return _clamp(1.0 - (val * _INV_DUP)) if math.isfinite(val) else 0.0
 
 def score_startup(startup_count: int) -> NormalizedRatio:
     """Evalúa la carga de inicio según la cantidad de programas registrados."""
-    return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
+    val = _to_float(startup_count)
+    return _clamp(1.0 - (val * _INV_STARTUP)) if math.isfinite(val) else 0.0
 
 _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
     "seguridad": lambda m: score_security(m.suspicious_count, m.suspicious_warnings),

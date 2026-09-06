@@ -319,18 +319,26 @@ def format_group(group: DuplicateGroup) -> List[str]:
         return []
         
     keeper = suggest_keeper(group)
-    mb_total = round(group.size_bytes / (1024 * 1024), 2)
-    mb_wasted = round(group.wasted_bytes / (1024 * 1024), 2)
+    try:
+        mb_total = round(group.size_bytes / (1024 * 1024), 2)
+        mb_wasted = round(group.wasted_bytes / (1024 * 1024), 2)
+    except (TypeError, ValueError):
+        return []
+
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     
     for path in group.paths:
         if not isinstance(path, Path):
             continue
-        if not path.exists():
-            lines.append(f"   [desaparecido] {path}")
-            continue
-        elif not _is_valid_candidate(path):
-            lines.append(f"   [inaccesible] {path}")
+        try:
+            if not path.exists():
+                lines.append(f"   [desaparecido] {path}")
+                continue
+            elif not _is_valid_candidate(path):
+                lines.append(f"   [inaccesible] {path}")
+                continue
+        except (OSError, PermissionError):
+            lines.append(f"   [error] {path}")
             continue
         
         label = 'conservar' if keeper is not None and path == keeper else 'duplicado'
