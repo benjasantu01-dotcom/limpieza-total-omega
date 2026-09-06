@@ -206,15 +206,8 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float) -> List[str]:
-    """
-    Filtra y ejecuta recomendaciones basadas en el estado del sistema.
-    
-    Args:
-        metrics: Estado actual del sistema.
-        rules: Lista de reglas a evaluar.
-        ratio: Valor normalizado del área bajo análisis.
-    """
-    findings: List[str] = []
+    """Filtra y ejecuta recomendaciones basadas en el estado del sistema."""
+    findings = []
     for rule in rules:
         if rule.check(metrics, ratio):
             try:
@@ -222,42 +215,30 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                 if msg and msg.strip():
                     findings.append(msg.strip())
             except Exception:
-                continue
+                pass
     return findings
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """
-    Ejecuta el pipeline de evaluación completo sobre las métricas provistas.
+    """Ejecuta el pipeline de evaluación completo sobre las métricas provistas."""
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+        return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o corruptos."])
     
-    Args:
-        metrics: Objeto SystemMetrics con datos crudos validados.
-        
-    Returns:
-        HealthResult: Informe detallado conteniendo score final y recomendaciones.
-    """
-    if not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error: Tipo de entrada de métricas inválido."])
-    
-    # Validar integridad antes de procesar
-    if not metrics.is_finite:
-        return HealthResult(0, "F", {}, ["Error: Datos de sistema corruptos."])
-    
-    metric_breakdown: Dict[MetricKey, int] = {}
-    total_pts: float = 0.0
-    recommendations: List[str] = []
+    metric_breakdown = {}
+    total_pts = 0
+    recommendations = []
     
     for area, weight, scorer, rules in _OPTIMIZED_PIPELINE:
         try:
             ratio = scorer(metrics)
             pts = int(round(ratio * weight))
             metric_breakdown[area] = pts
-            total_pts += float(pts)
+            total_pts += pts
             if rules:
                 recommendations.extend(_evaluate_rules(metrics, rules, ratio))
         except (ValueError, TypeError, ZeroDivisionError):
             continue
             
-    final_score = int(_clamp(total_pts, 0.0, 100.0))
+    final_score = int(_clamp(float(total_pts), 0.0, 100.0))
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
@@ -275,19 +256,11 @@ def _render_bar(pts: int, maximo: int) -> str:
     return ('#' * puntos) + ('.' * (maximo - puntos))
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """
-    Serializa un HealthResult en una lista de líneas legible para el usuario.
-    
-    Args:
-        result: Objeto HealthResult generado por compute_score.
-        
-    Returns:
-        List[str]: Líneas de texto formateadas para visualización en UI o reporte.
-    """
+    """Serializa un HealthResult en una lista de líneas legible para el usuario."""
     if not isinstance(result, HealthResult):
         return ["Error: Informe no disponible o formato inválido."]
     
-    lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+    lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
     for area, maximo in _WEIGHT_ITEMS_INT:
         puntos = result.breakdown.get(area, 0)

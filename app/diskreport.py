@@ -205,11 +205,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorrido DFS iterativo evitando bucles infinitos mediante el rastreo de inodos.
-    
-    Args:
-        directory: Ruta raíz de inicio.
-        skip_protected: Si es True, ignora rutas bloqueadas según safety.py para 
-                       evitar errores de permiso y proteger el sistema.
     """
     root_path = _validate_root(directory)
     if root_path is None:
@@ -249,28 +244,18 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """Retorna los N archivos más grandes en la ruta dada."""
-    if not isinstance(limit, int) or limit <= 0: return []
     root = _validate_root(directory)
     if not root: return []
-    
-    items = ((s, p) for p, s in walk_files(root, skip_protected))
-    return [FileEntry(p, s) for s, p in heapq.nlargest(limit, items, key=lambda x: x[0])]
+    data = _collect_summary_data(root, skip_protected)
+    return [FileEntry(p, s) for s, p in data.top_files[:limit]]
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """Agrega uso de disco por extensión."""
     root = _validate_root(directory)
     if not root: return []
-    
-    size_map: Dict[str, int] = defaultdict(int)
-    count_map: Dict[str, int] = defaultdict(int)
-    
-    for path, size in walk_files(root, skip_protected):
-        ext = path.suffix.lower() or "(sin extensión)"
-        size_map[ext] += size
-        count_map[ext] += 1
-    
-    usage_list = [ExtensionUsage(e, size_map[e], count_map[e]) for e in size_map]
+    data = _collect_summary_data(root, skip_protected)
+    usage_list = [ExtensionUsage(e, data.ext_sizes[e], data.ext_counts[e]) for e in data.ext_sizes]
     return heapq.nlargest(limit, usage_list, key=lambda u: u.size_bytes)
 
 
@@ -279,13 +264,11 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root = _validate_root(directory)
     if not root: return []
             
-    sums: Dict[str, int] = defaultdict(int)
-    counts: Dict[str, int] = defaultdict(int)
+    sums: Dict[Path, int] = defaultdict(int)
+    counts: Dict[Path, int] = defaultdict(int)
     
     for path, size in walk_files(root, skip_protected):
         try:
-            if not isinstance(path, Path) or not path.exists():
-                continue
             rel = path.relative_to(root)
             if rel.parts:
                 top = root / rel.parts[0]
@@ -299,11 +282,10 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Tuple[int, int]:
     """Calcula bytes totales y cantidad de archivos."""
-    total_bytes, count = 0, 0
-    for _, size in walk_files(directory, skip_protected):
-        total_bytes += size
-        count += 1
-    return total_bytes, count
+    root = _validate_root(directory)
+    if not root: return 0, 0
+    data = _collect_summary_data(root, skip_protected)
+    return data.total_bytes, data.total_files
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
@@ -319,7 +301,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
         ext_sizes[ext] += size
         ext_counts[ext] += 1
         
-        if len(top_heap) < 10:
+        if len(top_heap) < 20:
             heapq.heappush(top_heap, (size, path))
         elif size > top_heap[0][0]:
             heapq.heapreplace(top_heap, (size, path))

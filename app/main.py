@@ -1323,6 +1323,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             dest = stage_for_review(aptos)
             self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")
             self._invalidate_cache("junk")
+            self._safe_run_ui_callback(self.refresh_list)
 
         self.run_async(task, check_safety=True, target=".")
 

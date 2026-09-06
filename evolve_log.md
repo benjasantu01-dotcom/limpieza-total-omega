@@ -1170,3 +1170,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-06T11:09:56` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se implementó una caché de resultados en `detect_profiles` para evitar el cálculo redundante de directorios compartidos y se optimizó la estructura de datos `perf_cache` para que persista durante todo el escaneo, reduciendo drásticamente las llamadas al disco en estructuras anidadas o comunes.
 - `2026-09-06T11:09:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T11:09:56` Corrida terminada. Total usado hoy: 264.
+- `2026-09-06T11:18:09` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-09-06T11:18:37` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `_collect_summary_data` para realizar el recorrido del disco en una sola pasada, evitando la redundancia de volver a escanear los mismos archivos en funciones separadas al generar el reporte, mejorando así drásticamente la eficiencia en I/O.
+- `2026-09-06T11:19:01` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-06T11:19:27` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimizé `compute_score` eliminando la creación repetitiva de una lista de excepciones y mejorando la eficiencia del bucle principal al realizar el cálculo de `total_pts` y `metric_breakdown` con acceso directo a las constantes precomputadas.
+- `2026-09-06T11:20:23` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un mecanismo de **invalidación selectiva de caché por clave** en los métodos de análisis (`on_scan_junk`, `on_stage`, etc.), reemplazando la necesidad de invalidar manualmente o releer datos, lo que reduce drásticamente el I/O redundante y mejora la respuesta de la UI.
+- `2026-09-06T11:20:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T11:20:23` Corrida terminada. Total usado hoy: 268.
