@@ -389,7 +389,6 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
     Traslada archivos basura validados a un área de cuarentena para revisión.
-    Usa `ensure_safe_to_modify` para forzar chequeos de seguridad antes del movimiento.
     """
     if not files or not isinstance(review_dir, str): return None
 
@@ -408,13 +407,11 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             if not isinstance(junk_file, JunkFile) or junk_file.path is None: continue
             src: Path = junk_file.path.resolve()
             
-            # Evitar reprocesar archivos ya en cuarentena
             if src.is_relative_to(dest_base): continue
-            
             if not src.exists() or not src.is_file(): continue
             
             target: Optional[Path] = _can_move_file(junk_file, dest_base)
-            if target and target.is_relative_to(dest_base) and is_safe_to_modify(src) and is_safe_to_modify(target) and not is_protected_path(target):
+            if target and target.is_relative_to(dest_base) and is_safe_to_modify(src) and is_safe_to_modify(target):
                 ensure_safe_to_modify(src)
                 ensure_safe_to_modify(target)
                 shutil.move(str(src), str(target))
@@ -426,7 +423,6 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina archivos desde la carpeta de cuarentena de forma segura.
-    Requiere validaciones de seguridad explícitas (`is_safe_to_modify`) por cada ítem.
     """
     if not isinstance(review_dir, str): return 0
 
@@ -440,7 +436,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
-            if item.is_file() and item.exists() and item.is_relative_to(dest) and is_safe_to_modify(item) and not is_protected_path(item):
+            if item.is_file() and item.exists() and item.is_relative_to(dest) and is_safe_to_modify(item):
                 if _passes_system_checks(item) and not _is_file_locked(item):
                     ensure_safe_to_modify(item)
                     item.unlink()

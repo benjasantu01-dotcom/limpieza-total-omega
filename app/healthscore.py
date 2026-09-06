@@ -220,8 +220,12 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Ejecuta el pipeline de evaluación completo sobre las métricas provistas."""
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
-        return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o corruptos."])
+    if not isinstance(metrics, SystemMetrics):
+        return HealthResult(0, "F", {}, ["Error: Tipo de datos inválido."])
+    
+    # Verificación de finitud defensiva pre-cálculo
+    if not metrics.is_finite:
+        return HealthResult(0, "F", {}, ["Error: Datos de sistema corruptos."])
     
     metric_breakdown = {}
     total_pts = 0
