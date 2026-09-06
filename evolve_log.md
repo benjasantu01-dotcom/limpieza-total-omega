@@ -1177,3 +1177,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-06T11:20:23` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un mecanismo de **invalidación selectiva de caché por clave** en los métodos de análisis (`on_scan_junk`, `on_stage`, etc.), reemplazando la necesidad de invalidar manualmente o releer datos, lo que reduce drásticamente el I/O redundante y mejora la respuesta de la UI.
 - `2026-09-06T11:20:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T11:20:23` Corrida terminada. Total usado hoy: 268.
+- `2026-09-06T11:28:19` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-09-06T11:28:49` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-09-06T11:29:18` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_for_junk` y `_process_directory` transformando `JUNK_EXTENSIONS` de `frozenset` a un conjunto local cacheado y eliminando llamadas redundantes a `Path` y `resolve()` dentro del bucle crítico, reemplazándolas por operaciones directas sobre `os.DirEntry` que ya tiene la información necesaria.
+- `2026-09-06T11:29:51` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `purge_all` transformando la iteración de búsqueda de archivos a una operación de tiempo constante ($O(1)$) mediante el uso de un `set` de nombres de archivos válidos, evitando múltiples accesos a disco y comparaciones innecesarias dentro del bucle principal.
+- `2026-09-06T11:29:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-06T11:29:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T11:29:54` Corrida terminada. Total usado hoy: 272.

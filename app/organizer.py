@@ -294,7 +294,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
     Recorre recursivamente directorios buscando archivos temporales.
     Aplica un límite estricto de profundidad (50) para evitar desbordamiento de pila.
     """
-    if depth > 50 or current_dir is None or not current_dir.exists(): return
+    if depth > 50 or current_dir is None: return
     
     # Pre-chequeo único para el directorio actual
     if is_protected_path(current_dir):
@@ -307,10 +307,10 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry):
                             _process_directory(Path(entry.path), found, depth + 1)
-                    elif entry.is_file(follow_symlinks=False) and _is_junk_path(entry.name):
-                        stats = entry.stat()
-                        if stats.st_size > 0:
-                            found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
+                    elif entry.is_file(follow_symlinks=False) and is_valid_junk_extension(entry.name):
+                        st = entry.stat()
+                        if st.st_size > 0:
+                            found.append(JunkFile(Path(entry.path), st.st_size, datetime.fromtimestamp(st.st_mtime)))
                 except (OSError, PermissionError):
                     continue
     except (OSError, PermissionError, RuntimeError):
@@ -330,9 +330,8 @@ def scan_for_junk(directories: Optional[Sequence[str]] = None) -> List[JunkFile]
     
     for d in search_dirs:
         try:
-            if not isinstance(d, Path): continue
             path_obj: Path = d.expanduser()
-            if path_obj.exists() and path_obj.is_dir() and not _is_unc_path(path_obj):
+            if path_obj.is_dir() and not _is_unc_path(path_obj):
                 resolved: Path = path_obj.resolve()
                 if not is_protected_path(resolved):
                     _process_directory(resolved, found)

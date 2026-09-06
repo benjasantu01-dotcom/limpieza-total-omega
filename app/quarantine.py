@@ -599,6 +599,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
+    # Optimización: mapeo para acceso O(1) en vez de búsqueda lineal
     item_map = {item.stored_name: item for item in items}
     purged_count = 0
     kept_items = []
@@ -612,11 +613,11 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                 continue
                 
             item = item_map.get(stored_path.name)
-            if item and _is_item_purgable(stored_path, item, quarantine_root):
-                if _safe_unlink(stored_path):
-                    purged_count += 1
-                    continue
             if item:
+                if _is_item_purgable(stored_path, item, quarantine_root):
+                    if _safe_unlink(stored_path):
+                        purged_count += 1
+                        continue
                 kept_items.append(item)
     except (PermissionError, OSError):
         pass
