@@ -145,10 +145,11 @@ class StartupEntry:
         try:
             if not os.path.lexists(p) or p.is_dir():
                 return False
+            # Intentar obtener atributos sin abrir el archivo para evitar bloqueos
             stats = p.lstat()
             # 0x400 es el bitmask para FILE_ATTRIBUTE_REPARSE_POINT
-            return not p.is_symlink() and not (stats.st_file_attributes & 0x00000400)
-        except (OSError, PermissionError):
+            return not p.is_symlink() and not (getattr(stats, 'st_file_attributes', 0) & 0x00000400)
+        except (OSError, PermissionError, AttributeError):
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:

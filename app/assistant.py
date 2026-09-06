@@ -128,7 +128,7 @@ class ProblemCriterion(NamedTuple):
             if f_val < 0: return None
             
             msg: str = self.message_format.format(f_val)[:_MAX_MSG_CHUNK]
-            return msg if _is_safe_text_structure(msg) else None
+            return msg if _ensure_safe_text(msg) else None
         except (ValueError, TypeError, AttributeError, KeyError):
             return None
 
@@ -293,7 +293,7 @@ class SystemContext:
         grade_val = _get_source_value(source, "grade")
         if isinstance(grade_val, str):
             clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
-            if _is_safe_text_structure(clean_grade):
+            if _ensure_safe_text(clean_grade):
                 self.grade = clean_grade
         return found_data
 
@@ -614,7 +614,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             clean = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             final = _validate_response_length(clean)
             
-            if _ensure_safe_text(final) and not is_protected_path(final) and not _PATH_INJECTION_REGEX.search(final):
+            if _ensure_safe_text(final):
                 return final
             return None
             

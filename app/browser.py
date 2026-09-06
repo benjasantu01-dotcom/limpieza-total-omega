@@ -115,9 +115,10 @@ def base_directories() -> List[Path]:
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """Confirma que 'real_target' se encuentre jerárquicamente dentro de 'real_base'."""
     try:
-        target_res = real_target.resolve(strict=True)
-        base_res = real_base.resolve(strict=True)
-        return base_res == target_res or base_res in target_res.parents
+        target_res = str(real_target.resolve(strict=True))
+        base_res = str(real_base.resolve(strict=True))
+        # Uso de commonpath para evitar bypass por manipulación de componentes de ruta
+        return os.path.commonpath([target_res, base_res]) == base_res
     except (OSError, RuntimeError, ValueError):
         return False
 
@@ -154,6 +155,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         
         # Validar seguridad antes de seguir
         path_obj = Path(path)
+        # Nota: is_safe_to_modify es un chequeo preventivo de solo lectura aquí
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
             return True
         

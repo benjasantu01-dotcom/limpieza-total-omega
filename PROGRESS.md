@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Mejoras aceptadas: **240** (47.6% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 194
+- Sin respuesta de la IA (error o límite): 191
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-04 | 32 | 3 | 7 | 2 | 30 |
+| 2026-09-04 | 32 | 3 | 7 | 2 | 26 |
 | 2026-09-05 | 164 | 13 | 24 | 14 | 135 |
-| 2026-09-06 | 41 | 0 | 8 | 2 | 29 |
+| 2026-09-06 | 44 | 0 | 8 | 2 | 30 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
-- robustez ante casos límite: **52**
+- robustez ante casos límite: **53**
 - manejo de errores y validación de entradas: **49**
 - rendimiento: **42**
-- seguridad defensiva: **40**
+- seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **21**
 - `diskreport.py`: **21**
-- `assistant.py`: **20**
 - `branding.py`: **19**
 - `scanner.py`: **19**
 - `memory.py`: **19**
 - `settings.py`: **18**
+- `browser.py`: **18**
 - `duplicates.py`: **18**
 - `organizer.py`: **18**
 - `safety.py`: **18**
 - `healthscore.py`: **17**
-- `browser.py`: **17**
 - `quarantine.py`: **14**
+- `startup.py`: **10**
 - `main.py`: **10**
-- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-06T03:30:41` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_path_inside_base` y `_should_skip_entry` para prevenir ataques de *path traversal* mediante el uso de `os.path.commonpath`, que es más estricto y seguro al manejar la resolución de rutas relativas y el encadenamiento de directorios.
+- `2026-09-06T03:29:57` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva al mejorar `_ensure_safe_text` y la validación de `SystemContext` para asegurar que ningún valor que pudiera ser interpretado como una ruta o contener caracteres de control maliciosos llegue a ser procesado o devuelto por el asistente, implementando un filtro más riguroso en la propiedad `is_valid_structure`.
+- `2026-09-06T03:29:19` **startup.py** (robustez ante casos límite): Mejoré la robustez de `StartupEntry._validate_file_access` al manejar casos de errores de acceso durante la obtención de atributos de archivo, evitando excepciones no capturadas al encontrar archivos en uso o bloqueados por el sistema durante el escaneo.
 - `2026-09-06T03:20:07` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save()` ante condiciones de carrera y fallos de sistema de archivos al añadir una verificación explícita de `parent.exists()` y `parent.is_dir()` inmediatamente antes de realizar la escritura, evitando excepciones por entornos de ejecución volátiles.
 - `2026-09-06T03:19:25` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos de archivos inexistentes durante la validación de integridad al agregar un chequeo de `exists()` dentro de `_check_file_integrity`, evitando excepciones innecesarias cuando un archivo es borrado o movido por otro proceso entre la validación inicial y el chequeo detallado.
 - `2026-09-06T03:11:08` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` al introducir una verificación de existencia y consistencia antes de la operación de `unlink` del archivo origen, asegurando que la operación de aislamiento se considere exitosa solo si el archivo fue movido e identificado físicamente en el destino antes de eliminar el original.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T02:49:49` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo del `canvas` añadiendo validaciones contra valores extremos (`inf`, `NaN`) y saneando parámetros de entrada para prevenir errores en tiempo de ejecución (ej. `ZeroDivisionError` en cálculos de escala o `TypeError` por tipos inesperados).
 - `2026-09-06T02:49:32` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_validate_and_assign` ante valores `None` inesperados o tipos de datos malformados en el origen, asegurando que el proceso de ingesta no aborte ante entradas parciales o corruptas.
 - `2026-09-06T02:48:28` **settings.py** (rendimiento): Se optimizó el rendimiento mediante la implementación de un mecanismo de "dirty check" en `save` y `update`, evitando operaciones innecesarias de escritura en disco y recreación de caché cuando los datos no han cambiado realmente.
-- `2026-09-06T02:39:18` **scanner.py** (rendimiento): Optimizé la detección de extensiones y la ejecución de heurísticas moviendo el cálculo de sufijos fuera de los loops y utilizando conjuntos (sets) para búsquedas O(1), evitando re-procesamiento innecesario de rutas en `scan_file`.
-- `2026-09-06T02:38:23` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` transformando `item_map` de una lista de objetos a un `dict` para acceso O(1) y evitando la reconstrucción redundante de objetos `QuarantineItem` durante la iteración sobre el directorio.
-- `2026-09-06T02:31:33` **organizer.py** (rendimiento): Optimizé la búsqueda de archivos basura pre-compilando el conjunto de extensiones en un formato de búsqueda más eficiente y reduciendo la redundancia en la recursión mediante el uso de `os.scandir` de forma más directa, evitando conversiones innecesarias a `Path` y llamadas a `resolve()` dentro del bucle crítico.
