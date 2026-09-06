@@ -320,7 +320,7 @@ def scan_for_junk(directories: Optional[Sequence[str]] = None) -> List[JunkFile]
     Escanea las rutas indicadas (o por defecto) buscando archivos temporales.
     Retorna una lista de instancias JunkFile para su posterior procesamiento.
     """
-    if directories is not None and not all(isinstance(d, str) for d in directories):
+    if directories is not None and (not isinstance(directories, (list, tuple)) or not all(isinstance(d, str) for d in directories)):
         return []
     
     search_dirs: List[Path] = [Path(d) for d in directories] if directories else DEFAULT_SCAN_DIRS

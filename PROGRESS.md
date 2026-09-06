@@ -8,24 +8,24 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **237** (47.0% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 203
+- Rechazadas por guardia de seguridad: 33
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 129 | 11 | 20 | 11 | 97 |
-| 2026-09-06 | 108 | 2 | 15 | 5 | 106 |
+| 2026-09-05 | 128 | 11 | 18 | 11 | 96 |
+| 2026-09-06 | 109 | 2 | 15 | 6 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **55**
 - seguridad defensiva: **50**
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **45**
+- manejo de errores y validación de entradas: **44**
 - rendimiento: **43**
-- manejo de errores y validación de entradas: **43**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,18 +34,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **20**
 - `duplicates.py`: **19**
 - `scanner.py`: **19**
-- `safety.py`: **18**
 - `settings.py`: **18**
 - `branding.py`: **17**
+- `safety.py`: **17**
 - `healthscore.py`: **17**
+- `organizer.py`: **17**
 - `browser.py`: **16**
-- `organizer.py`: **16**
 - `quarantine.py`: **13**
 - `main.py`: **12**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-06T10:09:12` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la validación de los parámetros de entrada en `scan_for_junk` y `stage_for_review` para prevenir ejecuciones con datos malformados, capturando de manera más robusta posibles errores en la expansión de rutas o en la estructura de los directorios, asegurando que el bucle de procesamiento siempre reciba tipos y valores esperados.
 - `2026-09-06T09:56:42` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` al reemplazar el manejo de excepciones genérico por uno específico, validando el tipo de `destination` antes de procesar para evitar errores en tiempo de ejecución al llamar a `Path()`.
 - `2026-09-06T09:49:38` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `handle_score` y `_format_problem_message` añadiendo validaciones específicas de tipos y manejo de errores ante datos ausentes o mal formados, asegurando que la interfaz no falle ante un `SystemContext` con valores inesperados.
 - `2026-09-06T08:26:00` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` aplicando `ensure_safe_to_modify` sobre el directorio padre antes de realizar operaciones de archivo, asegurando que la estructura de directorios destino sea válida y segura antes de proceder con el reemplazo atómico.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T07:56:41` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia de la ruta antes de intentar cualquier operación de escritura, asegurando que la función no solo verifique la seguridad del destino final, sino también que no se creen subdirectorios innecesarios o riesgosos si la ruta es inválida.
 - `2026-09-06T07:56:18` **assistant.py** (seguridad defensiva): Mejoré la seguridad en la gestión de configuraciones del asistente validando estrictamente el campo `model` contra `_MODEL_NAME_REGEX` antes de usarlo para construir URLs, evitando posibles inyecciones de parámetros en el endpoint.
 - `2026-09-06T07:55:08` **startup.py** (robustez ante casos límite): Mejora la robustez ante permisos denegados durante el escaneo de directorios al envolver `entry.is_file()` en una verificación explícita de `entry.path` y añadir un manejo de excepciones más granular, asegurando que un acceso denegado a un solo archivo no interrumpa el inventario de otras entradas legítimas.
-- `2026-09-06T07:54:28` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante errores de entrada y concurrencia implementando un chequeo de integridad previo al parseo JSON y añadiendo un bloqueo de archivo básico (`os.replace` ya es atómico en Windows/POSIX, pero ahora se asegura que el archivo resultante sea accesible antes de actualizar el caché).

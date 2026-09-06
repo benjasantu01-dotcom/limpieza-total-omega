@@ -1096,3 +1096,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-06T09:57:43` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-06T09:57:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T09:57:43` Corrida terminada. Total usado hoy: 236.
+- `2026-09-06T10:06:51` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-09-06T10:07:19` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-06T10:08:30` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` añadiendo validaciones explícitas de entrada (`None`/`ValueError`) y verificaciones de existencia antes de operar, evitando errores en tiempo de ejecución al interactuar con el sistema de archivos o procesos.
+- `2026-09-06T10:08:57` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-06T10:09:12` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de los parámetros de entrada en `scan_for_junk` y `stage_for_review` para prevenir ejecuciones con datos malformados, capturando de manera más robusta posibles errores en la expansión de rutas o en la estructura de los directorios, asegurando que el bucle de procesamiento siempre reciba tipos y valores esperados.
+- `2026-09-06T10:09:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T10:09:12` Corrida terminada. Total usado hoy: 240.
