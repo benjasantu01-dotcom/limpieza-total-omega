@@ -497,3 +497,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-06T14:34:00` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-06T14:34:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T14:34:00` Corrida terminada. Total usado hoy: 344.
+- `2026-09-06T14:41:53` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-06T14:42:24` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-06T14:42:58` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación explícita y preventiva para `item_id` y `original_path` en `QuarantineItem.from_dict` para evitar que diccionarios malformados o con rutas relativas peligrosas introduzcan estados inválidos en la aplicación, mejorando la robustez ante la carga de manifiestos.
+- `2026-09-06T14:43:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-09-06T14:43:33` ➖ Sin cambios en safety.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `ensure_safe_to_modify` ante errores de resolución de archivos y condiciones de carrera, añadiendo un chequeo explícito de existencia mediante `p.exists()` antes de invocar `_check_file_integrity`, lo que evita lanzamientos innecesarios de excepciones `FileNotFoundError` durante la validación.
+- `2026-09-06T14:43:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T14:43:33` Corrida terminada. Total usado hoy: 348.

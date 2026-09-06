@@ -108,9 +108,13 @@ class QuarantineItem:
         if not required.issubset(data.keys()):
             return None
         try:
+            orig_p = str(data["original_path"])
+            # Validación de seguridad: no permitir rutas relativas o maliciosas en el manifiesto
+            if not Path(orig_p).is_absolute():
+                return None
             return cls(
                 item_id=str(data["item_id"]),
-                original_path=str(data["original_path"]),
+                original_path=orig_p,
                 stored_name=str(data["stored_name"]),
                 size_bytes=int(data["size_bytes"]),
                 reason=str(data["reason"]),
