@@ -210,9 +210,12 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
     findings: List[str] = []
     for rule in rules:
         if rule.check(metrics, ratio):
-            msg = rule.message_factory(metrics)
-            if msg and msg.strip():
-                findings.append(msg.strip())
+            try:
+                msg = rule.message_factory(metrics)
+                if msg and msg.strip():
+                    findings.append(msg.strip())
+            except Exception:
+                continue
     return findings
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -232,7 +235,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         pts = int(round(ratio * weight))
         metric_breakdown[area] = pts
         total_pts += float(pts)
-        if rules:
+        if rules and metrics.is_finite:
             recommendations.extend(_evaluate_rules(metrics, rules, ratio))
     
     final_score = int(_clamp(total_pts, 0.0, 100.0))

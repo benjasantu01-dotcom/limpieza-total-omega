@@ -89,6 +89,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         p = Path(os.fspath(directory)).resolve(strict=True)
+        # Seguridad: validamos que la ruta absoluta no sea una ruta protegida del sistema
         if p.is_dir() and not is_protected_path(p):
             return p
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
