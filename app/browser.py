@@ -145,7 +145,8 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Evalúa si una entrada (os.DirEntry) debe omitirse según criterios de seguridad y visibilidad.
+    Evalúa si una entrada debe omitirse. Se bloquean rutas protegidas, enlaces
+    simbólicos o junctions para evitar bucles infinitos o fugas fuera del scope.
     """
     if entry is None or not hasattr(entry, 'name') or _is_excluded_file(entry.name):
         return True
@@ -157,10 +158,11 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         
         # Validar seguridad antes de seguir
         path_obj = Path(path)
-        # Nota: is_safe_to_modify es un chequeo preventivo de solo lectura aquí
+        # Nota: is_safe_to_modify actúa como filtro de seguridad en solo lectura
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
             return True
         
+        # Prevenir seguimiento de punteros fuera de la estructura deseada
         if entry.is_symlink() or is_junction_fn(path) or os.path.ismount(path):
             return True
             
@@ -173,7 +175,10 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
-    """Valida que la ruta sea segura (no protegida) y opcionalmente descienda de la base permitida."""
+    """
+    Valida la integridad de una ruta. Verifica existencia, restricciones de seguridad
+    globales y asegura que la ruta sea una subcarpeta válida del directorio base.
+    """
     try:
         if not isinstance(path_obj, Path) or not path_obj.is_absolute() or len(str(path_obj)) >= MAX_PATH_LEN:
             return False
@@ -195,7 +200,8 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula recursivamente el tamaño en bytes de un directorio mediante os.scandir.
+    Calcula recursivamente el tamaño en bytes de un directorio usando os.scandir.
+    Usa `follow_symlinks=False` explícitamente para mantener el escaneo seguro.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
@@ -246,7 +252,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
-    """Verifica si una ruta candidata es una carpeta válida de caché antes de escanear."""
+    """Verifica si una ruta candidata es una carpeta de caché segura antes de iniciar el escaneo."""
     if not isinstance(candidate, Path) or not isinstance(base_path, Path) or not candidate.is_absolute():
         return False
     try:
@@ -271,6 +277,7 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Escanea el sistema buscando perfiles de navegadores y calcula su ocupación.
+    Solo procesa carpetas que superan los filtros de `is_safe_to_traverse`.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS

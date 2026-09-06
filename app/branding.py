@@ -84,6 +84,7 @@ UI_FONT_BOLD: Final[str] = "bold"
 UI_FONT_HEADER_SIZE: Final[int] = 23
 UI_FONT_BODY_SIZE: Final[int] = 12
 
+# Paleta centralizada: cambios aquí impactan en toda la UI vía color().
 PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType({
     "background": "#0a0e17", "surface": "#141b2d", "surface_alt": "#1e2740",
     "surface_hover": "#28324f", "card": "#182135", "accent": "#00f0c0",
@@ -109,6 +110,7 @@ FONT_SIZES: Final[Mapping[str, int]] = MappingProxyType({
     "body": UI_FONT_BODY_SIZE, "mono": 11, "caption": 10,
 })
 
+# Estilos de severidad vinculados a colores de paleta para consistencia visual.
 SEVERITY_STYLES: Final[Mapping[SeverityLevel, SeverityStyle]] = MappingProxyType({
     "ok": (C_SUCCESS, "Correcto"),
     "info": (C_INFO, "Informativo"),
@@ -129,6 +131,7 @@ ICONS: Final[Mapping[str, str]] = MappingProxyType({
 
 GRADIENT_STOPS: Final[Tuple[HexColor, ...]] = ("#00f0c0", "#7c5cff", "#ff2d78")
 
+# Umbrales críticos para healthscore.py: definen los rangos numéricos de salud.
 SCORE_THRESHOLDS: Final[Tuple[Tuple[float, HexColor], ...]] = (
     (90.0, C_SUCCESS), (80.0, C_INFO), (65.0, C_WARNING), (50.0, "#ff7b39")
 )

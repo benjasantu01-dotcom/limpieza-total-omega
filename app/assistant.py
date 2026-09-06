@@ -437,7 +437,12 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
     return _get_active_problems(ctx) if ctx.analyzed else []
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
-    """Explica el estado de la RAM y desaconseja el uso de optimizadores externos."""
+    """
+    Explica el estado de la RAM y desaconseja optimizadores externos.
+    Argumentos:
+        ctx: Contexto actual del sistema.
+        user_query: Consulta original del usuario (para contexto).
+    """
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
     mem_pct: float = ctx.get_metric("memory_available_percent", 50.0)
     total_gb: float = ctx.get_metric("memory_total_gb", 0.0)
@@ -454,7 +459,9 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(full_text), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
-    """Calcula el espacio total recuperable y diagnostica niveles críticos de almacenamiento."""
+    """
+    Calcula el espacio total recuperable y diagnostica niveles críticos de almacenamiento.
+    """
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
     junk: float = ctx.get_metric("junk_mb", 0.0)
     dup: float = ctx.get_metric("duplicate_mb", 0.0)
@@ -469,7 +476,9 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(full_text), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
-    """Informa sobre el estado de archivos detectados y reafirma la política de no-borrado automático."""
+    """
+    Informa sobre el estado de archivos detectados y reafirma la política de no-borrado.
+    """
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
     count: int = int(ctx.get_metric("suspicious_count", 0.0))
     warn: int = int(ctx.get_metric("suspicious_warnings", 0.0))
@@ -482,7 +491,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
-    """Provee un resumen ejecutivo de la salud del sistema basado en las métricas actuales."""
+    """Provee un resumen ejecutivo de la salud del sistema."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
     score_val: str = str(ctx.score) if ctx.score is not None else "N/A"
     grade: str = str(ctx.grade) if ctx.grade else ""

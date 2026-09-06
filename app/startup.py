@@ -292,32 +292,31 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f_name, f_cmd = reader.fieldnames[0], reader.fieldnames[1]
             
         for row in reader:
-            try:
-                if not isinstance(row, dict):
-                    continue
-                
-                raw_n = row.get(f_name)
-                raw_c = row.get(f_cmd)
-                
-                if not isinstance(raw_n, str) or not isinstance(raw_c, str):
-                    continue
-                
-                name = "".join(c for c in raw_n if ord(c) >= 32).strip()
-                cmd = "".join(c for c in raw_c if ord(c) >= 32).strip()
-                
-                if not name or not cmd or cmd.startswith(r"\\") or cmd in seen_commands:
-                    continue
-                if name.upper().startswith("PS") or any(c in cmd for c in '<>|?*&;'):
-                    continue
-                
-                p_cmd = Path(cmd)
-                if is_protected_path(p_cmd):
-                    continue
-                    
-                seen_commands.add(cmd)
-                parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
-            except (KeyError, ValueError, TypeError):
+            if not isinstance(row, dict):
                 continue
+                
+            raw_n = row.get(f_name)
+            raw_c = row.get(f_cmd)
+            
+            # Validación de integridad de los datos leídos
+            if raw_n is None or raw_c is None:
+                continue
+                
+            name = "".join(c for c in str(raw_n) if ord(c) >= 32).strip()
+            cmd = "".join(c for c in str(raw_c) if ord(c) >= 32).strip()
+            
+            if not name or not cmd or cmd.startswith(r"\\") or cmd in seen_commands:
+                continue
+            if name.upper().startswith("PS") or any(c in cmd for c in '<>|?*&;'):
+                continue
+            
+            p_cmd = Path(cmd)
+            if is_protected_path(p_cmd):
+                continue
+                
+            seen_commands.add(cmd)
+            parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
+            
     except (csv.Error, OSError, ValueError, TypeError):
         return []
     return parsed_entries
