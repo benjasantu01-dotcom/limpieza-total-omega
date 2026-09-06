@@ -1205,3 +1205,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-06T12:01:16` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez en `parse_windows_process_csv` añadiendo manejo de errores para valores inesperados en las columnas del CSV (como celdas vacías o formatos corruptos) y asegurando que las conversiones a entero sean seguras, evitando así que una línea malformada detenga el análisis de procesos.
 - `2026-09-06T12:01:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T12:01:16` Corrida terminada. Total usado hoy: 284.
+- `2026-09-06T12:09:04` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-09-06T12:09:35` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-06T12:10:12` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de `st_nlink` en `_safe_unlink` para prevenir el borrado de archivos que podrían tener múltiples enlaces duros (Hard Links), un escenario común en ataques de enlaces o archivos compartidos que podría causar pérdida de datos inesperada.
+- `2026-09-06T12:11:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-06T12:11:59` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-06T12:12:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-09-06T12:12:45` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo un chequeo de integridad en `ensure_safe_to_modify` para detectar si el archivo es un dispositivo especial o contiene datos corrompidos mediante `os.stat` antes de realizar operaciones de movimiento/borrado, previniendo errores de sistema al intentar manipular archivos bloqueados por el kernel.
+- `2026-09-06T12:12:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T12:12:45` Corrida terminada. Total usado hoy: 288.

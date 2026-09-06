@@ -167,7 +167,7 @@ def _is_file_locked(path: Path) -> bool:
 
 def _safe_unlink(path: Path) -> bool:
     """
-    Elimina un archivo tras validaciones de seguridad: propiedad y bloqueo.
+    Elimina un archivo tras validaciones de seguridad: propiedad, enlaces y bloqueo.
     """
     if not isinstance(path, Path) or not path.exists() or not path.is_file():
         return False
@@ -175,8 +175,12 @@ def _safe_unlink(path: Path) -> bool:
         return False
         
     try:
+        st = path.stat()
         # Validación de propiedad en entornos POSIX
-        if hasattr(os, 'getuid') and path.stat().st_uid != os.getuid():
+        if hasattr(os, 'getuid') and st.st_uid != os.getuid():
+            return False
+        # Prevenir borrado si el archivo tiene enlaces duros adicionales
+        if st.st_nlink > 1:
             return False
             
         if is_safe_to_modify(path) and not _is_file_locked(path):

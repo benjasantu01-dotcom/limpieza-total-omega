@@ -78,6 +78,7 @@ class ProtectionReason(Enum):
     EXCESSIVE_DEPTH = "profundidad excesiva"
     MOUNT_POINT = "punto de montaje detectado"
     EXCESSIVE_SIZE = "tamaño de archivo excedido"
+    INVALID_TYPE = "tipo de archivo no soportado"
 
 
 class ValidationContext(Enum):
@@ -233,6 +234,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _IntegrityCheck(ProtectionReason.EMPTY_FILE, lambda p, st: p.is_file() and st.st_size == 0),
     _IntegrityCheck(ProtectionReason.EXCESSIVE_SIZE, lambda p, st: p.is_file() and st.st_size > MAX_FILE_SIZE),
     _IntegrityCheck(ProtectionReason.MOUNT_POINT, lambda p, _: os.path.ismount(p)),
+    _IntegrityCheck(ProtectionReason.INVALID_TYPE, lambda _, st: not (stat.S_ISREG(st.st_mode) or stat.S_ISDIR(st.st_mode))),
 ]
 
 
@@ -394,8 +396,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_boundary_conditions(p, base_dir)
     
     if p.exists():
-        if not (p.is_file() or p.is_dir()):
-            raise UnsafePathError("Objeto no soportado.", SafetyValidationErrorCode.GENERIC)
         _check_file_integrity(p)
     elif p.parent and is_protected_path(p.parent):
         raise UnsafePathError("Directorio contenedor protegido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
@@ -444,6 +444,7 @@ def describe_protection(path: PathLike) -> str:
             if _is_file_in_use(str(p)): return f"'{p}' en uso."
             if _is_system_or_hidden(p): return f"'{p}' atributo oculto/sistema/offline."
             if _has_alternate_data_stream(p.name): return f"'{p}' contiene ADS."
+            if not (p.is_file() or p.is_dir()): return f"'{p}' tipo de objeto no soportado."
             if p.is_file() and p.stat().st_size == 0: return f"'{p}' archivo vacío."
             if p.is_file() and p.stat().st_size > MAX_FILE_SIZE: return f"'{p}' tamaño excesivo."
     except OSError:
