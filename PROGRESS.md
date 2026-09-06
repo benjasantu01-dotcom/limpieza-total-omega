@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **240** (47.6% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 36
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 103 | 8 | 16 | 7 | 90 |
-| 2026-09-06 | 137 | 3 | 20 | 8 | 112 |
+| 2026-09-05 | 100 | 8 | 15 | 7 | 90 |
+| 2026-09-06 | 140 | 3 | 20 | 8 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **56**
+- robustez ante casos límite: **51**
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **48**
 - rendimiento: **45**
-- seguridad defensiva: **42**
+- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **21**
 - `diskreport.py`: **20**
-- `settings.py`: **19**
+- `memory.py`: **20**
+- `scanner.py`: **20**
 - `assistant.py`: **19**
-- `memory.py`: **19**
 - `browser.py`: **18**
+- `healthscore.py`: **18**
+- `settings.py`: **18**
 - `duplicates.py`: **18**
 - `organizer.py`: **18**
-- `safety.py`: **17**
 - `branding.py`: **17**
-- `healthscore.py`: **17**
+- `safety.py`: **16**
 - `quarantine.py`: **15**
-- `main.py`: **12**
+- `main.py`: **13**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-06T12:01:16` **memory.py** (robustez ante casos límite): Mejoré la robustez en `parse_windows_process_csv` añadiendo manejo de errores para valores inesperados en las columnas del CSV (como celdas vacías o formatos corruptos) y asegurando que las conversiones a entero sean seguras, evitando así que una línea malformada detenga el análisis de procesos.
+- `2026-09-06T12:01:01` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante fallos de hilos y condiciones de carrera en `_worker_thread_logic`, asegurando que la gestión del estado "ocupado" (`_set_busy`) y la limpieza del log ocurran incluso si la tarea asíncrona lanza una excepción inesperada, previniendo que la UI quede bloqueada permanentemente.
+- `2026-09-06T11:59:48` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics.validate` ante escenarios de datos de entrada extremos o nulos al inyectar valores por defecto más seguros y robustos, garantizando que el motor de inferencia siempre trabaje con rangos finitos y controlados.
 - `2026-09-06T11:50:21` **browser.py** (robustez ante casos límite): Se ha robustecido el escaneo recursivo mediante la validación proactiva de rutas mediante `is_safe_to_modify` antes de invocar `os.scandir` y `resolve`, evitando errores por bloqueos de acceso durante la traversa.
 - `2026-09-06T11:49:54` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante casos de error en el sistema de archivos (como errores de escritura o permisos) utilizando un manejo de excepciones explícito y verificaciones de seguridad más estrictas, asegurando que cualquier fallo sea capturado de forma silenciosa pero segura sin interrumpir la ejecución de la UI.
 - `2026-09-06T11:39:59` **settings.py** (rendimiento): Optimicé el rendimiento de `settings.py` implementando una pre-validación rápida en el acceso a la caché `_CACHE` y `_SAFETY_CACHE` para evitar operaciones de I/O innecesarias en cada llamada, además de refactorizar las validaciones de `path` para minimizar el uso de `resolve(strict=False)` en rutas ya verificadas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T11:18:37` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para realizar el recorrido del disco en una sola pasada, evitando la redundancia de volver a escanear los mismos archivos en funciones separadas al generar el reporte, mejorando así drásticamente la eficiencia en I/O.
 - `2026-09-06T11:09:56` **browser.py** (rendimiento): Se implementó una caché de resultados en `detect_profiles` para evitar el cálculo redundante de directorios compartidos y se optimizó la estructura de datos `perf_cache` para que persista durante todo el escaneo, reduciendo drásticamente las llamadas al disco en estructuras anidadas o comunes.
 - `2026-09-06T11:09:07` **assistant.py** (rendimiento): Mejoré el rendimiento del motor local reemplazando la búsqueda lineal por `_KEYWORD_TO_HANDLER` con un `frozenset` precalculado para cada manejador, evitando repetir recorridos y optimizando la resolución de intención.
-- `2026-09-06T10:59:23` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a los métodos de `_Validators` y estructurando la lógica de validación para que sea más clara y predecible, alineando la documentación con las reglas de seguridad del proyecto.
-- `2026-09-06T10:59:06` **scanner.py** (legibilidad y documentación): Documenté con docstrings claros y tipado estricto las funciones de bajo nivel en `scanner.py`, clarificando el propósito de los chequeos de archivos sospechosos y mejorando la mantenibilidad del motor heurístico.
-- `2026-09-06T10:50:00` **quarantine.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y `_generate_safe_stored_name`, extrayendo la lógica de saneamiento de caracteres a una función auxiliar con nombre claro y documentando explícitamente las restricciones del sistema de archivos.

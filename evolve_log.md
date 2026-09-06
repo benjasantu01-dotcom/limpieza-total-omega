@@ -1198,3 +1198,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-06T11:50:32` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
 - `2026-09-06T11:50:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T11:50:32` Corrida terminada. Total usado hoy: 280.
+- `2026-09-06T11:58:54` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-09-06T11:59:21` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-06T11:59:48` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics.validate` ante escenarios de datos de entrada extremos o nulos al inyectar valores por defecto más seguros y robustos, garantizando que el motor de inferencia siempre trabaje con rangos finitos y controlados.
+- `2026-09-06T12:01:01` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `main.py` ante fallos de hilos y condiciones de carrera en `_worker_thread_logic`, asegurando que la gestión del estado "ocupado" (`_set_busy`) y la limpieza del log ocurran incluso si la tarea asíncrona lanza una excepción inesperada, previniendo que la UI quede bloqueada permanentemente.
+- `2026-09-06T12:01:16` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez en `parse_windows_process_csv` añadiendo manejo de errores para valores inesperados en las columnas del CSV (como celdas vacías o formatos corruptos) y asegurando que las conversiones a entero sean seguras, evitando así que una línea malformada detenga el análisis de procesos.
+- `2026-09-06T12:01:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T12:01:16` Corrida terminada. Total usado hoy: 284.

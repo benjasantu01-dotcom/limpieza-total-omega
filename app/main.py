@@ -1056,7 +1056,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """
         if self._closing: return
         try:
-            # Re-verificación de seguridad obligatoria antes de procesar cualquier tarea
             if target:
                 self._ensure_path_writable_and_clean(target)
             
