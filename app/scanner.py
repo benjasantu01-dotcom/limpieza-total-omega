@@ -133,7 +133,7 @@ class Scanner:
                 return False
             
             name = entry.name
-            if RTL_CHAR_RE.search(name) or RESERVED_NAMES_RE.match(name):
+            if not name or RTL_CHAR_RE.search(name) or RESERVED_NAMES_RE.match(name):
                 return False
             
             if not self._is_inside_base_root(path_str):
@@ -241,7 +241,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    scanner.process_entry(entry, stack)
+                    if entry:
+                        scanner.process_entry(entry, stack)
         except (PermissionError, OSError, FileNotFoundError):
             continue
     return scanner.results

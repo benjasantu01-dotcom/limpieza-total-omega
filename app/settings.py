@@ -267,7 +267,8 @@ def validate(raw_values: Any) -> AppSettings:
     for key_str, val in raw_values.items():
         if val is None: continue
         key_enum = _STR_TO_ENUM.get(key_str)
-        validator = _VALIDATOR_MAP.get(key_enum) if key_enum else None
+        if not key_enum: continue
+        validator = _VALIDATOR_MAP.get(key_enum)
         if validator:
             validated = validator(key_enum, val)
             if validated is not None or (key_enum == ConfigKey.ULTIMA_CARPETA and val == ""):
@@ -307,13 +308,13 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     if (cached := _CACHE.get(ruta_str)) and cached[1] == cleaned_settings:
         return ruta
 
+    temp_path = None
     try:
         if cleaned_settings.get("asistente_activado") and not (
             cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
         ):
             cleaned_settings["asistente_activado"] = False
         
-        # Validación defensiva antes de cualquier operación de escritura
         if is_protected_path(ruta_str) or not is_safe_to_modify(ruta_str):
             return None
             
@@ -323,26 +324,22 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         if not parent.is_dir(): return None
         
-        if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE * 2:
-            return None
-        
-        temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None
         
+        temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
         with open(temp_path, "wb") as f:
             f.write(data)
             f.flush()
             os.fsync(f.fileno())
         
-        if not (parent.exists() and parent.is_dir()): return None
         os.replace(temp_path, ruta)
         _CACHE[ruta_str] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError, TypeError):
         return None
     finally:
-        if 'temp_path' in locals() and temp_path and os.path.exists(temp_path):
+        if temp_path and temp_path.exists():
             try: os.remove(temp_path)
             except OSError: pass
 

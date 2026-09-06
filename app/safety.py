@@ -246,7 +246,7 @@ def _check_file_integrity(path: Path) -> None:
         for rule in _VALIDATORS:
             if rule.predicate(path, file_stat):
                 raise UnsafePathError(f"Violación de integridad: {rule.reason.value}", SafetyValidationErrorCode.GENERIC)
-    except (PermissionError, OSError) as e:
+    except (FileNotFoundError, PermissionError, OSError) as e:
         raise UnsafePathError(f"No se pudo verificar integridad: {e}", SafetyValidationErrorCode.GENERIC)
 
 
@@ -402,7 +402,7 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> TypeG
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
         return True
-    except (UnsafePathError, TypeError, ValueError, OSError): return False
+    except (UnsafePathError, ValueError, TypeError, OSError): return False
 
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
