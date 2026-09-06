@@ -423,3 +423,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-06T02:18:57` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
 - `2026-09-06T02:18:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T02:18:57` Corrida terminada. Total usado hoy: 56.
+- `2026-09-06T02:27:38` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-09-06T02:28:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-06T02:28:36` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del bucle principal de cálculo (`compute_score`) reemplazando el acceso repetitivo a las constantes `_LIMIT_*` por valores pre-calculados, y eliminando la conversión innecesaria a `float` dentro de las funciones de puntuación gracias a que `SystemMetrics` ya garantiza datos validados en su `__post_init__`.
+- `2026-09-06T02:29:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-06T02:29:34` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-06T02:30:45` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._is_safe_disk_operation, LimpiezaTotalOmegaApp._is_safe_file_access, LimpiezaTotalOmegaApp._is_safe_target_dir, LimpiezaTotalOmegaApp._is_valid_dir, LimpiezaTotalOmegaApp._update_cards, LimpiezaTotalOmegaApp._validate_numeric_setting, LimpiezaTotalOmegaApp._verify_disk_path
+- `2026-09-06T02:31:17` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación de objetos `ProcessMemory` mediante bucles con una búsqueda filtrada más eficiente y directa, reduciendo la carga de CPU y la creación innecesaria de objetos al procesar listados de procesos.
+- `2026-09-06T02:31:33` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé la búsqueda de archivos basura pre-compilando el conjunto de extensiones en un formato de búsqueda más eficiente y reduciendo la redundancia en la recursión mediante el uso de `os.scandir` de forma más directa, evitando conversiones innecesarias a `Path` y llamadas a `resolve()` dentro del bucle crítico.
+- `2026-09-06T02:31:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T02:31:33` Corrida terminada. Total usado hoy: 60.

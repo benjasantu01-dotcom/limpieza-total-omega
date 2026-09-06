@@ -61,10 +61,12 @@ _LIMIT_STARTUP_COUNT: Final[int] = 20
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-# Factores de normalización: escalan valores brutos a un ratio [0.0, 1.0].
-_INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB if _LIMIT_JUNK_MB > 0 else 0.0
-_INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB if _LIMIT_DUPLICATE_MB > 0 else 0.0
-_INV_STARTUP: Final[float] = 1.0 / float(_LIMIT_STARTUP_COUNT) if _LIMIT_STARTUP_COUNT > 0 else 0.0
+# Factores de normalización pre-calculados para evitar divisiones en tiempo de ejecución.
+_INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB
+_INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB
+_INV_STARTUP: Final[float] = 1.0 / float(_LIMIT_STARTUP_COUNT)
+_INV_RAM: Final[float] = 1.0 / _LIMIT_RAM_PERCENT
+_INV_DISK: Final[float] = 1.0 / _LIMIT_DISK_PERCENT
 
 # Niveles de severidad para activar reglas de recomendación (heurística).
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
@@ -88,37 +90,27 @@ _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
     """Transforma el volumen de basura en un ratio de salud (0.0 a 1.0)."""
-    val = _to_float(junk_mb)
-    return _clamp(1.0 - (val * _INV_JUNK)) if math.isfinite(val) else 0.0
+    return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
     """Calcula el ratio de seguridad penalizando eventos detectados."""
-    s = _to_float(suspicious_count)
-    w = _to_float(warnings)
-    if not (math.isfinite(s) and math.isfinite(w)): return 0.0
-    return _clamp(1.0 - ((s * 0.05) + (w * 0.25)))
+    return _clamp(1.0 - ((float(suspicious_count) * 0.05) + (float(warnings) * 0.25)))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Evalúa la salud de la memoria RAM según el margen de disponibilidad."""
-    val = _to_float(available_percent)
-    if not math.isfinite(val) or _LIMIT_RAM_PERCENT <= 0: return 0.0
-    return _clamp(val / _LIMIT_RAM_PERCENT)
+    return _clamp(float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
     """Evalúa la salud del disco según el porcentaje de espacio libre disponible."""
-    val = _to_float(free_percent)
-    if not math.isfinite(val) or _LIMIT_DISK_PERCENT <= 0: return 0.0
-    return _clamp(val / _LIMIT_DISK_PERCENT)
+    return _clamp(float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
     """Calcula el ratio de duplicados basado en el espacio desperdiciado."""
-    val = _to_float(duplicate_mb)
-    return _clamp(1.0 - (val * _INV_DUP)) if math.isfinite(val) else 0.0
+    return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int) -> NormalizedRatio:
     """Evalúa la carga de inicio según la cantidad de programas registrados."""
-    val = _to_float(startup_count)
-    return _clamp(1.0 - (val * _INV_STARTUP)) if math.isfinite(val) else 0.0
+    return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
 _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
     "seguridad": lambda m: score_security(m.suspicious_count, m.suspicious_warnings),
@@ -206,7 +198,7 @@ def _to_float(value: Any, default: float = 0.0) -> float:
 
 def grade_for_score(score: float | int) -> str:
     """Clasifica el puntaje (0-100) según una escala de letras."""
-    s = _to_float(score)
+    s = float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
     if s >= 65: return "C"
@@ -217,13 +209,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
     """Filtra y ejecuta recomendaciones basadas en el estado del sistema."""
     findings: List[str] = []
     for rule in rules:
-        try:
-            if rule.check(metrics, ratio):
-                msg = rule.message_factory(metrics)
-                if isinstance(msg, str) and msg.strip():
-                    findings.append(msg.strip())
-        except (AttributeError, ValueError, TypeError, ZeroDivisionError):
-            continue
+        if rule.check(metrics, ratio):
+            msg = rule.message_factory(metrics)
+            if msg and msg.strip():
+                findings.append(msg.strip())
     return findings
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -231,7 +220,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de entrada de métricas inválido."])
     
-    metrics.validate()
     if not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de sistema corruptos."])
     
@@ -240,18 +228,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     recommendations: List[str] = []
     
     for area, weight, scorer, rules in _OPTIMIZED_PIPELINE:
-        try:
-            ratio = scorer(metrics)
-            if not math.isfinite(ratio):
-                ratio = 0.0
-            pts = int(round(ratio * weight))
-            metric_breakdown[area] = pts
-            total_pts += float(pts)
-            if rules:
-                recommendations.extend(_evaluate_rules(metrics, rules, ratio))
-        except (AttributeError, ValueError, TypeError, ZeroDivisionError):
-            metric_breakdown[area] = 0
-            continue
+        ratio = scorer(metrics)
+        pts = int(round(ratio * weight))
+        metric_breakdown[area] = pts
+        total_pts += float(pts)
+        if rules:
+            recommendations.extend(_evaluate_rules(metrics, rules, ratio))
     
     final_score = int(_clamp(total_pts, 0.0, 100.0))
     if metrics.quarantined_count > 0:

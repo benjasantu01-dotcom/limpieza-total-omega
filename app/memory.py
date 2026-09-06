@@ -207,20 +207,16 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
     
-    proc_list: List[ProcessMemory] = []
-    for line in raw_csv_text.splitlines():
-        line = line.strip()
-        if not line: continue
-        
-        parts = [p.strip().strip("'\"") for p in line.split(",", 2)]
-        if len(parts) < 3: continue
-        
-        process = _is_valid_process_entry(parts[0], parts[1], parts[2])
-        if process:
-            proc_list.append(process)
-    
-    proc_list.sort(key=lambda p: p.working_set, reverse=True)
-    return proc_list[:limit]
+    def process_generator():
+        for line in raw_csv_text.splitlines():
+            line = line.strip()
+            if not line: continue
+            parts = [p.strip().strip("'\"") for p in line.split(",", 2)]
+            if len(parts) >= 3:
+                proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
+                if proc: yield proc
+
+    return sorted(process_generator(), key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Invoca la API de Windows GlobalMemoryStatusEx mediante ctypes."""
