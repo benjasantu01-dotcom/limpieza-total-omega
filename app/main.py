@@ -272,7 +272,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _init_state(self) -> None:
         """Configura el estado inicial, cachés, variables de control y pools."""
-        self._cache: Dict[str, Any] = {}
+        self._cache: OrderedDict[str, Any] = OrderedDict()
         self._cache_access_times: Dict[str, float] = {}
         self._cache_ttl = 300
         self._cache_max_size = 20
@@ -910,6 +910,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         now = time.time()
         if not force and key in self._cache:
             if now - self._cache_access_times.get(key, 0) < self._cache_ttl:
+                self._cache.move_to_end(key)
                 return self._cache[key]
         
         if provider:
@@ -917,10 +918,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 data = provider()
                 if data is not None:
                     if len(self._cache) >= self._cache_max_size:
-                        # FIFO básico para limpieza de caché
-                        oldest = next(iter(self._cache))
-                        del self._cache[oldest]
-                        del self._cache_access_times[oldest]
+                        oldest_key, _ = self._cache.popitem(last=False)
+                        self._cache_access_times.pop(oldest_key, None)
                     self._cache[key] = data
                     self._cache_access_times[key] = now
                 return data
@@ -941,7 +940,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         keys_to_del = [k for k in self._cache.keys() if k.startswith(key_prefix)]
         for k in keys_to_del:
             del self._cache[k]
-            del self._cache_access_times[k]
+            self._cache_access_times.pop(k, None)
 
     def _box(self, tab: str) -> Optional[ctk.CTkTextbox]:
         """Recupera la caja de log asociada a una pestaña."""

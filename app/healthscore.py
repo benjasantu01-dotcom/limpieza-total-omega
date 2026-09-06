@@ -239,11 +239,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     total_pts: float = 0.0
     recommendations: List[str] = []
     
-    for area, weight, scorer, rules in _OPTIMIZED_PIPELINE:
+    for _, weight, scorer, rules in _OPTIMIZED_PIPELINE:
         try:
             ratio = scorer(metrics)
             pts = int(round(ratio * weight))
-            metric_breakdown[area] = pts
+            metric_breakdown[_OPTIMIZED_PIPELINE[len(metric_breakdown)][0]] = pts
             total_pts += float(pts)
             if rules:
                 recommendations.extend(_evaluate_rules(metrics, rules, ratio))

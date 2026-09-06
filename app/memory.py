@@ -274,6 +274,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     
     now = time.time()
     if (now - _proc_cache_time) > 60:
+        # Consulta eficiente: ordena en el lado de PowerShell y selecciona solo los necesarios
         fetch_limit = limit + 5
         cmd = [
             'powershell', '-NoProfile', '-NonInteractive', '-Command', 

@@ -783,3 +783,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-06T06:44:11` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé el rendimiento de `summarize` y `_collect_summary_data` evitando llamadas redundantes a `path.exists()` y redundancias en la recolección de estadísticas, lo que reduce drásticamente las llamadas al sistema operativo durante el recorrido del disco.
 - `2026-09-06T06:44:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T06:44:11` Corrida terminada. Total usado hoy: 160.
+- `2026-09-06T06:52:39` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-09-06T06:53:06` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-06T06:53:34` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el pipeline de cálculo utilizando la pre-instanciación de una lista de tuplas y eliminando la recolección dinámica de recomendaciones dentro de `compute_score`, reduciendo la carga de procesamiento en cada ejecución del bucle.
+- `2026-09-06T06:54:48` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se ha optimizado la gestión de caché para eliminar la iteración sobre el diccionario `self._cache` en cada búsqueda (O(n)), reemplazando la lógica de limpieza FIFO manual por una estructura `collections.OrderedDict` que permite el borrado eficiente de elementos obsoletos en tiempo constante (O(1)).
+- `2026-09-06T06:55:08` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de memoria de procesos mediante el uso de una única llamada a PowerShell, eliminando la sobrecarga de múltiples ejecuciones y aprovechando que la información de `Name`, `Id` y `WorkingSet` se obtiene nativamente en una sola pasada.
+- `2026-09-06T06:55:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T06:55:08` Corrida terminada. Total usado hoy: 164.
