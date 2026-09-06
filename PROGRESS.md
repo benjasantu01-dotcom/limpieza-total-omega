@@ -9,43 +9,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **235** (46.6% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 204
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 154 | 13 | 23 | 12 | 134 |
-| 2026-09-06 | 81 | 1 | 13 | 3 | 70 |
+| 2026-09-05 | 152 | 13 | 23 | 12 | 132 |
+| 2026-09-06 | 83 | 1 | 13 | 4 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **46**
-- rendimiento: **42**
-- robustez ante casos límite: **42**
+- seguridad defensiva: **44**
+- rendimiento: **43**
+- robustez ante casos límite: **43**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
 - `memory.py`: **21**
+- `diskreport.py`: **21**
 - `safety.py`: **19**
+- `scanner.py`: **19**
+- `assistant.py`: **19**
 - `organizer.py`: **18**
-- `scanner.py`: **18**
 - `settings.py`: **18**
 - `healthscore.py`: **18**
-- `assistant.py`: **18**
 - `duplicates.py`: **18**
 - `browser.py`: **16**
 - `branding.py`: **15**
-- `main.py`: **13**
+- `main.py`: **12**
 - `quarantine.py`: **12**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-06T07:14:50` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` al añadir una validación de tipos más estricta para las fuentes de datos, asegurando que `ingest` no intente iterar sobre objetos inesperados y evitando fallos ante entradas mal formadas o tipos primitivos pasados erróneamente.
+- `2026-09-06T07:13:28` **scanner.py** (rendimiento): Optimicé el método `_is_safe_entry` reemplazando múltiples llamados redundantes a `Path(path_str)` por comparaciones directas de cadenas y reduciendo la creación de objetos `Path` innecesarios dentro del bucle de escaneo.
 - `2026-09-06T07:04:37` **safety.py** (rendimiento): Se implementó un cacheo más eficiente en `is_protected_path` utilizando `lru_cache` sobre el resultado de `os.path.commonpath`, evitando recalcular repetidamente la pertenencia a directorios del sistema durante recorridos de disco pesados.
 - `2026-09-06T07:03:59` **quarantine.py** (rendimiento): Optimicé el acceso al manifiesto en `purge_all` y `list_items` convirtiendo la lista a un diccionario para evitar iteraciones redundantes y búsquedas O(n) dentro de los bucles, mejorando la complejidad algorítmica de las operaciones de limpieza y consulta.
 - `2026-09-06T07:03:24` **organizer.py** (rendimiento): Optimizé el rendimiento de `_process_directory` reemplazando la creación repetida de objetos `Path` y `str` dentro del bucle principal mediante el uso directo de `os.DirEntry` y reduciendo las llamadas a `is_protected_path` al procesar solo una vez por directorio.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T06:32:47` **safety.py** (legibilidad y documentación): Se introdujo documentación técnica detallada mediante docstrings explicativos en las funciones de validación crítica y se añadieron type hints ausentes para mejorar la claridad del contrato de datos, facilitando el mantenimiento y la auditoría del módulo `safety.py`.
 - `2026-09-06T06:23:37` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `quarantine.py` mediante la refactorización de `_safe_unlink` y `_is_item_purgable` para reducir la complejidad ciclomática y mejorar la claridad de los filtros de seguridad, asegurando que sigan cumpliendo estrictamente con las políticas de acceso requeridas.
 - `2026-09-06T06:23:02` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `organizer.py` mediante la adición de docstrings estructuradas en las funciones auxiliares de validación, clarificando las precondiciones, el propósito de seguridad de cada chequeo y los posibles efectos colaterales de las operaciones de disco.
-- `2026-09-06T06:22:33` **memory.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros y retornos de las funciones que faltaban (como `diagnose`, `_read_windows_snapshot`, `_get_process_path`) y se documentaron los parámetros de las funciones de parseo para mejorar la claridad del contrato de datos.
-- `2026-09-06T06:14:10` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de inicialización en `__init__` extrayendo la configuración de estados y componentes a un método dedicado `_init_components`, y añadiendo docstrings descriptivos a los métodos de construcción de la UI.

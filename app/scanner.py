@@ -124,7 +124,8 @@ class Scanner:
             
             if not self._is_inside_base_root(path_str):
                 return False
-                
+            
+            # Solo instanciamos Path si pasamos las validaciones previas de cadena
             return not is_protected_path(Path(path_str))
         except (OSError, AttributeError):
             return False

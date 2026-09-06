@@ -279,7 +279,7 @@ class SystemContext:
         Extrae y valida métricas desde una fuente externa (diccionario o objeto).
         Devuelve True si al menos una métrica válida fue procesada.
         """
-        if source is None or isinstance(source, (list, tuple, str, int, float, bool)):
+        if not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool)):
             return False
             
         found_data = False
@@ -327,13 +327,12 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _get_source_value(source: Any, key: str) -> Any:
-    """Extrae valores de fuentes evitando miembros privados o protegidos."""
+    """Extracts values from sources safely."""
     try:
         if isinstance(source, dict):
             return source.get(key)
-        if hasattr(source, key):
-            if not key.startswith('_'):
-                return getattr(source, key)
+        if hasattr(source, key) and not key.startswith('_'):
+            return getattr(source, key)
         return None
     except (AttributeError, TypeError, KeyError):
         return None
@@ -361,7 +360,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """Fabrica un SystemContext a partir de fuentes de datos dispersas."""
     ctx = SystemContext()
     sources = [s for s in [metrics, health, extra] 
-               if s is not None and (isinstance(s, dict) or hasattr(s, "__dict__"))]
+               if isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str, int, float, bool))]
     
     for src in sources:
         if ctx.ingest(src):
@@ -391,7 +390,6 @@ def context_as_text(context: SystemContext) -> str:
     if not isinstance(context, SystemContext) or not context.analyzed or not context.is_valid_structure:
         return "No hay métricas disponibles todavía."
     
-    # Pre-calculamos los strings para maximizar el hit rate del lru_cache
     s_score = _fmt_metric_sanitized(context.score) if context.score is not None else "N/A"
     s_grade = str(context.grade)[:5]
     s_junk = _fmt_metric_sanitized(context.junk_mb, " MB")
@@ -439,12 +437,7 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
     return _get_active_problems(ctx) if ctx.analyzed else []
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
-    """
-    Explica el estado de la RAM y desaconseja optimizadores externos.
-    Argumentos:
-        ctx: Contexto actual del sistema.
-        user_query: Consulta original del usuario (para contexto).
-    """
+    """Explica el estado de la RAM y desaconseja optimizadores externos."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
     mem_pct: float = ctx.get_metric("memory_available_percent", 50.0)
     total_gb: float = ctx.get_metric("memory_total_gb", 0.0)
@@ -461,9 +454,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(full_text), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
-    """
-    Calcula el espacio total recuperable y diagnostica niveles críticos de almacenamiento.
-    """
+    """Calcula el espacio total recuperable y diagnostica niveles críticos de almacenamiento."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
     junk: float = ctx.get_metric("junk_mb", 0.0)
     dup: float = ctx.get_metric("duplicate_mb", 0.0)
@@ -478,9 +469,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(full_text), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
-    """
-    Informa sobre el estado de archivos detectados y reafirma la política de no-borrado.
-    """
+    """Informa sobre el estado de archivos detectados y reafirma la política de no-borrado."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
     count: int = int(ctx.get_metric("suspicious_count", 0.0))
     warn: int = int(ctx.get_metric("suspicious_warnings", 0.0))
@@ -539,7 +528,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
     
-    # Búsqueda optimizada O(1) por token
     for token in _TOKEN_REGEX.findall(q_sanitized):
         handler = _KEYWORD_TO_HANDLER.get(token)
         if handler:
