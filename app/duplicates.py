@@ -179,7 +179,10 @@ def _collect_candidates(
     min_size: int, 
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
-    """Recorre recursivamente los directorios seleccionados y filtra archivos elegibles."""
+    """
+    Recorre recursivamente los directorios seleccionados y filtra archivos elegibles.
+    Utiliza `os.scandir` para un rendimiento eficiente en el árbol de archivos.
+    """
     size_map: Dict[int, List[Path]] = defaultdict(list)
 
     def _scan_directory_recursive(current_dir: Path) -> None:
@@ -211,6 +214,7 @@ def _collect_candidates(
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
+    """Agrupa archivos según el resultado de una función de hashing dada."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if (digest := hash_func(path)):
@@ -219,7 +223,11 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
-    """Aplica hashing completo solo a los grupos que coincidieron por hash parcial."""
+    """
+    Aplica hashing completo a grupos con colisiones parciales.
+    Reduce drásticamente las llamadas a I/O costosas al descartar archivos 
+    diferentes en el Paso 2 antes de proceder al Paso 3.
+    """
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
     

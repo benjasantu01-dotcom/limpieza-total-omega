@@ -26,13 +26,13 @@ MetricKey: TypeAlias = str
 
 class RecommendationRule(NamedTuple):
     """
-    Define una regla de inferencia para generar recomendaciones.
+    Define una regla de inferencia para generar recomendaciones al usuario.
     
     Attributes:
-        area: Identificador del módulo afectado.
+        area: Identificador del módulo (seguridad, disco, etc.).
         threshold: Valor límite de ratio bajo el cual la regla se activa.
-        message_factory: Callable que recibe métricas para generar un string explicativo.
-        check: Función booleana (metrics, ratio) -> bool que evalúa si activar la regla.
+        message_factory: Función que inyecta contexto de SystemMetrics en un mensaje.
+        check: Predicado (metrics, ratio) -> bool para decidir la ejecución de la regla.
     """
     area: MetricKey
     threshold: float
@@ -206,7 +206,14 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float) -> List[str]:
-    """Filtra y ejecuta recomendaciones basadas en el estado del sistema."""
+    """
+    Filtra y ejecuta recomendaciones basadas en el estado del sistema.
+    
+    Args:
+        metrics: Estado actual del sistema.
+        rules: Lista de reglas a evaluar.
+        ratio: Valor normalizado del área bajo análisis.
+    """
     findings: List[str] = []
     for rule in rules:
         if rule.check(metrics, ratio):

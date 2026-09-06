@@ -91,6 +91,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry) -> bool:
     """
     Determina si un nodo debe ser excluido (puntos de reparse, enlaces simbólicos).
+    Esta función es crítica para evitar bucles infinitos en sistemas de archivos 
+    con junctions o enlaces cíclicos que no representan contenido único.
     """
     REPARSE_POINT_ATTR = 0x400
     try:
@@ -201,7 +203,14 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Recorrido DFS iterativo evitando bucles mediante inodos (inode tracking)."""
+    """
+    Recorrido DFS iterativo evitando bucles infinitos mediante el rastreo de inodos.
+    
+    Args:
+        directory: Ruta raíz de inicio.
+        skip_protected: Si es True, ignora rutas bloqueadas según safety.py para 
+                       evitar errores de permiso y proteger el sistema.
+    """
     root_path = _validate_root(directory)
     if root_path is None:
         return
