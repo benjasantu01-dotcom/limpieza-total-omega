@@ -72,13 +72,14 @@ class DuplicateGroup:
 
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
+    if path is None: return None
     path_obj = Path(path)
     
     if not _is_valid_candidate(path_obj) or chunk_size <= 0:
         return None
         
     try:
-        if path_obj.stat().st_size == 0:
+        if not path_obj.is_file() or path_obj.stat().st_size == 0:
             return None
             
         digest = hashlib.sha256()
@@ -94,13 +95,14 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
+    if path is None: return None
     path_obj = Path(path)
 
     if not _is_valid_candidate(path_obj) or read_bytes <= 0:
         return None
 
     try:
-        if path_obj.stat().st_size == 0:
+        if not path_obj.is_file() or path_obj.stat().st_size == 0:
             return None
 
         with open(path_obj, "rb") as f:
@@ -114,8 +116,9 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 def _is_valid_candidate(path: Path) -> bool:
     """Valida requisitos básicos: debe ser archivo, no estar protegido y ser legible."""
+    if not isinstance(path, Path):
+        return False
     try:
-        # Se verifica st_nlink == 1 para evitar procesar hard links que podrían causar loops o conteo erróneo
         return (
             path.is_file() and 
             not path.is_symlink() and
@@ -173,7 +176,6 @@ def _collect_candidates(
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Seguridad defensiva: Verificar que la entrada sigue bajo el root_base
                         entry_path = Path(entry.path).resolve()
                         if not str(entry_path).startswith(str(root_base)):
                             continue

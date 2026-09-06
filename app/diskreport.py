@@ -255,11 +255,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     while stack:
         current_dir = stack.pop()
         
-        # Verificar existencia antes de abrir el directorio
-        if not current_dir.exists():
-            continue
-            
         try:
+            if not current_dir.exists():
+                continue
+                
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     if _is_excluded_path(entry):
@@ -281,7 +280,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             yield Path(entry.path), max(0, int(getattr(st, 'st_size', 0)))
                     except (PermissionError, OSError, AttributeError):
                         continue
-        except (PermissionError, OSError):
+        except (PermissionError, OSError, FileNotFoundError):
             continue
 
 

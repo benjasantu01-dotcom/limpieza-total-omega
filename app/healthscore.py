@@ -223,6 +223,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de entrada de métricas inválido."])
     
+    # Validar integridad antes de procesar
     if not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de sistema corruptos."])
     
@@ -231,13 +232,16 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     recommendations: List[str] = []
     
     for area, weight, scorer, rules in _OPTIMIZED_PIPELINE:
-        ratio = scorer(metrics)
-        pts = int(round(ratio * weight))
-        metric_breakdown[area] = pts
-        total_pts += float(pts)
-        if rules and metrics.is_finite:
-            recommendations.extend(_evaluate_rules(metrics, rules, ratio))
-    
+        try:
+            ratio = scorer(metrics)
+            pts = int(round(ratio * weight))
+            metric_breakdown[area] = pts
+            total_pts += float(pts)
+            if rules:
+                recommendations.extend(_evaluate_rules(metrics, rules, ratio))
+        except (ValueError, TypeError, ZeroDivisionError):
+            continue
+            
     final_score = int(_clamp(total_pts, 0.0, 100.0))
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")

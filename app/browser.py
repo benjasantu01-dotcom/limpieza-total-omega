@@ -114,6 +114,8 @@ def base_directories() -> List[Path]:
 
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """Confirma que 'real_target' se encuentre jerárquicamente dentro de 'real_base'."""
+    if not isinstance(real_target, Path) or not isinstance(real_base, Path):
+        return False
     try:
         target_res = str(real_target.resolve(strict=True))
         base_res = str(real_base.resolve(strict=True))
@@ -145,7 +147,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     """
     Evalúa si una entrada (os.DirEntry) debe omitirse según criterios de seguridad y visibilidad.
     """
-    if _is_excluded_file(entry.name):
+    if entry is None or not hasattr(entry, 'name') or _is_excluded_file(entry.name):
         return True
         
     try:
