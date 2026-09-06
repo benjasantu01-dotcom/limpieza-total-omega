@@ -16,6 +16,7 @@ from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List, Optiona
 from types import MappingProxyType
 from functools import lru_cache
 from safety import is_safe_to_modify, ensure_safe_to_modify, is_protected_path
+import math
 
 class CanvasElement(Protocol):
     """Protocolo que define los métodos mínimos requeridos por el sistema de dibujo de customtkinter."""
@@ -189,6 +190,7 @@ def score_color(score: Union[float, int, None]) -> HexColor:
     if score is None: return C_TEXT_MUTED
     try:
         valor = float(score)
+        if not math.isfinite(valor): return C_TEXT_MUTED
     except (TypeError, ValueError): return C_TEXT_MUTED
     if not (0.0 <= valor <= 100.0): return C_TEXT_MUTED
     for limit, color_val in SCORE_THRESHOLDS:
@@ -201,6 +203,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
     """Crea una barra de progreso visual en texto plano (ASCII)."""
     try:
         valor = float(percent) if percent is not None else 0.0
+        if not math.isfinite(valor): valor = 0.0
         ancho = max(1, int(width))
         llenos = int(round(max(0.0, min(100.0, valor)) / 100 * ancho))
         return filled * llenos + empty * (ancho - llenos)
@@ -227,6 +230,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
     ratio = max(0.0, min(1.0, float(ratio)))
+    if not math.isfinite(ratio): ratio = 0.0
     return _rgb_to_hex((
         int(r1 + (r2 - r1) * ratio),
         int(g1 + (g2 - g1) * ratio),
@@ -342,6 +346,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     """Renderiza el logo completo en el canvas, escalado a la posición (x, y)."""
     try:
         s = float(size)
+        if not math.isfinite(s): return
         scale = max(0.1, min(10.0, s / 128.0))
         coords = _get_shield_coords(scale)
         contorno = [canvas_x + coords[i] if i % 2 == 0 else canvas_y + coords[i] for i in range(len(coords))]
@@ -364,6 +369,7 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
     try:
         if percent is None: return
         val = float(percent)
+        if not math.isfinite(val): return
         diam = max(20, int(size))
         thick = max(2, min(int(thickness), (diam // 2) - 1))
         borde = thick / 2.0

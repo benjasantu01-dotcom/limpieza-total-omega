@@ -299,19 +299,24 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """Persiste configuración mediante reemplazo atómico tras validar seguridad de ruta."""
     if not _is_dict(values): return None
+    
+    ruta = settings_path(custom_base).absolute()
+    ruta_str = str(ruta)
+    cleaned_settings = validate(values)
+    
+    # Dirty check: evitar escrituras innecesarias
+    if (cached := _CACHE.get(ruta_str)) and cached[1] == cleaned_settings:
+        return ruta
+
     try:
-        cleaned_settings = validate(values)
-        
         if cleaned_settings.get("asistente_activado") and not (
             cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
         ):
             cleaned_settings["asistente_activado"] = False
         
-        temp_path = None
-        ruta = settings_path(custom_base).absolute()
-        if is_protected_path(str(ruta)) or ruta.is_symlink(): return None
+        if is_protected_path(ruta_str) or ruta.is_symlink(): return None
         if hasattr(ruta, 'is_junction') and ruta.is_junction(): return None
-        ensure_safe_to_modify(str(ruta))
+        ensure_safe_to_modify(ruta_str)
         
         parent = ruta.parent
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
@@ -331,7 +336,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         
         if not parent.exists(): return None
         os.replace(temp_path, ruta)
-        _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
+        _CACHE[ruta_str] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError, TypeError):
         return None

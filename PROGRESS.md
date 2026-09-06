@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-04 | 40 | 4 | 8 | 2 | 36 |
+| 2026-09-04 | 37 | 4 | 8 | 2 | 35 |
 | 2026-09-05 | 164 | 13 | 24 | 14 | 135 |
-| 2026-09-06 | 29 | 0 | 7 | 2 | 26 |
+| 2026-09-06 | 32 | 0 | 7 | 2 | 27 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **48**
-- rendimiento: **41**
-- robustez ante casos límite: **41**
+- seguridad defensiva: **45**
+- robustez ante casos límite: **43**
+- rendimiento: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **20**
+- `assistant.py`: **20**
 - `diskreport.py`: **20**
-- `assistant.py`: **19**
-- `duplicates.py`: **18**
-- `healthscore.py`: **18**
+- `branding.py`: **19**
 - `organizer.py`: **18**
 - `safety.py`: **18**
-- `branding.py`: **18**
+- `settings.py`: **18**
 - `memory.py`: **18**
-- `settings.py`: **17**
+- `healthscore.py`: **17**
+- `duplicates.py`: **17**
 - `browser.py`: **16**
 - `quarantine.py`: **13**
-- `main.py`: **10**
 - `startup.py`: **10**
+- `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-06T02:49:49` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo del `canvas` añadiendo validaciones contra valores extremos (`inf`, `NaN`) y saneando parámetros de entrada para prevenir errores en tiempo de ejecución (ej. `ZeroDivisionError` en cálculos de escala o `TypeError` por tipos inesperados).
+- `2026-09-06T02:49:32` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_validate_and_assign` ante valores `None` inesperados o tipos de datos malformados en el origen, asegurando que el proceso de ingesta no aborte ante entradas parciales o corruptas.
+- `2026-09-06T02:48:28` **settings.py** (rendimiento): Se optimizó el rendimiento mediante la implementación de un mecanismo de "dirty check" en `save` y `update`, evitando operaciones innecesarias de escritura en disco y recreación de caché cuando los datos no han cambiado realmente.
 - `2026-09-06T02:39:18` **scanner.py** (rendimiento): Optimizé la detección de extensiones y la ejecución de heurísticas moviendo el cálculo de sufijos fuera de los loops y utilizando conjuntos (sets) para búsquedas O(1), evitando re-procesamiento innecesario de rutas en `scan_file`.
 - `2026-09-06T02:38:23` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` transformando `item_map` de una lista de objetos a un `dict` para acceso O(1) y evitando la reconstrucción redundante de objetos `QuarantineItem` durante la iteración sobre el directorio.
 - `2026-09-06T02:31:33` **organizer.py** (rendimiento): Optimizé la búsqueda de archivos basura pre-compilando el conjunto de extensiones en un formato de búsqueda más eficiente y reduciendo la redundancia en la recursión mediante el uso de `os.scandir` de forma más directa, evitando conversiones innecesarias a `Path` y llamadas a `resolve()` dentro del bucle crítico.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T01:57:25` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad de `quarantine.py` documentando las precondiciones y efectos secundarios de las funciones críticas de manipulación de archivos mediante Google Style Docstrings, además de añadir type hints explícitos en los retornos de las funciones que realizan validaciones de seguridad.
 - `2026-09-06T01:56:50` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `organizer.py` añadiendo type hints faltantes, estandarizando la documentación mediante docstrings claros, y extrayendo la lógica de validación de extensiones a una función con nombre semántico, cumpliendo así con el enfoque de documentación y claridad solicitado.
 - `2026-09-06T01:53:21` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `parse_windows_process_csv` para extraer la lógica de validación de filas a una función privada, aclarando el flujo y permitiendo una mejor validación de cada registro.
-- `2026-09-06T01:48:31` **healthscore.py** (legibilidad y documentación): He mejorado la documentación del módulo añadiendo type hints faltantes en las funciones de puntuación y simplificando la lógica de validación de finitud en `SystemMetrics` mediante un método decorado como propiedad, lo cual mejora la legibilidad y sigue las mejores prácticas de Python moderno.
-- `2026-09-06T01:47:37` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del flujo de trabajo de hash en `duplicates.py` mediante type hints adicionales, docstrings detallados que explican el *porqué* de las decisiones técnicas, y la extracción de la lógica de decisión de estrategia (pequeños vs grandes) a un método con un nombre más explícito para mejorar la legibilidad y mantenibilidad.
-- `2026-09-06T01:37:41` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y robustez del módulo mediante la adición de docstrings técnicos detallados en las funciones de escaneo (`walk_files`, `_collect_summary_data`) y la estandarización de type hints, facilitando la comprensión del flujo de datos en un entorno de inspección profunda.

@@ -440,3 +440,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-06T02:39:18` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la detección de extensiones y la ejecución de heurísticas moviendo el cálculo de sufijos fuera de los loops y utilizando conjuntos (sets) para búsquedas O(1), evitando re-procesamiento innecesario de rutas en `scan_file`.
 - `2026-09-06T02:39:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T02:39:18` Corrida terminada. Total usado hoy: 64.
+- `2026-09-06T02:47:58` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-09-06T02:48:28` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el rendimiento mediante la implementación de un mecanismo de "dirty check" en `save` y `update`, evitando operaciones innecesarias de escritura en disco y recreación de caché cuando los datos no han cambiado realmente.
+- `2026-09-06T02:48:54` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-06T02:49:32` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` y `_validate_and_assign` ante valores `None` inesperados o tipos de datos malformados en el origen, asegurando que el proceso de ingesta no aborte ante entradas parciales o corruptas.
+- `2026-09-06T02:49:49` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y las funciones de dibujo del `canvas` añadiendo validaciones contra valores extremos (`inf`, `NaN`) y saneando parámetros de entrada para prevenir errores en tiempo de ejecución (ej. `ZeroDivisionError` en cálculos de escala o `TypeError` por tipos inesperados).
+- `2026-09-06T02:49:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T02:49:49` Corrida terminada. Total usado hoy: 68.

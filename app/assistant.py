@@ -279,7 +279,7 @@ class SystemContext:
         Extrae y valida métricas desde una fuente externa (diccionario o objeto).
         Devuelve True si al menos una métrica válida fue procesada.
         """
-        if not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool)):
+        if source is None or isinstance(source, (list, tuple, str, int, float, bool)):
             return False
             
         found_data = False
@@ -331,7 +331,7 @@ def _get_source_value(source: Any, key: str) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        if isinstance(source, object) and hasattr(source, key):
+        if hasattr(source, key):
             if not key.startswith('_'):
                 return getattr(source, key)
         return None
@@ -341,8 +341,6 @@ def _get_source_value(source: Any, key: str) -> Any:
 def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: MetricSpec) -> bool:
     """Valida el valor de la métrica según MetricSpec y lo asigna de forma segura."""
     try:
-        if not hasattr(ctx, key):
-            return False
         val = _get_source_value(source, key)
         if val is None or not spec.is_valid_type(val):
             return False
@@ -363,7 +361,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """Fabrica un SystemContext a partir de fuentes de datos dispersas."""
     ctx = SystemContext()
     sources = [s for s in [metrics, health, extra] 
-               if s is not None and (isinstance(s, dict) or isinstance(s, object))]
+               if s is not None and (isinstance(s, dict) or hasattr(s, "__dict__"))]
     
     for src in sources:
         if ctx.ingest(src):
