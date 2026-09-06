@@ -1782,8 +1782,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         valores: AppSettings = dict(self.settings)  # type: ignore
         for clave, variable in self.setting_vars.items():
             try:
-                valores[clave] = variable.get() # type: ignore
+                # El acceso a variable.get() puede fallar si el widget fue destruido
+                valores[clave] = variable.get()  # type: ignore
             except (tk.TclError, Exception):
+                # En caso de error, mantenemos el valor previo existente en self.settings
                 continue
         
         valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(

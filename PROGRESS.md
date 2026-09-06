@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 37
+- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-04 | 14 | 2 | 4 | 1 | 1 |
+| 2026-09-04 | 11 | 2 | 3 | 1 | 1 |
 | 2026-09-05 | 164 | 13 | 24 | 14 | 135 |
-| 2026-09-06 | 55 | 0 | 9 | 3 | 65 |
+| 2026-09-06 | 56 | 1 | 9 | 3 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **53**
 - seguridad defensiva: **49**
-- manejo de errores y validación de entradas: **45**
-- legibilidad y documentación: **44**
-- rendimiento: **42**
+- manejo de errores y validación de entradas: **46**
+- legibilidad y documentación: **42**
+- rendimiento: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `assistant.py`: **19**
 - `duplicates.py`: **19**
 - `memory.py`: **19**
-- `scanner.py`: **18**
 - `browser.py`: **18**
 - `organizer.py`: **18**
 - `safety.py`: **18**
 - `settings.py`: **18**
+- `assistant.py`: **18**
 - `branding.py`: **17**
 - `healthscore.py`: **17**
+- `scanner.py`: **17**
 - `quarantine.py`: **12**
-- `main.py`: **10**
-- `startup.py`: **9**
+- `main.py`: **11**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-06T05:42:30` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_collect_settings` agregando un manejo de errores más específico y defensivo, asegurando que si la interfaz falla al recuperar los valores de los widgets (por ejemplo, durante el cierre de la app o si un widget ha sido destruido), la aplicación no aborte y preserve la integridad de la configuración.
 - `2026-09-06T05:32:41` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `compute_score` implementando una validación explícita para asegurar que las métricas posean valores lógicos (como porcentajes de memoria dentro de rangos válidos) mediante la verificación de `is_finite` antes de procesar el pipeline y capturando errores inesperados durante el cálculo de los scorers.
 - `2026-09-06T05:32:31` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` añadiendo validaciones explícitas de tipo y estado para evitar excepciones innecesarias y mejorar la consistencia con el manejo de errores del resto de la app.
 - `2026-09-06T05:32:06` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas al acceder a los metadatos de archivos y normalizando las entradas de usuario, evitando que errores de acceso (como `FileNotFoundError` o `PermissionError`) interrumpan el análisis completo sin previo aviso.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T03:30:41` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_path_inside_base` y `_should_skip_entry` para prevenir ataques de *path traversal* mediante el uso de `os.path.commonpath`, que es más estricto y seguro al manejar la resolución de rutas relativas y el encadenamiento de directorios.
 - `2026-09-06T03:29:57` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva al mejorar `_ensure_safe_text` y la validación de `SystemContext` para asegurar que ningún valor que pudiera ser interpretado como una ruta o contener caracteres de control maliciosos llegue a ser procesado o devuelto por el asistente, implementando un filtro más riguroso en la propiedad `is_valid_structure`.
 - `2026-09-06T03:29:19` **startup.py** (robustez ante casos límite): Mejoré la robustez de `StartupEntry._validate_file_access` al manejar casos de errores de acceso durante la obtención de atributos de archivo, evitando excepciones no capturadas al encontrar archivos en uso o bloqueados por el sistema durante el escaneo.
-- `2026-09-06T03:20:07` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save()` ante condiciones de carrera y fallos de sistema de archivos al añadir una verificación explícita de `parent.exists()` y `parent.is_dir()` inmediatamente antes de realizar la escritura, evitando excepciones por entornos de ejecución volátiles.

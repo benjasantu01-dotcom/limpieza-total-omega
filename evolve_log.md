@@ -711,3 +711,33 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-06T05:32:41` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `compute_score` implementando una validación explícita para asegurar que las métricas posean valores lógicos (como porcentajes de memoria dentro de rangos válidos) mediante la verificación de `is_finite` antes de procesar el pipeline y capturando errores inesperados durante el cálculo de los scorers.
 - `2026-09-06T05:32:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T05:32:41` Corrida terminada. Total usado hoy: 132.
+- `2026-09-06T05:41:19` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-09-06T05:42:30` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_collect_settings` agregando un manejo de errores más específico y defensivo, asegurando que si la interfaz falla al recuperar los valores de los widgets (por ejemplo, durante el cierre de la app o si un widget ha sido destruido), la aplicación no aborte y preserve la integridad de la configuración.
+- `2026-09-06T05:42:57` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-06T05:43:23` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-06T05:43:43` Tests FALLARON:
+```
+::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:288: SyntaxWarning: invalid escape sequence '\)'
+    """Determina si la ruta normalizada corresponde a la raíz de una unidad (ej. C:\)."""
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:117: SyntaxWarning: invalid escape sequence '\A'
+    Extrae la ruta contenida en comillas en comandos como: "C:\App\ejecutable.exe" /arg.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - safety.UnsafePathError: [GENERIC] Ruta origen inaccesible: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-2/test_quarantine_missing_file_r0/no-existe.txt'
+1 failed, 298 passed, 11 warnings in 1.33s
+
+```
+- `2026-09-06T05:43:43` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `quarantine_file` y `restore_item` mediante una validación explícita y temprana de rutas antes de cualquier operación, asegurando que `None` o rutas mal formadas no provoquen excepciones no controladas, siguiendo el enfoque de validación de entradas.
+- `2026-09-06T05:43:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T05:43:43` Corrida terminada. Total usado hoy: 136.
