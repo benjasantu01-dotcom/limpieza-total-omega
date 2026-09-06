@@ -142,9 +142,15 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Evalúa si una entrada (os.DirEntry) del sistema de archivos debe omitirse.
-    Usa la metadata del objeto DirEntry para evitar llamadas excesivas al disco.
-    Retorna True si el archivo debe ignorarse, False si es seguro procesarlo.
+    Evalúa si una entrada (os.DirEntry) debe omitirse según criterios de seguridad y visibilidad.
+    
+    Args:
+        entry: Objeto DirEntry del sistema de archivos a evaluar.
+        kernel32: Instancia opcional de la API Win32 para verificar atributos.
+        is_junction_fn: Función para detectar puntos de reparse/junctions.
+        
+    Returns:
+        bool: True si el elemento debe ser ignorado, False en caso contrario.
     """
     if _is_excluded_file(entry.name):
         return True
@@ -194,12 +200,18 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula recursivamente el tamaño en bytes de un directorio mediante os.scandir.
-    Requiere que la ruta raíz sea validada previamente por 'is_safe_to_traverse'.
+    
+    Args:
+        root_abs: Ruta absoluta del directorio a sumar.
+        is_junction_fn: Función detectora de junctions.
+        kernel32: Referencia a la API Win32 opcional.
+        memo: Diccionario para evitar re-cálculos (cache local).
+        base_check_path: Ruta raíz permitida para validación de contexto.
+        depth: Profundidad actual de la recursión.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
     
-    # Normalizar ruta para el memo y evitar procesamiento redundante en casos de enlaces cíclicos o inconsistencias
     try:
         norm_path = str(Path(root_abs).resolve(strict=True))
     except (OSError, RuntimeError):
@@ -273,7 +285,16 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
-    """Escanea el sistema buscando perfiles de navegadores y calcula su ocupación."""
+    """
+    Escanea el sistema buscando perfiles de navegadores y calcula su ocupación.
+    
+    Args:
+        bases: Lista opcional de directorios base de usuario.
+        cache_paths: Mapeo opcional de nombres de navegador a rutas de caché.
+        
+    Returns:
+        List[BrowserCache]: Lista de objetos con información de cada caché detectado.
+    """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
@@ -281,7 +302,6 @@ def detect_profiles(
         return []
     
     k32: Optional[ctypes.WinDLL] = _get_kernel32()
-    # Cache de resultados para evitar redundancia en subdirectorios
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     

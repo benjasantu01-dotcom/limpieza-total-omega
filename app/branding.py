@@ -27,7 +27,7 @@ class CanvasElement(Protocol):
     def create_arc(self, *args: float, **kwargs: Any) -> int: ...
 
 class ColorSegment(NamedTuple):
-    """Representa un rango contiguo de píxeles/unidades con un color constante en un gradiente."""
+    """Representa un rango contiguo de unidades con un color constante en un gradiente."""
     hex_color: HexColor
     start_index: int
     end_index: int
@@ -347,7 +347,6 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         scale = max(0.1, min(10.0, s / 128.0))
         coords = _get_shield_coords(scale)
         contorno = [canvas_x + coords[i] if i % 2 == 0 else canvas_y + coords[i] for i in range(len(coords))]
-        # Renderizado optimizado: una capa fija de resplandor para evitar cálculos en loop
         canvas.create_oval(canvas_x + 64 * scale - 75 * scale, canvas_y + 58 * scale - 75 * scale, canvas_x + 64 * scale + 75 * scale, canvas_y + 58 * scale + 75 * scale, fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
