@@ -187,10 +187,10 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[ProcessMemory]:
     """Valida y convierte datos crudos de proceso, retornando objeto si es seguro."""
-    if not name or not pid_str.isdigit() or not ws_str.isdigit():
+    try:
+        pid_val, ws_val = int(pid_str), int(ws_str)
+    except (ValueError, TypeError):
         return None
-    
-    pid_val, ws_val = int(pid_str), int(ws_str)
     
     if pid_val <= 0 or ws_val < 0 or pid_val in SYSTEM_CRITICAL_PIDS:
         return None
@@ -209,12 +209,15 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     
     def process_generator():
         for line in raw_csv_text.splitlines():
-            line = line.strip()
-            if not line: continue
-            parts = [p.strip().strip("'\"") for p in line.split(",", 2)]
-            if len(parts) >= 3:
-                proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
-                if proc: yield proc
+            clean_line = line.strip()
+            if not clean_line: continue
+            
+            # Esperamos formato: Name,PID,WorkingSet
+            parts = [p.strip().strip("'\"") for p in clean_line.split(",")]
+            if len(parts) < 3: continue
+            
+            proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
+            if proc: yield proc
 
     return sorted(process_generator(), key=lambda p: p.working_set, reverse=True)[:limit]
 

@@ -206,9 +206,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @validated_ui_operation
     def _on_closing(self) -> None:
         """Cierra el pool de hilos y destruye la ventana de manera segura."""
-        self._closing = True
-        
         with self._task_lock:
+            self._closing = True
             if self._executor:
                 self._executor.shutdown(wait=False)
                 self._executor = None

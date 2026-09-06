@@ -111,7 +111,7 @@ def _get_win_attributes(path_or_entry: Union[os.DirEntry, Path]) -> int:
     """Extrae los atributos de archivo de Windows (Win32 API bits) de forma segura."""
     try:
         if hasattr(path_or_entry, 'stat'):
-            return path_or_entry.stat().st_file_attributes
+            return path_or_entry.stat(follow_symlinks=False).st_file_attributes
         return Path(path_or_entry).stat().st_file_attributes
     except (OSError, AttributeError, ValueError):
         return 0
