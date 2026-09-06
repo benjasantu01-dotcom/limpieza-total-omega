@@ -345,7 +345,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """
     if junk_file is None or dest_base is None: return None
     if not isinstance(junk_file, JunkFile) or junk_file.path is None or not isinstance(dest_base, Path): return None
-    if _is_unc_path(dest_base) or is_protected_path(dest_base): return None
+    if _is_unc_path(dest_base) or is_protected_path(dest_base) or is_protected_path(junk_file.path): return None
     try:
         dest_base_res: Path = dest_base.resolve()
         if not dest_base_res.exists() or not dest_base_res.is_dir(): return None

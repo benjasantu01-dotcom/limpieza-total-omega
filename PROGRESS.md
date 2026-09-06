@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **243** (48.2% de aceptación)
+- Mejoras aceptadas: **245** (48.6% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 187
+- Sin respuesta de la IA (error o límite): 184
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-04 | 32 | 3 | 7 | 2 | 22 |
+| 2026-09-04 | 32 | 3 | 7 | 2 | 18 |
 | 2026-09-05 | 164 | 13 | 24 | 14 | 135 |
-| 2026-09-06 | 47 | 0 | 8 | 3 | 30 |
+| 2026-09-06 | 49 | 0 | 9 | 3 | 31 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - robustez ante casos límite: **53**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **45**
+- seguridad defensiva: **47**
 - rendimiento: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `assistant.py`: **21**
+- `memory.py`: **20**
 - `branding.py`: **19**
 - `scanner.py`: **19**
 - `duplicates.py`: **19**
-- `memory.py`: **19**
+- `organizer.py`: **19**
 - `healthscore.py`: **18**
 - `settings.py`: **18**
 - `browser.py`: **18**
-- `organizer.py`: **18**
 - `safety.py`: **18**
 - `quarantine.py`: **14**
 - `startup.py`: **10**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-06T03:50:12` **organizer.py** (seguridad defensiva): He mejorado `_can_move_file` añadiendo una validación explícita mediante `is_protected_path` al archivo origen `junk_file.path`, asegurando que, incluso si pasó los filtros previos, no sea una ruta protegida antes de intentar generar una operación de movimiento, reforzando la defensa en profundidad.
+- `2026-09-06T03:49:43` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva al invocar `OpenProcess` con un `dwDesiredAccess` más restrictivo (`PROCESS_QUERY_LIMITED_INFORMATION`), asegurando que la app no solicite privilegios innecesarios de acceso total, y añadiendo una validación explícita mediante `is_safe_to_modify` sobre el ejecutable del proceso antes de intentar cualquier operación de gestión de memoria.
 - `2026-09-06T03:40:23` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del pipeline de evaluación añadiendo una validación de estado `metrics.is_finite` antes de cada cómputo de área y asegurando que las reglas de recomendación no fallen si el `message_factory` recibe datos inesperados, protegiendo así la integridad de la interfaz ante estados de memoria o disco inconsistentes.
 - `2026-09-06T03:39:54` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `_is_valid_candidate` integrando una verificación de "hard links" (st_nlink) y asegurando que las rutas no solo sean legibles, sino que permanezcan dentro del árbol de directorios de confianza antes de ser procesadas.
 - `2026-09-06T03:39:30` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` al añadir una verificación explícita de `is_protected_path` mediante una instancia de `Path` resuelta, previniendo que rutas manipuladas o simbólicas evadan los filtros de seguridad antes de ser procesadas por las funciones de escaneo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T03:10:17` **memory.py** (robustez ante casos límite): Mejoré `parse_windows_process_csv` para que sea robusto ante entradas malformadas o incompletas (common en entornos con alta carga) añadiendo validación de longitud de columnas y manejo de excepciones durante el parseo de enteros, evitando que un mal dato de PowerShell rompa la recolección de métricas.
 - `2026-09-06T03:09:46` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante estados de carrera y errores de inicialización al asegurar que el pool de hilos (`_executor`) y la cola de logs estén totalmente protegidos mediante `threading.Lock` antes de cualquier acceso asíncrono, evitando excepciones `RuntimeError` durante el cierre de la aplicación.
 - `2026-09-06T03:01:17` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante archivos que se bloquean o desaparecen durante la enumeración (Race Conditions) añadiendo bloques `try-except` granulares dentro del bucle de escaneo, asegurando que un error de acceso en un archivo no aborte el procesamiento de todo el directorio.
-- `2026-09-06T03:00:52` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `walk_files` y `_collect_summary_data` para manejar de forma robusta la posible desaparición de archivos o cambios en los permisos durante el recorrido del árbol, asegurando que el análisis no se detenga ante archivos bloqueados o borrados súbitamente por procesos externos.
-- `2026-09-06T03:00:25` **browser.py** (robustez ante casos límite): Se introdujo una gestión de errores más robusta en `_sum_directory_recursive` para manejar casos de rutas excesivamente largas (superiores a `MAX_PATH_LEN`) y fallos en `os.scandir` por permisos denegados o inconsistencias en el sistema de archivos, asegurando que el proceso de escaneo no se interrumpa ante un solo error de acceso.

@@ -484,3 +484,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-06T03:41:18` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva centralizando la validación de directorios críticos mediante el uso de `self._ensure_path_writable_and_clean` en `on_stage` y `on_quarantine_duplicates`, garantizando que ninguna operación de movimiento de archivos ocurra sin una verificación explícita de seguridad, evitando así el uso de rutas no validadas o enlaces simbólicos.
 - `2026-09-06T03:41:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-06T03:41:18` Corrida terminada. Total usado hoy: 88.
+- `2026-09-06T03:49:11` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-09-06T03:49:43` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al invocar `OpenProcess` con un `dwDesiredAccess` más restrictivo (`PROCESS_QUERY_LIMITED_INFORMATION`), asegurando que la app no solicite privilegios innecesarios de acceso total, y añadiendo una validación explícita mediante `is_safe_to_modify` sobre el ejecutable del proceso antes de intentar cualquier operación de gestión de memoria.
+- `2026-09-06T03:50:12` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). He mejorado `_can_move_file` añadiendo una validación explícita mediante `is_protected_path` al archivo origen `junk_file.path`, asegurando que, incluso si pasó los filtros previos, no sea una ruta protegida antes de intentar generar una operación de movimiento, reforzando la defensa en profundidad.
+- `2026-09-06T03:50:48` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: seguridad defensiva).
+- `2026-09-06T03:50:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-06T03:50:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-06T03:50:52` Corrida terminada. Total usado hoy: 92.

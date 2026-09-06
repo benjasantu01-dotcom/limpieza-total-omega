@@ -47,8 +47,9 @@ BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 # Máscaras de acceso para operaciones de proceso seguro en Win32
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
-# Solo necesitamos leer información y realizar el ajuste de memoria
-SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_QUERY_INFORMATION
+PROCESS_SET_QUOTA: Final[int] = 0x0100
+# Mínimo acceso necesario: consultar info + modificar cuota (para EmptyWorkingSet)
+SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
 
 STILL_ACTIVE_EXIT_CODE: Final[int] = 259
 SYSTEM_CRITICAL_PIDS: Set[int] = {0, 4}
