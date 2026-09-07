@@ -784,3 +784,40 @@ FAILED evolve/tests/test_assistant.py::test_booleans_accept_the_usual_strings - 
 - `2026-09-07T12:59:01` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de los callbacks de la UI agregando una validación explícita para evitar que `_safe_get_entry_value` procese widgets destruidos prematuramente, y envolviendo las llamadas de actualización de configuración en un bloque `try-except` más defensivo para prevenir bloqueos de la app si el usuario intenta guardar ajustes mientras los widgets están en estado inconsistente.
 - `2026-09-07T12:59:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T12:59:01` Corrida terminada. Total usado hoy: 308.
+- `2026-09-07T13:06:52` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-07T13:07:22` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-07T13:07:50` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-07T13:08:27` Tests FALLARON:
+```
+-of-runner/pytest-1/test_quarantine_missing_file_r0/no-existe.txt')
+reason = 'Marcado como sospechoso'
+base = PosixPath('/tmp/pytest-of-runner/pytest-1/test_quarantine_missing_file_r0/_Cuarentena')
+
+    def quarantine_file(
+        source: PathLike,
+        reason: str = "Marcado como sospechoso",
+        base: PathLike = DEFAULT_QUARANTINE_DIR,
+    ) -> QuarantineItem:
+        """
+        Ciclo completo: valida, aísla y registra en manifiesto un archivo sospechoso.
+        """
+        if not source:
+            raise ValueError("Ruta de origen proporcionada vacía.")
+    
+        # Normalización temprana y validación de existencia antes de cualquier lógica
+        try:
+            source_path = Path(source).expanduser().resolve(strict=True)
+        except (OSError, RuntimeError) as e:
+>           raise UnsafePathError(f"Ruta de origen inválida o inaccesible: {e}")
+E           safety.UnsafePathError: [GENERIC] Ruta de origen inválida o inaccesible: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_quarantine_missing_file_r0/no-existe.txt'
+
+app/quarantine.py:506: UnsafePathError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - safety.UnsafePathError: [GENERIC] Ruta de origen inválida o inaccesible: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_quarantine_missing_file_r0/no-existe.txt'
+1 failed, 298 passed in 1.33s
+
+```
+- `2026-09-07T13:08:27` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `quarantine_file` añadiendo validaciones preventivas de entrada y un manejo de errores más específico, asegurando que `source_path` no solo exista, sino que sea accesible y cumpla con las restricciones antes de intentar cualquier operación de I/O crítica.
+- `2026-09-07T13:08:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-07T13:08:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T13:08:31` Corrida terminada. Total usado hoy: 312.
