@@ -288,9 +288,10 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path) or not p.is_file(): 
+        if not isinstance(p, Path): 
             continue
         try:
+            # stat() puede fallar si el archivo fue bloqueado o movido tras el análisis
             stat_info = p.stat()
             candidates.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError):
@@ -313,7 +314,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
         mb_total = round(group.size_bytes / (1024 * 1024), 2)
         mb_wasted = round(group.wasted_bytes / (1024 * 1024), 2)
     except (TypeError, ValueError, ZeroDivisionError):
-        return []
+        return ["Error calculando tamaño de grupo"]
 
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     

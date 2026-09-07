@@ -118,7 +118,15 @@ def _get_local_windows_drives() -> List[str]:
     Detecta unidades lógicas montadas en Windows mediante el inventario de letras.
     """
     import string
-    return [f"{letter}:\\" for letter in string.ascii_uppercase if os.path.exists(f"{letter}:\\")]
+    drives = []
+    for letter in string.ascii_uppercase:
+        drive = f"{letter}:\\"
+        try:
+            if os.path.exists(drive):
+                drives.append(drive)
+        except (OSError, PermissionError):
+            continue
+    return drives
 
 
 @dataclass(frozen=True)

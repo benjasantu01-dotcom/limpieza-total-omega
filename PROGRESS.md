@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 208
 
@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 31 | 4 | 7 | 1 | 19 |
+| 2026-09-05 | 28 | 4 | 6 | 1 | 19 |
 | 2026-09-06 | 165 | 3 | 23 | 9 | 150 |
-| 2026-09-07 | 37 | 5 | 5 | 6 | 39 |
+| 2026-09-07 | 41 | 5 | 5 | 6 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **54**
 - seguridad defensiva: **48**
-- legibilidad y documentación: **47**
 - rendimiento: **45**
-- manejo de errores y validación de entradas: **39**
+- legibilidad y documentación: **44**
+- manejo de errores y validación de entradas: **43**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **20**
-- `diskreport.py`: **19**
-- `quarantine.py`: **18**
+- `diskreport.py`: **20**
+- `browser.py`: **19**
 - `assistant.py`: **18**
-- `browser.py`: **18**
 - `settings.py`: **18**
-- `memory.py`: **17**
-- `organizer.py`: **17**
+- `duplicates.py`: **17**
 - `healthscore.py`: **17**
-- `duplicates.py`: **16**
+- `quarantine.py`: **17**
+- `branding.py`: **16**
 - `main.py`: **16**
-- `branding.py`: **15**
+- `memory.py`: **16**
+- `organizer.py`: **16**
 - `safety.py`: **15**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T03:58:48` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante la validación proactiva de tipos y estados, asegurando que los fallos en la obtención de metadatos o la ausencia de archivos no rompan el proceso, sino que se gestionen con estados de error controlados.
+- `2026-09-07T03:58:39` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_local_windows_drives` capturando errores de acceso al sistema de archivos y validando tipos, asegurando que la detección de unidades no aborte el proceso si alguna unidad (como una lectora de CD o unidad de red mapeada) está bloqueada o inaccesible.
+- `2026-09-07T03:58:14` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_path_inside_base` y `_should_skip_entry` añadiendo validaciones explícitas de tipo y estado para evitar errores de ejecución ante entradas inesperadas (`None` o rutas mal formadas), reforzando el enfoque de seguridad mediante validación defensiva de parámetros.
+- `2026-09-07T03:57:48` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` al reemplazar el manejo genérico de excepciones por una validación estricta de rutas (`Path.resolve()`) y asegurar que el directorio padre exista antes de intentar escribir, cumpliendo con las reglas de seguridad sin cambiar la funcionalidad.
 - `2026-09-07T03:50:15` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` añadiendo validación explícita para evitar que la ingestión de métricas falle silenciosamente al procesar fuentes de datos malformadas o tipos inesperados.
 - `2026-09-07T02:35:37` **startup.py** (seguridad defensiva): Reforcé la seguridad defensiva en `parse_registry_csv` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta extraída antes de procesarla, evitando que entradas maliciosas en el registro pudieran evadir el filtro de seguridad inicial.
 - `2026-09-07T02:26:37` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save()` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del archivo de configuración antes de cualquier operación, asegurando que ni siquiera el archivo de settings pueda ser movido a una ubicación crítica (como `System32`) mediante un archivo `config.json` malintencionado.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T02:05:47` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación de la jerarquía de rutas utilizando `_is_path_inside_base` antes de cada recursión, asegurando que el escáner no se escape accidentalmente del directorio base incluso si se encuentran enlaces simbólicos o inconsistencias en el sistema de archivos que `os.scandir` o `resolve()` pudieran omitir.
 - `2026-09-07T01:56:14` **branding.py** (seguridad defensiva): Mejoré la seguridad defensiva de `save_logo_svg` añadiendo una comprobación explícita para evitar la creación de directorios en rutas bloqueadas mediante `is_protected_path` antes de invocar `mkdir`, asegurando que la operación de escritura sea coherente con las políticas de seguridad del proyecto.
 - `2026-09-07T01:55:55` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta de tipos antes de acceder a la estructura anidada del JSON, evitando así posibles excepciones o comportamientos inesperados ante payloads mal formados o maliciosos.
-- `2026-09-07T01:54:54` **settings.py** (robustez ante casos límite): Se añadió una validación explícita para evitar operaciones de escritura cuando el dispositivo se encuentra en estado de solo lectura o falla de acceso durante la comprobación de integridad, mejorando la robustez ante estados del sistema de archivos degradados.
-- `2026-09-07T01:45:36` **safety.py** (robustez ante casos límite): Se reforzó la robustez de `is_within_directory` y `_validate_boundary_conditions` para manejar correctamente rutas inexistentes o inaccesibles, evitando que `normalize()` (a través de `path.resolve()`) falle silenciosamente o lance excepciones inesperadas cuando el sistema de archivos deniega permisos o la ruta está mal formada.
-- `2026-09-07T01:44:47` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_safe_unlink` y `purge_all` para prevenir errores de concurrencia y bloqueos de archivos en sistemas Windows, asegurando que el proceso de limpieza no aborte prematuramente si un archivo está bloqueado temporalmente por otro proceso del sistema.
-- `2026-09-07T01:37:14` **organizer.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante excepciones de E/S en `_is_file_locked` y `_is_recursive_violation` mediante el uso de bloques `try-except` más granulares y la validación de estados de archivo, evitando fallos silenciosos ante archivos inexistentes o bloqueos de acceso durante la resolución de rutas.

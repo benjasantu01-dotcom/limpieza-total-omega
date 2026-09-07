@@ -126,6 +126,9 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
     try:
+        # Validación extra de integridad antes de resolver
+        if not real_target.is_absolute() or not real_base.is_absolute():
+            return False
         target_res = str(real_target.resolve(strict=True))
         base_res = str(real_base.resolve(strict=True))
         return os.path.commonpath([target_res, base_res]) == base_res
@@ -168,11 +171,14 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
             return True
         
         path_obj = Path(path)
-        # Se requiere resolución para detectar enlaces/protecciones reales
         resolved = path_obj.resolve()
         if not is_safe_to_modify(resolved) or is_protected_path(resolved):
             return True
         
+        # Validación de tipo de archivo defensiva
+        if not (entry.is_file(follow_symlinks=False) or entry.is_dir(follow_symlinks=False)):
+            return True
+            
         if entry.is_symlink() or is_junction_fn(path) or os.path.ismount(path):
             return True
             
@@ -218,7 +224,6 @@ def _sum_directory_recursive(
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
     
-    # Normalización para memoization
     norm_path = root_abs
     if norm_path in memo:
         return memo[norm_path]
@@ -242,7 +247,6 @@ def _sum_directory_recursive(
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        # Validación jerárquica adicional antes de descender recursivamente
                         entry_path = Path(entry.path)
                         if base_check_path and not _is_path_inside_base(entry_path.resolve(), base_check_path):
                             continue
@@ -251,7 +255,6 @@ def _sum_directory_recursive(
                             entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                         )
                     elif entry.is_file(follow_symlinks=False):
-                        # Capturamos errores de acceso al obtener el tamaño de cada archivo
                         try:
                             stats = entry.stat(follow_symlinks=False)
                             total += stats.st_size
@@ -320,7 +323,6 @@ def detect_profiles(
         return []
     
     k32: Optional[ctypes.WinDLL] = _get_kernel32()
-    # Cache global de directorios escaneados para evitar redundancia inter-navegador
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
@@ -341,7 +343,6 @@ def detect_profiles(
                     
                 c_path = candidate.resolve(strict=True)
                 
-                # Reutilizamos perf_cache para que los subdirectorios comunes no se sumen varias veces
                 size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), c_path, size))
