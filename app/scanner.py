@@ -154,6 +154,10 @@ class Scanner:
             return
         
         try:
+            # Re-verificar seguridad ante cambios rápidos en el FS
+            if is_protected_path(Path(entry.path)):
+                return
+            
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
                     self._handle_directory(entry, stack)
@@ -173,6 +177,8 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """Orquestador principal de reglas heurísticas para un archivo individual."""
+    if is_protected_path(path):
+        return []
     findings: ScanResult = []
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
@@ -200,7 +206,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         base_path = Path(directory)
         if not base_path.exists(): return []
         root_input = base_path.resolve(strict=False)
-        if not root_input.is_dir() or is_protected_path(root_input) or str(root_input).startswith(("\\\\", "//")):
+        # Bloquear explícitamente rutas UNC (comienzan con \\) y rutas protegidas
+        if not root_input.is_dir() or str(root_input).startswith(("\\\\", "//")) or is_protected_path(root_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError, PermissionError):
         return []

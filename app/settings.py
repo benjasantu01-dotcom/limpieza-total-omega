@@ -320,6 +320,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         ):
             cleaned_settings["asistente_activado"] = False
         
+        # Validación defensiva crítica antes de tocar nada
         if is_protected_path(ruta_str) or not is_safe_to_modify(ruta_str):
             return None
             
