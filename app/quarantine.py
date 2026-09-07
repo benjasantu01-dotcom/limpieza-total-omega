@@ -224,6 +224,11 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
     extension = f".{parts[-1]}" if len(parts) > 1 else ""
     return f"{item_id}__{name_base[:64]}{extension}"[:128]
 
+def _ensure_path_ownership(path: Path) -> None:
+    """Verifica que el usuario actual sea el dueño del directorio de trabajo."""
+    if hasattr(os, 'getuid'):
+        if path.stat().st_uid != os.getuid():
+            raise UnsafePathError("Propiedad de directorio no coincide con usuario actual.")
 
 def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """Resuelve la ruta absoluta del directorio de cuarentena, validando permisos."""
@@ -237,7 +242,9 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
             raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
         if not is_safe_to_modify(path):
             raise UnsafePathError("Directorio no cumple políticas de seguridad.")
+        
         path.mkdir(parents=True, exist_ok=True)
+        _ensure_path_ownership(path)
         return path
     except (OSError, RuntimeError) as e:
         raise OSError(f"Error al preparar directorio de cuarentena: {e}")

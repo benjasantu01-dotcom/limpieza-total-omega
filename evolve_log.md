@@ -556,3 +556,10 @@ FAILED evolve/tests/test_assistant.py::test_booleans_accept_the_usual_strings - 
 - `2026-09-07T11:06:59` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad de la operación `trim_working_set` al asegurar que el manejo de recursos (handles) sea robusto, añadiendo una comprobación explícita para evitar que `OpenProcess` acceda a procesos con privilegios elevados que podrían desencadenar excepciones de acceso denegado o inestabilidad, garantizando que solo se gestionen procesos donde la app tiene autoridad total.
 - `2026-09-07T11:06:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T11:06:59` Corrida terminada. Total usado hoy: 264.
+- `2026-09-07T11:14:42` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-09-07T11:15:14` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-07T11:15:51` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha implementado `_ensure_path_ownership` en `quarantine.py` para verificar que el usuario actual posea el directorio de cuarentena antes de cualquier operación de lectura/escritura, mitigando riesgos de secuestro de ruta o permisos inadecuados en entornos multiusuario.
+- `2026-09-07T11:16:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-07T11:16:28` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha implementado `is_absolute_path_allowed` para restringir la modificación exclusivamente a rutas absolutas, eliminando ambigüedades de resolución de `cwd` y forzando una validación explícita de ubicación antes de cualquier operación destructiva.
+- `2026-09-07T11:16:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T11:16:28` Corrida terminada. Total usado hoy: 268.

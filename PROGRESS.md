@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **240** (47.6% de aceptación)
+- Mejoras aceptadas: **242** (48.0% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 196
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-06 | 114 | 3 | 14 | 6 | 103 |
-| 2026-09-07 | 126 | 11 | 18 | 16 | 93 |
+| 2026-09-06 | 114 | 3 | 14 | 6 | 99 |
+| 2026-09-07 | 128 | 11 | 19 | 16 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - robustez ante casos límite: **51**
+- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **46**
 - rendimiento: **44**
 
 ## Mejoras aceptadas por archivo
@@ -32,11 +32,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **21**
 - `settings.py`: **20**
 - `browser.py`: **19**
+- `safety.py`: **19**
 - `assistant.py`: **19**
+- `quarantine.py`: **19**
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
-- `safety.py`: **18**
-- `quarantine.py`: **18**
 - `diskreport.py`: **17**
 - `memory.py`: **17**
 - `main.py`: **16**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T11:16:28` **safety.py** (seguridad defensiva): Se ha implementado `is_absolute_path_allowed` para restringir la modificación exclusivamente a rutas absolutas, eliminando ambigüedades de resolución de `cwd` y forzando una validación explícita de ubicación antes de cualquier operación destructiva.
+- `2026-09-07T11:15:51` **quarantine.py** (seguridad defensiva): Se ha implementado `_ensure_path_ownership` en `quarantine.py` para verificar que el usuario actual posea el directorio de cuarentena antes de cualquier operación de lectura/escritura, mitigando riesgos de secuestro de ruta o permisos inadecuados en entornos multiusuario.
 - `2026-09-07T11:06:59` **memory.py** (seguridad defensiva): Se reforzó la seguridad de la operación `trim_working_set` al asegurar que el manejo de recursos (handles) sea robusto, añadiendo una comprobación explícita para evitar que `OpenProcess` acceda a procesos con privilegios elevados que podrían desencadenar excepciones de acceso denegado o inestabilidad, garantizando que solo se gestionen procesos donde la app tiene autoridad total.
 - `2026-09-07T11:06:43` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` añadiendo una validación explícita mediante `is_safe_to_modify` en el decorador `run_async` y centralizando la comprobación de seguridad en `_worker_thread_logic`, asegurando que incluso si el usuario interactúa con la UI durante procesos asíncronos, ninguna operación de disco sea iniciada en rutas prohibidas o de sistema.
 - `2026-09-07T11:05:27` **healthscore.py** (seguridad defensiva): Reforcé la integridad del contenedor `SystemMetrics` añadiendo una validación de rango estricta a `_LIMIT_RAM_PERCENT` y `_LIMIT_DISK_PERCENT` en la validación post-inicialización, garantizando que los divisores usados en la normalización nunca resulten en una división por cero o valores negativos inesperados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T10:36:57` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallos de I/O y race conditions durante el proceso de aislamiento, añadiendo una limpieza explícita de archivos temporales huérfanos y garantizando que el `manifest.json` no quede en un estado inconsistente si la operación de `unlink` del original falla tras el aislamiento.
 - `2026-09-07T10:36:17` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `organizer.py` implementando un chequeo estricto de dispositivos de almacenamiento (`is_relative_to` no es suficiente si la unidad cambia o el sistema de archivos no es local) y añadiendo una validación explícita para evitar mover archivos entre particiones (cross-device move) que podrían fallar o causar comportamientos inesperados en `shutil.move`.
 - `2026-09-07T10:26:00` **main.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `is_protected_path` en `_ask_folder` antes de devolver la ruta seleccionada, garantizando que el usuario no pueda seleccionar ni procesar directorios restringidos desde la interfaz gráfica, fortaleciendo la robustez ante casos límite de selección de usuario.
-- `2026-09-07T10:25:01` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics` ante valores numéricos extremos o inválidos (como `NaN` o `inf`) durante la inicialización, mediante la implementación de `math.isfinite` en la validación post-inicialización, asegurando que el pipeline de cálculo nunca reciba datos que puedan propagar estados de error.
-- `2026-09-07T10:24:33` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `find_duplicates` y `_collect_candidates` añadiendo validaciones tempranas contra condiciones de carrera, errores de sistema (como rutas con caracteres inválidos o dispositivos desconectados durante el escaneo) y manejo de estados incoherentes del sistema de archivos.

@@ -60,6 +60,7 @@ class SafetyValidationErrorCode(IntEnum):
     HARD_LINK_DETECTED = 12
     ACCESS_DENIED = 13
     IO_ERROR = 14
+    RELATIVE_PATH_NOT_ALLOWED = 15
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
@@ -280,6 +281,14 @@ def normalize(path: PathLike) -> Path:
         raise ValueError(f"Error irrecuperable al normalizar {path_str}: {e}")
 
 
+def is_absolute_path_allowed(path: PathLike) -> bool:
+    """Valida que la ruta sea absoluta para evitar dependencias del entorno de ejecución (CWD)."""
+    try:
+        return Path(path).is_absolute()
+    except (TypeError, ValueError):
+        return False
+
+
 def is_drive_root(path: PathLike) -> bool:
     """Determina si una ruta apunta a la raíz de un dispositivo de almacenamiento (ej: C:\\)."""
     try:
@@ -367,6 +376,8 @@ def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | 
     Aplica restricciones de alcance (scope) para prevenir la manipulación fuera
     del entorno permitido o la auto-modificación de la propia aplicación.
     """
+    if not is_absolute_path_allowed(target_path):
+        raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     
