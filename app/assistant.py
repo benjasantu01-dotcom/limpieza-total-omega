@@ -359,12 +359,18 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Fabrica un SystemContext a partir de fuentes de datos dispersas."""
     ctx = SystemContext()
-    sources = [s for s in [metrics, health, extra] 
-               if isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str, int, float, bool))]
+    # Filtramos fuentes explícitamente para asegurar que sean contenedores de datos
+    valid_sources = []
+    for s in [metrics, health, extra]:
+        if isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str, int, float, bool, type)):
+            valid_sources.append(s)
     
-    for src in sources:
-        if ctx.ingest(src):
-            ctx.analyzed = True
+    for src in valid_sources:
+        try:
+            if ctx.ingest(src):
+                ctx.analyzed = True
+        except Exception:
+            continue
     return ctx
 
 def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
