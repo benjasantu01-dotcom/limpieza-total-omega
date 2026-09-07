@@ -1196,3 +1196,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-07T06:20:52` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta de la estructura del JSON recibido para evitar posibles excepciones no controladas o acceso a datos inesperados, siguiendo el enfoque de validar los datos externos antes de procesarlos.
 - `2026-09-07T06:20:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T06:20:52` Corrida terminada. Total usado hoy: 152.
+- `2026-09-07T06:29:18` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-09-07T06:29:52` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado `save_logo_svg` para prevenir el uso de rutas no normalizadas o potencialmente maliciosas mediante el uso de `pathlib.Path.resolve().absolute()` antes de cualquier validación, asegurando que el chequeo de seguridad reciba una ruta absoluta canónica y resistente a ataques de "path traversal" o intentos de escape del directorio de trabajo.
+- `2026-09-07T06:30:18` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-09-07T06:30:43` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-09-07T06:30:54` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_collect_candidates` integrando `is_protected_path` directamente en el bucle de escaneo, asegurando que las rutas de sistema sean ignoradas preventivamente antes de cualquier operación de I/O, siguiendo el principio de "defensa en profundidad".
+- `2026-09-07T06:30:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T06:30:54` Corrida terminada. Total usado hoy: 156.

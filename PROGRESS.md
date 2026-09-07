@@ -6,19 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **241** (47.8% de aceptación)
+- Mejoras aceptadas: **243** (48.2% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 0 | 0 | 0 | 0 | 2 |
-| 2026-09-06 | 165 | 3 | 23 | 9 | 150 |
-| 2026-09-07 | 76 | 7 | 12 | 10 | 47 |
+| 2026-09-06 | 165 | 3 | 23 | 9 | 148 |
+| 2026-09-07 | 78 | 7 | 12 | 10 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **45**
-- seguridad defensiva: **41**
+- seguridad defensiva: **43**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,17 +35,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **19**
 - `quarantine.py`: **19**
 - `assistant.py`: **18**
+- `duplicates.py`: **18**
 - `organizer.py`: **18**
-- `duplicates.py`: **17**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
 - `safety.py`: **16**
+- `branding.py`: **16**
 - `main.py`: **15**
-- `branding.py`: **15**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T06:30:54` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` integrando `is_protected_path` directamente en el bucle de escaneo, asegurando que las rutas de sistema sean ignoradas preventivamente antes de cualquier operación de I/O, siguiendo el principio de "defensa en profundidad".
+- `2026-09-07T06:29:52` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir el uso de rutas no normalizadas o potencialmente maliciosas mediante el uso de `pathlib.Path.resolve().absolute()` antes de cualquier validación, asegurando que el chequeo de seguridad reciba una ruta absoluta canónica y resistente a ataques de "path traversal" o intentos de escape del directorio de trabajo.
 - `2026-09-07T06:20:03` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de guardado de configuración mediante la validación explícita del contenido del archivo resultante antes de su confirmación final, previniendo estados inconsistentes o archivos corruptos ante errores inesperados durante la escritura en disco.
 - `2026-09-07T06:19:33` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `_is_safe_entry` al agregar una validación estricta de rutas relativas o malformadas mediante `path.is_absolute()`, evitando que el escáner intente procesar rutas fuera del `base_root` que podrían escapar a la verificación de prefijo si el sistema operativo devuelve rutas inconsistentes.
 - `2026-09-07T06:10:36` **safety.py** (robustez ante casos límite): Se introdujo la verificación `p.exists()` dentro de `_validate_boundary_conditions` para evitar que `is_reparse_point` intente hacer `lstat` sobre rutas que no existen físicamente en disco, mejorando la robustez ante estados inconsistentes del sistema de archivos.
@@ -60,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T05:39:25` **scanner.py** (rendimiento): Se optimizó el flujo de escaneo eliminando múltiples llamadas redundantes a `is_protected_path` y `Path()` dentro de `process_entry` y `scan_directory` al aprovechar que `entry.path` ya está disponible y `_is_safe_entry` realiza la validación inicial, reduciendo el número de syscalls y la creación de objetos innecesarios en un bucle crítico.
 - `2026-09-07T05:39:01` **safety.py** (rendimiento): Se optimizó `is_protected_path` eliminando la llamada innecesaria a `normalize` (que es costosa al resolver el path real) dentro de la cadena de llamadas, permitiendo que la caché `lru_cache` funcione sobre el string original, reduciendo significativamente la sobrecarga en escaneos masivos.
 - `2026-09-07T05:29:51` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la deserialización completa innecesaria dentro de `list_items` y `total_quarantined_bytes` mediante el uso de una caché en memoria y reduciendo las iteraciones, además de evitar lecturas redundantes en `purge_all` al centralizar el acceso a los datos.
-- `2026-09-07T05:29:16` **organizer.py** (rendimiento): Se optimizó el escaneo de archivos reemplazando la creación repetida de objetos `Path` y conversiones de tipo dentro del bucle `_process_directory` por el uso directo de `os.DirEntry` y métodos de `os.path`, reduciendo la carga de memoria y el overhead de instanciación en sistemas con directorios con miles de archivos.
-- `2026-09-07T05:28:48` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria global mediante la eliminación de una llamada innecesaria a `_create_mem_status_ex` (que usaba `lru_cache` de forma redundante) y se refactorizó `read_snapshot` para evitar recrear la estructura en cada llamada, reutilizando un único buffer pre-asignado.

@@ -314,7 +314,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda una copia física del archivo logo.svg tras verificar integridad y seguridad."""
     if destination is None: return None
     try:
-        path_obj = Path(destination).resolve()
+        # Resolvemos a ruta absoluta y canónica para evitar path traversal
+        path_obj = Path(destination).resolve().absolute()
         parent = path_obj.parent
         
         # Validación de seguridad: rutas protegidas o bloqueadas
