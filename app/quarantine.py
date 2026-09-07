@@ -383,7 +383,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Guarda el manifiesto de forma atómica: escribe en temporal, fuerza
-    flushing a disco (fsync) y reemplaza el original.
+    flushing a disco (fsync) y reemplaza el original para prevenir corrupción.
     """
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")

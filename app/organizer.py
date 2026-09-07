@@ -189,7 +189,7 @@ def _is_file_locked(path: Path) -> bool:
     
     if os.name == "nt":
         try:
-            # FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE = 0x7
+            # FILE_SHARE_READ (0x1) | FILE_SHARE_WRITE (0x2) | FILE_SHARE_DELETE (0x4) = 0x7
             # OPEN_EXISTING = 0x3
             handle = ctypes.windll.kernel32.CreateFileW(
                 str(path), 0x80000000, 0x7, None, 0x3, 0x80, None
@@ -217,11 +217,11 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 
 def _passes_system_checks(src: Path) -> bool:
     """
-    Verifica atributos de archivo (System, Hidden, ReadOnly, Reparse).
+    Verifica atributos Win32 (System, Hidden, ReadOnly, Reparse).
+    Máscara 0x407: 0x400 (Reparse Point), 0x004 (System), 0x002 (Hidden), 0x001 (ReadOnly).
     Retorna True si el archivo es considerado "seguro" para manipular.
     """
     if os.name != "nt" or src is None: return True
-    # Máscaras: 0x400 (Reparse), 0x004 (System), 0x002 (Hidden), 0x001 (ReadOnly)
     mask: int = 0x407
     return not (_get_win_attributes(src) & mask)
 
@@ -305,6 +305,18 @@ def _should_scan_directory(entry: os.DirEntry) -> bool:
     return entry is not None and _is_allowed_directory(entry.name) and not _is_junction(entry)
 
 
+def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
+    """Analiza una entrada individual del sistema de archivos y la añade si es basura válida."""
+    try:
+        if entry.is_file(follow_symlinks=False) and is_valid_junk_extension(entry.name):
+            info = entry.stat()
+            # Solo incluir archivos con contenido, excluyendo bloqueados
+            if info.st_size > 0 and not _is_file_locked(Path(entry.path)):
+                found.append(JunkFile(Path(entry.path), info.st_size, datetime.fromtimestamp(info.st_mtime)))
+    except (OSError, PermissionError):
+        pass
+
+
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0) -> None:
     """
     Recorre recursivamente directorios buscando archivos temporales.
@@ -318,17 +330,11 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
     try:
         with os.scandir(current_dir) as it:
             for entry in it:
-                try:
-                    if entry.is_dir(follow_symlinks=False):
-                        if _should_scan_directory(entry):
-                            _process_directory(Path(entry.path), found, depth + 1)
-                    elif entry.is_file(follow_symlinks=False) and is_valid_junk_extension(entry.name):
-                        info = entry.stat()
-                        # Solo incluir archivos con contenido, excluyendo bloqueados
-                        if info.st_size > 0 and not _is_file_locked(Path(entry.path)):
-                            found.append(JunkFile(Path(entry.path), info.st_size, datetime.fromtimestamp(info.st_mtime)))
-                except (OSError, PermissionError):
-                    continue
+                if entry.is_dir(follow_symlinks=False):
+                    if _should_scan_directory(entry):
+                        _process_directory(Path(entry.path), found, depth + 1)
+                else:
+                    _evaluate_entry(entry, found)
     except (OSError, PermissionError, RuntimeError):
         pass
 
