@@ -73,7 +73,16 @@ class DuplicateGroup:
 
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo. Se usa para confirmar duplicados de archivos grandes."""
+    """
+    Calcula el hash SHA256 completo del archivo completo.
+    
+    Args:
+        path: Ruta al archivo.
+        chunk_size: Tamaño de lectura por bloque (default 1MB).
+        
+    Returns:
+        Hexdigest del hash si tiene éxito, None si falla o es inválido.
+    """
     if path is None: return None
     path_obj = Path(path)
     
@@ -97,7 +106,10 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula un hash rápido de los primeros bytes. Útil para descartar candidatos sin leer todo el disco."""
+    """
+    Calcula un hash rápido de los primeros N bytes definidos en PARTIAL_READ_BYTES.
+    Útil para descartar candidatos de archivos grandes sin leer el archivo completo.
+    """
     if path is None: return None
     path_obj = Path(path)
 
@@ -229,9 +241,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
     """
-    Aplica hashing completo a grupos con colisiones parciales.
-    Reduce drásticamente las llamadas a I/O costosas al descartar archivos 
-    diferentes en el Paso 2 antes de proceder al Paso 3.
+    Refina grupos aplicando hash completo (Paso 3) solo a archivos que ya coinciden 
+    en su hash parcial (Paso 2), optimizando drásticamente el I/O.
     """
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
@@ -244,10 +255,11 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona la estrategia de hashing basada en el tamaño del archivo para optimizar rendimiento."""
+    """Selecciona la estrategia de hashing según el tamaño del archivo."""
     if not isinstance(size, int) or size <= 0 or not paths or len(paths) < 2: 
         return []
     
+    # Archivos pequeños se hashean totalmente de una, archivos grandes pasan por refinamiento
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, partial_hash)
     else:
@@ -280,8 +292,8 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Sugerencia de archivo a conservar: prioriza el más antiguo por fecha de modificación
-    y, en caso de empate, el que tenga la ruta más corta (estética de sistema de archivos).
+    Sugiere el archivo a conservar basándose en heurística de antigüedad (más viejo)
+    y longitud de ruta (más corta en caso de empate).
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
@@ -291,7 +303,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if not isinstance(p, Path): 
             continue
         try:
-            # stat() puede fallar si el archivo fue bloqueado o movido tras el análisis
             stat_info = p.stat()
             candidates.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError):
@@ -305,7 +316,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Genera una representación textual formateada de un grupo de duplicados para el reporte."""
+    """Genera una representación textual legible para el usuario final."""
     if not isinstance(group, DuplicateGroup) or group.paths is None:
         return []
         

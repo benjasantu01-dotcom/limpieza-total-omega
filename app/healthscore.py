@@ -10,8 +10,8 @@ DISEÑO:
   la verificabilidad y los tests unitarios.
 - El pipeline utiliza una estrategia de 'Clamping' para asegurar que cualquier
   entrada de métrica, sin importar su origen, resulte en un valor entre 0 y 1.
-- La extensión del puntaje a nuevos módulos se realiza agregando una entrada 
-  en el diccionario `_SCORERS` y ajustando la constante `WEIGHTS`.
+- Los factores de normalización (ej. _INV_JUNK) se calculan como el inverso del 
+  umbral crítico, permitiendo convertir escalas arbitrarias a una base 0.0-1.0.
 """
 
 from __future__ import annotations
@@ -151,6 +151,7 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None:
+        """Validación automática tras inicialización para garantizar coherencia numérica."""
         self.validate()
 
     def validate(self) -> None:
