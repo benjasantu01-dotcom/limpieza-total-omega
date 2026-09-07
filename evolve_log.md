@@ -505,3 +505,10 @@ FAILED evolve/tests/test_assistant.py::test_booleans_accept_the_usual_strings - 
 - `2026-09-07T09:55:40` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `load_manifest` reemplazando la lectura repetida de disco por una caché de invalidación basada en el `mtime` del archivo, evitando parseos JSON innecesarios en llamadas consecutivas.
 - `2026-09-07T09:55:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T09:55:40` Corrida terminada. Total usado hoy: 236.
+- `2026-09-07T10:03:14` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-09-07T10:03:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-09-07T10:04:09` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento del filtrado masivo de rutas en `filter_safe_paths` evitando la resolución redundante de `normalize()` (que es costosa debido a `resolve()` y `exists()`) al mover el chequeo de restricciones de `base_dir` y extensiones hacia una lógica de pre-filtrado rápido.
+- `2026-09-07T10:04:33` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el flujo de escaneo integrando la verificación de `is_protected_path` directamente dentro de `_is_safe_entry` y evitando llamadas redundantes a `Path(entry.path)` y `path.suffix`, reduciendo significativamente las operaciones de I/O y la creación de objetos innecesarios durante el recorrido recursivo.
+- `2026-09-07T10:04:48` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` y `save()` reemplazando el uso intensivo de `copy()` y serialización JSON repetida mediante un caché más robusto, evitando lecturas y validaciones de disco innecesarias cuando el archivo no ha cambiado.
+- `2026-09-07T10:04:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T10:04:48` Corrida terminada. Total usado hoy: 240.

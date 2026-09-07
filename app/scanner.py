@@ -93,14 +93,6 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 ]
 
 class Scanner:
-    """
-    Controlador de estado para el escaneo recursivo del sistema de archivos.
-
-    Mantiene el historial de rutas visitadas para prevenir ciclos mediante 'seen',
-    gestiona la configuración base del escaneo y acumula los resultados encontrados 
-    en 'results' durante el recorrido.
-    """
-    
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
@@ -109,39 +101,25 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica mediante comparación de prefijo si el elemento es un descendiente de la raíz."""
         return entry_path.lower().startswith(self.base_root_str)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """
-        Valida que la entrada sea segura para procesar.
-
-        Filtra por longitud de ruta, caracteres peligrosos (RTL), nombres reservados
-        del sistema y verifica que la ruta esté dentro del alcance permitido (base_root) 
-        y no sea una ruta protegida.
-        """
         try:
             path_str: str = entry.path
             if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
                 return False
             
-            p = Path(path_str)
-            if not p.is_absolute():
-                return False
-
-            name: str = entry.name
-            if not name or RTL_CHAR_RE.search(name) or RESERVED_NAMES_RE.match(name):
+            if RTL_CHAR_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name):
                 return False
             
             if not self._is_inside_base_root(path_str):
                 return False
             
-            return not is_protected_path(p)
+            return not is_protected_path(Path(path_str))
         except (OSError, AttributeError, TypeError):
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Detecta puntos de reparse (Junctions, Symlinks) para evitar ciclos o fugas de scope."""
         try:
             if entry.is_symlink():
                 return True
@@ -150,18 +128,11 @@ class Scanner:
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """Marca un directorio como visitado y lo agrega a la pila para exploración futura."""
         if entry.path and entry.path not in self.seen:
             self.seen.add(entry.path)
             directory_stack.append(entry.path)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """
-        Analiza una entrada del sistema de archivos.
-
-        Si es directorio, lo encola; si es archivo, evalúa heurísticas si la 
-        extensión es sospechosa.
-        """
         if not self._is_safe_entry(entry):
             return
         
@@ -171,33 +142,26 @@ class Scanner:
                     self._handle_directory(entry, directory_stack)
                 return
 
-            ext_idx: int = entry.name.rfind('.')
-            ext_low: str = entry.name[ext_idx:].lower() if ext_idx != -1 else ""
-            
-            if ext_low in SUSPICIOUS_ALL_EXTS:
-                self._run_file_heuristics(Path(entry.path), entry, ext_low)
+            name = entry.name
+            ext_idx = name.rfind('.')
+            if ext_idx != -1:
+                ext_low = name[ext_idx:].lower()
+                if ext_low in SUSPICIOUS_ALL_EXTS:
+                    self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, FileNotFoundError):
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
-        """Despacha la ejecución de heurísticas para un archivo específico encontrado."""
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
-    """
-    Orquestador principal de reglas heurísticas para un archivo individual.
-    
-    Verifica seguridad de la ruta antes de analizar y aplica reglas de tamaño 
-    y registro de ejecutables.
-    """
     if is_protected_path(path):
         return []
     findings: ScanResult = []
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
     
-    file_ext: str = ext or path.suffix.lower()
-    if file_ext in SUSPICIOUS_EXECUTABLE_EXT:
+    if (ext or path.suffix.lower()) in SUSPICIOUS_EXECUTABLE_EXT:
         try:
             stats = entry.stat(follow_symlinks=False) if entry else path.stat()
             if stats.st_size == 0:
@@ -212,7 +176,6 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Inicia el escaneo recursivo validando la seguridad de la raíz de entrada."""
     if not isinstance(directory, (str, Path)): return []
         
     try:

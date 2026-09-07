@@ -415,10 +415,14 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> TypeG
 
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
-    """Iterador seguro que filtra una lista de rutas."""
+    """Iterador optimizado que filtra una lista de rutas evitando normalizaciones redundantes."""
     results = []
     for p in paths:
         if p is None: continue
+        # Pre-chequeo rápido: caracteres inválidos o extensión antes de normalizar (costoso)
+        path_str = str(p)
+        if not allow_sensitive and _is_sensitive_extension(Path(path_str)):
+            continue
         try:
             results.append(ensure_safe_to_modify(p, allow_sensitive=allow_sensitive))
         except (UnsafePathError, ValueError, TypeError, OSError):

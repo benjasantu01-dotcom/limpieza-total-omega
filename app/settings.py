@@ -35,7 +35,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple, TypeGuard
 
-from safety import is_safe_to_modify, is_protected_path, ensure_safe_to_modify
+from safety import is_safe_to_modify, is_protected_path
 
 PathLike: TypeAlias = str | Path
 T = TypeVar("T")
@@ -254,11 +254,9 @@ _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, Callable[[ConfigKey, Any], Any
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Resuelve la ubicación persistente del archivo JSON de configuración."""
     if custom_base is None: return _PATH_CACHE["default"]
-    
     cache_key = str(custom_base)
     if (cached := _PATH_CACHE.get(cache_key)) is not None:
         return cached
-        
     try:
         base = Path(custom_base).expanduser()
         if _Validators._is_safe_path(str(base)):
@@ -276,7 +274,6 @@ def validate(raw_values: Any) -> AppSettings:
     for key_str, val in raw_values.items():
         key_enum = _STR_TO_ENUM.get(key_str)
         if not key_enum: continue
-        
         validator = _VALIDATOR_MAP.get(key_enum)
         if validator:
             validated = validator(key_enum, val)
@@ -288,20 +285,17 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     """Lee configuración con caché basado en mtime."""
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
-    
     try:
         if not ruta.exists(): return DEFAULTS.copy()
         stats = ruta.stat()
         mtime = float(stats.st_mtime)
         if (cached := _CACHE.get(ruta_str)) and cached[0] == mtime:
-            return cached[1].copy()
-            
+            return cached[1]
         if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
-                content = json.load(f)
-            data = validate(content)
+                data = validate(json.load(f))
             _CACHE[ruta_str] = (mtime, data)
-            return data.copy()
+            return data
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
         pass
     return DEFAULTS.copy()
@@ -309,53 +303,36 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """Persiste configuración mediante reemplazo atómico tras validaciones de seguridad."""
     if not _is_dict(values): return None
-    
     ruta = settings_path(custom_base).absolute()
     ruta_str = str(ruta)
     cleaned_settings = validate(values)
-    
     if (cached := _CACHE.get(ruta_str)) and cached[1] == cleaned_settings:
         return ruta
-
     temp_path = None
     try:
         if cleaned_settings.get("asistente_activado") and not (
             cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
         ):
             cleaned_settings["asistente_activado"] = False
-        
-        # Verificar seguridad explícita usando chequeo booleano
-        if is_protected_path(ruta_str) or not is_safe_to_modify(ruta_str):
-            return None
-            
+        if is_protected_path(ruta_str) or not is_safe_to_modify(ruta_str): return None
         parent = ruta.parent
-        if is_protected_path(str(parent)):
-            return None
-            
+        if is_protected_path(str(parent)): return None
         if not parent.exists():
             if not is_safe_to_modify(str(parent)): return None
             parent.mkdir(parents=True, exist_ok=True)
-        
         if not parent.is_dir() or not os.access(parent, os.W_OK): return None
         if ruta.exists() and not os.access(ruta, os.W_OK): return None
-        
         usage = shutil.disk_usage(parent)
         if usage.free < 1024 * 1024: return None
-        
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None
-        
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
         with open(temp_path, "wb") as f:
             f.write(data)
             f.flush()
             os.fsync(f.fileno())
-        
-        # Validación de integridad antes del reemplazo
         with open(temp_path, "r", encoding="utf-8") as f:
-            if validate(json.load(f)) != cleaned_settings:
-                raise ValueError("Integrity mismatch")
-            
+            if validate(json.load(f)) != cleaned_settings: raise ValueError("Integrity mismatch")
         os.replace(temp_path, ruta)
         _CACHE[ruta_str] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta
