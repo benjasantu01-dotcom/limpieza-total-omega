@@ -242,6 +242,11 @@ def _sum_directory_recursive(
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
+                        # Validación jerárquica adicional antes de descender recursivamente
+                        entry_path = Path(entry.path)
+                        if base_check_path and not _is_path_inside_base(entry_path.resolve(), base_check_path):
+                            continue
+                            
                         total += _sum_directory_recursive(
                             entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                         )

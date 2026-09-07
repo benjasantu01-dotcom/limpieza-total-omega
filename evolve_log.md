@@ -768,3 +768,30 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-07T01:56:14` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva de `save_logo_svg` añadiendo una comprobación explícita para evitar la creación de directorios en rutas bloqueadas mediante `is_protected_path` antes de invocar `mkdir`, asegurando que la operación de escritura sea coherente con las políticas de seguridad del proyecto.
 - `2026-09-07T01:56:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T01:56:14` Corrida terminada. Total usado hoy: 48.
+- `2026-09-07T02:04:34` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-09-07T02:05:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-07T02:05:47` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación de la jerarquía de rutas utilizando `_is_path_inside_base` antes de cada recursión, asegurando que el escáner no se escape accidentalmente del directorio base incluso si se encuentran enlaces simbólicos o inconsistencias en el sistema de archivos que `os.scandir` o `resolve()` pudieran omitir.
+- `2026-09-07T02:06:16` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-09-07T02:06:43` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en la función `_collect_candidates` agregando una validación explícita con `is_protected_path` al procesar cada archivo encontrado, asegurando que incluso cambios en el sistema de archivos durante la iteración no expongan rutas sensibles.
+- `2026-09-07T02:06:54` Tests FALLARON:
+```
+emMetrics())
+        assert resultado.recommendations
+>       assert "buen estado" in " ".join(resultado.recommendations)
+E       AssertionError: assert 'buen estado' in 'No hay nada urgente para hacer.'
+E        +  where 'No hay nada urgente para hacer.' = <built-in method join of str object at 0x7fbd1ce2bb40>(['No hay nada urgente para hacer.'])
+E        +    where <built-in method join of str object at 0x7fbd1ce2bb40> = ' '.join
+E        +    and   ['No hay nada urgente para hacer.'] = HealthResult(score=100, grade='A', breakdown={'seguridad': 30, 'disco': 20, 'memoria': 18, 'basura': 14, 'duplicados': 10, 'arranque': 8}, recommendations=['No hay nada urgente para hacer.']).recommendations
+
+evolve/tests/test_modules.py:899: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommendation - AssertionError: assert 'buen estado' in 'No hay nada urgente para hacer.'
+ +  where 'No hay nada urgente para hacer.' = <built-in method join of str object at 0x7fbd1ce2bb40>(['No hay nada urgente para hacer.'])
+ +    where <built-in method join of str object at 0x7fbd1ce2bb40> = ' '.join
+ +    and   ['No hay nada urgente para hacer.'] = HealthResult(score=100, grade='A', breakdown={'seguridad': 30, 'disco': 20, 'memoria': 18, 'basura': 14, 'duplicados': 10, 'arranque': 8}, recommendations=['No hay nada urgente para hacer.']).recommendations
+1 failed, 298 passed in 1.17s
+
+```
+- `2026-09-07T02:06:54` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `_evaluate_rules` y `compute_score` implementando una técnica de "fail-safe" que evita que errores en los mensajes de usuario o fallos inesperados en el cálculo interrumpan el pipeline de análisis, garantizando que el sistema siempre devuelva un resultado válido.
+- `2026-09-07T02:06:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T02:06:54` Corrida terminada. Total usado hoy: 52.
