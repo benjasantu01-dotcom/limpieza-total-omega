@@ -165,19 +165,21 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     
     metric_map: Dict[str, int] = {"MemTotal": 0, "MemAvailable": 0, "MemFree": 0, "Cached": 0}
     
-    for line in meminfo_text.splitlines():
-        if ":" not in line: continue
-        parts = line.split(":", 1)
-        k_normalized = parts[0].strip()
-        
-        if k_normalized in metric_map:
-            val_parts = parts[1].split()
-            # Validación robusta: asegurar que el valor sea un entero positivo
-            if val_parts and val_parts[0].isdigit():
-                try:
-                    metric_map[k_normalized] = int(val_parts[0]) * 1024
-                except (ValueError, OverflowError):
-                    continue
+    try:
+        for line in meminfo_text.splitlines():
+            if ":" not in line: continue
+            parts = line.split(":", 1)
+            k_normalized = parts[0].strip()
+            
+            if k_normalized in metric_map:
+                val_parts = parts[1].split()
+                if val_parts and val_parts[0].isdigit():
+                    try:
+                        metric_map[k_normalized] = int(val_parts[0]) * 1024
+                    except (ValueError, OverflowError):
+                        continue
+    except Exception:
+        return MemorySnapshot(BytesValue(0), BytesValue(0))
             
     total_mem = metric_map["MemTotal"]
     if total_mem <= 0: 
@@ -221,9 +223,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             clean_line = line.strip()
             if not clean_line: continue
             
-            # Divide intentando manejar posibles campos vacíos o malformados
             parts = [p.strip().strip("'\"") for p in clean_line.split(",")]
-            # Validación robusta: requerimos exactamente 3 columnas con datos no vacíos
             if len(parts) != 3 or not all(parts): 
                 continue
             
@@ -283,7 +283,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     
     now = time.time()
     if (now - _proc_cache_time) > 60:
-        # Consulta eficiente: ordena en el lado de PowerShell y selecciona solo los necesarios
         fetch_limit = limit + 5
         cmd = [
             'powershell', '-NoProfile', '-NonInteractive', '-Command', 

@@ -212,15 +212,16 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
         if rule.check(metrics, ratio):
             try:
                 msg = rule.message_factory(metrics)
-                if msg and msg.strip():
+                if isinstance(msg, str) and msg.strip():
                     findings.append(msg.strip())
             except Exception:
-                pass
+                # Se captura cualquier excepción al generar el mensaje para no abortar el reporte.
+                continue
     return findings
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Ejecuta el pipeline de evaluación completo sobre las métricas provistas."""
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+    if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o corruptos."])
     
     metric_breakdown = {}
