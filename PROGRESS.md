@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **247** (49.0% de aceptación)
+- Mejoras aceptadas: **248** (49.2% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 191
+- Sin respuesta de la IA (error o límite): 190
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 47 | 5 | 8 | 2 | 32 |
+| 2026-09-05 | 47 | 5 | 8 | 2 | 28 |
 | 2026-09-06 | 165 | 3 | 23 | 9 | 150 |
-| 2026-09-07 | 35 | 5 | 5 | 6 | 9 |
+| 2026-09-07 | 36 | 5 | 5 | 6 | 12 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **54**
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **47**
+- seguridad defensiva: **48**
 - rendimiento: **45**
 
 ## Mejoras aceptadas por archivo
@@ -43,10 +43,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `main.py`: **17**
 - `branding.py`: **16**
 - `safety.py`: **16**
-- `startup.py`: **8**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T02:35:37` **startup.py** (seguridad defensiva): Reforcé la seguridad defensiva en `parse_registry_csv` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta extraída antes de procesarla, evitando que entradas maliciosas en el registro pudieran evadir el filtro de seguridad inicial.
 - `2026-09-07T02:26:37` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save()` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del archivo de configuración antes de cualquier operación, asegurando que ni siquiera el archivo de settings pueda ser movido a una ubicación crítica (como `System32`) mediante un archivo `config.json` malintencionado.
 - `2026-09-07T02:26:21` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva del escáner implementando un filtrado más estricto en `process_entry` y `scan_directory` para evitar el procesamiento de rutas UNC y proteger el acceso a archivos, asegurando que `is_protected_path` se consulte siempre antes de realizar cualquier operación de metadatos (stat), mitigando el riesgo de interacción con recursos de red inesperados o rutas maliciosas.
 - `2026-09-07T02:17:22` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad en `quarantine_file` al introducir un chequeo explícito de la existencia del archivo de origen justo antes de la operación de aislamiento, evitando así estados de carrera donde el archivo podría ser eliminado o movido por otro proceso entre la validación y el inicio de la copia.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T01:44:47` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_safe_unlink` y `purge_all` para prevenir errores de concurrencia y bloqueos de archivos en sistemas Windows, asegurando que el proceso de limpieza no aborte prematuramente si un archivo está bloqueado temporalmente por otro proceso del sistema.
 - `2026-09-07T01:37:14` **organizer.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante excepciones de E/S en `_is_file_locked` y `_is_recursive_violation` mediante el uso de bloques `try-except` más granulares y la validación de estados de archivo, evitando fallos silenciosos ante archivos inexistentes o bloqueos de acceso durante la resolución de rutas.
 - `2026-09-07T01:36:57` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `parse_linux_meminfo` y `parse_windows_process_csv` añadiendo validaciones contra entradas malformadas o tipos de datos inesperados, mitigando posibles errores de ejecución ante archivos de sistema inconsistentes o salidas de shell truncadas.
-- `2026-09-07T01:36:26` **main.py** (robustez ante casos límite): Se implementó un mecanismo de protección en `_ask_folder` y `_build_tab_ajustes` para manejar situaciones donde el sistema de archivos deniega permisos o la ruta seleccionada es inválida, asegurando que `main.py` no colapse ante errores inesperados del sistema operativo.

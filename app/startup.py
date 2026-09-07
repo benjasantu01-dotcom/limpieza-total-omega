@@ -294,8 +294,12 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             if name.upper().startswith("PS"):
                 continue
             
-            p_cmd: Path = Path(cmd)
-            if is_protected_path(p_cmd):
+            # Validación de seguridad: no procesar nada que apunte a rutas protegidas
+            try:
+                p_cmd: Path = Path(cmd)
+                if is_protected_path(p_cmd):
+                    continue
+            except (ValueError, TypeError):
                 continue
                 
             seen_commands.add(cmd)
