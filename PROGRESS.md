@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **239** (47.4% de aceptación)
+- Mejoras aceptadas: **237** (47.0% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 203
+- Rechazadas por guardia de seguridad: 35
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 67 | 6 | 10 | 6 | 53 |
+| 2026-09-05 | 64 | 6 | 10 | 5 | 53 |
 | 2026-09-06 | 165 | 3 | 23 | 9 | 150 |
-| 2026-09-07 | 7 | 2 | 1 | 2 | 0 |
+| 2026-09-07 | 8 | 2 | 2 | 2 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **54**
-- legibilidad y documentación: **51**
+- legibilidad y documentación: **52**
+- robustez ante casos límite: **51**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **49**
 - rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `scanner.py`: **20**
-- `browser.py`: **19**
+- `scanner.py`: **21**
+- `diskreport.py`: **20**
 - `memory.py`: **19**
-- `duplicates.py`: **18**
 - `organizer.py`: **18**
 - `settings.py`: **18**
+- `browser.py`: **18**
 - `assistant.py`: **17**
+- `duplicates.py`: **17**
 - `quarantine.py`: **17**
 - `healthscore.py`: **17**
 - `safety.py`: **16**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T00:33:56` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la inclusión de Type Hints explícitos para variables complejas y la adición de docstrings técnicos en los métodos de `Scanner`, clarificando el propósito y el flujo de los mecanismos de exclusión y recursión.
 - `2026-09-07T00:24:27` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `quarantine.py` mediante la refactorización de `_check_path_syntax_integrity` para evitar validaciones anidadas profundas y la adición de Type Hints explícitos para mejorar la claridad sobre las estructuras de datos manejadas.
 - `2026-09-07T00:23:52` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de Type Hints explícitos, docstrings enriquecidos con especificaciones sobre los parámetros, y la conversión de las estructuras de chequeo en funciones más descriptivas para facilitar el mantenimiento preventivo.
 - `2026-09-07T00:23:22` **memory.py** (legibilidad y documentación): Documenté con docstrings claros los propósitos y las restricciones de seguridad de las funciones internas del módulo `memory.py`, mejorando la mantenibilidad y explicando el fundamento técnico detrás de las validaciones de acceso a procesos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T14:32:32` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que el pipeline de evaluación maneje de forma segura métricas que puedan producir divisiones por cero o valores inesperados antes de que ocurra el cálculo, evitando fallos silenciosos en el pipeline.
 - `2026-09-06T14:32:06` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `format_group` añadiendo validaciones de tipo y estado para evitar errores en tiempo de ejecución ante archivos inexistentes o permisos denegados, alineándose con el enfoque de manejo de errores defensivo.
 - `2026-09-06T14:23:22` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` y las funciones que lo consumen, asegurando que `_collect_summary_data` maneje internamente las excepciones durante la iteración y añadiendo validaciones de tipo para los parámetros de entrada (`limit`) en las funciones públicas, evitando errores inesperados ante valores mal formados.
-- `2026-09-06T14:22:40` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` implementando una validación de parámetros más estricta y evitando la propagación de excepciones mediante el uso de filtros de seguridad explícitos y chequeos de tipo, alineado con el enfoque de manejo de errores y validación.

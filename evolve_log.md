@@ -628,3 +628,10 @@ ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defi
 - `2026-09-07T00:24:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-07T00:24:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T00:24:31` Corrida terminada. Total usado hoy: 12.
+- `2026-09-07T00:32:59` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-09-07T00:33:30` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
+- `2026-09-07T00:33:56` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna mediante la inclusión de Type Hints explícitos para variables complejas y la adición de docstrings técnicos en los métodos de `Scanner`, clarificando el propósito y el flujo de los mecanismos de exclusión y recursión.
+- `2026-09-07T00:34:23` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators, _Validators._is_safe_path, _Validators._run_safety_checks, _Validators._validate_enum_str, _Validators.bool, _Validators.int, _Validators.path, _Validators.str
+- `2026-09-07T00:34:34` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
+- `2026-09-07T00:34:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T00:34:34` Corrida terminada. Total usado hoy: 16.

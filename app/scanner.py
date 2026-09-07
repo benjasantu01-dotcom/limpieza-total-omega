@@ -101,27 +101,30 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root = base_root.resolve(strict=False)
-        self.base_root_str = str(self.base_root).lower()
+        self.base_root: Path = base_root.resolve(strict=False)
+        self.base_root_str: str = str(self.base_root).lower()
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Determina si la ruta es descendiente estricta de la raíz de escaneo."""
+        """Verifica mediante resolución de ruta si el elemento es un descendiente de la raíz de escaneo."""
         if not entry_path: return False
         try:
-            resolved_path = Path(entry_path).resolve(strict=False)
+            resolved_path: Path = Path(entry_path).resolve(strict=False)
             return str(resolved_path).lower().startswith(self.base_root_str)
         except (OSError, RuntimeError):
             return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida integridad, nombres reservados, caracteres prohibidos y restricciones de safety.py."""
+        """
+        Valida que la entrada no viole restricciones de sistema, longitud máxima, 
+        nombres reservados, ofuscación RTL o políticas de seguridad (is_protected_path).
+        """
         try:
-            path_str = entry.path
+            path_str: str = entry.path
             if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
                 return False
             
-            name = entry.name
+            name: str = entry.name
             if not name or RTL_CHAR_RE.search(name) or RESERVED_NAMES_RE.match(name):
                 return False
             
@@ -133,7 +136,7 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Detecta puntos de reparse (Junctions, Symlinks)."""
+        """Detecta puntos de reparse (Junctions, Symlinks) para evitar ciclos o fugas de scope."""
         try:
             if entry.is_symlink():
                 return True
@@ -142,13 +145,16 @@ class Scanner:
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
-        """Agrega un directorio a la pila de exploración si no ha sido procesado."""
+        """Registra el directorio en el historial de visitados y lo añade a la pila de exploración."""
         if entry.path and entry.path not in self.seen:
             self.seen.add(entry.path)
             stack.append(entry.path)
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
-        """Clasifica una entrada según su tipo y aplica heurísticas si es necesario."""
+        """
+        Clasifica la entrada: si es directorio, lo encola; si es archivo, 
+        evalúa si su extensión coincide con el set de sospechosos.
+        """
         if not self._is_safe_entry(entry):
             return
         
@@ -158,8 +164,8 @@ class Scanner:
                     self._handle_directory(entry, stack)
                 return
 
-            ext_idx = entry.name.rfind('.')
-            ext_low = entry.name[ext_idx:].lower() if ext_idx != -1 else ""
+            ext_idx: int = entry.name.rfind('.')
+            ext_low: str = entry.name[ext_idx:].lower() if ext_idx != -1 else ""
             
             if ext_low in SUSPICIOUS_ALL_EXTS:
                 self._run_file_heuristics(Path(entry.path), entry, ext_low)
@@ -167,16 +173,16 @@ class Scanner:
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
-        """Despacha el archivo detectado a las funciones de escaneo."""
+        """Despacha la ejecución de heurísticas para un archivo específico encontrado."""
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
-    """Orquestador principal de reglas heurísticas."""
+    """Orquestador principal de reglas heurísticas para un archivo individual."""
     findings: ScanResult = []
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
     
-    file_ext = ext or path.suffix.lower()
+    file_ext: str = ext or path.suffix.lower()
     if file_ext in SUSPICIOUS_EXECUTABLE_EXT:
         try:
             stats = entry.stat(follow_symlinks=False) if entry else path.stat()
