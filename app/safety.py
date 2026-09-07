@@ -382,7 +382,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | 
         raise UnsafePathError("Intento de acceso a la raíz de unidad.", SafetyValidationErrorCode.ROOT_ACCESS)
     if is_protected_path(target_path):
         raise UnsafePathError("Ruta en directorio protegido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
-    if _is_reparse_point(target_path):
+    if target_path.exists() and _is_reparse_point(target_path):
         raise UnsafePathError("Nodo de reparse detectado.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
 

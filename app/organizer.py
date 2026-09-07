@@ -18,6 +18,7 @@ import os
 import shutil
 import string
 import logging
+import ctypes
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -180,16 +181,25 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Intenta abrir un archivo exclusivamente para verificar bloqueos.
-    Si el archivo es un enlace simbólico o está en uso, se considera no procesable.
+    Verifica si un archivo está bloqueado por otro proceso usando syscalls.
+    En Windows, intenta abrir el archivo solo para lectura sin pedir exclusividad.
     """
     if path is None or _is_junction(path): return True
-    try:
-        if not path.exists(): return True
-        with open(path, "rb") as f:
+    if not path.exists(): return True
+    
+    if os.name == "nt":
+        try:
+            # FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE = 0x7
+            # OPEN_EXISTING = 0x3
+            handle = ctypes.windll.kernel32.CreateFileW(
+                str(path), 0x80000000, 0x7, None, 0x3, 0x80, None
+            )
+            if handle == -1: return True
+            ctypes.windll.kernel32.CloseHandle(handle)
             return False
-    except (PermissionError, OSError, IOError):
-        return True 
+        except Exception:
+            return True
+    return False
 
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
@@ -311,7 +321,8 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
                             _process_directory(Path(entry.path), found, depth + 1)
                     elif entry.is_file(follow_symlinks=False) and is_valid_junk_extension(entry.name):
                         info = entry.stat()
-                        if info.st_size > 0:
+                        # Solo incluir archivos con contenido, excluyendo bloqueados
+                        if info.st_size > 0 and not _is_file_locked(Path(entry.path)):
                             found.append(JunkFile(Path(entry.path), info.st_size, datetime.fromtimestamp(info.st_mtime)))
                 except (OSError, PermissionError):
                     continue

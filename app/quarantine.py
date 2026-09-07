@@ -548,7 +548,11 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     
     parent = destination.parent
     if not parent.exists():
-        parent.mkdir(parents=True, exist_ok=True)
+        try:
+            parent.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            raise RuntimeError("No se pudo crear la estructura de carpetas de destino.")
+            
     if not is_safe_to_modify(parent) or not is_safe_to_modify(destination):
         raise UnsafePathError("Restauración denegada: destino no seguro.")
         
