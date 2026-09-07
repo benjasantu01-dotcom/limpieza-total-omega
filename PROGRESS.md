@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 20
+- Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-06 | 144 | 3 | 19 | 8 | 126 |
-| 2026-09-07 | 88 | 9 | 13 | 12 | 82 |
+| 2026-09-06 | 142 | 3 | 18 | 8 | 125 |
+| 2026-09-07 | 89 | 9 | 14 | 13 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **53**
 - seguridad defensiva: **48**
-- rendimiento: **45**
-- legibilidad y documentación: **43**
-- manejo de errores y validación de entradas: **43**
+- rendimiento: **44**
+- manejo de errores y validación de entradas: **44**
+- legibilidad y documentación: **42**
 
 ## Mejoras aceptadas por archivo
 
@@ -37,15 +37,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **17**
 - `memory.py`: **17**
 - `duplicates.py`: **17**
+- `safety.py`: **17**
 - `healthscore.py`: **16**
 - `organizer.py`: **16**
-- `safety.py`: **16**
-- `branding.py`: **15**
 - `main.py`: **15**
-- `startup.py`: **10**
+- `branding.py`: **14**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T08:43:24` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `ensure_safe_to_modify` y `_validate_structural_safety` implementando verificaciones de tipo y estado más explícitas, asegurando que los fallos sean capturados mediante excepciones específicas antes de realizar operaciones de I/O, siguiendo las mejores prácticas del enfoque de manejo de errores y validación de entradas.
 - `2026-09-07T08:33:51` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` añadiendo una validación explícita para asegurar que la cadena de entrada no sea solo espacio en blanco y manejando posibles errores de formato por línea, evitando excepciones inesperadas durante el parseo de la salida de PowerShell.
 - `2026-09-07T08:32:24` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` mediante la adición de un chequeo explícito de `None` en `validate` y refiné `compute_score` para manejar de forma segura casos donde `scorer` pueda retornar valores fuera de rango o inesperados, garantizando la integridad de los resultados incluso ante entradas marginales.
 - `2026-09-07T08:31:58` **duplicates.py** (manejo de errores y validación de entradas): Reforcé la robustez de `find_duplicates` añadiendo validaciones de tipo y de estado en la entrada, asegurando que si `directories` contiene elementos nulos o rutas inválidas, el flujo se detenga de forma elegante sin lanzar excepciones que interrumpan el proceso.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T06:29:52` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir el uso de rutas no normalizadas o potencialmente maliciosas mediante el uso de `pathlib.Path.resolve().absolute()` antes de cualquier validación, asegurando que el chequeo de seguridad reciba una ruta absoluta canónica y resistente a ataques de "path traversal" o intentos de escape del directorio de trabajo.
 - `2026-09-07T06:20:03` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de guardado de configuración mediante la validación explícita del contenido del archivo resultante antes de su confirmación final, previniendo estados inconsistentes o archivos corruptos ante errores inesperados durante la escritura en disco.
 - `2026-09-07T06:19:33` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `_is_safe_entry` al agregar una validación estricta de rutas relativas o malformadas mediante `path.is_absolute()`, evitando que el escáner intente procesar rutas fuera del `base_root` que podrían escapar a la verificación de prefijo si el sistema operativo devuelve rutas inconsistentes.
-- `2026-09-07T06:10:36` **safety.py** (robustez ante casos límite): Se introdujo la verificación `p.exists()` dentro de `_validate_boundary_conditions` para evitar que `is_reparse_point` intente hacer `lstat` sobre rutas que no existen físicamente en disco, mejorando la robustez ante estados inconsistentes del sistema de archivos.

@@ -309,9 +309,7 @@ def is_protected_path(path: PathLike) -> bool:
     if not path: return True
     try:
         p_str = str(path)
-        # Optimizamos: verificamos el string directamente en la caché antes de normalizar si es posible
         if _is_system_path_cached(p_str): return True
-        
         p = normalize(path)
         return p == Path(p.anchor)
     except (ValueError, TypeError, OSError, RuntimeError): 
@@ -328,7 +326,6 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         if is_drive_root(c_path) or is_protected_path(c_path):
             return False
             
-        # Comparación robusta usando la jerarquía de directorios absoluta
         parts_c = c_path.parts
         parts_p = p_path.parts
         
@@ -348,55 +345,54 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
-    """Realiza chequeos estructurales (caracteres prohibidos, nombres reservados, UNC) antes de acceder al FS."""
+    """Realiza chequeos estructurales antes de acceder al sistema de archivos."""
+    if not isinstance(path_string, str):
+        raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
     if "\0" in path_string:
-        raise UnsafePathError("Inyección de carácter nulo detectada.", SafetyValidationErrorCode.NULL_CHAR)
+        raise UnsafePathError("Inyección de carácter nulo.", SafetyValidationErrorCode.NULL_CHAR)
     if _has_invalid_chars(path_string):
-        raise UnsafePathError("La ruta contiene caracteres inválidos.", SafetyValidationErrorCode.INVALID_CHARS)
+        raise UnsafePathError("Caracteres inválidos detectados.", SafetyValidationErrorCode.INVALID_CHARS)
     
     for part in target_path.parts:
         if not part or part.strip() != part:
-            raise UnsafePathError("Componente de ruta inválido.", SafetyValidationErrorCode.INVALID_CHARS)
+            raise UnsafePathError("Componente vacío o malformado.", SafetyValidationErrorCode.INVALID_CHARS)
         if _is_reserved_device_name(part):
-            raise UnsafePathError(f"Nombre '{part}' reservado.", SafetyValidationErrorCode.RESERVED_NAME)
+            raise UnsafePathError(f"Nombre reservado '{part}'.", SafetyValidationErrorCode.RESERVED_NAME)
 
     if path_string.startswith(("\\\\", "//")):
-        raise UnsafePathError("Operación en rutas de red (UNC) bloqueada.", SafetyValidationErrorCode.UNC_PATH)
+        raise UnsafePathError("Rutas UNC bloqueadas.", SafetyValidationErrorCode.UNC_PATH)
     if len(str(target_path)) >= MAX_PATH_LENGTH:
-        raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG)
+        raise UnsafePathError("Ruta excede MAX_PATH.", SafetyValidationErrorCode.PATH_TOO_LONG)
 
 
 def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | None) -> None:
     """Aplica restricciones de alcance (scope) y previene la auto-modificación de la aplicación."""
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
-        raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
+        raise UnsafePathError("Fuera de alcance.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     
     app_root = Path(os.getcwd()).resolve()
     if target_path == app_root or app_root in target_path.parents:
-        raise UnsafePathError("Modificación del directorio de la aplicación denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
+        raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
         
     if is_drive_root(target_path):
-        raise UnsafePathError("Intento de acceso a la raíz de unidad.", SafetyValidationErrorCode.ROOT_ACCESS)
+        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS)
     if is_protected_path(target_path):
-        raise UnsafePathError("Ruta en directorio protegido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+        raise UnsafePathError("Ruta protegida por sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
     if target_path.exists() and _is_reparse_point(target_path):
         raise UnsafePathError("Nodo de reparse detectado.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
-    """
-    Función principal de guardia: valida rigurosamente si una ruta es segura para ser modificada.
-    Lanza UnsafePathError si alguna validación falla.
-    """
-    if path is None: raise UnsafePathError("Ruta nula recibida.")
+    """Valida rigurosamente si una ruta es segura para ser modificada."""
+    if path is None: raise UnsafePathError("Ruta nula.")
     
     try:
         p = normalize(path)
     except ValueError as e:
-        raise UnsafePathError(f"Ruta inválida: {e}")
+        raise UnsafePathError(f"Ruta no normalizable: {e}")
     
     if not allow_sensitive and _is_sensitive_extension(p):
-        raise UnsafePathError(f"Extensión sensible '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
+        raise UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
 
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
@@ -404,7 +400,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if p.exists():
         _check_file_integrity(p)
     elif p.parent and is_protected_path(p.parent):
-        raise UnsafePathError("Directorio contenedor protegido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+        raise UnsafePathError("Directorio contenedor restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
             
     return p
 
@@ -418,7 +414,7 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> TypeG
 
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
-    """Iterador seguro que filtra una lista de rutas, descartando aquellas que no pasan la validación."""
+    """Iterador seguro que filtra una lista de rutas."""
     results = []
     for p in paths:
         if p is None: continue
@@ -430,7 +426,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
 
 
 def describe_protection(path: PathLike) -> str:
-    """Genera un reporte legible para el usuario final sobre por qué una ruta no fue considerada segura."""
+    """Genera un reporte legible sobre el estado de seguridad de una ruta."""
     if path is None: return "Ruta nula."
     try:
         p = normalize(path)
