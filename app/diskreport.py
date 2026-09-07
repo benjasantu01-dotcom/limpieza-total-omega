@@ -211,10 +211,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorrido DFS iterativo evitando bucles infinitos mediante el rastreo de inodos.
-    
-    Utiliza un stack para la profundidad y `visited_inodes` para detectar ciclos.
-    Los inodos capturados son (st_dev, st_ino) para identificar de forma única
-    la ubicación física del objeto en el sistema de archivos.
     """
     root_path = _validate_root(directory)
     if root_path is None:
@@ -225,16 +221,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
-        if not current_dir.exists() or not os.access(current_dir, os.R_OK):
-            continue
-            
+        
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    if _is_excluded_path(entry):
-                        continue
-                    
                     try:
+                        if _is_excluded_path(entry):
+                            continue
+                        
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
