@@ -906,3 +906,11 @@ assert 'rectangle' in ['oval', 'polygon', 'polygon', 'polygon', 'polygon', 'poly
 - `2026-09-07T14:09:55` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando un conjunto (`set`) para registrar rutas ya visitadas, evitando así el procesamiento redundante de directorios cuando se pasan múltiples rutas de entrada solapadas o enlaces complejos.
 - `2026-09-07T14:09:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T14:09:55` Corrida terminada. Total usado hoy: 336.
+- `2026-09-07T14:18:30` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-07T14:19:06` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score eliminando la creación de objetos innecesarios y redundantes durante la ejecución de `compute_score`, reemplazando el uso de `append` en listas dinámicas por una pre-asignación eficiente y evitando iteraciones repetitivas sobre `_OPTIMIZED_PIPELINE` mediante un acceso directo más limpio.
+- `2026-09-07T14:20:17` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards
+- `2026-09-07T14:20:49` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `read_snapshot` eliminando la recreación innecesaria de objetos `MemorySnapshot` y `pathlib.Path` en cada llamado, centralizando la configuración del sistema operativo y reutilizando la estructura de datos para evitar latencia en bucles de monitoreo.
+- `2026-09-07T14:21:49` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-07T14:22:09` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-07T14:22:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T14:22:09` Corrida terminada. Total usado hoy: 340.

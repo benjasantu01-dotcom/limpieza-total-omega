@@ -203,18 +203,16 @@ def grade_for_score(score: float | int) -> str:
     if s >= 50: return "D"
     return "F"
 
-def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float) -> List[str]:
-    """Filtra y ejecuta recomendaciones basadas en el estado del sistema."""
-    findings = []
+def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float, findings: List[str]) -> None:
+    """Filtra y ejecuta recomendaciones in-place."""
     for rule in rules:
         if rule.check(metrics, ratio):
             try:
                 msg = rule.message_factory(metrics)
-                if isinstance(msg, str) and msg.strip():
+                if msg and msg.strip():
                     findings.append(msg.strip())
             except Exception:
                 continue
-    return findings
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Ejecuta el pipeline de evaluación completo sobre las métricas provistas."""
@@ -233,7 +231,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             metric_breakdown[area] = pts
             total_pts += pts
             if rules:
-                recommendations.extend(_evaluate_rules(metrics, rules, ratio))
+                _evaluate_rules(metrics, rules, ratio, recommendations)
         except (ValueError, TypeError, ZeroDivisionError):
             metric_breakdown[area] = 0
             continue

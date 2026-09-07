@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 209
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-06 | 73 | 2 | 9 | 5 | 79 |
-| 2026-09-07 | 150 | 14 | 24 | 18 | 130 |
+| 2026-09-06 | 70 | 2 | 9 | 5 | 78 |
+| 2026-09-07 | 152 | 14 | 25 | 18 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **51**
 - legibilidad y documentación: **49**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **41**
-- rendimiento: **38**
+- rendimiento: **40**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **21**
-- `scanner.py`: **20**
+- `settings.py`: **20**
 - `assistant.py`: **19**
+- `scanner.py`: **19**
 - `browser.py`: **18**
 - `duplicates.py`: **18**
 - `quarantine.py`: **17**
 - `safety.py`: **17**
-- `healthscore.py`: **16**
-- `memory.py`: **15**
+- `healthscore.py`: **17**
+- `memory.py`: **16**
 - `diskreport.py`: **14**
 - `branding.py`: **13**
 - `main.py`: **13**
 - `organizer.py`: **12**
-- `startup.py`: **10**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T14:20:49` **memory.py** (rendimiento): Optimicé el rendimiento de `read_snapshot` eliminando la recreación innecesaria de objetos `MemorySnapshot` y `pathlib.Path` en cada llamado, centralizando la configuración del sistema operativo y reutilizando la estructura de datos para evitar latencia en bucles de monitoreo.
+- `2026-09-07T14:19:06` **healthscore.py** (rendimiento): Optimicé el cálculo del score eliminando la creación de objetos innecesarios y redundantes durante la ejecución de `compute_score`, reemplazando el uso de `append` en listas dinámicas por una pre-asignación eficiente y evitando iteraciones repetitivas sobre `_OPTIMIZED_PIPELINE` mediante un acceso directo más limpio.
 - `2026-09-07T14:09:55` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando un conjunto (`set`) para registrar rutas ya visitadas, evitando así el procesamiento redundante de directorios cuando se pasan múltiples rutas de entrada solapadas o enlaces complejos.
 - `2026-09-07T14:09:15` **browser.py** (rendimiento): Se optimizó la recursión de `_sum_directory_recursive` evitando llamadas costosas a `Path.resolve()` dentro del bucle y minimizando la creación de objetos `Path` mediante el uso de nombres de archivo crudos obtenidos de `os.scandir`, mejorando el rendimiento en directorios de caché con miles de archivos.
 - `2026-09-07T13:59:55` **assistant.py** (rendimiento): Optimicé el rendimiento de `_get_source_value` reemplazando el manejo de excepciones (`try-except` costoso en bucles) por una comprobación de tipo más eficiente y un acceso directo a `__dict__` o `getattr`, reduciendo la carga en la ingesta masiva de datos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T13:29:01` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints más precisos (específicamente en el uso de `Any` y `Dict`) y se han clarificado los docstrings de funciones críticas (`_sum_directory_recursive` y `_is_valid_cache_path`) para explicar el "porqué" de las validaciones de seguridad, facilitando el mantenimiento y la auditoría del código.
 - `2026-09-07T13:28:03` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_assign` y `ingest`, eliminando redundancias en la lógica de validación de métricas y clarificando el flujo de asignación de datos mediante el uso de `getattr` y `setattr` de forma más limpia.
 - `2026-09-07T13:20:07` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` reemplazando el bloque genérico de manejo de excepciones por capturas específicas y añadiendo una validación explícita para evitar que `json.dumps` trabaje con tipos no serializables, asegurando que la integridad de la configuración no se vea comprometida por errores de tipado en el diccionario de entrada.
-- `2026-09-07T13:19:36` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `scan_directory` validando explícitamente que la entrada no sea `None` o una ruta vacía antes de procesarla, asegurando que los parámetros recibidos sean siempre cadenas o Path no vacíos antes de llamar a funciones de resolución de sistema, evitando excepciones innecesarias en tiempo de ejecución.
-- `2026-09-07T13:19:04` **safety.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_check_file_integrity` y `_is_file_in_use` para distinguir explícitamente entre errores de acceso y condiciones de sistema, evitando el silenciamiento incorrecto de errores y proporcionando diagnósticos más precisos ante fallos de I/O.

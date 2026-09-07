@@ -151,6 +151,9 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     return stat
 
 _win_mem_buffer: MEMORYSTATUSEX = _create_mem_status_ex()
+_is_windows: bool = os.name == "nt"
+_linux_mem_path: Path = Path("/proc/meminfo")
+_EMPTY_SNAPSHOT: MemorySnapshot = MemorySnapshot(BytesValue(0), BytesValue(0))
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
@@ -159,7 +162,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     Convierte el formato de texto plano de Linux en un objeto MemorySnapshot unificado.
     """
     if not isinstance(meminfo_text, str) or not meminfo_text:
-        return MemorySnapshot(BytesValue(0), BytesValue(0))
+        return _EMPTY_SNAPSHOT
     
     metric_map: Dict[str, int] = {"MemTotal": 0, "MemAvailable": 0, "MemFree": 0, "Cached": 0}
     
@@ -177,11 +180,11 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
                     except (ValueError, OverflowError):
                         continue
     except Exception:
-        return MemorySnapshot(BytesValue(0), BytesValue(0))
+        return _EMPTY_SNAPSHOT
             
     total_mem = metric_map["MemTotal"]
     if total_mem <= 0: 
-        return MemorySnapshot(BytesValue(0), BytesValue(0))
+        return _EMPTY_SNAPSHOT
     
     available = metric_map["MemAvailable"] if metric_map["MemAvailable"] > 0 else metric_map["MemFree"]
     return MemorySnapshot(
@@ -237,25 +240,23 @@ def _read_windows_snapshot() -> MemorySnapshot:
     """Invoca la API de Windows GlobalMemoryStatusEx mediante ctypes. Retorna MemorySnapshot."""
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "GlobalMemoryStatusEx"):
-        return MemorySnapshot(BytesValue(0), BytesValue(0))
+        return _EMPTY_SNAPSHOT
     
     try:
         if kernel32.GlobalMemoryStatusEx(ctypes.byref(_win_mem_buffer)):
             return MemorySnapshot(total=BytesValue(_win_mem_buffer.ullTotalPhys), available=BytesValue(_win_mem_buffer.ullAvailPhys))
     except (AttributeError, ValueError, TypeError, OverflowError, OSError):
         pass
-    return MemorySnapshot(BytesValue(0), BytesValue(0))
+    return _EMPTY_SNAPSHOT
 
 _snap_cache_time: float = 0.0
 _snap_cache_data: Optional[MemorySnapshot] = None
-_is_windows: bool = os.name == "nt"
-_linux_mem_path: Path = Path("/proc/meminfo")
 
 def read_snapshot() -> MemorySnapshot:
     """Lee el estado actual de la memoria. Cachea resultado por 5 segundos."""
     global _snap_cache_time, _snap_cache_data
     now = time.time()
-    if (now - _snap_cache_time) < 5 and _snap_cache_data:
+    if (now - _snap_cache_time) < 5 and _snap_cache_data is not None:
         return _snap_cache_data
 
     if _is_windows: 
@@ -264,14 +265,14 @@ def read_snapshot() -> MemorySnapshot:
         try:
             if _linux_mem_path.exists():
                 content = _linux_mem_path.read_text(encoding="utf-8")
-                _snap_cache_data = parse_linux_meminfo(content) if content else MemorySnapshot(BytesValue(0), BytesValue(0))
+                _snap_cache_data = parse_linux_meminfo(content)
             else:
-                _snap_cache_data = MemorySnapshot(BytesValue(0), BytesValue(0))
+                _snap_cache_data = _EMPTY_SNAPSHOT
         except (OSError, UnicodeDecodeError, RuntimeError):
-            _snap_cache_data = MemorySnapshot(BytesValue(0), BytesValue(0))
+            _snap_cache_data = _EMPTY_SNAPSHOT
     
     _snap_cache_time = now
-    return _snap_cache_data or MemorySnapshot(BytesValue(0), BytesValue(0))
+    return _snap_cache_data
 
 _proc_cache_time: float = 0.0
 _proc_cache_data: List[ProcessMemory] = []
