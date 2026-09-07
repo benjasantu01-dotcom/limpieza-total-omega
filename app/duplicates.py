@@ -193,7 +193,7 @@ def _collect_candidates(
                 for entry in iterator:
                     try:
                         if entry.is_dir(follow_symlinks=False):
-                            entry_path = Path(entry.path).resolve()
+                            entry_path = Path(entry.path)
                             if not is_protected_path(entry_path) and not is_junction(entry_path):
                                 _scan_directory_recursive(entry_path)
                         elif entry.is_file(follow_symlinks=False):

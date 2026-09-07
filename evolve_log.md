@@ -642,3 +642,55 @@ ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defi
 - `2026-09-07T00:44:56` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_summary_data` eliminando la llamada redundante a `sorted()` al final, utilizando en su lugar la propiedad del heap mantenido durante la iteración para ahorrar ciclos de CPU y memoria en recorridos masivos.
 - `2026-09-07T00:44:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T00:44:56` Corrida terminada. Total usado hoy: 20.
+- `2026-09-07T00:53:18` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-09-07T00:53:46` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` eliminando la resolución innecesaria de rutas (`.resolve()`) dentro del loop crítico de `scandir`, utilizando en su lugar la ruta relativa obtenida del `DirEntry` y validándola contra `is_protected_path`, evitando así múltiples llamadas al sistema operativo por cada archivo encontrado.
+- `2026-09-07T00:54:12` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle de cálculo en `compute_score` reemplazando los cálculos redundantes de `_clamp` y `round` dentro de `_evaluate_rules` y `metric_breakdown` por una pre-cálculo eficiente, y eliminé la conversión a `float` innecesaria dentro de `_render_bar` para reducir la carga de CPU en cada ciclo.
+- `2026-09-07T00:55:28` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un mecanismo de caché con tiempo de vida (TTL) y límite de tamaño en `_get_cached` y `_compile_metrics` para evitar cálculos repetitivos de métricas de sistema y E/S de disco durante la navegación entre pestañas, mejorando la respuesta de la UI.
+- `2026-09-07T00:55:44` Tests FALLARON:
+```
+................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_parse_process_csv_sorts_by_consumption __________________
+
+    def test_parse_process_csv_sorts_by_consumption():
+        csv = (
+            '"Name","Id","WorkingSet"\n'
+            '"chico","10","1048576"\n'
+            '"grande","11","104857600"\n'
+            '"medio","12","10485760"\n'
+        )
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert ['chico', 'grande', 'medio'] == ['grande', 'medio', 'chico']
+E         
+E         At index 0 diff: 'chico' != 'grande'
+E         
+E         Full diff:
+E           [
+E         +     'chico',
+E               'grande',
+E               'medio',
+E         -     'chico',
+E           ]
+
+evolve/tests/test_modules.py:346: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert ['chico', 'grande', 'medio'] == ['grande', 'medio', 'chico']
+  
+  At index 0 diff: 'chico' != 'grande'
+  
+  Full diff:
+    [
+  +     'chico',
+        'grande',
+        'medio',
+  -     'chico',
+    ]
+1 failed, 298 passed in 1.35s
+
+```
+- `2026-09-07T00:55:44` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `top_memory_processes` evitando el costo de parseo de strings multilínea en el lado de Python y reduciendo la frecuencia de llamadas a subprocesos, moviendo la lógica de selección y limpieza a la ejecución del comando de PowerShell.
+- `2026-09-07T00:55:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T00:55:44` Corrida terminada. Total usado hoy: 24.

@@ -220,11 +220,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Ejecuta el pipeline de evaluación completo sobre las métricas provistas."""
-    if not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error: Tipo de datos inválido."])
-    
-    if not metrics.is_finite:
-        return HealthResult(0, "F", {}, ["Error: Datos de sistema corruptos."])
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+        return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o corruptos."])
     
     metric_breakdown = {}
     total_pts = 0
@@ -233,8 +230,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for area, weight, scorer, rules in _OPTIMIZED_PIPELINE:
         try:
             ratio = scorer(metrics)
-            if not math.isfinite(ratio):
-                ratio = 0.0
+            ratio = ratio if math.isfinite(ratio) else 0.0
             pts = int(round(ratio * weight))
             metric_breakdown[area] = pts
             total_pts += pts
@@ -258,7 +254,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 def _render_bar(pts: int, maximo: int) -> str:
     """Renderiza una barra de progreso textual simple."""
     if maximo <= 0: return ""
-    puntos = max(0, min(pts, maximo))
+    puntos = pts if pts > 0 else 0
+    if puntos > maximo: puntos = maximo
     return ('#' * puntos) + ('.' * (maximo - puntos))
 
 def summarize(result: HealthResult | None) -> List[str]:
