@@ -540,9 +540,9 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
     
+    # Búsqueda directa optimizada
     for token in _TOKEN_REGEX.findall(q_sanitized):
-        handler = _KEYWORD_TO_HANDLER.get(token)
-        if handler:
+        if (handler := _KEYWORD_TO_HANDLER.get(token)):
             return handler(context, question)
             
     cuerpo = _format_problem_message(

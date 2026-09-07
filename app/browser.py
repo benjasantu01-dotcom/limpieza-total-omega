@@ -218,8 +218,13 @@ def _sum_directory_recursive(
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
     
+    # Normalización para memoization
+    norm_path = root_abs
+    if norm_path in memo:
+        return memo[norm_path]
+    
     try:
-        path_obj = Path(root_abs).resolve(strict=True)
+        path_obj = Path(norm_path).resolve(strict=True)
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
             return 0
         if base_check_path and not _is_path_inside_base(path_obj, base_check_path):
@@ -227,9 +232,6 @@ def _sum_directory_recursive(
         norm_path = str(path_obj)
     except (OSError, RuntimeError):
         return 0
-    
-    if norm_path in memo:
-        return memo[norm_path]
     
     total: int = 0
     try:
@@ -309,6 +311,7 @@ def detect_profiles(
         return []
     
     k32: Optional[ctypes.WinDLL] = _get_kernel32()
+    # Cache global de directorios escaneados para evitar redundancia inter-navegador
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
@@ -329,7 +332,7 @@ def detect_profiles(
                     
                 c_path = candidate.resolve(strict=True)
                 
-                # Reutilizamos el dict perf_cache para memoizar directorios comunes (User Data)
+                # Reutilizamos perf_cache para que los subdirectorios comunes no se sumen varias veces
                 size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), c_path, size))

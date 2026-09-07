@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 64 | 6 | 10 | 5 | 53 |
+| 2026-09-05 | 61 | 6 | 10 | 4 | 53 |
 | 2026-09-06 | 165 | 3 | 23 | 9 | 150 |
-| 2026-09-07 | 8 | 2 | 2 | 2 | 2 |
+| 2026-09-07 | 11 | 2 | 2 | 3 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
-- robustez ante casos límite: **51**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **49**
-- rendimiento: **36**
+- robustez ante casos límite: **48**
+- rendimiento: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **21**
-- `diskreport.py`: **20**
-- `memory.py`: **19**
-- `organizer.py`: **18**
+- `diskreport.py`: **21**
+- `browser.py`: **19**
 - `settings.py`: **18**
-- `browser.py`: **18**
-- `assistant.py`: **17**
+- `assistant.py`: **18**
+- `memory.py`: **18**
 - `duplicates.py`: **17**
+- `organizer.py`: **17**
 - `quarantine.py`: **17**
 - `healthscore.py`: **17**
 - `safety.py`: **16**
 - `branding.py`: **16**
-- `main.py`: **15**
+- `main.py`: **14**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T00:44:56` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` eliminando la llamada redundante a `sorted()` al final, utilizando en su lugar la propiedad del heap mantenido durante la iteración para ahorrar ciclos de CPU y memoria en recorridos masivos.
+- `2026-09-07T00:44:44` **browser.py** (rendimiento): Optimicé el rendimiento de la detección de cachés evitando el re-escaneo redundante de subdirectorios mediante la persistencia y reutilización efectiva del diccionario `perf_cache` a través de todas las iteraciones de navegadores dentro de `detect_profiles`.
+- `2026-09-07T00:43:47` **assistant.py** (rendimiento): Se optimizó el motor de inferencia local reemplazando la lógica de búsqueda por tokens (que iteraba palabras) por un set de búsqueda directa para evitar recorridos redundantes y mejorar el rendimiento en la resolución de consultas.
 - `2026-09-07T00:33:56` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la inclusión de Type Hints explícitos para variables complejas y la adición de docstrings técnicos en los métodos de `Scanner`, clarificando el propósito y el flujo de los mecanismos de exclusión y recursión.
 - `2026-09-07T00:24:27` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `quarantine.py` mediante la refactorización de `_check_path_syntax_integrity` para evitar validaciones anidadas profundas y la adición de Type Hints explícitos para mejorar la claridad sobre las estructuras de datos manejadas.
 - `2026-09-07T00:23:52` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de Type Hints explícitos, docstrings enriquecidos con especificaciones sobre los parámetros, y la conversión de las estructuras de chequeo en funciones más descriptivas para facilitar el mantenimiento preventivo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-06T14:52:34` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_directory` y `_is_safe_entry` mediante la validación explícita de `None` y errores de tipo al procesar rutas, evitando posibles `AttributeError` o `ValueError` al interactuar con entradas del sistema de archivos potencialmente corruptas o mal formadas.
 - `2026-09-06T14:42:58` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita y preventiva para `item_id` y `original_path` en `QuarantineItem.from_dict` para evitar que diccionarios malformados o con rutas relativas peligrosas introduzcan estados inválidos en la aplicación, mejorando la robustez ante la carga de manifiestos.
 - `2026-09-06T14:33:46` **main.py** (manejo de errores y validación de entradas): Se ha mejorado `_validate_numeric_setting` y su integración en `_collect_settings` para garantizar que la aplicación no intente procesar valores numéricos inválidos o vacíos, y se añadió una validación explícita de `self.assistant_context` antes de operar sobre él en `on_full_analysis` para evitar estados inconsistentes si el análisis falla.
-- `2026-09-06T14:32:32` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que el pipeline de evaluación maneje de forma segura métricas que puedan producir divisiones por cero o valores inesperados antes de que ocurra el cálculo, evitando fallos silenciosos en el pipeline.
-- `2026-09-06T14:32:06` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `format_group` añadiendo validaciones de tipo y estado para evitar errores en tiempo de ejecución ante archivos inexistentes o permisos denegados, alineándose con el enfoque de manejo de errores defensivo.
-- `2026-09-06T14:23:22` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` y las funciones que lo consumen, asegurando que `_collect_summary_data` maneje internamente las excepciones durante la iteración y añadiendo validaciones de tipo para los parámetros de entrada (`limit`) en las funciones públicas, evitando errores inesperados ante valores mal formados.

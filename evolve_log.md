@@ -635,3 +635,10 @@ ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defi
 - `2026-09-07T00:34:34` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
 - `2026-09-07T00:34:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T00:34:34` Corrida terminada. Total usado hoy: 16.
+- `2026-09-07T00:43:08` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-09-07T00:43:47` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el motor de inferencia local reemplazando la lógica de búsqueda por tokens (que iteraba palabras) por un set de búsqueda directa para evitar recorridos redundantes y mejorar el rendimiento en la resolución de consultas.
+- `2026-09-07T00:44:17` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Se optimizó `gradient_colors` eliminando la recreación innecesaria de tuplas RGB dentro del bucle mediante la extracción del cálculo de puntos de parada, reduciendo la complejidad computacional en cada llamada.
+- `2026-09-07T00:44:44` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de la detección de cachés evitando el re-escaneo redundante de subdirectorios mediante la persistencia y reutilización efectiva del diccionario `perf_cache` a través de todas las iteraciones de navegadores dentro de `detect_profiles`.
+- `2026-09-07T00:44:56` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_summary_data` eliminando la llamada redundante a `sorted()` al final, utilizando en su lugar la propiedad del heap mantenido durante la iteración para ahorrar ciclos de CPU y memoria en recorridos masivos.
+- `2026-09-07T00:44:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T00:44:56` Corrida terminada. Total usado hoy: 20.

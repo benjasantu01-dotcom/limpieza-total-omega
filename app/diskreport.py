@@ -328,7 +328,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     except Exception:
         pass
             
-    return SummaryData(total_bytes, total_files, dict(ext_sizes), dict(ext_counts), sorted(top_heap, key=lambda x: x[0], reverse=True))
+    # Devolvemos la lista ordenada descendente desde el heap (nlargest es más eficiente que sort sobre todo)
+    return SummaryData(total_bytes, total_files, dict(ext_sizes), dict(ext_counts), heapq.nlargest(20, top_heap))
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
