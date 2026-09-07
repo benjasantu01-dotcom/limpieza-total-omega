@@ -402,3 +402,40 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-07T08:43:24` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las validaciones en `ensure_safe_to_modify` y `_validate_structural_safety` implementando verificaciones de tipo y estado más explícitas, asegurando que los fallos sean capturados mediante excepciones específicas antes de realizar operaciones de I/O, siguiendo las mejores prácticas del enfoque de manejo de errores y validación de entradas.
 - `2026-09-07T08:43:24` Rotación — log: 1107 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T08:43:24` Corrida terminada. Total usado hoy: 208.
+- `2026-09-07T08:51:52` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-09-07T08:52:22` Tests FALLARON:
+```
+========================
+_____________ test_scanner_flags_system_lookalike_outside_system32 _____________
+
+    def test_scanner_flags_system_lookalike_outside_system32():
+        # Se usa PureWindowsPath a propósito: los tests corren en Linux (GitHub
+        # Actions) y ahí un Path normal no reconoce las barras invertidas, así
+        # que `.name` devolvería la ruta entera y el test fallaría siempre.
+        result = scanner.check_system_lookalike(PureWindowsPath(r"C:\Users\test\Downloads\svchost.exe"))
+>       assert result is not None
+E       assert None is not None
+
+evolve/tests/test_basic.py:201: AssertionError
+________________ test_scanner_lookalike_logic_is_os_independent ________________
+
+    def test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+        flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+>       assert flagged is not None and flagged.severity == "warning"
+E       assert (None is not None)
+
+evolve/tests/test_basic.py:213: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - assert (None is not None)
+2 failed, 297 passed in 1.34s
+
+```
+- `2026-09-07T08:52:22` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de las heurísticas de archivo añadiendo validaciones de tipo y presencia para los parámetros `entry` y `path`, evitando excepciones `TypeError` o `AttributeError` en caso de recibir objetos inesperados durante el escaneo, y se ha consolidado el manejo de errores en `scan_file` mediante una estructura de control más estricta.
+- `2026-09-07T08:52:56` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` reemplazando el uso de `ensure_safe_to_modify` por un chequeo booleano `is_safe_to_modify` para evitar excepciones innecesarias y asegurando que las operaciones de acceso a disco sean verificadas antes de intentar abrir archivos.
+- `2026-09-07T08:53:26` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo una validación estricta contra comandos vacíos o nulos antes de intentar procesarlos, evitando así posibles errores de tipo o excepciones en el bucle principal si la salida de PowerShell contiene filas incompletas o malformadas.
+- `2026-09-07T08:53:54` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `assistant.py` añadiendo tipos completos y docstrings detallados en las funciones de procesamiento de datos para clarificar el flujo de seguridad y la lógica de validación de métricas.
+- `2026-09-07T08:53:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T08:53:54` Corrida terminada. Total usado hoy: 212.

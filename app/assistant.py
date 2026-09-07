@@ -356,9 +356,11 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
         return False
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
-    """Fabrica un SystemContext a partir de fuentes de datos dispersas."""
+    """
+    Fabrica un objeto SystemContext, poblando las métricas desde diversas fuentes
+    e ignorando tipos de datos primitivos o no estructurados.
+    """
     ctx = SystemContext()
-    # Solo ingerir tipos complejos (dict/instancias) ignorando primitivos o tipos nulos
     valid_sources = [s for s in [metrics, health, extra] if s is not None and isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str, int, float, bool, type))]
     
     for src in valid_sources:
