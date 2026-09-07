@@ -278,7 +278,11 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
         return []
         
     groups: List[DuplicateGroup] = []
-    size_map = _collect_candidates(directories, min_size, skip_protected)
+    # Validación adicional: eliminar posibles None de la iterable de entrada
+    valid_dirs = [d for d in directories if d is not None]
+    if not valid_dirs: return []
+
+    size_map = _collect_candidates(valid_dirs, min_size, skip_protected)
     for size, paths in size_map.items():
         groups.extend(_decide_hash_strategy_and_process(size, paths))
         

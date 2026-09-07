@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 19
+- Rechazadas por guardia de seguridad: 32
+- Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-06 | 145 | 3 | 22 | 8 | 126 |
-| 2026-09-07 | 85 | 9 | 13 | 11 | 82 |
+| 2026-09-06 | 144 | 3 | 19 | 8 | 126 |
+| 2026-09-07 | 88 | 9 | 13 | 12 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **53**
 - seguridad defensiva: **48**
 - rendimiento: **45**
-- legibilidad y documentación: **44**
-- manejo de errores y validación de entradas: **40**
+- legibilidad y documentación: **43**
+- manejo de errores y validación de entradas: **43**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **20**
 - `settings.py`: **20**
+- `scanner.py`: **19**
 - `quarantine.py`: **18**
 - `assistant.py`: **18**
 - `browser.py`: **18**
 - `diskreport.py`: **17**
-- `memory.py`: **16**
+- `memory.py`: **17**
+- `duplicates.py`: **17**
+- `healthscore.py`: **16**
 - `organizer.py`: **16**
-- `duplicates.py`: **16**
 - `safety.py`: **16**
 - `branding.py`: **15**
-- `healthscore.py`: **15**
 - `main.py`: **15**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T08:33:51` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` añadiendo una validación explícita para asegurar que la cadena de entrada no sea solo espacio en blanco y manejando posibles errores de formato por línea, evitando excepciones inesperadas durante el parseo de la salida de PowerShell.
+- `2026-09-07T08:32:24` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` mediante la adición de un chequeo explícito de `None` en `validate` y refiné `compute_score` para manejar de forma segura casos donde `scorer` pueda retornar valores fuera de rango o inesperados, garantizando la integridad de los resultados incluso ante entradas marginales.
+- `2026-09-07T08:31:58` **duplicates.py** (manejo de errores y validación de entradas): Reforcé la robustez de `find_duplicates` añadiendo validaciones de tipo y de estado en la entrada, asegurando que si `directories` contiene elementos nulos o rutas inválidas, el flujo se detenga de forma elegante sin lanzar excepciones que interrumpan el proceso.
 - `2026-09-07T08:23:03` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_sum_directory_recursive` mediante la validación explícita de `root_abs` como una ruta existente antes de iniciar el `scandir`, evitando excepciones por rutas inválidas o de longitud excesiva y centralizando el manejo de errores para garantizar un retorno consistente de `0` en casos de acceso denegado.
 - `2026-09-07T08:22:00` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` añadiendo validación explícita para evitar errores de tipo `TypeError` o `AttributeError` al iterar sobre fuentes de datos heterogéneas, garantizando que solo se intenten ingerir objetos que realmente soporten `getattr` o acceso por claves.
 - `2026-09-07T07:00:20` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una verificación explícita mediante `is_protected_path` sobre el directorio padre antes de realizar cualquier escritura, asegurando que ni siquiera el archivo de configuración pueda ser creado en ubicaciones críticas protegidas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T06:20:03` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de guardado de configuración mediante la validación explícita del contenido del archivo resultante antes de su confirmación final, previniendo estados inconsistentes o archivos corruptos ante errores inesperados durante la escritura en disco.
 - `2026-09-07T06:19:33` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `_is_safe_entry` al agregar una validación estricta de rutas relativas o malformadas mediante `path.is_absolute()`, evitando que el escáner intente procesar rutas fuera del `base_root` que podrían escapar a la verificación de prefijo si el sistema operativo devuelve rutas inconsistentes.
 - `2026-09-07T06:10:36` **safety.py** (robustez ante casos límite): Se introdujo la verificación `p.exists()` dentro de `_validate_boundary_conditions` para evitar que `is_reparse_point` intente hacer `lstat` sobre rutas que no existen físicamente en disco, mejorando la robustez ante estados inconsistentes del sistema de archivos.
-- `2026-09-07T06:10:02` **quarantine.py** (robustez ante casos límite): Mejora la robustez en la recuperación de archivos de cuarentena al añadir una comprobación de existencia previa para evitar excepciones `OSError` cuando el sistema de archivos reporta colisiones de enlaces o estados inconsistentes durante la restauración.
-- `2026-09-07T06:09:28` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos con permisos denegados o en uso, reemplazando la apertura simple (que fallaba en archivos abiertos por otros procesos) por una verificación basada en `ctypes` para Windows que consulta el estado del archivo sin requerir exclusividad, además de añadir un control contra archivos de tamaño cero en el escaneo inicial.
-- `2026-09-07T06:00:59` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` al centralizar la apertura del handle y asegurar una limpieza garantizada mediante el uso de `try...finally` para evitar fugas de memoria o bloqueo de recursos en casos de error durante la validación o ejecución.
