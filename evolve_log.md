@@ -512,3 +512,10 @@ FAILED evolve/tests/test_assistant.py::test_booleans_accept_the_usual_strings - 
 - `2026-09-07T10:04:48` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` y `save()` reemplazando el uso intensivo de `copy()` y serialización JSON repetida mediante un caché más robusto, evitando lecturas y validaciones de disco innecesarias cuando el archivo no ha cambiado.
 - `2026-09-07T10:04:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T10:04:48` Corrida terminada. Total usado hoy: 240.
+- `2026-09-07T10:13:27` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-09-07T10:13:53` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): el archivo se encogió al 57% del original (posible pérdida de código)
+- `2026-09-07T10:14:34` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `ingest` y `_get_source_value` para manejar fallos en la estructura del objeto fuente (ej. objetos con atributos que lanzan excepciones al ser accedidos o tipos inesperados) sin interrumpir el proceso de ingestión.
+- `2026-09-07T10:15:09` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-07T10:15:24` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-07T10:15:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T10:15:24` Corrida terminada. Total usado hoy: 244.

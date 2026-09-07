@@ -276,23 +276,22 @@ class SystemContext:
 
     def ingest(self, source: Any) -> bool:
         """Extrae y valida métricas desde una fuente (dict/objeto)."""
-        if not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool)):
+        if not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool, type)):
             return False
             
         found_data = False
         for key, spec in _VALIDATORS.items():
-            try:
-                val = _get_source_value(source, key)
-                if val is not None and _validate_and_assign(self, source, key, spec):
-                    found_data = True
-            except Exception:
-                continue
+            if _validate_and_assign(self, source, key, spec):
+                found_data = True
         
-        grade_val = _get_source_value(source, "grade")
-        if isinstance(grade_val, str):
-            clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
-            if _ensure_safe_text(clean_grade):
-                self.grade = clean_grade
+        try:
+            grade_val = _get_source_value(source, "grade")
+            if isinstance(grade_val, str):
+                clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
+                if _ensure_safe_text(clean_grade):
+                    self.grade = clean_grade
+        except Exception:
+            pass
         return found_data
 
 @dataclass
@@ -325,16 +324,17 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _get_source_value(source: Any, key: str) -> Any:
-    """Extrae valores de fuentes de datos de forma segura, ignorando métodos protegidos."""
+    """Extrae valores de fuentes de datos de forma segura."""
     try:
         if isinstance(source, dict):
             return source.get(key)
+        # Acceso genérico con manejo de excepciones severas
         if hasattr(source, key):
             val = getattr(source, key)
-            if not isinstance(val, Callable) and not key.startswith('_'):
+            if not callable(val) and not key.startswith('_'):
                 return val
         return None
-    except (AttributeError, TypeError):
+    except Exception:
         return None
 
 def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: MetricSpec) -> bool:
@@ -367,7 +367,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         try:
             if ctx.ingest(src):
                 ctx.analyzed = True
-        except (AttributeError, TypeError):
+        except Exception:
             continue
     return ctx
 
