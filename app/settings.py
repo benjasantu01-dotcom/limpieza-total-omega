@@ -348,7 +348,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.flush()
             os.fsync(f.fileno())
         
-        if not _is_dict(json.loads(temp_path.read_text(encoding="utf-8"))): raise ValueError("Corrupt file")
+        # Validación de integridad antes del reemplazo
+        with open(temp_path, "r", encoding="utf-8") as f:
+            if validate(json.load(f)) != cleaned_settings:
+                raise ValueError("Integrity mismatch")
             
         os.replace(temp_path, ruta)
         _CACHE[ruta_str] = (float(ruta.stat().st_mtime), cleaned_settings)

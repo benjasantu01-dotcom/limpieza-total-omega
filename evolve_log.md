@@ -1155,3 +1155,44 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-07T06:10:36` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo la verificación `p.exists()` dentro de `_validate_boundary_conditions` para evitar que `is_reparse_point` intente hacer `lstat` sobre rutas que no existen físicamente en disco, mejorando la robustez ante estados inconsistentes del sistema de archivos.
 - `2026-09-07T06:10:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T06:10:36` Corrida terminada. Total usado hoy: 148.
+- `2026-09-07T06:19:07` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-09-07T06:19:33` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `_is_safe_entry` al agregar una validación estricta de rutas relativas o malformadas mediante `path.is_absolute()`, evitando que el escáner intente procesar rutas fuera del `base_root` que podrían escapar a la verificación de prefijo si el sistema operativo devuelve rutas inconsistentes.
+- `2026-09-07T06:20:03` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha robustecido el proceso de guardado de configuración mediante la validación explícita del contenido del archivo resultante antes de su confirmación final, previniendo estados inconsistentes o archivos corruptos ante errores inesperados durante la escritura en disco.
+- `2026-09-07T06:20:30` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.38s
+
+```
+- `2026-09-07T06:20:30` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_resolve_path_from_command` y `_resolve_and_cache_path` añadiendo un manejo de excepciones más específico y defensivo para rutas con caracteres inválidos o longitudes excesivas (superiores a `MAX_PATH` de Windows), evitando que `Path` arroje errores no controlados que detendrían la ejecución del escáner de inicio.
+- `2026-09-07T06:20:52` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta de la estructura del JSON recibido para evitar posibles excepciones no controladas o acceso a datos inesperados, siguiendo el enfoque de validar los datos externos antes de procesarlos.
+- `2026-09-07T06:20:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T06:20:52` Corrida terminada. Total usado hoy: 152.

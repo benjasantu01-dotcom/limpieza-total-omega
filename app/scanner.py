@@ -123,6 +123,10 @@ class Scanner:
             if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
                 return False
             
+            p = Path(path_str)
+            if not p.is_absolute():
+                return False
+
             name: str = entry.name
             if not name or RTL_CHAR_RE.search(name) or RESERVED_NAMES_RE.match(name):
                 return False
@@ -130,7 +134,7 @@ class Scanner:
             if not self._is_inside_base_root(path_str):
                 return False
             
-            return not is_protected_path(Path(path_str))
+            return not is_protected_path(p)
         except (OSError, AttributeError, TypeError):
             return False
 

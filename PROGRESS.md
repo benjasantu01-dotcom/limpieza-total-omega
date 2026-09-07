@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **239** (47.4% de aceptación)
-- Rechazadas por tests: 9
+- Mejoras aceptadas: **241** (47.8% de aceptación)
+- Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 203
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 0 | 0 | 0 | 0 | 6 |
+| 2026-09-05 | 0 | 0 | 0 | 0 | 2 |
 | 2026-09-06 | 165 | 3 | 23 | 9 | 150 |
-| 2026-09-07 | 74 | 6 | 12 | 9 | 47 |
+| 2026-09-07 | 76 | 7 | 12 | 10 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
+- robustez ante casos límite: **53**
 - legibilidad y documentación: **52**
-- robustez ante casos límite: **51**
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **45**
 - seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **20**
+- `scanner.py`: **21**
+- `settings.py`: **20**
 - `browser.py`: **19**
 - `diskreport.py`: **19**
 - `quarantine.py`: **19**
-- `settings.py`: **19**
 - `assistant.py`: **18**
 - `organizer.py`: **18**
 - `duplicates.py`: **17**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T06:20:03` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de guardado de configuración mediante la validación explícita del contenido del archivo resultante antes de su confirmación final, previniendo estados inconsistentes o archivos corruptos ante errores inesperados durante la escritura en disco.
+- `2026-09-07T06:19:33` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `_is_safe_entry` al agregar una validación estricta de rutas relativas o malformadas mediante `path.is_absolute()`, evitando que el escáner intente procesar rutas fuera del `base_root` que podrían escapar a la verificación de prefijo si el sistema operativo devuelve rutas inconsistentes.
 - `2026-09-07T06:10:36` **safety.py** (robustez ante casos límite): Se introdujo la verificación `p.exists()` dentro de `_validate_boundary_conditions` para evitar que `is_reparse_point` intente hacer `lstat` sobre rutas que no existen físicamente en disco, mejorando la robustez ante estados inconsistentes del sistema de archivos.
 - `2026-09-07T06:10:02` **quarantine.py** (robustez ante casos límite): Mejora la robustez en la recuperación de archivos de cuarentena al añadir una comprobación de existencia previa para evitar excepciones `OSError` cuando el sistema de archivos reporta colisiones de enlaces o estados inconsistentes durante la restauración.
 - `2026-09-07T06:09:28` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos con permisos denegados o en uso, reemplazando la apertura simple (que fallaba en archivos abiertos por otros procesos) por una verificación basada en `ctypes` para Windows que consulta el estado del archivo sin requerir exclusividad, además de añadir un control contra archivos de tamaño cero en el escaneo inicial.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T05:29:51` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la deserialización completa innecesaria dentro de `list_items` y `total_quarantined_bytes` mediante el uso de una caché en memoria y reduciendo las iteraciones, además de evitar lecturas redundantes en `purge_all` al centralizar el acceso a los datos.
 - `2026-09-07T05:29:16` **organizer.py** (rendimiento): Se optimizó el escaneo de archivos reemplazando la creación repetida de objetos `Path` y conversiones de tipo dentro del bucle `_process_directory` por el uso directo de `os.DirEntry` y métodos de `os.path`, reduciendo la carga de memoria y el overhead de instanciación en sistemas con directorios con miles de archivos.
 - `2026-09-07T05:28:48` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria global mediante la eliminación de una llamada innecesaria a `_create_mem_status_ex` (que usaba `lru_cache` de forma redundante) y se refactorizó `read_snapshot` para evitar recrear la estructura en cada llamada, reutilizando un único buffer pre-asignado.
-- `2026-09-07T05:19:22` **healthscore.py** (rendimiento): Optimicé el método `SystemMetrics.is_finite` reemplazando la creación dinámica de listas y el uso de `all` por una comprobación secuencial, evitando la asignación de memoria innecesaria en cada ciclo del motor analítico.
-- `2026-09-07T05:18:56` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` para evitar realizar `stat()` múltiples veces innecesarias, reutilizando la información del `os.DirEntry` ya obtenida durante la iteración, lo que reduce el I/O del sistema de archivos.
