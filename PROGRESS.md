@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 208
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 13 | 2 | 2 | 1 | 16 |
+| 2026-09-05 | 10 | 2 | 2 | 0 | 16 |
 | 2026-09-06 | 165 | 3 | 23 | 9 | 150 |
-| 2026-09-07 | 57 | 5 | 9 | 7 | 42 |
+| 2026-09-07 | 59 | 5 | 9 | 7 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **51**
-- robustez ante casos límite: **50**
+- legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **48**
-- rendimiento: **36**
+- robustez ante casos límite: **47**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **20**
 - `scanner.py`: **20**
 - `diskreport.py`: **19**
-- `healthscore.py`: **18**
 - `quarantine.py`: **18**
-- `memory.py`: **17**
-- `organizer.py`: **17**
+- `browser.py`: **18**
+- `healthscore.py`: **17**
 - `assistant.py`: **17**
-- `browser.py`: **17**
 - `safety.py`: **16**
 - `branding.py`: **16**
 - `duplicates.py`: **16**
+- `memory.py`: **16**
+- `organizer.py`: **16**
 - `main.py`: **15**
-- `startup.py`: **9**
+- `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T05:11:47` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios implementando la memoización completa en el diccionario `perf_cache` a través de toda la recursión, evitando re-procesar subcarpetas compartidas que aparecen en múltiples rutas de caché (común en instalaciones de navegadores basados en Chromium).
+- `2026-09-07T05:09:05` **startup.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de resolución de rutas en `StartupEntry` y la estructura de datos que recibe `parse_registry_csv`, facilitando el mantenimiento y la comprensión de las restricciones de seguridad aplicadas.
 - `2026-09-07T04:59:13` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `settings.py` al extraer la compleja y densa lógica de validación de rutas y seguridad del método `_Validators._run_safety_checks` en sub-funciones con propósitos claros, permitiendo un flujo de lectura lineal y documentado.
 - `2026-09-07T04:58:59` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `Scanner` y sus métodos principales mediante la adición de docstrings estructurados que clarifican el flujo de datos y las responsabilidades, además de renombrar `stack` a `directory_stack` para evitar ambigüedades sobre su propósito en el bucle de escaneo.
 - `2026-09-07T04:49:44` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `organizer.py` mediante la adición de Type Hints detallados, clarificación de docstrings en funciones críticas de validación y la extracción de la lógica de chequeo de atributos a una estructura más legible, sin alterar la lógica de negocio ni las salvaguardas de seguridad.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T04:27:38` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save()` capturando explícitamente el caso donde `json.load()` falla tras la escritura y validando el estado del sistema mediante `os.access` y `shutil.disk_usage` antes de cualquier operación destructiva sobre archivos existentes, asegurando que la configuración nunca quede en un estado corrupto o incompleto.
 - `2026-09-07T04:22:08` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` al validar explícitamente el tipo de entrada de `directory` y envolver el bucle de escaneo con una verificación de seguridad preventiva, además de agregar manejo de errores específico ante posibles fallos en `os.scandir` para asegurar que el proceso no se detenga inesperadamente.
 - `2026-09-07T04:20:02` **safety.py** (manejo de errores y validación de entradas): Se mejora `_check_file_integrity` para distinguir explícitamente entre errores de acceso al sistema de archivos (bloqueos, permisos) y violaciones de política de seguridad (hard links, tamaño, etc.), evitando ocultar errores del sistema bajo un `UnsafePathError` genérico que podría enmascarar problemas de I/O legítimos.
-- `2026-09-07T04:18:36` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y la carga inicial del manifiesto añadiendo validaciones explícitas de tipo y estructura antes de procesar los datos, evitando que un JSON malformado o un archivo de manifiesto corrompido provoquen caídas inesperadas en el bucle principal.
-- `2026-09-07T04:08:48` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_linux_meminfo` mediante la captura explícita de excepciones y una validación de tipo más estricta sobre el texto de entrada, evitando errores de ejecución ante entradas malformadas.

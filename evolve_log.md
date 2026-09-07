@@ -1069,3 +1069,13 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-09-07T04:59:13` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `settings.py` al extraer la compleja y densa lógica de validación de rutas y seguridad del método `_Validators._run_safety_checks` en sub-funciones con propósitos claros, permitiendo un flujo de lectura lineal y documentado.
 - `2026-09-07T04:59:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T04:59:13` Corrida terminada. Total usado hoy: 120.
+- `2026-09-07T05:07:55` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-09-07T05:08:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-07T05:08:30` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-07T05:09:05` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Documenté con docstrings detallados la lógica de resolución de rutas en `StartupEntry` y la estructura de datos que recibe `parse_registry_csv`, facilitando el mantenimiento y la comprensión de las restricciones de seguridad aplicadas.
+- `2026-09-07T05:10:18` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: rendimiento).
+- `2026-09-07T05:10:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-07T05:11:34` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-07T05:11:47` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de directorios implementando la memoización completa en el diccionario `perf_cache` a través de toda la recursión, evitando re-procesar subcarpetas compartidas que aparecen en múltiples rutas de caché (común en instalaciones de navegadores basados en Chromium).
+- `2026-09-07T05:11:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T05:11:47` Corrida terminada. Total usado hoy: 124.

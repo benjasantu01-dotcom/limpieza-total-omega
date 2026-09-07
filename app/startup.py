@@ -110,7 +110,11 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Extrae rutas encapsuladas entre comillas ignorando argumentos posteriores."""
+        """
+        Extrae rutas encapsuladas entre comillas ignorando argumentos posteriores.
+        Lógica: busca el segundo índice de comillas; si existe, valida la ruta
+        interna contra `is_protected_path` antes de considerarla válida.
+        """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
         
@@ -137,12 +141,16 @@ class StartupEntry:
             if not os.path.lexists(p) or p.is_dir():
                 return False
             stats = p.lstat()
+            # 0x00000400 es el atributo FILE_ATTRIBUTE_REPARSE_POINT en Windows
             return not p.is_symlink() and not (getattr(stats, 'st_file_attributes', 0) & 0x00000400)
         except (OSError, PermissionError, AttributeError):
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Normaliza rutas a formato absoluto, valida seguridad y gestiona caché de sesión."""
+        """
+        Normaliza rutas a formato absoluto y valida integridad.
+        Implementa caché de resultados (`_EXISTS_CACHE`) para minimizar llamadas al sistema.
+        """
         if not path_string or self._is_path_suspicious(path_string) or self._is_reserved_device_name(path_string):
             return ""
         
@@ -260,7 +268,10 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
-    """Transforma la salida CSV cruda de PowerShell en instancias de StartupEntry."""
+    """
+    Transforma la salida CSV cruda de PowerShell (espera un formato de tabla con al menos dos columnas)
+    en instancias de `StartupEntry`. Filtra entradas que apunten a rutas protegidas.
+    """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         

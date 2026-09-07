@@ -126,7 +126,6 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
     try:
-        # Validación extra de integridad antes de resolver
         if not real_target.is_absolute() or not real_base.is_absolute():
             return False
         target_res = str(real_target.resolve(strict=True))
@@ -175,7 +174,6 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         if not is_safe_to_modify(resolved) or is_protected_path(resolved):
             return True
         
-        # Validación de tipo de archivo defensiva
         if not (entry.is_file(follow_symlinks=False) or entry.is_dir(follow_symlinks=False)):
             return True
             
@@ -218,54 +216,34 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Recorre el sistema de archivos de forma recursiva limitando la profundidad.
-    Utiliza memoization para evitar re-escaneo de directorios compartidos y chequeos 
-    de seguridad constantes para prevenir escapes de la ruta permitida.
+    Utiliza memoization para evitar re-escaneo de directorios.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
     
-    norm_path = root_abs
-    if norm_path in memo:
-        return memo[norm_path]
-    
-    try:
-        path_obj = Path(norm_path).resolve(strict=True)
-        if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
-            return 0
-        if base_check_path and not _is_path_inside_base(path_obj, base_check_path):
-            return 0
-        norm_path = str(path_obj)
-    except (OSError, RuntimeError):
-        return 0
+    if root_abs in memo:
+        return memo[root_abs]
     
     total: int = 0
     try:
-        with os.scandir(norm_path) as it:
+        with os.scandir(root_abs) as it:
             for entry in it:
                 try:
                     if _should_skip_entry(entry, kernel32, is_junction_fn):
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        entry_path = Path(entry.path)
-                        if base_check_path and not _is_path_inside_base(entry_path.resolve(), base_check_path):
-                            continue
-                            
                         total += _sum_directory_recursive(
                             entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                         )
                     elif entry.is_file(follow_symlinks=False):
-                        try:
-                            stats = entry.stat(follow_symlinks=False)
-                            total += stats.st_size
-                        except (OSError, PermissionError):
-                            continue
+                        total += entry.stat(follow_symlinks=False).st_size
                 except (OSError, PermissionError):
                     continue
     except (PermissionError, OSError):
         return 0
     
-    memo[norm_path] = total
+    memo[root_abs] = total
     return total
 
 
