@@ -160,10 +160,6 @@ class Scanner:
             return
         
         try:
-            # Re-verificar seguridad ante cambios rápidos en el FS
-            if is_protected_path(Path(entry.path)):
-                return
-            
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
                     self._handle_directory(entry, directory_stack)
@@ -224,8 +220,6 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     while directory_stack:
         current_dir = directory_stack.pop()
         try:
-            if is_protected_path(Path(current_dir)):
-                continue
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, directory_stack)

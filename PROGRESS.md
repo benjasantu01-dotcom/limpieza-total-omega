@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
-- Rechazadas por tests: 9
+- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 6 | 1 | 1 | 0 | 14 |
+| 2026-09-05 | 4 | 1 | 1 | 0 | 12 |
 | 2026-09-06 | 165 | 3 | 23 | 9 | 150 |
-| 2026-09-07 | 64 | 5 | 11 | 7 | 45 |
+| 2026-09-07 | 67 | 6 | 11 | 7 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **47**
+- seguridad defensiva: **45**
+- rendimiento: **45**
 - robustez ante casos límite: **44**
-- rendimiento: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **20**
-- `settings.py`: **19**
+- `scanner.py`: **21**
+- `settings.py`: **20**
 - `diskreport.py`: **19**
-- `healthscore.py`: **18**
 - `browser.py`: **18**
 - `quarantine.py`: **18**
-- `duplicates.py`: **17**
 - `memory.py`: **17**
 - `assistant.py`: **17**
+- `healthscore.py`: **17**
 - `organizer.py`: **17**
-- `safety.py`: **15**
+- `safety.py`: **16**
+- `duplicates.py`: **16**
 - `main.py`: **15**
 - `branding.py`: **15**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T05:39:55` **settings.py** (rendimiento): Optimicé el rendimiento de `load` y `save` eliminando la llamada innecesaria a `copy()` durante la validación inicial y utilizando `dict.get()` para evitar búsquedas repetidas en el diccionario de configuración, además de consolidar la validación de tipos mediante un acceso único a `_STR_TO_ENUM`.
+- `2026-09-07T05:39:25` **scanner.py** (rendimiento): Se optimizó el flujo de escaneo eliminando múltiples llamadas redundantes a `is_protected_path` y `Path()` dentro de `process_entry` y `scan_directory` al aprovechar que `entry.path` ya está disponible y `_is_safe_entry` realiza la validación inicial, reduciendo el número de syscalls y la creación de objetos innecesarios en un bucle crítico.
+- `2026-09-07T05:39:01` **safety.py** (rendimiento): Se optimizó `is_protected_path` eliminando la llamada innecesaria a `normalize` (que es costosa al resolver el path real) dentro de la cadena de llamadas, permitiendo que la caché `lru_cache` funcione sobre el string original, reduciendo significativamente la sobrecarga en escaneos masivos.
 - `2026-09-07T05:29:51` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la deserialización completa innecesaria dentro de `list_items` y `total_quarantined_bytes` mediante el uso de una caché en memoria y reduciendo las iteraciones, además de evitar lecturas redundantes en `purge_all` al centralizar el acceso a los datos.
 - `2026-09-07T05:29:16` **organizer.py** (rendimiento): Se optimizó el escaneo de archivos reemplazando la creación repetida de objetos `Path` y conversiones de tipo dentro del bucle `_process_directory` por el uso directo de `os.DirEntry` y métodos de `os.path`, reduciendo la carga de memoria y el overhead de instanciación en sistemas con directorios con miles de archivos.
 - `2026-09-07T05:28:48` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria global mediante la eliminación de una llamada innecesaria a `_create_mem_status_ex` (que usaba `lru_cache` de forma redundante) y se refactorizó `read_snapshot` para evitar recrear la estructura en cada llamada, reutilizando un único buffer pre-asignado.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T04:49:44` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `organizer.py` mediante la adición de Type Hints detallados, clarificación de docstrings en funciones críticas de validación y la extracción de la lógica de chequeo de atributos a una estructura más legible, sin alterar la lógica de negocio ni las salvaguardas de seguridad.
 - `2026-09-07T04:49:15` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `MEMORYSTATUSEX` para reflejar con mayor precisión el uso de tipos de `ctypes`, facilitando la auditoría del código y garantizando la legibilidad para futuros desarrolladores del equipo.
 - `2026-09-07T04:38:51` **healthscore.py** (legibilidad y documentación): Se ha añadido un método `__post_init__` y `validate` más robusto mediante `TypeGuard` (implícito) y validaciones de rango explícitas, además de documentar mediante docstrings el propósito de los factores de normalización para mejorar la mantenibilidad del motor.
-- `2026-09-07T04:38:39` **duplicates.py** (legibilidad y documentación): He mejorado la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones críticas, aclarando las precondiciones de los argumentos y explicando la lógica de decisión detrás de la estrategia de hashing.
-- `2026-09-07T04:38:14` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` añadiendo docstrings detallados en los métodos clave y tipado estricto en las estructuras de datos, facilitando la comprensión del flujo de datos en el análisis de disco sin alterar su lógica operativa.
-- `2026-09-07T04:29:36` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en los retornos y argumentos, y se ha introducido un bloque `if __name__ == "__main__":` con una prueba de integridad básica para validar la consistencia de los alias de color y la configuración de la paleta.

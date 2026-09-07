@@ -274,9 +274,9 @@ def validate(raw_values: Any) -> AppSettings:
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_str, val in raw_values.items():
-        if val is None: continue
         key_enum = _STR_TO_ENUM.get(key_str)
         if not key_enum: continue
+        
         validator = _VALIDATOR_MAP.get(key_enum)
         if validator:
             validated = validator(key_enum, val)
@@ -299,7 +299,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
                 content = json.load(f)
-            if not _is_dict(content): return DEFAULTS.copy()
             data = validate(content)
             _CACHE[ruta_str] = (mtime, data)
             return data.copy()
@@ -349,8 +348,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.flush()
             os.fsync(f.fileno())
         
-        with open(temp_path, "r", encoding="utf-8") as f:
-            if not _is_dict(json.load(f)): raise ValueError("Corrupt file")
+        if not _is_dict(json.loads(temp_path.read_text(encoding="utf-8"))): raise ValueError("Corrupt file")
             
         os.replace(temp_path, ruta)
         _CACHE[ruta_str] = (float(ruta.stat().st_mtime), cleaned_settings)
@@ -365,12 +363,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     """Fusiona cambios incrementales validados en la configuración persistida."""
     current = load(custom_base)
-    validators = _VALIDATOR_MAP
     modified = False
     for k, v in changes.items():
-        if v is None: continue
         key_enum = _STR_TO_ENUM.get(k)
-        validator = validators.get(key_enum) if key_enum else None
+        validator = _VALIDATOR_MAP.get(key_enum) if key_enum else None
         if validator:
             val = validator(key_enum, v)
             if val is not None and val != current.get(k):

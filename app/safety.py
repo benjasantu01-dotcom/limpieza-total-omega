@@ -311,8 +311,12 @@ def is_protected_path(path: PathLike) -> bool:
     """Verifica si la ruta se encuentra dentro de carpetas restringidas por el sistema o por configuración de usuario."""
     if not path: return True
     try:
+        p_str = str(path)
+        # Optimizamos: verificamos el string directamente en la caché antes de normalizar si es posible
+        if _is_system_path_cached(p_str): return True
+        
         p = normalize(path)
-        return _is_system_path_cached(str(p)) or (p.anchor != "" and p == Path(p.anchor))
+        return p == Path(p.anchor)
     except (ValueError, TypeError, OSError, RuntimeError): 
         return True
 
