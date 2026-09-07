@@ -360,10 +360,6 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
     """
     Realiza una auditoría de seguridad del proceso objetivo antes de modificar su estado.
-    Verifica estado de ejecución, propiedad del handle y restricciones de ruta (safety.py).
-    
-    Esta validación previene intentos de modificar memoria de procesos críticos o rutas 
-    protegidas, asegurando que la operación solo ocurra en ejecutables validados.
     """
     if not proc_handle: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
@@ -380,7 +376,6 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         if not exec_path:
             return False, "No se pudo verificar el origen del proceso."
         
-        # Validaciones de seguridad defensiva: no tocar rutas protegidas ni no autorizadas
         if is_protected_path(exec_path) or not is_safe_to_modify(exec_path):
             return False, "Operación denegada por política de seguridad."
             
@@ -391,10 +386,6 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta liberar páginas de memoria física del working set de un proceso.
-    
-    Esta es una operación invasiva en la gestión de memoria del proceso objetivo. 
-    Requiere permisos de administrador y pasa por una validación estricta de seguridad 
-    en `_is_safe_to_trim` para evitar el cierre o la desestabilización de procesos vitales.
     """
     if not _is_windows: return False, "Operación solo soportada en Windows."
     
@@ -412,8 +403,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
-        err = kernel32.GetLastError()
-        return False, f"Acceso denegado (código {err})."
+        return False, f"Acceso denegado (código {kernel32.GetLastError()})."
     
     try:
         is_safe, error_reason = _is_safe_to_trim(proc_handle, target_pid)

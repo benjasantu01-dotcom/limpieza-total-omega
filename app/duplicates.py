@@ -204,8 +204,8 @@ def _collect_candidates(
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Saltar protegidos temprano
-                        if is_protected_path(Path(entry.path)):
+                        # Saltar protegidos y symlinks de entrada
+                        if entry.is_symlink() or is_protected_path(Path(entry.path)):
                             continue
                             
                         if entry.is_dir(follow_symlinks=False):
@@ -213,10 +213,8 @@ def _collect_candidates(
                                 _scan_directory_recursive(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
                             st = _get_entry_stat(entry)
-                            # Reutilizamos el objeto st obtenido de scandir para minimizar llamadas a stat()
                             if st and st.st_size >= min_size and st.st_nlink == 1:
                                 entry_path = Path(entry.path)
-                                # Validación final de acceso tras filtros rápidos
                                 if os.access(entry_path, os.R_OK):
                                     size_map[st.st_size].append(entry_path)
                     except (OSError, PermissionError):
@@ -261,7 +259,6 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
     if not isinstance(size, int) or size <= 0 or not paths or len(paths) < 2: 
         return []
     
-    # Archivos pequeños se hashean totalmente de una, archivos grandes pasan por refinamiento
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, partial_hash)
     else:
