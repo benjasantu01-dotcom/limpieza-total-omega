@@ -856,7 +856,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if numeric:
                 return int(val)
             return val
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, tk.TclError):
             return default
 
     def _is_safe_disk_operation(self, path: Union[str, Path]) -> bool:
@@ -1818,26 +1818,29 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @validated_ui_operation
     def on_save_settings(self) -> None:
         """Persiste la configuración modificada."""
-        propuestos = self._collect_settings()
-        if propuestos.get("asistente_activado") and not self.settings.get("asistente_activado"):
-            if not self._confirm(
-                "Activar asistente en línea",
-                assistant.PRIVACY_NOTICE + "\n\n¿Lo activamos?",
-            ):
-                if hasattr(self, 'setting_vars') and "asistente_activado" in self.setting_vars:
-                    self.setting_vars["asistente_activado"].set(False)
-                return
+        try:
+            propuestos = self._collect_settings()
+            if propuestos.get("asistente_activado") and not self.settings.get("asistente_activado"):
+                if not self._confirm(
+                    "Activar asistente en línea",
+                    assistant.PRIVACY_NOTICE + "\n\n¿Lo activamos?",
+                ):
+                    if hasattr(self, 'setting_vars') and "asistente_activado" in self.setting_vars:
+                        self.setting_vars["asistente_activado"].set(False)
+                    return
 
-        def task() -> None:
-            self.settings = settings_mod.update(propuestos)
-            ruta = settings_mod.settings_path()
-            self.log_lines(
-                [f"Ajustes guardados en: {ruta}", ""] + settings_mod.describe(),
-                "Ajustes",
-            )
-            self.set_status("Ajustes guardados.")
+            def task() -> None:
+                self.settings = settings_mod.update(propuestos)
+                ruta = settings_mod.settings_path()
+                self.log_lines(
+                    [f"Ajustes guardados en: {ruta}", ""] + settings_mod.describe(),
+                    "Ajustes",
+                )
+                self.set_status("Ajustes guardados.")
 
-        self.run_async(task)
+            self.run_async(task)
+        except Exception as e:
+            logging.error("Error al recopilar/guardar ajustes: %s", e)
 
     @validated_ui_operation
     def on_show_settings(self) -> None:

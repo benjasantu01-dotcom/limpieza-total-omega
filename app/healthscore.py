@@ -162,7 +162,6 @@ class SystemMetrics:
         self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings)))
         self.startup_count = int(max(0, _to_float(self.startup_count)))
         self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
-        # Evitar divisiones por cero forzando mínimos positivos en los divisores usados en scorers
         self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.1, 100.0)
         self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.1, 100.0)
 
@@ -219,8 +218,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Ejecuta el pipeline de evaluación completo sobre las métricas provistas."""
-    if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
-        return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o corruptos."])
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+        return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
     total_pts: int = 0
@@ -253,14 +252,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 def _render_bar(pts: int, maximo: int) -> str:
     """Renderiza una barra de progreso textual simple."""
     if maximo <= 0: return ""
-    puntos = pts if pts > 0 else 0
-    if puntos > maximo: puntos = maximo
-    return ('#' * puntos) + ('.' * (maximo - puntos))
+    puntos = _clamp(pts, 0, maximo)
+    return ('#' * int(puntos)) + ('.' * int(maximo - puntos))
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Serializa un HealthResult en una lista de líneas legible para el usuario."""
     if not isinstance(result, HealthResult):
-        return ["Error: Informe no disponible o formato inválido."]
+        return ["Error: Informe no disponible."]
     
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     

@@ -84,14 +84,15 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Returns:
         Hexdigest si el archivo es accesible y válido, None en caso contrario.
     """
-    if path is None: return None
-    path_obj = Path(path)
-    
-    if not _is_valid_candidate(path_obj) or chunk_size <= 0:
+    if path is None or chunk_size <= 0:
         return None
         
     try:
-        if not path_obj.is_file() or path_obj.stat().st_size == 0:
+        path_obj = Path(path)
+        if not _is_valid_candidate(path_obj):
+            return None
+            
+        if path_obj.stat().st_size == 0:
             return None
             
         digest = hashlib.sha256()
@@ -111,14 +112,15 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
     Calcula un hash de los primeros N bytes del archivo. 
     Estrategia de optimización I/O para descartar archivos grandes que difieren al inicio.
     """
-    if path is None: return None
-    path_obj = Path(path)
-
-    if not _is_valid_candidate(path_obj) or read_bytes <= 0:
+    if path is None or read_bytes <= 0:
         return None
 
     try:
-        if not path_obj.is_file() or path_obj.stat().st_size == 0:
+        path_obj = Path(path)
+        if not _is_valid_candidate(path_obj):
+            return None
+
+        if path_obj.stat().st_size == 0:
             return None
 
         with open(path_obj, "rb") as f:
@@ -204,7 +206,6 @@ def _collect_candidates(
                 for entry in iterator:
                     try:
                         entry_path = Path(entry.path)
-                        # Validaciones defensivas ante cambios en el FS durante el recorrido
                         if is_protected_path(entry_path):
                             continue
                         if entry.is_symlink():
@@ -213,7 +214,6 @@ def _collect_candidates(
                             if not is_junction(entry_path):
                                 _scan_directory_recursive(entry_path)
                         elif entry.is_file(follow_symlinks=False):
-                            # Re-validar estado para mitigar race conditions (TOCTOU)
                             if _is_valid_candidate(entry_path):
                                 st = entry.stat(follow_symlinks=False)
                                 if st and st.st_size >= min_size:
@@ -276,13 +276,11 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
         return []
         
     groups: List[DuplicateGroup] = []
-    # Validación explícita de entradas antes de iniciar el escaneo pesado
     valid_dirs = [d for d in directories if d is not None]
     if not valid_dirs: return []
 
     size_map = _collect_candidates(valid_dirs, min_size, skip_protected)
     for size, paths in size_map.items():
-        # Procesar grupos solo si todavía existen tras el filtrado inicial
         groups.extend(_decide_hash_strategy_and_process(size, paths))
         
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
