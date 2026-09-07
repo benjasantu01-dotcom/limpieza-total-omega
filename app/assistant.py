@@ -281,17 +281,18 @@ class SystemContext:
             
         found_data = False
         for key, spec in _VALIDATORS.items():
-            if _validate_and_assign(self, source, key, spec):
-                found_data = True
+            val = _get_source_value(source, key)
+            if val is not None and spec.is_valid_type(val):
+                f_val = float(val)
+                if not math.isnan(f_val) and not math.isinf(f_val) and spec.min_val <= f_val <= spec.max_val:
+                    setattr(self, key, spec.cast_func(f_val))
+                    found_data = True
         
-        try:
-            grade_val = _get_source_value(source, "grade")
-            if isinstance(grade_val, str):
-                clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
-                if _ensure_safe_text(clean_grade):
-                    self.grade = clean_grade
-        except Exception:
-            pass
+        grade_val = _get_source_value(source, "grade")
+        if isinstance(grade_val, str):
+            clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
+            if _ensure_safe_text(clean_grade):
+                self.grade = clean_grade
         return found_data
 
 @dataclass
@@ -337,31 +338,12 @@ def _get_source_value(source: Any, key: str) -> Any:
     except Exception:
         return None
 
-def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: MetricSpec) -> bool:
-    """Valida el valor de la métrica según MetricSpec y asigna."""
-    try:
-        val = _get_source_value(source, key)
-        if val is None or not spec.is_valid_type(val):
-            return False
-        
-        f_val = float(val)
-        if math.isnan(f_val) or math.isinf(f_val):
-            return False
-        if not (spec.min_val <= f_val <= spec.max_val):
-            return False
-        
-        setattr(ctx, key, spec.cast_func(f_val))
-        return True
-    except (ValueError, TypeError, AttributeError):
-        return False
-
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
     Fabrica un objeto SystemContext, poblando las métricas desde diversas fuentes
     e ignorando tipos de datos primitivos o no estructurados.
     """
     ctx = SystemContext()
-    # Filtramos fuentes explícitamente válidas para evitar errores de tipo en la ingesta
     valid_sources = [s for s in [metrics, health, extra] 
                      if isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str, int, float, bool, type))]
     

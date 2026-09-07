@@ -228,7 +228,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorrido DFS (Depth-First Search) para listar archivos y sus pesos.
+    Recorrido DFS (Depth-First Search) iterativo para listar archivos y sus pesos.
+    
+    Usa `os.scandir` para eficiencia en el I/O y detecta ciclos de archivos mediante
+    la comparación de inodos (dev/ino) para evitar duplicación o bucles.
     """
     root_path = _validate_root(directory)
     if root_path is None:
@@ -317,9 +320,13 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
     Realiza una pasada integral sobre el árbol de archivos para recolectar métricas.
+    
+    Utiliza un heap binario para mantener el top 20 de archivos más grandes durante
+    la iteración, optimizando el uso de memoria ante grandes volúmenes de archivos.
     """
     total_bytes, total_files = 0, 0
-    ext_sizes, ext_counts = defaultdict(int), defaultdict(int)
+    ext_sizes: Dict[str, int] = defaultdict(int)
+    ext_counts: Dict[str, int] = defaultdict(int)
     top_heap: List[Tuple[int, Path]] = []
     
     try:

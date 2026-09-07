@@ -216,13 +216,14 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Recorre el sistema de archivos de forma recursiva limitando la profundidad.
-    Utiliza memoization para evitar re-escaneo de directorios.
+    Utiliza un diccionario 'memo' para prevenir re-procesamiento innecesario 
+    y recursión infinita en árboles de directorios grandes.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
     
     root_path = Path(root_abs)
-    # Validar jerarquía estricta contra base_check_path si existe
+    # Validar jerarquía estricta contra base_check_path para evitar escapar fuera del directorio usuario
     if base_check_path and not _is_path_inside_base(root_path, base_check_path):
         return 0
     
@@ -273,8 +274,8 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """
-    Verifica que la carpeta candidata sea un objetivo válido, seguro y no protegido 
-    antes de iniciar el proceso de cálculo de tamaño.
+    Verifica que la carpeta sea una ubicación de caché legítima, no un link simbólico 
+    externo o una ruta del sistema protegida, antes de proceder al escaneo.
     """
     if not isinstance(candidate, Path) or not isinstance(base_path, Path) or not candidate.is_absolute():
         return False
@@ -302,8 +303,8 @@ def detect_profiles(
     Escanea en busca de perfiles, mapea rutas relativas a absolutas y calcula
     la ocupación de cada caché, ordenando el resultado de mayor a menor.
     """
-    raw_bases: Any = bases if bases is not None else base_directories()
-    browser_map: Any = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
+    raw_bases: Sequence[Path] = bases if bases is not None else base_directories()
+    browser_map: Dict[str, str] = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
     if not isinstance(raw_bases, (list, tuple)) or not isinstance(browser_map, dict):
         return []

@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 209
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-06 | 89 | 2 | 11 | 6 | 80 |
-| 2026-09-07 | 138 | 12 | 20 | 17 | 129 |
+| 2026-09-06 | 85 | 2 | 11 | 6 | 80 |
+| 2026-09-07 | 141 | 12 | 21 | 17 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **51**
 - seguridad defensiva: **51**
 - manejo de errores y validación de entradas: **44**
-- rendimiento: **41**
-- legibilidad y documentación: **40**
+- legibilidad y documentación: **43**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **21**
 - `settings.py`: **21**
-- `quarantine.py`: **18**
+- `assistant.py`: **19**
 - `safety.py`: **18**
-- `assistant.py`: **18**
-- `browser.py`: **17**
+- `browser.py`: **18**
 - `duplicates.py`: **17**
-- `memory.py`: **16**
+- `quarantine.py`: **17**
 - `healthscore.py`: **16**
-- `main.py`: **15**
+- `diskreport.py`: **15**
+- `memory.py`: **15**
 - `branding.py`: **14**
-- `diskreport.py`: **14**
-- `organizer.py`: **13**
+- `main.py`: **14**
+- `organizer.py`: **12**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T13:29:15` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` incluyendo type hints faltantes en funciones clave y enriqueciendo los docstrings con la descripción precisa de la lógica de recursión y manejo de errores, facilitando el mantenimiento futuro.
+- `2026-09-07T13:29:01` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints más precisos (específicamente en el uso de `Any` y `Dict`) y se han clarificado los docstrings de funciones críticas (`_sum_directory_recursive` y `_is_valid_cache_path`) para explicar el "porqué" de las validaciones de seguridad, facilitando el mantenimiento y la auditoría del código.
+- `2026-09-07T13:28:03` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_assign` y `ingest`, eliminando redundancias en la lógica de validación de métricas y clarificando el flujo de asignación de datos mediante el uso de `getattr` y `setattr` de forma más limpia.
 - `2026-09-07T13:20:07` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` reemplazando el bloque genérico de manejo de excepciones por capturas específicas y añadiendo una validación explícita para evitar que `json.dumps` trabaje con tipos no serializables, asegurando que la integridad de la configuración no se vea comprometida por errores de tipado en el diccionario de entrada.
 - `2026-09-07T13:19:36` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `scan_directory` validando explícitamente que la entrada no sea `None` o una ruta vacía antes de procesarla, asegurando que los parámetros recibidos sean siempre cadenas o Path no vacíos antes de llamar a funciones de resolución de sistema, evitando excepciones innecesarias en tiempo de ejecución.
 - `2026-09-07T13:19:04` **safety.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_check_file_integrity` y `_is_file_in_use` para distinguir explícitamente entre errores de acceso y condiciones de sistema, evitando el silenciamiento incorrecto de errores y proporcionando diagnósticos más precisos ante fallos de I/O.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T11:25:18` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `process_entry` mediante la validación explícita del tipo de archivo y la prevención de recursión infinita o desbordamiento al procesar entradas, asegurando que `entry.is_dir()` sea chequeado antes de intentar cualquier operación de sistema sobre la ruta, manteniendo la integridad del bucle de escaneo.
 - `2026-09-07T11:16:28` **safety.py** (seguridad defensiva): Se ha implementado `is_absolute_path_allowed` para restringir la modificación exclusivamente a rutas absolutas, eliminando ambigüedades de resolución de `cwd` y forzando una validación explícita de ubicación antes de cualquier operación destructiva.
 - `2026-09-07T11:15:51` **quarantine.py** (seguridad defensiva): Se ha implementado `_ensure_path_ownership` en `quarantine.py` para verificar que el usuario actual posea el directorio de cuarentena antes de cualquier operación de lectura/escritura, mitigando riesgos de secuestro de ruta o permisos inadecuados en entornos multiusuario.
-- `2026-09-07T11:06:59` **memory.py** (seguridad defensiva): Se reforzó la seguridad de la operación `trim_working_set` al asegurar que el manejo de recursos (handles) sea robusto, añadiendo una comprobación explícita para evitar que `OpenProcess` acceda a procesos con privilegios elevados que podrían desencadenar excepciones de acceso denegado o inestabilidad, garantizando que solo se gestionen procesos donde la app tiene autoridad total.
-- `2026-09-07T11:06:43` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` añadiendo una validación explícita mediante `is_safe_to_modify` en el decorador `run_async` y centralizando la comprobación de seguridad en `_worker_thread_logic`, asegurando que incluso si el usuario interactúa con la UI durante procesos asíncronos, ninguna operación de disco sea iniciada en rutas prohibidas o de sistema.
-- `2026-09-07T11:05:27` **healthscore.py** (seguridad defensiva): Reforcé la integridad del contenedor `SystemMetrics` añadiendo una validación de rango estricta a `_LIMIT_RAM_PERCENT` y `_LIMIT_DISK_PERCENT` en la validación post-inicialización, garantizando que los divisores usados en la normalización nunca resulten en una división por cero o valores negativos inesperados.
