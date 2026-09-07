@@ -21,7 +21,7 @@ import os
 import ctypes
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Sequence, Dict, List, Optional, Callable, Set, Union
+from typing import Iterable, Sequence, Dict, List, Optional, Callable, Set, Union, Any
 from safety import is_protected_path, is_safe_to_modify
 
 __all__ = [
@@ -212,7 +212,8 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Recorre el sistema de archivos de forma recursiva limitando la profundidad.
-    Utiliza memoization para optimizar resultados y evitar conteos redundantes.
+    Utiliza memoization para evitar re-escaneo de directorios compartidos y chequeos 
+    de seguridad constantes para prevenir escapes de la ruta permitida.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
@@ -271,7 +272,10 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
-    """Verifica si una carpeta candidata es un objetivo legítimo de limpieza (caché)."""
+    """
+    Verifica que la carpeta candidata sea un objetivo válido, seguro y no protegido 
+    antes de iniciar el proceso de cálculo de tamaño.
+    """
     if not isinstance(candidate, Path) or not isinstance(base_path, Path) or not candidate.is_absolute():
         return False
     try:
@@ -298,8 +302,8 @@ def detect_profiles(
     Escanea en busca de perfiles, mapea rutas relativas a absolutas y calcula
     la ocupación de cada caché, ordenando el resultado de mayor a menor.
     """
-    raw_bases = bases if bases is not None else base_directories()
-    browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
+    raw_bases: Any = bases if bases is not None else base_directories()
+    browser_map: Any = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
     if not isinstance(raw_bases, (list, tuple)) or not isinstance(browser_map, dict):
         return []

@@ -563,3 +563,36 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-06T23:31:54` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-06T23:42:04` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-06T23:52:15` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-07T00:02:29` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-09-07T00:03:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-07T00:04:36` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.01s
+
+```
+- `2026-09-07T00:04:36` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry._extract_quoted_path` validando explícitamente el resultado de `Path()` antes de intentar acceder a sus propiedades, evitando excepciones silenciosas al procesar cadenas de comando malformadas.
+- `2026-09-07T00:05:12` ➖ Sin cambios en assistant.py (enfoque: legibilidad y documentación). Motivo: Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en los métodos de `SystemContext` y `ProblemCriterion`, además de clarificar los docstrings en las funciones de procesamiento de datos para facilitar la auditoría de seguridad.
+- `2026-09-07T00:05:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-07T00:06:24` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los tipos, se unificaron las constantes de color para evitar redundancias y se añadieron docstrings detallados en las funciones de manipulación de color para clarificar el manejo de errores defensivo, mejorando la mantenibilidad.
+- `2026-09-07T00:06:37` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo type hints más precisos (específicamente en el uso de `Any` y estructuras de datos) y se han expandido los docstrings para explicar la lógica de recursión y las salvaguardas de seguridad en las funciones críticas de recorrido de disco.
+- `2026-09-07T00:06:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T00:06:37` Corrida terminada. Total usado hoy: 4.

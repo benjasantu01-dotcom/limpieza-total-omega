@@ -95,6 +95,7 @@ PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType({
     "text_dim": "#5c6b85", "border": "#2a3654", "glow": "#00f0c0",
 })
 
+# Alias directos de la paleta para acceso frecuente en lógica de dibujo
 C_SURFACE: Final[HexColor] = PALETTE["surface"]
 C_BACKGROUND: Final[HexColor] = PALETTE["background"]
 C_GLOW: Final[HexColor] = PALETTE["glow"]
@@ -110,7 +111,6 @@ FONT_SIZES: Final[Mapping[str, int]] = MappingProxyType({
     "body": UI_FONT_BODY_SIZE, "mono": 11, "caption": 10,
 })
 
-# Estilos de severidad vinculados a colores de paleta para consistencia visual.
 SEVERITY_STYLES: Final[Mapping[SeverityLevel, SeverityStyle]] = MappingProxyType({
     "ok": (C_SUCCESS, "Correcto"),
     "info": (C_INFO, "Informativo"),
@@ -131,7 +131,6 @@ ICONS: Final[Mapping[str, str]] = MappingProxyType({
 
 GRADIENT_STOPS: Final[Tuple[HexColor, ...]] = ("#00f0c0", "#7c5cff", "#ff2d78")
 
-# Umbrales críticos para healthscore.py: definen los rangos numéricos de salud.
 SCORE_THRESHOLDS: Final[Tuple[Tuple[float, HexColor], ...]] = (
     (90.0, C_SUCCESS), (80.0, C_INFO), (65.0, C_WARNING), (50.0, "#ff7b39")
 )
@@ -215,7 +214,10 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
-    """Convierte color hexadecimal #RRGGBB a tupla RGB (r, g, b)."""
+    """
+    Convierte un string hexadecimal formato #RRGGBB a tupla RGB (0-255).
+    Retorna (0,0,0) por defecto si el formato es inválido o no hexadecimal.
+    """
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"): 
         return (0, 0, 0)
     try:
@@ -225,12 +227,15 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 
 @lru_cache(maxsize=128)
 def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
-    """Convierte tupla RGB (0-255) a color hexadecimal #RRGGBB."""
+    """Convierte tupla RGB (0-255) a string hexadecimal #RRGGBB, asegurando límites 0-255."""
     return "#{:02x}{:02x}{:02x}".format(*[max(0, min(255, c)) for c in rgb])
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """Interpolación lineal entre dos colores hexadecimales usando un ratio [0.0, 1.0]."""
+    """
+    Realiza una interpolación lineal entre dos colores hexadecimales.
+    El ratio 0.0 retorna 'start', ratio 1.0 retorna 'end'.
+    """
     if start == end: return start
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
