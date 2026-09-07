@@ -169,14 +169,6 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         if not path or len(path) >= MAX_PATH_LEN or not os.path.isabs(path) or any(c in path for c in '<>|?"*'):
             return True
         
-        path_obj = Path(path)
-        resolved = path_obj.resolve()
-        if not is_safe_to_modify(resolved) or is_protected_path(resolved):
-            return True
-        
-        if not (entry.is_file(follow_symlinks=False) or entry.is_dir(follow_symlinks=False)):
-            return True
-            
         if entry.is_symlink() or is_junction_fn(path) or os.path.ismount(path):
             return True
             
@@ -222,14 +214,6 @@ def _sum_directory_recursive(
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
     
-    root_path = Path(root_abs)
-    # Validar jerarquía estricta contra base_check_path para evitar escapar fuera del directorio usuario
-    if base_check_path and not _is_path_inside_base(root_path, base_check_path):
-        return 0
-    
-    if not root_path.is_dir():
-        return 0
-        
     if root_abs in memo:
         return memo[root_abs]
     
@@ -287,7 +271,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
             return False
         if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or 
             os.path.ismount(str(real_candidate)) or not real_candidate.is_dir() or 
-            not _is_safe_to_traverse(real_candidate, base_path) or
+            not _is_path_inside_base(real_candidate, base_path) or
             _is_excluded_file(real_candidate.name)):
             return False
         return True

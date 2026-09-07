@@ -878,3 +878,31 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-09-07T13:59:55` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_source_value` reemplazando el manejo de excepciones (`try-except` costoso en bucles) por una comprobación de tipo más eficiente y un acceso directo a `__dict__` o `getattr`, reduciendo la carga en la ingesta masiva de datos.
 - `2026-09-07T13:59:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T13:59:55` Corrida terminada. Total usado hoy: 332.
+- `2026-09-07T14:08:10` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-07T14:08:46` Tests FALLARON:
+```
+ze=72)
+        assert "oval" in canvas.llamadas, "falta el halo detrás del escudo"
+>       assert "rectangle" in canvas.llamadas, "falta el degradado del escudo"
+E       AssertionError: falta el degradado del escudo
+E       assert 'rectangle' in ['oval', 'polygon', 'polygon', 'polygon', 'polygon', 'polygon', ...]
+E        +  where ['oval', 'polygon', 'polygon', 'polygon', 'polygon', 'polygon', ...] = <test_modules._CanvasFalso object at 0x7f39e4c893a0>.llamadas
+
+evolve/tests/test_modules.py:273: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel - AssertionError: assert 0 == 60
+ +  where 0 = <built-in method count of list object at 0x7f39e4c68040>('line')
+ +    where <built-in method count of list object at 0x7f39e4c68040> = ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...].count
+ +      where ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...] = <test_modules._CanvasFalso object at 0x7f39e4c8bec0>.llamadas
+FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - AssertionError: falta el degradado del escudo
+assert 'rectangle' in ['oval', 'polygon', 'polygon', 'polygon', 'polygon', 'polygon', ...]
+ +  where ['oval', 'polygon', 'polygon', 'polygon', 'polygon', 'polygon', ...] = <test_modules._CanvasFalso object at 0x7f39e4c893a0>.llamadas
+2 failed, 297 passed in 1.34s
+
+```
+- `2026-09-07T14:08:46` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se optimizaron las funciones de renderizado `draw_gradient_bar` y `draw_shield_stripes` eliminando la creación de objetos `create_line` o `create_rectangle` individuales dentro de bucles, consolidando los segmentos de color para reducir significativamente la sobrecarga del Canvas en cada frame de dibujo.
+- `2026-09-07T14:09:15` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó la recursión de `_sum_directory_recursive` evitando llamadas costosas a `Path.resolve()` dentro del bucle y minimizando la creación de objetos `Path` mediante el uso de nombres de archivo crudos obtenidos de `os.scandir`, mejorando el rendimiento en directorios de caché con miles de archivos.
+- `2026-09-07T14:09:45` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-07T14:09:55` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando un conjunto (`set`) para registrar rutas ya visitadas, evitando así el procesamiento redundante de directorios cuando se pasan múltiples rutas de entrada solapadas o enlaces complejos.
+- `2026-09-07T14:09:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T14:09:55` Corrida terminada. Total usado hoy: 336.

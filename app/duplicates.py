@@ -20,7 +20,7 @@ from collections import defaultdict
 from collections.abc import Sequence, Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Union, Callable, TypeAlias
+from typing import Dict, List, Optional, Union, Callable, TypeAlias, Tuple
 
 from safety import is_protected_path
 
@@ -143,7 +143,6 @@ def _is_valid_candidate(path: Path) -> bool:
     if not isinstance(path, Path):
         return False
     try:
-        # Pre-condición: el archivo debe ser un objeto Path estándar.
         return (
             path.is_file() and 
             not path.is_symlink() and
@@ -193,12 +192,18 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un barrido recursivo del sistema de archivos para recolectar candidatos.
-    Utiliza os.scandir para minimizar llamadas al sistema (syscalls).
+    Utiliza un conjunto para evitar procesar rutas visitadas y os.scandir para syscalls eficientes.
     """
     size_map: Dict[int, List[Path]] = defaultdict(list)
+    visited: set[Path] = set()
 
     def _scan_directory_recursive(current_dir: Path) -> None:
         try:
+            resolved_dir = current_dir.resolve()
+            if resolved_dir in visited:
+                return
+            visited.add(resolved_dir)
+            
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
