@@ -526,13 +526,22 @@ def quarantine_file(
         save_manifest(items_list, base)
         
         if destination.exists() and quarantine_item.verify_integrity(destination):
-            source_path.unlink()
+            try:
+                source_path.unlink()
+            except OSError as e:
+                # Si el unlink falla, abortamos el registro del manifiesto para evitar corrupción
+                _safe_unlink(destination)
+                raise RuntimeError(f"No se pudo eliminar el original tras aislamiento: {e}")
             return quarantine_item
         else:
             raise RuntimeError("Fallo de integridad post-persistencia.")
     except Exception as e:
         if destination.exists():
             _safe_unlink(destination)
+        # Limpiar temporales huérfanos en sandbox antes de elevar
+        for tmp in dest_dir.glob(".tmp_q_*"):
+            try: tmp.unlink()
+            except OSError: pass
         raise RuntimeError(f"Fallo en operación de aislamiento: {e}")
 
 

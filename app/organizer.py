@@ -286,6 +286,9 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         target_dir: Path = dest.parent if dest.is_file() else dest
         if not target_dir.exists(): return False
         
+        # Validar que estemos en el mismo dispositivo físico para evitar errores de copia
+        if s_res.drive != target_dir.resolve().drive: return False
+        
         return _validate_file_attributes(s_res)
     except (OSError, RuntimeError, AttributeError):
         return False

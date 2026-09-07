@@ -526,3 +526,12 @@ FAILED evolve/tests/test_assistant.py::test_booleans_accept_the_usual_strings - 
 - `2026-09-07T10:26:00` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita de `is_protected_path` en `_ask_folder` antes de devolver la ruta seleccionada, garantizando que el usuario no pueda seleccionar ni procesar directorios restringidos desde la interfaz gráfica, fortaleciendo la robustez ante casos límite de selección de usuario.
 - `2026-09-07T10:26:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T10:26:00` Corrida terminada. Total usado hoy: 248.
+- `2026-09-07T10:33:45` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-09-07T10:34:47` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-07T10:35:22` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-07T10:35:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-07T10:36:17` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en `organizer.py` implementando un chequeo estricto de dispositivos de almacenamiento (`is_relative_to` no es suficiente si la unidad cambia o el sistema de archivos no es local) y añadiendo una validación explícita para evitar mover archivos entre particiones (cross-device move) que podrían fallar o causar comportamientos inesperados en `shutil.move`.
+- `2026-09-07T10:36:57` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` ante fallos de I/O y race conditions durante el proceso de aislamiento, añadiendo una limpieza explícita de archivos temporales huérfanos y garantizando que el `manifest.json` no quede en un estado inconsistente si la operación de `unlink` del original falla tras el aislamiento.
+- `2026-09-07T10:37:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-09-07T10:37:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T10:37:03` Corrida terminada. Total usado hoy: 252.
