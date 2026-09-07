@@ -20,7 +20,7 @@ from collections import defaultdict
 from collections.abc import Sequence, Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Union, Tuple, Callable, TypeAlias
+from typing import Dict, List, Optional, Union, Callable, TypeAlias
 
 from safety import is_protected_path
 
@@ -78,7 +78,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Calcula el hash SHA256 completo del archivo para confirmación de identidad.
     
     Args:
-        path: Ruta del archivo a procesar.
+        path: Ruta del archivo (str o Path) a procesar.
         chunk_size: Tamaño del buffer en bytes para lectura incremental.
         
     Returns:
@@ -134,13 +134,16 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 def _is_valid_candidate(path: Path) -> bool:
     """
-    Validador estricto de elegibilidad de archivos para análisis:
-    Excluye enlaces simbólicos, rutas protegidas y archivos con hard links múltiples
-    (para evitar procesar la misma entrada de disco bajo nombres diferentes).
+    Validador estricto de elegibilidad de archivos para análisis.
+    
+    Verifica que el archivo no sea un enlace simbólico, que no esté en una ruta 
+    protegida, que sea legible y que no tenga hard links (para evitar procesar 
+    la misma entrada de disco múltiples veces).
     """
     if not isinstance(path, Path):
         return False
     try:
+        # Pre-condición: el archivo debe ser un objeto Path estándar.
         return (
             path.is_file() and 
             not path.is_symlink() and
@@ -152,18 +155,11 @@ def _is_valid_candidate(path: Path) -> bool:
         return False
 
 
-def _get_entry_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
-    """Obtiene el estado de una entrada sin resolver enlaces simbólicos."""
-    try:
-        return entry.stat(follow_symlinks=False)
-    except OSError:
-        return None
-
-
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Clasifica rutas por tamaño. Sirve como filtro primario de alta velocidad."""
     groups: Dict[int, List[Path]] = defaultdict(list)
-    if paths is None or not isinstance(paths, Iterable): return groups
+    if paths is None or not isinstance(paths, Iterable): 
+        return groups
     
     for p in paths:
         path_obj = Path(p) if isinstance(p, (str, Path)) else None
@@ -180,7 +176,8 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
     """Resuelve rutas base y descarta directorios protegidos."""
     try:
-        if not item: return None
+        if not item: 
+            return None
         root = Path(item).resolve(strict=False)
         if root.exists() and root.is_dir() and not is_protected_path(root):
             return root
@@ -206,7 +203,7 @@ def _collect_candidates(
                 for entry in iterator:
                     try:
                         entry_path = Path(entry.path)
-                        if is_protected_path(entry_path):
+                        if skip_protected and is_protected_path(entry_path):
                             continue
                         if entry.is_symlink():
                             continue
@@ -242,8 +239,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
     """
-    Aplica hashing jerárquico: primero parcial para descartar, luego completo (Paso 3)
-    para confirmar colisiones detectadas en el Paso 2.
+    Aplica hashing jerárquico: primero parcial para descartar, luego completo 
+    para confirmar colisiones detectadas en el nivel parcial.
     """
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
@@ -269,7 +266,14 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
 
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
-    """Orquestador principal que ejecuta la lógica de deduplicación."""
+    """
+    Orquestador principal que ejecuta la lógica de deduplicación.
+    
+    Args:
+        directories: Lista de rutas donde buscar.
+        min_size: Tamaño mínimo en bytes para considerar un archivo.
+        skip_protected: Si se deben ignorar rutas marcadas como protegidas.
+    """
     if not isinstance(directories, Iterable) or isinstance(directories, (str, Path)): 
         return []
     if not isinstance(min_size, int) or min_size < 0: 
@@ -289,7 +293,8 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Suma total de bytes recuperables de una lista de grupos."""
-    if not groups or not isinstance(groups, (list, tuple)): return 0
+    if not groups or not isinstance(groups, (list, tuple)): 
+        return 0
     return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
 
 

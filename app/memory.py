@@ -80,8 +80,7 @@ TRIM_WARNING: Final[str] = (
 class MEMORYSTATUSEX(ctypes.Structure):
     """
     Estructura de datos Win32 utilizada por GlobalMemoryStatusEx.
-    Los tipos corresponden a definiciones de Microsoft para asegurar 
-    alineación de memoria correcta en arquitecturas de 64 bits.
+    Define los campos de memoria física y virtual reportados por el sistema operativo.
     """
     _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),
@@ -151,7 +150,7 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return stat
 
-_win_mem_buffer = _create_mem_status_ex()
+_win_mem_buffer: MEMORYSTATUSEX = _create_mem_status_ex()
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
