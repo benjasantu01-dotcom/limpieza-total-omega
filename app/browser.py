@@ -305,6 +305,7 @@ def detect_profiles(
         return []
     
     k32: Optional[ctypes.WinDLL] = _get_kernel32()
+    # Cache de resultados intermedios para optimizar escaneos repetidos
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     

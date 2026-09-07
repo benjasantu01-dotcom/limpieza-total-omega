@@ -168,10 +168,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que todos los atributos numéricos sean matemáticamente finitos."""
-        return (math.isfinite(self.junk_mb) and math.isfinite(self.suspicious_count) and 
-                math.isfinite(self.suspicious_warnings) and math.isfinite(self.memory_available_percent) and 
-                math.isfinite(self.disk_free_percent) and math.isfinite(self.duplicate_mb) and 
-                math.isfinite(self.startup_count) and math.isfinite(self.quarantined_count))
+        return all(math.isfinite(getattr(self, field.name)) for field in self.__dataclass_fields__.values())
 
 @dataclass
 class HealthResult:
