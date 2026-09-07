@@ -1086,3 +1086,10 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-09-07T05:20:14` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data
 - `2026-09-07T05:20:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T05:20:14` Corrida terminada. Total usado hoy: 128.
+- `2026-09-07T05:28:17` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-09-07T05:28:48` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de memoria global mediante la eliminación de una llamada innecesaria a `_create_mem_status_ex` (que usaba `lru_cache` de forma redundante) y se refactorizó `read_snapshot` para evitar recrear la estructura en cada llamada, reutilizando un único buffer pre-asignado.
+- `2026-09-07T05:29:16` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el escaneo de archivos reemplazando la creación repetida de objetos `Path` y conversiones de tipo dentro del bucle `_process_directory` por el uso directo de `os.DirEntry` y métodos de `os.path`, reduciendo la carga de memoria y el overhead de instanciación en sistemas con directorios con miles de archivos.
+- `2026-09-07T05:29:51` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la carga del manifiesto eliminando la deserialización completa innecesaria dentro de `list_items` y `total_quarantined_bytes` mediante el uso de una caché en memoria y reduciendo las iteraciones, además de evitar lecturas redundantes en `purge_all` al centralizar el acceso a los datos.
+- `2026-09-07T05:29:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-09-07T05:29:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T05:29:54` Corrida terminada. Total usado hoy: 132.

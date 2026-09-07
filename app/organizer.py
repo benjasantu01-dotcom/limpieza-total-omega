@@ -310,9 +310,9 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
                         if _should_scan_directory(entry):
                             _process_directory(Path(entry.path), found, depth + 1)
                     elif entry.is_file(follow_symlinks=False) and is_valid_junk_extension(entry.name):
-                        st = entry.stat()
-                        if st.st_size > 0:
-                            found.append(JunkFile(Path(entry.path), st.st_size, datetime.fromtimestamp(st.st_mtime)))
+                        info = entry.stat()
+                        if info.st_size > 0:
+                            found.append(JunkFile(Path(entry.path), info.st_size, datetime.fromtimestamp(info.st_mtime)))
                 except (OSError, PermissionError):
                     continue
     except (OSError, PermissionError, RuntimeError):

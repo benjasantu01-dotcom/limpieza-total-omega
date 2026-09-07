@@ -145,15 +145,13 @@ def format_bytes(num: Optional[int | float]) -> str:
     val: float = num / (1024 ** idx)
     return f"{val:.{0 if idx == 0 else 1}f} {BYTE_UNITS[idx]}"
 
-@lru_cache(maxsize=1)
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
-    """
-    Instancia la estructura de memoria de Windows y establece su longitud requerida.
-    La longitud debe ser configurada antes de llamar a GlobalMemoryStatusEx.
-    """
+    """Instancia la estructura de memoria de Windows y establece su longitud requerida."""
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return stat
+
+_win_mem_buffer = _create_mem_status_ex()
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
@@ -240,9 +238,8 @@ def _read_windows_snapshot() -> MemorySnapshot:
         return MemorySnapshot(BytesValue(0), BytesValue(0))
     
     try:
-        stat = _create_mem_status_ex()
-        if kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
-            return MemorySnapshot(total=BytesValue(stat.ullTotalPhys), available=BytesValue(stat.ullAvailPhys))
+        if kernel32.GlobalMemoryStatusEx(ctypes.byref(_win_mem_buffer)):
+            return MemorySnapshot(total=BytesValue(_win_mem_buffer.ullTotalPhys), available=BytesValue(_win_mem_buffer.ullAvailPhys))
     except (AttributeError, ValueError, TypeError, OverflowError, OSError):
         pass
     return MemorySnapshot(BytesValue(0), BytesValue(0))

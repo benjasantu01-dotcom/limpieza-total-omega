@@ -330,6 +330,19 @@ def _load_manifest_raw(base_str: str, _mtime: float = 0.0) -> List[Dict[str, Any
     except (json.JSONDecodeError, OSError, PermissionError):
         return []
 
+@lru_cache(maxsize=2)
+def _cached_manifest(base_str: str, _mtime: float) -> List[QuarantineItem]:
+    """Carga y valida los ítems del manifiesto usando caché de resultados."""
+    base_path = Path(base_str)
+    raw_data = _load_manifest_raw(base_str, _mtime)
+    items = []
+    for d in raw_data:
+        if isinstance(d, dict):
+            item = QuarantineItem.from_dict(d)
+            if item and (base_path / item.stored_name).exists():
+                items.append(item)
+    return items
+
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
     """Carga y sincroniza el manifiesto, purgando registros de archivos inexistentes."""
     base_path = quarantine_dir(base)
@@ -338,28 +351,9 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
     
     if force_reload:
         _load_manifest_raw.cache_clear()
+        _cached_manifest.cache_clear()
     
-    raw_data = _load_manifest_raw(str(base_path), mtime)
-    if not isinstance(raw_data, list):
-        return []
-
-    validated: List[QuarantineItem] = []
-    dirty = False
-    
-    for d in raw_data:
-        if not isinstance(d, dict):
-            dirty = True
-            continue
-        item = QuarantineItem.from_dict(d)
-        if item and (base_path / item.stored_name).exists():
-            validated.append(item)
-        else:
-            dirty = True
-    
-    if dirty:
-        save_manifest(validated, base_path)
-        
-    return validated
+    return _cached_manifest(str(base_path), mtime)
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
@@ -396,6 +390,7 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
         finally: os.close(dir_fd)
         
         _load_manifest_raw.cache_clear()
+        _cached_manifest.cache_clear()
         return target_path
     except (OSError, TypeError, IOError) as e:
         if temp_path and isinstance(temp_path, Path) and temp_path.exists():
@@ -496,7 +491,7 @@ def quarantine_file(
     file_hash = _atomic_isolate_file(source_path, destination, original_size)
     
     try:
-        raw_items = _load_manifest_raw(str(dest_dir))
+        items_list = load_manifest(dest_dir)
         quarantine_item = QuarantineItem(
             item_id=item_id,
             original_path=str(source_path),
@@ -506,9 +501,6 @@ def quarantine_file(
             quarantined_at=datetime.now().isoformat(timespec="seconds"),
             sha256=file_hash,
         )
-        
-        items_list = [QuarantineItem.from_dict(d) for d in raw_items if isinstance(d, dict)]
-        items_list = [i for i in items_list if i is not None]
         items_list.append(quarantine_item)
         save_manifest(items_list, base)
         
@@ -614,28 +606,23 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
-    item_map: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}
+    item_map = {item.stored_name: item for item in items}
     purged_count = 0
-    kept_items: List[QuarantineItem] = []
+    kept_items = []
     
     try:
         for stored_path in quarantine_root.iterdir():
             if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
                 continue
-            
-            # Solo procesar archivos, ignorar basura residual
-            if not stored_path.is_file():
-                continue
-            
-            if not _is_within_quarantine_sandbox(stored_path.resolve(), quarantine_root):
+            if not stored_path.is_file() or not _is_within_quarantine_sandbox(stored_path.resolve(), quarantine_root):
                 continue
                 
             item = item_map.get(stored_path.name)
+            if item and _is_item_purgable(stored_path, item, quarantine_root):
+                if _safe_unlink(stored_path):
+                    purged_count += 1
+                    continue
             if item:
-                if _is_item_purgable(stored_path, item, quarantine_root):
-                    if _safe_unlink(stored_path):
-                        purged_count += 1
-                        continue
                 kept_items.append(item)
     except (PermissionError, OSError):
         pass
