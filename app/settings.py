@@ -293,7 +293,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             return cached[1]
         if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
-                data = validate(json.load(f))
+                raw_data = json.load(f)
+                if not _is_dict(raw_data): raise ValueError("Configuración no es un objeto")
+                data = validate(raw_data)
             _CACHE[ruta_str] = (mtime, data)
             return data
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):

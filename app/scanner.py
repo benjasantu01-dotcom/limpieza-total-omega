@@ -106,7 +106,7 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         try:
             path_str: str = entry.path
-            if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
+            if not path_str or not entry.name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
                 return False
             
             if RTL_CHAR_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name):

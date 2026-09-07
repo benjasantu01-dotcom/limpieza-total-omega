@@ -171,7 +171,7 @@ def _is_system_or_hidden(path: Path) -> bool:
     try:
         st = path.lstat()
         return bool(getattr(st, 'st_file_attributes', 0) & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
-    except (AttributeError, OSError):
+    except (AttributeError, OSError, FileNotFoundError):
         return False 
 
 
@@ -194,7 +194,7 @@ def _is_reparse_point(path: Path) -> bool:
         st = path.lstat()
         attrs = getattr(st, 'st_file_attributes', 0)
         return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT) or _is_junction(path)
-    except (AttributeError, OSError):
+    except (AttributeError, OSError, FileNotFoundError):
         return path.is_symlink()
 
 
@@ -243,12 +243,12 @@ def _check_file_integrity(path: Path) -> None:
     try:
         file_stat = path.stat()
     except (PermissionError, OSError) as e:
+        if isinstance(e, FileNotFoundError): return
         code = SafetyValidationErrorCode.ACCESS_DENIED if isinstance(e, PermissionError) else SafetyValidationErrorCode.IO_ERROR
         raise UnsafePathError(f"Error de acceso: {e}", code)
         
     for rule in _VALIDATORS:
         if rule.predicate(path, file_stat):
-            # Mapeo de razones específicas a códigos de error cuando es necesario
             code = SafetyValidationErrorCode.HARD_LINK_DETECTED if rule.reason == ProtectionReason.HARD_LINK else SafetyValidationErrorCode.GENERIC
             raise UnsafePathError(f"Violación de integridad: {rule.reason.value}", code)
 
@@ -258,7 +258,7 @@ def _is_readonly(path: Path) -> bool:
     """Verifica el bit de modo POSIX/Windows para determinar si el archivo es de solo lectura."""
     try:
         return not bool(path.stat().st_mode & stat.S_IWRITE)
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, FileNotFoundError):
         return True
 
 
@@ -273,7 +273,6 @@ def normalize(path: PathLike) -> Path:
         p = Path(path_str)
         if ".." in p.parts: raise ValueError("Path traversal detectado.")
         
-        # Uso estricto de abspath si el archivo no existe para evitar errores de resolución
         if p.exists():
             return p.resolve()
         return Path(os.path.abspath(path_str))
@@ -419,7 +418,6 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     results = []
     for p in paths:
         if p is None: continue
-        # Pre-chequeo rápido: caracteres inválidos o extensión antes de normalizar (costoso)
         path_str = str(p)
         if not allow_sensitive and _is_sensitive_extension(Path(path_str)):
             continue
@@ -454,7 +452,7 @@ def describe_protection(path: PathLike) -> str:
             if p.is_file() and p.stat().st_size == 0: return f"'{p}' archivo vacío."
             if p.is_file() and p.stat().st_size > MAX_FILE_SIZE: return f"'{p}' tamaño excesivo."
             if p.is_file() and p.stat().st_nlink > 1: return f"'{p}' detectado como hard link."
-    except OSError:
+    except (OSError, FileNotFoundError):
         pass
     if _is_sensitive_extension(p): return f"'{p.name}' extensión sensible."
     return f"'{p}' es candidata a modificación."

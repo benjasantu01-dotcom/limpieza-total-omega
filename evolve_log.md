@@ -535,3 +535,10 @@ FAILED evolve/tests/test_assistant.py::test_booleans_accept_the_usual_strings - 
 - `2026-09-07T10:37:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
 - `2026-09-07T10:37:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T10:37:03` Corrida terminada. Total usado hoy: 252.
+- `2026-09-07T10:44:01` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-09-07T10:44:36` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante estados inconsistentes del sistema de archivos, asegurando que `_check_file_integrity` y `_is_system_or_hidden` manejen correctamente archivos que desaparecen entre la verificación de existencia y la obtención de atributos (`FileNotFoundError`), evitando fallos en condiciones de carrera.
+- `2026-09-07T10:45:02` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha robustecido el escaneo heurístico incorporando una validación explícita para evitar el procesamiento redundante o erróneo de archivos que carecen de nombre (nombre vacío) o que presentan metadatos inaccesibles debido a condiciones de carrera, asegurando que las funciones de análisis no fallen al intentar acceder a propiedades de archivos bloqueados por el sistema durante la iteración.
+- `2026-09-07T10:45:34` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `load` para asegurar que el contenido del archivo JSON sea un diccionario válido antes de procesarlo, evitando excepciones imprevistas al iterar sobre él si el archivo fuera, por ejemplo, un valor primitivo (`null`, `true`, `123`) o un tipo de datos no deseado.
+- `2026-09-07T10:45:48` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-07T10:45:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T10:45:48` Corrida terminada. Total usado hoy: 256.
