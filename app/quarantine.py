@@ -481,6 +481,9 @@ def quarantine_file(
     if source_path.is_dir():
         raise UnsafePathError("Aislamiento de directorios no permitido.")
         
+    if not source_path.exists():
+        raise FileNotFoundError("El archivo origen ha desaparecido antes de la operación.")
+        
     original_size = source_path.stat().st_size
     dest_dir = quarantine_dir(base)
     

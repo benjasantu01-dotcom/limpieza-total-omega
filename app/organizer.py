@@ -183,9 +183,9 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """
     Intenta abrir un archivo exclusivamente para verificar bloqueos.
-    Si el archivo está en uso por otra aplicación, retornará True.
+    Si el archivo es un enlace simbólico o está en uso, se considera no procesable.
     """
-    if path is None: return True
+    if path is None or _is_junction(path): return True
     try:
         if not path.exists(): return True
         with open(path, "rb") as f:

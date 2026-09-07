@@ -1111,8 +1111,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if not folder:
                 return None
             
-            self._ensure_path_writable_and_clean(folder)
-            return str(Path(folder).resolve())
+            if self._is_safe_target_dir(folder):
+                return str(Path(folder).resolve())
+            else:
+                messagebox.showwarning("Ruta no segura", "Operación no permitida en esta ruta.")
+                return None
         except (safety.UnsafePathError, OSError, PermissionError, FileNotFoundError, ValueError):
             messagebox.showwarning("Ruta no segura", "Operación no permitida en esta ruta.")
             return None
