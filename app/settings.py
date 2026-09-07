@@ -324,11 +324,15 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         ):
             cleaned_settings["asistente_activado"] = False
         
+        # Verificar seguridad explícita sobre el archivo y su contenedor
         if is_protected_path(ruta_str) or not is_safe_to_modify(ruta_str):
             return None
             
-        ensure_safe_to_modify(ruta_str)
         parent = ruta.parent
+        if is_protected_path(str(parent)):
+            return None
+            
+        ensure_safe_to_modify(ruta_str)
         if not parent.exists():
             ensure_safe_to_modify(str(parent))
             parent.mkdir(parents=True, exist_ok=True)
