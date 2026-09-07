@@ -225,9 +225,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o corruptos."])
     
-    metric_breakdown = {}
-    total_pts = 0
-    recommendations = []
+    metric_breakdown: Dict[MetricKey, int] = {}
+    total_pts: int = 0
+    recommendations: List[str] = []
     
     for area, weight, scorer, rules in _OPTIMIZED_PIPELINE:
         try:

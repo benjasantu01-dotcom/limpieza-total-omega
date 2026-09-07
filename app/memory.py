@@ -345,6 +345,7 @@ def _is_system_process(pid: int) -> bool:
 def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
     """
     Recupera la ruta absoluta del ejecutable mediante APIs de Win32 (Psapi).
+    Utiliza un buffer de 4096 caracteres para asegurar la captura de rutas largas.
     """
     if not proc_handle: return None
     psapi = ctypes.windll.psapi
@@ -359,6 +360,7 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
     """
     Realiza una auditoría de seguridad del proceso objetivo antes de modificar su estado.
+    Valida el estado del handle, la actividad real del PID y la integridad de la ruta.
     """
     if not proc_handle: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
@@ -385,6 +387,7 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta liberar páginas de memoria física del working set de un proceso.
+    Solo disponible en Windows tras validación estricta de seguridad.
     """
     if not _is_windows: return False, "Operación solo soportada en Windows."
     
