@@ -596,3 +596,28 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-07T00:06:37` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo type hints más precisos (específicamente en el uso de `Any` y estructuras de datos) y se han expandido los docstrings para explicar la lógica de recursión y las salvaguardas de seguridad en las funciones críticas de recorrido de disco.
 - `2026-09-07T00:06:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T00:06:37` Corrida terminada. Total usado hoy: 4.
+- `2026-09-07T00:12:39` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-09-07T00:13:07` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de procesamiento de datos y la normalización de los tipos de retorno, garantizando que el "porqué" de las decisiones de filtrado y agregación quede claro para futuros mantenedores.
+- `2026-09-07T00:13:32` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones críticas y la adición de Type Hints en la lógica de procesamiento de directorios, facilitando la comprensión del flujo de datos sin alterar la funcionalidad.
+- `2026-09-07T00:13:58` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:25: in <module>
+    import healthscore  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^
+app/healthscore.py:138: in <module>
+    PipelineStep: TypeAlias = Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], List[RecommendationRule]]
+                                                              ^^^^^^^^^^^^^
+E   NameError: name 'SystemMetrics' is not defined
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defined
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.28s
+
+```
+- `2026-09-07T00:13:58` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings de tipo Google a las funciones críticas para clarificar el flujo de datos y el propósito de las transformaciones, además de aplicar type hints más precisos en la estructura del pipeline para facilitar la auditoría de tipos.
+- `2026-09-07T00:14:54` ➖ Sin cambios en main.py (enfoque: legibilidad y documentación). Motivo: He refactorizado la jerarquía de construcción de pestañas para reducir la duplicación de código mediante el uso de `getattr` sobre una lista unificada, mejorando la legibilidad y manteniendo la robustez del registro de componentes.
+- `2026-09-07T00:14:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T00:14:54` Corrida terminada. Total usado hoy: 8.

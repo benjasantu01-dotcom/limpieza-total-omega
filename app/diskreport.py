@@ -48,6 +48,13 @@ MB_SIZE: int = 1024 * 1024
 class SummaryData(NamedTuple):
     """
     Contenedor inmutable de resultados para el análisis unificado.
+    
+    Attributes:
+        total_bytes: Sumatoria acumulada del peso de archivos.
+        total_files: Contador de archivos procesados válidos.
+        ext_sizes: Diccionario mapeando extensión a bytes totales.
+        ext_counts: Diccionario mapeando extensión a cantidad de archivos.
+        top_files: Lista de tuplas (size, path) ordenada descendentemente.
     """
     total_bytes: int
     total_files: int
@@ -204,6 +211,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorrido DFS iterativo evitando bucles infinitos mediante el rastreo de inodos.
+    
+    Utiliza un stack para la profundidad y `visited_inodes` para detectar ciclos.
+    Los inodos capturados son (st_dev, st_ino) para identificar de forma única
+    la ubicación física del objeto en el sistema de archivos.
     """
     root_path = _validate_root(directory)
     if root_path is None:
@@ -291,7 +302,12 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
-    """Ejecuta pasada unificada con recolección de estadísticas optimizada."""
+    """
+    Ejecuta una pasada unificada de recolección de estadísticas sobre el directorio.
+    
+    Utiliza un min-heap para mantener los archivos más grandes con O(log N) costo
+    de inserción, permitiendo analizar directorios masivos sin saturar la memoria RAM.
+    """
     total_bytes, total_files = 0, 0
     ext_sizes, ext_counts = defaultdict(int), defaultdict(int)
     top_heap: List[Tuple[int, Path]] = []
@@ -304,6 +320,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
             ext_sizes[ext] += size
             ext_counts[ext] += 1
             
+            # Mantenimiento del heap para los 20 archivos más grandes
             if len(top_heap) < 20:
                 heapq.heappush(top_heap, (size, path))
             elif size > top_heap[0][0]:

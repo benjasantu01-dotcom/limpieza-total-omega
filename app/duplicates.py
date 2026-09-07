@@ -140,6 +140,7 @@ def _is_valid_candidate(path: Path) -> bool:
 
 
 def _get_entry_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
+    """Obtiene información de estado de una entrada de directorio sin seguir enlaces simbólicos."""
     try:
         return entry.stat(follow_symlinks=False)
     except OSError:
@@ -164,6 +165,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 
 def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
+    """Resuelve rutas de entrada y valida que sean directorios permitidos."""
     try:
         if not item: return None
         root = Path(item).resolve(strict=False)
