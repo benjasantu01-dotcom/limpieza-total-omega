@@ -1568,12 +1568,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
+            # Seguridad: validamos el entorno antes de realizar la operación sobre el proceso
+            self._ensure_path_writable_and_clean(Path.home())
+            
             if not memory_mod.process_exists(pid):
                 self._safe_run_ui_callback(lambda: self.log(f"Error: El proceso {pid} ya no está activo.", "Memoria"))
                 return
             
-            # Chequeo adicional de seguridad antes de operar
-            self._ensure_path_writable_and_clean(Path.home())
             try:
                 ok, mensaje = memory_mod.trim_working_set(pid)
                 self._safe_run_ui_callback(lambda: self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria"))

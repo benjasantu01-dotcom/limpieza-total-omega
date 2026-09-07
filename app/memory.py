@@ -341,19 +341,15 @@ def _is_system_process(pid: int) -> bool:
 
 def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
     """
-    Recupera la ruta absoluta del ejecutable mediante QueryFullProcessImageNameW.
-    Requiere un handle con permisos PROCESS_QUERY_LIMITED_INFORMATION o superior.
+    Recupera la ruta absoluta del ejecutable mediante APIs de Win32 (Psapi).
     """
     if not proc_handle: return None
-    kernel32 = ctypes.windll.kernel32
-    if not hasattr(kernel32, "QueryFullProcessImageNameW"): return None
-    
+    psapi = ctypes.windll.psapi
     buf = ctypes.create_unicode_buffer(4096)
-    size = ctypes.c_ulong(4096)
     try:
-        if kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size)) > 0:
+        if psapi.GetModuleFileNameExW(proc_handle, None, buf, 4096) > 0:
             return str(buf.value)
-    except (OSError, ctypes.ArgumentError, ValueError, BufferError): 
+    except (OSError, ctypes.ArgumentError, ValueError):
         pass
     return None
 
