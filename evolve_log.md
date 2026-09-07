@@ -1079,3 +1079,10 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-09-07T05:11:47` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de directorios implementando la memoización completa en el diccionario `perf_cache` a través de toda la recursión, evitando re-procesar subcarpetas compartidas que aparecen en múltiples rutas de caché (común en instalaciones de navegadores basados en Chromium).
 - `2026-09-07T05:11:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T05:11:47` Corrida terminada. Total usado hoy: 124.
+- `2026-09-07T05:18:06` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-09-07T05:18:31` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-07T05:18:56` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé `_collect_candidates` para evitar realizar `stat()` múltiples veces innecesarias, reutilizando la información del `os.DirEntry` ya obtenida durante la iteración, lo que reduce el I/O del sistema de archivos.
+- `2026-09-07T05:19:22` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el método `SystemMetrics.is_finite` reemplazando la creación dinámica de listas y el uso de `all` por una comprobación secuencial, evitando la asignación de memoria innecesaria en cada ciclo del motor analítico.
+- `2026-09-07T05:20:14` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data
+- `2026-09-07T05:20:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T05:20:14` Corrida terminada. Total usado hoy: 128.

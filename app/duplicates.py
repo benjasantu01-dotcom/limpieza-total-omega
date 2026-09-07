@@ -204,18 +204,20 @@ def _collect_candidates(
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        entry_path = Path(entry.path)
-                        # Chequeo de seguridad adicional por iteración
-                        if is_protected_path(entry_path):
+                        # Saltar protegidos temprano
+                        if is_protected_path(Path(entry.path)):
                             continue
                             
                         if entry.is_dir(follow_symlinks=False):
-                            if not is_junction(entry_path):
-                                _scan_directory_recursive(entry_path)
+                            if not is_junction(Path(entry.path)):
+                                _scan_directory_recursive(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
                             st = _get_entry_stat(entry)
+                            # Reutilizamos el objeto st obtenido de scandir para minimizar llamadas a stat()
                             if st and st.st_size >= min_size and st.st_nlink == 1:
-                                if _is_valid_candidate(entry_path):
+                                entry_path = Path(entry.path)
+                                # Validación final de acceso tras filtros rápidos
+                                if os.access(entry_path, os.R_OK):
                                     size_map[st.st_size].append(entry_path)
                     except (OSError, PermissionError):
                         continue
