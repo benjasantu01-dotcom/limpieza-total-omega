@@ -300,8 +300,8 @@ def _is_system_path_cached(path_str: str) -> bool:
         p_str_low = path_str.lower()
         if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
             return True
-        p_parts = Path(path_str).parts
-        return any(part.lower() in PROTECTED_DIR_NAMES for part in p_parts)
+        # Usar set intersection para mayor rendimiento en la búsqueda de nombres
+        return not PROTECTED_DIR_NAMES.isdisjoint(p_str_low.split(os.sep))
     except (OSError, RuntimeError):
         return True
 
@@ -312,9 +312,7 @@ def is_protected_path(path: PathLike) -> bool:
     if not path: return True
     try:
         p = normalize(path)
-        if _is_system_path_cached(str(p)):
-            return True
-        return p.anchor != "" and p == Path(p.anchor)
+        return _is_system_path_cached(str(p)) or (p.anchor != "" and p == Path(p.anchor))
     except (ValueError, TypeError, OSError, RuntimeError): 
         return True
 
