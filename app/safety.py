@@ -213,7 +213,7 @@ def _is_file_in_use(path_str: str) -> bool:
         return False
     try:
         kernel32 = ctypes.windll.kernel32
-        handle = kernel32.CreateFileW(path_str, 0x80000000, 0x00000007, None, 3, 0x00000080, None)
+        handle = kernel32.CreateFileW(path_str, 0x80000000, 0x00000000, None, 3, 0x00000080, None)
         if handle == -1 or handle == 0xFFFFFFFF: 
             return True
         kernel32.CloseHandle(handle)
@@ -249,9 +249,6 @@ def _check_file_integrity(path: Path) -> None:
         code = SafetyValidationErrorCode.ACCESS_DENIED if isinstance(e, PermissionError) else SafetyValidationErrorCode.IO_ERROR
         raise UnsafePathError(f"Error de acceso al archivo: {e}", code)
         
-    if not os.access(path, os.W_OK):
-        raise UnsafePathError("Acceso de escritura denegado.", SafetyValidationErrorCode.ACCESS_DENIED)
-    
     for rule in _VALIDATORS:
         if rule.predicate(path, file_stat):
             code = SafetyValidationErrorCode.HARD_LINK_DETECTED if rule.reason == ProtectionReason.HARD_LINK else SafetyValidationErrorCode.GENERIC
@@ -446,7 +443,6 @@ def describe_protection(path: PathLike) -> str:
     try:
         if p.exists():
             if len(str(p)) >= MAX_PATH_LENGTH: return f"'{p}' longitud excesiva."
-            if not os.access(p, os.W_OK): return f"'{p}' sin permisos de escritura."
             if os.path.islink(p): return f"'{p}' es un enlace simbólico."
             if os.path.ismount(p): return f"'{p}' es un punto de montaje."
             if _is_readonly(p): return f"'{p}' es solo lectura."

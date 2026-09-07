@@ -536,7 +536,8 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if not stored_file.exists() or not quarantine_item.verify_integrity(stored_file):
         raise RuntimeError("Integridad comprometida: archivo no hallado o corrompido.")
     
-    destination = Path(quarantine_item.original_path).absolute()
+    # Validación estricta de la ruta destino para prevenir path traversal mediante el manifiesto
+    destination = Path(quarantine_item.original_path).resolve()
     _check_path_syntax_integrity(destination)
     if is_protected_path(destination):
         raise UnsafePathError("Restauración denegada: destino protegido.")
