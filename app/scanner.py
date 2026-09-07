@@ -95,7 +95,9 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 class Scanner:
     """
     Controlador de estado para el escaneo recursivo del sistema de archivos.
-    Mantiene el historial de rutas visitadas y los resultados encontrados.
+
+    Mantiene el historial de rutas visitadas para prevenir ciclos, gestiona la 
+    configuración base del escaneo y acumula los resultados encontrados.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -111,8 +113,10 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida que la entrada no viole restricciones de sistema, longitud máxima, 
-        nombres reservados, ofuscación RTL o políticas de seguridad (is_protected_path).
+        Valida que la entrada sea segura para procesar.
+
+        Verifica restricciones de longitud, nombres reservados, ofuscación RTL y 
+        comprueba contra 'is_protected_path' para evitar tocar directorios críticos.
         """
         try:
             path_str: str = entry.path
@@ -139,16 +143,18 @@ class Scanner:
         except (OSError, AttributeError, TypeError, FileNotFoundError, PermissionError):
             return True 
 
-    def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
-        """Registra el directorio en el historial de visitados y lo añade a la pila de exploración."""
+    def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
+        """Marca un directorio como visitado y lo agrega a la pila para exploración futura."""
         if entry.path and entry.path not in self.seen:
             self.seen.add(entry.path)
-            stack.append(entry.path)
+            directory_stack.append(entry.path)
 
-    def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
+    def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """
-        Clasifica la entrada: si es directorio, lo encola; si es archivo, 
-        evalúa si su extensión coincide con el set de sospechosos.
+        Analiza una entrada del sistema de archivos.
+
+        Si es directorio, lo encola; si es archivo, evalúa heurísticas si la 
+        extensión es sospechosa.
         """
         if not self._is_safe_entry(entry):
             return
@@ -160,7 +166,7 @@ class Scanner:
             
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
-                    self._handle_directory(entry, stack)
+                    self._handle_directory(entry, directory_stack)
                 return
 
             ext_idx: int = entry.name.rfind('.')
@@ -212,17 +218,17 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         return []
 
     scanner = Scanner(base_root=root_input)
-    stack: List[str] = [str(root_input)]
+    directory_stack: List[str] = [str(root_input)]
     scanner.seen.add(str(root_input))
     
-    while stack:
-        current_dir = stack.pop()
+    while directory_stack:
+        current_dir = directory_stack.pop()
         try:
             if is_protected_path(Path(current_dir)):
                 continue
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    scanner.process_entry(entry, stack)
+                    scanner.process_entry(entry, directory_stack)
         except (PermissionError, OSError, FileNotFoundError):
             continue
     return scanner.results

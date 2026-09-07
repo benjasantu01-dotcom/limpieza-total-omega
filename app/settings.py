@@ -154,6 +154,11 @@ def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
 
 class _Validators:
     @staticmethod
+    def _is_reparse_point(path: Path) -> bool:
+        """Verifica si la ruta es un punto de reparse (junction o symlink)."""
+        return path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction())
+
+    @staticmethod
     def _run_safety_checks(path_obj: Path) -> bool:
         """Determina si la ruta es segura de manipular mediante `safety.py`."""
         path_str = str(path_obj)
@@ -162,7 +167,7 @@ class _Validators:
         
         try:
             resolved = path_obj.resolve(strict=False)
-            if resolved.is_symlink() or (hasattr(resolved, 'is_junction') and resolved.is_junction()):
+            if _Validators._is_reparse_point(resolved):
                 _SAFETY_CACHE[path_str] = False
                 return False
             
@@ -185,7 +190,7 @@ class _Validators:
 
     @staticmethod
     def bool(key: ConfigKey, val: Any) -> Optional[bool]:
-        """Normaliza entradas (str/bool/int) a booleanos estrictos usando léxico común."""
+        """Normaliza entradas (str/bool/int) a booleanos estrictos."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -196,7 +201,7 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
-        """Convierte a entero y recorta el valor según los límites definidos en `_NUMERIC_LIMITS`."""
+        """Convierte a entero y recorta según los límites definidos."""
         parsed_value = int(val)
         limit = _NUMERIC_LIMITS.get(key)
         if limit: return max(limit.min, min(limit.max, parsed_value))
@@ -204,7 +209,7 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
-        """Normaliza rutas a strings absolutos verificando que no comprometan la seguridad."""
+        """Normaliza rutas a strings absolutos verificando seguridad."""
         if val == "": return ""
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
@@ -212,7 +217,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
-        """Valida cadenas contra listas blancas definidas en `_ENUM_VALS`."""
+        """Valida cadenas contra listas blancas."""
         val = text.lower()
         allowed = _ENUM_VALS.get(key)
         if allowed: return val if val in allowed else None
@@ -221,7 +226,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        """Sanitiza strings: impide caracteres nulos, secuencias de escape de ruta ('..') y control."""
+        """Sanitiza strings: impide caracteres nulos, secuencias de escape y control."""
         text = str(val).strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(key, text)
