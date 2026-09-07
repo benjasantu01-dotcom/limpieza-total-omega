@@ -331,16 +331,19 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     
     try:
         for path, size in walk_files(directory, skip_protected):
-            total_bytes += size
-            total_files += 1
-            ext = path.suffix.lower() or "(sin extensión)"
-            ext_sizes[ext] += size
-            ext_counts[ext] += 1
-            
-            if len(top_heap) < 20:
-                heapq.heappush(top_heap, (size, path))
-            elif size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (size, path))
+            try:
+                total_bytes += size
+                total_files += 1
+                ext = path.suffix.lower() or "(sin extensión)"
+                ext_sizes[ext] += size
+                ext_counts[ext] += 1
+                
+                if len(top_heap) < 20:
+                    heapq.heappush(top_heap, (size, path))
+                elif size > top_heap[0][0]:
+                    heapq.heapreplace(top_heap, (size, path))
+            except (OSError, PermissionError, TypeError):
+                continue
     except (OSError, PermissionError, RuntimeError):
         pass
             
