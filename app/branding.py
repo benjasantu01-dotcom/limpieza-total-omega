@@ -315,13 +315,12 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination: return None
     try:
         path_obj = Path(destination).resolve()
+        parent = path_obj.parent
         
         # Validaciones de seguridad previas a la operación de disco
-        if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
+        if is_protected_path(path_obj) or is_protected_path(parent):
             return None
-        
-        parent = path_obj.parent
-        if is_protected_path(parent) or not is_safe_to_modify(parent):
+        if not is_safe_to_modify(path_obj) or not is_safe_to_modify(parent):
             return None
             
         ensure_safe_to_modify(path_obj)

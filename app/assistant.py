@@ -585,7 +585,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
         return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Extrae respuesta textual del payload JSON."""
+    """Extrae respuesta textual del payload JSON con validación estricta."""
     if not isinstance(data, dict): return None
     try:
         candidates = data.get("candidates")
@@ -598,7 +598,7 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         if not isinstance(parts, list) or not parts: return None
         text_val = parts[0].get("text")
         return str(text_val) if isinstance(text_val, str) else None
-    except (AttributeError, TypeError): return None
+    except (AttributeError, TypeError, IndexError): return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
     """Gestiona la comunicación con la API externa."""

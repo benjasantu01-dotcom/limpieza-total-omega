@@ -761,3 +761,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-07T01:45:44` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-09-07T01:45:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T01:45:44` Corrida terminada. Total usado hoy: 44.
+- `2026-09-07T01:54:22` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-09-07T01:54:54` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se añadió una validación explícita para evitar operaciones de escritura cuando el dispositivo se encuentra en estado de solo lectura o falla de acceso durante la comprobación de integridad, mejorando la robustez ante estados del sistema de archivos degradados.
+- `2026-09-07T01:55:19` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-07T01:55:55` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta de tipos antes de acceder a la estructura anidada del JSON, evitando así posibles excepciones o comportamientos inesperados ante payloads mal formados o maliciosos.
+- `2026-09-07T01:56:14` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva de `save_logo_svg` añadiendo una comprobación explícita para evitar la creación de directorios en rutas bloqueadas mediante `is_protected_path` antes de invocar `mkdir`, asegurando que la operación de escritura sea coherente con las políticas de seguridad del proyecto.
+- `2026-09-07T01:56:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T01:56:14` Corrida terminada. Total usado hoy: 48.

@@ -345,6 +345,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.flush()
             os.fsync(f.fileno())
         
+        if not os.path.exists(temp_path): return None
         with open(temp_path, "r", encoding="utf-8") as f:
             json.load(f)
             
