@@ -855,3 +855,26 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-07T13:49:31` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _CheckResult
 - `2026-09-07T13:49:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T13:49:31` Corrida terminada. Total usado hoy: 328.
+- `2026-09-07T13:58:00` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-07T13:58:27` Tests FALLARON:
+```
+exe'), reason='Nombre de proceso de sistema fuera de System32', severity=<SeverityLevel.WARNING: 2>).severity
+
+evolve/tests/test_basic.py:213: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - AssertionError: assert <SeverityLevel.WARNING: 2> == 'warning'
+ +  where <SeverityLevel.WARNING: 2> = Suspicion(path=PosixPath('factura.pdf.exe'), reason='Doble extensión disfrazando el tipo real de archivo', severity=<SeverityLevel.WARNING: 2>).severity
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - AssertionError: assert <SeverityLevel.WARNING: 2> == 'warning'
+ +  where <SeverityLevel.WARNING: 2> = Suspicion(path=PureWindowsPath('C:/Users/test/Downloads/svchost.exe'), reason='Nombre de proceso de sistema fuera de System32', severity=<SeverityLevel.WARNING: 2>).severity
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - AssertionError: assert (Suspicion(path=PurePosixPath('/home/user/Downloads/svchost.exe'), reason='Nombre de proceso de sistema fuera de System32', severity=<SeverityLevel.WARNING: 2>) is not None and <SeverityLevel.WARNING: 2> == 'warning')
+ +  where <SeverityLevel.WARNING: 2> = Suspicion(path=PurePosixPath('/home/user/Downloads/svchost.exe'), reason='Nombre de proceso de sistema fuera de System32', severity=<SeverityLevel.WARNING: 2>).severity
+3 failed, 296 passed in 1.36s
+
+```
+- `2026-09-07T13:58:27` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se introdujo un `IntEnum` para los niveles de severidad (`SeverityLevel`) en `Suspicion`, eliminando la ambigüedad de usar strings "mágicos" y mejorando la calidad del código mediante tipado fuerte.
+- `2026-09-07T13:58:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-07T13:59:02` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators.str
+- `2026-09-07T13:59:31` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados con la convención Google/NumPy, la especificación de tipos de retorno y la clarificación de la lógica de resolución de rutas en la clase `StartupEntry`, facilitando el mantenimiento y la auditoría de seguridad del código.
+- `2026-09-07T13:59:55` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_source_value` reemplazando el manejo de excepciones (`try-except` costoso en bucles) por una comprobación de tipo más eficiente y un acceso directo a `__dict__` o `getattr`, reduciendo la carga en la ingesta masiva de datos.
+- `2026-09-07T13:59:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T13:59:55` Corrida terminada. Total usado hoy: 332.

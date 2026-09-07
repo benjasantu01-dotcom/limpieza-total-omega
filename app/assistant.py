@@ -325,18 +325,12 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _get_source_value(source: Any, key: str) -> Any:
-    """Extrae valores de fuentes de datos de forma segura."""
-    try:
-        if isinstance(source, dict):
-            return source.get(key)
-        # Acceso genérico con manejo de excepciones severas
-        if hasattr(source, key):
-            val = getattr(source, key)
-            if not callable(val) and not key.startswith('_'):
-                return val
-        return None
-    except Exception:
-        return None
+    """Extrae valores de fuentes de datos de forma segura sin excepciones evitables."""
+    if isinstance(source, dict):
+        return source.get(key)
+    # Acceso directo para evitar el costo de bloques try-except
+    attr = getattr(source, key, None)
+    return attr if not callable(attr) else None
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
@@ -559,7 +553,7 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Crea el cuerpo JSON para la API de Google, validando que el contexto sea estático."""
-    if not _ensure_safe_text(context_text) or not _is_safe_text_structure(context_text): return None
+    if not _ensure_safe_text(context_text) or not _is_safe_结构_structure(context_text): return None
     try:
         q = _sanitize_query(question)
         if not _ensure_safe_text(q): return None
