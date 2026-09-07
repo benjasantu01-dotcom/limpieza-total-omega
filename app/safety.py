@@ -121,13 +121,7 @@ _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
 
 
 class _IntegrityCheck(NamedTuple):
-    """
-    Define una regla de seguridad para archivos.
-    
-    Attributes:
-        reason: El motivo técnico por el cual un archivo podría ser bloqueado.
-        predicate: Función que recibe (Path, stat_result) y retorna True si es inseguro.
-    """
+    """Define una regla de seguridad para archivos."""
     reason: ProtectionReason
     predicate: ViolationPredicate
 
@@ -242,15 +236,19 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 
 
 def _check_file_integrity(path: Path) -> None:
-    """Ejecuta la batería de reglas de validación y lanza UnsafePathError ante cualquier violación."""
+    """
+    Ejecuta la batería de reglas de validación sobre el estado del archivo.
+    Lanza UnsafePathError con el código de error correspondiente ante cualquier violación.
+    """
     try:
         file_stat = path.stat()
     except (PermissionError, OSError) as e:
         code = SafetyValidationErrorCode.ACCESS_DENIED if isinstance(e, PermissionError) else SafetyValidationErrorCode.IO_ERROR
-        raise UnsafePathError(f"Error de acceso al archivo: {e}", code)
+        raise UnsafePathError(f"Error de acceso: {e}", code)
         
     for rule in _VALIDATORS:
         if rule.predicate(path, file_stat):
+            # Mapeo de razones específicas a códigos de error cuando es necesario
             code = SafetyValidationErrorCode.HARD_LINK_DETECTED if rule.reason == ProtectionReason.HARD_LINK else SafetyValidationErrorCode.GENERIC
             raise UnsafePathError(f"Violación de integridad: {rule.reason.value}", code)
 
@@ -366,11 +364,14 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
 
 
 def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | None) -> None:
-    """Aplica restricciones de alcance (scope) y previene la auto-modificación de la aplicación."""
+    """
+    Aplica restricciones de alcance (scope) para prevenir la manipulación fuera
+    del entorno permitido o la auto-modificación de la propia aplicación.
+    """
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
-        raise UnsafePathError("Fuera de alcance.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
+        raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     
-    app_root = Path(os.getcwd()).resolve()
+    app_root: Path = Path(os.getcwd()).resolve()
     if target_path == app_root or app_root in target_path.parents:
         raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
         

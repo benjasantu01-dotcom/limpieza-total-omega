@@ -96,8 +96,9 @@ class Scanner:
     """
     Controlador de estado para el escaneo recursivo del sistema de archivos.
 
-    Mantiene el historial de rutas visitadas para prevenir ciclos, gestiona la 
-    configuración base del escaneo y acumula los resultados encontrados.
+    Mantiene el historial de rutas visitadas para prevenir ciclos mediante 'seen',
+    gestiona la configuración base del escaneo y acumula los resultados encontrados 
+    en 'results' durante el recorrido.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -115,8 +116,9 @@ class Scanner:
         """
         Valida que la entrada sea segura para procesar.
 
-        Verifica restricciones de longitud, nombres reservados, ofuscación RTL y 
-        comprueba contra 'is_protected_path' para evitar tocar directorios críticos.
+        Filtra por longitud de ruta, caracteres peligrosos (RTL), nombres reservados
+        del sistema y verifica que la ruta esté dentro del alcance permitido (base_root) 
+        y no sea una ruta protegida.
         """
         try:
             path_str: str = entry.path
@@ -182,7 +184,12 @@ class Scanner:
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
-    """Orquestador principal de reglas heurísticas para un archivo individual."""
+    """
+    Orquestador principal de reglas heurísticas para un archivo individual.
+    
+    Verifica seguridad de la ruta antes de analizar y aplica reglas de tamaño 
+    y registro de ejecutables.
+    """
     if is_protected_path(path):
         return []
     findings: ScanResult = []
