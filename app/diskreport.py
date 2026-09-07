@@ -320,8 +320,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
     Realiza una pasada integral sobre el árbol de archivos para recolectar métricas.
     
-    Usa un min-heap para mantener el seguimiento de los archivos más pesados con
-    alta eficiencia de memoria (O(N log 20)).
+    Utiliza una estrategia de min-heap para mantener los 20 archivos más grandes
+    con una complejidad espacial reducida, procesando el árbol mediante `walk_files`.
     """
     total_bytes, total_files = 0, 0
     ext_sizes, ext_counts = defaultdict(int), defaultdict(int)
