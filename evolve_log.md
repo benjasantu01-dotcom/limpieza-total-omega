@@ -1029,3 +1029,14 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-09-07T04:09:00` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-07T04:09:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T04:09:00` Corrida terminada. Total usado hoy: 100.
+- `2026-09-07T04:16:56` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-09-07T04:17:58` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-07T04:18:36` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_manifest` y la carga inicial del manifiesto añadiendo validaciones explícitas de tipo y estructura antes de procesar los datos, evitando que un JSON malformado o un archivo de manifiesto corrompido provoquen caídas inesperadas en el bucle principal.
+- `2026-09-07T04:19:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-07T04:19:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-07T04:20:02` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se mejora `_check_file_integrity` para distinguir explícitamente entre errores de acceso al sistema de archivos (bloqueos, permisos) y violaciones de política de seguridad (hard links, tamaño, etc.), evitando ocultar errores del sistema bajo un `UnsafePathError` genérico que podría enmascarar problemas de I/O legítimos.
+- `2026-09-07T04:20:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-07T04:21:50` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-07T04:22:08` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scan_directory` al validar explícitamente el tipo de entrada de `directory` y envolver el bucle de escaneo con una verificación de seguridad preventiva, además de agregar manejo de errores específico ante posibles fallos en `os.scandir` para asegurar que el proceso no se detenga inesperadamente.
+- `2026-09-07T04:22:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T04:22:08` Corrida terminada. Total usado hoy: 104.

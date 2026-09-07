@@ -58,6 +58,8 @@ class SafetyValidationErrorCode(IntEnum):
     FILE_IN_USE = 10
     SENSITIVE_EXTENSION = 11
     HARD_LINK_DETECTED = 12
+    ACCESS_DENIED = 13
+    IO_ERROR = 14
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
@@ -243,15 +245,17 @@ def _check_file_integrity(path: Path) -> None:
     """Ejecuta la batería de reglas de validación y lanza UnsafePathError ante cualquier violación."""
     try:
         file_stat = path.stat()
-        if not os.access(path, os.W_OK):
-            raise UnsafePathError("Acceso de escritura denegado.", SafetyValidationErrorCode.GENERIC)
+    except (PermissionError, OSError) as e:
+        code = SafetyValidationErrorCode.ACCESS_DENIED if isinstance(e, PermissionError) else SafetyValidationErrorCode.IO_ERROR
+        raise UnsafePathError(f"Error de acceso al archivo: {e}", code)
         
-        for rule in _VALIDATORS:
-            if rule.predicate(path, file_stat):
-                code = SafetyValidationErrorCode.HARD_LINK_DETECTED if rule.reason == ProtectionReason.HARD_LINK else SafetyValidationErrorCode.GENERIC
-                raise UnsafePathError(f"Violación de integridad: {rule.reason.value}", code)
-    except (FileNotFoundError, PermissionError, OSError) as e:
-        raise UnsafePathError(f"No se pudo verificar integridad: {e}", SafetyValidationErrorCode.GENERIC)
+    if not os.access(path, os.W_OK):
+        raise UnsafePathError("Acceso de escritura denegado.", SafetyValidationErrorCode.ACCESS_DENIED)
+    
+    for rule in _VALIDATORS:
+        if rule.predicate(path, file_stat):
+            code = SafetyValidationErrorCode.HARD_LINK_DETECTED if rule.reason == ProtectionReason.HARD_LINK else SafetyValidationErrorCode.GENERIC
+            raise UnsafePathError(f"Violación de integridad: {rule.reason.value}", code)
 
 
 @lru_cache(maxsize=2048)

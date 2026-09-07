@@ -163,7 +163,6 @@ def _is_file_locked(path: Path) -> bool:
     if not isinstance(path, Path) or not path.exists():
         return False
     try:
-        # Abrir en modo 'r+b' verifica lectura/escritura sin truncar
         with open(path, "r+b") as f:
             return False
     except (PermissionError, IOError, OSError):
@@ -264,19 +263,14 @@ def _check_path_syntax_integrity(path: Path) -> None:
         raise UnsafePathError("Ruta vacía.")
     
     path_str = str(path)
-    # 1. Caracteres inválidos
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
         raise UnsafePathError("Ruta con caracteres de control prohibida.")
-    # 2. Profundidad
     if len(path.parts) > 32:
         raise UnsafePathError("Profundidad de ruta excesiva.")
-    # 3. Flujos alternos o navegación
     if ":" in path.name.replace(path.drive, "") or ":" in str(path.parent):
         raise UnsafePathError("Ruta con flujos de datos alternos (ADS) prohibida.")
-    # 4. Traversal y comodines
     if ".." in path.parts or any(c in str(path.name) for c in "<>\"|?*"):
         raise UnsafePathError("Ruta con caracteres prohibidos o navegación inválida.")
-    # 5. Enlaces y puntos de reparse
     if path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction()):
         raise UnsafePathError("Operación denegada en enlace simbólico o punto de reparse.")
 
@@ -346,16 +340,21 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
         _load_manifest_raw.cache_clear()
     
     raw_data = _load_manifest_raw(str(base_path), mtime)
+    if not isinstance(raw_data, list):
+        return []
+
     validated: List[QuarantineItem] = []
     dirty = False
     
     for d in raw_data:
+        if not isinstance(d, dict):
+            dirty = True
+            continue
         item = QuarantineItem.from_dict(d)
-        if item:
-            if (base_path / item.stored_name).exists():
-                validated.append(item)
-            else:
-                dirty = True
+        if item and (base_path / item.stored_name).exists():
+            validated.append(item)
+        else:
+            dirty = True
     
     if dirty:
         save_manifest(validated, base_path)
@@ -508,7 +507,7 @@ def quarantine_file(
             sha256=file_hash,
         )
         
-        items_list = [QuarantineItem.from_dict(d) for d in raw_items if d and isinstance(d, dict)]
+        items_list = [QuarantineItem.from_dict(d) for d in raw_items if isinstance(d, dict)]
         items_list = [i for i in items_list if i is not None]
         items_list.append(quarantine_item)
         save_manifest(items_list, base)

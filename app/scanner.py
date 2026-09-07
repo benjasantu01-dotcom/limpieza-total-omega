@@ -200,13 +200,12 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Inicia el escaneo recursivo validando la seguridad de la raíz de entrada."""
-    if not directory: return []
+    if not isinstance(directory, (str, Path)): return []
         
     try:
         base_path = Path(directory)
         if not base_path.exists(): return []
         root_input = base_path.resolve(strict=False)
-        # Bloquear explícitamente rutas UNC (comienzan con \\) y rutas protegidas
         if not root_input.is_dir() or str(root_input).startswith(("\\\\", "//")) or is_protected_path(root_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError, PermissionError):
@@ -219,6 +218,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     while stack:
         current_dir = stack.pop()
         try:
+            if is_protected_path(Path(current_dir)):
+                continue
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, stack)
