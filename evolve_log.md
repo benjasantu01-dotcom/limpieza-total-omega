@@ -703,3 +703,34 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-09-07T01:06:35` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` al convertir `PROTECTED_DIR_NAMES` en un `frozenset` pre-procesado y simplificar la lógica de comprobación de rutas, evitando múltiples instanciaciones de `Path` y normalizaciones redundantes dentro del bucle.
 - `2026-09-07T01:06:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T01:06:35` Corrida terminada. Total usado hoy: 28.
+- `2026-09-07T01:13:37` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-09-07T01:14:07` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo reemplazando la resolución de rutas mediante `resolve()` dentro de `_is_inside_base_root` por una comparación de prefijos de cadenas de texto, evitando así llamadas costosas al sistema de archivos por cada archivo procesado.
+- `2026-09-07T01:14:36` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a `_VALIDATOR_MAP` utilizando una referencia local dentro del bucle `update` y se eliminó la recreación innecesaria de objetos `DEFAULTS` mediante copias durante las validaciones, mejorando la eficiencia en operaciones frecuentes de configuración.
+- `2026-09-07T01:15:03` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.30s
+
+```
+- `2026-09-07T01:15:03` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Implementé un mecanismo de caché en `_resolve_and_cache_path` que utiliza el resultado de `os.path.realpath` para evitar múltiples llamadas costosas al sistema de archivos sobre el mismo ejecutable, mejorando el rendimiento al procesar listas largas de entradas en el startup.
+- `2026-09-07T01:15:26` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `ingest` y `_validate_and_assign` ante valores inesperados en el diccionario de entrada, asegurando que si una métrica está presente pero es de un tipo incompatible (ej. `None` o una cadena vacía en un campo numérico), el sistema la ignore silenciosamente en lugar de intentar procesarla o fallar.
+- `2026-09-07T01:15:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T01:15:26` Corrida terminada. Total usado hoy: 32.

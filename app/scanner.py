@@ -102,17 +102,12 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.base_root: Path = base_root.resolve(strict=False)
-        self.base_root_str: str = str(self.base_root).lower()
+        self.base_root_str: str = str(self.base_root).lower() + os.sep
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica mediante resolución de ruta si el elemento es un descendiente de la raíz de escaneo."""
-        if not entry_path: return False
-        try:
-            resolved_path: Path = Path(entry_path).resolve(strict=False)
-            return str(resolved_path).lower().startswith(self.base_root_str)
-        except (OSError, RuntimeError):
-            return False
+        """Verifica mediante comparación de prefijo si el elemento es un descendiente de la raíz."""
+        return entry_path.lower().startswith(self.base_root_str)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """

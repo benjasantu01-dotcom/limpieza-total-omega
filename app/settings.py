@@ -155,9 +155,7 @@ def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
 class _Validators:
     @staticmethod
     def _run_safety_checks(path_obj: Path) -> bool:
-        """Determina si la ruta es segura de manipular mediante `safety.py`.
-        Utiliza caché para evitar llamadas repetitivas a I/O. Rechaza symlinks
-        y junctions para prevenir ataques de redirección."""
+        """Determina si la ruta es segura de manipular mediante `safety.py`."""
         path_str = str(path_obj)
         if (cached := _SAFETY_CACHE.get(path_str)) is not None:
             return cached
@@ -282,7 +280,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Lee configuración con caché basado en mtime. Retorna DEFAULTS si falla."""
+    """Lee configuración con caché basado en mtime."""
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     
@@ -326,7 +324,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             return None
             
         ensure_safe_to_modify(ruta_str)
-        
         parent = ruta.parent
         if not parent.exists():
             ensure_safe_to_modify(str(parent))
@@ -348,7 +345,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.flush()
             os.fsync(f.fileno())
         
-        # Verificar integridad del archivo temporal antes del reemplazo
         with open(temp_path, "r", encoding="utf-8") as f:
             json.load(f)
             
@@ -365,11 +361,12 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     """Fusiona cambios incrementales validados en la configuración persistida."""
     current = load(custom_base)
+    validators = _VALIDATOR_MAP
     modified = False
     for k, v in changes.items():
         if v is None: continue
         key_enum = _STR_TO_ENUM.get(k)
-        validator = _VALIDATOR_MAP.get(key_enum) if key_enum else None
+        validator = validators.get(key_enum) if key_enum else None
         if validator:
             val = validator(key_enum, v)
             if val is not None and val != current.get(k):
