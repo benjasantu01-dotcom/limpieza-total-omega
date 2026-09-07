@@ -361,7 +361,9 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     e ignorando tipos de datos primitivos o no estructurados.
     """
     ctx = SystemContext()
-    valid_sources = [s for s in [metrics, health, extra] if s is not None and isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str, int, float, bool, type))]
+    # Filtramos fuentes explícitamente válidas para evitar errores de tipo en la ingesta
+    valid_sources = [s for s in [metrics, health, extra] 
+                     if isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str, int, float, bool, type))]
     
     for src in valid_sources:
         try:

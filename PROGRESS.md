@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 206
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-06 | 100 | 2 | 13 | 6 | 83 |
-| 2026-09-07 | 131 | 11 | 19 | 16 | 123 |
+| 2026-09-06 | 96 | 2 | 13 | 6 | 83 |
+| 2026-09-07 | 132 | 11 | 19 | 17 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **51**
 - seguridad defensiva: **51**
-- legibilidad y documentación: **48**
+- legibilidad y documentación: **44**
 - rendimiento: **44**
-- manejo de errores y validación de entradas: **37**
+- manejo de errores y validación de entradas: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **21**
 - `settings.py`: **20**
 - `quarantine.py`: **19**
+- `assistant.py`: **19**
 - `safety.py`: **18**
-- `assistant.py`: **18**
-- `healthscore.py`: **17**
-- `memory.py`: **17**
 - `browser.py`: **17**
+- `healthscore.py`: **16**
+- `memory.py`: **16**
 - `duplicates.py`: **16**
-- `main.py`: **15**
 - `diskreport.py`: **15**
-- `organizer.py`: **14**
+- `main.py`: **14**
 - `branding.py`: **14**
+- `organizer.py`: **13**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T12:48:16` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` añadiendo validación de tipo explícita para evitar errores en tiempo de ejecución al procesar objetos inesperados, y fortalecí el manejo de excepciones en `_validate_and_assign` para asegurar que fallos en un campo no interrumpan la ingesta de los demás.
 - `2026-09-07T11:26:19` **startup.py** (seguridad defensiva): Se ha mejorado la robustez defensiva al añadir una validación estricta contra rutas UNC maliciosas dentro de `_extract_quoted_path` y `_resolve_and_cache_path`, asegurando que cualquier entrada que intente escapar del sistema de archivos local mediante prefijos de red sea descartada inmediatamente antes de cualquier operación de I/O.
 - `2026-09-07T11:25:50` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save()` añadiendo una verificación explícita mediante `is_protected_path` al directorio padre, previniendo así intentos de escritura en rutas del sistema protegidas que pudieran omitir el chequeo de `is_safe_to_modify`.
 - `2026-09-07T11:25:18` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `process_entry` mediante la validación explícita del tipo de archivo y la prevención de recursión infinita o desbordamiento al procesar entradas, asegurando que `entry.is_dir()` sea chequeado antes de intentar cualquier operación de sistema sobre la ruta, manteniendo la integridad del bucle de escaneo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T10:54:59` **assistant.py** (seguridad defensiva): Se endurece la seguridad del motor de consulta externa implementando `is_protected_path` sobre el texto de respuesta de Gemini y se añade una capa de validación adicional en `_build_payload` para asegurar que el contexto enviado nunca sea modificado por caracteres de escape o inyección durante la serialización JSON.
 - `2026-09-07T10:45:34` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `load` para asegurar que el contenido del archivo JSON sea un diccionario válido antes de procesarlo, evitando excepciones imprevistas al iterar sobre él si el archivo fuera, por ejemplo, un valor primitivo (`null`, `true`, `123`) o un tipo de datos no deseado.
 - `2026-09-07T10:45:02` **scanner.py** (robustez ante casos límite): Se ha robustecido el escaneo heurístico incorporando una validación explícita para evitar el procesamiento redundante o erróneo de archivos que carecen de nombre (nombre vacío) o que presentan metadatos inaccesibles debido a condiciones de carrera, asegurando que las funciones de análisis no fallen al intentar acceder a propiedades de archivos bloqueados por el sistema durante la iteración.
-- `2026-09-07T10:44:36` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes del sistema de archivos, asegurando que `_check_file_integrity` y `_is_system_or_hidden` manejen correctamente archivos que desaparecen entre la verificación de existencia y la obtención de atributos (`FileNotFoundError`), evitando fallos en condiciones de carrera.
