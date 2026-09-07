@@ -1462,3 +1462,34 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-09-07T08:15:17` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-07T08:15:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T08:15:17` Corrida terminada. Total usado hoy: 196.
+- `2026-09-07T08:21:19` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-09-07T08:22:00` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` añadiendo validación explícita para evitar errores de tipo `TypeError` o `AttributeError` al iterar sobre fuentes de datos heterogéneas, garantizando que solo se intenten ingerir objetos que realmente soporten `getattr` o acceso por claves.
+- `2026-09-07T08:22:35` Tests FALLARON:
+```
+........................................................................ [ 24%]
+.........................F.............................................. [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+1 failed, 298 passed in 1.01s
+
+```
+- `2026-09-07T08:22:35` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `save_logo_svg` y las funciones de dibujo (`draw_logo`, `draw_ring`) mediante la validación proactiva de tipos y valores, evitando excepciones innecesarias y asegurando que las operaciones críticas (como `write_text`) solo ocurran tras validaciones de seguridad explícitas y chequeos de integridad de datos.
+- `2026-09-07T08:23:03` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_sum_directory_recursive` mediante la validación explícita de `root_abs` como una ruta existente antes de iniciar el `scandir`, evitando excepciones por rutas inválidas o de longitud excesiva y centralizando el manejo de errores para garantizar un retorno consistente de `0` en casos de acceso denegado.
+- `2026-09-07T08:23:15` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-07T08:23:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T08:23:15` Corrida terminada. Total usado hoy: 200.

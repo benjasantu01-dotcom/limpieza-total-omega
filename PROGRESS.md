@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
-- Rechazadas por tests: 11
+- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 208
@@ -16,27 +16,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-06 | 148 | 3 | 22 | 8 | 127 |
-| 2026-09-07 | 83 | 8 | 13 | 11 | 81 |
+| 2026-09-06 | 145 | 3 | 22 | 8 | 126 |
+| 2026-09-07 | 85 | 9 | 13 | 11 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **53**
 - seguridad defensiva: **48**
-- legibilidad y documentación: **47**
 - rendimiento: **45**
-- manejo de errores y validación de entradas: **38**
+- legibilidad y documentación: **44**
+- manejo de errores y validación de entradas: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **20**
 - `settings.py`: **20**
-- `quarantine.py`: **19**
-- `memory.py`: **17**
-- `organizer.py`: **17**
+- `quarantine.py`: **18**
+- `assistant.py`: **18**
+- `browser.py`: **18**
 - `diskreport.py`: **17**
-- `assistant.py`: **17**
-- `browser.py`: **17**
+- `memory.py`: **16**
+- `organizer.py`: **16**
 - `duplicates.py`: **16**
 - `safety.py`: **16**
 - `branding.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T08:23:03` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_sum_directory_recursive` mediante la validación explícita de `root_abs` como una ruta existente antes de iniciar el `scandir`, evitando excepciones por rutas inválidas o de longitud excesiva y centralizando el manejo de errores para garantizar un retorno consistente de `0` en casos de acceso denegado.
+- `2026-09-07T08:22:00` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` añadiendo validación explícita para evitar errores de tipo `TypeError` o `AttributeError` al iterar sobre fuentes de datos heterogéneas, garantizando que solo se intenten ingerir objetos que realmente soporten `getattr` o acceso por claves.
 - `2026-09-07T07:00:20` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una verificación explícita mediante `is_protected_path` sobre el directorio padre antes de realizar cualquier escritura, asegurando que ni siquiera el archivo de configuración pueda ser creado en ubicaciones críticas protegidas.
 - `2026-09-07T06:51:03` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera (Race Conditions) y errores de acceso, asegurando que la validación de integridad no aborte ante cambios de estado transitorios que puedan ocurrir entre la verificación inicial y la operación, y evitando el uso de `os.access` (que es poco confiable en Windows debido a ACLs complejas) en favor de intentar abrir el descriptor de archivo de forma controlada.
 - `2026-09-07T06:50:14` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `quarantine.py` mediante la implementación de una validación de `path traversal` más estricta en `restore_item`, asegurando que, incluso si el manifiesto fuera alterado maliciosamente, la ruta de destino no pueda escapar del directorio base del usuario ni apuntar a rutas protegidas mediante el uso de `resolve()` antes de realizar chequeos de contención.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T06:10:02` **quarantine.py** (robustez ante casos límite): Mejora la robustez en la recuperación de archivos de cuarentena al añadir una comprobación de existencia previa para evitar excepciones `OSError` cuando el sistema de archivos reporta colisiones de enlaces o estados inconsistentes durante la restauración.
 - `2026-09-07T06:09:28` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos con permisos denegados o en uso, reemplazando la apertura simple (que fallaba en archivos abiertos por otros procesos) por una verificación basada en `ctypes` para Windows que consulta el estado del archivo sin requerir exclusividad, además de añadir un control contra archivos de tamaño cero en el escaneo inicial.
 - `2026-09-07T06:00:59` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` al centralizar la apertura del handle y asegurar una limpieza garantizada mediante el uso de `try...finally` para evitar fugas de memoria o bloqueo de recursos en casos de error durante la validación o ejecución.
-- `2026-09-07T05:59:13` **duplicates.py** (robustez ante casos límite): Mejora la robustez ante errores en el sistema de archivos durante la iteración en `_scan_directory_recursive` mediante el uso de `entry.is_symlink()` para evitar seguir enlaces simbólicos mal formados y asegurar la limpieza de excepciones en caso de que archivos sean eliminados por procesos externos durante el escaneo.
-- `2026-09-07T05:50:12` **browser.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `_sum_directory_recursive` ante archivos bloqueados o denegados durante el escaneo, asegurando que la recursión continúe su curso incluso si un subdirectorio lanza una excepción de acceso durante `os.scandir` o `entry.stat`.

@@ -358,16 +358,14 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Fabrica un SystemContext a partir de fuentes de datos dispersas."""
     ctx = SystemContext()
-    valid_sources = []
-    for s in [metrics, health, extra]:
-        if isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str, int, float, bool, type)):
-            valid_sources.append(s)
+    # Solo ingerir tipos complejos (dict/instancias) ignorando primitivos o tipos nulos
+    valid_sources = [s for s in [metrics, health, extra] if s is not None and isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str, int, float, bool, type))]
     
     for src in valid_sources:
         try:
             if ctx.ingest(src):
                 ctx.analyzed = True
-        except Exception:
+        except (AttributeError, TypeError):
             continue
     return ctx
 
