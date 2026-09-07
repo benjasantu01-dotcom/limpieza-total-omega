@@ -320,7 +320,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         ):
             cleaned_settings["asistente_activado"] = False
         
-        # Validación defensiva crítica antes de tocar nada
         if is_protected_path(ruta_str) or not is_safe_to_modify(ruta_str):
             return None
             
@@ -334,8 +333,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if ruta.exists() and not os.access(ruta, os.W_OK): return None
         
         usage = shutil.disk_usage(parent)
-        if usage.free < 1024 * 1024:
-            return None
+        if usage.free < 1024 * 1024: return None
         
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None
@@ -346,14 +344,13 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.flush()
             os.fsync(f.fileno())
         
-        if not os.path.exists(temp_path): return None
         with open(temp_path, "r", encoding="utf-8") as f:
-            json.load(f)
+            if not _is_dict(json.load(f)): raise ValueError("Corrupt file")
             
         os.replace(temp_path, ruta)
         _CACHE[ruta_str] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta
-    except (OSError, IOError, PermissionError, RuntimeError, TypeError, json.JSONDecodeError):
+    except (OSError, IOError, PermissionError, RuntimeError, TypeError, json.JSONDecodeError, ValueError):
         return None
     finally:
         if temp_path and temp_path.exists():

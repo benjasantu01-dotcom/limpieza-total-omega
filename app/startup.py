@@ -289,6 +289,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             name: str = "".join(c for c in raw_n if ord(c) >= 32).strip()
             cmd: str = "".join(c for c in raw_c if ord(c) >= 32).strip()
             
+            # Validación de datos: asegurar que no haya comandos vacíos o rutas UNC sospechosas
             if not name or not cmd or cmd.startswith(r"\\") or cmd in seen_commands:
                 continue
             if name.upper().startswith("PS"):
@@ -297,7 +298,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             # Validación de seguridad: no procesar nada que apunte a rutas protegidas
             try:
                 p_cmd: Path = Path(cmd)
-                if is_protected_path(p_cmd):
+                if not p_cmd.parts or is_protected_path(p_cmd):
                     continue
             except (ValueError, TypeError):
                 continue

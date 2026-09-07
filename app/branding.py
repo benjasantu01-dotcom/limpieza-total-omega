@@ -391,3 +391,9 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         if val > 0: canvas.create_arc(*caja, start=90, extent=-(max(0.0, min(100.0, val)) / 100 * 359.9), style="arc", outline=fill or score_color(val), width=thick)
     except (TypeError, ValueError, AttributeError, ZeroDivisionError): 
         return
+
+if __name__ == "__main__":
+    # Test simple de integridad: Verificar que los alias de color coincidan con la paleta.
+    assert color("surface") == C_SURFACE, "Mismatch en alias de color SURFACE"
+    assert color("success") == C_SUCCESS, "Mismatch en alias de color SUCCESS"
+    print("Branding module integrity check passed.")

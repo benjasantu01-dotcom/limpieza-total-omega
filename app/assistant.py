@@ -80,7 +80,7 @@ class MetricSpec:
     Define el contrato de validación y conversión para métricas numéricas.
     
     Attributes:
-        cast_func: Función (int/float) para transformar el valor bruto.
+        cast_func: Función para transformar el valor bruto (ej. float o int).
         min_val: Límite inferior físico aceptable.
         max_val: Límite superior físico aceptable.
     """
@@ -118,7 +118,7 @@ class ProblemCriterion(NamedTuple):
         val = ctx.get_metric(self.metric_key, -1.0)
         return val >= 0 and self._evaluate_metric(val)
 
-    def format_if_triggered(self, ctx: SystemContext) -> str | None:
+    def format_if_triggered(self, ctx: SystemContext) -> Optional[str]:
         """Retorna una cadena descriptiva si el criterio se cumple, validando seguridad."""
         try:
             if not self.is_triggered_by(ctx):
@@ -138,8 +138,8 @@ class AreaExplanation(NamedTuple):
     description: str
 
 # Tipos para validación de datos
-MetricSource: TypeAlias = dict[str, Any] | object
-ScoreSource: TypeAlias = dict[str, Any] | object
+MetricSource: TypeAlias = Union[dict[str, Any], object]
+ScoreSource: TypeAlias = Union[dict[str, Any], object]
 
 # Constantes de seguridad
 _MAX_TEXT_LENGTH: Final[int] = 1000
@@ -282,7 +282,6 @@ class SystemContext:
         found_data = False
         for key, spec in _VALIDATORS.items():
             try:
-                # Se valida que el valor no sea None antes de intentar procesarlo
                 val = _get_source_value(source, key)
                 if val is not None and _validate_and_assign(self, source, key, spec):
                     found_data = True
@@ -359,7 +358,6 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Fabrica un SystemContext a partir de fuentes de datos dispersas."""
     ctx = SystemContext()
-    # Filtramos fuentes explícitamente para asegurar que sean contenedores de datos
     valid_sources = []
     for s in [metrics, health, extra]:
         if isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str, int, float, bool, type)):
@@ -432,7 +430,7 @@ def _get_active_problems(ctx: SystemContext) -> list[str]:
     """Identifica problemas activos basándose en criterios de salud."""
     return [msg for crit in _CRITERIOS_SALUD if (msg := crit.format_if_triggered(ctx))]
 
-def _format_problem_message(problems: list[str], score: int | str) -> str:
+def _format_problem_message(problems: list[str], score: Union[int, str]) -> str:
     """Crea una oración descriptiva con los problemas detectados."""
     try:
         clean_score = str(score)
@@ -548,7 +546,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
     
-    # Búsqueda directa optimizada
     for token in _TOKEN_REGEX.findall(q_sanitized):
         if (handler := _KEYWORD_TO_HANDLER.get(token)):
             return handler(context, question)

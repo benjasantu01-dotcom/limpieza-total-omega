@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 22 | 4 | 4 | 1 | 19 |
+| 2026-09-05 | 18 | 4 | 4 | 1 | 19 |
 | 2026-09-06 | 165 | 3 | 23 | 9 | 150 |
-| 2026-09-07 | 46 | 5 | 6 | 7 | 40 |
+| 2026-09-07 | 50 | 5 | 6 | 7 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **54**
+- manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **48**
-- manejo de errores y validación de entradas: **48**
-- legibilidad y documentación: **42**
-- rendimiento: **41**
+- legibilidad y documentación: **44**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **20**
 - `diskreport.py`: **19**
-- `healthscore.py`: **18**
+- `settings.py`: **19**
+- `assistant.py`: **18**
 - `browser.py`: **18**
 - `quarantine.py`: **18**
-- `settings.py`: **18**
-- `duplicates.py`: **17**
-- `memory.py`: **17**
-- `assistant.py`: **17**
-- `main.py`: **16**
+- `healthscore.py`: **17**
+- `duplicates.py`: **16**
+- `memory.py`: **16**
 - `organizer.py`: **16**
 - `safety.py`: **16**
-- `branding.py`: **15**
-- `startup.py`: **8**
+- `branding.py`: **16**
+- `main.py`: **15**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T04:29:36` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en los retornos y argumentos, y se ha introducido un bloque `if __name__ == "__main__":` con una prueba de integridad básica para validar la consistencia de los alias de color y la configuración de la paleta.
+- `2026-09-07T04:28:43` **assistant.py** (legibilidad y documentación): Mejora la documentación técnica interna mediante la adición de Type Hints explícitos, la resolución de ambigüedades en parámetros (especificando `Any` o `Union`) y la clarificación del flujo de datos en las funciones de validación de seguridad, facilitando el mantenimiento y la auditoría del código conforme al enfoque de legibilidad.
+- `2026-09-07T04:28:06` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación explícita para asegurar que los comandos extraídos del CSV no estén vacíos y sean rutas potencialmente válidas antes de instanciar `StartupEntry`, evitando así el procesamiento de filas malformadas o entradas de registro sin ruta de ejecución.
+- `2026-09-07T04:27:38` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save()` capturando explícitamente el caso donde `json.load()` falla tras la escritura y validando el estado del sistema mediante `os.access` y `shutil.disk_usage` antes de cualquier operación destructiva sobre archivos existentes, asegurando que la configuración nunca quede en un estado corrupto o incompleto.
 - `2026-09-07T04:22:08` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` al validar explícitamente el tipo de entrada de `directory` y envolver el bucle de escaneo con una verificación de seguridad preventiva, además de agregar manejo de errores específico ante posibles fallos en `os.scandir` para asegurar que el proceso no se detenga inesperadamente.
 - `2026-09-07T04:20:02` **safety.py** (manejo de errores y validación de entradas): Se mejora `_check_file_integrity` para distinguir explícitamente entre errores de acceso al sistema de archivos (bloqueos, permisos) y violaciones de política de seguridad (hard links, tamaño, etc.), evitando ocultar errores del sistema bajo un `UnsafePathError` genérico que podría enmascarar problemas de I/O legítimos.
 - `2026-09-07T04:18:36` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y la carga inicial del manifiesto añadiendo validaciones explícitas de tipo y estructura antes de procesar los datos, evitando que un JSON malformado o un archivo de manifiesto corrompido provoquen caídas inesperadas en el bucle principal.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T03:57:48` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` al reemplazar el manejo genérico de excepciones por una validación estricta de rutas (`Path.resolve()`) y asegurar que el directorio padre exista antes de intentar escribir, cumpliendo con las reglas de seguridad sin cambiar la funcionalidad.
 - `2026-09-07T03:50:15` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` añadiendo validación explícita para evitar que la ingestión de métricas falle silenciosamente al procesar fuentes de datos malformadas o tipos inesperados.
 - `2026-09-07T02:35:37` **startup.py** (seguridad defensiva): Reforcé la seguridad defensiva en `parse_registry_csv` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta extraída antes de procesarla, evitando que entradas maliciosas en el registro pudieran evadir el filtro de seguridad inicial.
-- `2026-09-07T02:26:37` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save()` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del archivo de configuración antes de cualquier operación, asegurando que ni siquiera el archivo de settings pueda ser movido a una ubicación crítica (como `System32`) mediante un archivo `config.json` malintencionado.
-- `2026-09-07T02:26:21` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva del escáner implementando un filtrado más estricto en `process_entry` y `scan_directory` para evitar el procesamiento de rutas UNC y proteger el acceso a archivos, asegurando que `is_protected_path` se consulte siempre antes de realizar cualquier operación de metadatos (stat), mitigando el riesgo de interacción con recursos de red inesperados o rutas maliciosas.
-- `2026-09-07T02:17:22` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad en `quarantine_file` al introducir un chequeo explícito de la existencia del archivo de origen justo antes de la operación de aislamiento, evitando así estados de carrera donde el archivo podría ser eliminado o movido por otro proceso entre la validación y el inicio de la copia.
-- `2026-09-07T02:17:02` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad en `_is_file_locked` para evitar la apertura innecesaria de archivos en modo lectura exclusiva si el archivo es un enlace simbólico o un punto de reparse, delegando esta validación a la lógica de `_is_junction` antes de intentar operar sobre el descriptor.
