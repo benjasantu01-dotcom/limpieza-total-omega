@@ -114,9 +114,7 @@ def is_valid_junk_extension(filename: str) -> bool:
 def _get_win_attributes(path_or_entry: Union[os.DirEntry, Path]) -> int:
     """
     Obtiene los atributos de archivo Win32 mediante syscalls.
-    
-    Retorna:
-        Máscara de bits de atributos Win32, o 0 si no se puede acceder.
+    Retorna la máscara de bits de atributos Win32 o 0 si el acceso falla.
     """
     try:
         if hasattr(path_or_entry, 'stat'):
@@ -202,7 +200,6 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
     try:
         s: Path = src.resolve()
         d: Path = dest.resolve()
-        # Verificamos si src es igual o es padre de dest, evitando excepciones por rutas inexistentes
         return s == d or (d.exists() and s.exists() and d.is_relative_to(s))
     except (OSError, ValueError):
         return True
@@ -210,12 +207,13 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 
 def _passes_system_checks(src: Path) -> bool:
     """
-    Verifica atributos de archivo (System, Hidden, ReadOnly).
-    Ignora archivos protegidos por el SO para preservar la estabilidad del sistema.
+    Verifica atributos de archivo (System, Hidden, ReadOnly, Reparse).
+    Retorna True si el archivo es considerado "seguro" para manipular.
     """
     if os.name != "nt" or src is None: return True
-    # 0x400 (Reparse), 0x004 (System), 0x002 (Hidden), 0x001 (ReadOnly)
-    return not (_get_win_attributes(src) & 0x407)
+    # Máscaras: 0x400 (Reparse), 0x004 (System), 0x002 (Hidden), 0x001 (ReadOnly)
+    mask: int = 0x407
+    return not (_get_win_attributes(src) & mask)
 
 
 def _has_forbidden_chars(path: Path) -> bool:
@@ -301,7 +299,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
     """
     if depth > 50 or current_dir is None: return
     
-    # Pre-chequeo único para el directorio actual
     if is_protected_path(current_dir):
         return
 
@@ -372,7 +369,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
             if shutil.disk_usage(dest_base_res.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): 
                 return None
         except (OSError, ValueError):
-            pass # Fallback: continuar si no se puede verificar espacio de forma precisa
+            pass 
             
         if not _is_safe_to_move(junk_file, dest_base_res): return None
         
@@ -382,7 +379,6 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         safe_name: str = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
         target: Path = _generate_unique_target(dest_base_res / safe_name)
         
-        # Verificación final de contención y aliasing
         if target.parent.resolve() != dest_base_res: return None
         if target.exists() and os.path.samefile(src_res, target): return None
             

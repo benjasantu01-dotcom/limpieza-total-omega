@@ -47,7 +47,7 @@ BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 # Máscaras de acceso para operaciones de proceso seguro en Win32
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
-PROCESS_SET_QUOTA: Final[int] = 0x0100
+PROCESS_SET_QUOTA: Final[int] = 0x100
 # Mínimo acceso necesario: consultar info + modificar cuota (para EmptyWorkingSet)
 SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
 
@@ -79,8 +79,9 @@ TRIM_WARNING: Final[str] = (
 
 class MEMORYSTATUSEX(ctypes.Structure):
     """
-    Estructura de datos utilizada por GlobalMemoryStatusEx para reportar el
-    estado físico y virtual de la memoria del sistema en Windows.
+    Estructura de datos Win32 utilizada por GlobalMemoryStatusEx.
+    Los tipos corresponden a definiciones de Microsoft para asegurar 
+    alineación de memoria correcta en arquitecturas de 64 bits.
     """
     _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),
@@ -147,8 +148,8 @@ def format_bytes(num: Optional[int | float]) -> str:
 @lru_cache(maxsize=1)
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
     """
-    Instancia y pre-configura la estructura de memoria de Windows.
-    El campo dwLength es obligatorio para que la API de Win32 acepte la estructura.
+    Instancia la estructura de memoria de Windows y establece su longitud requerida.
+    La longitud debe ser configurada antes de llamar a GlobalMemoryStatusEx.
     """
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
