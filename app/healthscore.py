@@ -156,19 +156,19 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Aplica normalización defensiva para asegurar integridad de datos."""
-        self.junk_mb = max(0.0, _to_float(self.junk_mb if self.junk_mb is not None else 0.0))
-        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb if self.duplicate_mb is not None else 0.0))
-        self.suspicious_count = int(max(0, _to_float(self.suspicious_count if self.suspicious_count is not None else 0)))
-        self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings if self.suspicious_warnings is not None else 0)))
-        self.startup_count = int(max(0, _to_float(self.startup_count if self.startup_count is not None else 0)))
-        self.quarantined_count = int(max(0, _to_float(self.quarantined_count if self.quarantined_count is not None else 0)))
-        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent if self.memory_available_percent is not None else 100.0, 100.0), 0.0, 100.0)
-        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent if self.disk_free_percent is not None else 100.0, 100.0), 0.0, 100.0)
+        self.junk_mb = max(0.0, _to_float(self.junk_mb))
+        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
+        self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
+        self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings)))
+        self.startup_count = int(max(0, _to_float(self.startup_count)))
+        self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
+        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
+        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
 
     @property
     def is_finite(self) -> bool:
         """Verifica que todos los atributos numéricos sean matemáticamente finitos."""
-        return all(math.isfinite(getattr(self, field.name)) for field in self.__dataclass_fields__.values())
+        return all(math.isfinite(float(getattr(self, f.name))) for f in self.__dataclass_fields__.values())
 
 @dataclass
 class HealthResult:
@@ -213,7 +213,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                 if isinstance(msg, str) and msg.strip():
                     findings.append(msg.strip())
             except Exception:
-                # Se captura cualquier excepción al generar el mensaje para no abortar el reporte.
                 continue
     return findings
 

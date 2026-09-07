@@ -229,9 +229,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorrido DFS (Depth-First Search) para listar archivos y sus pesos.
-    
-    Implementa control de inodos para evitar el procesamiento redundante en 
-    sistemas de archivos con enlaces simbólicos complejos.
     """
     root_path = _validate_root(directory)
     if root_path is None:
@@ -319,9 +316,6 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
     Realiza una pasada integral sobre el árbol de archivos para recolectar métricas.
-    
-    Utiliza una estrategia de min-heap para mantener los 20 archivos más grandes
-    con una complejidad espacial reducida, procesando el árbol mediante `walk_files`.
     """
     total_bytes, total_files = 0, 0
     ext_sizes, ext_counts = defaultdict(int), defaultdict(int)

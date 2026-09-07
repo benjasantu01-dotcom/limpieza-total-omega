@@ -180,7 +180,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
     try:
         if not item: return None
         root = Path(item).resolve(strict=False)
-        if root.is_dir() and not is_protected_path(root):
+        if root.exists() and root.is_dir() and not is_protected_path(root):
             return root
     except (OSError, ValueError, RuntimeError):
         pass
@@ -204,12 +204,11 @@ def _collect_candidates(
                 for entry in iterator:
                     try:
                         entry_path = Path(entry.path)
+                        # Chequeos de seguridad defensivos ante cambios en el FS durante el recorrido
                         if is_protected_path(entry_path):
                             continue
-
                         if entry.is_symlink():
                             continue
-                            
                         if entry.is_dir(follow_symlinks=False):
                             if not is_junction(entry_path):
                                 _scan_directory_recursive(entry_path)
@@ -224,7 +223,7 @@ def _collect_candidates(
             pass
 
     if directories and isinstance(directories, Iterable):
-        roots = {Path(r).resolve() for item in directories if (r := _resolve_and_verify_root(item))}
+        roots = {r for item in directories if (r := _resolve_and_verify_root(item))}
         for root in roots:
             _scan_directory_recursive(root)
             
@@ -276,11 +275,13 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
         return []
         
     groups: List[DuplicateGroup] = []
+    # Validación explícita de entradas antes de iniciar el escaneo pesado
     valid_dirs = [d for d in directories if d is not None]
     if not valid_dirs: return []
 
     size_map = _collect_candidates(valid_dirs, min_size, skip_protected)
     for size, paths in size_map.items():
+        # Procesar grupos solo si todavía existen tras el filtrado inicial
         groups.extend(_decide_hash_strategy_and_process(size, paths))
         
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
