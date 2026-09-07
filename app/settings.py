@@ -318,9 +318,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             cleaned_settings["asistente_activado"] = False
         if is_protected_path(ruta_str) or not is_safe_to_modify(ruta_str): return None
         parent = ruta.parent
-        if is_protected_path(str(parent)): return None
+        if is_protected_path(str(parent)) or not is_safe_to_modify(str(parent)): return None
         if not parent.exists():
-            if not is_safe_to_modify(str(parent)): return None
             parent.mkdir(parents=True, exist_ok=True)
         if not parent.is_dir() or not os.access(parent, os.W_OK): return None
         if ruta.exists() and not os.access(ruta, os.W_OK): return None

@@ -137,7 +137,10 @@ class Scanner:
             return
         
         try:
-            if entry.is_dir(follow_symlinks=False):
+            # Identificamos tipo primero de forma segura sin seguir symlinks
+            is_dir = entry.is_dir(follow_symlinks=False)
+            
+            if is_dir:
                 if not self._is_reparse_point(entry):
                     self._handle_directory(entry, directory_stack)
                 return

@@ -167,7 +167,7 @@ class StartupEntry:
         
         try:
             norm: str = os.path.normpath(path_string)
-            if len(norm) > 260:
+            if len(norm) > 260 or norm.startswith(r"\\"):
                 return ""
         except (ValueError, TypeError):
             return ""
