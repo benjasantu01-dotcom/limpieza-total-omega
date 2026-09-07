@@ -239,19 +239,21 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 def _check_file_integrity(path: Path) -> None:
     """
     Ejecuta la batería de reglas de validación sobre el estado del archivo.
-    Lanza UnsafePathError con el código de error correspondiente ante cualquier violación.
+    Lanza UnsafePathError ante cualquier violación detectada.
     """
     try:
         file_stat = path.stat()
     except (PermissionError, OSError) as e:
-        if isinstance(e, FileNotFoundError): return
+        if isinstance(e, FileNotFoundError):
+            return
+        # Clasificar error de acceso específicamente
         code = SafetyValidationErrorCode.ACCESS_DENIED if isinstance(e, PermissionError) else SafetyValidationErrorCode.IO_ERROR
-        raise UnsafePathError(f"Error de acceso: {e}", code)
+        raise UnsafePathError(f"Error de acceso en {path}: {e}", code)
         
     for rule in _VALIDATORS:
         if rule.predicate(path, file_stat):
             code = SafetyValidationErrorCode.HARD_LINK_DETECTED if rule.reason == ProtectionReason.HARD_LINK else SafetyValidationErrorCode.GENERIC
-            raise UnsafePathError(f"Violación de integridad: {rule.reason.value}", code)
+            raise UnsafePathError(f"Violación de integridad ({rule.reason.value}) en {path}", code)
 
 
 @lru_cache(maxsize=2048)

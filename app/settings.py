@@ -325,8 +325,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if ruta.exists() and not os.access(ruta, os.W_OK): return None
         usage = shutil.disk_usage(parent)
         if usage.free < 1024 * 1024: return None
+        
+        # Validar serialización antes de escribir
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None
+        
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
         with open(temp_path, "wb") as f:
             f.write(data)
@@ -337,7 +340,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         os.replace(temp_path, ruta)
         _CACHE[ruta_str] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta
-    except (OSError, IOError, PermissionError, RuntimeError, TypeError, json.JSONDecodeError, ValueError):
+    except (TypeError, ValueError, OSError, IOError, PermissionError, json.JSONDecodeError):
         return None
     finally:
         if temp_path and temp_path.exists():

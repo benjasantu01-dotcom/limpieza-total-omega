@@ -179,7 +179,10 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    if not isinstance(directory, (str, Path)): return []
+    if directory is None or (isinstance(directory, str) and not directory.strip()):
+        return []
+    if not isinstance(directory, (str, Path)):
+        return []
         
     try:
         base_path = Path(directory)
