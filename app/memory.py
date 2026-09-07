@@ -172,8 +172,12 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         
         if k_normalized in metric_map:
             val_parts = parts[1].split()
+            # Validación robusta: asegurar que el valor sea un entero positivo
             if val_parts and val_parts[0].isdigit():
-                metric_map[k_normalized] = int(val_parts[0]) * 1024
+                try:
+                    metric_map[k_normalized] = int(val_parts[0]) * 1024
+                except (ValueError, OverflowError):
+                    continue
             
     total_mem = metric_map["MemTotal"]
     if total_mem <= 0: 
@@ -219,7 +223,8 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             
             # Divide intentando manejar posibles campos vacíos o malformados
             parts = [p.strip().strip("'\"") for p in clean_line.split(",")]
-            if len(parts) < 3 or not all(parts[:3]): 
+            # Validación robusta: requerimos exactamente 3 columnas con datos no vacíos
+            if len(parts) != 3 or not all(parts): 
                 continue
             
             proc = _is_valid_process_entry(parts[0], parts[1], parts[2])

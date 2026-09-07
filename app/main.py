@@ -781,12 +781,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self._add_setting_label(grilla, "Duplicados desde (KB):", 2, 0)
         self.min_dup_entry = self._entry(grilla, "64", 100)
-        self.min_dup_entry.insert(0, str(self.settings.get("duplicados_tamano_minimo_kb", 64)))
+        try:
+            self.min_dup_entry.insert(0, str(self.settings.get("duplicados_tamano_minimo_kb", 64)))
+        except tk.TclError:
+            pass
         self.min_dup_entry.grid(row=2, column=1, sticky="w")
 
         self._add_setting_label(grilla, "Top de archivos:", 2, 2)
         self.top_files_entry = self._entry(grilla, "15", 100)
-        self.top_files_entry.insert(0, str(self.settings.get("top_archivos", 15)))
+        try:
+            self.top_files_entry.insert(0, str(self.settings.get("top_archivos", 15)))
+        except tk.TclError:
+            pass
         self.top_files_entry.grid(row=2, column=3, sticky="w")
 
         self._build_ia_settings(tab)

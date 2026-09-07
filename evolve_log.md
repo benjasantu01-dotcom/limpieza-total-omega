@@ -746,3 +746,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-07T01:31:12` ➖ Sin cambios en duplicates.py (enfoque: robustez ante casos límite). Motivo: Se ha robustecido el proceso de búsqueda en `_collect_candidates` para manejar la concurrencia y los cambios de estado del disco entre la enumeración y el acceso a metadatos, asegurando que si un archivo desaparece durante el escaneo, el proceso continúe sin interrumpirse.
 - `2026-09-07T01:31:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T01:31:12` Corrida terminada. Total usado hoy: 36.
+- `2026-09-07T01:34:01` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-09-07T01:34:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-07T01:35:14` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-09-07T01:36:26` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se implementó un mecanismo de protección en `_ask_folder` y `_build_tab_ajustes` para manejar situaciones donde el sistema de archivos deniega permisos o la ruta seleccionada es inválida, asegurando que `main.py` no colapse ante errores inesperados del sistema operativo.
+- `2026-09-07T01:36:57` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `parse_linux_meminfo` y `parse_windows_process_csv` añadiendo validaciones contra entradas malformadas o tipos de datos inesperados, mitigando posibles errores de ejecución ante archivos de sistema inconsistentes o salidas de shell truncadas.
+- `2026-09-07T01:37:14` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia ante excepciones de E/S en `_is_file_locked` y `_is_recursive_violation` mediante el uso de bloques `try-except` más granulares y la validación de estados de archivo, evitando fallos silenciosos ante archivos inexistentes o bloqueos de acceso durante la resolución de rutas.
+- `2026-09-07T01:37:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T01:37:14` Corrida terminada. Total usado hoy: 40.

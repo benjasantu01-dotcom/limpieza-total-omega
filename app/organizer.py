@@ -187,6 +187,7 @@ def _is_file_locked(path: Path) -> bool:
     """
     if path is None: return True
     try:
+        if not path.exists(): return True
         with open(path, "rb") as f:
             return False
     except (PermissionError, OSError, IOError):
@@ -201,7 +202,8 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
     try:
         s: Path = src.resolve()
         d: Path = dest.resolve()
-        return d.is_relative_to(s) or os.path.samefile(s, d)
+        # Verificamos si src es igual o es padre de dest, evitando excepciones por rutas inexistentes
+        return s == d or (d.exists() and s.exists() and d.is_relative_to(s))
     except (OSError, ValueError):
         return True
 
