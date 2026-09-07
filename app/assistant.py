@@ -647,6 +647,7 @@ def ask(question: str, context: Optional[SystemContext] = None,
     if not available(base): return respaldo
     try:
         settings_data = settings.load(base)
+        if not isinstance(settings_data, dict): return respaldo
         cfg = _parse_config(settings_data)
         if not _MODEL_NAME_REGEX.match(cfg.model):
             return respaldo

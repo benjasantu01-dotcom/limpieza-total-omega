@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
-- Rechazadas por tests: 10
+- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 207
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 4 | 1 | 1 | 0 | 12 |
+| 2026-09-05 | 3 | 0 | 1 | 0 | 10 |
 | 2026-09-06 | 165 | 3 | 23 | 9 | 150 |
-| 2026-09-07 | 67 | 6 | 11 | 7 | 45 |
+| 2026-09-07 | 69 | 6 | 11 | 8 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **45**
+- robustez ante casos límite: **46**
 - rendimiento: **45**
-- robustez ante casos límite: **44**
+- seguridad defensiva: **44**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **21**
 - `settings.py`: **20**
+- `browser.py`: **19**
 - `diskreport.py`: **19**
-- `browser.py`: **18**
+- `assistant.py`: **18**
 - `quarantine.py`: **18**
-- `memory.py`: **17**
-- `assistant.py`: **17**
 - `healthscore.py`: **17**
 - `organizer.py`: **17**
 - `safety.py`: **16**
 - `duplicates.py`: **16**
+- `memory.py`: **16**
 - `main.py`: **15**
 - `branding.py`: **15**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T05:50:12` **browser.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `_sum_directory_recursive` ante archivos bloqueados o denegados durante el escaneo, asegurando que la recursión continúe su curso incluso si un subdirectorio lanza una excepción de acceso durante `os.scandir` o `entry.stat`.
+- `2026-09-07T05:49:15` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del asistente ante posibles errores de configuración y corrupción de datos al implementar una validación de `settings` en `ask` que captura excepciones antes de procesar el contexto, evitando que una configuración malformada bloquee la respuesta del motor local.
 - `2026-09-07T05:39:55` **settings.py** (rendimiento): Optimicé el rendimiento de `load` y `save` eliminando la llamada innecesaria a `copy()` durante la validación inicial y utilizando `dict.get()` para evitar búsquedas repetidas en el diccionario de configuración, además de consolidar la validación de tipos mediante un acceso único a `_STR_TO_ENUM`.
 - `2026-09-07T05:39:25` **scanner.py** (rendimiento): Se optimizó el flujo de escaneo eliminando múltiples llamadas redundantes a `is_protected_path` y `Path()` dentro de `process_entry` y `scan_directory` al aprovechar que `entry.path` ya está disponible y `_is_safe_entry` realiza la validación inicial, reduciendo el número de syscalls y la creación de objetos innecesarios en un bucle crítico.
 - `2026-09-07T05:39:01` **safety.py** (rendimiento): Se optimizó `is_protected_path` eliminando la llamada innecesaria a `normalize` (que es costosa al resolver el path real) dentro de la cadena de llamadas, permitiendo que la caché `lru_cache` funcione sobre el string original, reduciendo significativamente la sobrecarga en escaneos masivos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T04:59:13` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `settings.py` al extraer la compleja y densa lógica de validación de rutas y seguridad del método `_Validators._run_safety_checks` en sub-funciones con propósitos claros, permitiendo un flujo de lectura lineal y documentado.
 - `2026-09-07T04:58:59` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `Scanner` y sus métodos principales mediante la adición de docstrings estructurados que clarifican el flujo de datos y las responsabilidades, además de renombrar `stack` a `directory_stack` para evitar ambigüedades sobre su propósito en el bucle de escaneo.
 - `2026-09-07T04:49:44` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `organizer.py` mediante la adición de Type Hints detallados, clarificación de docstrings en funciones críticas de validación y la extracción de la lógica de chequeo de atributos a una estructura más legible, sin alterar la lógica de negocio ni las salvaguardas de seguridad.
-- `2026-09-07T04:49:15` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `MEMORYSTATUSEX` para reflejar con mayor precisión el uso de tipos de `ctypes`, facilitando la auditoría del código y garantizando la legibilidad para futuros desarrolladores del equipo.
-- `2026-09-07T04:38:51` **healthscore.py** (legibilidad y documentación): Se ha añadido un método `__post_init__` y `validate` más robusto mediante `TypeGuard` (implícito) y validaciones de rango explícitas, además de documentar mediante docstrings el propósito de los factores de normalización para mejorar la mantenibilidad del motor.
