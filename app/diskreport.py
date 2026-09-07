@@ -247,17 +247,18 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry):
                             continue
                         
+                        entry_path = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
                             if inode[0] != 0 and inode not in visited_inodes:
-                                entry_path = Path(entry.path)
                                 if not skip_protected or not is_protected_path(entry_path):
                                     visited_inodes.add(inode)
                                     stack.append(entry_path)
                         elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat(follow_symlinks=False)
-                            yield Path(entry.path), max(0, int(getattr(st, 'st_size', 0)))
+                            if not skip_protected or not is_protected_path(entry_path):
+                                st = entry.stat(follow_symlinks=False)
+                                yield entry_path, max(0, int(getattr(st, 'st_size', 0)))
                     except (PermissionError, OSError, AttributeError):
                         continue
         except (PermissionError, OSError, FileNotFoundError):
@@ -333,7 +334,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
                 heapq.heappush(top_heap, (size, path))
             elif size > top_heap[0][0]:
                 heapq.heapreplace(top_heap, (size, path))
-    except Exception:
+    except (OSError, PermissionError, RuntimeError):
         pass
             
     return SummaryData(total_bytes, total_files, dict(ext_sizes), dict(ext_counts), heapq.nlargest(20, top_heap))

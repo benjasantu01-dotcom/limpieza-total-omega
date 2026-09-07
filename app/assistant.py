@@ -574,11 +574,12 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
     )
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
-    """Crea el cuerpo JSON para la API de Google."""
-    if not _ensure_safe_text(context_text): return None
+    """Crea el cuerpo JSON para la API de Google, validando que el contexto sea estático."""
+    if not _ensure_safe_text(context_text) or not _is_safe_text_structure(context_text): return None
     try:
         q = _sanitize_query(question)
         if not _ensure_safe_text(q): return None
+        # Serialización controlada
         data = {"contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]}]}
         encoded = json.dumps(data).encode("utf-8")
         if len(encoded) > _MAX_PROMPT_LIMIT * 2:
@@ -604,7 +605,7 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     except (AttributeError, TypeError, IndexError): return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
-    """Gestiona la comunicación con la API externa."""
+    """Gestiona la comunicación con la API externa verificando que la respuesta no sea una ruta."""
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): 
         return None
         
@@ -627,10 +628,12 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             raw_text = _extract_text_from_gemini_json(data)
             if not raw_text: return None
             
+            # Post-procesado defensivo
             clean = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             final = _validate_response_length(clean)
             
-            if _ensure_safe_text(final):
+            # Verificación estricta: si la IA intenta retornar una ruta, se descarta
+            if _ensure_safe_text(final) and _is_safe_text_structure(final):
                 return final
             return None
             

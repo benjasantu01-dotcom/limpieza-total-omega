@@ -221,8 +221,12 @@ def _sum_directory_recursive(
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
     
-    # Validar existencia antes de procesar
-    if not os.path.isdir(root_abs):
+    root_path = Path(root_abs)
+    # Validar jerarquía estricta contra base_check_path si existe
+    if base_check_path and not _is_path_inside_base(root_path, base_check_path):
+        return 0
+    
+    if not root_path.is_dir():
         return 0
         
     if root_abs in memo:

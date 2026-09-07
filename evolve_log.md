@@ -542,3 +542,10 @@ FAILED evolve/tests/test_assistant.py::test_booleans_accept_the_usual_strings - 
 - `2026-09-07T10:45:48` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
 - `2026-09-07T10:45:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T10:45:48` Corrida terminada. Total usado hoy: 256.
+- `2026-09-07T10:54:18` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-09-07T10:54:59` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endurece la seguridad del motor de consulta externa implementando `is_protected_path` sobre el texto de respuesta de Gemini y se añade una capa de validación adicional en `_build_payload` para asegurar que el contexto enviado nunca sea modificado por caracteres de escape o inyección durante la serialización JSON.
+- `2026-09-07T10:55:32` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-07T10:55:59` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante una verificación de "prohibición de re-entrada" y una validación estricta de la jerarquía de rutas durante la recursión, evitando que un enlace simbólico o un reparse point malicioso dentro de la subestructura de caché pueda escapar del ámbito de `base_check_path`.
+- `2026-09-07T10:56:12` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Reforcé la integridad del escaneo en `_collect_summary_data` y `walk_files` capturando excepciones específicas durante la iteración para evitar abortos silenciosos del proceso y asegurar que las rutas procesadas pasen por `is_protected_path` incluso en casos de error de sistema.
+- `2026-09-07T10:56:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T10:56:12` Corrida terminada. Total usado hoy: 260.

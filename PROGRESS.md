@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Mejoras aceptadas: **236** (46.8% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-06 | 114 | 3 | 14 | 6 | 111 |
-| 2026-09-07 | 119 | 11 | 18 | 16 | 92 |
+| 2026-09-06 | 114 | 3 | 14 | 6 | 107 |
+| 2026-09-07 | 122 | 11 | 18 | 16 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,19 +25,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **51**
 - manejo de errores y validación de entradas: **46**
 - rendimiento: **44**
-- seguridad defensiva: **39**
+- seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **21**
 - `settings.py`: **20**
-- `browser.py`: **18**
+- `browser.py`: **19**
+- `assistant.py`: **19**
 - `safety.py`: **18**
-- `assistant.py`: **18**
 - `quarantine.py`: **18**
+- `diskreport.py`: **17**
 - `duplicates.py`: **17**
 - `healthscore.py`: **17**
-- `diskreport.py`: **16**
 - `memory.py`: **16**
 - `main.py`: **15**
 - `branding.py`: **15**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T10:56:12` **diskreport.py** (seguridad defensiva): Reforcé la integridad del escaneo en `_collect_summary_data` y `walk_files` capturando excepciones específicas durante la iteración para evitar abortos silenciosos del proceso y asegurar que las rutas procesadas pasen por `is_protected_path` incluso en casos de error de sistema.
+- `2026-09-07T10:55:59` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante una verificación de "prohibición de re-entrada" y una validación estricta de la jerarquía de rutas durante la recursión, evitando que un enlace simbólico o un reparse point malicioso dentro de la subestructura de caché pueda escapar del ámbito de `base_check_path`.
+- `2026-09-07T10:54:59` **assistant.py** (seguridad defensiva): Se endurece la seguridad del motor de consulta externa implementando `is_protected_path` sobre el texto de respuesta de Gemini y se añade una capa de validación adicional en `_build_payload` para asegurar que el contexto enviado nunca sea modificado por caracteres de escape o inyección durante la serialización JSON.
 - `2026-09-07T10:45:34` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `load` para asegurar que el contenido del archivo JSON sea un diccionario válido antes de procesarlo, evitando excepciones imprevistas al iterar sobre él si el archivo fuera, por ejemplo, un valor primitivo (`null`, `true`, `123`) o un tipo de datos no deseado.
 - `2026-09-07T10:45:02` **scanner.py** (robustez ante casos límite): Se ha robustecido el escaneo heurístico incorporando una validación explícita para evitar el procesamiento redundante o erróneo de archivos que carecen de nombre (nombre vacío) o que presentan metadatos inaccesibles debido a condiciones de carrera, asegurando que las funciones de análisis no fallen al intentar acceder a propiedades de archivos bloqueados por el sistema durante la iteración.
 - `2026-09-07T10:44:36` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes del sistema de archivos, asegurando que `_check_file_integrity` y `_is_system_or_hidden` manejen correctamente archivos que desaparecen entre la verificación de existencia y la obtención de atributos (`FileNotFoundError`), evitando fallos en condiciones de carrera.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T10:14:34` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `ingest` y `_get_source_value` para manejar fallos en la estructura del objeto fuente (ej. objetos con atributos que lanzan excepciones al ser accedidos o tipos inesperados) sin interrumpir el proceso de ingestión.
 - `2026-09-07T10:04:48` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` reemplazando el uso intensivo de `copy()` y serialización JSON repetida mediante un caché más robusto, evitando lecturas y validaciones de disco innecesarias cuando el archivo no ha cambiado.
 - `2026-09-07T10:04:33` **scanner.py** (rendimiento): Se optimizó el flujo de escaneo integrando la verificación de `is_protected_path` directamente dentro de `_is_safe_entry` y evitando llamadas redundantes a `Path(entry.path)` y `path.suffix`, reduciendo significativamente las operaciones de I/O y la creación de objetos innecesarios durante el recorrido recursivo.
-- `2026-09-07T10:04:09` **safety.py** (rendimiento): Se optimizó el rendimiento del filtrado masivo de rutas en `filter_safe_paths` evitando la resolución redundante de `normalize()` (que es costosa debido a `resolve()` y `exists()`) al mover el chequeo de restricciones de `base_dir` y extensiones hacia una lógica de pre-filtrado rápido.
-- `2026-09-07T09:54:48` **memory.py** (rendimiento): Se implementó un mecanismo de caché más eficiente y robusto para `top_memory_processes` evitando la ejecución redundante de comandos costosos mediante la actualización selectiva de la variable global de resultados solo cuando la ejecución del proceso de PowerShell es exitosa, mejorando la estabilidad del rendimiento del módulo.
-- `2026-09-07T09:46:00` **healthscore.py** (rendimiento): Optimicé el método `SystemMetrics.is_finite` reemplazando la serie de comprobaciones booleanas por una verificación eficiente mediante `all()` sobre un generador, reduciendo la redundancia de código y mejorando la legibilidad.
