@@ -68,10 +68,9 @@ class StartupEntry:
     """
     Representa una entrada de inicio (archivo en carpeta o clave de registro).
 
-    Atributos:
-        name: Identificador legible de la entrada.
-        command: String original obtenido del sistema (ruta o línea de ejecución).
-        source: Origen del dato ('registro' o 'carpeta').
+    Mantiene una caché interna (`_exec_cache`) para el ejecutable resuelto y un 
+    booleano (`_checked_exists`) que garantiza que la resolución costosa de I/O 
+    solo ocurra una vez por instancia.
     """
     name: str
     command: str
@@ -81,10 +80,13 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
-        """Verifica si el nombre de archivo es un dispositivo reservado por el kernel de Windows."""
+        """
+        Valida si el nombre base del archivo coincide con dispositivos reservados 
+        por el kernel de Windows (ej: NUL, CON), los cuales podrían causar 
+        bloqueos o comportamiento inesperado al acceder a ellos mediante la API de archivos.
+        """
         reserved: Set[str] = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
         try:
-            # Detectar rutas con NUL bytes u otros caracteres de control que confunden a la API de Windows
             if "\0" in path_str:
                 return True
             return Path(path_str).stem.upper() in reserved
@@ -92,28 +94,32 @@ class StartupEntry:
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:
-        """Detecta caracteres de inyección de comandos o rutas UNC que requieren validación extra."""
+        """
+        Realiza una verificación heurística de la cadena de comandos en busca de 
+        caracteres asociados a inyección de comandos o rutas UNC que, por diseño, 
+        quedan fuera del ámbito de escaneo local de esta aplicación.
+        """
         suspicious_chars = '<>|?*\0&;%'
         return any(c in path_string for c in suspicious_chars) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Valida que la extensión sea ejecutable y no sea un enlace simbólico."""
+        """Verifica la extensión del archivo y que el objeto no sea un enlace simbólico."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Filtra caracteres de control ASCII (no imprimibles) de la cadena de comando."""
+        """Filtra caracteres de control ASCII no imprimibles para limpiar la visualización."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae rutas encapsuladas entre comillas ignorando argumentos posteriores.
-        Lógica: busca el segundo índice de comillas; si existe, valida la ruta
-        interna contra `is_protected_path` antes de considerarla válida.
+        Extrae la ruta absoluta dentro de una cadena de comando entrecomillada.
+        Valida que la ruta extraída no sea nula y no viole las restricciones de 
+        `is_protected_path` antes de retornar el string.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -136,20 +142,25 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Valida existencia y tipo de archivo, evitando seguir puntos de reparseo (Junctions)."""
+        """
+        Confirma la existencia y accesibilidad del archivo en disco.
+        Ignora explícitamente puntos de reparseo (Junctions) para evitar 
+        recorrer recursivamente estructuras de archivos del sistema.
+        """
         try:
             if not os.path.lexists(p) or p.is_dir():
                 return False
             stats = p.lstat()
-            # 0x00000400 es el atributo FILE_ATTRIBUTE_REPARSE_POINT en Windows
+            # 0x00000400 es el atributo FILE_ATTRIBUTE_REPARSE_POINT
             return not p.is_symlink() and not (getattr(stats, 'st_file_attributes', 0) & 0x00000400)
         except (OSError, PermissionError, AttributeError):
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
-        Normaliza rutas a formato absoluto y valida integridad.
-        Implementa caché de resultados (`_EXISTS_CACHE`) para minimizar llamadas al sistema.
+        Resuelve una ruta relativa o corta a su forma absoluta en disco.
+        Utiliza una caché de nivel de módulo `_EXISTS_CACHE` para evitar 
+        consultas repetidas al sistema de archivos para la misma cadena.
         """
         if not path_string or self._is_path_suspicious(path_string) or self._is_reserved_device_name(path_string):
             return ""
@@ -189,7 +200,7 @@ class StartupEntry:
             return path_string
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Parsea líneas de comando complejas para obtener el ejecutable primario."""
+        """Decodifica una línea de comando (que puede contener flags/argumentos) para identificar el binario."""
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -206,7 +217,10 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Retorna la ruta absoluta del ejecutable tras resolución diferida (Lazy Loading)."""
+        """
+        Retorna la ruta absoluta del ejecutable, resolviéndola solo cuando sea necesario.
+        Implementa lazy loading para optimizar el rendimiento al listar múltiples entradas.
+        """
         if self._checked_exists:
             return self._exec_cache or ""
             
@@ -249,7 +263,6 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
             with os.scandir(folder) as it:
                 for entry in it:
                     try:
-                        # Verificamos acceso explícito al path antes de consultar propiedades
                         if entry.path and entry.is_file(follow_symlinks=False):
                             _, ext = os.path.splitext(entry.name)
                             if ext.lower() in EXECUTABLE_EXTS:
@@ -294,20 +307,17 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             raw_n = row.get(f_name)
             raw_c = row.get(f_cmd)
             
-            # Validación: asegurar existencia de los datos antes de operar
             if raw_n is None or raw_c is None:
                 continue
                 
             name: str = "".join(c for c in raw_n if ord(c) >= 32).strip()
             cmd: str = "".join(c for c in raw_c if ord(c) >= 32).strip()
             
-            # Validación de datos: asegurar que no haya comandos vacíos o rutas UNC sospechosas
             if not name or not cmd or cmd.startswith(r"\\") or cmd in seen_commands:
                 continue
             if name.upper().startswith("PS"):
                 continue
             
-            # Validación de seguridad: no procesar nada que apunte a rutas protegidas
             try:
                 p_cmd: Path = Path(cmd)
                 if not p_cmd.parts or is_protected_path(p_cmd):

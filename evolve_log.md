@@ -463,3 +463,30 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-09-07T09:24:08` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación de la clase `Scanner` y sus métodos principales con docstrings precisos, añadí type hints faltantes en la pila de directorios y clarifiqué la lógica de `scan_file` para asegurar que la responsabilidad del filtrado inicial sea explícita y coherente con las reglas de seguridad.
 - `2026-09-07T09:24:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T09:24:08` Corrida terminada. Total usado hoy: 224.
+- `2026-09-07T09:32:38` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-09-07T09:33:10` Tests FALLARON:
+```
+............F........................................................... [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+____________________ test_booleans_accept_the_usual_strings ____________________
+
+    def test_booleans_accept_the_usual_strings():
+>       assert settings.validate({"asistente_activado": "true"})["asistente_activado"] is True
+E       assert False is True
+
+evolve/tests/test_assistant.py:105: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_booleans_accept_the_usual_strings - assert False is True
+1 failed, 298 passed in 0.89s
+
+```
+- `2026-09-07T09:33:10` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad del módulo documentando exhaustivamente las funciones internas de validación (`_Validators`) y extrayendo la lógica de normalización de tipos de `save` hacia una función privada más clara, facilitando la comprensión del flujo de datos sin alterar el comportamiento.
+- `2026-09-07T09:33:43` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de la clase `StartupEntry` y sus métodos internos mediante la adición de docstrings técnicos detallados que explican la lógica de resolución, la política de caché y las medidas de seguridad adoptadas para el manejo de rutas, cumpliendo con el enfoque de legibilidad y mantenibilidad.
+- `2026-09-07T09:34:26` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `local_answer` reemplazando la iteración por tokens sobre toda la cadena de consulta por una búsqueda directa en `_KEYWORD_TO_HANDLER`, evitando el preprocesamiento innecesario de palabras que no son disparadores.
+- `2026-09-07T09:34:48` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado la generación de degradados en `gradient_colors` y `draw_gradient_bar` mediante el uso de una lógica de generación directa de segmentos de color, evitando la creación de listas intermedias de miles de elementos y reduciendo la carga sobre el recolector de basura y el caché de `lru_cache` al trabajar con rangos calculados aritméticamente.
+- `2026-09-07T09:34:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T09:34:48` Corrida terminada. Total usado hoy: 228.
