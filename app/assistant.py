@@ -553,7 +553,7 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Crea el cuerpo JSON para la API de Google, validando que el contexto sea estático."""
-    if not _ensure_safe_text(context_text) or not _is_safe_结构_structure(context_text): return None
+    if not _ensure_safe_text(context_text) or not _is_safe_text_structure(context_text): return None
     try:
         q = _sanitize_query(question)
         if not _ensure_safe_text(q): return None

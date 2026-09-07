@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 209
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-06 | 66 | 2 | 9 | 5 | 78 |
-| 2026-09-07 | 154 | 14 | 27 | 18 | 131 |
+| 2026-09-06 | 63 | 2 | 9 | 4 | 78 |
+| 2026-09-07 | 156 | 15 | 27 | 19 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
-- seguridad defensiva: **47**
+- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **44**
 - rendimiento: **42**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **20**
 - `scanner.py`: **19**
-- `duplicates.py`: **18**
+- `assistant.py`: **19**
 - `quarantine.py`: **18**
 - `safety.py`: **18**
-- `assistant.py`: **18**
 - `browser.py`: **17**
+- `duplicates.py`: **17**
 - `healthscore.py`: **17**
-- `memory.py`: **16**
-- `main.py`: **13**
+- `memory.py`: **15**
+- `branding.py`: **13**
 - `diskreport.py`: **13**
-- `branding.py`: **12**
 - `organizer.py`: **12**
+- `main.py`: **12**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T14:42:31` **branding.py** (robustez ante casos límite): Se añadió una validación defensiva en `save_logo_svg` para prevenir ataques de denegación de servicio o manipulación mediante rutas de longitud excesiva o caracteres inválidos, garantizando que el path sea una ruta absoluta válida antes de intentar operaciones de sistema.
+- `2026-09-07T14:41:33` **assistant.py** (robustez ante casos límite): Corregí una referencia a una función inexistente (`_is_safe_结构_structure`) en `_build_payload`, reemplazándola por la correcta `_is_safe_text_structure` para asegurar que el payload siempre valide la ausencia de rutas antes de su envío.
 - `2026-09-07T14:30:12` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` eliminando la llamada a `normalize()` (que implica acceso a disco y resolución de rutas) en el caso común donde el sistema ya puede determinar la protección mediante el cacheo previo de la cadena de texto, reduciendo drásticamente la latencia en escaneos masivos.
 - `2026-09-07T14:29:21` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` y `_cached_manifest` sustituyendo la validación redundante `exists()` (que realiza llamadas al sistema para cada ítem) por una lógica que confía en el estado del manifiesto, moviendo la verificación de existencia solo al punto de uso si es estrictamente necesario, y reduciendo la complejidad de iteración.
 - `2026-09-07T14:20:49` **memory.py** (rendimiento): Optimicé el rendimiento de `read_snapshot` eliminando la recreación innecesaria de objetos `MemorySnapshot` y `pathlib.Path` en cada llamado, centralizando la configuración del sistema operativo y reutilizando la estructura de datos para evitar latencia en bucles de monitoreo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T13:41:05` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando docstrings descriptivos a los tipos complejos y funciones internas para clarificar el flujo de control, junto con la adición de Type Hints en variables críticas (`_win_mem_buffer`, `_snap_cache_time`, etc.) para facilitar el mantenimiento y la legibilidad del código senior.
 - `2026-09-07T13:38:33` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de los tipos en `healthscore.py`, añadiendo docstrings descriptivos a los parámetros de las funciones de scoring para clarificar las unidades esperadas (MB, %, etc.), lo cual facilita el mantenimiento y la auditoría de las reglas de negocio.
 - `2026-09-07T13:38:06` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y la robustez del módulo `duplicates.py` añadiendo type hints faltantes, clarificando la lógica de los validadores y documentando las precondiciones de las funciones clave para alinear el código con los estándares de legibilidad y mantenibilidad exigidos.
-- `2026-09-07T13:29:15` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` incluyendo type hints faltantes en funciones clave y enriqueciendo los docstrings con la descripción precisa de la lógica de recursión y manejo de errores, facilitando el mantenimiento futuro.
-- `2026-09-07T13:29:01` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints más precisos (específicamente en el uso de `Any` y `Dict`) y se han clarificado los docstrings de funciones críticas (`_sum_directory_recursive` y `_is_valid_cache_path`) para explicar el "porqué" de las validaciones de seguridad, facilitando el mantenimiento y la auditoría del código.
