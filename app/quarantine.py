@@ -159,7 +159,7 @@ def _get_sha256(path: Path) -> str:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Intenta abrir un archivo en modo lectura para detectar exclusividad."""
+    """Intenta abrir un archivo en modo escritura para detectar exclusividad."""
     if not isinstance(path, Path) or not path.exists():
         return False
     try:
@@ -180,10 +180,8 @@ def _safe_unlink(path: Path) -> bool:
         
     try:
         st = path.stat()
-        # Validación de propiedad en entornos POSIX
         if hasattr(os, 'getuid') and st.st_uid != os.getuid():
             return False
-        # Prevenir borrado si el archivo tiene enlaces duros adicionales
         if st.st_nlink > 1:
             return False
             
@@ -206,7 +204,6 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
         
     parts = sanitized.split('.')
     name_base = parts[0] if parts[0] else "q_file"
-    # Previene colisión con dispositivos reservados de Windows (NUL, CON, etc.)
     if name_base.upper() in WINDOWS_RESERVED_NAMES:
         name_base = f"q_{name_base}"
     
@@ -262,16 +259,23 @@ def _check_windows_file_attributes(path_str: str) -> None:
 
 def _check_path_syntax_integrity(path: Path) -> None:
     """Valida la integridad sintáctica de la ruta para prevenir ataques."""
-    if not path: raise UnsafePathError("Ruta vacía.")
+    if not path:
+        raise UnsafePathError("Ruta vacía.")
+    
     path_str = str(path)
+    # 1. Caracteres inválidos
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
         raise UnsafePathError("Ruta con caracteres de control prohibida.")
+    # 2. Profundidad
     if len(path.parts) > 32:
         raise UnsafePathError("Profundidad de ruta excesiva.")
+    # 3. Flujos alternos o navegación
     if ":" in path.name.replace(path.drive, "") or ":" in str(path.parent):
         raise UnsafePathError("Ruta con flujos de datos alternos (ADS) prohibida.")
+    # 4. Traversal y comodines
     if ".." in path.parts or any(c in str(path.name) for c in "<>\"|?*"):
         raise UnsafePathError("Ruta con caracteres prohibidos o navegación inválida.")
+    # 5. Enlaces y puntos de reparse
     if path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction()):
         raise UnsafePathError("Operación denegada en enlace simbólico o punto de reparse.")
 
@@ -607,10 +611,9 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
-    # Optimización: mapeo para acceso O(1) en vez de búsqueda lineal
-    item_map = {item.stored_name: item for item in items}
+    item_map: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}
     purged_count = 0
-    kept_items = []
+    kept_items: List[QuarantineItem] = []
     
     try:
         for stored_path in quarantine_root.iterdir():

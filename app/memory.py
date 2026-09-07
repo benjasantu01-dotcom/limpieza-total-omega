@@ -187,7 +187,10 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     )
 
 def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[ProcessMemory]:
-    """Valida y convierte datos crudos de proceso, retornando objeto si es seguro."""
+    """
+    Valida si un proceso extraído de la shell es apto para mostrar en la interfaz.
+    Aplica filtros de seguridad: omite rutas protegidas y procesos del kernel.
+    """
     try:
         pid_val, ws_val = int(pid_str), int(ws_str)
     except (ValueError, TypeError):
@@ -293,7 +296,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 @lru_cache(maxsize=8)
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """Clasifica el nivel de presión de memoria en cuatro estados semáticos."""
+    """Clasifica el nivel de presión de memoria en cuatro estados semánticos."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0: return "info"
     available = snapshot.available_percent
     if available >= 35: return "ok"
@@ -356,6 +359,9 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
     """
     Realiza una auditoría de seguridad del proceso objetivo antes de modificar su estado.
     Verifica estado de ejecución, propiedad del handle y restricciones de ruta (safety.py).
+    
+    Esta validación previene intentos de modificar memoria de procesos críticos o rutas 
+    protegidas, asegurando que la operación solo ocurra en ejecutables validados.
     """
     if not proc_handle: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
@@ -381,7 +387,13 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         return False, "Error interno durante la verificación de integridad."
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Intenta liberar páginas de memoria física del working set de un proceso."""
+    """
+    Intenta liberar páginas de memoria física del working set de un proceso.
+    
+    Esta es una operación invasiva en la gestión de memoria del proceso objetivo. 
+    Requiere permisos de administrador y pasa por una validación estricta de seguridad 
+    en `_is_safe_to_trim` para evitar el cierre o la desestabilización de procesos vitales.
+    """
     if not _is_windows: return False, "Operación solo soportada en Windows."
     
     try:

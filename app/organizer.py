@@ -77,7 +77,11 @@ def list_available_drives() -> List[str]:
 class JunkFile:
     """
     Representa un archivo candidato a limpieza.
-    Se utiliza una dataclass para centralizar el acceso a propiedades calculadas.
+    
+    Attributes:
+        path: Ubicación absoluta y resuelta del archivo.
+        size_bytes: Tamaño en bytes.
+        modified: Fecha de última modificación.
     """
     path: Path
     size_bytes: int
@@ -110,7 +114,9 @@ def is_valid_junk_extension(filename: str) -> bool:
 def _get_win_attributes(path_or_entry: Union[os.DirEntry, Path]) -> int:
     """
     Obtiene los atributos de archivo Win32 mediante syscalls.
-    Retorna una máscara de bits o 0 si el acceso está restringido.
+    
+    Retorna:
+        Máscara de bits de atributos Win32, o 0 si no se puede acceder.
     """
     try:
         if hasattr(path_or_entry, 'stat'):
@@ -189,8 +195,7 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
-    Verifica si el destino está contenido en la fuente.
-    Previene errores catastróficos de lógica de archivos (loops de copia).
+    Verifica si el destino está contenido en la fuente (bucle de copia).
     """
     if src is None or dest is None: return True
     try:
@@ -214,7 +219,6 @@ def _passes_system_checks(src: Path) -> bool:
 def _has_forbidden_chars(path: Path) -> bool:
     """
     Valida la ausencia de caracteres reservados de Windows (ej. CON, NUL).
-    Previene la ejecución de comandos en dispositivos lógicos.
     """
     if path is None: return True
     try:
@@ -244,7 +248,6 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 def _validate_file_attributes(src: Path) -> bool:
     """
     Valida la integridad física del archivo: existencia, tipo y disponibilidad.
-    Garantiza que no sea un enlace ni esté bloqueado antes de procesarlo.
     """
     try:
         if src is None or not src.exists() or not src.is_file(): return False
