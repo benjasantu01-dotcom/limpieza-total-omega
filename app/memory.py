@@ -292,8 +292,10 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
             if proc.returncode == 0 and proc.stdout:
-                _proc_cache_data = parse_windows_process_csv(proc.stdout, limit=limit)
-                _proc_cache_time = now
+                parsed = parse_windows_process_csv(proc.stdout, limit=limit)
+                if parsed:
+                    _proc_cache_data = parsed
+                    _proc_cache_time = now
         except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): 
             pass
             
