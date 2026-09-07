@@ -204,7 +204,7 @@ def _collect_candidates(
                 for entry in iterator:
                     try:
                         entry_path = Path(entry.path)
-                        # Chequeos de seguridad defensivos ante cambios en el FS durante el recorrido
+                        # Validaciones defensivas ante cambios en el FS durante el recorrido
                         if is_protected_path(entry_path):
                             continue
                         if entry.is_symlink():
@@ -213,9 +213,10 @@ def _collect_candidates(
                             if not is_junction(entry_path):
                                 _scan_directory_recursive(entry_path)
                         elif entry.is_file(follow_symlinks=False):
-                            st = _get_entry_stat(entry)
-                            if st and st.st_size >= min_size and st.st_nlink == 1:
-                                if os.access(entry_path, os.R_OK):
+                            # Re-validar estado para mitigar race conditions (TOCTOU)
+                            if _is_valid_candidate(entry_path):
+                                st = entry.stat(follow_symlinks=False)
+                                if st and st.st_size >= min_size:
                                     size_map[st.st_size].append(entry_path)
                     except (OSError, PermissionError):
                         continue

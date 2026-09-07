@@ -1062,8 +1062,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """
         if self._closing: return
         try:
-            if target:
-                self._ensure_path_writable_and_clean(target)
+            if target and not self._is_safe_path(target):
+                raise safety.UnsafePathError("Operación abortada: ruta insegura detectada.")
             
             if not self._closing:
                 self._safe_run(fn, tab)
@@ -1080,6 +1080,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         valida la integridad de la ruta destino antes de poner la tarea en la cola del ejecutor.
         """
         if self._closing or not self.winfo_exists(): return
+        
+        if check_safety and target and not self._is_safe_path(target):
+            self.log("Acción denegada: la ruta destino no es segura.", self._current_tab())
+            return
         
         self._set_busy(True)
         tab = self._current_tab()

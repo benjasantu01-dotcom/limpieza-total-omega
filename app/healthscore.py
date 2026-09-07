@@ -162,8 +162,9 @@ class SystemMetrics:
         self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings)))
         self.startup_count = int(max(0, _to_float(self.startup_count)))
         self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
-        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
-        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
+        # Evitar divisiones por cero forzando mínimos positivos en los divisores usados en scorers
+        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.1, 100.0)
+        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.1, 100.0)
 
     @property
     def is_finite(self) -> bool:
