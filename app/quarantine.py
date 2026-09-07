@@ -356,19 +356,18 @@ def _load_manifest_raw(base_str: str, _mtime: float = 0.0) -> ManifestData:
 
 @lru_cache(maxsize=2)
 def _cached_manifest(base_str: str, _mtime: float) -> List[QuarantineItem]:
-    """Carga y valida los ítems del manifiesto usando caché de resultados."""
-    base_path = Path(base_str)
+    """Carga y mapea los ítems del manifiesto usando caché de resultados."""
     raw_data = _load_manifest_raw(base_str, _mtime)
     items = []
     for d in raw_data:
         if isinstance(d, dict):
             item = QuarantineItem.from_dict(d)
-            if item and (base_path / item.stored_name).exists():
+            if item:
                 items.append(item)
     return items
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga y sincroniza el manifiesto, purgando registros de archivos inexistentes."""
+    """Carga y sincroniza el manifiesto, retornando la lista de ítems."""
     base_path = quarantine_dir(base)
     m_path = _manifest_path(base_path)
     mtime = m_path.stat().st_mtime if m_path.exists() else 0.0
@@ -554,7 +553,12 @@ def quarantine_file(
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna lista de ítems ordenados por fecha de aislamiento (más reciente primero)."""
-    return sorted(load_manifest(base), key=lambda item: item.quarantined_at, reverse=True)
+    # Filtramos la existencia física solo al listar, para optimizar el rendimiento general
+    base_path = quarantine_dir(base)
+    return [
+        i for i in sorted(load_manifest(base), key=lambda x: x.quarantined_at, reverse=True)
+        if (base_path / i.stored_name).exists()
+    ]
 
 
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:

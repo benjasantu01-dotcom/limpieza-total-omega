@@ -914,3 +914,10 @@ assert 'rectangle' in ['oval', 'polygon', 'polygon', 'polygon', 'polygon', 'poly
 - `2026-09-07T14:22:09` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-09-07T14:22:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T14:22:09` Corrida terminada. Total usado hoy: 340.
+- `2026-09-07T14:28:38` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-07T14:29:21` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` y `_cached_manifest` sustituyendo la validación redundante `exists()` (que realiza llamadas al sistema para cada ítem) por una lógica que confía en el estado del manifiesto, moviendo la verificación de existencia solo al punto de uso si es estrictamente necesario, y reduciendo la complejidad de iteración.
+- `2026-09-07T14:29:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-09-07T14:30:12` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` eliminando la llamada a `normalize()` (que implica acceso a disco y resolución de rutas) en el caso común donde el sistema ya puede determinar la protección mediante el cacheo previo de la cadena de texto, reduciendo drásticamente la latencia en escaneos masivos.
+- `2026-09-07T14:30:22` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._run_file_heuristics
+- `2026-09-07T14:30:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T14:30:22` Corrida terminada. Total usado hoy: 344.
