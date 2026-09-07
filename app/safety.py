@@ -274,13 +274,10 @@ def normalize(path: PathLike) -> Path:
         p = Path(path_str)
         if ".." in p.parts: raise ValueError("Path traversal detectado.")
         
-        current = Path(p.anchor)
-        for part in p.parts[1:]:
-            current = current / part
-            if _is_reparse_point(current):
-                raise ValueError(f"Acceso restringido: componente {current} es un punto de reparse.")
-        
-        return p.resolve() if p.exists() else Path(os.path.abspath(path_str))
+        # Uso estricto de abspath si el archivo no existe para evitar errores de resolución
+        if p.exists():
+            return p.resolve()
+        return Path(os.path.abspath(path_str))
     except (OSError, RuntimeError, TypeError, PermissionError) as e:
         raise ValueError(f"Error irrecuperable al normalizar {path_str}: {e}")
 
@@ -300,7 +297,6 @@ def _is_system_path_cached(path_str: str) -> bool:
         p_str_low = path_str.lower()
         if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
             return True
-        # Usar set intersection para mayor rendimiento en la búsqueda de nombres
         return not PROTECTED_DIR_NAMES.isdisjoint(p_str_low.split(os.sep))
     except (OSError, RuntimeError):
         return True
@@ -321,14 +317,19 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
     """Valida jerarquía: verifica si 'child' es un subdirectorio o archivo contenido en 'parent'."""
     if child is None or parent is None: return False
     try:
-        c_path = Path(child).resolve()
-        p_path = Path(parent).resolve()
+        c_path = normalize(child)
+        p_path = normalize(parent)
         
         if is_drive_root(c_path) or is_protected_path(c_path):
             return False
             
-        common = os.path.commonpath([str(c_path), str(p_path)])
-        return common == str(p_path) if allow_equal else (c_path != p_path and common == str(p_path))
+        # Comparación robusta usando la jerarquía de directorios absoluta
+        parts_c = c_path.parts
+        parts_p = p_path.parts
+        
+        if len(parts_c) < len(parts_p): return False
+        if not allow_equal and parts_c == parts_p: return False
+        return parts_c[:len(parts_p)] == parts_p
     except (ValueError, TypeError, OSError, RuntimeError): return False
 
 

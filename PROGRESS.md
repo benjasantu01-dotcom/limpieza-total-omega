@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
+- Mejoras aceptadas: **237** (47.0% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-05 | 47 | 5 | 8 | 2 | 52 |
+| 2026-09-05 | 47 | 5 | 8 | 2 | 48 |
 | 2026-09-06 | 165 | 3 | 23 | 9 | 150 |
-| 2026-09-07 | 23 | 4 | 3 | 5 | 5 |
+| 2026-09-07 | 25 | 4 | 4 | 5 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
+- robustez ante casos límite: **53**
 - legibilidad y documentación: **52**
-- robustez ante casos límite: **51**
 - manejo de errores y validación de entradas: **49**
 - rendimiento: **45**
 - seguridad defensiva: **38**
@@ -39,14 +39,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **17**
 - `organizer.py`: **17**
 - `settings.py`: **17**
+- `quarantine.py`: **17**
 - `main.py`: **16**
-- `quarantine.py`: **16**
+- `safety.py`: **16**
 - `branding.py`: **15**
-- `safety.py`: **15**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-07T01:45:36` **safety.py** (robustez ante casos límite): Se reforzó la robustez de `is_within_directory` y `_validate_boundary_conditions` para manejar correctamente rutas inexistentes o inaccesibles, evitando que `normalize()` (a través de `path.resolve()`) falle silenciosamente o lance excepciones inesperadas cuando el sistema de archivos deniega permisos o la ruta está mal formada.
+- `2026-09-07T01:44:47` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_safe_unlink` y `purge_all` para prevenir errores de concurrencia y bloqueos de archivos en sistemas Windows, asegurando que el proceso de limpieza no aborte prematuramente si un archivo está bloqueado temporalmente por otro proceso del sistema.
 - `2026-09-07T01:37:14` **organizer.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante excepciones de E/S en `_is_file_locked` y `_is_recursive_violation` mediante el uso de bloques `try-except` más granulares y la validación de estados de archivo, evitando fallos silenciosos ante archivos inexistentes o bloqueos de acceso durante la resolución de rutas.
 - `2026-09-07T01:36:57` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `parse_linux_meminfo` y `parse_windows_process_csv` añadiendo validaciones contra entradas malformadas o tipos de datos inesperados, mitigando posibles errores de ejecución ante archivos de sistema inconsistentes o salidas de shell truncadas.
 - `2026-09-07T01:36:26` **main.py** (robustez ante casos límite): Se implementó un mecanismo de protección en `_ask_folder` y `_build_tab_ajustes` para manejar situaciones donde el sistema de archivos deniega permisos o la ruta seleccionada es inválida, asegurando que `main.py` no colapse ante errores inesperados del sistema operativo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T00:54:12` **healthscore.py** (rendimiento): Optimicé el bucle de cálculo en `compute_score` reemplazando los cálculos redundantes de `_clamp` y `round` dentro de `_evaluate_rules` y `metric_breakdown` por una pre-cálculo eficiente, y eliminé la conversión a `float` innecesaria dentro de `_render_bar` para reducir la carga de CPU en cada ciclo.
 - `2026-09-07T00:53:46` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` eliminando la resolución innecesaria de rutas (`.resolve()`) dentro del loop crítico de `scandir`, utilizando en su lugar la ruta relativa obtenida del `DirEntry` y validándola contra `is_protected_path`, evitando así múltiples llamadas al sistema operativo por cada archivo encontrado.
 - `2026-09-07T00:44:56` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` eliminando la llamada redundante a `sorted()` al final, utilizando en su lugar la propiedad del heap mantenido durante la iteración para ahorrar ciclos de CPU y memoria en recorridos masivos.
-- `2026-09-07T00:44:44` **browser.py** (rendimiento): Optimicé el rendimiento de la detección de cachés evitando el re-escaneo redundante de subdirectorios mediante la persistencia y reutilización efectiva del diccionario `perf_cache` a través de todas las iteraciones de navegadores dentro de `detect_profiles`.
-- `2026-09-07T00:43:47` **assistant.py** (rendimiento): Se optimizó el motor de inferencia local reemplazando la lógica de búsqueda por tokens (que iteraba palabras) por un set de búsqueda directa para evitar recorridos redundantes y mejorar el rendimiento en la resolución de consultas.

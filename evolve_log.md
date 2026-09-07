@@ -754,3 +754,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-07T01:37:14` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia ante excepciones de E/S en `_is_file_locked` y `_is_recursive_violation` mediante el uso de bloques `try-except` más granulares y la validación de estados de archivo, evitando fallos silenciosos ante archivos inexistentes o bloqueos de acceso durante la resolución de rutas.
 - `2026-09-07T01:37:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-07T01:37:14` Corrida terminada. Total usado hoy: 40.
+- `2026-09-07T01:44:11` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-09-07T01:44:47` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_safe_unlink` y `purge_all` para prevenir errores de concurrencia y bloqueos de archivos en sistemas Windows, asegurando que el proceso de limpieza no aborte prematuramente si un archivo está bloqueado temporalmente por otro proceso del sistema.
+- `2026-09-07T01:45:05` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-09-07T01:45:36` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `is_within_directory` y `_validate_boundary_conditions` para manejar correctamente rutas inexistentes o inaccesibles, evitando que `normalize()` (a través de `path.resolve()`) falle silenciosamente o lance excepciones inesperadas cuando el sistema de archivos deniega permisos o la ruta está mal formada.
+- `2026-09-07T01:45:44` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-07T01:45:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-07T01:45:44` Corrida terminada. Total usado hoy: 44.

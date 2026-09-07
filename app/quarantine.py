@@ -163,7 +163,8 @@ def _is_file_locked(path: Path) -> bool:
     if not isinstance(path, Path) or not path.exists():
         return False
     try:
-        with open(path, "ab") as f:
+        # Abrir en modo 'r+b' verifica lectura/escritura sin truncar
+        with open(path, "r+b") as f:
             return False
     except (PermissionError, IOError, OSError):
         return True
@@ -618,6 +619,10 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     try:
         for stored_path in quarantine_root.iterdir():
             if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
+                continue
+            
+            # Solo procesar archivos, ignorar basura residual
+            if not stored_path.is_file():
                 continue
             
             if not _is_within_quarantine_sandbox(stored_path.resolve(), quarantine_root):
