@@ -312,10 +312,14 @@ def _is_restricted_content(text: str) -> bool:
     restricted_patterns = [r"exec", r"eval", r"subprocess", r"system\s*\(", r"rm\s+", r"del\s+"]
     return any(re.search(p, text, re.IGNORECASE) for p in restricted_patterns)
 
+def _is_sensitive_structure(text: str) -> bool:
+    """Verifica estructuras que parecen intentos de evasión o manipulación."""
+    return bool(re.search(r"(\\\\|[a-z]:\\|/etc/|\\\\UNC)", text, re.IGNORECASE))
+
 def _is_safe_text_structure(text: str) -> bool:
     """Verifica si un texto contiene patrones de inyección o rutas sensibles."""
     if not text: return True
-    if _PATH_INJECTION_REGEX.search(text) or is_protected_path(text) or _is_restricted_content(text):
+    if _PATH_INJECTION_REGEX.search(text) or is_protected_path(text) or _is_restricted_content(text) or _is_sensitive_structure(text):
         return False
     return True
 

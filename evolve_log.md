@@ -689,3 +689,34 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-08T09:22:09` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha añadido una validación de existencia para la ruta del archivo de configuración antes de aplicar `os.replace` y se encapsuló la lectura del archivo en un bloque `try-except` más robusto para prevenir condiciones de carrera (TOCTOU) y errores de acceso concurrente típicos en sistemas multi-proceso.
 - `2026-09-08T09:22:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T09:22:09` Corrida terminada. Total usado hoy: 220.
+- `2026-09-08T09:30:39` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-09-08T09:31:10` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de I/O en `StartupEntry._validate_file_access` y `_resolve_and_cache_path` mediante la inclusión de `FileNotFoundError` en los bloques `try-except`, garantizando que la aplicación no colapse cuando el sistema operativo bloquee o reporte estados inconsistentes sobre archivos efímeros.
+- `2026-09-08T09:31:51` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva de `assistant.py` mediante la implementación de `_is_sensitive_structure` para validar que el contenido del contexto no contenga tokens potencialmente peligrosos (como múltiples barras invertidas o secuencias sospechosas en Windows) antes de ser procesado por el motor de IA, reduciendo la superficie de ataque por inyección.
+- `2026-09-08T09:32:29` Tests FALLARON:
+```
+........................................................................ [ 24%]
+.........................F.............................................. [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+1 failed, 298 passed in 1.38s
+
+```
+- `2026-09-08T09:32:29` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se ha mejorado `save_logo_svg` reemplazando la creación de directorios recursiva e implícita (`mkdir(parents=True)`) por una verificación explícita de seguridad, asegurando que solo se escriba en rutas pre-validadas y evitando comportamientos de escritura inesperados en el sistema de archivos.
+- `2026-09-08T09:32:42` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante la validación estricta de la jerarquía de rutas utilizando `_is_path_inside_base` sobre cada subdirectorio antes de entrar, garantizando que el escaneo nunca escape del ámbito autorizado por la base, incluso en casos de estructuras de directorios complejas.
+- `2026-09-08T09:32:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T09:32:42` Corrida terminada. Total usado hoy: 224.

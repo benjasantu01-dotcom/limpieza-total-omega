@@ -137,7 +137,7 @@ class StartupEntry:
                 return False
             stats = p.lstat()
             return not p.is_symlink() and not (getattr(stats, 'st_file_attributes', 0) & 0x00000400)
-        except (OSError, PermissionError, AttributeError):
+        except (OSError, PermissionError, FileNotFoundError, AttributeError):
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
@@ -165,7 +165,7 @@ class StartupEntry:
             
             try:
                 real_path_str: str = os.path.realpath(abs_path)
-            except (OSError, PermissionError):
+            except (OSError, PermissionError, FileNotFoundError):
                 real_path_str = abs_path
 
             real_path: Path = Path(real_path_str)
@@ -175,7 +175,7 @@ class StartupEntry:
                 
             _EXISTS_CACHE[real_path_str] = True
             return real_path_str
-        except (OSError, ValueError, RuntimeError, TypeError, PermissionError):
+        except (OSError, ValueError, RuntimeError, TypeError, PermissionError, FileNotFoundError):
             _EXISTS_CACHE[path_string] = False
             return path_string
 
@@ -250,9 +250,9 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
                                         command=entry.path,
                                         source="carpeta"
                                     ))
-                    except (OSError, PermissionError):
+                    except (OSError, PermissionError, FileNotFoundError):
                         continue
-        except (OSError, PermissionError, ValueError):
+        except (OSError, PermissionError, ValueError, FileNotFoundError):
             continue
     return found_entries
 

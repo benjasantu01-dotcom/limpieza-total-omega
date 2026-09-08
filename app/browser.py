@@ -219,7 +219,6 @@ def _sum_directory_recursive(
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or depth < 0 or len(root_abs) >= MAX_PATH_LEN:
         return 0
     
-    # Retornar valor cacheado si existe
     if root_abs in memo:
         return memo[root_abs]
     
@@ -232,7 +231,8 @@ def _sum_directory_recursive(
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        if base_check_path and not _is_path_inside_base(Path(entry.path).resolve(), base_check_path):
+                        child_path = Path(entry.path).resolve()
+                        if base_check_path and not _is_path_inside_base(child_path, base_check_path):
                             continue
                         total += _sum_directory_recursive(
                             entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
@@ -277,7 +277,6 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
         real_candidate = candidate.resolve(strict=True)
         if not is_safe_to_modify(real_candidate) or is_protected_path(real_candidate):
             return False
-        # Valida que sea un directorio real y esté contenido estrictamente dentro de la base
         if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or 
             os.path.ismount(str(real_candidate)) or not real_candidate.is_dir() or 
             not _is_path_inside_base(real_candidate, base_path) or
@@ -303,7 +302,6 @@ def detect_profiles(
         return []
     
     k32: Optional[ctypes.WinDLL] = _get_kernel32()
-    # Cache de resultados intermedios para optimizar escaneos repetidos
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
