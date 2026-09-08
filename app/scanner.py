@@ -115,7 +115,8 @@ class Scanner:
             if not path_str or not entry.name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
                 return False
             
-            if RTL_CHAR_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name):
+            # Defensa contra ofuscación de nombres o nombres reservados de sistema
+            if RTL_CHAR_RE.search(path_str) or RESERVED_NAMES_RE.match(entry.name):
                 return False
             
             if not self._is_inside_base_root(path_str):

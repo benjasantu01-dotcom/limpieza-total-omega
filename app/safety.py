@@ -403,7 +403,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | 
         raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS)
     if is_protected_path(target_path):
         raise UnsafePathError("Ruta protegida por sistema.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
-    if target_path.exists() and _is_reparse_point(str(target_path)):
+    if _is_reparse_point(str(target_path)):
         raise UnsafePathError("Nodo de reparse detectado.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
 

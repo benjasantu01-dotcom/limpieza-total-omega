@@ -765,3 +765,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-09-08T09:52:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-08T09:52:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T09:52:48` Corrida terminada. Total usado hoy: 232.
+- `2026-09-08T10:01:15` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-09-08T10:01:49` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva integrando la detección de puntos de reparse (junctions/symlinks) dentro de la validación estructural `_validate_boundary_conditions` para asegurar que ninguna operación de modificación atraviese o manipule recursivamente estas rutas críticas antes de intentar cualquier acceso a disco.
+- `2026-09-08T10:02:16` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha robustecido el escáner defensivo evitando el procesamiento de rutas con caracteres de control (como los de ofuscación RTL ya detectados en nombres) mediante la validación estricta de `entry.path` en `_is_safe_entry`, asegurando que ninguna ruta pase el filtro si presenta inconsistencias o caracteres sospechosos antes de ser manipulada por `pathlib`.
+- `2026-09-08T10:02:46` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las operaciones de escritura en `save()` implementando `os.replace` (que es atómico en sistemas POSIX y Windows) y eliminando `os.rename` como fallback, para asegurar que el archivo de configuración nunca quede en un estado intermedio corrupto ante interrupciones.
+- `2026-09-08T10:02:59` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-09-08T10:02:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T10:02:59` Corrida terminada. Total usado hoy: 236.

@@ -337,10 +337,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.flush()
             os.fsync(f.fileno())
         
-        if ruta.exists():
-            os.replace(temp_path, ruta)
-        else:
-            os.rename(temp_path, ruta)
+        # os.replace es atómico tanto en POSIX como en Windows
+        os.replace(temp_path, ruta)
+        
         _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta
     except (TypeError, ValueError, OSError, IOError, PermissionError):
