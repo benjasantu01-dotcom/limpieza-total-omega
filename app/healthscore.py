@@ -207,7 +207,7 @@ def grade_for_score(score: float | int) -> str:
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float, findings: List[str]) -> None:
     """Ejecuta una lista de reglas de recomendación in-place."""
-    if not math.isfinite(ratio): return
+    if not math.isfinite(ratio) or not metrics.is_finite: return
     for rule in rules:
         try:
             if rule.check(metrics, ratio):

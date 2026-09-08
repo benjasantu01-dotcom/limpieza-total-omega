@@ -1435,8 +1435,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.set_status("Aislando archivos...")
             aislados = 0
             for item_s in suspicions:
+                # Verificación de seguridad granular antes de procesar cada item
                 if self._is_safe_path(item_s.path):
                     try:
+                        safety.ensure_safe_to_modify(Path(item_s.path).resolve())
                         item = quarantine.quarantine_file(item_s.path, reason="Marcado por escaneo heurístico")
                         self.log(f"Aislado [{item.item_id}] {item_s.path}", "Seguridad")
                         aislados += 1
@@ -1582,7 +1584,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Seguridad: validamos el entorno antes de realizar la operación sobre el proceso
+            # Seguridad: forzamos verificación de integridad ambiental antes de ejecutar acción invasiva
             self._ensure_path_writable_and_clean(Path.home())
             
             if not memory_mod.process_exists(pid):

@@ -79,7 +79,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         return None
         
     try:
-        path_obj = Path(path)
+        path_obj = Path(path).resolve(strict=False)
         if not _is_valid_candidate(path_obj):
             return None
             
@@ -104,7 +104,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
         return None
 
     try:
-        path_obj = Path(path)
+        path_obj = Path(path).resolve(strict=False)
         if not _is_valid_candidate(path_obj):
             return None
 
@@ -125,14 +125,15 @@ def _is_valid_candidate(path: Path) -> bool:
     if not isinstance(path, Path):
         return False
     try:
-        if not path.exists():
+        resolved = path.resolve(strict=False)
+        if not resolved.exists():
             return False
         return (
-            path.is_file() and 
-            not path.is_symlink() and
-            not is_protected_path(path) and 
-            os.access(path, os.R_OK) and
-            path.stat().st_nlink == 1
+            resolved.is_file() and 
+            not resolved.is_symlink() and
+            not is_protected_path(resolved) and 
+            os.access(resolved, os.R_OK) and
+            resolved.stat().st_nlink == 1
         )
     except (OSError, ValueError, TypeError):
         return False
@@ -146,13 +147,15 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     
     for p in paths:
         path_obj = Path(p) if isinstance(p, (str, Path)) else None
-        if path_obj and _is_valid_candidate(path_obj):
-            try:
-                size = path_obj.stat().st_size
-                if size > 0:
-                    groups[size].append(path_obj)
-            except (OSError, PermissionError):
-                continue
+        if path_obj:
+            resolved = path_obj.resolve(strict=False)
+            if _is_valid_candidate(resolved):
+                try:
+                    size = resolved.stat().st_size
+                    if size > 0:
+                        groups[size].append(resolved)
+                except (OSError, PermissionError):
+                    continue
     return groups
 
 
@@ -180,17 +183,15 @@ def _collect_candidates(
 
     def _scan_directory_recursive(current_dir: Path) -> None:
         try:
-            if is_protected_path(current_dir):
-                return
-            resolved_dir = current_dir.resolve()
-            if resolved_dir in visited:
+            resolved_dir = current_dir.resolve(strict=False)
+            if is_protected_path(resolved_dir) or resolved_dir in visited:
                 return
             visited.add(resolved_dir)
             
-            with os.scandir(current_dir) as iterator:
+            with os.scandir(resolved_dir) as iterator:
                 for entry in iterator:
                     try:
-                        entry_path = Path(entry.path)
+                        entry_path = Path(entry.path).resolve(strict=False)
                         if skip_protected and is_protected_path(entry_path):
                             continue
                         if entry.is_symlink():

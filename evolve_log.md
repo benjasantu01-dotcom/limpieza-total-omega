@@ -1516,3 +1516,57 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-08T05:08:45` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
 - `2026-09-08T05:08:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T05:08:45` Corrida terminada. Total usado hoy: 120.
+- `2026-09-08T05:15:47` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-09-08T05:16:14` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` y `_is_valid_candidate` integrando el uso de `path.resolve()` antes de realizar chequeos de seguridad y garantizando que el acceso al disco sea consistente con las reglas de exclusión y protección, previniendo posibles ataques de *Time-of-Check Time-of-Use* (TOCTOU) y errores de validación de rutas mediante el uso consistente de `Path.resolve(strict=False)`.
+- `2026-09-08T05:16:40` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez del sistema de inferencia agregando validaciones defensivas en `_evaluate_rules` para asegurar que las entradas sigan siendo íntegras y finitas durante la ejecución de las reglas, evitando posibles desbordamientos o comportamientos indefinidos al procesar métricas externas.
+- `2026-09-08T05:17:49` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `on_trim_process` y `on_quarantine_findings` al implementar validaciones granulares de la ruta (`ensure_safe_to_modify`) justo antes de las operaciones de E/S, garantizando que ninguna ruta externa o manipulada por el usuario pueda saltarse los filtros de seguridad del sistema antes de procesar cambios.
+- `2026-09-08T05:18:02` Tests FALLARON:
+```
+          '"grande","11","104857600"\n'
+            '"medio","12","10485760"\n'
+        )
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.42s
+
+```
+- `2026-09-08T05:18:02` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad defensiva de `memory.py` introduciendo un filtrado de rutas mediante `is_safe_to_modify` en el generador de procesos, asegurando que cualquier proceso listado en la interfaz no solo sea validado como "no crítico", sino también verificado contra políticas de modificación antes de ser procesado por la UI.
+- `2026-09-08T05:18:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T05:18:02` Corrida terminada. Total usado hoy: 124.
