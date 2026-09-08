@@ -331,19 +331,16 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     
     try:
         for path, size in walk_files(directory, skip_protected):
-            try:
-                total_bytes += size
-                total_files += 1
-                ext = path.suffix.lower() or "(sin extensión)"
-                ext_sizes[ext] += size
-                ext_counts[ext] += 1
-                
-                if len(top_heap) < 20:
-                    heapq.heappush(top_heap, (size, path))
-                elif size > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (size, path))
-            except (OSError, PermissionError, TypeError):
-                continue
+            total_bytes += size
+            total_files += 1
+            ext = path.suffix.lower() or "(sin extensión)"
+            ext_sizes[ext] += size
+            ext_counts[ext] += 1
+            
+            if len(top_heap) < 20:
+                heapq.heappush(top_heap, (size, path))
+            elif size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
     except (OSError, PermissionError, RuntimeError):
         pass
             
@@ -353,6 +350,9 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
     """
     Genera un informe descriptivo y formateado del análisis para presentación.
+    
+    Returns:
+        List[str]: Lista de líneas de texto que componen el reporte.
     """
     root = _validate_root(directory)
     if not root: return ["Error: Ruta no válida."]

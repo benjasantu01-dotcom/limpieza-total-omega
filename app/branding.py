@@ -378,7 +378,13 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza el logo vectorial completo en un componente canvas dado."""
+    """
+    Renderiza el logo vectorial completo en un componente canvas dado.
+    :param canvas: Objeto Canvas destino.
+    :param size: Tamaño base del logo.
+    :param canvas_x: Desplazamiento horizontal relativo al canvas.
+    :param canvas_y: Desplazamiento vertical relativo al canvas.
+    """
     try:
         s = float(size)
         if not math.isfinite(s) or s <= 0: return
@@ -392,7 +398,13 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (ValueError, TypeError, AttributeError, ZeroDivisionError, OverflowError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una barra de degradado horizontal orientada a UI."""
+    """
+    Dibuja una barra de degradado horizontal orientada a UI.
+    :param width: Ancho total de la barra.
+    :param height: Altura vertical de la línea.
+    :param canvas_x: Origen X en el canvas.
+    :param canvas_y: Origen Y en el canvas.
+    """
     try:
         segments = _get_grouped_segments(gradient_colors(max(1, int(width)), stops))
         for seg in segments:
@@ -400,7 +412,14 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (ValueError, TypeError, AttributeError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[HexColor] = None, fill: Optional[HexColor] = None) -> None:
-    """Renderiza un gráfico circular de progreso con manejo de errores defensivo."""
+    """
+    Renderiza un gráfico circular de progreso con manejo de errores defensivo.
+    :param percent: Valor 0-100 a graficar.
+    :param size: Diámetro exterior.
+    :param canvas_x: Posición X.
+    :param canvas_y: Posición Y.
+    :param thickness: Grosor del trazo.
+    """
     try:
         if percent is None: return
         val = float(percent)

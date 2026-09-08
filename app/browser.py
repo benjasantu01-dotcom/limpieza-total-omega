@@ -19,10 +19,9 @@ así en CI se puede simular una instalación con carpetas temporales.
 from __future__ import annotations
 import os
 import ctypes
-import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Sequence, Dict, List, Optional, Callable, Set, Union, Any
+from typing import Iterable, Sequence, Dict, List, Optional, Callable, Union
 from safety import is_protected_path, is_safe_to_modify
 
 __all__ = [
@@ -91,12 +90,11 @@ class BrowserCache:
 def _get_kernel32() -> Optional[ctypes.WinDLL]:
     """
     Carga kernel32.dll para acceder a atributos de archivo de bajo nivel en Windows.
-    Retorna None en sistemas no compatibles o si falla la carga.
+    Permite identificar archivos con atributos ocultos/sistema que deben omitirse.
     """
     if os.name != 'nt' or not hasattr(ctypes, 'WinDLL'):
         return None
     try:
-        # Se requiere explícitamente el uso de WinDLL para interactuar con la API de Windows
         return ctypes.WinDLL('kernel32.dll', use_last_error=True)
     except (OSError, RuntimeError, AttributeError):
         return None
@@ -123,13 +121,14 @@ def base_directories() -> List[Path]:
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
     Verifica mediante `os.path.commonpath` que la ruta objetivo esté bajo la base,
-    protegiendo contra ataques de path traversal.
+    protegiendo contra ataques de path traversal mediante resolución de enlaces.
     """
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
     try:
         if not real_target.is_absolute() or not real_base.is_absolute():
             return False
+        # Normalizamos a cadena para comparación de sistema de archivos
         target_res = str(real_target.resolve(strict=True))
         base_res = str(real_base.resolve(strict=True))
         return os.path.commonpath([target_res, base_res]) == base_res
@@ -144,12 +143,11 @@ def _is_excluded_file(name: Optional[str]) -> bool:
 
 def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """
-    Verifica mediante API de Win32 si un archivo tiene atributos de 'Sistema' u 'Oculto'.
-    Solo operativo en entornos Windows con kernel32 disponible.
+    Usa la API Win32 GetFileAttributesW para detectar archivos marcados como 
+    Ocultos o de Sistema, evitando procesar estructuras de configuración críticas.
     """
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
-    # Validamos explícitamente la presencia de la función antes de invocarla
     if not hasattr(kernel32, 'GetFileAttributesW'):
         return False
     try:
@@ -163,8 +161,8 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Filtro de seguridad para `os.scandir`. Omite rutas no seguras, symlinks, junctions,
-    archivos protegidos o entradas que excedan límites de longitud.
+    Filtro de seguridad para `os.scandir`. Omite rutas no seguras, symlinks, 
+    junctions (puntos de reanálisis), archivos protegidos o rutas excesivamente largas.
     """
     if entry is None or not hasattr(entry, 'name') or _is_excluded_file(entry.name):
         return True
@@ -174,6 +172,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         if not path or len(path) >= MAX_PATH_LEN or not os.path.isabs(path) or any(c in path for c in '<>|?"*') or '\0' in path:
             return True
         
+        # is_symlink() cubre enlaces simbólicos estándar; is_junction_fn cubre puntos de reanálisis NTFS
         if entry.is_symlink() or is_junction_fn(path) or os.path.ismount(path):
             return True
             
@@ -213,6 +212,7 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Recorre el sistema de archivos de forma recursiva limitando la profundidad.
+    Usa un diccionario `memo` para evitar recálculos en la misma iteración.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or depth < 0 or len(root_abs) >= MAX_PATH_LEN:
         return 0
@@ -272,6 +272,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
         real_candidate = candidate.resolve(strict=True)
         if not is_safe_to_modify(real_candidate) or is_protected_path(real_candidate):
             return False
+        # Valida que sea un directorio real y esté contenido estrictamente dentro de la base
         if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or 
             os.path.ismount(str(real_candidate)) or not real_candidate.is_dir() or 
             not _is_path_inside_base(real_candidate, base_path) or
