@@ -314,7 +314,11 @@ def detect_profiles(
                 if not isinstance(rel_str, str) or not rel_str:
                     continue
                 
+                # Prevenir path traversal: evitar partes de ruta como ".."
                 parts = rel_str.split("\\")
+                if ".." in parts:
+                    continue
+                
                 candidate = real_base.joinpath(*parts)
                 
                 if not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):

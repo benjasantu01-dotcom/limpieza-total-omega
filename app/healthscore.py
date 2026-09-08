@@ -152,9 +152,10 @@ class SystemMetrics:
 
     def __post_init__(self) -> None:
         """Valida y normaliza las métricas tras la inicialización."""
-        for field_name in self.__dataclass_fields__:
-            if getattr(self, field_name) is None:
-                setattr(self, field_name, 0.0)
+        for field_info in self.__dataclass_fields__.values():
+            val = getattr(self, field_info.name)
+            if val is None:
+                setattr(self, field_info.name, 0.0 if field_info.type is float else 0)
         self.validate()
 
     def validate(self) -> None:
@@ -171,9 +172,6 @@ class SystemMetrics:
         }
         for key, val in sanitized.items():
             setattr(self, key, val)
-        
-        if not self.is_finite:
-            raise ValueError("Métricas de sistema contienen valores no finitos.")
 
     @property
     def is_finite(self) -> bool:
@@ -219,9 +217,9 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
-                if msg and isinstance(msg, str) and msg.strip():
+                if isinstance(msg, str) and msg.strip():
                     findings.append(msg.strip())
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -241,7 +239,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             total_pts += pts
             if rules:
                 _evaluate_rules(metrics, rules, ratio, recommendations)
-        except (Exception, ValueError):
+        except (AttributeError, TypeError, ValueError):
             metric_breakdown[area] = 0
             continue
             
@@ -259,8 +257,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 def _render_bar(pts: int, maximo: int) -> str:
     """Crea una representación visual de barra para un área específica."""
     if maximo <= 0: return ""
-    puntos = _clamp(pts, 0, maximo)
-    return ('#' * int(puntos)) + ('.' * int(maximo - puntos))
+    puntos = int(_clamp(float(pts), 0.0, float(maximo)))
+    return ('#' * puntos) + ('.' * (maximo - puntos))
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una lista de líneas textuales formateadas para el reporte."""

@@ -57,8 +57,11 @@ class SummaryData(NamedTuple):
 def _bytes_to_mb(size_bytes: int | float) -> float:
     if not isinstance(size_bytes, (int, float)):
         return 0.0
-    val = float(size_bytes)
-    return round(val / MB_SIZE, 2) if val > 0 else 0.0
+    try:
+        val = float(size_bytes)
+        return round(val / MB_SIZE, 2) if val > 0 else 0.0
+    except (ValueError, TypeError, OverflowError):
+        return 0.0
 
 
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
@@ -140,7 +143,9 @@ class DriveUsage:
 
     @property
     def used_percent(self) -> float:
-        return round(self.used / self.total * 100, 1) if self.total > 0 else 0.0
+        if not isinstance(self.total, (int, float)) or self.total <= 0:
+            return 0.0
+        return round(self.used / self.total * 100, 1)
 
     @property
     def is_almost_full(self) -> bool:
@@ -151,13 +156,16 @@ def format_size(num: Union[int, float, None]) -> str:
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     
-    value = float(num)
-    for unit in ("B", "KB", "MB", "GB", "TB"):
-        if value < 1024 or unit == "TB":
-            decimals = 0 if unit == "B" else 1
-            return f"{value:.{decimals}f} {unit}"
-        value /= 1024
-    return f"{value:.1f} TB"
+    try:
+        value = float(num)
+        for unit in ("B", "KB", "MB", "GB", "TB"):
+            if value < 1024 or unit == "TB":
+                decimals = 0 if unit == "B" else 1
+                return f"{value:.{decimals}f} {unit}"
+            value /= 1024
+        return f"{value:.1f} TB"
+    except (ValueError, TypeError, OverflowError):
+        return "0 B"
 
 
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
@@ -203,7 +211,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(entry_path)
                         elif entry.is_file(follow_symlinks=False):
-                            yield entry_path, max(0, int(entry.stat().st_size))
+                            size = entry.stat().st_size
+                            yield entry_path, max(0, int(size)) if isinstance(size, (int, float)) else 0
                     except (PermissionError, OSError, AttributeError):
                         continue
         except (PermissionError, OSError, FileNotFoundError):
@@ -258,7 +267,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        if skip_protected and is_protected_path(path): continue
         try:
             total_bytes += size
             total_files += 1
