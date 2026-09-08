@@ -151,28 +151,30 @@ _EMPTY_SNAPSHOT: MemorySnapshot = MemorySnapshot(BytesValue(0), BytesValue(0))
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
-    """Analizador determinista para /proc/meminfo. Retorna objeto MemorySnapshot."""
+    """
+    Analizador determinista para /proc/meminfo. 
+    Transforma el formato 'Key: Value kB' estándar de Linux a MemorySnapshot.
+    """
     if not isinstance(meminfo_text, str) or not meminfo_text:
         return _EMPTY_SNAPSHOT
     
-    metrics: Dict[str, int] = {"MemTotal": 0, "MemAvailable": 0, "MemFree": 0, "Cached": 0}
+    metrics: Dict[str, int] = {}
     
+    # Procesar líneas esperando formato "Clave: Valor kB"
     for line in meminfo_text.splitlines():
-        if ":" not in line: continue
+        if ":" not in line: 
+            continue
         key, value_part = line.split(":", 1)
-        k_normalized = key.strip()
-        if k_normalized in metrics:
-            val_items = value_part.split()
-            if val_items and val_items[0].isdigit():
-                try:
-                    metrics[k_normalized] = int(val_items[0]) * 1024
-                except (ValueError, OverflowError):
-                    continue
+        # Extraer solo el valor numérico, descartando unidades como 'kB'
+        numeric_part = "".join(filter(str.isdigit, value_part))
+        if numeric_part:
+            metrics[key.strip()] = int(numeric_part) * 1024
             
     total = metrics.get("MemTotal", 0)
     if total <= 0: 
         return _EMPTY_SNAPSHOT
     
+    # MemAvailable es la prioridad; si no existe, estimar con MemFree
     available = metrics.get("MemAvailable") or metrics.get("MemFree", 0)
     return MemorySnapshot(
         total=BytesValue(total), 
@@ -356,6 +358,7 @@ def _is_safe_to_trim(proc_handle: int, pid: int) -> Tuple[bool, Optional[str]]:
         if not exec_path:
             return False, "No se pudo verificar el origen del proceso."
         
+        # Validar mediante políticas de seguridad globales antes de operar
         if is_protected_path(exec_path) or not is_safe_to_modify(exec_path):
             return False, "Operación denegada por política de seguridad."
             

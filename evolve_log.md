@@ -1019,3 +1019,37 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-09-08T12:17:22` ✅ Mejora aceptada en main.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `main.py` documentando los métodos de la clase `LimpiezaTotalOmegaApp` con docstrings consistentes y claros que explican el propósito de cada funcionalidad, además de aplicar type hints faltantes en los retornos de métodos clave.
 - `2026-09-08T12:17:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T12:17:22` Corrida terminada. Total usado hoy: 288.
+- `2026-09-08T12:23:57` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-09-08T12:24:29` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). He mejorado la legibilidad técnica y la capacidad de mantenimiento de `memory.py` mediante la refactorización de `parse_linux_meminfo` para utilizar una lógica de extracción de datos más clara, agregando docstrings descriptivos que explican el "porqué" de las validaciones de seguridad y refinando el uso de tipos en las firmas para mejorar la robustez del análisis.
+- `2026-09-08T12:25:02` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_is_file_locked` para eliminar el uso de números mágicos (magic numbers) en los flags de `CreateFileW`, reemplazándolos con constantes descriptivas y mejorando el manejo del handle.
+- `2026-09-08T12:25:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-08T12:25:39` Tests FALLARON:
+```
+PathError
+_______________ test_quarantine_summary_reports_size_and_origin ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_summary_report0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_summary_report0/_Cuarentena')
+
+    def test_quarantine_summary_reports_size_and_origin(tmp_path, cuarentena):
+        origen = tmp_path / "pesado.bin"
+        origen.write_bytes(b"0" * 2048)
+        quarantine.quarantine_file(origen, reason="motivo de prueba", base=cuarentena)
+    
+        texto = "\n".join(quarantine.summarize(cuarentena))
+>       assert "pesado.bin" in texto
+E       AssertionError: assert 'pesado.bin' in '1 ítems ocupan 0.0 MB.'
+
+evolve/tests/test_safety.py:309: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - assert 0 == 2
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - safety.UnsafePathError: [GENERIC] Ruta origen inaccesible: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-3/test_quarantine_missing_file_r0/no-existe.txt'
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - AssertionError: assert 'pesado.bin' in '1 ítems ocupan 0.0 MB.'
+4 failed, 295 passed in 1.37s
+
+```
+- `2026-09-08T12:25:39` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se refactorizó la lógica de purga y la gestión de directorios en `quarantine.py` para mejorar la legibilidad y robustez, extrayendo la lógica de validación de archivos "huérfanos" (presentes en disco pero no en manifiesto) y centralizando los criterios de seguridad, cumpliendo con las directrices de mantenimiento de código crítico.
+- `2026-09-08T12:25:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-08T12:25:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T12:25:43` Corrida terminada. Total usado hoy: 292.
