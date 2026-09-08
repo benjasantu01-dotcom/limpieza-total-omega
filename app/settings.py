@@ -323,10 +323,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         
         parent = ruta.parent
         if not parent.exists():
-            try:
-                parent.mkdir(parents=True, exist_ok=True)
-            except OSError:
-                return None
+            if not _Validators._is_safe_path(str(parent)): return None
+            parent.mkdir(parents=True, exist_ok=True)
             
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None

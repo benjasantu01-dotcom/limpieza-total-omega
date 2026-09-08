@@ -100,7 +100,7 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root: Path = base_root.resolve(strict=False)
+        self.base_root: Path = base_root.resolve()
         self.base_root_str: str = str(self.base_root).lower() + os.sep
         self.now_ts: float = datetime.now().timestamp()
 
@@ -122,10 +122,8 @@ class Scanner:
         try:
             if entry.is_symlink():
                 return True
-            # Intentar verificar atributos sin seguir enlaces
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError, PermissionError):
-            # En caso de error de acceso, tratar como seguro omitir para evitar bloqueos
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
@@ -141,6 +139,9 @@ class Scanner:
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
                     self._handle_directory(entry, directory_stack)
+                return
+
+            if len(entry.path) > MAX_PATH_LENGTH:
                 return
 
             name = entry.name
@@ -183,7 +184,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         if not base_path.exists() or not base_path.is_dir(): 
             return []
         
-        root_input = base_path.resolve(strict=True)
+        root_input = base_path.resolve()
         if not root_input.is_absolute() or str(root_input).startswith(("\\\\", "//")) or is_protected_path(root_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError, PermissionError):
