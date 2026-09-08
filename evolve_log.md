@@ -1053,3 +1053,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-08T12:25:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-08T12:25:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T12:25:43` Corrida terminada. Total usado hoy: 292.
+- `2026-09-08T12:34:14` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-09-08T12:34:49` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _CheckResult
+- `2026-09-08T12:34:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-08T12:34:53` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-08T12:35:25` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `scanner.py` mediante la adición de docstrings detallados en los métodos de `Scanner` y funciones auxiliares, clarificando el propósito, argumentos y lógica de seguridad de cada componente.
+- `2026-09-08T12:35:56` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenimiento del código mediante la refactorización de `_Validators._run_safety_checks` para consolidar la lógica de resolución de rutas y validación, eliminando redundancias en el flujo de ejecución.
+- `2026-09-08T12:36:10` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). He refactorizado la clase `StartupEntry` para separar la lógica de validación de rutas y acceso a archivos de la lógica de negocio, documentando con docstrings claros los métodos privados y clarificando las responsabilidades de cada chequeo para mejorar la mantenibilidad y legibilidad del código.
+- `2026-09-08T12:36:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T12:36:10` Corrida terminada. Total usado hoy: 296.

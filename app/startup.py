@@ -81,7 +81,7 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
-        """Determina si la ruta hace referencia a un nombre reservado del kernel (evita errores de I/O)."""
+        """Verifica si el nombre de archivo es reservado por el kernel de Windows (p.ej. CON, NUL)."""
         reserved: Set[str] = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
         try:
             if "\0" in path_str:
@@ -91,25 +91,25 @@ class StartupEntry:
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:
-        """Valida caracteres prohibidos y rutas UNC (no soportadas para análisis local)."""
+        """Detecta caracteres inválidos o rutas UNC que podrían ser inseguras o inalcanzables localmente."""
         suspicious_chars = '<>|?*\0&;%'
         return any(c in path_string for c in suspicious_chars) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Verifica extensión ejecutable omitiendo enlaces simbólicos por seguridad."""
+        """Determina si el archivo posee una extensión ejecutable y no es un enlace simbólico."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Elimina caracteres de control y espacios innecesarios de la línea de comandos."""
+        """Limpia la línea de comandos de caracteres de control o no imprimibles."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Extrae la ruta de un ejecutable envuelta en comillas validando que sea absoluta."""
+        """Extrae rutas que se encuentran entre comillas dobles, validando su integridad básica."""
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
         
@@ -131,17 +131,18 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Confirma existencia física y rechaza puntos de reparseo (reparse points)."""
+        """Comprueba si el archivo existe físicamente, es un archivo real (no directorio) y es seguro."""
         try:
             if not os.path.lexists(p) or p.is_dir():
                 return False
             stats = p.lstat()
+            # 0x00000400 es el atributo FILE_ATTRIBUTE_REPARSE_POINT (Junctions/Symlinks)
             return not p.is_symlink() and not (getattr(stats, 'st_file_attributes', 0) & 0x00000400)
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Resuelve rutas a su forma absoluta y normalizada, cacheando resultados para rendimiento."""
+        """Normaliza, valida contra listas protegidas y resuelve rutas absolutas utilizando caché."""
         if not path_string or self._is_path_suspicious(path_string) or self._is_reserved_device_name(path_string):
             return ""
         
@@ -180,7 +181,7 @@ class StartupEntry:
             return path_string
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Separa el ejecutable de los argumentos de línea de comandos."""
+        """Analiza la línea de comandos para aislar el ejecutable principal."""
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -197,7 +198,7 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Devuelve la ruta absoluta del ejecutable (evaluación perezosa)."""
+        """Proporciona la ruta absoluta del ejecutable tras una evaluación perezosa."""
         if self._checked_exists:
             return self._exec_cache or ""
             

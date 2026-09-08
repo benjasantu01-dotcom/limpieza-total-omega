@@ -162,21 +162,19 @@ class _Validators:
     def _run_safety_checks(path_obj: Path) -> bool:
         """Determina si la ruta es segura de manipular mediante `safety.py`."""
         path_str = str(path_obj)
-        if (cached := _SAFETY_CACHE.get(path_str)) is not None:
-            return cached
+        if path_str in _SAFETY_CACHE:
+            return _SAFETY_CACHE[path_str]
         
         try:
             resolved = path_obj.resolve(strict=False)
-            if _Validators._is_reparse_point(resolved):
-                _SAFETY_CACHE[path_str] = False
-                return False
-            
-            is_safe = not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
-            _SAFETY_CACHE[path_str] = is_safe
-            return is_safe
+            is_safe = not _Validators._is_reparse_point(resolved) and \
+                      not is_protected_path(str(resolved)) and \
+                      is_safe_to_modify(str(resolved))
         except (OSError, PermissionError):
-            _SAFETY_CACHE[path_str] = False
-            return False
+            is_safe = False
+            
+        _SAFETY_CACHE[path_str] = is_safe
+        return is_safe
 
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
