@@ -16,26 +16,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 85 | 9 | 16 | 10 | 84 |
-| 2026-09-08 | 134 | 10 | 20 | 8 | 128 |
+| 2026-09-07 | 82 | 9 | 15 | 10 | 84 |
+| 2026-09-08 | 137 | 10 | 21 | 8 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **46**
-- robustez ante casos límite: **41**
-- rendimiento: **31**
+- robustez ante casos límite: **38**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
+- `duplicates.py`: **20**
 - `assistant.py`: **20**
-- `safety.py`: **19**
-- `settings.py`: **19**
-- `duplicates.py`: **19**
-- `healthscore.py`: **19**
-- `scanner.py`: **18**
-- `memory.py`: **17**
+- `healthscore.py`: **20**
+- `memory.py`: **18**
+- `safety.py`: **18**
+- `settings.py`: **18**
+- `scanner.py`: **17**
 - `browser.py`: **16**
 - `quarantine.py`: **15**
 - `branding.py`: **14**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-08T12:56:57` **memory.py** (rendimiento): Se optimizó `top_memory_processes` reemplazando la lógica de filtrado redundante dentro del generador por una técnica de *list comprehension* con `if` incorporado, y centralizando la validación de procesos para reducir el costo de llamadas a `is_protected_path` mediante la evaluación perezosa en la lista de candidatos.
+- `2026-09-08T12:55:28` **healthscore.py** (rendimiento): Optimicé el cálculo del `SystemMetrics` evitando la re-iteración sobre `__dataclass_fields__` en `validate` (que es costosa al ejecutarse en cada inicio) y eliminando el uso de `getattr`/`setattr` en favor de una asignación directa tras la sanitización.
+- `2026-09-08T12:55:02` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `Path.resolve()` dentro del bucle interno, utilizando directamente `entry.path` para las validaciones y delegando la resolución de `real_path` a la entrada del directorio, lo que reduce drásticamente las syscalls en escaneos grandes.
 - `2026-09-08T12:46:20` **diskreport.py** (rendimiento): Optimicé el motor `_collect_summary_data` para utilizar una estructura de datos `heapq` más eficiente y evitar la clasificación completa de listas en `largest_files`, reduciendo la carga de CPU y memoria en directorios grandes.
 - `2026-09-08T12:45:42` **branding.py** (rendimiento): Se optimizó el cálculo de la paleta y los colores de severidad utilizando `@lru_cache` para evitar la sobrecarga de consultas recurrentes en una interfaz gráfica dinámica, y se refactorizó `severity_color` y `severity_label` para centralizar la lógica de acceso a `SEVERITY_STYLES`, evitando redundancias de `lowercase` y búsquedas repetidas.
 - `2026-09-08T12:45:07` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la iteración secuencial sobre los tokens de la pregunta por una búsqueda directa en `_KEYWORD_TO_HANDLER`, evitando el overhead del regex `_TOKEN_REGEX` y el loop `for` cuando la pregunta coincide exactamente con una clave, además de reducir el uso de memoria en las operaciones de búsqueda de palabras clave.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-08T12:15:18` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de tipos mediante docstrings explícitos y la adición de Type Hints en las funciones del pipeline, facilitando la comprensión del flujo de datos en el motor de puntuación sin alterar su comportamiento funcional.
 - `2026-09-08T12:14:47` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `duplicates.py` mediante docstrings detallados en las funciones de procesamiento recursivo y la clarificación de las estrategias de hashing para asegurar que el flujo de trabajo sea auditable por futuros desarrolladores.
 - `2026-09-08T12:14:15` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos en las funciones principales y se reemplazó el uso de nombres de variables ambiguos en `_collect_summary_data` para clarificar la lógica de acumulación de métricas, mejorando la mantenibilidad sin alterar la funcionalidad.
-- `2026-09-08T12:05:37` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código añadiendo docstrings descriptivos con el formato Google Style, especificando tipos de retorno y parámetros, y añadiendo anotaciones de tipo faltantes para mejorar la mantenibilidad y legibilidad técnica.
-- `2026-09-08T12:05:21` **branding.py** (legibilidad y documentación): Documenté el propósito técnico de las funciones críticas y clarifiqué la estructura de los tipos complejos para mejorar la mantenibilidad del módulo de branding.
-- `2026-09-08T12:04:46` **assistant.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados en funciones clave y la creación de una propiedad `is_empty` en `SystemContext` para estandarizar la verificación de estado, reemplazando chequeos manuales fragmentados.

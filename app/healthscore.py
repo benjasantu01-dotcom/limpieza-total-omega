@@ -152,31 +152,24 @@ class SystemMetrics:
 
     def __post_init__(self) -> None:
         """Valida y normaliza las métricas tras la inicialización."""
-        for field_info in self.__dataclass_fields__.values():
-            val = getattr(self, field_info.name)
-            if val is None:
-                setattr(self, field_info.name, 0.0 if field_info.type is float else 0)
         self.validate()
 
     def validate(self) -> None:
         """Aplica normalización defensiva para asegurar integridad de datos."""
-        sanitized = {
-            "junk_mb": max(0.0, _to_float(self.junk_mb)),
-            "duplicate_mb": max(0.0, _to_float(self.duplicate_mb)),
-            "suspicious_count": int(max(0, _to_float(self.suspicious_count))),
-            "suspicious_warnings": int(max(0, _to_float(self.suspicious_warnings))),
-            "startup_count": int(max(0, _to_float(self.startup_count))),
-            "quarantined_count": int(max(0, _to_float(self.quarantined_count))),
-            "memory_available_percent": _clamp(_to_float(self.memory_available_percent, 100.0), 0.1, 100.0),
-            "disk_free_percent": _clamp(_to_float(self.disk_free_percent, 100.0), 0.1, 100.0)
-        }
-        for key, val in sanitized.items():
-            setattr(self, key, val)
+        self.junk_mb = max(0.0, _to_float(self.junk_mb))
+        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
+        self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
+        self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings)))
+        self.startup_count = int(max(0, _to_float(self.startup_count)))
+        self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
+        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.1, 100.0)
+        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.1, 100.0)
 
     @property
     def is_finite(self) -> bool:
         """Comprueba si todos los campos numéricos son valores finitos."""
-        return all(math.isfinite(float(getattr(self, f.name))) for f in self.__dataclass_fields__.values())
+        return (math.isfinite(self.junk_mb) and math.isfinite(self.duplicate_mb) and 
+                math.isfinite(self.memory_available_percent) and math.isfinite(self.disk_free_percent))
 
 @dataclass
 class HealthResult:

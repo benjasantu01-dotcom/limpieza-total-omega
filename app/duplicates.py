@@ -167,14 +167,13 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Barrido recursivo del disco utilizando os.scandir para rendimiento.
-    Mantiene un set 'visited' para evitar recursión infinita en ciclos de enlaces.
     """
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[str] = set()
 
     def _scan_directory_recursive(current_dir: Path) -> None:
         try:
-            real_path = str(current_dir.resolve(strict=False))
+            real_path = os.path.realpath(current_dir)
             if real_path in visited or is_protected_path(current_dir):
                 return
             visited.add(real_path)
@@ -182,17 +181,15 @@ def _collect_candidates(
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        path_entry = Path(entry.path)
-                        if skip_protected and is_protected_path(path_entry):
-                            continue
-                            
                         if entry.is_dir(follow_symlinks=False):
-                            if not is_junction(path_entry):
-                                _scan_directory_recursive(path_entry)
+                            if not is_junction(Path(entry.path)):
+                                _scan_directory_recursive(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
-                            if st.st_size >= min_size and _is_valid_candidate(path_entry):
-                                size_map[st.st_size].append(path_entry)
+                            if st.st_size >= min_size:
+                                path_entry = Path(entry.path)
+                                if (not skip_protected or not is_protected_path(path_entry)) and _is_valid_candidate(path_entry):
+                                    size_map[st.st_size].append(path_entry)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

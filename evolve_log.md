@@ -1069,3 +1069,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-08T12:46:20` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el motor `_collect_summary_data` para utilizar una estructura de datos `heapq` más eficiente y evitar la clasificación completa de listas en `largest_files`, reduciendo la carga de CPU y memoria en directorios grandes.
 - `2026-09-08T12:46:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T12:46:20` Corrida terminada. Total usado hoy: 300.
+- `2026-09-08T12:54:33` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-08T12:55:02` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `Path.resolve()` dentro del bucle interno, utilizando directamente `entry.path` para las validaciones y delegando la resolución de `real_path` a la entrada del directorio, lo que reduce drásticamente las syscalls en escaneos grandes.
+- `2026-09-08T12:55:28` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del `SystemMetrics` evitando la re-iteración sobre `__dataclass_fields__` en `validate` (que es costosa al ejecutarse en cada inicio) y eliminando el uso de `getattr`/`setattr` en favor de una asignación directa tras la sanitización.
+- `2026-09-08T12:56:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards
+- `2026-09-08T12:56:57` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó `top_memory_processes` reemplazando la lógica de filtrado redundante dentro del generador por una técnica de *list comprehension* con `if` incorporado, y centralizando la validación de procesos para reducir el costo de llamadas a `is_protected_path` mediante la evaluación perezosa en la lista de candidatos.
+- `2026-09-08T12:56:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T12:56:57` Corrida terminada. Total usado hoy: 304.

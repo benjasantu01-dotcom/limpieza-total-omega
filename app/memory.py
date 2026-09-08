@@ -211,11 +211,9 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             if not clean_line: continue
             
             parts = [p.strip().strip("'\"") for p in clean_line.split(",")]
-            if len(parts) != 3 or not all(parts): 
-                continue
-            
-            proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
-            if proc: yield proc
+            if len(parts) == 3 and all(parts):
+                proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
+                if proc: yield proc
 
     return sorted(process_generator(), key=lambda p: p.working_set, reverse=True)[:limit]
 
