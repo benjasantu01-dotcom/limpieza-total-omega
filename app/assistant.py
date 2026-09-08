@@ -571,11 +571,12 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
         return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Extrae respuesta textual del payload JSON con validación estricta."""
+    """Extrae respuesta textual del payload JSON con validación estricta de estructura."""
     if not isinstance(data, dict): return None
     try:
+        # Validación paso a paso de la estructura esperada: {"candidates": [{"content": {"parts": [{"text": "..."}]}}]}
         candidates = data.get("candidates")
-        if not isinstance(candidates, list) or len(candidates) == 0: return None
+        if not isinstance(candidates, list) or not candidates: return None
         
         c1 = candidates[0]
         if not isinstance(c1, dict): return None
@@ -584,9 +585,12 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         if not isinstance(content, dict): return None
         
         parts = content.get("parts")
-        if not isinstance(parts, list) or len(parts) == 0: return None
+        if not isinstance(parts, list) or not parts: return None
         
-        text_val = parts[0].get("text")
+        first_part = parts[0]
+        if not isinstance(first_part, dict): return None
+        
+        text_val = first_part.get("text")
         return str(text_val) if isinstance(text_val, str) else None
     except (AttributeError, TypeError, IndexError, KeyError): 
         return None

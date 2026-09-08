@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 38
+- Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 107 | 10 | 21 | 12 | 90 |
-| 2026-09-08 | 106 | 9 | 17 | 8 | 124 |
+| 2026-09-07 | 104 | 10 | 20 | 12 | 90 |
+| 2026-09-08 | 107 | 9 | 17 | 8 | 127 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
 - robustez ante casos límite: **47**
 - seguridad defensiva: **47**
+- legibilidad y documentación: **46**
 - rendimiento: **37**
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **20**
-- `healthscore.py`: **19**
 - `settings.py`: **19**
+- `duplicates.py`: **19**
 - `safety.py`: **19**
-- `memory.py`: **18**
+- `assistant.py`: **19**
 - `scanner.py`: **18**
-- `assistant.py`: **18**
+- `healthscore.py`: **18**
+- `memory.py`: **17**
 - `browser.py`: **16**
 - `quarantine.py`: **16**
 - `branding.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-08T11:25:56` **assistant.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `_extract_text_from_gemini_json` implementando una validación exhaustiva de los tipos y existencia de los campos en el payload de la API, evitando excepciones ante respuestas inesperadas o truncadas.
 - `2026-09-08T10:02:46` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones de escritura en `save()` implementando `os.replace` (que es atómico en sistemas POSIX y Windows) y eliminando `os.rename` como fallback, para asegurar que el archivo de configuración nunca quede en un estado intermedio corrupto ante interrupciones.
 - `2026-09-08T10:02:16` **scanner.py** (seguridad defensiva): Se ha robustecido el escáner defensivo evitando el procesamiento de rutas con caracteres de control (como los de ofuscación RTL ya detectados en nombres) mediante la validación estricta de `entry.path` en `_is_safe_entry`, asegurando que ninguna ruta pase el filtro si presenta inconsistencias o caracteres sospechosos antes de ser manipulada por `pathlib`.
 - `2026-09-08T10:01:49` **safety.py** (seguridad defensiva): Se reforzó la seguridad defensiva integrando la detección de puntos de reparse (junctions/symlinks) dentro de la validación estructural `_validate_boundary_conditions` para asegurar que ninguna operación de modificación atraviese o manipule recursivamente estas rutas críticas antes de intentar cualquier acceso a disco.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-08T09:21:53` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `Scanner` ante cambios en el sistema de archivos durante el escaneo y rutas inexistentes mediante la adición de una verificación explícita de `exists()` antes de procesar cada entrada en el stack y un manejo de errores más estricto al leer metadatos de archivos, evitando excepciones por condiciones de carrera o archivos bloqueados por el sistema operativo.
 - `2026-09-08T09:14:51` **organizer.py** (robustez ante casos límite): Se introdujo una validación de "disponibilidad de escritura" en `stage_for_review` para prevenir fallos silenciosos ante carpetas de destino en medios de solo lectura o con permisos restringidos, fortaleciendo la robustez ante errores de I/O comunes.
 - `2026-09-08T09:13:16` **memory.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `trim_working_set` y `_get_process_path` ante procesos que finalizan inesperadamente o cuyos permisos de acceso son dinámicos, utilizando `ctypes.windll.kernel32.CloseHandle` de forma garantizada y añadiendo chequeos de nulidad en las APIs de `psapi`.
-- `2026-09-08T09:01:22` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_collect_candidates` ante la concurrencia de sistema de archivos (race conditions donde un archivo desaparece entre el `scandir` y el `stat`) envolviendo el acceso a metadatos en un bloque `try-except` específico para evitar que una excepción por archivo bloqueado o eliminado aborte la iteración completa del directorio.
