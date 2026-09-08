@@ -122,8 +122,10 @@ class Scanner:
         try:
             if entry.is_symlink():
                 return True
+            # Intentar verificar atributos sin seguir enlaces
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError, PermissionError):
+            # En caso de error de acceso, tratar como seguro omitir para evitar bloqueos
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 36
+- Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 75 | 7 | 14 | 8 | 80 |
-| 2026-09-08 | 146 | 12 | 22 | 9 | 131 |
+| 2026-09-07 | 75 | 7 | 14 | 8 | 76 |
+| 2026-09-08 | 149 | 12 | 23 | 9 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **46**
-- robustez ante casos límite: **43**
+- robustez ante casos límite: **46**
 - seguridad defensiva: **40**
 - rendimiento: **38**
 
@@ -32,13 +32,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **21**
 - `healthscore.py`: **21**
 - `duplicates.py`: **20**
+- `safety.py`: **19**
+- `scanner.py`: **19**
 - `memory.py`: **18**
-- `safety.py`: **18**
-- `scanner.py`: **18**
 - `settings.py`: **17**
 - `browser.py`: **16**
+- `quarantine.py`: **16**
 - `diskreport.py`: **15**
-- `quarantine.py`: **15**
 - `branding.py`: **13**
 - `startup.py`: **11**
 - `main.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-08T13:47:27` **scanner.py** (robustez ante casos límite): He mejorado la robustez de `_is_safe_entry` y `_is_reparse_point` añadiendo validaciones explícitas contra rutas que devuelven errores de acceso (`PermissionError`) o que son nulas, asegurando que el scanner no se detenga ante archivos bloqueados por el sistema operativo.
+- `2026-09-08T13:47:15` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `safety.py` ante casos límite en la detección de puntos de reparse, sustituyendo `path.is_symlink()` (que solo detecta enlaces simbólicos) por una consulta directa a los atributos de archivo mediante `GetFileAttributesW` para capturar correctamente tanto Junctions como Symlinks y evitar el seguimiento accidental de rutas fuera de los límites permitidos.
+- `2026-09-08T13:46:21` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos inexistentes o bloqueos por permisos antes de intentar operaciones de I/O, evitando excepciones innecesarias en el bucle de escaneo.
 - `2026-09-08T13:38:44` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` y `_is_safe_to_trim` implementando un manejo defensivo de errores y validación de tipos ante fallas inesperadas de la API de Windows, asegurando que cualquier error durante el ciclo de vida del handle o la interacción con `psapi` sea capturado sin comprometer la integridad del proceso ni el bucle de ejecución.
 - `2026-09-08T13:35:55` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del método `validate` en `SystemMetrics` ante casos límite donde los valores numéricos podrían ser `NaN` o `inf`, asegurando que el pipeline de puntuación nunca reciba datos no finitos mediante una limpieza más estricta durante la inicialización.
 - `2026-09-08T13:27:09` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `_collect_candidates` ante casos límite de entrada (como carpetas cuyo acceso es denegado durante la recursión) y se ha añadido una validación de seguridad extra en `_is_valid_candidate` para garantizar que solo se procesen archivos realmente accesibles y sin atributos de reparse, mitigando errores en tiempo de ejecución.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-08T12:56:57` **memory.py** (rendimiento): Se optimizó `top_memory_processes` reemplazando la lógica de filtrado redundante dentro del generador por una técnica de *list comprehension* con `if` incorporado, y centralizando la validación de procesos para reducir el costo de llamadas a `is_protected_path` mediante la evaluación perezosa en la lista de candidatos.
 - `2026-09-08T12:55:28` **healthscore.py** (rendimiento): Optimicé el cálculo del `SystemMetrics` evitando la re-iteración sobre `__dataclass_fields__` en `validate` (que es costosa al ejecutarse en cada inicio) y eliminando el uso de `getattr`/`setattr` en favor de una asignación directa tras la sanitización.
 - `2026-09-08T12:55:02` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `Path.resolve()` dentro del bucle interno, utilizando directamente `entry.path` para las validaciones y delegando la resolución de `real_path` a la entrada del directorio, lo que reduce drásticamente las syscalls en escaneos grandes.
-- `2026-09-08T12:46:20` **diskreport.py** (rendimiento): Optimicé el motor `_collect_summary_data` para utilizar una estructura de datos `heapq` más eficiente y evitar la clasificación completa de listas en `largest_files`, reduciendo la carga de CPU y memoria en directorios grandes.
-- `2026-09-08T12:45:42` **branding.py** (rendimiento): Se optimizó el cálculo de la paleta y los colores de severidad utilizando `@lru_cache` para evitar la sobrecarga de consultas recurrentes en una interfaz gráfica dinámica, y se refactorizó `severity_color` y `severity_label` para centralizar la lógica de acceso a `SEVERITY_STYLES`, evitando redundancias de `lowercase` y búsquedas repetidas.
-- `2026-09-08T12:45:07` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la iteración secuencial sobre los tokens de la pregunta por una búsqueda directa en `_KEYWORD_TO_HANDLER`, evitando el overhead del regex `_TOKEN_REGEX` y el loop `for` cuando la pregunta coincide exactamente con una clave, además de reducir el uso de memoria en las operaciones de búsqueda de palabras clave.

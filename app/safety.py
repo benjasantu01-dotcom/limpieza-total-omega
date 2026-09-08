@@ -183,27 +183,16 @@ def _is_system_or_hidden(path_str: str | None) -> bool:
 
 
 @lru_cache(maxsize=2048)
-def _is_junction(path_str: str) -> bool:
-    """Usa GetFileAttributesW de la WinAPI para identificar puntos de unión (Junctions)."""
-    if os.name != 'nt': return False
+def _is_reparse_point(path_str: str) -> bool:
+    """Determina si un archivo es un punto de reparse (Junction o Symlink) vía WinAPI."""
+    if os.name != 'nt':
+        return os.path.islink(path_str)
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(path_str)
         if attrs == 0xFFFFFFFF: return False
         return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT)
-    except (AttributeError, OSError, TypeError):
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         return False
-
-
-@lru_cache(maxsize=2048)
-def _is_reparse_point(path_str: str) -> bool:
-    """Determina si un archivo es un punto de reparse (Symlink o Junction)."""
-    path = Path(path_str)
-    try:
-        st = path.lstat()
-        attrs = getattr(st, 'st_file_attributes', 0)
-        return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT) or _is_junction(path_str)
-    except (AttributeError, OSError, FileNotFoundError):
-        return path.is_symlink()
 
 
 @lru_cache(maxsize=1024)
@@ -465,7 +454,7 @@ def describe_protection(path: PathLike) -> str:
     try:
         if p.exists():
             if len(str(p)) >= MAX_PATH_LENGTH: return f"'{p}' longitud excesiva."
-            if os.path.islink(p): return f"'{p}' es un enlace simbólico."
+            if _is_reparse_point(str(p)): return f"'{p}' es un punto de reparse (Junction/Symlink)."
             if os.path.ismount(p): return f"'{p}' es un punto de montaje."
             if _is_readonly(str(p)): return f"'{p}' es solo lectura."
             if _is_file_in_use(str(p)): return f"'{p}' en uso."

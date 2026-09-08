@@ -170,12 +170,13 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Detecta si un archivo está en uso exclusivo intentando abrirlo en r+b.
-    Si el SO deniega el acceso, es indicativo de que el archivo está bloqueado.
+    Detecta si un archivo está en uso exclusivo mediante intentos de apertura.
+    Valida existencia y accesibilidad antes de intentar el bloqueo de I/O.
     """
     if not isinstance(path, Path) or not path.exists():
         return False
     try:
+        # Intenta abrir para escritura exclusiva. Si falla, el archivo está bloqueado.
         with open(path, "r+b") as f:
             f.flush()
             os.fsync(f.fileno())

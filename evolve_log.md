@@ -1157,3 +1157,11 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-08T13:38:59` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-09-08T13:38:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T13:38:59` Corrida terminada. Total usado hoy: 320.
+- `2026-09-08T13:45:39` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-08T13:46:21` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos inexistentes o bloqueos por permisos antes de intentar operaciones de I/O, evitando excepciones innecesarias en el bucle de escaneo.
+- `2026-09-08T13:46:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-09-08T13:47:15` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `safety.py` ante casos límite en la detección de puntos de reparse, sustituyendo `path.is_symlink()` (que solo detecta enlaces simbólicos) por una consulta directa a los atributos de archivo mediante `GetFileAttributesW` para capturar correctamente tanto Junctions como Symlinks y evitar el seguimiento accidental de rutas fuera de los límites permitidos.
+- `2026-09-08T13:47:15` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-08T13:47:27` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). He mejorado la robustez de `_is_safe_entry` y `_is_reparse_point` añadiendo validaciones explícitas contra rutas que devuelven errores de acceso (`PermissionError`) o que son nulas, asegurando que el scanner no se detenga ante archivos bloqueados por el sistema operativo.
+- `2026-09-08T13:47:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T13:47:27` Corrida terminada. Total usado hoy: 324.
