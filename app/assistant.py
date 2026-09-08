@@ -284,7 +284,7 @@ class SystemContext:
             val = _get_source_value(source, key)
             if val is not None and spec.is_valid_type(val):
                 f_val = float(val)
-                if 0.0 <= f_val <= spec.max_val:
+                if not math.isnan(f_val) and not math.isinf(f_val) and spec.min_val <= f_val <= spec.max_val:
                     setattr(self, key, spec.cast_func(f_val))
                     found_data = True
         
@@ -383,7 +383,7 @@ def context_as_text(context: SystemContext) -> str:
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Convierte un valor a string formateado con unidad."""
     f = _safe_float(val, -1.0)
-    if f < 0:
+    if f < 0 or math.isnan(f) or math.isinf(f):
         return "N/A"
     try:
         return f"{f:.{decimal}f}{unit}"

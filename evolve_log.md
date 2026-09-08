@@ -1454,3 +1454,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-08T04:16:16` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` y `save()` reemplazando la serialización/deserialización redundante y las validaciones innecesarias, consolidando el acceso al archivo y reduciendo el uso de I/O mediante un chequeo de integridad directo antes del `os.replace`.
 - `2026-09-08T04:16:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T04:16:16` Corrida terminada. Total usado hoy: 100.
+- `2026-09-08T04:24:52` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-09-08T04:25:20` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-08T04:25:56` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` y `_fmt_metric` ante valores inesperados (como `math.inf` o `math.nan` recibidos desde JSON u objetos corruptos), añadiendo chequeos explícitos para evitar que el estado interno del asistente quede en un estado numérico inválido que rompa la lógica posterior.
+- `2026-09-08T04:26:28` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de parámetros de entrada (evitando estados inconsistentes en Canvas) y asegurando que las operaciones de sistema se realicen sobre rutas normalizadas, previniendo errores de concurrencia o permisos al crear directorios.
+- `2026-09-08T04:26:39` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-08T04:26:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T04:26:39` Corrida terminada. Total usado hoy: 104.

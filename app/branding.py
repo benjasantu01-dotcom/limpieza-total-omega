@@ -335,23 +335,20 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda una copia física del SVG tras validación estricta de seguridad."""
     if destination is None: return None
     try:
-        raw_val = str(destination)
-        if not raw_val or len(raw_val) > 1024: return None
-        path_raw = Path(raw_val)
+        path_raw = Path(str(destination)).resolve()
         
-        # Validación de ruta y normalización para evitar escapes
-        if not path_raw.name or path_raw.name in (".", ".."): return None
-        path_obj = path_raw.resolve().absolute()
-        
-        if is_protected_path(path_obj) or is_protected_path(path_obj.parent):
+        # Prevenir rutas vacías, mal formadas o protegidas
+        if not path_raw.name or is_protected_path(path_raw) or is_protected_path(path_raw.parent):
             return None
-        if not is_safe_to_modify(path_obj) or not is_safe_to_modify(path_obj.parent):
+        
+        # Validar capacidad de escritura en el destino sin sobreescribir inadvertidamente
+        if not is_safe_to_modify(path_raw) or not is_safe_to_modify(path_raw.parent):
             return None
             
-        ensure_safe_to_modify(path_obj)
-        path_obj.parent.mkdir(parents=True, exist_ok=True)
-        path_obj.write_text(logo_svg(), encoding="utf-8")
-        return path_obj
+        ensure_safe_to_modify(path_raw)
+        path_raw.parent.mkdir(parents=True, exist_ok=True)
+        path_raw.write_text(logo_svg(), encoding="utf-8")
+        return path_raw
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError): 
         return None
 
@@ -362,6 +359,7 @@ def logo_ascii() -> str:
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Helper interno: dibuja franjas graduadas decorativas en el canvas."""
     try:
+        if not math.isfinite(scale) or scale <= 0: return
         franjas_count = max(6, int(28 * scale))
         colores = gradient_colors(franjas_count)
         base_y = canvas_y + 18 * scale
@@ -377,6 +375,7 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Helper interno: dibuja elementos tipográficos e íconos sobre el escudo."""
     try:
+        if not math.isfinite(scale) or scale <= 0: return
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, canvas_x + 75 * scale, canvas_y + 41 * scale, fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
         canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, canvas_x + 89 * scale, canvas_y + 38 * scale, canvas_x + 92 * scale, canvas_y + 52 * scale, fill=C_BACKGROUND, outline="")
         canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(UI_FONT_HEADER_SIZE * scale)), UI_FONT_BOLD))
@@ -405,13 +404,10 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
     Dibuja una barra de degradado horizontal orientada a UI.
-    :param width: Ancho total de la barra.
-    :param height: Altura vertical de la línea.
-    :param canvas_x: Origen X en el canvas.
-    :param canvas_y: Origen Y en el canvas.
     """
     try:
-        segments = _get_grouped_segments(gradient_colors(max(1, int(width)), stops))
+        w_val = max(1, int(width))
+        segments = _get_grouped_segments(gradient_colors(w_val, stops))
         for seg in segments:
             canvas.create_line(canvas_x + seg.start_index, canvas_y, canvas_x + seg.end_index, canvas_y, fill=seg.hex_color, width=max(1, int(height)))
     except (ValueError, TypeError, AttributeError): pass
@@ -419,11 +415,6 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[HexColor] = None, fill: Optional[HexColor] = None) -> None:
     """
     Renderiza un gráfico circular de progreso con manejo de errores defensivo.
-    :param percent: Valor 0-100 a graficar.
-    :param size: Diámetro exterior.
-    :param canvas_x: Posición X.
-    :param canvas_y: Posición Y.
-    :param thickness: Grosor del trazo.
     """
     try:
         if percent is None: return
