@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 35
+- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-06 | 59 | 2 | 8 | 4 | 77 |
+| 2026-09-06 | 59 | 1 | 8 | 4 | 74 |
 | 2026-09-07 | 158 | 15 | 27 | 19 | 131 |
-| 2026-09-08 | 3 | 0 | 0 | 0 | 1 |
+| 2026-09-08 | 5 | 0 | 1 | 0 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
-- robustez ante casos límite: **45**
+- robustez ante casos límite: **47**
 - manejo de errores y validación de entradas: **44**
 - rendimiento: **42**
 - seguridad defensiva: **40**
@@ -32,11 +32,11 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `assistant.py`: **19**
 - `settings.py`: **19**
+- `quarantine.py`: **18**
+- `safety.py`: **18**
 - `scanner.py`: **18**
 - `browser.py`: **18**
 - `healthscore.py`: **18**
-- `quarantine.py`: **17**
-- `safety.py`: **17**
 - `duplicates.py`: **17**
 - `memory.py`: **16**
 - `diskreport.py`: **14**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-08T00:21:25` **safety.py** (robustez ante casos límite): Se añadió una validación específica para rutas con caracteres Unicode "homoglyph" (posibles ataques de spoofing mediante normalización) y se reforzó la robustez ante la ausencia de `st_file_attributes` en sistemas no Windows al verificar la integridad.
+- `2026-09-08T00:20:47` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` añadiendo una verificación de existencia y estado del archivo en el sistema de archivos justo antes de intentar la operación de aislamiento (evitando condiciones de carrera entre la validación inicial y la ejecución), y añadí un bloque `finally` para asegurar que el manifiesto se sincronice incluso si fallan operaciones no críticas posteriores.
 - `2026-09-08T00:11:47` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_read_windows_snapshot` agregando una validación explícita para asegurar que la estructura Win32 devuelva valores lógicos antes de crear el `MemorySnapshot`, evitando así reportar estados de memoria corruptos o negativos ante fallos parciales de la API.
 - `2026-09-08T00:11:34` **main.py** (robustez ante casos límite): Mejoré la resiliencia del sistema ante estados de error inesperados durante la carga inicial del layout y el acceso a widgets, implementando un bloque `try-except` robusto dentro de `_tab_factory` y asegurando que las referencias a `winfo_exists()` siempre verifiquen el estado de la ventana antes de cualquier interacción, evitando *crashes* al manipular pestañas durante procesos asíncronos.
 - `2026-09-08T00:10:26` **healthscore.py** (robustez ante casos límite): Se introdujo una protección defensiva en `_evaluate_rules` para manejar escenarios de datos inconsistentes (como `NaN` o valores extremos) que podrían haber escapado a la validación previa, garantizando que el pipeline de recomendaciones no aborte ante entradas inesperadas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T14:19:06` **healthscore.py** (rendimiento): Optimicé el cálculo del score eliminando la creación de objetos innecesarios y redundantes durante la ejecución de `compute_score`, reemplazando el uso de `append` en listas dinámicas por una pre-asignación eficiente y evitando iteraciones repetitivas sobre `_OPTIMIZED_PIPELINE` mediante un acceso directo más limpio.
 - `2026-09-07T14:09:55` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando un conjunto (`set`) para registrar rutas ya visitadas, evitando así el procesamiento redundante de directorios cuando se pasan múltiples rutas de entrada solapadas o enlaces complejos.
 - `2026-09-07T14:09:15` **browser.py** (rendimiento): Se optimizó la recursión de `_sum_directory_recursive` evitando llamadas costosas a `Path.resolve()` dentro del bucle y minimizando la creación de objetos `Path` mediante el uso de nombres de archivo crudos obtenidos de `os.scandir`, mejorando el rendimiento en directorios de caché con miles de archivos.
-- `2026-09-07T13:59:55` **assistant.py** (rendimiento): Optimicé el rendimiento de `_get_source_value` reemplazando el manejo de excepciones (`try-except` costoso en bucles) por una comprobación de tipo más eficiente y un acceso directo a `__dict__` o `getattr`, reduciendo la carga en la ingesta masiva de datos.
-- `2026-09-07T13:59:31` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados con la convención Google/NumPy, la especificación de tipos de retorno y la clarificación de la lógica de resolución de rutas en la clase `StartupEntry`, facilitando el mantenimiento y la auditoría de seguridad del código.

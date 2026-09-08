@@ -1030,3 +1030,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-08T00:11:47` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_read_windows_snapshot` agregando una validación explícita para asegurar que la estructura Win32 devuelva valores lógicos antes de crear el `MemorySnapshot`, evitando así reportar estados de memoria corruptos o negativos ante fallos parciales de la API.
 - `2026-09-08T00:11:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T00:11:47` Corrida terminada. Total usado hoy: 4.
+- `2026-09-08T00:19:40` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-09-08T00:20:10` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-08T00:20:47` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` añadiendo una verificación de existencia y estado del archivo en el sistema de archivos justo antes de intentar la operación de aislamiento (evitando condiciones de carrera entre la validación inicial y la ejecución), y añadí un bloque `finally` para asegurar que el manifiesto se sincronice incluso si fallan operaciones no críticas posteriores.
+- `2026-09-08T00:21:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-09-08T00:21:25` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se añadió una validación específica para rutas con caracteres Unicode "homoglyph" (posibles ataques de spoofing mediante normalización) y se reforzó la robustez ante la ausencia de `st_file_attributes` en sistemas no Windows al verificar la integridad.
+- `2026-09-08T00:21:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T00:21:25` Corrida terminada. Total usado hoy: 8.

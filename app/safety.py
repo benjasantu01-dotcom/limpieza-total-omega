@@ -15,6 +15,7 @@ from enum import Enum, auto, IntEnum
 from pathlib import Path
 from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, TypeGuard
 from functools import lru_cache
+import unicodedata
 
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result], bool]
@@ -61,6 +62,7 @@ class SafetyValidationErrorCode(IntEnum):
     ACCESS_DENIED = 13
     IO_ERROR = 14
     RELATIVE_PATH_NOT_ALLOWED = 15
+    SUSPICIOUS_ENCODING = 16
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
@@ -171,7 +173,9 @@ def _is_system_or_hidden(path: Path) -> bool:
     """Verifica mediante la estructura de atributos de archivo si es oculto o de sistema."""
     try:
         st = path.lstat()
-        return bool(getattr(st, 'st_file_attributes', 0) & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
+        # st_file_attributes no existe en todos los sistemas POSIX
+        attrs = getattr(st, 'st_file_attributes', 0)
+        return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
     except (AttributeError, OSError, FileNotFoundError):
         return False 
 
@@ -246,7 +250,6 @@ def _check_file_integrity(path: Path) -> None:
     except (PermissionError, OSError) as e:
         if isinstance(e, FileNotFoundError):
             return
-        # Clasificar error de acceso específicamente
         code = SafetyValidationErrorCode.ACCESS_DENIED if isinstance(e, PermissionError) else SafetyValidationErrorCode.IO_ERROR
         raise UnsafePathError(f"Error de acceso en {path}: {e}", code)
         
@@ -271,6 +274,10 @@ def normalize(path: PathLike) -> Path:
     if path is None: raise ValueError("Ruta nula recibida.")
     path_str = str(path).strip()
     if not path_str: raise ValueError("Entrada de ruta vacía.")
+    
+    # Detección de posibles ataques de normalización Unicode (homoglyphs)
+    if unicodedata.normalize('NFKC', path_str) != path_str:
+         raise ValueError("Ruta contiene secuencias Unicode sospechosas.")
         
     try:
         p = Path(path_str)
@@ -316,7 +323,6 @@ def is_protected_path(path: PathLike) -> bool:
     """Verifica si la ruta se encuentra dentro de carpetas restringidas por el sistema o por configuración de usuario."""
     if not path: return True
     p_str = str(path)
-    # Optimización: chequeo rápido por texto antes de resolver ruta con disco
     if _is_system_path_cached(p_str): return True
     try:
         p = normalize(path)

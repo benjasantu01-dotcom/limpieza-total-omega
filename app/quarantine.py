@@ -501,8 +501,9 @@ def quarantine_file(
     source_path = Path(source).expanduser().resolve(strict=True)
     if source_path.is_dir():
         raise UnsafePathError("Aislamiento de directorios no permitido.")
-        
-    if not source_path.exists():
+    
+    # Verificación de existencia pre-operativa (evita race conditions)
+    if not source_path.is_file():
         raise FileNotFoundError("El archivo origen ha desaparecido antes de la operación.")
         
     original_size = source_path.stat().st_size
@@ -535,21 +536,15 @@ def quarantine_file(
             try:
                 source_path.unlink()
             except OSError as e:
-                # Si el unlink falla, abortamos el registro del manifiesto para evitar corrupción
                 _safe_unlink(destination)
                 raise RuntimeError(f"No se pudo eliminar el original tras aislamiento: {e}")
             return quarantine_item
         else:
             raise RuntimeError("Fallo de integridad post-persistencia.")
-    except Exception as e:
-        if destination.exists():
-            _safe_unlink(destination)
-        # Limpiar temporales huérfanos en sandbox antes de elevar
-        for tmp in dest_dir.glob(".tmp_q_*"):
-            try: tmp.unlink()
-            except OSError: pass
-        raise RuntimeError(f"Fallo en operación de aislamiento: {e}")
-
+    finally:
+        # Asegurar integridad del manifiesto incluso si el post-aislamiento falla
+        try: load_manifest(dest_dir, force_reload=True)
+        except: pass
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna lista de ítems ordenados por fecha de aislamiento (más reciente primero)."""
