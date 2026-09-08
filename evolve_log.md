@@ -1084,3 +1084,36 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-08T13:06:56` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento de `filter_safe_paths` sustituyendo el manejo de excepciones por un chequeo previo con `is_safe_to_modify`, evitando el costo computacional de levantar y capturar objetos `UnsafePathError` en cada iteración al filtrar listas grandes.
 - `2026-09-08T13:06:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T13:06:56` Corrida terminada. Total usado hoy: 308.
+- `2026-09-08T13:15:00` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-08T13:15:33` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo reemplazando las verificaciones repetitivas de `is_protected_path` (que involucra múltiples chequeos de listas de sistema) por una comprobación temprana en `process_entry`, evitando llamadas redundantes a heurísticas en archivos o carpetas que ya sabemos que son inseguros.
+- `2026-09-08T13:15:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-08T13:16:06` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Se optimizó el rendimiento de carga reemplazando la lectura del archivo de disco por una verificación previa del tamaño y tiempo de modificación (`st_mtime`) del archivo (`stat`), evitando así operaciones de E/S innecesarias y deserialización JSON repetida cuando la configuración no ha cambiado.
+- `2026-09-08T13:16:35` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.41s
+
+```
+- `2026-09-08T13:16:35` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a disco en `_resolve_and_cache_path` mediante la implementación de una caché de resolución de rutas (`_RESOLVED_PATH_CACHE`), evitando realizar llamadas repetitivas a `os.path.realpath` y `os.path.exists` para comandos idénticos.
+- `2026-09-08T13:16:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-08T13:17:07` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` ante datos malformados o tipos inesperados, asegurando que el proceso de ingesta sea atómico y no se detenga ni corrompa el estado al encontrar un valor nulo o fuera de rango.
+- `2026-09-08T13:17:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T13:17:07` Corrida terminada. Total usado hoy: 312.
