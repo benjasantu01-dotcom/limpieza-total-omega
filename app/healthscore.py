@@ -153,6 +153,8 @@ class SystemMetrics:
     def __post_init__(self) -> None:
         """Validación automática tras inicialización para garantizar coherencia numérica."""
         self.validate()
+        if not self.is_finite:
+            raise ValueError("Métricas de sistema contienen valores no finitos.")
 
     def validate(self) -> None:
         """Aplica normalización defensiva para asegurar integridad de datos."""
@@ -233,7 +235,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             total_pts += pts
             if rules:
                 _evaluate_rules(metrics, rules, ratio, recommendations)
-        except (ValueError, TypeError, ZeroDivisionError):
+        except Exception:
             metric_breakdown[area] = 0
             continue
             

@@ -36,6 +36,8 @@ from safety import is_protected_path, is_safe_to_modify
 
 if TYPE_CHECKING:
     from ctypes import wintypes
+else:
+    wintypes = None
 
 # Definición de tipos para seguridad semántica en cálculos de memoria
 BytesValue = NewType("BytesValue", int)
@@ -347,10 +349,9 @@ def _is_system_process(pid: int) -> bool:
     """Verifica si un PID es crítico (kernel/idle) o el proceso actual."""
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
-def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
+def _get_process_path(proc_handle: int) -> Optional[str]:
     """
     Recupera la ruta absoluta del ejecutable mediante APIs de Win32 (Psapi).
-    Utiliza un buffer de 4096 caracteres para asegurar la captura de rutas largas.
     """
     if not proc_handle: return None
     psapi = ctypes.windll.psapi
@@ -362,7 +363,7 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
         pass
     return None
 
-def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
+def _is_safe_to_trim(proc_handle: int, pid: int) -> Tuple[bool, Optional[str]]:
     """
     Realiza una auditoría de seguridad del proceso objetivo antes de modificar su estado.
     Valida el estado del handle, la actividad real del PID y la integridad de la ruta.
@@ -408,7 +409,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
-    # Abrir solo con permisos mínimos de consulta y cuota para mitigar impacto
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         return False, f"Acceso denegado (código {kernel32.GetLastError()})."

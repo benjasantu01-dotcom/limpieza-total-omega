@@ -1081,7 +1081,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """
         if self._closing or not self.winfo_exists(): return
         
-        if check_safety and target and not self._is_safe_path(target):
+        # Validación defensiva extra: forzar chequeo de target si existe
+        if target and not self._is_safe_path(target):
             self.log("Acción denegada: la ruta destino no es segura.", self._current_tab())
             return
         
@@ -1090,7 +1091,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         with self._task_lock:
             if not self._closing and self._executor:
-                self._executor.submit(self._worker_thread_logic, fn, tab, target if check_safety else None)
+                self._executor.submit(self._worker_thread_logic, fn, tab, target)
             else:
                 self._set_busy(False)
 
@@ -1299,7 +1300,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log(f"Encontrados {len(junk)} candidatos ({total_mb} MB).", "Limpieza")
             self._safe_run_ui_callback(self.refresh_list)
 
-        self.run_async(task, check_safety=True, target=self.scan_target or str(Path.home()))
+        self.run_async(task, target=self.scan_target or str(Path.home()))
 
     @safe_ui_operation
     def refresh_list(self) -> None:
@@ -1341,7 +1342,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._invalidate_cache("junk")
             self._safe_run_ui_callback(self.refresh_list)
 
-        self.run_async(task, check_safety=True, target=str(Path.home()))
+        self.run_async(task, target=str(Path.home()))
 
     @validated_ui_operation
     def on_delete_reviewed(self) -> None:
@@ -1361,7 +1362,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception as e:
                 self.log(f"Error en borrado: {e}", "Limpieza")
 
-        self.run_async(task, check_safety=True, target=str(Path.home()))
+        self.run_async(task, target=str(Path.home()))
 
     def _run_heuristic_scan(self, folder: str) -> None:
         """Ejecuta escaneo de seguridad en una ruta."""
@@ -1389,7 +1390,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log("Recordá: son señales, no una condena. Usá 'Aislar hallazgos' "
                      "para moverlos a cuarentena sin borrarlos.", "Seguridad")
 
-        self.run_async(task, check_safety=True, target=folder)
+        self.run_async(task, target=folder)
 
     @validated_ui_operation
     def on_heuristic_scan(self) -> None:
@@ -1439,7 +1440,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log(f"Listo: {aislados} aislado(s).", "Seguridad")
             self._invalidate_cache("suspicions")
 
-        self.run_async(task, check_safety=True, target=str(Path.home()))
+        self.run_async(task, target=str(Path.home()))
 
     @validated_ui_operation
     def on_defender_scan(self) -> None:
@@ -1488,7 +1489,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception as e:
                 self._safe_run_ui_callback(lambda: self.log(f"Error al restaurar: {e}", "Cuarentena"))
 
-        self.run_async(task, check_safety=True, target=str(Path.home()))
+        self.run_async(task, target=str(Path.home()))
 
     @validated_ui_operation
     def on_purge_quarantine(self) -> None:
@@ -1508,7 +1509,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             borrados = quarantine.purge_all()
             self.log(f"Borrados {borrados} archivo(s) de la cuarentena.", "Cuarentena")
 
-        self.run_async(task, check_safety=True, target=str(Path.home()))
+        self.run_async(task, target=str(Path.home()))
 
     @validated_ui_operation
     def on_memory_report(self) -> None:
@@ -1586,7 +1587,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception as e:
                 self._safe_run_ui_callback(lambda: self.log(f"Error al intentar liberar proceso: {e}", "Memoria"))
 
-        self.run_async(task, check_safety=True, target=str(Path.home()))
+        self.run_async(task, target=str(Path.home()))
 
     @validated_ui_operation
     def on_drives_report(self) -> None:
@@ -1627,7 +1628,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log(f"Analizando {folder} (solo lectura, puede tardar)...", "Disco")
             self.log_lines(diskreport.summarize(folder), "Disco")
 
-        self.run_async(task, check_safety=True, target=folder)
+        self.run_async(task, target=folder)
 
     @validated_ui_operation
     def on_find_duplicates(self) -> None:
@@ -1661,7 +1662,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 lineas.append("")
             self.log_lines(lineas, "Duplicados")
 
-        self.run_async(task, check_safety=True, target=folder)
+        self.run_async(task, target=folder)
 
     @validated_ui_operation
     def on_quarantine_duplicates(self) -> None:
@@ -1699,7 +1700,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log(f"Aisladas {movidos} copia(s). Revisá la pestaña Cuarentena.", "Duplicados")
             self._invalidate_cache("dups")
 
-        self.run_async(task, check_safety=True, target=str(Path.home()))
+        self.run_async(task, target=str(Path.home()))
 
     @validated_ui_operation
     def on_browser_report(self) -> None:
