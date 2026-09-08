@@ -113,11 +113,11 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 
 def _is_valid_candidate(path: Path) -> bool:
-    """Validador estricto: comprueba existencia, permisos y que no sea enlace simbólico."""
+    """Validador estricto: comprueba existencia, permisos y que no sea enlace simbólico o junction."""
     if not isinstance(path, Path):
         return False
     try:
-        if not path.exists() or not path.is_file() or path.is_symlink():
+        if not path.exists() or not path.is_file() or path.is_symlink() or is_junction(path):
             return False
         return (
             not is_protected_path(path) and 
@@ -192,8 +192,8 @@ def _collect_candidates(
                                     size_map[st.st_size].append(path_entry)
                     except (OSError, PermissionError):
                         continue
-        except (OSError, PermissionError):
-            pass
+        except (OSError, PermissionError, FileNotFoundError):
+            return
 
     if isinstance(directories, Iterable):
         roots = {r for item in directories if item and (r := _resolve_and_verify_root(item))}

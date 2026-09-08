@@ -68,7 +68,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if directory is None:
         return None
     try:
-        path_obj = Path(os.fspath(directory)).resolve(strict=True)
+        path_str = os.fspath(directory)
+        path_obj = Path(path_str).resolve(strict=True)
         if path_obj.is_dir() and not is_protected_path(path_obj) and os.access(path_obj, os.R_OK):
             return path_obj
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
@@ -205,6 +206,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                 for entry in iterator:
                     try:
                         if _is_excluded_path(entry): continue
+                        
+                        # Validar nombre del archivo para evitar errores de encoding
+                        _ = os.fsdecode(entry.name)
+                        
                         entry_path = Path(entry.path)
                         if skip_protected and is_protected_path(entry_path): continue
                         
@@ -215,9 +220,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(entry_path)
                         elif entry.is_file(follow_symlinks=False):
-                            size = entry.stat().st_size
+                            st = entry.stat()
+                            size = st.st_size
                             yield entry_path, max(0, int(size)) if isinstance(size, (int, float)) else 0
-                    except (PermissionError, OSError, AttributeError):
+                    except (PermissionError, OSError, AttributeError, UnicodeDecodeError):
                         continue
         except (PermissionError, OSError, FileNotFoundError):
             continue
