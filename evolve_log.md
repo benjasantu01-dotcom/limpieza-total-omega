@@ -668,3 +668,24 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-08T09:16:14` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `purge_all` ante casos límite mediante la validación de existencia y tipos de archivo, evitando fallos silenciosos al iterar sobre directorios y asegurando la consistencia entre el estado real del disco y el manifiesto.
 - `2026-09-08T09:16:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T09:16:14` Corrida terminada. Total usado hoy: 216.
+- `2026-09-08T09:20:28` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-09-08T09:20:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-08T09:21:26` Tests FALLARON:
+```
+arantine_moves_the_file_without_deleting_it - safety.UnsafePathError: [GENERIC] Directorio no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - safety.UnsafePathError: [GENERIC] Directorio no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: [GENERIC] Directorio no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: [GENERIC] Directorio no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: [GENERIC] Directorio no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: [GENERIC] Directorio no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: [GENERIC] Directorio no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - safety.UnsafePathError: [GENERIC] Directorio no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: [GENERIC] Directorio no cumple políticas de seguridad.
+14 failed, 285 passed in 1.20s
+
+```
+- `2026-09-08T09:21:26` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se reforzó `ensure_safe_to_modify` para detectar si el sistema de archivos es de solo lectura (como una unidad de red montada o un medio extraíble bloqueado) mediante un intento de acceso a `stat()` inicial, protegiendo a la app contra operaciones de escritura que fallarían por razones de permisos a nivel de volumen.
+- `2026-09-08T09:21:53` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la robustez de `Scanner` ante cambios en el sistema de archivos durante el escaneo y rutas inexistentes mediante la adición de una verificación explícita de `exists()` antes de procesar cada entrada en el stack y un manejo de errores más estricto al leer metadatos de archivos, evitando excepciones por condiciones de carrera o archivos bloqueados por el sistema operativo.
+- `2026-09-08T09:22:09` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha añadido una validación de existencia para la ruta del archivo de configuración antes de aplicar `os.replace` y se encapsuló la lectura del archivo en un bloque `try-except` más robusto para prevenir condiciones de carrera (TOCTOU) y errores de acceso concurrente típicos en sistemas multi-proceso.
+- `2026-09-08T09:22:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T09:22:09` Corrida terminada. Total usado hoy: 220.

@@ -136,7 +136,7 @@ class Scanner:
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Registra directorios no visitados en el stack para su procesamiento posterior."""
-        if entry.path and entry.path not in self.seen:
+        if entry.path and entry.path not in self.seen and os.path.exists(entry.path):
             self.seen.add(entry.path)
             directory_stack.append(entry.path)
 
@@ -149,6 +149,10 @@ class Scanner:
             directory_stack: Stack mutable de rutas de directorios pendientes.
         """
         try:
+            # Comprobación adicional de existencia ante condiciones de carrera
+            if not os.path.exists(entry.path):
+                return
+
             is_dir = entry.is_dir(follow_symlinks=False)
             
             if is_dir:
@@ -220,6 +224,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     while directory_stack:
         current_dir = directory_stack.pop()
         try:
+            if not os.path.exists(current_dir):
+                continue
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, directory_stack)

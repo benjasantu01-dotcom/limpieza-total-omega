@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 37
+- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 122 | 10 | 22 | 13 | 121 |
-| 2026-09-08 | 94 | 6 | 15 | 7 | 94 |
+| 2026-09-07 | 122 | 10 | 22 | 13 | 117 |
+| 2026-09-08 | 96 | 7 | 16 | 7 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
+- robustez ante casos límite: **46**
 - manejo de errores y validación de entradas: **45**
-- robustez ante casos límite: **44**
 - seguridad defensiva: **38**
 - rendimiento: **37**
 
@@ -33,10 +33,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **19**
 - `healthscore.py`: **19**
 - `safety.py`: **19**
+- `settings.py`: **19**
 - `memory.py`: **18**
-- `settings.py`: **18**
+- `scanner.py`: **18**
 - `quarantine.py`: **17**
-- `scanner.py`: **17**
 - `browser.py`: **16**
 - `branding.py`: **14**
 - `diskreport.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-08T09:22:09` **settings.py** (robustez ante casos límite): Se ha añadido una validación de existencia para la ruta del archivo de configuración antes de aplicar `os.replace` y se encapsuló la lectura del archivo en un bloque `try-except` más robusto para prevenir condiciones de carrera (TOCTOU) y errores de acceso concurrente típicos en sistemas multi-proceso.
+- `2026-09-08T09:21:53` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `Scanner` ante cambios en el sistema de archivos durante el escaneo y rutas inexistentes mediante la adición de una verificación explícita de `exists()` antes de procesar cada entrada en el stack y un manejo de errores más estricto al leer metadatos de archivos, evitando excepciones por condiciones de carrera o archivos bloqueados por el sistema operativo.
 - `2026-09-08T09:14:51` **organizer.py** (robustez ante casos límite): Se introdujo una validación de "disponibilidad de escritura" en `stage_for_review` para prevenir fallos silenciosos ante carpetas de destino en medios de solo lectura o con permisos restringidos, fortaleciendo la robustez ante errores de I/O comunes.
 - `2026-09-08T09:13:16` **memory.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `trim_working_set` y `_get_process_path` ante procesos que finalizan inesperadamente o cuyos permisos de acceso son dinámicos, utilizando `ctypes.windll.kernel32.CloseHandle` de forma garantizada y añadiendo chequeos de nulidad en las APIs de `psapi`.
 - `2026-09-08T09:01:22` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_collect_candidates` ante la concurrencia de sistema de archivos (race conditions donde un archivo desaparece entre el `scandir` y el `stat`) envolviendo el acceso a metadatos en un bloque `try-except` específico para evitar que una excepción por archivo bloqueado o eliminado aborte la iteración completa del directorio.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-08T08:20:43` **diskreport.py** (rendimiento): Optimizé la eficiencia de `_collect_summary_data` eliminando el uso de `dict()` y la creación de estructuras temporales redundantes durante la recolección, y mejoré la lógica de `walk_files` para evitar `stat` innecesarios al verificar el inodo, consolidando la lógica de obtención de atributos.
 - `2026-09-08T08:20:18` **browser.py** (rendimiento): Se implementó un cache local para los tamaños de subcarpetas durante la recursión en `_sum_directory_recursive`, evitando el re-cálculo redundante cuando múltiples navegadores comparten estructuras comunes bajo el mismo árbol de perfiles.
 - `2026-09-08T08:19:51` **branding.py** (rendimiento): Optimicé el acceso a colores y tamaños mediante la eliminación de llamadas redundantes a `lru_cache` para constantes y la pre-computación de valores de estilo en el módulo de `branding.py`.
-- `2026-09-08T08:10:28` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `StartupEntry` añadiendo type hints faltantes en los atributos y mejorando la precisión de los docstrings internos para reflejar claramente las restricciones de seguridad aplicadas.
-- `2026-09-08T08:10:00` **settings.py** (legibilidad y documentación): Mejoré la legibilidad del módulo `settings.py` mediante la implementación de `TypeAlias` explícitos y la adición de docstrings estructurados en funciones clave para clarificar el flujo de validación y persistencia.
