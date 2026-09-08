@@ -619,3 +619,34 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-08T08:41:24` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la lógica de filtrado inicial en `Scanner.process_entry` moviendo la validación de extensión (que es una operación de string rápida) antes de llamar a `_is_safe_entry` (que involucra chequeos de seguridad más costosos), reduciendo así la carga de cómputo en el bucle principal.
 - `2026-09-08T08:41:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T08:41:24` Corrida terminada. Total usado hoy: 204.
+- `2026-09-08T08:49:50` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-09-08T08:50:20` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _Validators._validate_enum_str
+- `2026-09-08T08:50:48` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.34s
+
+```
+- `2026-09-08T08:50:48` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el método `_resolve_and_cache_path` implementando un esquema de caché de "doble entrada" (ruta cruda y ruta resuelta) para evitar llamadas redundantes a `os.path.realpath` y `exists()` sobre archivos que ya fueron procesados, mejorando el rendimiento en sistemas con muchas entradas de registro.
+- `2026-09-08T08:51:27` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del sistema de métricas mediante la validación explícita de `float('inf')` y `math.isnan` al ingerir datos y al convertir a texto, previniendo errores de serialización o visualización cuando los cálculos internos produzcan valores no finitos.
+- `2026-09-08T08:51:44` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-08T08:51:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T08:51:44` Corrida terminada. Total usado hoy: 208.

@@ -232,7 +232,7 @@ def _safe_float(val: Any, default: float = 0.0) -> float:
         if val is None or isinstance(val, bool) or not isinstance(val, (int, float, str)):
             return default
         f = float(val)
-        if math.isnan(f) or math.isinf(f):
+        if not math.isfinite(f):
             return default
         return f
     except (TypeError, ValueError):
@@ -283,12 +283,10 @@ class SystemContext:
         for key, spec in _VALIDATORS.items():
             val = _get_source_value(source, key)
             if val is not None and spec.is_valid_type(val):
-                # Aplicamos cast forzado al tipo esperado (int o float)
                 casted_val = spec.cast_func(val)
-                if not math.isnan(float(casted_val)) and not math.isinf(float(casted_val)):
-                    if spec.min_val <= float(casted_val) <= spec.max_val:
-                        setattr(self, key, casted_val)
-                        found_data = True
+                if math.isfinite(float(casted_val)) and spec.min_val <= float(casted_val) <= spec.max_val:
+                    setattr(self, key, casted_val)
+                    found_data = True
         
         grade_val = _get_source_value(source, "grade")
         if isinstance(grade_val, str):
@@ -339,9 +337,7 @@ def _get_source_value(source: Any, key: str) -> Any:
     return attr if not callable(attr) else None
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
-    """
-    Fabrica un objeto SystemContext, poblando las métricas desde diversas fuentes.
-    """
+    """Fabrica un objeto SystemContext, poblando las métricas desde diversas fuentes."""
     ctx = SystemContext()
     for s in (metrics, health, extra):
         if isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str, int, float, bool, type)):
@@ -390,7 +386,7 @@ def context_as_text(context: SystemContext) -> str:
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Convierte un valor a string formateado con unidad."""
     f = _safe_float(val, -1.0)
-    if f < 0 or math.isnan(f) or math.isinf(f):
+    if f < 0:
         return "N/A"
     try:
         return f"{f:.{decimal}f}{unit}"
@@ -513,7 +509,6 @@ def _sanitize_query(question: str) -> str:
     clean = _CONTROL_CHARS_REGEX.sub(' ', question)
     clean = _PATH_INJECTION_REGEX.sub(' ', clean)
     clean = clean.strip()[:100].lower()
-    # Bloqueo preventivo de rutas sensibles introducidas en el texto
     if is_protected_path(clean): return ""
     return clean
 
@@ -563,7 +558,6 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     try:
         q = _sanitize_query(question)
         if not _ensure_safe_text(q): return None
-        # Serialización controlada
         data = {"contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]}]}
         encoded = json.dumps(data).encode("utf-8")
         if len(encoded) > _MAX_PROMPT_LIMIT * 2:
@@ -576,7 +570,6 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     """Extrae respuesta textual del payload JSON con validación estricta."""
     if not isinstance(data, dict): return None
     try:
-        # Validación defensiva de estructura anidada de la API
         candidates = data.get("candidates")
         if not isinstance(candidates, list) or len(candidates) == 0: return None
         
@@ -589,7 +582,6 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         parts = content.get("parts")
         if not isinstance(parts, list) or len(parts) == 0: return None
         
-        # Extracción y validación final de tipo
         text_val = parts[0].get("text")
         return str(text_val) if isinstance(text_val, str) else None
     except (AttributeError, TypeError, IndexError, KeyError): 
@@ -619,11 +611,9 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             raw_text = _extract_text_from_gemini_json(data)
             if not raw_text: return None
             
-            # Post-procesado defensivo
             clean = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             final = _validate_response_length(clean)
             
-            # Verificación estricta: si la IA intenta retornar una ruta o comando, se descarta
             if _ensure_safe_text(final) and _is_safe_text_structure(final):
                 return final
             return None

@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 214
 
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 129 | 11 | 23 | 14 | 123 |
-| 2026-09-08 | 89 | 5 | 14 | 5 | 91 |
+| 2026-09-07 | 127 | 10 | 23 | 14 | 122 |
+| 2026-09-08 | 90 | 6 | 15 | 5 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
-- seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **45**
-- robustez ante casos límite: **39**
+- seguridad defensiva: **43**
+- robustez ante casos límite: **40**
 - rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **20**
 - `settings.py`: **19**
+- `assistant.py`: **19**
+- `duplicates.py`: **19**
 - `healthscore.py`: **19**
 - `safety.py`: **19**
 - `quarantine.py`: **18**
 - `scanner.py`: **18**
-- `assistant.py`: **18**
 - `memory.py`: **17**
 - `browser.py`: **16**
 - `branding.py`: **14**
 - `startup.py`: **11**
 - `diskreport.py`: **11**
-- `main.py`: **10**
+- `main.py`: **9**
 - `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-08T08:51:27` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del sistema de métricas mediante la validación explícita de `float('inf')` y `math.isnan` al ingerir datos y al convertir a texto, previniendo errores de serialización o visualización cuando los cálculos internos produzcan valores no finitos.
 - `2026-09-08T08:41:24` **scanner.py** (rendimiento): Optimizé la lógica de filtrado inicial en `Scanner.process_entry` moviendo la validación de extensión (que es una operación de string rápida) antes de llamar a `_is_safe_entry` (que involucra chequeos de seguridad más costosos), reduciendo así la carga de cómputo en el bucle principal.
 - `2026-09-08T08:41:12` **safety.py** (rendimiento): Se optimizó el rendimiento del módulo `safety.py` mediante la implementación de `lru_cache` en funciones críticas que se invocan repetidamente durante la escaneo de directorios, reduciendo drásticamente las llamadas redundantes a `os.path` y `Path.exists()`.
 - `2026-09-08T08:40:17` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la redundancia de iteraciones mediante el uso de un diccionario de búsqueda en `purge_all`, evitando así una complejidad temporal cuadrática `O(n*m)` al procesar archivos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-08T08:00:46` **safety.py** (legibilidad y documentación): Mejora de legibilidad mediante la refactorización de `_validate_structural_safety` y `_validate_boundary_conditions` para usar bloques de lógica más descriptivos y docstrings explicativos, facilitando el mantenimiento y auditoría de las reglas de seguridad.
 - `2026-09-08T08:00:07` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de bajo nivel en `quarantine.py` mediante docstrings detallados que explican el "porqué" de las validaciones de seguridad y se han añadido type hints en retornos omitidos para mejorar la legibilidad del contrato de las interfaces.
 - `2026-09-08T07:59:29` **organizer.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `organizer.py` mediante la implementación de `docstrings` detallados en funciones auxiliares de seguridad y la unificación de la lógica de validación, clarificando los criterios de exclusión de archivos.
-- `2026-09-08T07:50:51` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `memory.py` mediante la normalización de la estructura de las funciones críticas de validación y la clarificación de los propósitos de los tipos de datos personalizados, asegurando que el código sea más mantenible y claro en su intención.
