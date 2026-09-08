@@ -425,16 +425,9 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
 
     try:
         dest_base: Path = Path(review_dir).expanduser().resolve()
-        if _is_unc_path(dest_base) or is_protected_path(dest_base): return None
+        if _is_unc_path(dest_base) or not is_safe_to_modify(dest_base): return None
         
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-        
-        # Validación extra: asegurarse de que el directorio sea escribible antes de iniciar
-        test_file = dest_base / ".perm_check"
-        test_file.touch(exist_ok=True)
-        test_file.unlink()
-        
-        if not is_safe_to_modify(dest_base): return None
     except (OSError, RuntimeError):
         return None
 
@@ -443,12 +436,10 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             if not isinstance(junk_file, JunkFile) or junk_file.path is None: continue
             src: Path = junk_file.path.resolve()
             
-            if src.is_relative_to(dest_base): continue
-            if not src.exists() or not src.is_file(): continue
+            if src.is_relative_to(dest_base) or not src.exists() or not src.is_file(): continue
             
             target: Optional[Path] = _can_move_file(junk_file, dest_base)
             if target and target.is_relative_to(dest_base) and is_safe_to_modify(src) and is_safe_to_modify(target):
-                # Validar disponibilidad antes de invocar operación destructiva
                 if _is_file_locked(src): continue
                 ensure_safe_to_modify(src)
                 ensure_safe_to_modify(target)
@@ -468,7 +459,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
 
     try:
         dest: Path = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or _is_unc_path(dest) or not is_safe_to_modify(dest) or is_protected_path(dest): 
+        if not dest.exists() or _is_unc_path(dest) or not is_safe_to_modify(dest): 
             return 0
     except (OSError, RuntimeError):
         return 0

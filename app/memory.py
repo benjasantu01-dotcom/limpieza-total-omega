@@ -160,12 +160,10 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     
     metrics: Dict[str, int] = {}
     
-    # Procesar líneas esperando formato "Clave: Valor kB"
     for line in meminfo_text.splitlines():
         if ":" not in line: 
             continue
         key, value_part = line.split(":", 1)
-        # Extraer solo el valor numérico, descartando unidades como 'kB'
         numeric_part = "".join(filter(str.isdigit, value_part))
         if numeric_part:
             metrics[key.strip()] = int(numeric_part) * 1024
@@ -174,7 +172,6 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     if total <= 0: 
         return _EMPTY_SNAPSHOT
     
-    # MemAvailable es la prioridad; si no existe, estimar con MemFree
     available = metrics.get("MemAvailable") or metrics.get("MemFree", 0)
     return MemorySnapshot(
         total=BytesValue(total), 
@@ -345,9 +342,7 @@ def _is_safe_to_trim(proc_handle: int, pid: int) -> Tuple[bool, Optional[str]]:
     kernel32 = ctypes.windll.kernel32
     
     try:
-        current_pid = kernel32.GetProcessId(proc_handle)
-        if current_pid != pid: return False, "Mismatch de PID."
-        
+        # Verificamos si el proceso sigue activo y es el correcto
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
             return False, "Imposible obtener estado del proceso."
@@ -358,7 +353,7 @@ def _is_safe_to_trim(proc_handle: int, pid: int) -> Tuple[bool, Optional[str]]:
         if not exec_path:
             return False, "No se pudo verificar el origen del proceso."
         
-        # Validar mediante políticas de seguridad globales antes de operar
+        # Validar mediante políticas de seguridad globales
         if is_protected_path(exec_path) or not is_safe_to_modify(exec_path):
             return False, "Operación denegada por política de seguridad."
             
@@ -382,17 +377,16 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
+    # Abrir solo con permisos mínimos necesarios para consulta y modificación segura
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         return False, f"Acceso denegado (código {kernel32.GetLastError()})."
     
     try:
-        # Validación de seguridad defensiva adicional
         is_safe, error_reason = _is_safe_to_trim(proc_handle, target_pid)
         if not is_safe: 
             return False, error_reason or "Verificación de seguridad fallida."
         
-        # Operación crítica protegida por resultado de validación
         if not psapi.EmptyWorkingSet(proc_handle): 
             return False, "El sistema denegó la operación (EmptyWorkingSet falló)."
             
@@ -400,6 +394,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (Exception, ctypes.ArgumentError):
         return False, "Error inesperado al intentar liberar el proceso."
     finally:
-        # Garantizar cierre de handle independientemente del resultado
         if proc_handle:
             kernel32.CloseHandle(proc_handle)

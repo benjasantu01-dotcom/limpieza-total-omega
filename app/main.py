@@ -848,7 +848,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _is_safe_disk_operation(self, path: Union[str, Path]) -> bool:
         """Comprueba seguridad de ruta para operaciones de escritura."""
         try:
-            return safety.is_safe_to_modify(Path(path).resolve(strict=True))
+            p = Path(path).resolve(strict=True)
+            return not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
         except (OSError, RuntimeError, PermissionError, ValueError):
             return False
 
@@ -856,7 +857,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Verifica accesibilidad y seguridad de un archivo."""
         try:
             p = Path(path).resolve(strict=True)
-            return p.exists() and safety.is_safe_to_modify(p)
+            return p.exists() and not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
         except (OSError, RuntimeError, PermissionError, ValueError):
             return False
 
@@ -867,7 +868,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             p = Path(path).resolve(strict=True)
             if p.is_symlink():
                 return False
-            return safety.is_safe_to_modify(p)
+            return not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
         except (OSError, RuntimeError, PermissionError, ValueError):
             return False
 
@@ -875,6 +876,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Valida que una ruta de disco sea apta para análisis."""
         try:
             p = Path(path).resolve(strict=True)
+            if safety.is_protected_path(p): return False
             safety.ensure_safe_to_modify(p)
             return True
         except (safety.UnsafePathError, OSError, PermissionError, ValueError):
@@ -884,7 +886,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Valida seguridad de directorio para procesamiento recursivo."""
         try:
             p = Path(path).resolve(strict=True)
-            return p.is_dir() and safety.is_safe_to_modify(p)
+            return p.is_dir() and not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
         except (OSError, PermissionError, ValueError):
             return False
 
@@ -1096,7 +1098,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 return None
             
             p = Path(folder).resolve()
-            if not safety.is_safe_to_modify(p) or safety.is_protected_path(p):
+            if safety.is_protected_path(p) or not safety.is_safe_to_modify(p):
                 messagebox.showwarning("Ruta no segura", "Operación no permitida en esta ruta.")
                 return None
                 
@@ -1415,8 +1417,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             for item_s in suspicions:
                 if self._is_safe_path(item_s.path):
                     try:
-                        safety.ensure_safe_to_modify(Path(item_s.path).resolve())
-                        item = quarantine.quarantine_file(item_s.path, reason="Marcado por escaneo heurístico")
+                        p = Path(item_s.path).resolve()
+                        safety.ensure_safe_to_modify(p)
+                        item = quarantine.quarantine_file(str(p), reason="Marcado por escaneo heurístico")
                         self.log(f"Aislado [{item.item_id}] {item_s.path}", "Seguridad")
                         aislados += 1
                     except Exception as e:

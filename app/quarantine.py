@@ -468,6 +468,10 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
             raise OSError("Error de integridad post-escritura: mismatch de tamaño.")
             
         _check_windows_file_attributes(str(temp_path))
+        
+        # Validación de seguridad defensiva final antes de la operación destructiva
+        ensure_safe_to_modify(destination, allow_sensitive=True)
+        
         os.replace(temp_path, destination)
         
         dir_fd = os.open(str(destination.parent), os.O_RDONLY)
