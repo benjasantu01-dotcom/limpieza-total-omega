@@ -316,7 +316,8 @@ def _is_system_path_cached(path_str: str) -> bool:
         p_str_low = path_str.lower()
         if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
             return True
-        return not PROTECTED_DIR_NAMES.isdisjoint(p_str_low.split(os.sep))
+        # Comparativa eficiente sin split
+        return any(f"{os.sep}{p}{os.sep}" in p_str_low or p_str_low.endswith(f"{os.sep}{p}") for p in PROTECTED_DIR_NAMES)
     except (OSError, RuntimeError):
         return True
 

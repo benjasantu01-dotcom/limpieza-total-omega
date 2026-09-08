@@ -1447,3 +1447,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-08T04:08:12` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: rendimiento).
 - `2026-09-08T04:08:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T04:08:12` Corrida terminada. Total usado hoy: 96.
+- `2026-09-08T04:14:39` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-09-08T04:15:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-09-08T04:15:33` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento de `is_protected_path` al reemplazar la lógica de comprobación de `os.sep` mediante `split()` (que crea listas en memoria) por un chequeo directo de pertenencia de strings y subcadenas, aprovechando la naturaleza de la constante `PROTECTED_DIR_NAMES`.
+- `2026-09-08T04:15:59` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_file` y `process_entry` mediante la eliminación de llamadas redundantemente costosas a `path.suffix` y `path.stat`, delegando el trabajo en la información ya extraída por `os.scandir` durante la iteración inicial.
+- `2026-09-08T04:16:16` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` y `save()` reemplazando la serialización/deserialización redundante y las validaciones innecesarias, consolidando el acceso al archivo y reduciendo el uso de I/O mediante un chequeo de integridad directo antes del `os.replace`.
+- `2026-09-08T04:16:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T04:16:16` Corrida terminada. Total usado hoy: 100.

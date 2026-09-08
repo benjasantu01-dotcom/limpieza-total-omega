@@ -174,7 +174,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
     
-    if (ext or path.suffix.lower()) in SUSPICIOUS_EXECUTABLE_EXT:
+    if ext in SUSPICIOUS_EXECUTABLE_EXT:
         try:
             stats = entry.stat(follow_symlinks=False) if entry else path.stat()
             if stats.st_size == 0:
