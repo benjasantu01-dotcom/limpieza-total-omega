@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-06 | 9 | 0 | 1 | 1 | 15 |
+| 2026-09-06 | 9 | 0 | 1 | 1 | 11 |
 | 2026-09-07 | 158 | 15 | 27 | 19 | 131 |
-| 2026-09-08 | 59 | 5 | 9 | 4 | 51 |
+| 2026-09-08 | 60 | 5 | 9 | 4 | 54 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - robustez ante casos límite: **48**
-- seguridad defensiva: **47**
+- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **45**
 - rendimiento: **38**
 
@@ -32,7 +32,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `assistant.py`: **21**
 - `duplicates.py`: **20**
-- `settings.py`: **19**
+- `settings.py`: **20**
 - `healthscore.py`: **18**
 - `quarantine.py`: **18**
 - `scanner.py`: **18**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-08T05:37:12` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` implementando una comprobación de integridad en la ruta base antes de cualquier operación de disco y garantizando que la creación de directorios sea atómica y segura mediante `ensure_safe_to_modify` para evitar escrituras en ubicaciones prohibidas.
 - `2026-09-08T05:27:06` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `purge_all` y `quarantine_file` implementando una validación estricta de que el archivo a borrar o procesar no sea un enlace simbólico, reforzando la protección contra ataques de redirección de archivos fuera del sandbox.
 - `2026-09-08T05:17:49` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `on_trim_process` y `on_quarantine_findings` al implementar validaciones granulares de la ruta (`ensure_safe_to_modify`) justo antes de las operaciones de E/S, garantizando que ninguna ruta externa o manipulada por el usuario pueda saltarse los filtros de seguridad del sistema antes de procesar cambios.
 - `2026-09-08T05:16:40` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del sistema de inferencia agregando validaciones defensivas en `_evaluate_rules` para asegurar que las entradas sigan siendo íntegras y finitas durante la ejecución de las reglas, evitando posibles desbordamientos o comportamientos indefinidos al procesar métricas externas.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-08T04:38:00` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` al implementar un manejo defensivo ante `SystemMetrics` nulos o mal formados, garantizando que el pipeline de evaluación no colapse ante datos inconsistentes y proporcionando un estado de "Salud Desconocida" en lugar de fallos silenciosos.
 - `2026-09-08T04:36:00` **duplicates.py** (robustez ante casos límite): Se fortalece la robustez ante casos límite en `_collect_candidates` y `_is_valid_candidate` añadiendo validaciones explícitas contra archivos cuyo tamaño cambia o desaparece durante el escaneo (Race Conditions) mediante el uso de `try-except` encapsulados y validación de `stat` antes de la lectura.
 - `2026-09-08T04:35:33` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_protected_path` en `_get_local_windows_drives` para asegurar que el escaneo de unidades no intente acceder a rutas de sistema prohibidas o bloqueadas desde el inicio, incrementando la robustez del reporte ante entornos restringidos.
-- `2026-09-08T04:26:28` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de parámetros de entrada (evitando estados inconsistentes en Canvas) y asegurando que las operaciones de sistema se realicen sobre rutas normalizadas, previniendo errores de concurrencia o permisos al crear directorios.

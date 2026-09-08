@@ -311,9 +311,14 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         ):
             cleaned_settings["asistente_activado"] = False
             
-        if is_protected_path(str(ruta)) or not is_safe_to_modify(str(ruta)): return None
-        ruta.parent.mkdir(parents=True, exist_ok=True)
+        # Validación de seguridad: no permitir modificar si la ruta destino está protegida
+        if not _Validators._is_safe_path(str(ruta)): return None
         
+        # Creación segura del directorio padre
+        parent = ruta.parent
+        if not parent.exists():
+            parent.mkdir(parents=True, exist_ok=True)
+            
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None
         
