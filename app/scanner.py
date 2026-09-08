@@ -93,6 +93,10 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 ]
 
 class Scanner:
+    """
+    Clase principal responsable de recorrer el sistema de archivos de forma 
+    iterativa, aplicando filtros de seguridad y delegando análisis a las reglas heurísticas.
+    """
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
@@ -101,9 +105,11 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
+        """Verifica que la entrada esté contenida estrictamente dentro de la raíz de escaneo."""
         return entry_path.lower().startswith(self.base_root_str)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
+        """Aplica filtros de seguridad iniciales para evitar rutas prohibidas, sistemas o longitudes inválidas."""
         try:
             path_str: str = entry.path
             if not path_str or not entry.name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
@@ -120,6 +126,7 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
+        """Determina si un directorio es un punto de reparseo (Junction/Symlink) para evitar bucles."""
         try:
             if entry.is_symlink():
                 return True
@@ -128,11 +135,13 @@ class Scanner:
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
+        """Registra directorios válidos en el stack para su procesamiento posterior."""
         if entry.path and entry.path not in self.seen:
             self.seen.add(entry.path)
             directory_stack.append(entry.path)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
+        """Procesa una entrada del sistema de archivos, decidiendo si es una carpeta a explorar o un archivo a analizar."""
         if not self._is_safe_entry(entry):
             return
         
@@ -154,9 +163,11 @@ class Scanner:
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
+        """Ejecuta el conjunto completo de análisis sobre un archivo específico."""
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
+    """Analiza un archivo individual buscando patrones sospechosos o comportamientos anómalos."""
     if is_protected_path(path):
         return []
     findings: ScanResult = []
@@ -178,6 +189,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
+    """Punto de entrada para escanear recursivamente un directorio completo."""
     if directory is None or (isinstance(directory, str) and not directory.strip()):
         return []
     

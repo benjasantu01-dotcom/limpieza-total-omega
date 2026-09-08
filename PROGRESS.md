@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 34
+- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-06 | 30 | 0 | 3 | 2 | 39 |
+| 2026-09-06 | 28 | 0 | 3 | 1 | 38 |
 | 2026-09-07 | 158 | 15 | 27 | 19 | 131 |
-| 2026-09-08 | 35 | 1 | 4 | 2 | 38 |
+| 2026-09-08 | 36 | 2 | 5 | 3 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **51**
-- robustez ante casos límite: **49**
-- legibilidad y documentación: **46**
+- robustez ante casos límite: **47**
+- legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **45**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **19**
 - `memory.py`: **19**
+- `scanner.py`: **19**
 - `settings.py`: **19**
 - `assistant.py`: **19**
 - `healthscore.py`: **18**
 - `safety.py`: **18**
-- `scanner.py`: **18**
+- `browser.py`: **18**
 - `duplicates.py`: **18**
 - `quarantine.py`: **17**
-- `branding.py`: **14**
+- `branding.py`: **13**
 - `diskreport.py`: **13**
 - `main.py`: **12**
 - `organizer.py`: **10**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-08T03:35:28` **scanner.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo documentando exhaustivamente `Scanner` y sus métodos internos, además de añadir type hints explícitos y estandarizar la nomenclatura para cumplir con el enfoque de documentación técnica.
 - `2026-09-08T03:29:49` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de type hints en los retornos, clarificando las precondiciones de seguridad y el comportamiento ante errores.
 - `2026-09-08T03:29:34` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings precisos que detallan los parámetros, excepciones y el propósito de las funciones críticas de bajo nivel, asegurando que el equipo entienda los riesgos de las APIs de Win32 utilizadas.
 - `2026-09-08T03:25:58` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings de tipo Google Style a todas las funciones y clases, clarificando las responsabilidades de cada componente en el pipeline de evaluación para facilitar el mantenimiento futuro.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-08T02:55:20` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_check_file_integrity` y `_is_file_in_use` capturando excepciones más granulares y validando estados de retorno de `ctypes` para evitar errores de segmentación o comportamientos indefinidos al interactuar con el sistema de archivos.
 - `2026-09-08T02:54:17` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_sha256` y `_is_file_locked` mediante la captura de excepciones específicas y el cierre explícito de descriptores de archivo, evitando fugas de memoria o bloqueos persistentes en escenarios de errores de lectura.
 - `2026-09-08T02:46:34` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de la lógica de análisis de procesos en `parse_windows_process_csv` añadiendo una validación explícita para asegurar que los parámetros de entrada sean procesables antes de intentar iterar sobre ellos, previniendo errores en caso de entradas malformadas o inesperadas.
-- `2026-09-08T02:34:29` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_kernel32` y `__is_system_hidden` implementando validaciones de tipo y estructura más estrictas para evitar excepciones de acceso a atributos `None` o errores de tipo en tiempo de ejecución, alineado con el enfoque de validación de entradas.

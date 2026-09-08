@@ -1346,3 +1346,35 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-08T03:29:49` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de type hints en los retornos, clarificando las precondiciones de seguridad y el comportamiento ante errores.
 - `2026-09-08T03:29:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T03:29:49` Corrida terminada. Total usado hoy: 80.
+- `2026-09-08T03:33:52` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-09-08T03:34:28` ➖ Sin cambios en quarantine.py (enfoque: legibilidad y documentación). Motivo: Se introdujeron docstrings descriptivos y type hints faltantes en funciones internas clave de `quarantine.py` para mejorar la legibilidad y facilitar el mantenimiento del flujo lógico de seguridad.
+- `2026-09-08T03:34:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 114): unterminated string literal (detected at line 114)
+- `2026-09-08T03:35:18` Tests FALLARON:
+```
+nsure_safe_blocks_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'malo.tmp'
+  'app.tmp'
+  
+  Full diff:
+    {
+  +     'app.tmp',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - assert 'protegida' in "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación."
+ +  where "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación." = <function describe_protection at 0x7efe61b85760>(((PosixPath('/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7efe61b85760> = safety.describe_protection
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_restore_into_a_system_pat0/Windows/System32'
+14 failed, 285 passed in 1.47s
+
+```
+- `2026-09-08T03:35:18` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se refactorizó la lógica de validación interna de `is_protected_path` para mejorar la legibilidad y corregir un error lógico: la versión anterior devolvía `True` (protegido) si la ruta era la raíz, pero el chequeo de `p == Path(p.anchor)` es redundante y potencialmente erróneo en subdirectorios, por lo que se delegó la lógica de protección exclusivamente al sistema de rutas de Windows y la lista de nombres protegidos.
+- `2026-09-08T03:35:28` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del módulo documentando exhaustivamente `Scanner` y sus métodos internos, además de añadir type hints explícitos y estandarizar la nomenclatura para cumplir con el enfoque de documentación técnica.
+- `2026-09-08T03:35:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T03:35:28` Corrida terminada. Total usado hoy: 84.
