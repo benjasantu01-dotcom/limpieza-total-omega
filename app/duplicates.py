@@ -196,11 +196,15 @@ def _collect_candidates(
                             if not is_junction(Path(entry.path)):
                                 _scan_directory_recursive(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat(follow_symlinks=False)
-                            if st.st_size >= min_size:
-                                path_obj = Path(entry.path)
-                                if (not skip_protected or not is_protected_path(path_obj)) and _is_valid_candidate(path_obj):
-                                    size_map[st.st_size].append(path_obj)
+                            # Se aísla el acceso a los metadatos ante cambios en tiempo real
+                            try:
+                                st = entry.stat(follow_symlinks=False)
+                                if st.st_size >= min_size:
+                                    path_obj = Path(entry.path)
+                                    if (not skip_protected or not is_protected_path(path_obj)) and _is_valid_candidate(path_obj):
+                                        size_map[st.st_size].append(path_obj)
+                            except (OSError, PermissionError):
+                                continue
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

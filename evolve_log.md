@@ -650,3 +650,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-08T08:51:44` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-09-08T08:51:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T08:51:44` Corrida terminada. Total usado hoy: 208.
+- `2026-09-08T09:00:00` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-09-08T09:00:28` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-08T09:00:54` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la resiliencia de `_collect_summary_data` y las funciones dependientes ante errores de I/O (ej. archivos eliminados o bloqueados durante el escaneo) al añadir un bloque `try-except` explícito dentro del bucle de recolección de métricas, evitando que un fallo puntual detenga el análisis completo.
+- `2026-09-08T09:01:22` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_collect_candidates` ante la concurrencia de sistema de archivos (race conditions donde un archivo desaparece entre el `scandir` y el `stat`) envolviendo el acceso a metadatos en un bloque `try-except` específico para evitar que una excepción por archivo bloqueado o eliminado aborte la iteración completa del directorio.
+- `2026-09-08T09:01:34` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-09-08T09:01:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T09:01:34` Corrida terminada. Total usado hoy: 212.
