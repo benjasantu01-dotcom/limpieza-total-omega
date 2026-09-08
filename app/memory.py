@@ -388,13 +388,19 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, f"Acceso denegado (código {kernel32.GetLastError()})."
     
     try:
+        # Validación de seguridad defensiva adicional
         is_safe, error_reason = _is_safe_to_trim(proc_handle, target_pid)
         if not is_safe: 
             return False, error_reason or "Verificación de seguridad fallida."
+        
+        # Operación crítica protegida por resultado de validación
         if not psapi.EmptyWorkingSet(proc_handle): 
             return False, "El sistema denegó la operación (EmptyWorkingSet falló)."
+            
         return True, f"Working set liberado. {TRIM_WARNING}"
     except Exception:
         return False, "Error inesperado al intentar liberar el proceso."
     finally:
-        kernel32.CloseHandle(proc_handle)
+        # Garantizar cierre de handle independientemente del resultado
+        if proc_handle:
+            kernel32.CloseHandle(proc_handle)

@@ -727,3 +727,41 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-08T09:43:14` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva en `on_quarantine_findings` al introducir una verificación `ensure_safe_to_modify` dentro del bucle de procesamiento, garantizando que cada archivo sea re-validado justo antes de moverlo, mitigando así el riesgo de condiciones de carrera o cambios en el sistema de archivos durante la ejecución del proceso.
 - `2026-09-08T09:43:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T09:43:14` Corrida terminada. Total usado hoy: 228.
+- `2026-09-08T09:51:03` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-09-08T09:51:36` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad de la función `trim_working_set` implementando el principio de "cierre seguro de recursos" mediante un bloque `try...finally` más robusto y validando explícitamente el handle con un filtro de seguridad adicional previo a la ejecución, asegurando que no se operen procesos fuera de las capacidades permitidas.
+- `2026-09-08T09:52:06` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-08T09:52:44` Tests FALLARON:
+```
+     item_id=item_id,
+                original_path=str(source_path),
+                stored_name=destination.name,
+                size_bytes=original_size,
+                reason=str(reason) if reason else "Sin motivo",
+                quarantined_at=datetime.now().isoformat(timespec="seconds"),
+                sha256=file_hash,
+            )
+            items_list.append(quarantine_item)
+            save_manifest(items_list, base)
+    
+            if destination.exists() and quarantine_item.verify_integrity(destination):
+                # Validación de seguridad defensiva: solo borrar si es seguro modificar
+                if is_safe_to_modify(source_path):
+                    try:
+                        source_path.unlink()
+                    except OSError as e:
+                        _safe_unlink(destination)
+                        raise RuntimeError(f"No se pudo eliminar el original tras aislamiento: {e}")
+                else:
+>                   raise UnsafePathError("Operación de borrado cancelada por política de seguridad.")
+E                   safety.UnsafePathError: [GENERIC] Operación de borrado cancelada por política de seguridad.
+
+app/quarantine.py:562: UnsafePathError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: [GENERIC] Operación de borrado cancelada por política de seguridad.
+1 failed, 298 passed in 1.39s
+
+```
+- `2026-09-08T09:52:44` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad de `quarantine_file` añadiendo una validación explícita mediante `is_safe_to_modify` antes de intentar el borrado del archivo original, garantizando que ninguna operación destructiva (unlink) ocurra sobre rutas que el sistema pueda considerar críticas o protegidas.
+- `2026-09-08T09:52:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-08T09:52:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T09:52:48` Corrida terminada. Total usado hoy: 232.

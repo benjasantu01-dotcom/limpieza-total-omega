@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 38
+- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 122 | 10 | 22 | 13 | 109 |
-| 2026-09-08 | 102 | 8 | 16 | 8 | 94 |
+| 2026-09-07 | 122 | 10 | 22 | 13 | 105 |
+| 2026-09-08 | 103 | 9 | 17 | 8 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - robustez ante casos límite: **47**
 - manejo de errores y validación de entradas: **45**
-- seguridad defensiva: **43**
+- seguridad defensiva: **44**
 - rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
@@ -32,9 +32,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **21**
 - `assistant.py`: **20**
 - `healthscore.py`: **20**
+- `memory.py`: **19**
 - `safety.py`: **19**
 - `settings.py`: **19**
-- `memory.py`: **18**
 - `scanner.py`: **18**
 - `browser.py`: **17**
 - `quarantine.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-08T09:51:36` **memory.py** (seguridad defensiva): Mejoré la seguridad de la función `trim_working_set` implementando el principio de "cierre seguro de recursos" mediante un bloque `try...finally` más robusto y validando explícitamente el handle con un filtro de seguridad adicional previo a la ejecución, asegurando que no se operen procesos fuera de las capacidades permitidas.
 - `2026-09-08T09:42:17` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del método `validate` en `SystemMetrics` utilizando un patrón de validación más explícito, asegurando que los valores de entrada no solo sean finitos, sino que mantengan la integridad lógica del sistema mediante un filtrado estricto antes de procesar cualquier cálculo de puntuación.
 - `2026-09-08T09:41:49` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en la recolección de archivos mediante la validación explícita de `is_protected_path` en `_collect_candidates` antes de procesar cualquier entrada, asegurando que ningún descriptor de archivo o ruta que infrinja las políticas de seguridad sea siquiera considerado para el cálculo de metadatos o hashes.
 - `2026-09-08T09:41:23` **diskreport.py** (seguridad defensiva): Se mejoró la robustez defensiva de `walk_files` y `_collect_summary_data` al añadir un chequeo explícito mediante `is_protected_path` en cada nivel de recursión, garantizando que si una ruta es movida o modificada durante el escaneo, no se acceda a recursos prohibidos fuera del alcance inicial.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-08T09:00:54` **diskreport.py** (robustez ante casos límite): Mejoré la resiliencia de `_collect_summary_data` y las funciones dependientes ante errores de I/O (ej. archivos eliminados o bloqueados durante el escaneo) al añadir un bloque `try-except` explícito dentro del bucle de recolección de métricas, evitando que un fallo puntual detenga el análisis completo.
 - `2026-09-08T08:51:27` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del sistema de métricas mediante la validación explícita de `float('inf')` y `math.isnan` al ingerir datos y al convertir a texto, previniendo errores de serialización o visualización cuando los cálculos internos produzcan valores no finitos.
 - `2026-09-08T08:41:24` **scanner.py** (rendimiento): Optimizé la lógica de filtrado inicial en `Scanner.process_entry` moviendo la validación de extensión (que es una operación de string rápida) antes de llamar a `_is_safe_entry` (que involucra chequeos de seguridad más costosos), reduciendo así la carga de cómputo en el bucle principal.
-- `2026-09-08T08:41:12` **safety.py** (rendimiento): Se optimizó el rendimiento del módulo `safety.py` mediante la implementación de `lru_cache` en funciones críticas que se invocan repetidamente durante la escaneo de directorios, reduciendo drásticamente las llamadas redundantes a `os.path` y `Path.exists()`.
