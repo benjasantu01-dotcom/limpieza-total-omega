@@ -294,7 +294,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             return cached[1]
         if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
-                data = validate(json.load(f))
+                content = f.read(MAX_SETTINGS_SIZE + 1)
+                if len(content) > MAX_SETTINGS_SIZE: raise ValueError("Settings too large")
+                data = validate(json.loads(content))
             _CACHE[ruta_str] = (mtime, data)
             return data
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):

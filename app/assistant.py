@@ -190,6 +190,7 @@ _ENDPOINT: Final[str] = "https://generativelanguage.googleapis.com/v1beta/models
 _TIMEOUT_SECONDS: Final[int] = 30
 _PATH_INJECTION_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:[\\/]|/|\\|\.\.|\0|[\u202e\u202d])")
 _CONTROL_CHARS_REGEX: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f\u0080-\u009f\u202b-\u202f]")
+_ANSI_ESCAPE_REGEX: Final[re.Pattern] = re.compile(r"\x1B\[[0-9;]*[mK]")
 _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
 _MODEL_NAME_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9\.\-_]{1,64}$")
 _API_KEY_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9_\-\.]{1,128}$")
@@ -325,9 +326,13 @@ def _is_sensitive_structure(text: str) -> bool:
     return bool(re.search(r"(\\\\|[a-z]:\\|/etc/|\\\\UNC)", text, re.IGNORECASE))
 
 def _is_safe_text_structure(text: str) -> bool:
-    """Verifica si un texto contiene patrones de inyección o rutas sensibles."""
+    """Verifica si un texto contiene patrones de inyección, rutas o escapes ANSI."""
     if not text: return True
-    if _PATH_INJECTION_REGEX.search(text) or is_protected_path(text) or _is_restricted_content(text) or _is_sensitive_structure(text):
+    if (_PATH_INJECTION_REGEX.search(text) or 
+        is_protected_path(text) or 
+        _is_restricted_content(text) or 
+        _is_sensitive_structure(text) or
+        _ANSI_ESCAPE_REGEX.search(text)):
         return False
     return True
 
