@@ -22,7 +22,7 @@ import heapq
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Generator, Iterable, Dict, List, Tuple, Optional, Union, NamedTuple
+from typing import Generator, Iterable, Dict, List, Tuple, Optional, Union, NamedTuple, TypeAlias
 
 from safety import is_protected_path
 
@@ -43,6 +43,8 @@ __all__ = [
 ]
 
 MB_SIZE: int = 1024 * 1024
+# Alias de tipo para representar el par identificador único de archivo (dispositivo, inodo)
+Inode: TypeAlias = Tuple[int, int]
 
 
 class SummaryData(NamedTuple):
@@ -237,7 +239,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     if root_path is None:
         return
 
-    visited_inodes: set[Tuple[int, int]] = set()
+    visited_inodes: set[Inode] = set()
     stack: List[Path] = [root_path]
     
     while stack:
@@ -253,7 +255,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         entry_path = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
-                            inode = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
+                            inode: Inode = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
                             if inode[0] != 0 and inode not in visited_inodes:
                                 if not skip_protected or not is_protected_path(entry_path):
                                     visited_inodes.add(inode)
@@ -324,7 +326,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     Utiliza un heap binario para mantener el top 20 de archivos más grandes durante
     la iteración, optimizando el uso de memoria ante grandes volúmenes de archivos.
     """
-    total_bytes, total_files = 0, 0
+    total_bytes: int = 0
+    total_files: int = 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
     top_heap: List[Tuple[int, Path]] = []

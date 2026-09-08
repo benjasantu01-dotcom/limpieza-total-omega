@@ -309,27 +309,24 @@ def _get_shield_coords(s: float) -> Tuple[float, ...]:
 def logo_svg(size: int = 128) -> str:
     """Genera la estructura XML de un archivo SVG del logo (ideal para exportar)."""
     s = max(1, min(4096, int(size)))
-    stops_list = [f'      <stop offset="{o}" stop-color="{c}"/>' for o, c in zip(["0%", "55%", "100%"], GRADIENT_STOPS)]
-    stops = "\n".join(stops_list)
+    stops = "\n".join([f'      <stop offset="{o}" stop-color="{c}"/>' 
+                       for o, c in zip(["0%", "55%", "100%"], GRADIENT_STOPS)])
     
-    parts = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">',
-        '  <defs>',
-        f'    <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{stops}    </linearGradient>',
-        '    <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">',
-        f'      <stop offset="0%" stop-color="{C_GLOW}" stop-opacity="0.45"/>',
-        '      <stop offset="100%" stop-color="{C_GLOW}" stop-opacity="0"/>',
-        '    </radialGradient>',
-        '  </defs>',
-        f'  <rect width="128" height="128" rx="30" fill="{C_SURFACE}"/>',
-        f'  <circle cx="64" cy="56" r="52" fill="url(#omegaGlow)"/>',
-        '  <path d="M64 18 L100 31 V67 C100 90 83 104 64 110 C45 104 28 90 28 67 V31 Z" fill="url(#omegaShield)"/>',
-        f'  <path d="M41 75 L75 41" stroke="{C_BACKGROUND}" stroke-width="8" stroke-linecap="round"/>',
-        f'  <path d="M75 41 L89 38 L92 52 Z" fill="{C_BACKGROUND}"/>',
-        '  <text x="64" y="98" font-family="{UI_FONT_FAMILY}" font-size="26" font-weight="{UI_FONT_BOLD}" fill="{C_BACKGROUND}" text-anchor="middle">&#937;</text>',
-        '</svg>'
-    ]
-    return "\n".join(parts)
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{stops}    </linearGradient>
+    <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">
+      <stop offset="0%" stop-color="{C_GLOW}" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="{C_GLOW}" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="128" height="128" rx="30" fill="{C_SURFACE}"/>
+  <circle cx="64" cy="56" r="52" fill="url(#omegaGlow)"/>
+  <path d="M64 18 L100 31 V67 C100 90 83 104 64 110 C45 104 28 90 28 67 V31 Z" fill="url(#omegaShield)"/>
+  <path d="M41 75 L75 41" stroke="{C_BACKGROUND}" stroke-width="8" stroke-linecap="round"/>
+  <path d="M75 41 L89 38 L92 52 Z" fill="{C_BACKGROUND}"/>
+  <text x="64" y="98" font-family="{UI_FONT_FAMILY}" font-size="26" font-weight="{UI_FONT_BOLD}" fill="{C_BACKGROUND}" text-anchor="middle">&#937;</text>
+</svg>"""
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda una copia física del SVG tras validación estricta de seguridad."""
@@ -384,11 +381,11 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
-    Renderiza el logo vectorial completo en un componente canvas dado.
-    :param canvas: Objeto Canvas destino.
-    :param size: Tamaño base del logo.
-    :param canvas_x: Desplazamiento horizontal relativo al canvas.
-    :param canvas_y: Desplazamiento vertical relativo al canvas.
+    Renderiza el logo vectorial en el canvas destino.
+    :param canvas: Objeto Canvas de tkinter.
+    :param size: Escala base del icono (ej. 56.0).
+    :param canvas_x: Offset horizontal en píxeles.
+    :param canvas_y: Offset vertical en píxeles.
     """
     try:
         s = float(size)
@@ -404,7 +401,13 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
-    Dibuja una barra de degradado horizontal orientada a UI.
+    Dibuja una barra de degradado horizontal en UI.
+    :param canvas: Canvas destino.
+    :param width: Ancho total de la barra.
+    :param height: Grosor vertical.
+    :param canvas_x: Posición X.
+    :param canvas_y: Posición Y.
+    :param stops: Colores de control del gradiente.
     """
     try:
         w_val = max(1, int(width))
@@ -415,7 +418,15 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[HexColor] = None, fill: Optional[HexColor] = None) -> None:
     """
-    Renderiza un gráfico circular de progreso con manejo de errores defensivo.
+    Renderiza un gráfico circular de progreso.
+    :param canvas: Canvas destino.
+    :param percent: Valor 0-100.
+    :param size: Diámetro exterior.
+    :param canvas_x: Posición X.
+    :param canvas_y: Posición Y.
+    :param thickness: Grosor del trazo.
+    :param track: Color de fondo del anillo.
+    :param fill: Color del progreso.
     """
     try:
         if percent is None: return

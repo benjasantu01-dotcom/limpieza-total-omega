@@ -21,7 +21,8 @@ import os
 import ctypes
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Sequence, Dict, List, Optional, Callable, Union
+from typing import Iterable, Sequence, Dict, List, Optional, Callable, Union, TypeAlias
+
 from safety import is_protected_path, is_safe_to_modify
 
 __all__ = [
@@ -36,8 +37,9 @@ __all__ = [
     "SAFETY_NOTE",
 ]
 
-# Alias para funciones de chequeo de reparse points / junctions
-JunctionChecker = Callable[[str], bool]
+# Tipos definidos para mejorar la legibilidad de la arquitectura del módulo
+JunctionChecker: TypeAlias = Callable[[str], bool]
+BrowserMap: TypeAlias = Dict[str, str]
 
 def _is_junction_default(path: str) -> bool:
     """Fallback si el entorno no soporta la detección de junctions."""
@@ -47,7 +49,7 @@ def _is_junction_default(path: str) -> bool:
 _IS_JUNCTION_FN: JunctionChecker = getattr(os.path, 'isjunction', _is_junction_default)
 
 # Mapeo de nombres descriptivos a rutas relativas dentro de LOCALAPPDATA.
-BROWSER_CACHE_PATHS: Dict[str, str] = {
+BROWSER_CACHE_PATHS: BrowserMap = {
     "Google Chrome": r"Google\Chrome\User Data\Default\Cache",
     "Microsoft Edge": r"Microsoft\Edge\User Data\Default\Cache",
     "Brave": r"BraveSoftware\Brave-Browser\User Data\Default\Cache",
@@ -288,14 +290,14 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
 
 def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
-    cache_paths: Optional[Dict[str, str]] = None
+    cache_paths: Optional[BrowserMap] = None
 ) -> List[BrowserCache]:
     """
     Escanea en busca de perfiles, mapea rutas relativas a absolutas y calcula
     la ocupación de cada caché, ordenando el resultado de mayor a menor.
     """
     raw_bases: Sequence[Path] = bases if bases is not None else base_directories()
-    browser_map: Dict[str, str] = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
+    browser_map: BrowserMap = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
     if not isinstance(raw_bases, (list, tuple)) or not isinstance(browser_map, dict):
         return []
