@@ -212,7 +212,7 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float, findings: List[str]) -> None:
-    """Ejecuta una lista de reglas de recomendación in-place."""
+    """Ejecuta una lista de reglas de recomendación in-place sobre la lista de hallazgos."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -223,7 +223,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Calcula el score global y genera recomendaciones a partir de métricas."""
+    """
+    Calcula el score global del sistema y genera recomendaciones.
+    Itera sobre el pipeline preconfigurado aplicando cada 'scorer' y 'regla'.
+    """
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de sistema no disponibles o corruptos."])
     
@@ -233,8 +236,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for area, weight, scorer, rules in _OPTIMIZED_PIPELINE:
         try:
-            ratio = scorer(metrics)
-            pts = int(round(ratio * weight))
+            ratio: float = scorer(metrics)
+            pts: int = int(round(ratio * weight))
             metric_breakdown[area] = pts
             total_pts += pts
             if rules:

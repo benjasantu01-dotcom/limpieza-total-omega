@@ -153,6 +153,7 @@ class DriveUsage:
 
 
 def format_size(num: Union[int, float, None]) -> str:
+    """Convierte bytes a un string legible con la unidad correspondiente."""
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     
@@ -169,6 +170,7 @@ def format_size(num: Union[int, float, None]) -> str:
 
 
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
+    """Obtiene el uso de espacio de un punto de montaje específico."""
     if mount is None:
         return None
     try:
@@ -182,11 +184,13 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 
 
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
+    """Recopila el uso de disco de todas las unidades locales disponibles."""
     targets = mounts if mounts is not None else (_get_local_windows_drives() if os.name == "nt" else ["/"])
     return [d for m in targets if (d := drive_usage(m)) is not None]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
+    """Generador que recorre recursivamente el sistema de archivos evitando reparse points y rutas protegidas."""
     root_path = _validate_root(directory)
     if root_path is None:
         return
@@ -220,6 +224,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
+    """Retorna los N archivos más pesados encontrados en el directorio base."""
     root = _validate_root(directory)
     if not root: return []
     data = _collect_summary_data(root, skip_protected)
@@ -227,6 +232,7 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
+    """Agrupa el uso de espacio por extensión de archivo."""
     root = _validate_root(directory)
     if not root: return []
     data = _collect_summary_data(root, skip_protected)
@@ -235,25 +241,27 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
+    """Calcula el peso total por subcarpeta inmediata en la raíz indicada."""
     root = _validate_root(directory)
     if not root: return []
-    sums: Dict[Path, int] = defaultdict(int)
-    counts: Dict[Path, int] = defaultdict(int)
+    folder_total_bytes: Dict[Path, int] = defaultdict(int)
+    folder_file_counts: Dict[Path, int] = defaultdict(int)
     
     for path, size in walk_files(root, skip_protected):
         try:
             rel = path.relative_to(root)
             if rel.parts:
-                top = root / rel.parts[0]
-                sums[top] += size
-                counts[top] += 1
+                top_level_folder = root / rel.parts[0]
+                folder_total_bytes[top_level_folder] += size
+                folder_file_counts[top_level_folder] += 1
         except (ValueError, OSError): continue
 
-    results = [FolderUsage(p, sums[p], counts[p]) for p in sums]
+    results = [FolderUsage(p, folder_total_bytes[p], folder_file_counts[p]) for p in folder_total_bytes]
     return heapq.nlargest(max(1, limit), results, key=lambda f: f.size_bytes)
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Tuple[int, int]:
+    """Retorna el total de bytes y cantidad de archivos procesados."""
     root = _validate_root(directory)
     if not root: return 0, 0
     data = _collect_summary_data(root, skip_protected)
@@ -261,6 +269,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
+    """Motor de recolección de estadísticas: un solo recorrido para extraer todas las métricas."""
     total_bytes = total_files = 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
@@ -270,9 +279,9 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
         try:
             total_bytes += size
             total_files += 1
-            ext = path.suffix.lower() or "(sin extensión)"
-            ext_sizes[ext] += size
-            ext_counts[ext] += 1
+            extension = path.suffix.lower() or "(sin extensión)"
+            ext_sizes[extension] += size
+            ext_counts[extension] += 1
             
             if len(top_heap) < 20:
                 heapq.heappush(top_heap, (size, path))
@@ -285,6 +294,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
+    """Genera un reporte textual estructurado de los hallazgos en la carpeta dada."""
     root = _validate_root(directory)
     if not root: return ["Error: Ruta no válida."]
     data = _collect_summary_data(root, skip_protected)

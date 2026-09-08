@@ -113,7 +113,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 
 def _is_valid_candidate(path: Path) -> bool:
-    """Validador estricto de elegibilidad de archivos para análisis."""
+    """Validador estricto: comprueba existencia, permisos y que no sea enlace simbólico."""
     if not isinstance(path, Path):
         return False
     try:
@@ -148,7 +148,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 
 def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
-    """Resuelve rutas base y descarta directorios protegidos o inexistentes."""
+    """Resuelve la ruta absoluta y verifica si es un directorio escaneable."""
     try:
         if not item: 
             return None
@@ -165,7 +165,10 @@ def _collect_candidates(
     min_size: int, 
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
-    """Realiza un barrido recursivo del sistema de archivos."""
+    """
+    Barrido recursivo del disco utilizando os.scandir para rendimiento.
+    Mantiene un set 'visited' para evitar recursión infinita en ciclos de enlaces.
+    """
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[str] = set()
 
@@ -204,7 +207,7 @@ def _collect_candidates(
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Aplica la función hash indicada a una colección y agrupa rutas por digest resultante."""
+    """Agrupa una lista de archivos aplicando una función hash (parcial o completa)."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if path is not None and (digest := hash_func(path)):
@@ -213,7 +216,10 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
-    """Refina grupos existentes aplicando hashing SHA256 completo tras un filtrado por hash parcial."""
+    """
+    Refinamiento de grupos: primero agrupa por hash parcial y luego 
+    ejecuta el hash completo (SHA256) solo en los candidatos que colisionan.
+    """
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
     
@@ -225,7 +231,7 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona la estrategia de hashing eficiente según el tamaño del archivo."""
+    """Selecciona la estrategia de hashing óptima: parcial para archivos pequeños, profunda para grandes."""
     if not isinstance(size, int) or size <= 0 or not paths or len(paths) < 2: 
         return []
     
@@ -260,7 +266,10 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
-    """Aplica heurística: el archivo conservado es el más antiguo."""
+    """
+    Aplica heurística de selección: sugiere conservar el archivo más antiguo (mtime).
+    En caso de empate en mtime, utiliza la longitud de la ruta como desempate.
+    """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
         
@@ -277,7 +286,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Genera una lista de líneas descriptivas del grupo."""
+    """Genera una lista de líneas descriptivas del grupo para la interfaz."""
     if not isinstance(group, DuplicateGroup) or group.paths is None:
         return []
         
