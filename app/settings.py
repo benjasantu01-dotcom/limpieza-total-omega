@@ -305,45 +305,47 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """Persiste configuración mediante reemplazo atómico tras validaciones de seguridad."""
     if not _is_dict(values): return None
-    ruta = settings_path(custom_base).absolute()
-    ruta_str = str(ruta)
+    ruta = settings_path(custom_base)
     cleaned_settings = validate(values)
-    if (cached := _CACHE.get(ruta_str)) and cached[1] == cleaned_settings:
-        return ruta
-    temp_path = None
+    
     try:
+        # Validación estricta del destino final tras resolución de enlaces
+        resolved_path = ruta.resolve(strict=False)
+        resolved_parent = resolved_path.parent
+        
         if cleaned_settings.get("asistente_activado") and not (
             cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
         ):
             cleaned_settings["asistente_activado"] = False
-        if is_protected_path(ruta_str) or not is_safe_to_modify(ruta_str): return None
-        if ruta.exists() and not ruta.is_file(): return None
-        parent = ruta.parent
-        if is_protected_path(str(parent)) or not is_safe_to_modify(str(parent)): return None
-        if not parent.exists():
-            parent.mkdir(parents=True, exist_ok=True)
-        if not parent.is_dir() or not os.access(parent, os.W_OK): return None
-        if ruta.exists() and not os.access(ruta, os.W_OK): return None
-        usage = shutil.disk_usage(parent)
+            
+        if is_protected_path(str(resolved_path)) or not is_safe_to_modify(str(resolved_path)): return None
+        if not resolved_parent.exists():
+            resolved_parent.mkdir(parents=True, exist_ok=True)
+            
+        if not os.access(resolved_parent, os.W_OK): return None
+        if resolved_path.exists() and not os.access(resolved_path, os.W_OK): return None
+        
+        usage = shutil.disk_usage(resolved_parent)
         if usage.free < 1024 * 1024: return None
         
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None
         
-        temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
+        temp_path = resolved_path.with_suffix(f"{resolved_path.suffix}.tmp")
         with open(temp_path, "wb") as f:
             f.write(data)
             f.flush()
             os.fsync(f.fileno())
         with open(temp_path, "r", encoding="utf-8") as f:
             if validate(json.load(f)) != cleaned_settings: raise ValueError("Integrity mismatch")
-        os.replace(temp_path, ruta)
-        _CACHE[ruta_str] = (float(ruta.stat().st_mtime), cleaned_settings)
-        return ruta
+        
+        os.replace(temp_path, resolved_path)
+        _CACHE[str(ruta)] = (float(resolved_path.stat().st_mtime), cleaned_settings)
+        return resolved_path
     except (TypeError, ValueError, OSError, IOError, PermissionError, json.JSONDecodeError):
         return None
     finally:
-        if temp_path and temp_path.exists():
+        if 'temp_path' in locals() and temp_path.exists():
             try: os.remove(temp_path)
             except OSError: pass
 
