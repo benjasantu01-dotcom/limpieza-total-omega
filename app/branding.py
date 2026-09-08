@@ -39,7 +39,10 @@ class CanvasElement(Protocol):
     def create_arc(self, *args: float, **kwargs: Any) -> int: ...
 
 class ColorSegment(NamedTuple):
-    """Representa un segmento de color contiguo para optimizar operaciones de renderizado."""
+    """
+    Representa un rango de píxeles/pasos continuo para un mismo color.
+    Utilizado por los renderizadores para reducir llamadas individuales al canvas.
+    """
     hex_color: HexColor
     start_index: int
     end_index: int
@@ -51,7 +54,7 @@ SeverityStyle: TypeAlias = Tuple[HexColor, str]
 RGBTuple: TypeAlias = Tuple[int, int, int]  
 
 class PaletteDict(TypedDict):
-    """Estructura de datos para la paleta de colores de marca."""
+    """Estructura esperada de la paleta de colores de marca."""
     background: HexColor
     surface: HexColor
     surface_alt: HexColor
@@ -75,7 +78,7 @@ class PaletteDict(TypedDict):
     glow: HexColor
 
 class FontSizesDict(TypedDict):
-    """Escala tipográfica base para mantener consistencia visual."""
+    """Mapeo de roles de texto a tamaños de fuente (píxeles)."""
     display: int
     title: int
     subtitle: int
@@ -222,9 +225,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=256)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
-    """
-    Decodifica un string hexadecimal (#RRGGBB) a una tupla de valores RGB (0-255).
-    """
+    """Decodifica un string hexadecimal (#RRGGBB) a una tupla de valores RGB (0-255)."""
     if len(value) != 7 or value[0] != "#": return (0, 0, 0)
     try:
         return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
@@ -237,9 +238,7 @@ def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
 
 @lru_cache(maxsize=128)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """
-    Interpola linealmente entre dos colores para transiciones suaves.
-    """
+    """Interpolación lineal entre dos colores (ratio 0.0 a 1.0)."""
     if start == end: return start
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -274,7 +273,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=64)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, ...]:
-    """Reduce una serie de colores a segmentos compactos para optimizar llamadas al Canvas."""
+    """Agrupa colores adyacentes idénticos para optimizar el dibujo de canvas."""
     if not colors: return ()
     segments = []
     current_color = colors[0]

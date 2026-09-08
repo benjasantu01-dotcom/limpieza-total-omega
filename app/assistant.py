@@ -264,6 +264,11 @@ class SystemContext:
         val = getattr(self, key, default)
         return _safe_float(val, default)
 
+    @property
+    def is_empty(self) -> bool:
+        """Verifica si el contexto carece de datos analizados o es inválido."""
+        return not self.analyzed or not self.is_valid_structure
+
     def __hash__(self) -> int:
         return hash((self.score, self.grade, self.junk_mb, self.suspicious_count, 
                      self.memory_available_percent, self.disk_free_percent,
@@ -369,7 +374,7 @@ def _generate_context_lines_cached(score_s: str, grade: str, junk_s: str, susp_s
 
 def context_as_text(context: SystemContext) -> str:
     """Serializa el contexto a un formato seguro para la IA."""
-    if not isinstance(context, SystemContext) or not context.analyzed or not context.is_valid_structure:
+    if context.is_empty:
         return "No hay métricas disponibles todavía."
     
     s_score = _fmt_metric_sanitized(context.score) if context.score is not None else "N/A"
@@ -424,7 +429,7 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Analiza el estado de la RAM y provee recomendaciones de desempeño."""
-    if not ctx.analyzed: return Answer("Primero analizá el sistema.")
+    if ctx.is_empty: return Answer("Primero analizá el sistema.")
     mem_pct = ctx.get_metric("memory_available_percent", 50.0)
     total_gb = ctx.get_metric("memory_total_gb", 0.0)
     
@@ -442,7 +447,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Calcula el espacio total recuperable y diagnostica niveles críticos."""
-    if not ctx.analyzed: return Answer("Primero analizá el sistema.")
+    if ctx.is_empty: return Answer("Primero analizá el sistema.")
     junk = ctx.get_metric("junk_mb", 0.0)
     dup = ctx.get_metric("duplicate_mb", 0.0)
     cache = ctx.get_metric("browser_cache_mb", 0.0)
@@ -459,7 +464,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     """Informa sobre archivos sospechosos sin violar la política de no-borrado."""
-    if not ctx.analyzed: return Answer("Primero analizá el sistema.")
+    if ctx.is_empty: return Answer("Primero analizá el sistema.")
     count: int = int(ctx.get_metric("suspicious_count", 0.0))
     warn: int = int(ctx.get_metric("suspicious_warnings", 0.0))
     if count == 0:
@@ -472,7 +477,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Provee resumen ejecutivo de la salud del sistema."""
-    if not ctx.analyzed: return Answer("Primero analizá el sistema.")
+    if ctx.is_empty: return Answer("Primero analizá el sistema.")
     
     score_val = ctx.score if ctx.score is not None else "N/A"
     grade_str = ctx.grade if ctx.grade else ""
@@ -488,7 +493,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     """Evalúa impacto de programas de inicio."""
-    if not ctx.analyzed: return Answer("Primero analizá el sistema.")
+    if ctx.is_empty: return Answer("Primero analizá el sistema.")
     count: int = int(ctx.get_metric("startup_count", 0.0))
     estado = f"Tenés {count} programas que arrancan con Windows."
     valoracion = "Son bastantes, y cada uno suma tiempo de encendido." if count > 15 else ("Es normal." if count > 8 else "Está bien.")
@@ -521,7 +526,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     q_sanitized = _sanitize_query(question)
     if not _ensure_safe_text(q_sanitized):
         return Answer("Entrada no válida.")
-    if not isinstance(context, SystemContext) or not context.analyzed or not context.is_valid_structure:
+    if context.is_empty:
         return Answer(
             text="Todavía no corriste ningún análisis. Andá a la pestaña Salud "
                  "y apretá 'Analizar el sistema': es de solo lectura.",
