@@ -170,8 +170,9 @@ def _has_alternate_data_stream(path_name: str) -> bool:
 
 
 @lru_cache(maxsize=2048)
-def _is_system_or_hidden(path_str: str) -> bool:
+def _is_system_or_hidden(path_str: str | None) -> bool:
     """Verifica mediante la estructura de atributos de archivo si es oculto o de sistema."""
+    if not path_str: return False
     try:
         path = Path(path_str)
         st = path.lstat()
@@ -257,7 +258,7 @@ def _check_file_integrity(path: Path) -> None:
             if rule.predicate(path, file_stat):
                 code = SafetyValidationErrorCode.HARD_LINK_DETECTED if rule.reason == ProtectionReason.HARD_LINK else SafetyValidationErrorCode.GENERIC
                 raise UnsafePathError(f"Violación de integridad ({rule.reason.value})", code)
-        except Exception:
+        except (PermissionError, OSError, AttributeError):
             continue
 
 

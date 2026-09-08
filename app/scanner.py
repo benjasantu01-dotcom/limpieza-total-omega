@@ -115,7 +115,6 @@ class Scanner:
             if not path_str or not entry.name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
                 return False
             
-            # Defensa contra ofuscación de nombres o nombres reservados de sistema
             if RTL_CHAR_RE.search(path_str) or RESERVED_NAMES_RE.match(entry.name):
                 return False
             
@@ -150,7 +149,6 @@ class Scanner:
             directory_stack: Stack mutable de rutas de directorios pendientes.
         """
         try:
-            # Comprobación adicional de existencia ante condiciones de carrera
             if not os.path.exists(entry.path):
                 return
 
@@ -163,7 +161,6 @@ class Scanner:
                     self._handle_directory(entry, directory_stack)
                 return
 
-            # Optimización: Filtrado rápido por extensión antes de validación de seguridad pesada
             name = entry.name
             ext_idx = name.rfind('.')
             if ext_idx != -1:
@@ -171,8 +168,7 @@ class Scanner:
                 if ext_low in SUSPICIOUS_ALL_EXTS:
                     if self._is_safe_entry(entry):
                         self._run_file_heuristics(Path(entry.path), entry, ext_low)
-        except (OSError, PermissionError, FileNotFoundError) as e:
-            logger.debug(f"Error accediendo a la entrada {entry.path}: {e}")
+        except (OSError, PermissionError, FileNotFoundError):
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
@@ -203,7 +199,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Punto de entrada para escanear recursivamente un directorio completo."""
-    if not directory or (isinstance(directory, str) and not directory.strip()):
+    if not isinstance(directory, (str, Path)) or not str(directory).strip():
         return []
     
     try:
@@ -211,7 +207,6 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         if not base_path.exists() or not base_path.is_dir(): 
             return []
         
-        # Validar consistencia de ruta antes de inicializar el escáner
         root_input = base_path.resolve(strict=True)
         if not root_input.is_absolute() or str(root_input).startswith(("\\\\", "//")) or is_protected_path(root_input):
             return []
@@ -230,8 +225,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, directory_stack)
-        except (PermissionError, OSError, FileNotFoundError) as e:
-            logger.debug(f"Acceso denegado o error en directorio {current_dir}: {e}")
+        except (PermissionError, OSError, FileNotFoundError):
             continue
     return scanner.results
 

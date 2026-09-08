@@ -332,13 +332,18 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if len(data) > MAX_SETTINGS_SIZE: return None
         
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
-        with open(temp_path, "wb") as f:
-            f.write(data)
-            f.flush()
-            os.fsync(f.fileno())
-        
-        # os.replace es atómico tanto en POSIX como en Windows
-        os.replace(temp_path, ruta)
+        try:
+            with open(temp_path, "wb") as f:
+                f.write(data)
+                f.flush()
+                os.fsync(f.fileno())
+            
+            # os.replace es atómico tanto en POSIX como en Windows
+            os.replace(temp_path, ruta)
+        finally:
+            if temp_path.exists():
+                try: os.remove(temp_path)
+                except OSError: pass
         
         _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta

@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 100 | 10 | 18 | 12 | 88 |
-| 2026-09-08 | 115 | 9 | 17 | 8 | 127 |
+| 2026-09-07 | 98 | 10 | 18 | 12 | 86 |
+| 2026-09-08 | 118 | 9 | 18 | 8 | 127 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **47**
 - seguridad defensiva: **47**
-- manejo de errores y validación de entradas: **42**
+- manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **42**
-- rendimiento: **37**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **20**
+- `safety.py`: **20**
 - `healthscore.py`: **19**
-- `safety.py`: **19**
+- `settings.py`: **19**
 - `assistant.py`: **19**
+- `duplicates.py`: **19**
 - `memory.py`: **18**
-- `settings.py`: **18**
-- `browser.py`: **17**
+- `scanner.py`: **18**
 - `quarantine.py`: **17**
-- `scanner.py`: **17**
+- `browser.py`: **16**
 - `branding.py`: **12**
 - `diskreport.py`: **12**
 - `main.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-08T11:55:09` **settings.py** (manejo de errores y validación de entradas): Mejora la robustez de la función `save` ante fallos de escritura en el sistema de archivos al implementar un bloque `try-finally` para asegurar que el archivo temporal (`.tmp`) sea eliminado si ocurre una excepción inesperada durante la escritura o sincronización, evitando dejar basura en el directorio de configuración.
+- `2026-09-08T11:54:51` **scanner.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones en `scan_directory` y `_is_safe_entry` para validar tipos de entrada inesperados y evitar condiciones de carrera al acceder al sistema de archivos, asegurando que la función `is_protected_path` siempre reciba tipos de datos válidos (Path) y no valores nulos o tipos incompatibles que podrían elevar excepciones no capturadas.
+- `2026-09-08T11:54:26` **safety.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `_check_file_integrity` capturando explícitamente `PermissionError` y `OSError` para evitar fallos silenciosos, y añadí validación de tipo `None` en `_is_system_or_hidden` para evitar excepciones imprevistas al procesar rutas.
 - `2026-09-08T11:48:06` **quarantine.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `load_manifest` añadiendo validación explícita sobre el tipo de contenido y manejo defensivo de excepciones durante la deserialización, evitando que un JSON malformado o un archivo de manifiesto inconsistente interrumpa el flujo de la aplicación.
 - `2026-09-08T11:47:43` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez de `stage_for_review` capturando errores de `shutil.move` y validaciones previas para evitar que una excepción inesperada (como un archivo bloqueado en el instante del movimiento) detenga el procesamiento de la lista completa.
 - `2026-09-08T11:47:12` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` mediante una validación más estricta de las líneas de entrada y el uso de un diccionario de valores predeterminados para evitar errores de tipo `KeyError` o procesamiento de datos parciales.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-08T10:02:46` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones de escritura en `save()` implementando `os.replace` (que es atómico en sistemas POSIX y Windows) y eliminando `os.rename` como fallback, para asegurar que el archivo de configuración nunca quede en un estado intermedio corrupto ante interrupciones.
 - `2026-09-08T10:02:16` **scanner.py** (seguridad defensiva): Se ha robustecido el escáner defensivo evitando el procesamiento de rutas con caracteres de control (como los de ofuscación RTL ya detectados en nombres) mediante la validación estricta de `entry.path` en `_is_safe_entry`, asegurando que ninguna ruta pase el filtro si presenta inconsistencias o caracteres sospechosos antes de ser manipulada por `pathlib`.
 - `2026-09-08T10:01:49` **safety.py** (seguridad defensiva): Se reforzó la seguridad defensiva integrando la detección de puntos de reparse (junctions/symlinks) dentro de la validación estructural `_validate_boundary_conditions` para asegurar que ninguna operación de modificación atraviese o manipule recursivamente estas rutas críticas antes de intentar cualquier acceso a disco.
-- `2026-09-08T09:51:36` **memory.py** (seguridad defensiva): Mejoré la seguridad de la función `trim_working_set` implementando el principio de "cierre seguro de recursos" mediante un bloque `try...finally` más robusto y validando explícitamente el handle con un filtro de seguridad adicional previo a la ejecución, asegurando que no se operen procesos fuera de las capacidades permitidas.
-- `2026-09-08T09:42:17` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del método `validate` en `SystemMetrics` utilizando un patrón de validación más explícito, asegurando que los valores de entrada no solo sean finitos, sino que mantengan la integridad lógica del sistema mediante un filtrado estricto antes de procesar cualquier cálculo de puntuación.
-- `2026-09-08T09:41:49` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en la recolección de archivos mediante la validación explícita de `is_protected_path` en `_collect_candidates` antes de procesar cualquier entrada, asegurando que ningún descriptor de archivo o ruta que infrinja las políticas de seguridad sea siquiera considerado para el cálculo de metadatos o hashes.
