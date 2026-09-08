@@ -345,7 +345,9 @@ def _is_safe_to_trim(proc_handle: int, pid: int) -> Tuple[bool, Optional[str]]:
     kernel32 = ctypes.windll.kernel32
     
     try:
-        if kernel32.GetProcessId(proc_handle) != pid: return False, "Mismatch de PID."
+        current_pid = kernel32.GetProcessId(proc_handle)
+        if current_pid != pid: return False, "Mismatch de PID."
+        
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
             return False, "Imposible obtener estado del proceso."
@@ -395,7 +397,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "El sistema denegó la operación (EmptyWorkingSet falló)."
             
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except Exception:
+    except (Exception, ctypes.ArgumentError):
         return False, "Error inesperado al intentar liberar el proceso."
     finally:
         # Garantizar cierre de handle independientemente del resultado
