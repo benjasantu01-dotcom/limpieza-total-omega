@@ -1258,3 +1258,4 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-08T14:59:15` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
 - `2026-09-08T14:59:15` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T14:59:15` Corrida terminada. Total usado hoy: 350.
+- `2026-09-08T15:07:20` Presupuesto diario agotado (350 usados). Corte hasta mañana.
