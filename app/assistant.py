@@ -283,10 +283,12 @@ class SystemContext:
         for key, spec in _VALIDATORS.items():
             val = _get_source_value(source, key)
             if val is not None and spec.is_valid_type(val):
-                f_val = float(val)
-                if not math.isnan(f_val) and not math.isinf(f_val) and spec.min_val <= f_val <= spec.max_val:
-                    setattr(self, key, spec.cast_func(f_val))
-                    found_data = True
+                # Aplicamos cast forzado al tipo esperado (int o float)
+                casted_val = spec.cast_func(val)
+                if not math.isnan(float(casted_val)) and not math.isinf(float(casted_val)):
+                    if spec.min_val <= float(casted_val) <= spec.max_val:
+                        setattr(self, key, casted_val)
+                        found_data = True
         
         grade_val = _get_source_value(source, "grade")
         if isinstance(grade_val, str):
@@ -574,17 +576,24 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     """Extrae respuesta textual del payload JSON con validación estricta."""
     if not isinstance(data, dict): return None
     try:
+        # Validación defensiva de estructura anidada de la API
         candidates = data.get("candidates")
-        if not isinstance(candidates, list) or not candidates: return None
+        if not isinstance(candidates, list) or len(candidates) == 0: return None
+        
         c1 = candidates[0]
         if not isinstance(c1, dict): return None
+        
         content = c1.get("content")
         if not isinstance(content, dict): return None
+        
         parts = content.get("parts")
-        if not isinstance(parts, list) or not parts: return None
+        if not isinstance(parts, list) or len(parts) == 0: return None
+        
+        # Extracción y validación final de tipo
         text_val = parts[0].get("text")
         return str(text_val) if isinstance(text_val, str) else None
-    except (AttributeError, TypeError, IndexError): return None
+    except (AttributeError, TypeError, IndexError, KeyError): 
+        return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
     """Gestiona la comunicación con la API externa verificando que la respuesta no sea una ruta."""
