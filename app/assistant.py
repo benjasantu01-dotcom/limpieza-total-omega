@@ -428,34 +428,37 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Analiza el estado de la RAM y provee recomendaciones de desempeño."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
-    mem_pct: float = ctx.get_metric("memory_available_percent", 50.0)
-    total_gb: float = ctx.get_metric("memory_total_gb", 0.0)
-    startup_count: int = int(ctx.get_metric("startup_count", 0.0))
-    status_msg = f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."
-    performance_tip = (
-        "Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses."
-        if mem_pct < 15 else "Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM."
-    )
-    msg_parts = [status_msg, performance_tip, "No busques un 'liberador de RAM': la PC queda más lenta."]
-    if startup_count > 12:
-        msg_parts.append(f"Sí te conviene mirar los {startup_count} programas de inicio.")
-    full_text = " ".join(msg_parts)
-    return Answer(_validate_response_length(full_text), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
+    mem_pct = ctx.get_metric("memory_available_percent", 50.0)
+    total_gb = ctx.get_metric("memory_total_gb", 0.0)
+    
+    parts = [f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."]
+    if mem_pct < 15:
+        parts.append("Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses.")
+    else:
+        parts.append("Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM.")
+    
+    parts.append("No busques un 'liberador de RAM': la PC queda más lenta.")
+    if int(ctx.get_metric("startup_count", 0)) > 12:
+        parts.append(f"Sí te conviene mirar los {int(ctx.get_metric('startup_count', 0))} programas de inicio.")
+        
+    return Answer(_validate_response_length(" ".join(parts)), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Calcula el espacio total recuperable y diagnostica niveles críticos."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
-    junk: float = ctx.get_metric("junk_mb", 0.0)
-    dup: float = ctx.get_metric("duplicate_mb", 0.0)
-    cache: float = ctx.get_metric("browser_cache_mb", 0.0)
-    free: float = ctx.get_metric("disk_free_percent", 100.0)
-    recuperable: float = junk + dup + cache
-    diagnostico = f"Tenés {free:.0f}% libre en disco. Podés recuperar cerca de {recuperable:.0f} MB."
-    detalle = f"Esto incluye: {junk:.0f} MB de basura, {dup:.0f} MB de duplicados{f' y {cache:.0f} MB de caché' if cache > 0 else ''}."
-    advertencia = " Estás por debajo del 10%: esto afecta la estabilidad. Es urgente." if free < 10 else ""
-    accion = " Empezá por Limpieza: mueve los candidatos a revisión."
-    full_text = f"{diagnostico} {detalle}{advertencia}{accion}"
-    return Answer(_validate_response_length(full_text), notice=OFFLINE_NOTICE)
+    junk = ctx.get_metric("junk_mb", 0.0)
+    dup = ctx.get_metric("duplicate_mb", 0.0)
+    cache = ctx.get_metric("browser_cache_mb", 0.0)
+    free = ctx.get_metric("disk_free_percent", 100.0)
+    
+    recuperable = junk + dup + cache
+    msg = f"Tenés {free:.0f}% libre en disco. Podés recuperar cerca de {recuperable:.0f} MB."
+    msg += f" (incluye {junk:.0f} MB de basura, {dup:.0f} MB de duplicados{f', {cache:.0f} MB caché' if cache > 0 else ''})."
+    if free < 10:
+        msg += " ¡Alerta! Estás por debajo del 10%, afecta la estabilidad."
+    msg += " Empezá por Limpieza: mueve los candidatos a revisión."
+    
+    return Answer(_validate_response_length(msg), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     """Informa sobre archivos sospechosos sin violar la política de no-borrado."""

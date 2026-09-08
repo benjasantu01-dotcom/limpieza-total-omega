@@ -309,7 +309,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     cleaned_settings = validate(values)
     
     try:
-        # Validación estricta del destino final tras resolución de enlaces
         resolved_path = ruta.resolve(strict=False)
         resolved_parent = resolved_path.parent
         
@@ -336,13 +335,15 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.write(data)
             f.flush()
             os.fsync(f.fileno())
+        
         with open(temp_path, "r", encoding="utf-8") as f:
             if validate(json.load(f)) != cleaned_settings: raise ValueError("Integrity mismatch")
         
         os.replace(temp_path, resolved_path)
         _CACHE[str(ruta)] = (float(resolved_path.stat().st_mtime), cleaned_settings)
         return resolved_path
-    except (TypeError, ValueError, OSError, IOError, PermissionError, json.JSONDecodeError):
+    except (TypeError, ValueError, OSError, IOError, PermissionError, json.JSONDecodeError) as e:
+        # Registro silencioso y retorno de fallo sin exponer trazas al usuario
         return None
     finally:
         if 'temp_path' in locals() and temp_path.exists():

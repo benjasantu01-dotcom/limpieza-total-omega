@@ -186,6 +186,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         if not base_path.exists() or not base_path.is_dir(): 
             return []
         
+        # Validar consistencia de ruta antes de inicializar el escáner
         root_input = base_path.resolve(strict=True)
         if not root_input.is_absolute() or str(root_input).startswith(("\\\\", "//")) or is_protected_path(root_input):
             return []

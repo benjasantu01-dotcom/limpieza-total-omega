@@ -110,11 +110,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae y valida una ruta absoluta desde una cadena entrecomillada.
-
-        Returns:
-            Ruta absoluta normalizada si es segura, o cadena vacía si la ruta 
-            está protegida o es sospechosa.
+        Extracts and validates an absolute path from a quoted string.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -142,17 +138,12 @@ class StartupEntry:
             if not os.path.lexists(p) or p.is_dir():
                 return False
             stats = p.lstat()
-            # 0x00000400 = FILE_ATTRIBUTE_REPARSE_POINT
             return not p.is_symlink() and not (getattr(stats, 'st_file_attributes', 0) & 0x00000400)
         except (OSError, PermissionError, AttributeError):
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """
-        Resuelve una ruta relativa a absoluta. 
-        
-        Utiliza el módulo `_EXISTS_CACHE` para evitar llamadas redundantes a `realpath`.
-        """
+        """Resuelve una ruta relativa a absoluta usando caché."""
         if not path_string or self._is_path_suspicious(path_string) or self._is_reserved_device_name(path_string):
             return ""
         
@@ -269,13 +260,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
-    """
-    Convierte la salida CSV de PowerShell en una lista de objetos `StartupEntry`.
-
-    Args:
-        csv_text: Salida cruda de la ejecución de 'ConvertTo-Csv'.
-        source: Etiqueta de origen para el registro.
-    """
+    """Convierte la salida CSV de PowerShell en una lista de objetos `StartupEntry`."""
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
@@ -286,6 +271,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f = io.StringIO(csv_text.strip())
         reader: csv.DictReader = csv.DictReader(f)
         
+        # Validar estructura mínima para evitar errores de índice en filas
         if not reader.fieldnames or len(reader.fieldnames) < 2:
             return []
             
