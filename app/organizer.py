@@ -422,6 +422,11 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
         
+        # Validación extra: asegurarse de que el directorio sea escribible antes de iniciar
+        test_file = dest_base / ".perm_check"
+        test_file.touch(exist_ok=True)
+        test_file.unlink()
+        
         if not is_safe_to_modify(dest_base): return None
     except (OSError, RuntimeError):
         return None

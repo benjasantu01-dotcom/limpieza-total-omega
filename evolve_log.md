@@ -657,3 +657,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-08T09:01:34` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
 - `2026-09-08T09:01:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T09:01:34` Corrida terminada. Total usado hoy: 212.
+- `2026-09-08T09:10:13` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-09-08T09:11:16` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-08T09:11:26` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-08T09:12:46` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se mejora la robustez ante estados inconsistentes o nulos durante la inicialización de los componentes de la interfaz, asegurando que las referencias a `winfo_exists()` protejan correctamente los ciclos de vida de la UI frente a cierres abruptos o excepciones de concurrencia.
+- `2026-09-08T09:13:16` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de errores en `trim_working_set` y `_get_process_path` ante procesos que finalizan inesperadamente o cuyos permisos de acceso son dinámicos, utilizando `ctypes.windll.kernel32.CloseHandle` de forma garantizada y añadiendo chequeos de nulidad en las APIs de `psapi`.
+- `2026-09-08T09:14:16` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-08T09:14:51` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se introdujo una validación de "disponibilidad de escritura" en `stage_for_review` para prevenir fallos silenciosos ante carpetas de destino en medios de solo lectura o con permisos restringidos, fortaleciendo la robustez ante errores de I/O comunes.
+- `2026-09-08T09:15:51` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-08T09:16:14` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `purge_all` ante casos límite mediante la validación de existencia y tipos de archivo, evitando fallos silenciosos al iterar sobre directorios y asegurando la consistencia entre el estado real del disco y el manifiesto.
+- `2026-09-08T09:16:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T09:16:14` Corrida terminada. Total usado hoy: 216.

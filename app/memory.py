@@ -332,7 +332,9 @@ def _is_system_process(pid: int) -> bool:
 def _get_process_path(proc_handle: int) -> Optional[str]:
     """Intenta recuperar ruta de ejecutable mediante GetModuleFileNameExW."""
     if not proc_handle: return None
-    psapi = ctypes.windll.psapi
+    psapi = getattr(ctypes.windll, "psapi", None)
+    if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
+    
     buf = ctypes.create_unicode_buffer(4096)
     try:
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 4096) > 0:
