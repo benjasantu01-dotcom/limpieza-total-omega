@@ -443,11 +443,11 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     """Iterador optimizado que filtra una lista de rutas evitando normalizaciones redundantes."""
     results = []
     for p in paths:
-        if p is None: continue
-        try:
-            results.append(ensure_safe_to_modify(p, allow_sensitive=allow_sensitive))
-        except (UnsafePathError, ValueError, TypeError, OSError):
-            continue
+        if p is not None and is_safe_to_modify(p, allow_sensitive=allow_sensitive):
+            try:
+                results.append(normalize(p))
+            except (ValueError, TypeError, OSError):
+                continue
     return results
 
 

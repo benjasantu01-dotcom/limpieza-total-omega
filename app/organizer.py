@@ -316,9 +316,10 @@ def _should_scan_directory(entry: os.DirEntry) -> bool:
 def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
     """Analiza una entrada individual y la añade a la lista si es basura válida."""
     try:
-        if entry.is_file(follow_symlinks=False) and is_valid_junk_extension(entry.name):
+        # Usamos entry.is_file() que ya fue verificado por scandir, evitando stat adicional
+        if is_valid_junk_extension(entry.name):
             info = entry.stat()
-            # Solo incluir archivos con contenido, excluyendo bloqueados
+            # Excluir vacíos y bloqueados
             if info.st_size > 0 and not _is_file_locked(Path(entry.path)):
                 found.append(JunkFile(Path(entry.path), info.st_size, datetime.fromtimestamp(info.st_mtime)))
     except (OSError, PermissionError):
@@ -341,7 +342,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
                 if entry.is_dir(follow_symlinks=False):
                     if _should_scan_directory(entry):
                         _process_directory(Path(entry.path), found, depth + 1)
-                else:
+                elif entry.is_file(follow_symlinks=False):
                     _evaluate_entry(entry, found)
     except (OSError, PermissionError, RuntimeError):
         pass

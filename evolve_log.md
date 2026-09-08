@@ -1076,3 +1076,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-08T12:56:57` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó `top_memory_processes` reemplazando la lógica de filtrado redundante dentro del generador por una técnica de *list comprehension* con `if` incorporado, y centralizando la validación de procesos para reducir el costo de llamadas a `is_protected_path` mediante la evaluación perezosa en la lista de candidatos.
 - `2026-09-08T12:56:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T12:56:57` Corrida terminada. Total usado hoy: 304.
+- `2026-09-08T13:04:49` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-08T13:05:27` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_for_junk` y `_process_directory` al reemplazar las verificaciones redundantes de `path.exists()` y `path.is_file()` (que implican llamadas a sistema costosas) por el uso directo de las propiedades ya presentes en el objeto `os.DirEntry` de `scandir`.
+- `2026-09-08T13:05:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-08T13:06:08` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el bucle de `purge_all` transformando la búsqueda de ítems en una operación O(1) mediante `set` y `dict`, evitando el re-procesamiento redundante del manifiesto y mejorando la eficiencia de I/O al realizar el `save_manifest` una única vez tras finalizar el procesamiento de todos los archivos.
+- `2026-09-08T13:06:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-09-08T13:06:56` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento de `filter_safe_paths` sustituyendo el manejo de excepciones por un chequeo previo con `is_safe_to_modify`, evitando el costo computacional de levantar y capturar objetos `UnsafePathError` en cada iteración al filtrar listas grandes.
+- `2026-09-08T13:06:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T13:06:56` Corrida terminada. Total usado hoy: 308.

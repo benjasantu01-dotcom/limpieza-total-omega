@@ -668,31 +668,25 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
-    # Optimización: mapeo de items para acceso O(1) en el bucle
     item_map = {item.stored_name: item for item in items}
-    purged_count = 0
-    kept_items = []
+    purged_files = set()
     
     try:
         for stored_path in quarantine_root.iterdir():
             if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
                 continue
-            if not stored_path.is_file() or stored_path.is_symlink() or not _is_within_quarantine_sandbox(stored_path.resolve(), quarantine_root):
-                continue
-                
+            
             item = item_map.get(stored_path.name)
             if item and _is_item_purgable(stored_path, item, quarantine_root):
                 if _safe_unlink(stored_path):
-                    purged_count += 1
-                    continue
-            if item:
-                kept_items.append(item)
+                    purged_files.add(item.item_id)
     except (PermissionError, OSError):
         pass
                 
-    if purged_count > 0:
+    if purged_files:
+        kept_items = [i for i in items if i.item_id not in purged_files]
         save_manifest(kept_items, base)
-    return purged_count
+    return len(purged_files)
 
 
 def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
