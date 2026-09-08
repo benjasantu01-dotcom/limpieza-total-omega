@@ -148,23 +148,24 @@ class Scanner:
             entry: Objeto DirEntry de la entrada actual.
             directory_stack: Stack mutable de rutas de directorios pendientes.
         """
-        if not self._is_safe_entry(entry):
-            return
-        
         try:
             is_dir = entry.is_dir(follow_symlinks=False)
             
             if is_dir:
+                if not self._is_safe_entry(entry):
+                    return
                 if not self._is_reparse_point(entry):
                     self._handle_directory(entry, directory_stack)
                 return
 
+            # Optimización: Filtrado rápido por extensión antes de validación de seguridad pesada
             name = entry.name
             ext_idx = name.rfind('.')
             if ext_idx != -1:
                 ext_low = name[ext_idx:].lower()
                 if ext_low in SUSPICIOUS_ALL_EXTS:
-                    self._run_file_heuristics(Path(entry.path), entry, ext_low)
+                    if self._is_safe_entry(entry):
+                        self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, FileNotFoundError) as e:
             logger.debug(f"Error accediendo a la entrada {entry.path}: {e}")
             return
