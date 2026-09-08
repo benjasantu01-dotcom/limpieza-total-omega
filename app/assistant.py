@@ -509,7 +509,10 @@ def _sanitize_query(question: str) -> str:
     if not isinstance(question, str): return ""
     clean = _CONTROL_CHARS_REGEX.sub(' ', question)
     clean = _PATH_INJECTION_REGEX.sub(' ', clean)
-    return clean.strip()[:100].lower()
+    clean = clean.strip()[:100].lower()
+    # Bloqueo preventivo de rutas sensibles introducidas en el texto
+    if is_protected_path(clean): return ""
+    return clean
 
 def local_answer(question: str, context: SystemContext) -> Answer:
     """Motor de inferencia local: redirige a la respuesta adecuada."""

@@ -137,7 +137,6 @@ class Scanner:
             return
         
         try:
-            # Identificamos tipo primero de forma segura sin seguir symlinks
             is_dir = entry.is_dir(follow_symlinks=False)
             
             if is_dir:
@@ -181,14 +180,14 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if directory is None or (isinstance(directory, str) and not directory.strip()):
         return []
-    if not isinstance(directory, (str, Path)):
-        return []
-        
+    
     try:
         base_path = Path(directory)
-        if not base_path.exists(): return []
+        if not base_path.exists() or not base_path.is_dir(): 
+            return []
+        
         root_input = base_path.resolve(strict=False)
-        if not root_input.is_dir() or str(root_input).startswith(("\\\\", "//")) or is_protected_path(root_input):
+        if str(root_input).startswith(("\\\\", "//")) or is_protected_path(root_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError, PermissionError):
         return []

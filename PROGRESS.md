@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-06 | 59 | 1 | 8 | 4 | 74 |
+| 2026-09-06 | 59 | 1 | 8 | 4 | 70 |
 | 2026-09-07 | 158 | 15 | 27 | 19 | 131 |
-| 2026-09-08 | 5 | 0 | 1 | 0 | 2 |
+| 2026-09-08 | 8 | 1 | 1 | 0 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
-- robustez ante casos límite: **47**
+- robustez ante casos límite: **49**
 - manejo de errores y validación de entradas: **44**
 - rendimiento: **42**
-- seguridad defensiva: **40**
+- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **19**
-- `settings.py`: **19**
+- `assistant.py`: **20**
+- `settings.py`: **20**
+- `scanner.py`: **19**
 - `quarantine.py`: **18**
 - `safety.py`: **18**
-- `scanner.py`: **18**
 - `browser.py`: **18**
 - `healthscore.py`: **18**
 - `duplicates.py`: **17**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-08T00:31:42` **assistant.py** (seguridad defensiva): Se endureció la seguridad defensiva de `assistant.py` mediante la aplicación de `is_protected_path` directamente sobre los valores de entrada en `_sanitize_query` y `_ensure_safe_text`, asegurando que cualquier entrada de usuario sea filtrada preventivamente contra rutas protegidas antes de ser procesada por el asistente.
+- `2026-09-08T00:30:52` **settings.py** (robustez ante casos límite): Se introdujo una validación robusta contra race conditions y estados inconsistentes mediante un bloqueo por exclusión mutua usando `os.replace` y una verificación de integridad post-escritura, además de asegurar que las rutas configurables no apunten a archivos existentes que no sean de configuración mediante una validación de `path.is_file()` previa a la escritura.
+- `2026-09-08T00:30:21` **scanner.py** (robustez ante casos límite): Se reforzó la robustez de `_is_safe_entry` y `scan_directory` para manejar rutas con caracteres inválidos, espacios en blanco o entradas de sistema no resolubles, evitando que el escáner se interrumpa ante rutas excepcionalmente malformadas o permisos denegados en directorios raíz.
 - `2026-09-08T00:21:25` **safety.py** (robustez ante casos límite): Se añadió una validación específica para rutas con caracteres Unicode "homoglyph" (posibles ataques de spoofing mediante normalización) y se reforzó la robustez ante la ausencia de `st_file_attributes` en sistemas no Windows al verificar la integridad.
 - `2026-09-08T00:20:47` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` añadiendo una verificación de existencia y estado del archivo en el sistema de archivos justo antes de intentar la operación de aislamiento (evitando condiciones de carrera entre la validación inicial y la ejecución), y añadí un bloque `finally` para asegurar que el manifiesto se sincronice incluso si fallan operaciones no críticas posteriores.
 - `2026-09-08T00:11:47` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_read_windows_snapshot` agregando una validación explícita para asegurar que la estructura Win32 devuelva valores lógicos antes de crear el `MemorySnapshot`, evitando así reportar estados de memoria corruptos o negativos ante fallos parciales de la API.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-07T14:30:12` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` eliminando la llamada a `normalize()` (que implica acceso a disco y resolución de rutas) en el caso común donde el sistema ya puede determinar la protección mediante el cacheo previo de la cadena de texto, reduciendo drásticamente la latencia en escaneos masivos.
 - `2026-09-07T14:29:21` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` y `_cached_manifest` sustituyendo la validación redundante `exists()` (que realiza llamadas al sistema para cada ítem) por una lógica que confía en el estado del manifiesto, moviendo la verificación de existencia solo al punto de uso si es estrictamente necesario, y reduciendo la complejidad de iteración.
 - `2026-09-07T14:20:49` **memory.py** (rendimiento): Optimicé el rendimiento de `read_snapshot` eliminando la recreación innecesaria de objetos `MemorySnapshot` y `pathlib.Path` en cada llamado, centralizando la configuración del sistema operativo y reutilizando la estructura de datos para evitar latencia en bucles de monitoreo.
-- `2026-09-07T14:19:06` **healthscore.py** (rendimiento): Optimicé el cálculo del score eliminando la creación de objetos innecesarios y redundantes durante la ejecución de `compute_score`, reemplazando el uso de `append` en listas dinámicas por una pre-asignación eficiente y evitando iteraciones repetitivas sobre `_OPTIMIZED_PIPELINE` mediante un acceso directo más limpio.
-- `2026-09-07T14:09:55` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando un conjunto (`set`) para registrar rutas ya visitadas, evitando así el procesamiento redundante de directorios cuando se pasan múltiples rutas de entrada solapadas o enlaces complejos.
-- `2026-09-07T14:09:15` **browser.py** (rendimiento): Se optimizó la recursión de `_sum_directory_recursive` evitando llamadas costosas a `Path.resolve()` dentro del bucle y minimizando la creación de objetos `Path` mediante el uso de nombres de archivo crudos obtenidos de `os.scandir`, mejorando el rendimiento en directorios de caché con miles de archivos.

@@ -317,6 +317,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         ):
             cleaned_settings["asistente_activado"] = False
         if is_protected_path(ruta_str) or not is_safe_to_modify(ruta_str): return None
+        if ruta.exists() and not ruta.is_file(): return None
         parent = ruta.parent
         if is_protected_path(str(parent)) or not is_safe_to_modify(str(parent)): return None
         if not parent.exists():
@@ -326,7 +327,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         usage = shutil.disk_usage(parent)
         if usage.free < 1024 * 1024: return None
         
-        # Validar serialización antes de escribir
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None
         

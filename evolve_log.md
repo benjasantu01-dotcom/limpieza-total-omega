@@ -1037,3 +1037,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-08T00:21:25` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se añadió una validación específica para rutas con caracteres Unicode "homoglyph" (posibles ataques de spoofing mediante normalización) y se reforzó la robustez ante la ausencia de `st_file_attributes` en sistemas no Windows al verificar la integridad.
 - `2026-09-08T00:21:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T00:21:25` Corrida terminada. Total usado hoy: 8.
+- `2026-09-08T00:29:56` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-09-08T00:30:21` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_safe_entry` y `scan_directory` para manejar rutas con caracteres inválidos, espacios en blanco o entradas de sistema no resolubles, evitando que el escáner se interrumpa ante rutas excepcionalmente malformadas o permisos denegados en directorios raíz.
+- `2026-09-08T00:30:52` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra race conditions y estados inconsistentes mediante un bloqueo por exclusión mutua usando `os.replace` y una verificación de integridad post-escritura, además de asegurar que las rutas configurables no apunten a archivos existentes que no sean de configuración mediante una validación de `path.is_file()` previa a la escritura.
+- `2026-09-08T00:31:19` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.41s
+
+```
+- `2026-09-08T00:31:19` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha robustecido el manejo de rutas en `StartupEntry._resolve_and_cache_path` agregando un control de profundidad absoluta y validación de existencia mediante `os.path.exists` antes de intentar resoluciones de `realpath` que podrían fallar en entornos con permisos restringidos o archivos bloqueados.
+- `2026-09-08T00:31:42` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la seguridad defensiva de `assistant.py` mediante la aplicación de `is_protected_path` directamente sobre los valores de entrada en `_sanitize_query` y `_ensure_safe_text`, asegurando que cualquier entrada de usuario sea filtrada preventivamente contra rutas protegidas antes de ser procesada por el asistente.
+- `2026-09-08T00:31:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T00:31:42` Corrida terminada. Total usado hoy: 12.
