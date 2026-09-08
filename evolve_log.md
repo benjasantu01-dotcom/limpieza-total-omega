@@ -1570,3 +1570,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-08T05:18:02` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad defensiva de `memory.py` introduciendo un filtrado de rutas mediante `is_safe_to_modify` en el generador de procesos, asegurando que cualquier proceso listado en la interfaz no solo sea validado como "no crítico", sino también verificado contra políticas de modificación antes de ser procesado por la UI.
 - `2026-09-08T05:18:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T05:18:02` Corrida terminada. Total usado hoy: 124.
+- `2026-09-08T05:25:59` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-09-08T05:26:29` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-08T05:27:06` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `purge_all` y `quarantine_file` implementando una validación estricta de que el archivo a borrar o procesar no sea un enlace simbólico, reforzando la protección contra ataques de redirección de archivos fuera del sandbox.
+- `2026-09-08T05:27:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-08T05:27:39` ➖ Sin cambios en safety.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado `ensure_safe_to_modify` para verificar explícitamente si el directorio padre de un archivo inexistente reside en una ruta protegida antes de intentar cualquier operación, evitando posibles intentos de escritura en carpetas de sistema protegidas por nombre.
+- `2026-09-08T05:27:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T05:27:39` Corrida terminada. Total usado hoy: 128.

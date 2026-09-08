@@ -189,15 +189,14 @@ def _safe_unlink(path: Path) -> bool:
     """
     if not isinstance(path, Path) or not path.exists() or not path.is_file():
         return False
+    # Rechazo estricto de enlaces simbólicos en operaciones de eliminación
     if path.is_symlink():
         return False
         
     try:
         st = path.stat()
-        # Verificación de propiedad (UID) disponible en entornos POSIX
         if hasattr(os, 'getuid') and st.st_uid != os.getuid():
             return False
-        # Prevenir borrado si el archivo tiene múltiples hardlinks
         if st.st_nlink > 1:
             return False
             
@@ -302,16 +301,14 @@ def _check_path_syntax_integrity(path: Path) -> None:
     if ".." in path.parts or any(c in str(path.name) for c in "<>\"|?*"):
         raise UnsafePathError("Ruta con caracteres prohibidos o navegación inválida.")
     
-    # Detección de TOCTOU: Validar que el archivo resuelto no sea un enlace simbólico/reparse
     try:
         resolved = path.resolve(strict=True)
         if resolved.is_symlink():
             raise UnsafePathError("Operación denegada: el archivo es un enlace simbólico.")
-        # Verificación específica para Windows Junctions/Reparse Points
         if hasattr(resolved, 'is_junction') and resolved.is_junction():
             raise UnsafePathError("Operación denegada: el archivo es un punto de reparse.")
     except (OSError, RuntimeError):
-        pass # La existencia se verifica en otras capas, aquí validamos la estructura
+        pass
 
 
 def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
@@ -321,6 +318,8 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     
     if not resolved_source.is_file():
         raise UnsafePathError("Solo se permiten archivos regulares para aislamiento.")
+    if resolved_source.is_symlink():
+        raise UnsafePathError("Aislamiento de enlaces simbólicos prohibido.")
     if resolved_source.stat().st_size == 0:
         raise UnsafePathError("Operación denegada: archivos vacíos prohibidos.")
     if resolved_source.parent == resolved_dest_dir:
@@ -426,7 +425,6 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
 
         os.replace(temp_path, target_path)
         
-        # Sincronización del directorio para persistencia de metadatos en file system
         dir_fd = os.open(str(base_path), os.O_RDONLY)
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)
@@ -516,8 +514,9 @@ def quarantine_file(
     source_path = Path(source).expanduser().resolve(strict=True)
     if source_path.is_dir():
         raise UnsafePathError("Aislamiento de directorios no permitido.")
+    if source_path.is_symlink():
+        raise UnsafePathError("No se permite aislar enlaces simbólicos.")
     
-    # Verificación de existencia pre-operativa (evita race conditions)
     if not source_path.is_file():
         raise FileNotFoundError("El archivo origen ha desaparecido antes de la operación.")
         
@@ -551,25 +550,21 @@ def quarantine_file(
             try:
                 source_path.unlink()
             except OSError as e:
-                # Si no podemos borrar, revertimos el aislamiento
                 _safe_unlink(destination)
                 raise RuntimeError(f"No se pudo eliminar el original tras aislamiento: {e}")
             return quarantine_item
         else:
             raise RuntimeError("Fallo de integridad post-persistencia.")
     except Exception:
-        # Revertir aislamiento si algo falló en la lógica de persistencia
         if destination.exists():
             _safe_unlink(destination)
         raise
     finally:
-        # Asegurar integridad del manifiesto incluso si el post-aislamiento falla
         try: load_manifest(dest_dir, force_reload=True)
         except: pass
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna lista de ítems ordenados por fecha de aislamiento (más reciente primero)."""
-    # Filtramos la existencia física solo al listar, para optimizar el rendimiento general
     base_path = quarantine_dir(base)
     return [
         i for i in sorted(load_manifest(base), key=lambda x: x.quarantined_at, reverse=True)
@@ -594,7 +589,6 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     if not stored_file.exists() or not quarantine_item.verify_integrity(stored_file):
         raise RuntimeError("Integridad comprometida: archivo no hallado o corrompido.")
     
-    # Validación estricta de la ruta destino para prevenir path traversal
     destination = Path(quarantine_item.original_path).resolve()
     _check_path_syntax_integrity(destination)
     if is_protected_path(destination):
@@ -652,7 +646,8 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
     """
     Verifica si un ítem cumple los requisitos para purga automática (seguridad).
     """
-    if not file_path or not file_path.is_file() or not _is_within_quarantine_sandbox(file_path, base_path):
+    # Verificación extra contra Symlinks para evitar borrado fuera del sandbox
+    if not file_path or not file_path.is_file() or file_path.is_symlink() or not _is_within_quarantine_sandbox(file_path, base_path):
         return False
     
     if not is_safe_to_modify(file_path):
@@ -677,7 +672,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         for stored_path in quarantine_root.iterdir():
             if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
                 continue
-            if not stored_path.is_file() or not _is_within_quarantine_sandbox(stored_path.resolve(), quarantine_root):
+            # Aseguramos que solo tratamos con archivos y no enlaces simbólicos
+            if not stored_path.is_file() or stored_path.is_symlink() or not _is_within_quarantine_sandbox(stored_path.resolve(), quarantine_root):
                 continue
                 
             item = item_map.get(stored_path.name)
