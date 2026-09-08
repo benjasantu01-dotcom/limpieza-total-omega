@@ -175,8 +175,8 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None:
         return None
     try:
-        p = Path(os.fspath(mount)).resolve()
-        if p.exists() and p.is_dir() and not is_protected_path(p) and os.access(p, os.R_OK):
+        p = Path(os.fspath(mount)).resolve(strict=True)
+        if p.is_dir() and not is_protected_path(p) and os.access(p, os.R_OK):
             usage = shutil.disk_usage(p)
             return DriveUsage(str(p), usage.total, usage.used, usage.free)
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError):
@@ -207,10 +207,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         if _is_excluded_path(entry): continue
                         
-                        # Validar nombre del archivo para evitar errores de encoding
                         _ = os.fsdecode(entry.name)
+                        entry_path = Path(entry.path).resolve()
                         
-                        entry_path = Path(entry.path)
+                        # Defensivo: asegurar que el objeto no haya escapado del root
+                        if not str(entry_path).startswith(str(root_path)): continue
+                        
                         if skip_protected and is_protected_path(entry_path): continue
                         
                         if entry.is_dir(follow_symlinks=False):

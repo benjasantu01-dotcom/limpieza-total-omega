@@ -197,7 +197,8 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
     """Validación holística de seguridad para una ruta antes de recorrerla."""
     try:
-        if not isinstance(path_obj, Path) or not path_obj.is_absolute() or len(str(path_obj)) >= MAX_PATH_LEN:
+        p_str = str(path_obj)
+        if not isinstance(path_obj, Path) or not path_obj.is_absolute() or len(p_str) >= MAX_PATH_LEN or any(c in p_str for c in '<>|?"*') or '\0' in p_str:
             return False
         real_p = path_obj.resolve(strict=True)
         if not is_safe_to_modify(real_p) or is_protected_path(real_p):
@@ -218,7 +219,7 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """Recorre el sistema de archivos limitando profundidad y usando cache de memoización."""
-    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or depth < 0 or len(root_abs) >= MAX_PATH_LEN:
+    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or depth < 0 or len(root_abs) >= MAX_PATH_LEN or any(c in root_abs for c in '<>|?"*') or '\0' in root_abs:
         return 0
     
     if root_abs in memo:
@@ -268,10 +269,11 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """Verifica que la carpeta sea una ubicación de caché legítima."""
-    if not isinstance(candidate, Path) or not isinstance(base_path, Path) or not candidate.is_absolute():
+    c_str = str(candidate)
+    if not isinstance(candidate, Path) or not isinstance(base_path, Path) or not candidate.is_absolute() or any(c in c_str for c in '<>|?"*') or '\0' in c_str:
         return False
     try:
-        if not candidate.exists() or len(str(candidate)) >= MAX_PATH_LEN:
+        if not candidate.exists() or len(c_str) >= MAX_PATH_LEN:
             return False
         real_candidate = candidate.resolve(strict=True)
         if not is_safe_to_modify(real_candidate) or is_protected_path(real_candidate):
