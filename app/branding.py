@@ -326,7 +326,7 @@ def logo_svg(size: int = 128) -> str:
         '  <path d="M64 18 L100 31 V67 C100 90 83 104 64 110 C45 104 28 90 28 67 V31 Z" fill="url(#omegaShield)"/>',
         f'  <path d="M41 75 L75 41" stroke="{C_BACKGROUND}" stroke-width="8" stroke-linecap="round"/>',
         f'  <path d="M75 41 L89 38 L92 52 Z" fill="{C_BACKGROUND}"/>',
-        f'  <text x="64" y="98" font-family="{UI_FONT_FAMILY}" font-size="26" font-weight="{UI_FONT_BOLD}" fill="{C_BACKGROUND}" text-anchor="middle">&#937;</text>',
+        '  <text x="64" y="98" font-family="{UI_FONT_FAMILY}" font-size="26" font-weight="{UI_FONT_BOLD}" fill="{C_BACKGROUND}" text-anchor="middle">&#937;</text>',
         '</svg>'
     ]
     return "\n".join(parts)
@@ -346,7 +346,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
             return None
             
         ensure_safe_to_modify(path_raw)
-        path_raw.parent.mkdir(parents=True, exist_ok=True)
+        if not path_raw.parent.exists():
+            path_raw.parent.mkdir(parents=True, exist_ok=True)
         path_raw.write_text(logo_svg(), encoding="utf-8")
         return path_raw
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError): 

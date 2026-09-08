@@ -307,10 +307,15 @@ class Answer:
     def is_online(self) -> bool:
         return self.source == "gemini"
 
+def _is_restricted_content(text: str) -> bool:
+    """Verifica si el texto sugiere intentos de manipulación o inyección."""
+    restricted_patterns = [r"exec", r"eval", r"subprocess", r"system\s*\(", r"rm\s+", r"del\s+"]
+    return any(re.search(p, text, re.IGNORECASE) for p in restricted_patterns)
+
 def _is_safe_text_structure(text: str) -> bool:
     """Verifica si un texto contiene patrones de inyección o rutas sensibles."""
     if not text: return True
-    if _PATH_INJECTION_REGEX.search(text) or is_protected_path(text):
+    if _PATH_INJECTION_REGEX.search(text) or is_protected_path(text) or _is_restricted_content(text):
         return False
     return True
 
@@ -609,7 +614,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             clean = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             final = _validate_response_length(clean)
             
-            # Verificación estricta: si la IA intenta retornar una ruta, se descarta
+            # Verificación estricta: si la IA intenta retornar una ruta o comando, se descarta
             if _ensure_safe_text(final) and _is_safe_text_structure(final):
                 return final
             return None
