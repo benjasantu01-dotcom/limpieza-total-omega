@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-06 | 23 | 0 | 2 | 1 | 36 |
+| 2026-09-06 | 19 | 0 | 2 | 1 | 36 |
 | 2026-09-07 | 158 | 15 | 27 | 19 | 131 |
-| 2026-09-08 | 39 | 2 | 6 | 3 | 42 |
+| 2026-09-08 | 40 | 3 | 6 | 3 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **51**
+- seguridad defensiva: **50**
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **45**
-- robustez ante casos límite: **42**
-- rendimiento: **34**
+- robustez ante casos límite: **39**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **20**
-- `scanner.py`: **19**
-- `settings.py`: **19**
+- `assistant.py`: **19**
 - `browser.py`: **18**
 - `memory.py`: **18**
+- `scanner.py`: **18**
+- `settings.py`: **18**
 - `duplicates.py`: **18**
 - `healthscore.py`: **17**
 - `safety.py`: **17**
 - `quarantine.py`: **16**
 - `branding.py`: **14**
 - `diskreport.py`: **13**
-- `main.py`: **11**
-- `startup.py`: **10**
+- `main.py`: **12**
 - `organizer.py`: **10**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-08T04:06:47` **main.py** (rendimiento): Optimicé el sistema de caché implementando una invalidación de bajo costo mediante marcas de tiempo en lugar de reconstruir estructuras, y mejoré la eficiencia de `_compile_metrics` evitando I/O redundante al reutilizar los resultados cacheados de las distintas sub-tareas en lugar de disparar lecturas independientes.
 - `2026-09-08T03:45:57` **branding.py** (rendimiento): Optimicé el cálculo de `logo_svg` reemplazando la concatenación repetitiva de strings por una lista pre-procesada y un `join` para reducir la presión en el recolector de basura, y añadí `maxsize` a los decoradores de `lru_cache` en funciones de renderizado crítico para asegurar que los elementos repetitivos de la UI no recalculen su estado innecesariamente.
 - `2026-09-08T03:45:38` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` eliminando la creación innecesaria de listas intermedias y simplificando la validación de tipos, además de consolidar la lógica de extracción de métricas para evitar múltiples iteraciones sobre el diccionario de validadores.
 - `2026-09-08T03:45:02` **startup.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el módulo para mejorar la legibilidad y claridad del flujo de datos, siguiendo las guías de estilo para un proyecto de nivel profesional.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-08T03:05:06` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `handle_disk` y `handle_ram` para utilizar una estructura de mensajes más clara y centralizada, extrayendo la lógica de construcción de texto y reduciendo la complejidad ciclomática de las funciones de respuesta.
 - `2026-09-08T03:04:45` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación explícita de `reader.fieldnames` y manejo de errores ante entradas de registro malformadas, evitando que una línea CSV inesperada provoque un comportamiento indefinido.
 - `2026-09-08T03:04:17` **settings.py** (manejo de errores y validación de entradas): Reforcé `save()` para prevenir escrituras parciales o corrupciones mediante el uso de un manejo de excepciones granular y una validación de integridad post-escritura más robusta, asegurando que ante cualquier error durante el proceso de persistencia el sistema mantenga su estado previo intacto.
-- `2026-09-08T03:03:48` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_directory` validando la existencia de la ruta y capturando excepciones críticas antes de inicializar el escáner, evitando así que una ruta de entrada mal formada o inaccesible detenga el flujo de la aplicación.

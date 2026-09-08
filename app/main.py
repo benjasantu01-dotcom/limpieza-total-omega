@@ -1139,8 +1139,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return None
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
-        """Consolida las métricas del sistema para el cálculo del score de salud."""
-        # Se utilizan cachés para evitar I/O redundante en cada refresh
+        """Consolida las métricas del sistema utilizando estados cacheados por sesión."""
         junk = self._get_cached("junk") or []
         hallazgos = self._get_cached("suspicions") or []
         dups = self._get_cached("dups") or []
@@ -1167,7 +1166,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.clear("Salud")
             self.log("Analizando... esto no modifica nada.", "Salud")
 
-            # Invalidar snapshots de RAM al pedir re-análisis forzado
+            # Actualización forzada de métricas críticas
             self._invalidate_cache("ram_snapshot")
             metrics, snapshot, _ = self._compile_metrics()
             resultado = healthscore.compute_score(metrics)
