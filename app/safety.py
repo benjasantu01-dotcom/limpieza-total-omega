@@ -211,12 +211,14 @@ def _is_file_in_use(path_str: str) -> bool:
         return False
     try:
         kernel32 = ctypes.windll.kernel32
-        handle = kernel32.CreateFileW(path_str, 0x80000000, 0x00000000, None, 3, 0x00000080, None)
+        # GENERIC_READ = 0x80000000, OPEN_EXISTING = 3, FILE_SHARE_READ = 0x00000001
+        # Intentar abrir sin compartir para testear exclusividad
+        handle = kernel32.CreateFileW(path_str, 0x80000000, 0, None, 3, 0x00000080, None)
         if handle == -1 or handle == 0xFFFFFFFF: 
             return True
         kernel32.CloseHandle(handle)
         return False
-    except (AttributeError, OSError, PermissionError, TypeError, ctypes.ArgumentError):
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         return True
 
 
@@ -250,12 +252,15 @@ def _check_file_integrity(path: Path) -> None:
         if isinstance(e, FileNotFoundError):
             return
         code = SafetyValidationErrorCode.ACCESS_DENIED if isinstance(e, PermissionError) else SafetyValidationErrorCode.IO_ERROR
-        raise UnsafePathError(f"Error de acceso en {path}: {e}", code)
+        raise UnsafePathError(f"Error de acceso en {path}", code)
         
     for rule in _VALIDATORS:
-        if rule.predicate(path, file_stat):
-            code = SafetyValidationErrorCode.HARD_LINK_DETECTED if rule.reason == ProtectionReason.HARD_LINK else SafetyValidationErrorCode.GENERIC
-            raise UnsafePathError(f"Violación de integridad ({rule.reason.value}) en {path}", code)
+        try:
+            if rule.predicate(path, file_stat):
+                code = SafetyValidationErrorCode.HARD_LINK_DETECTED if rule.reason == ProtectionReason.HARD_LINK else SafetyValidationErrorCode.GENERIC
+                raise UnsafePathError(f"Violación de integridad ({rule.reason.value})", code)
+        except (AttributeError, OSError):
+            continue
 
 
 @lru_cache(maxsize=2048)
@@ -274,7 +279,6 @@ def normalize(path: PathLike) -> Path:
     path_str = str(path).strip()
     if not path_str: raise ValueError("Entrada de ruta vacía.")
     
-    # Detección de posibles ataques de normalización Unicode (homoglyphs)
     if unicodedata.normalize('NFKC', path_str) != path_str:
          raise ValueError("Ruta contiene secuencias Unicode sospechosas.")
         
@@ -370,7 +374,6 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     for part in target_path.parts:
         if not part or part.strip() != part:
             raise UnsafePathError("Componente vacío o malformado.", SafetyValidationErrorCode.INVALID_CHARS)
-        # Limpieza profunda de nombres: split por punto para ignorar extensiones en el chequeo de dispositivos
         name_only = part.split('.')[0]
         if _is_reserved_device_name(name_only):
             raise UnsafePathError(f"Nombre reservado '{part}'.", SafetyValidationErrorCode.RESERVED_NAME)

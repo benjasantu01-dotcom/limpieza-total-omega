@@ -1313,3 +1313,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-08T02:46:34` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la lógica de análisis de procesos en `parse_windows_process_csv` añadiendo una validación explícita para asegurar que los parámetros de entrada sean procesables antes de intentar iterar sobre ellos, previniendo errores en caso de entradas malformadas o inesperadas.
 - `2026-09-08T02:46:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T02:46:34` Corrida terminada. Total usado hoy: 64.
+- `2026-09-08T02:53:07` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-09-08T02:53:39` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-08T02:54:17` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_sha256` y `_is_file_locked` mediante la captura de excepciones específicas y el cierre explícito de descriptores de archivo, evitando fugas de memoria o bloqueos persistentes en escenarios de errores de lectura.
+- `2026-09-08T02:54:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-09-08T02:55:20` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_check_file_integrity` y `_is_file_in_use` capturando excepciones más granulares y validando estados de retorno de `ctypes` para evitar errores de segmentación o comportamientos indefinidos al interactuar con el sistema de archivos.
+- `2026-09-08T02:55:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T02:55:20` Corrida terminada. Total usado hoy: 68.

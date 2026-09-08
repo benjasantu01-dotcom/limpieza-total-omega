@@ -156,7 +156,10 @@ def _get_sha256(path: Path) -> str:
     sha256_hash = hashlib.sha256()
     try:
         with open(path, "rb") as handle:
-            while chunk := handle.read(CHUNK_SIZE):
+            while True:
+                chunk = handle.read(CHUNK_SIZE)
+                if not chunk:
+                    break
                 sha256_hash.update(chunk)
     except (OSError, PermissionError, IOError):
         return ""
@@ -172,6 +175,8 @@ def _is_file_locked(path: Path) -> bool:
         return False
     try:
         with open(path, "r+b") as f:
+            f.flush()
+            os.fsync(f.fileno())
             return False
     except (PermissionError, IOError, OSError):
         return True
