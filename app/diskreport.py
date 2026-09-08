@@ -193,19 +193,17 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                 for entry in iterator:
                     try:
                         if _is_excluded_path(entry): continue
+                        entry_path = Path(entry.path)
+                        if skip_protected and is_protected_path(entry_path): continue
                         
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
                             if inode[0] != 0 and inode not in visited_inodes:
-                                entry_path = Path(entry.path)
-                                if not skip_protected or not is_protected_path(entry_path):
-                                    visited_inodes.add(inode)
-                                    stack.append(entry_path)
+                                visited_inodes.add(inode)
+                                stack.append(entry_path)
                         elif entry.is_file(follow_symlinks=False):
-                            entry_path = Path(entry.path)
-                            if not skip_protected or not is_protected_path(entry_path):
-                                yield entry_path, max(0, int(entry.stat().st_size))
+                            yield entry_path, max(0, int(entry.stat().st_size))
                     except (PermissionError, OSError, AttributeError):
                         continue
         except (PermissionError, OSError, FileNotFoundError):
@@ -260,6 +258,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
+        if skip_protected and is_protected_path(path): continue
         try:
             total_bytes += size
             total_files += 1

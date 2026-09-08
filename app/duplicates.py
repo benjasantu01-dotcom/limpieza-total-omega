@@ -192,17 +192,19 @@ def _collect_candidates(
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        path_entry = Path(entry.path)
+                        if skip_protected and is_protected_path(path_entry):
+                            continue
+                            
                         if entry.is_dir(follow_symlinks=False):
-                            if not is_junction(Path(entry.path)):
-                                _scan_directory_recursive(Path(entry.path))
+                            if not is_junction(path_entry):
+                                _scan_directory_recursive(path_entry)
                         elif entry.is_file(follow_symlinks=False):
-                            # Se aísla el acceso a los metadatos ante cambios en tiempo real
                             try:
                                 st = entry.stat(follow_symlinks=False)
                                 if st.st_size >= min_size:
-                                    path_obj = Path(entry.path)
-                                    if (not skip_protected or not is_protected_path(path_obj)) and _is_valid_candidate(path_obj):
-                                        size_map[st.st_size].append(path_obj)
+                                    if _is_valid_candidate(path_entry):
+                                        size_map[st.st_size].append(path_entry)
                             except (OSError, PermissionError):
                                 continue
                     except (OSError, PermissionError):

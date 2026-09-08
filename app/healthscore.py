@@ -153,23 +153,27 @@ class SystemMetrics:
     def __post_init__(self) -> None:
         """Valida y normaliza las métricas tras la inicialización."""
         for field_name in self.__dataclass_fields__:
-            val = getattr(self, field_name)
-            if val is None:
+            if getattr(self, field_name) is None:
                 setattr(self, field_name, 0.0)
         self.validate()
-        if not self.is_finite:
-            raise ValueError("Métricas de sistema contienen valores no finitos.")
 
     def validate(self) -> None:
         """Aplica normalización defensiva para asegurar integridad de datos."""
-        self.junk_mb = max(0.0, _to_float(self.junk_mb))
-        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
-        self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
-        self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings)))
-        self.startup_count = int(max(0, _to_float(self.startup_count)))
-        self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
-        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.1, 100.0)
-        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.1, 100.0)
+        sanitized = {
+            "junk_mb": max(0.0, _to_float(self.junk_mb)),
+            "duplicate_mb": max(0.0, _to_float(self.duplicate_mb)),
+            "suspicious_count": int(max(0, _to_float(self.suspicious_count))),
+            "suspicious_warnings": int(max(0, _to_float(self.suspicious_warnings))),
+            "startup_count": int(max(0, _to_float(self.startup_count))),
+            "quarantined_count": int(max(0, _to_float(self.quarantined_count))),
+            "memory_available_percent": _clamp(_to_float(self.memory_available_percent, 100.0), 0.1, 100.0),
+            "disk_free_percent": _clamp(_to_float(self.disk_free_percent, 100.0), 0.1, 100.0)
+        }
+        for key, val in sanitized.items():
+            setattr(self, key, val)
+        
+        if not self.is_finite:
+            raise ValueError("Métricas de sistema contienen valores no finitos.")
 
     @property
     def is_finite(self) -> bool:
