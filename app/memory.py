@@ -226,11 +226,12 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             clean_line = line.strip()
             if not clean_line: continue
             
+            parts = [p.strip().strip("'\"") for p in clean_line.split(",")]
+            # Validación de integridad de la estructura esperada
+            if len(parts) != 3 or not all(parts): 
+                continue
+            
             try:
-                parts = [p.strip().strip("'\"") for p in clean_line.split(",")]
-                if len(parts) != 3 or not all(parts): 
-                    continue
-                
                 proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
                 if proc: yield proc
             except (IndexError, ValueError):
