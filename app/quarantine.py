@@ -551,11 +551,17 @@ def quarantine_file(
             try:
                 source_path.unlink()
             except OSError as e:
+                # Si no podemos borrar, revertimos el aislamiento
                 _safe_unlink(destination)
                 raise RuntimeError(f"No se pudo eliminar el original tras aislamiento: {e}")
             return quarantine_item
         else:
             raise RuntimeError("Fallo de integridad post-persistencia.")
+    except Exception:
+        # Revertir aislamiento si algo falló en la lógica de persistencia
+        if destination.exists():
+            _safe_unlink(destination)
+        raise
     finally:
         # Asegurar integridad del manifiesto incluso si el post-aislamiento falla
         try: load_manifest(dest_dir, force_reload=True)

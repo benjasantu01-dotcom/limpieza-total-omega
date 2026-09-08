@@ -1470,3 +1470,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-08T04:39:01` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se mejora la robustez de `on_trim_process` y `on_stage` ante posibles errores de acceso a disco (como archivos bloqueados o denegados) capturando excepciones específicas dentro de los hilos de trabajo, asegurando que la UI no se bloquee permanentemente y proporcionando retroalimentación clara al usuario en lugar de simplemente fallar silenciosamente.
 - `2026-09-08T04:39:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T04:39:01` Corrida terminada. Total usado hoy: 108.
+- `2026-09-08T04:45:14` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-09-08T04:45:43` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-08T04:46:11` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-08T04:46:47` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` ante fallos durante el proceso de aislamiento, asegurando que el estado del manifiesto y la persistencia del archivo original sean consistentes mediante un bloque `try...finally` mejorado que revierte el archivo aislado si la actualización del manifiesto falla, evitando así estados "huérfanos".
+- `2026-09-08T04:46:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-08T04:46:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T04:46:51` Corrida terminada. Total usado hoy: 112.
