@@ -334,18 +334,21 @@ def _get_source_value(source: Any, key: str) -> Any:
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
-    Fabrica un objeto SystemContext, poblando las métricas desde diversas fuentes
-    e ignorando tipos de datos primitivos o no estructurados.
+    Fabrica un objeto SystemContext, poblando las métricas desde diversas fuentes.
+    Valida que el resultado final sea consistente e ignorando entradas no estructuradas.
     """
     ctx = SystemContext()
-    valid_sources = [s for s in [metrics, health, extra] 
-                     if isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str, int, float, bool, type))]
-    
+    # Identificar fuentes válidas evitando tipos primitivos que causarían excepciones
+    valid_sources = []
+    for s in [metrics, health, extra]:
+        if isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str, int, float, bool, type)):
+            valid_sources.append(s)
+            
     for src in valid_sources:
         try:
             if ctx.ingest(src):
                 ctx.analyzed = True
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             continue
     return ctx
 

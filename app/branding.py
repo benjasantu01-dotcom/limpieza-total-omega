@@ -262,24 +262,27 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
     """Genera una rampa de colores interpolada a través de múltiples puntos de control."""
-    n = max(1, int(steps))
-    if len(stops) < 2: return (stops[0],) * n
-    
-    rgb_stops = tuple(_hex_to_rgb(s) for s in stops)
-    tramos = len(stops) - 1
-    res = []
-    
-    for i in range(n):
-        pos = (i / (n - 1) * tramos) if n > 1 else 0
-        idx = min(int(pos), tramos - 1)
-        delta = pos - idx
-        s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
-        res.append(_rgb_to_hex((
-            int(s1[0] + (s2[0] - s1[0]) * delta),
-            int(s1[1] + (s2[1] - s1[1]) * delta),
-            int(s1[2] + (s2[2] - s1[2]) * delta)
-        )))
-    return tuple(res)
+    try:
+        n = max(1, int(steps))
+        if not stops or len(stops) < 2: return (stops[0] if stops else C_TEXT_MUTED,) * n
+        
+        rgb_stops = tuple(_hex_to_rgb(s) for s in stops)
+        tramos = len(stops) - 1
+        res = []
+        
+        for i in range(n):
+            pos = (i / (n - 1) * tramos) if n > 1 else 0
+            idx = min(int(pos), tramos - 1)
+            delta = pos - idx
+            s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
+            res.append(_rgb_to_hex((
+                int(s1[0] + (s2[0] - s1[0]) * delta),
+                int(s1[1] + (s2[1] - s1[1]) * delta),
+                int(s1[2] + (s2[2] - s1[2]) * delta)
+            )))
+        return tuple(res)
+    except (ValueError, TypeError, ZeroDivisionError):
+        return (C_TEXT_MUTED,) * max(1, int(steps))
 
 @lru_cache(maxsize=32)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, ...]:
@@ -300,7 +303,7 @@ def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, .
 def _get_shield_coords(s: float) -> Tuple[float, ...]:
     """Escala las coordenadas vectoriales base (128x128) del escudo corporativo."""
     base: Final[Tuple[float, ...]] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
-    return tuple(v * s for v in base)
+    return tuple(v * max(0.0, float(s)) for v in base)
 
 @lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
@@ -331,18 +334,17 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         if not raw_val or len(raw_val) > 1024: return None
         path_raw = Path(raw_val)
         
-        # Validación: normalización para detectar intentos de escape
+        # Validación de ruta y normalización para evitar escapes
         if not path_raw.name or path_raw.name in (".", ".."): return None
         path_obj = path_raw.resolve().absolute()
-        parent = path_obj.parent
         
-        if is_protected_path(path_obj) or is_protected_path(parent):
+        if is_protected_path(path_obj) or is_protected_path(path_obj.parent):
             return None
-        if not is_safe_to_modify(path_obj) or not is_safe_to_modify(parent):
+        if not is_safe_to_modify(path_obj) or not is_safe_to_modify(path_obj.parent):
             return None
             
         ensure_safe_to_modify(path_obj)
-        parent.mkdir(parents=True, exist_ok=True)
+        path_obj.parent.mkdir(parents=True, exist_ok=True)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError): 
@@ -369,9 +371,11 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Helper interno: dibuja elementos tipográficos e íconos sobre el escudo."""
-    canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, canvas_x + 75 * scale, canvas_y + 41 * scale, fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
-    canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, canvas_x + 89 * scale, canvas_y + 38 * scale, canvas_x + 92 * scale, canvas_y + 52 * scale, fill=C_BACKGROUND, outline="")
-    canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(UI_FONT_HEADER_SIZE * scale)), UI_FONT_BOLD))
+    try:
+        canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, canvas_x + 75 * scale, canvas_y + 41 * scale, fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
+        canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, canvas_x + 89 * scale, canvas_y + 38 * scale, canvas_x + 92 * scale, canvas_y + 52 * scale, fill=C_BACKGROUND, outline="")
+        canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(UI_FONT_HEADER_SIZE * scale)), UI_FONT_BOLD))
+    except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Renderiza el logo vectorial completo en un componente canvas dado."""

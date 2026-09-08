@@ -96,8 +96,9 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
     if os.name != 'nt' or not hasattr(ctypes, 'WinDLL'):
         return None
     try:
+        # Se requiere explícitamente el uso de WinDLL para interactuar con la API de Windows
         return ctypes.WinDLL('kernel32.dll', use_last_error=True)
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, AttributeError):
         return None
 
 
@@ -147,6 +148,9 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
     Solo operativo en entornos Windows con kernel32 disponible.
     """
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
+        return False
+    # Validamos explícitamente la presencia de la función antes de invocarla
+    if not hasattr(kernel32, 'GetFileAttributesW'):
         return False
     try:
         attrs: int = kernel32.GetFileAttributesW(entry_path)
