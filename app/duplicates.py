@@ -125,15 +125,14 @@ def _is_valid_candidate(path: Path) -> bool:
     if not isinstance(path, Path):
         return False
     try:
-        resolved = path.resolve(strict=False)
-        if not resolved.exists():
+        if not path.exists():
             return False
         return (
-            resolved.is_file() and 
-            not resolved.is_symlink() and
-            not is_protected_path(resolved) and 
-            os.access(resolved, os.R_OK) and
-            resolved.stat().st_nlink == 1
+            path.is_file() and 
+            not path.is_symlink() and
+            not is_protected_path(path) and 
+            os.access(path, os.R_OK) and
+            path.stat().st_nlink == 1
         )
     except (OSError, ValueError, TypeError):
         return False
@@ -146,16 +145,15 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         return groups
     
     for p in paths:
-        path_obj = Path(p) if isinstance(p, (str, Path)) else None
-        if path_obj:
-            resolved = path_obj.resolve(strict=False)
-            if _is_valid_candidate(resolved):
-                try:
-                    size = resolved.stat().st_size
-                    if size > 0:
-                        groups[size].append(resolved)
-                except (OSError, PermissionError):
-                    continue
+        if p is None: continue
+        path_obj = Path(p)
+        if _is_valid_candidate(path_obj):
+            try:
+                size = path_obj.stat().st_size
+                if size > 0:
+                    groups[size].append(path_obj)
+            except (OSError, PermissionError):
+                continue
     return groups
 
 
@@ -220,7 +218,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Agrupa una lista de rutas basándose en el valor devuelto por la función hash."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if (digest := hash_func(path)):
+        if path is not None and (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 

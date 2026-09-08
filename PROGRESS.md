@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 21
+- Rechazadas por guardia de seguridad: 35
+- Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 152 | 13 | 27 | 17 | 131 |
-| 2026-09-08 | 61 | 5 | 9 | 4 | 85 |
+| 2026-09-07 | 150 | 13 | 26 | 17 | 130 |
+| 2026-09-08 | 63 | 5 | 9 | 5 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **48**
 - seguridad defensiva: **48**
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **40**
+- manejo de errores y validación de entradas: **39**
 - rendimiento: **38**
-- manejo de errores y validación de entradas: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
+- `duplicates.py`: **19**
 - `settings.py`: **19**
-- `duplicates.py`: **18**
+- `healthscore.py`: **18**
 - `safety.py`: **18**
-- `quarantine.py`: **17**
-- `scanner.py`: **17**
 - `browser.py`: **17**
-- `healthscore.py`: **17**
+- `scanner.py`: **16**
 - `memory.py`: **16**
+- `quarantine.py`: **16**
 - `branding.py`: **13**
 - `main.py`: **12**
 - `diskreport.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-08T07:09:14` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` mediante la adición de un chequeo explícito de tipos y valores nulos en `__post_init__`, evitando que valores no válidos propaguen estados erróneos hacia el pipeline de cálculo.
+- `2026-09-08T07:08:46` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de cálculo de hash y los validadores de rutas añadiendo comprobaciones contra `None`, rutas vacías o errores de tipo, evitando que excepciones en el sistema de archivos detengan procesos críticos.
 - `2026-09-08T06:59:23` **assistant.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_extract_text_from_gemini_json` implementando una validación de seguridad más rigurosa para evitar errores de ejecución ante respuestas de API malformadas o inesperadas, además de reforzar la integridad del bucle de parseo en `ingest` mediante la validación explícita de `float` y `int` para prevenir inyecciones de tipos no deseados.
 - `2026-09-08T05:37:12` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` implementando una comprobación de integridad en la ruta base antes de cualquier operación de disco y garantizando que la creación de directorios sea atómica y segura mediante `ensure_safe_to_modify` para evitar escrituras en ubicaciones prohibidas.
 - `2026-09-08T05:27:06` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `purge_all` y `quarantine_file` implementando una validación estricta de que el archivo a borrar o procesar no sea un enlace simbólico, reforzando la protección contra ataques de redirección de archivos fuera del sandbox.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-08T04:55:59` **safety.py** (robustez ante casos límite): Se ha mejorado `_validate_structural_safety` para prevenir ataques de "drive-by download" o manipulación de rutas mediante la detección de puntos de reparse anidados y la validación estricta de componentes de ruta en Windows (evitando nombres terminados en puntos o espacios, los cuales son vectores de ofuscación de archivos).
 - `2026-09-08T04:46:47` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallos durante el proceso de aislamiento, asegurando que el estado del manifiesto y la persistencia del archivo original sean consistentes mediante un bloque `try...finally` mejorado que revierte el archivo aislado si la actualización del manifiesto falla, evitando así estados "huérfanos".
 - `2026-09-08T04:39:01` **main.py** (robustez ante casos límite): Se mejora la robustez de `on_trim_process` y `on_stage` ante posibles errores de acceso a disco (como archivos bloqueados o denegados) capturando excepciones específicas dentro de los hilos de trabajo, asegurando que la UI no se bloquee permanentemente y proporcionando retroalimentación clara al usuario en lugar de simplemente fallar silenciosamente.
-- `2026-09-08T04:38:00` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` al implementar un manejo defensivo ante `SystemMetrics` nulos o mal formados, garantizando que el pipeline de evaluación no colapse ante datos inconsistentes y proporcionando un estado de "Salud Desconocida" en lugar de fallos silenciosos.
-- `2026-09-08T04:36:00` **duplicates.py** (robustez ante casos límite): Se fortalece la robustez ante casos límite en `_collect_candidates` y `_is_valid_candidate` añadiendo validaciones explícitas contra archivos cuyo tamaño cambia o desaparece durante el escaneo (Race Conditions) mediante el uso de `try-except` encapsulados y validación de `stat` antes de la lectura.

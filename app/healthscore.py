@@ -152,6 +152,10 @@ class SystemMetrics:
 
     def __post_init__(self) -> None:
         """Valida y normaliza las métricas tras la inicialización."""
+        for field_name in self.__dataclass_fields__:
+            val = getattr(self, field_name)
+            if val is None:
+                setattr(self, field_name, 0.0)
         self.validate()
         if not self.is_finite:
             raise ValueError("Métricas de sistema contienen valores no finitos.")

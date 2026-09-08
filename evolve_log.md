@@ -549,3 +549,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-08T07:00:03` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-08T07:00:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T07:00:03` Corrida terminada. Total usado hoy: 164.
+- `2026-09-08T07:07:50` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-09-08T07:08:21` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-08T07:08:46` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de cálculo de hash y los validadores de rutas añadiendo comprobaciones contra `None`, rutas vacías o errores de tipo, evitando que excepciones en el sistema de archivos detengan procesos críticos.
+- `2026-09-08T07:09:14` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemMetrics` mediante la adición de un chequeo explícito de tipos y valores nulos en `__post_init__`, evitando que valores no válidos propaguen estados erróneos hacia el pipeline de cálculo.
+- `2026-09-08T07:10:09` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de los callbacks de la UI agregando un chequeo explícito de existencia de widgets (`winfo_exists()`) antes de cualquier manipulación, evitando excepciones por `TclError` cuando se dispara un `after` durante o inmediatamente después del cierre de la aplicación.
+- `2026-09-08T07:10:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T07:10:09` Corrida terminada. Total usado hoy: 168.
