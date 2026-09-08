@@ -591,3 +591,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-08T08:00:46` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejora de legibilidad mediante la refactorización de `_validate_structural_safety` y `_validate_boundary_conditions` para usar bloques de lógica más descriptivos y docstrings explicativos, facilitando el mantenimiento y auditoría de las reglas de seguridad.
 - `2026-09-08T08:00:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T08:00:46` Corrida terminada. Total usado hoy: 188.
+- `2026-09-08T08:09:04` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-09-08T08:09:31` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (especialmente en `directory_stack`), se añadieron docstrings detallados en métodos internos y se refactorizó la lógica de inicialización en `Scanner` para clarificar la distinción entre la raíz del escaneo y los estados de procesamiento.
+- `2026-09-08T08:10:00` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad del módulo `settings.py` mediante la implementación de `TypeAlias` explícitos y la adición de docstrings estructurados en funciones clave para clarificar el flujo de validación y persistencia.
+- `2026-09-08T08:10:28` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `StartupEntry` añadiendo type hints faltantes en los atributos y mejorando la precisión de los docstrings internos para reflejar claramente las restricciones de seguridad aplicadas.
+- `2026-09-08T08:10:52` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: rendimiento).
+- `2026-09-08T08:10:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T08:10:52` Corrida terminada. Total usado hoy: 192.

@@ -34,7 +34,7 @@ class Suspicion:
     severity: str
 
 # Alias para funciones de chequeo heurístico.
-# La firma espera la ruta, un objeto DirEntry opcional (para rendimiento) y el timestamp actual.
+# La firma espera la ruta, un objeto DirEntry opcional y el timestamp actual de la corrida.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 
 # Lista acumulativa de hallazgos durante el proceso de escaneo.
@@ -126,7 +126,7 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si un directorio es un punto de reparseo (Junction/Symlink) para evitar bucles."""
+        """Determina si una entrada es un punto de reparseo para evitar seguir Junctions o Symlinks."""
         try:
             if entry.is_symlink():
                 return True
@@ -135,13 +135,19 @@ class Scanner:
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """Registra directorios válidos en el stack para su procesamiento posterior."""
+        """Registra directorios no visitados en el stack para su procesamiento posterior."""
         if entry.path and entry.path not in self.seen:
             self.seen.add(entry.path)
             directory_stack.append(entry.path)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """Procesa una entrada del sistema de archivos, decidiendo si es una carpeta a explorar o un archivo a analizar."""
+        """
+        Analiza una entrada: si es directorio, lo encola; si es archivo, aplica heurísticas.
+        
+        Args:
+            entry: Objeto DirEntry de la entrada actual.
+            directory_stack: Stack mutable de rutas de directorios pendientes.
+        """
         if not self._is_safe_entry(entry):
             return
         
@@ -164,7 +170,7 @@ class Scanner:
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
-        """Ejecuta el conjunto completo de análisis sobre un archivo específico."""
+        """Delega la ejecución de reglas heurísticas al motor de escaneo de archivos."""
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:

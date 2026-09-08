@@ -37,6 +37,7 @@ from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar
 from safety import is_safe_to_modify, is_protected_path
 
 PathLike: TypeAlias = str | Path
+SettingsDict: TypeAlias = dict[str, Any]
 T = TypeVar("T")
 P = ParamSpec("P")
 
@@ -83,7 +84,7 @@ class _NumericRange(NamedTuple):
     min: int
     max: int
 
-def _is_dict(val: Any) -> TypeGuard[dict[Any, Any]]:
+def _is_dict(val: Any) -> TypeGuard[SettingsDict]:
     """Helper para verificar que un objeto sea un diccionario utilizable."""
     return isinstance(val, dict)
 
@@ -267,7 +268,10 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return _PATH_CACHE["default"]
 
 def validate(raw_values: Any) -> AppSettings:
-    """Aplica el esquema y validaciones a un objeto crudo; retorna `DEFAULTS` ante errores."""
+    """
+    Aplica el esquema y validaciones a un objeto crudo.
+    Retorna `DEFAULTS` ante valores corruptos para asegurar la continuidad de la app.
+    """
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_str, val in raw_values.items():
@@ -281,7 +285,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Lee configuración con caché basado en mtime."""
+    """Lee configuración desde disco, usando caché basado en tiempo de última modificación."""
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     try:
@@ -300,7 +304,10 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Persiste configuración mediante reemplazo atómico tras validaciones de seguridad."""
+    """
+    Persiste la configuración mediante reemplazo atómico para evitar archivos corruptos.
+    Aplica validaciones de seguridad estrictas antes de cualquier escritura en disco.
+    """
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     cleaned_settings = validate(values)
@@ -311,11 +318,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         ):
             cleaned_settings["asistente_activado"] = False
             
-        # Validación de seguridad: no permitir modificar si la ruta destino está protegida o es un reparse point
         if not _Validators._is_safe_path(str(ruta)): return None
         if _Validators._is_reparse_point(ruta.resolve(strict=False)): return None
         
-        # Creación segura del directorio padre
         parent = ruta.parent
         if not parent.exists():
             try:
@@ -354,7 +359,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
-    """Restablece al estado original de fábrica."""
+    """Restablece la configuración al estado original de fábrica."""
     save(DEFAULTS, custom_base)
     return DEFAULTS.copy()
 
