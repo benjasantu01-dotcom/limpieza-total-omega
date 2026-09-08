@@ -151,34 +151,34 @@ def app_title() -> str:
     """Retorna el nombre completo de la aplicación y su versión actual."""
     return f"{APP_NAME} v{APP_VERSION}"
 
-@lru_cache(maxsize=16)
+@lru_cache(maxsize=32)
 def color(name: str) -> HexColor:
     """Busca un color en la paleta global; retorna gris por defecto si no existe."""
     return PALETTE.get(name, "#808080")
 
-@lru_cache(maxsize=8)
+@lru_cache(maxsize=16)
 def font_size(name: str) -> int:
     """Retorna el tamaño de fuente configurado para un rol tipográfico dado."""
     return FONT_SIZES.get(name, UI_FONT_BODY_SIZE)
 
-@lru_cache(maxsize=16)
+@lru_cache(maxsize=32)
 def icon(section: Optional[str]) -> str:
     """Mapea un nombre de sección a su icono Unicode representativo."""
     return ICONS.get(section.strip(), "\u2022") if isinstance(section, str) else "\u2022"
 
-@lru_cache(maxsize=16)
+@lru_cache(maxsize=32)
 def tab_label(section: str) -> str:
     """Genera el texto formateado para pestañas, combinando icono y etiqueta."""
     return f"{icon(section)}  {section}"
 
-@lru_cache(maxsize=8)
+@lru_cache(maxsize=16)
 def severity_color(severity: Optional[str]) -> HexColor:
     """Selecciona el color según el nivel de severidad (OK, Info, Warning, Danger)."""
     if severity and (style := SEVERITY_STYLES.get(severity.lower())):
         return style[0]
     return C_TEXT_MUTED
 
-@lru_cache(maxsize=8)
+@lru_cache(maxsize=16)
 def severity_label(severity: Optional[str]) -> str:
     """Retorna la etiqueta legible de una severidad dada."""
     if severity and (style := SEVERITY_STYLES.get(severity.lower())):
@@ -189,14 +189,14 @@ def severity_icon(severity: Optional[str]) -> str:
     """Devuelve el símbolo asociado al nivel de severidad."""
     return _SEVERITY_MAP.get(severity.lower(), "\u2022") if isinstance(severity, str) else "\u2022"
 
-@lru_cache(maxsize=8)
+@lru_cache(maxsize=16)
 def grade_color(grade: Optional[str]) -> HexColor:
     """Retorna el color asignado a una letra de calificación (A-F)."""
     if grade and grade.strip():
         return GRADE_COLORS.get(grade.upper()[0], C_TEXT_MUTED)
     return C_TEXT_MUTED
 
-@lru_cache(maxsize=64)
+@lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> HexColor:
     """Determina el color según el puntaje numérico (0-100) basándose en umbrales definidos."""
     if score is None: return C_TEXT_MUTED
@@ -209,7 +209,7 @@ def score_color(score: Union[float, int, None]) -> HexColor:
         if valor >= limit: return color_val
     return C_DANGER
 
-@lru_cache(maxsize=32)
+@lru_cache(maxsize=64)
 def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
     """
@@ -225,7 +225,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
     except (TypeError, ValueError):
         return empty * max(1, int(width))
 
-@lru_cache(maxsize=128)
+@lru_cache(maxsize=256)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
     """
     Decodifica un string hexadecimal (#RRGGBB) a una tupla de valores RGB (0-255).
@@ -238,12 +238,12 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
     except (ValueError, IndexError): 
         return (0, 0, 0)
 
-@lru_cache(maxsize=128)
+@lru_cache(maxsize=256)
 def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
     """Codifica una tupla RGB a string hexadecimal #RRGGBB con clipping de valores."""
     return "#{:02x}{:02x}{:02x}".format(*[max(0, min(255, c)) for c in rgb])
 
-@lru_cache(maxsize=64)
+@lru_cache(maxsize=128)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     """
     Interpola linealmente entre dos colores para transiciones suaves.
@@ -259,7 +259,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
         int(b1 + (b2 - b1) * ratio)
     ))
 
-@lru_cache(maxsize=32)
+@lru_cache(maxsize=64)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
     """Genera una rampa de colores interpolada a través de múltiples puntos de control."""
     try:
@@ -284,7 +284,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     except (ValueError, TypeError, ZeroDivisionError):
         return (C_TEXT_MUTED,) * max(1, int(steps))
 
-@lru_cache(maxsize=32)
+@lru_cache(maxsize=64)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, ...]:
     """Reduce una serie de colores a segmentos compactos para optimizar llamadas al Canvas."""
     if not colors: return ()
@@ -299,32 +299,37 @@ def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, .
     segments.append(ColorSegment(current_color, start, len(colors)))
     return tuple(segments)
 
-@lru_cache(maxsize=8)
+@lru_cache(maxsize=16)
 def _get_shield_coords(s: float) -> Tuple[float, ...]:
     """Escala las coordenadas vectoriales base (128x128) del escudo corporativo."""
     base: Final[Tuple[float, ...]] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
     return tuple(v * max(0.0, float(s)) for v in base)
 
-@lru_cache(maxsize=4)
+@lru_cache(maxsize=8)
 def logo_svg(size: int = 128) -> str:
     """Genera la estructura XML de un archivo SVG del logo (ideal para exportar)."""
     s = max(1, min(4096, int(size)))
-    stops = "".join(f'      <stop offset="{o}" stop-color="{c}"/>\n' for o, c in zip(["0%", "55%", "100%"], GRADIENT_STOPS))
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
-  <defs>
-    <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{stops}    </linearGradient>
-    <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">
-      <stop offset="0%" stop-color="{C_GLOW}" stop-opacity="0.45"/>
-      <stop offset="100%" stop-color="{C_GLOW}" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-  <rect width="128" height="128" rx="30" fill="{C_SURFACE}"/>
-  <circle cx="64" cy="56" r="52" fill="url(#omegaGlow)"/>
-  <path d="M64 18 L100 31 V67 C100 90 83 104 64 110 C45 104 28 90 28 67 V31 Z" fill="url(#omegaShield)"/>
-  <path d="M41 75 L75 41" stroke="{C_BACKGROUND}" stroke-width="8" stroke-linecap="round"/>
-  <path d="M75 41 L89 38 L92 52 Z" fill="{C_BACKGROUND}"/>
-  <text x="64" y="98" font-family="{UI_FONT_FAMILY}" font-size="26" font-weight="{UI_FONT_BOLD}" fill="{C_BACKGROUND}" text-anchor="middle">&#937;</text>
-</svg>"""
+    stops_list = [f'      <stop offset="{o}" stop-color="{c}"/>' for o, c in zip(["0%", "55%", "100%"], GRADIENT_STOPS)]
+    stops = "\n".join(stops_list)
+    
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">',
+        '  <defs>',
+        f'    <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{stops}    </linearGradient>',
+        '    <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">',
+        f'      <stop offset="0%" stop-color="{C_GLOW}" stop-opacity="0.45"/>',
+        '      <stop offset="100%" stop-color="{C_GLOW}" stop-opacity="0"/>',
+        '    </radialGradient>',
+        '  </defs>',
+        f'  <rect width="128" height="128" rx="30" fill="{C_SURFACE}"/>',
+        f'  <circle cx="64" cy="56" r="52" fill="url(#omegaGlow)"/>',
+        '  <path d="M64 18 L100 31 V67 C100 90 83 104 64 110 C45 104 28 90 28 67 V31 Z" fill="url(#omegaShield)"/>',
+        f'  <path d="M41 75 L75 41" stroke="{C_BACKGROUND}" stroke-width="8" stroke-linecap="round"/>',
+        f'  <path d="M75 41 L89 38 L92 52 Z" fill="{C_BACKGROUND}"/>',
+        f'  <text x="64" y="98" font-family="{UI_FONT_FAMILY}" font-size="26" font-weight="{UI_FONT_BOLD}" fill="{C_BACKGROUND}" text-anchor="middle">&#937;</text>',
+        '</svg>'
+    ]
+    return "\n".join(parts)
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda una copia física del SVG tras validación estricta de seguridad."""

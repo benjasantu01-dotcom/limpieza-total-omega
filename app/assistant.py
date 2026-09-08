@@ -284,7 +284,7 @@ class SystemContext:
             val = _get_source_value(source, key)
             if val is not None and spec.is_valid_type(val):
                 f_val = float(val)
-                if not math.isnan(f_val) and not math.isinf(f_val) and spec.min_val <= f_val <= spec.max_val:
+                if 0.0 <= f_val <= spec.max_val:
                     setattr(self, key, spec.cast_func(f_val))
                     found_data = True
         
@@ -328,28 +328,18 @@ def _get_source_value(source: Any, key: str) -> Any:
     """Extrae valores de fuentes de datos de forma segura sin excepciones evitables."""
     if isinstance(source, dict):
         return source.get(key)
-    # Acceso directo para evitar el costo de bloques try-except
     attr = getattr(source, key, None)
     return attr if not callable(attr) else None
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
     Fabrica un objeto SystemContext, poblando las métricas desde diversas fuentes.
-    Valida que el resultado final sea consistente e ignorando entradas no estructuradas.
     """
     ctx = SystemContext()
-    # Identificar fuentes válidas evitando tipos primitivos que causarían excepciones
-    valid_sources = []
-    for s in [metrics, health, extra]:
+    for s in (metrics, health, extra):
         if isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str, int, float, bool, type)):
-            valid_sources.append(s)
-            
-    for src in valid_sources:
-        try:
-            if ctx.ingest(src):
+            if ctx.ingest(s):
                 ctx.analyzed = True
-        except (AttributeError, TypeError, ValueError):
-            continue
     return ctx
 
 def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
