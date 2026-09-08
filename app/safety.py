@@ -173,7 +173,6 @@ def _is_system_or_hidden(path: Path) -> bool:
     """Verifica mediante la estructura de atributos de archivo si es oculto o de sistema."""
     try:
         st = path.lstat()
-        # st_file_attributes no existe en todos los sistemas POSIX
         attrs = getattr(st, 'st_file_attributes', 0)
         return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
     except (AttributeError, OSError, FileNotFoundError):
@@ -371,7 +370,9 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     for part in target_path.parts:
         if not part or part.strip() != part:
             raise UnsafePathError("Componente vacío o malformado.", SafetyValidationErrorCode.INVALID_CHARS)
-        if _is_reserved_device_name(part):
+        # Limpieza profunda de nombres: split por punto para ignorar extensiones en el chequeo de dispositivos
+        name_only = part.split('.')[0]
+        if _is_reserved_device_name(name_only):
             raise UnsafePathError(f"Nombre reservado '{part}'.", SafetyValidationErrorCode.RESERVED_NAME)
 
     if path_string.startswith(("\\\\", "//")):

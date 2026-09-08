@@ -186,8 +186,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         if not base_path.exists() or not base_path.is_dir(): 
             return []
         
-        root_input = base_path.resolve(strict=False)
-        if str(root_input).startswith(("\\\\", "//")) or is_protected_path(root_input):
+        root_input = base_path.resolve(strict=True)
+        if not root_input.is_absolute() or str(root_input).startswith(("\\\\", "//")) or is_protected_path(root_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError, PermissionError):
         return []

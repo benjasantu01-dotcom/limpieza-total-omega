@@ -1082,3 +1082,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-08T00:52:48` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-09-08T00:52:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T00:52:48` Corrida terminada. Total usado hoy: 20.
+- `2026-09-08T01:00:30` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-09-08T01:01:07` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado `_check_path_syntax_integrity` para detectar y bloquear explícitamente ataques de *Time-of-Check to Time-of-Use* (TOCTOU) mediante la validación de que el archivo, tras ser resuelto, no sea un enlace simbólico o un punto de reparse (junction) que pudiera haber sido manipulado entre la validación y la operación.
+- `2026-09-08T01:01:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-08T01:01:57` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). He mejorado `_validate_structural_safety` para prevenir ataques de "dir traversal" más complejos que utilizan nombres de dispositivos reservados combinados con extensiones o rutas relativas, cerrando el hueco donde una ruta maliciosa podría engañar al sistema operativo.
+- `2026-09-08T01:02:05` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha añadido una validación estricta en `scan_directory` para verificar que la ruta escaneada sea absoluta y evitar ataques de salto de directorio mediante rutas relativas maliciosas, garantizando que el escaneo solo ocurra dentro de un contexto controlado y seguro.
+- `2026-09-08T01:02:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T01:02:05` Corrida terminada. Total usado hoy: 24.

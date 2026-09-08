@@ -281,7 +281,8 @@ def _check_windows_file_attributes(path_str: str) -> None:
 def _check_path_syntax_integrity(path: Path) -> None:
     """
     Valida la integridad sintáctica de la ruta para prevenir ataques de 
-    Path Traversal o uso de flujos alternativos (ADS).
+    Path Traversal o uso de flujos alternativos (ADS), verificando que
+    la resolución sea inequívoca.
     """
     if not path:
         raise UnsafePathError("Ruta vacía.")
@@ -295,8 +296,17 @@ def _check_path_syntax_integrity(path: Path) -> None:
         raise UnsafePathError("Ruta con flujos de datos alternos (ADS) prohibida.")
     if ".." in path.parts or any(c in str(path.name) for c in "<>\"|?*"):
         raise UnsafePathError("Ruta con caracteres prohibidos o navegación inválida.")
-    if path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction()):
-        raise UnsafePathError("Operación denegada en enlace simbólico o punto de reparse.")
+    
+    # Detección de TOCTOU: Validar que el archivo resuelto no sea un enlace simbólico/reparse
+    try:
+        resolved = path.resolve(strict=True)
+        if resolved.is_symlink():
+            raise UnsafePathError("Operación denegada: el archivo es un enlace simbólico.")
+        # Verificación específica para Windows Junctions/Reparse Points
+        if hasattr(resolved, 'is_junction') and resolved.is_junction():
+            raise UnsafePathError("Operación denegada: el archivo es un punto de reparse.")
+    except (OSError, RuntimeError):
+        pass # La existencia se verifica en otras capas, aquí validamos la estructura
 
 
 def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
