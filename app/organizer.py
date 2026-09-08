@@ -158,8 +158,8 @@ def _is_unc_path(path: Path) -> bool:
 
 def _generate_unique_target(target: Path) -> Path:
     """
-    Calcula un nombre de archivo destino único si existe colisión.
-    Usa sufijos numéricos hasta un límite de 999 intentos para evitar colisiones.
+    Genera una ruta única para evitar colisiones de nombres durante el movimiento.
+    Si el destino existe, añade un sufijo numérico incremental (ej: archivo_1.tmp).
     """
     if target is None:
         return target
@@ -181,17 +181,16 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado por otro proceso.
-    En Windows, usa CreateFileW con permisos de compartición para verificar
-    si el archivo está en uso exclusivo por otro proceso.
+    Verifica si un archivo está siendo utilizado exclusivamente por otro proceso.
+    Intenta abrir un handle en Windows con permisos de compartición; si falla, 
+    se asume bloqueado por razones de seguridad.
     """
     if path is None or _is_junction(path): return True
     if not path.exists(): return True
     
     if os.name == "nt":
         try:
-            # FILE_SHARE_READ (0x1) | FILE_SHARE_WRITE (0x2) | FILE_SHARE_DELETE (0x4) = 0x7
-            # OPEN_EXISTING = 0x3
+            # 0x80000000: GENERIC_READ, 0x7: FILE_SHARE_READ|WRITE|DELETE, 0x3: OPEN_EXISTING
             handle = ctypes.windll.kernel32.CreateFileW(
                 str(path), 0x80000000, 0x7, None, 0x3, 0x80, None
             )
@@ -205,8 +204,8 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
-    Verifica si la ruta destino está contenida dentro de la ruta fuente.
-    Previene bucles de recursión al intentar mover carpetas.
+    Valida que la operación de movimiento no cause una recursión lógica,
+    comprobando que el destino no sea subdirectorio o el mismo que el origen.
     """
     if src is None or dest is None: return True
     try:
@@ -219,19 +218,18 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 
 def _passes_system_checks(src: Path) -> bool:
     """
-    Verifica atributos Win32 (System, Hidden, ReadOnly, Reparse).
-    Máscara 0x407: 0x400 (Reparse Point), 0x004 (System), 0x002 (Hidden), 0x001 (ReadOnly).
-    Retorna True si el archivo es considerado "seguro" para manipular.
+    Filtra archivos con atributos especiales de Windows.
+    Rechaza archivos con atributos de Sistema, Ocultos, solo Lectura o Puntos de Reparse.
     """
     if os.name != "nt" or src is None: return True
-    mask: int = 0x407
+    mask: int = 0x407 # Reparse Point (0x400), System (0x004), Hidden (0x002), ReadOnly (0x001)
     return not (_get_win_attributes(src) & mask)
 
 
 def _has_forbidden_chars(path: Path) -> bool:
     """
-    Valida la ausencia de nombres reservados de Windows (ej. CON, NUL) 
-    y caracteres prohibidos en el sistema de archivos NTFS.
+    Verifica si la ruta contiene caracteres o nombres reservados por el sistema operativo
+    que impidan la correcta manipulación mediante APIs de Windows.
     """
     if path is None: return True
     try:

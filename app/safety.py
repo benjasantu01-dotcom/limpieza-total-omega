@@ -365,7 +365,10 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
-    """Realiza chequeos estructurales antes de acceder al sistema de archivos."""
+    """
+    Realiza chequeos estructurales (caracteres, dispositivos reservados, 
+    rutas UNC y longitud) antes de acceder al sistema de archivos.
+    """
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
     if "\0" in path_string:
@@ -377,7 +380,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         if not part or part.strip() != part or part.endswith(('.', ' ')):
             raise UnsafePathError(f"Componente '{part}' malformado.", SafetyValidationErrorCode.INVALID_CHARS)
         
-        # Validación defensiva contra posibles divisiones de string vacías
+        # Validación defensiva contra posibles dispositivos DOS (ej: CON.txt)
         parts_split = part.split('.')
         name_only = parts_split[0]
         if name_only and _is_reserved_device_name(name_only):
@@ -394,11 +397,15 @@ def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | 
     Aplica restricciones de alcance (scope) para prevenir la manipulación fuera
     del entorno permitido o la auto-modificación de la propia aplicación.
     """
+    # 1. Asegurar ruta absoluta para evitar ambigüedades con CWD
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
+        
+    # 2. Controlar limites definidos por el usuario
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     
+    # 3. Proteger la integridad del directorio de la aplicación
     try:
         app_root: Path = Path(os.getcwd()).resolve()
         if target_path == app_root or app_root in target_path.parents:
@@ -406,6 +413,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | 
     except (OSError, RuntimeError):
         pass
         
+    # 4. Bloqueos críticos de sistema
     if is_drive_root(target_path):
         raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS)
     if is_protected_path(target_path):
