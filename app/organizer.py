@@ -441,11 +441,14 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             
             target: Optional[Path] = _can_move_file(junk_file, dest_base)
             if target and target.is_relative_to(dest_base) and is_safe_to_modify(src) and is_safe_to_modify(target):
+                # Validar disponibilidad antes de invocar operación destructiva
+                if _is_file_locked(src): continue
                 ensure_safe_to_modify(src)
                 ensure_safe_to_modify(target)
                 shutil.move(str(src), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError) as e:
             logger.error(f"Error moviendo {junk_file.path}: {e}")
+            continue
     return dest_base
 
 

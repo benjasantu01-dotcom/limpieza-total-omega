@@ -155,33 +155,29 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     if not isinstance(meminfo_text, str) or not meminfo_text:
         return _EMPTY_SNAPSHOT
     
-    metric_map: Dict[str, int] = {"MemTotal": 0, "MemAvailable": 0, "MemFree": 0, "Cached": 0}
+    metrics: Dict[str, int] = {"MemTotal": 0, "MemAvailable": 0, "MemFree": 0, "Cached": 0}
     
-    try:
-        for line in meminfo_text.splitlines():
-            if ":" not in line: continue
-            parts = line.split(":", 1)
-            k_normalized = parts[0].strip()
+    for line in meminfo_text.splitlines():
+        if ":" not in line: continue
+        key, value_part = line.split(":", 1)
+        k_normalized = key.strip()
+        if k_normalized in metrics:
+            val_items = value_part.split()
+            if val_items and val_items[0].isdigit():
+                try:
+                    metrics[k_normalized] = int(val_items[0]) * 1024
+                except (ValueError, OverflowError):
+                    continue
             
-            if k_normalized in metric_map:
-                val_parts = parts[1].split()
-                if val_parts and val_parts[0].isdigit():
-                    try:
-                        metric_map[k_normalized] = int(val_parts[0]) * 1024
-                    except (ValueError, OverflowError):
-                        continue
-    except Exception:
-        return _EMPTY_SNAPSHOT
-            
-    total_mem = metric_map["MemTotal"]
-    if total_mem <= 0: 
+    total = metrics.get("MemTotal", 0)
+    if total <= 0: 
         return _EMPTY_SNAPSHOT
     
-    available = metric_map["MemAvailable"] if metric_map["MemAvailable"] > 0 else metric_map["MemFree"]
+    available = metrics.get("MemAvailable") or metrics.get("MemFree", 0)
     return MemorySnapshot(
-        total=BytesValue(total_mem), 
-        available=BytesValue(min(available, total_mem)), 
-        cached=BytesValue(max(0, metric_map["Cached"]))
+        total=BytesValue(total), 
+        available=BytesValue(min(available, total)), 
+        cached=BytesValue(max(0, metrics.get("Cached", 0)))
     )
 
 def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[ProcessMemory]:

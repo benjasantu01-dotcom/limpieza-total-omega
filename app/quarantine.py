@@ -354,7 +354,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 @lru_cache(maxsize=4)
 def _load_manifest_raw(base_str: str, _mtime: float = 0.0) -> ManifestData:
-    """Carga cruda del archivo JSON con caché para evitar I/O redundante."""
+    """Carga cruda del archivo JSON con validación de estructura."""
     path = _manifest_path(Path(base_str))
     if not path.is_file():
         return []
@@ -381,7 +381,11 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
     """Carga y sincroniza la lista de ítems en cuarentena desde el manifiesto."""
     base_path = quarantine_dir(base)
     m_path = _manifest_path(base_path)
-    mtime = m_path.stat().st_mtime if m_path.exists() else 0.0
+    
+    try:
+        mtime = m_path.stat().st_mtime if m_path.exists() else 0.0
+    except OSError:
+        mtime = 0.0
     
     if force_reload:
         _load_manifest_raw.cache_clear()

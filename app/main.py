@@ -1813,22 +1813,27 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         valores: AppSettings = dict(self.settings)  # type: ignore
         for clave, variable in self.setting_vars.items():
             try:
-                # El acceso a variable.get() puede fallar si el widget fue destruido
-                valores[clave] = variable.get()  # type: ignore
+                # Verificar existencia del widget/variable de control antes de acceder
+                if hasattr(variable, 'get'):
+                    valores[clave] = variable.get()  # type: ignore
             except (tk.TclError, Exception):
-                # En caso de error, mantenemos el valor previo existente en self.settings
                 continue
         
-        valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
-            self._safe_get_entry_value(getattr(self, 'min_dup_entry', None), None, numeric=True), 64
-        )
-        valores["top_archivos"] = self._validate_numeric_setting(
-            self._safe_get_entry_value(getattr(self, 'top_files_entry', None), None, numeric=True), 15
-        )
+        # Validaciones de campos de entrada con verificación de existencia previa
+        if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
+            valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
+                self._safe_get_entry_value(self.min_dup_entry, None, numeric=True), 64
+            )
             
-        clave_raw = self._safe_get_entry_value(getattr(self, 'api_key_entry', None), "")
-        if clave_raw:
-            valores["asistente_clave_api"] = clave_raw
+        if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists():
+            valores["top_archivos"] = self._validate_numeric_setting(
+                self._safe_get_entry_value(self.top_files_entry, None, numeric=True), 15
+            )
+            
+        if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
+            clave_raw = self._safe_get_entry_value(self.api_key_entry, "")
+            if clave_raw:
+                valores["asistente_clave_api"] = clave_raw
             
         return valores
 
