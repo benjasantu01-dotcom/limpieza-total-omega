@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 144 | 12 | 25 | 15 | 128 |
-| 2026-09-08 | 72 | 5 | 10 | 5 | 88 |
+| 2026-09-07 | 141 | 12 | 24 | 15 | 128 |
+| 2026-09-08 | 75 | 5 | 11 | 5 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **48**
 - seguridad defensiva: **48**
+- legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **45**
-- legibilidad y documentación: **43**
-- rendimiento: **32**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
 - `assistant.py`: **20**
-- `safety.py`: **19**
-- `duplicates.py`: **18**
-- `scanner.py`: **17**
+- `settings.py`: **19**
+- `duplicates.py`: **19**
+- `memory.py`: **18**
+- `safety.py`: **18**
+- `healthscore.py`: **18**
 - `browser.py`: **17**
-- `memory.py`: **17**
 - `quarantine.py`: **17**
-- `healthscore.py`: **17**
+- `scanner.py`: **16**
 - `branding.py`: **14**
 - `diskreport.py`: **11**
 - `main.py`: **11**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-08T07:50:51` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `memory.py` mediante la normalización de la estructura de las funciones críticas de validación y la clarificación de los propósitos de los tipos de datos personalizados, asegurando que el código sea más mantenible y claro en su intención.
+- `2026-09-08T07:49:39` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de puntuación y la expansión de los docstrings para explicar la lógica de normalización de cada métrica.
+- `2026-09-08T07:49:12` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones críticas, aclarando el propósito y el manejo de excepciones, e integrando type hints faltantes en funciones internas para mejorar la mantenibilidad y legibilidad del código.
 - `2026-09-08T07:40:34` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento al definir un tipo explícito `Inode` para los identificadores de archivos y clarificar la lógica de las funciones de recolección de datos mediante anotaciones de tipos más precisas.
 - `2026-09-08T07:40:22` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de los tipos mediante `TypeAlias` y `TypedDict` para hacer explícita la estructura del mapa de rutas de caché, facilitando el mantenimiento y la lectura de las configuraciones de los navegadores.
 - `2026-09-08T07:39:56` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `logo_svg`, reemplazando la concatenación manual de strings por una plantilla de múltiples líneas más clara y documentando los parámetros de las funciones `draw_logo`, `draw_gradient_bar` y `draw_ring` para alinearlas con los estándares de documentación del proyecto.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-08T07:09:14` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` mediante la adición de un chequeo explícito de tipos y valores nulos en `__post_init__`, evitando que valores no válidos propaguen estados erróneos hacia el pipeline de cálculo.
 - `2026-09-08T07:08:46` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de cálculo de hash y los validadores de rutas añadiendo comprobaciones contra `None`, rutas vacías o errores de tipo, evitando que excepciones en el sistema de archivos detengan procesos críticos.
 - `2026-09-08T06:59:23` **assistant.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_extract_text_from_gemini_json` implementando una validación de seguridad más rigurosa para evitar errores de ejecución ante respuestas de API malformadas o inesperadas, además de reforzar la integridad del bucle de parseo en `ingest` mediante la validación explícita de `float` y `int` para prevenir inyecciones de tipos no deseados.
-- `2026-09-08T05:37:12` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` implementando una comprobación de integridad en la ruta base antes de cualquier operación de disco y garantizando que la creación de directorios sea atómica y segura mediante `ensure_safe_to_modify` para evitar escrituras en ubicaciones prohibidas.
-- `2026-09-08T05:27:06` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `purge_all` y `quarantine_file` implementando una validación estricta de que el archivo a borrar o procesar no sea un enlace simbólico, reforzando la protección contra ataques de redirección de archivos fuera del sandbox.
-- `2026-09-08T05:17:49` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `on_trim_process` y `on_quarantine_findings` al implementar validaciones granulares de la ruta (`ensure_safe_to_modify`) justo antes de las operaciones de E/S, garantizando que ninguna ruta externa o manipulada por el usuario pueda saltarse los filtros de seguridad del sistema antes de procesar cambios.

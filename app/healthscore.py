@@ -89,27 +89,27 @@ if sum(WEIGHTS.values()) != 100:
 _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Transforma el volumen de basura (en MB) en un ratio de salud."""
+    """Transforma el volumen de archivos temporales (MB) en un ratio: >5GB impacta a 0.0."""
     return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula el ratio de seguridad penalizando conteo de archivos sospechosos."""
+    """Calcula salud de seguridad: cada archivo sospechoso resta 5%, cada advertencia 25%."""
     return _clamp(1.0 - ((float(suspicious_count) * 0.05) + (float(warnings) * 0.25)))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Evalúa salud de memoria RAM: porcentaje de disponibilidad."""
+    """Evalúa salud de memoria: normaliza el % de RAM libre respecto al umbral crítico."""
     return _clamp(float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Evalúa salud de disco: porcentaje de espacio libre."""
+    """Evalúa salud de almacenamiento: normaliza el % de espacio libre respecto al umbral crítico."""
     return _clamp(float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de duplicados según el espacio desperdiciado."""
+    """Calcula salud de duplicados: penaliza el espacio desperdiciado sobre el límite de 2GB."""
     return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Evalúa la carga de inicio según la cantidad de programas registrados."""
+    """Evalúa salud de inicio: penaliza linealmente el conteo de apps según el umbral."""
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
 _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
