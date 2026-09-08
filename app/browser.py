@@ -219,6 +219,7 @@ def _sum_directory_recursive(
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or depth < 0 or len(root_abs) >= MAX_PATH_LEN:
         return 0
     
+    # Retornar valor cacheado si existe
     if root_abs in memo:
         return memo[root_abs]
     
@@ -231,7 +232,6 @@ def _sum_directory_recursive(
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        # Validación defensiva: asegurar que la recursión no escape del scope permitido
                         if base_check_path and not _is_path_inside_base(Path(entry.path).resolve(), base_check_path):
                             continue
                         total += _sum_directory_recursive(

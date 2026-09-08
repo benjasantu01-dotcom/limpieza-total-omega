@@ -180,30 +180,27 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """Realiza un barrido recursivo del sistema de archivos, manteniendo el estado de directorios visitados."""
     size_map: Dict[int, List[Path]] = defaultdict(list)
-    visited: set[Path] = set()
+    visited: set[str] = set()
 
     def _scan_directory_recursive(current_dir: Path) -> None:
         try:
-            resolved_dir = current_dir.resolve(strict=False)
-            if is_protected_path(resolved_dir) or resolved_dir in visited:
+            real_path = str(current_dir.resolve(strict=False))
+            if real_path in visited or is_protected_path(current_dir):
                 return
-            visited.add(resolved_dir)
+            visited.add(real_path)
             
-            with os.scandir(resolved_dir) as iterator:
+            with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        entry_path = Path(entry.path).resolve(strict=False)
-                        if skip_protected and is_protected_path(entry_path):
-                            continue
-                        if entry.is_symlink():
-                            continue
                         if entry.is_dir(follow_symlinks=False):
-                            if not is_junction(entry_path):
-                                _scan_directory_recursive(entry_path)
+                            if not is_junction(Path(entry.path)):
+                                _scan_directory_recursive(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
-                            if st and st.st_size >= min_size and _is_valid_candidate(entry_path):
-                                size_map[st.st_size].append(entry_path)
+                            if st.st_size >= min_size:
+                                path_obj = Path(entry.path)
+                                if (not skip_protected or not is_protected_path(path_obj)) and _is_valid_candidate(path_obj):
+                                    size_map[st.st_size].append(path_obj)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

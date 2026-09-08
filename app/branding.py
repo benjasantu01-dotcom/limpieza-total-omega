@@ -151,12 +151,10 @@ def app_title() -> str:
     """Retorna el nombre completo de la aplicación y su versión actual."""
     return f"{APP_NAME} v{APP_VERSION}"
 
-@lru_cache(maxsize=32)
 def color(name: str) -> HexColor:
     """Busca un color en la paleta global; retorna gris por defecto si no existe."""
     return PALETTE.get(name, "#808080")
 
-@lru_cache(maxsize=16)
 def font_size(name: str) -> int:
     """Retorna el tamaño de fuente configurado para un rol tipográfico dado."""
     return FONT_SIZES.get(name, UI_FONT_BODY_SIZE)
@@ -171,14 +169,12 @@ def tab_label(section: str) -> str:
     """Genera el texto formateado para pestañas, combinando icono y etiqueta."""
     return f"{icon(section)}  {section}"
 
-@lru_cache(maxsize=16)
 def severity_color(severity: Optional[str]) -> HexColor:
     """Selecciona el color según el nivel de severidad (OK, Info, Warning, Danger)."""
     if severity and (style := SEVERITY_STYLES.get(severity.lower())):
         return style[0]
     return C_TEXT_MUTED
 
-@lru_cache(maxsize=16)
 def severity_label(severity: Optional[str]) -> str:
     """Retorna la etiqueta legible de una severidad dada."""
     if severity and (style := SEVERITY_STYLES.get(severity.lower())):
@@ -189,7 +185,6 @@ def severity_icon(severity: Optional[str]) -> str:
     """Devuelve el símbolo asociado al nivel de severidad."""
     return _SEVERITY_MAP.get(severity.lower(), "\u2022") if isinstance(severity, str) else "\u2022"
 
-@lru_cache(maxsize=16)
 def grade_color(grade: Optional[str]) -> HexColor:
     """Retorna el color asignado a una letra de calificación (A-F)."""
     if grade and grade.strip():
@@ -229,30 +224,26 @@ def bar(percent: Union[float, int, None], width: int = 24,
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
     """
     Decodifica un string hexadecimal (#RRGGBB) a una tupla de valores RGB (0-255).
-    Implementa validación de formato robusta.
     """
-    if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"): 
-        return (0, 0, 0)
+    if len(value) != 7 or value[0] != "#": return (0, 0, 0)
     try:
         return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
-    except (ValueError, IndexError): 
-        return (0, 0, 0)
+    except (ValueError, IndexError): return (0, 0, 0)
 
 @lru_cache(maxsize=256)
 def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
-    """Codifica una tupla RGB a string hexadecimal #RRGGBB con clipping de valores."""
+    """Codifica una tupla RGB a string hexadecimal #RRGGBB."""
     return "#{:02x}{:02x}{:02x}".format(*[max(0, min(255, c)) for c in rgb])
 
 @lru_cache(maxsize=128)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     """
     Interpola linealmente entre dos colores para transiciones suaves.
-    El ratio 0.0 resulta en 'start', 1.0 resulta en 'end'.
     """
     if start == end: return start
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
-    ratio = max(0.0, min(1.0, float(ratio) if math.isfinite(ratio) else 0.0))
+    ratio = max(0.0, min(1.0, ratio))
     return _rgb_to_hex((
         int(r1 + (r2 - r1) * ratio),
         int(g1 + (g2 - g1) * ratio),
@@ -262,27 +253,24 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 @lru_cache(maxsize=64)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
     """Genera una rampa de colores interpolada a través de múltiples puntos de control."""
-    try:
-        n = max(1, int(steps))
-        if not stops or len(stops) < 2: return (stops[0] if stops else C_TEXT_MUTED,) * n
-        
-        rgb_stops = tuple(_hex_to_rgb(s) for s in stops)
-        tramos = len(stops) - 1
-        res = []
-        
-        for i in range(n):
-            pos = (i / (n - 1) * tramos) if n > 1 else 0
-            idx = min(int(pos), tramos - 1)
-            delta = pos - idx
-            s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
-            res.append(_rgb_to_hex((
-                int(s1[0] + (s2[0] - s1[0]) * delta),
-                int(s1[1] + (s2[1] - s1[1]) * delta),
-                int(s1[2] + (s2[2] - s1[2]) * delta)
-            )))
-        return tuple(res)
-    except (ValueError, TypeError, ZeroDivisionError):
-        return (C_TEXT_MUTED,) * max(1, int(steps))
+    n = max(1, int(steps))
+    if not stops or len(stops) < 2: return (stops[0] if stops else C_TEXT_MUTED,) * n
+    
+    rgb_stops = tuple(_hex_to_rgb(s) for s in stops)
+    tramos = len(stops) - 1
+    res = []
+    
+    for i in range(n):
+        pos = (i / (n - 1) * tramos) if n > 1 else 0
+        idx = min(int(pos), tramos - 1)
+        delta = pos - idx
+        s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
+        res.append(_rgb_to_hex((
+            int(s1[0] + (s2[0] - s1[0]) * delta),
+            int(s1[1] + (s2[1] - s1[1]) * delta),
+            int(s1[2] + (s2[2] - s1[2]) * delta)
+        )))
+    return tuple(res)
 
 @lru_cache(maxsize=64)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, ...]:
@@ -303,7 +291,7 @@ def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, .
 def _get_shield_coords(s: float) -> Tuple[float, ...]:
     """Escala las coordenadas vectoriales base (128x128) del escudo corporativo."""
     base: Final[Tuple[float, ...]] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
-    return tuple(v * max(0.0, float(s)) for v in base)
+    return tuple(v * max(0.0, s) for v in base)
 
 @lru_cache(maxsize=8)
 def logo_svg(size: int = 128) -> str:
@@ -333,15 +321,10 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if destination is None: return None
     try:
         path_raw = Path(str(destination)).resolve()
-        
-        # Prevenir rutas vacías, mal formadas o protegidas
         if not path_raw.name or is_protected_path(path_raw) or is_protected_path(path_raw.parent):
             return None
-        
-        # Validar capacidad de escritura en el destino sin sobreescribir inadvertidamente
         if not is_safe_to_modify(path_raw) or not is_safe_to_modify(path_raw.parent):
             return None
-            
         ensure_safe_to_modify(path_raw)
         if not path_raw.parent.exists():
             path_raw.parent.mkdir(parents=True, exist_ok=True)
@@ -357,7 +340,6 @@ def logo_ascii() -> str:
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Helper interno: dibuja franjas graduadas decorativas en el canvas."""
     try:
-        if not math.isfinite(scale) or scale <= 0: return
         franjas_count = max(6, int(28 * scale))
         colores = gradient_colors(franjas_count)
         base_y = canvas_y + 18 * scale
@@ -368,28 +350,21 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
             progreso = mid / max(1.0, float(franjas_count - 1))
             w = 36 * scale * (1.0 if progreso < 0.55 else 1.0 - (progreso - 0.55) * 1.9)
             canvas.create_rectangle(center_x - w, base_y + seg.start_index * factor_y, center_x + w, base_y + seg.end_index * factor_y + 1, fill=seg.hex_color, outline="")
-    except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
+    except Exception: pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Helper interno: dibuja elementos tipográficos e íconos sobre el escudo."""
     try:
-        if not math.isfinite(scale) or scale <= 0: return
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, canvas_x + 75 * scale, canvas_y + 41 * scale, fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
         canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, canvas_x + 89 * scale, canvas_y + 38 * scale, canvas_x + 92 * scale, canvas_y + 52 * scale, fill=C_BACKGROUND, outline="")
         canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(UI_FONT_HEADER_SIZE * scale)), UI_FONT_BOLD))
-    except (AttributeError, TypeError, ValueError): pass
+    except Exception: pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """
-    Renderiza el logo vectorial en el canvas destino.
-    :param canvas: Objeto Canvas de tkinter.
-    :param size: Escala base del icono (ej. 56.0).
-    :param canvas_x: Offset horizontal en píxeles.
-    :param canvas_y: Offset vertical en píxeles.
-    """
+    """Renderiza el logo vectorial en el canvas destino."""
     try:
         s = float(size)
-        if not math.isfinite(s) or s <= 0: return
+        if s <= 0: return
         scale = max(0.1, min(10.0, s / 128.0))
         coords = _get_shield_coords(scale)
         contorno = [canvas_x + coords[i] if i % 2 == 0 else canvas_y + coords[i] for i in range(len(coords))]
@@ -397,51 +372,25 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
         _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, scale)
-    except (ValueError, TypeError, AttributeError, ZeroDivisionError, OverflowError): pass
+    except Exception: pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """
-    Dibuja una barra de degradado horizontal en UI.
-    :param canvas: Canvas destino.
-    :param width: Ancho total de la barra.
-    :param height: Grosor vertical.
-    :param canvas_x: Posición X.
-    :param canvas_y: Posición Y.
-    :param stops: Colores de control del gradiente.
-    """
+    """Dibuja una barra de degradado horizontal en UI."""
     try:
         w_val = max(1, int(width))
-        segments = _get_grouped_segments(gradient_colors(w_val, stops))
-        for seg in segments:
+        for seg in _get_grouped_segments(gradient_colors(w_val, stops)):
             canvas.create_line(canvas_x + seg.start_index, canvas_y, canvas_x + seg.end_index, canvas_y, fill=seg.hex_color, width=max(1, int(height)))
-    except (ValueError, TypeError, AttributeError): pass
+    except Exception: pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[HexColor] = None, fill: Optional[HexColor] = None) -> None:
-    """
-    Renderiza un gráfico circular de progreso.
-    :param canvas: Canvas destino.
-    :param percent: Valor 0-100.
-    :param size: Diámetro exterior.
-    :param canvas_x: Posición X.
-    :param canvas_y: Posición Y.
-    :param thickness: Grosor del trazo.
-    :param track: Color de fondo del anillo.
-    :param fill: Color del progreso.
-    """
+    """Renderiza un gráfico circular de progreso."""
+    if percent is None: return
     try:
-        if percent is None: return
-        val = float(percent)
-        if not math.isfinite(val): return
+        val = max(0.0, min(100.0, float(percent)))
         diam = max(20, int(size))
         thick = max(2, min(int(thickness), (diam // 2) - 1))
         borde = thick / 2.0
         caja = (canvas_x + borde, canvas_y + borde, canvas_x + diam - borde, canvas_y + diam - borde)
         canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)
-        if val > 0: canvas.create_arc(*caja, start=90, extent=-(max(0.0, min(100.0, val)) / 100 * 359.9), style="arc", outline=fill or score_color(val), width=thick)
-    except (TypeError, ValueError, AttributeError, ZeroDivisionError): 
-        return
-
-if __name__ == "__main__":
-    assert color("surface") == C_SURFACE, "Mismatch en alias de color SURFACE"
-    assert color("success") == C_SUCCESS, "Mismatch en alias de color SUCCESS"
-    print("Branding module integrity check passed.")
+        if val > 0: canvas.create_arc(*caja, start=90, extent=-(val / 100 * 359.9), style="arc", outline=fill or score_color(val), width=thick)
+    except Exception: return

@@ -598,3 +598,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-08T08:10:52` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: rendimiento).
 - `2026-09-08T08:10:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T08:10:52` Corrida terminada. Total usado hoy: 192.
+- `2026-09-08T08:19:16` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-09-08T08:19:51` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el acceso a colores y tamaños mediante la eliminación de llamadas redundantes a `lru_cache` para constantes y la pre-computación de valores de estilo en el módulo de `branding.py`.
+- `2026-09-08T08:20:18` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se implementó un cache local para los tamaños de subcarpetas durante la recursión en `_sum_directory_recursive`, evitando el re-cálculo redundante cuando múltiples navegadores comparten estructuras comunes bajo el mismo árbol de perfiles.
+- `2026-09-08T08:20:43` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la eficiencia de `_collect_summary_data` eliminando el uso de `dict()` y la creación de estructuras temporales redundantes durante la recolección, y mejoré la lógica de `walk_files` para evitar `stat` innecesarios al verificar el inodo, consolidando la lógica de obtención de atributos.
+- `2026-09-08T08:20:54` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé `_collect_candidates` utilizando `os.scandir` para obtener el tamaño de archivo directamente durante la iteración (a través del objeto `DirEntry`), evitando miles de llamadas innecesarias a `path.stat()` que degradaban el rendimiento en discos mecánicos o volúmenes grandes.
+- `2026-09-08T08:20:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T08:20:54` Corrida terminada. Total usado hoy: 196.
