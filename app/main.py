@@ -1336,10 +1336,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task() -> None:
             self.set_status("Moviendo a revisión...")
-            dest = stage_for_review(aptos)
-            self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")
-            self._invalidate_cache("junk")
-            self._safe_run_ui_callback(self.refresh_list)
+            try:
+                dest = stage_for_review(aptos)
+                self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")
+                self._invalidate_cache("junk")
+                self._safe_run_ui_callback(self.refresh_list)
+            except Exception as e:
+                self.log(f"Error al mover archivos: {e}", "Limpieza")
 
         self.run_async(task, target=str(Path.home()))
 
@@ -1433,9 +1436,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             aislados = 0
             for item_s in suspicions:
                 if self._is_safe_path(item_s.path):
-                    item = quarantine.quarantine_file(item_s.path, reason="Marcado por escaneo heurístico")
-                    self.log(f"Aislado [{item.item_id}] {item_s.path}", "Seguridad")
-                    aislados += 1
+                    try:
+                        item = quarantine.quarantine_file(item_s.path, reason="Marcado por escaneo heurístico")
+                        self.log(f"Aislado [{item.item_id}] {item_s.path}", "Seguridad")
+                        aislados += 1
+                    except Exception as e:
+                        self.log(f"Error al aislar {item_s.path}: {e}", "Seguridad")
             self.log(f"Listo: {aislados} aislado(s).", "Seguridad")
             self._invalidate_cache("suspicions")
 
@@ -1505,8 +1511,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            borrados = quarantine.purge_all()
-            self.log(f"Borrados {borrados} archivo(s) de la cuarentena.", "Cuarentena")
+            try:
+                borrados = quarantine.purge_all()
+                self.log(f"Borrados {borrados} archivo(s) de la cuarentena.", "Cuarentena")
+            except Exception as e:
+                self.log(f"Error en borrado: {e}", "Cuarentena")
 
         self.run_async(task, target=str(Path.home()))
 
@@ -1694,8 +1703,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             movidos = 0
             for ruta in aptos:
                 if self._is_safe_path(ruta):
-                    quarantine.quarantine_file(ruta, reason="Copia duplicada")
-                    movidos += 1
+                    try:
+                        quarantine.quarantine_file(ruta, reason="Copia duplicada")
+                        movidos += 1
+                    except Exception as e:
+                        self.log(f"Error al aislar {ruta}: {e}", "Duplicados")
             self.log(f"Aisladas {movidos} copia(s). Revisá la pestaña Cuarentena.", "Duplicados")
             self._invalidate_cache("dups")
 
@@ -1753,8 +1765,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            ruta = reporting.save_report(self.report_data, destino, as_markdown=as_markdown)
-            self.log(f"Informe guardado en: {ruta}", "Informe")
+            try:
+                ruta = reporting.save_report(self.report_data, destino, as_markdown=as_markdown)
+                self.log(f"Informe guardado en: {ruta}", "Informe")
+            except Exception as e:
+                self.log(f"Error al guardar reporte: {e}", "Informe")
 
         self.run_async(task)
 

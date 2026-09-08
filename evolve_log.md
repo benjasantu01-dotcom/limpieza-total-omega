@@ -1461,3 +1461,12 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-08T04:26:39` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
 - `2026-09-08T04:26:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T04:26:39` Corrida terminada. Total usado hoy: 104.
+- `2026-09-08T04:35:04` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-09-08T04:35:33` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de `is_protected_path` en `_get_local_windows_drives` para asegurar que el escaneo de unidades no intente acceder a rutas de sistema prohibidas o bloqueadas desde el inicio, incrementando la robustez del reporte ante entornos restringidos.
+- `2026-09-08T04:36:00` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se fortalece la robustez ante casos límite en `_collect_candidates` y `_is_valid_candidate` añadiendo validaciones explícitas contra archivos cuyo tamaño cambia o desaparece durante el escaneo (Race Conditions) mediante el uso de `try-except` encapsulados y validación de `stat` antes de la lectura.
+- `2026-09-08T04:36:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-08T04:37:18` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-08T04:38:00` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` al implementar un manejo defensivo ante `SystemMetrics` nulos o mal formados, garantizando que el pipeline de evaluación no colapse ante datos inconsistentes y proporcionando un estado de "Salud Desconocida" en lugar de fallos silenciosos.
+- `2026-09-08T04:39:01` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se mejora la robustez de `on_trim_process` y `on_stage` ante posibles errores de acceso a disco (como archivos bloqueados o denegados) capturando excepciones específicas dentro de los hilos de trabajo, asegurando que la UI no se bloquee permanentemente y proporcionando retroalimentación clara al usuario en lugar de simplemente fallar silenciosamente.
+- `2026-09-08T04:39:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T04:39:01` Corrida terminada. Total usado hoy: 108.

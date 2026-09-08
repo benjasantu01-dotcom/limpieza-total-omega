@@ -125,7 +125,7 @@ def _get_local_windows_drives() -> List[str]:
     for letter in string.ascii_uppercase:
         drive = f"{letter}:\\"
         try:
-            if os.path.exists(drive):
+            if os.path.exists(drive) and not is_protected_path(Path(drive)):
                 drives.append(drive)
         except (OSError, PermissionError):
             continue

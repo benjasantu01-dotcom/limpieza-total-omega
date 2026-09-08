@@ -122,9 +122,11 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 def _is_valid_candidate(path: Path) -> bool:
     """Validador estricto de elegibilidad de archivos para análisis."""
-    if not isinstance(path, Path) or not path.exists():
+    if not isinstance(path, Path):
         return False
     try:
+        if not path.exists():
+            return False
         return (
             path.is_file() and 
             not path.is_symlink() and
@@ -197,10 +199,9 @@ def _collect_candidates(
                             if not is_junction(entry_path):
                                 _scan_directory_recursive(entry_path)
                         elif entry.is_file(follow_symlinks=False):
-                            if _is_valid_candidate(entry_path):
-                                st = entry.stat(follow_symlinks=False)
-                                if st and st.st_size >= min_size:
-                                    size_map[st.st_size].append(entry_path)
+                            st = entry.stat(follow_symlinks=False)
+                            if st and st.st_size >= min_size and _is_valid_candidate(entry_path):
+                                size_map[st.st_size].append(entry_path)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

@@ -220,7 +220,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Calcula el score global y genera recomendaciones a partir de métricas."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
-        return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos."])
+        return HealthResult(0, "F", {}, ["Error: Datos de sistema no disponibles o corruptos."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
     total_pts: int = 0
@@ -235,7 +235,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             total_pts += pts
             if rules:
                 _evaluate_rules(metrics, rules, ratio, recommendations)
-        except Exception:
+        except (Exception, ValueError):
             metric_breakdown[area] = 0
             continue
             
