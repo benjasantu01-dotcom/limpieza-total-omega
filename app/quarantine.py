@@ -511,7 +511,15 @@ def quarantine_file(
     if not source:
         raise ValueError("Ruta de origen vacía.")
     
-    source_path = Path(source).expanduser().resolve(strict=True)
+    # Validar que sea una ruta absoluta antes de intentar resolverla
+    p_source = Path(source)
+    if not p_source.is_absolute():
+        try:
+            p_source = p_source.resolve(strict=True)
+        except (OSError, RuntimeError) as e:
+            raise UnsafePathError(f"Ruta origen no válida o inaccesible: {e}")
+    
+    source_path = p_source
     if source_path.is_dir():
         raise UnsafePathError("Aislamiento de directorios no permitido.")
     if source_path.is_symlink():

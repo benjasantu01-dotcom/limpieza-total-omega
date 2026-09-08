@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 22
+- Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 150 | 13 | 26 | 17 | 130 |
-| 2026-09-08 | 63 | 5 | 9 | 5 | 86 |
+| 2026-09-07 | 149 | 13 | 25 | 16 | 129 |
+| 2026-09-08 | 65 | 5 | 10 | 5 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **48**
 - seguridad defensiva: **48**
+- manejo de errores y validación de entradas: **41**
 - legibilidad y documentación: **40**
-- manejo de errores y validación de entradas: **39**
-- rendimiento: **38**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
+- `assistant.py`: **20**
 - `duplicates.py`: **19**
 - `settings.py`: **19**
 - `healthscore.py`: **18**
 - `safety.py`: **18**
 - `browser.py`: **17**
+- `memory.py`: **17**
+- `quarantine.py`: **17**
 - `scanner.py`: **16**
-- `memory.py`: **16**
-- `quarantine.py`: **16**
 - `branding.py`: **13**
 - `main.py`: **12**
 - `diskreport.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-08T07:19:41` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita para asegurar que la ruta original es absoluta y verificable, evitando excepciones genéricas al intentar manipular rutas relativas o mal formadas antes de iniciar el proceso de aislamiento.
+- `2026-09-08T07:18:37` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` agregando una validación explícita para evitar errores de tipo al procesar los campos extraídos, asegurando que `int()` solo se ejecute tras verificar la naturaleza del dato, evitando excepciones inesperadas en el bucle de parseo.
 - `2026-09-08T07:09:14` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` mediante la adición de un chequeo explícito de tipos y valores nulos en `__post_init__`, evitando que valores no válidos propaguen estados erróneos hacia el pipeline de cálculo.
 - `2026-09-08T07:08:46` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de cálculo de hash y los validadores de rutas añadiendo comprobaciones contra `None`, rutas vacías o errores de tipo, evitando que excepciones en el sistema de archivos detengan procesos críticos.
 - `2026-09-08T06:59:23` **assistant.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_extract_text_from_gemini_json` implementando una validación de seguridad más rigurosa para evitar errores de ejecución ante respuestas de API malformadas o inesperadas, además de reforzar la integridad del bucle de parseo en `ingest` mediante la validación explícita de `float` y `int` para prevenir inyecciones de tipos no deseados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-08T05:06:18` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `assistant.py` mediante la implementación de `_is_restricted_content` para detectar activamente intentos de inyección de contenido, integrándolo en el pipeline de validación de respuestas tanto locales como remotas para asegurar que ninguna salida contenga patrones de rutas o caracteres de control ocultos.
 - `2026-09-08T04:57:22` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `load` y `save` ante archivos en disco potencialmente bloqueados, corruptos o con permisos denegados, integrando un manejo de excepciones más granular que evita el uso de bloques genéricos `pass` y garantiza que cualquier error de E/S retorne un estado de configuración consistente.
 - `2026-09-08T04:55:59` **safety.py** (robustez ante casos límite): Se ha mejorado `_validate_structural_safety` para prevenir ataques de "drive-by download" o manipulación de rutas mediante la detección de puntos de reparse anidados y la validación estricta de componentes de ruta en Windows (evitando nombres terminados en puntos o espacios, los cuales son vectores de ofuscación de archivos).
-- `2026-09-08T04:46:47` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallos durante el proceso de aislamiento, asegurando que el estado del manifiesto y la persistencia del archivo original sean consistentes mediante un bloque `try...finally` mejorado que revierte el archivo aislado si la actualización del manifiesto falla, evitando así estados "huérfanos".
-- `2026-09-08T04:39:01` **main.py** (robustez ante casos límite): Se mejora la robustez de `on_trim_process` y `on_stage` ante posibles errores de acceso a disco (como archivos bloqueados o denegados) capturando excepciones específicas dentro de los hilos de trabajo, asegurando que la UI no se bloquee permanentemente y proporcionando retroalimentación clara al usuario en lugar de simplemente fallar silenciosamente.

@@ -200,6 +200,9 @@ def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[Pr
     Valida si un proceso extraído de la shell es apto para mostrar en la interfaz.
     Aplica filtros de seguridad: omite rutas protegidas y procesos del kernel.
     """
+    if not isinstance(pid_str, str) or not isinstance(ws_str, str):
+        return None
+    
     try:
         pid_val, ws_val = int(pid_str), int(ws_str)
     except (ValueError, TypeError):
@@ -231,11 +234,8 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             if len(parts) != 3 or not all(parts): 
                 continue
             
-            try:
-                proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
-                if proc: yield proc
-            except (IndexError, ValueError):
-                continue
+            proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
+            if proc: yield proc
 
     return sorted(process_generator(), key=lambda p: p.working_set, reverse=True)[:limit]
 

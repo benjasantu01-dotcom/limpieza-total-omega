@@ -556,3 +556,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-08T07:10:09` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de los callbacks de la UI agregando un chequeo explícito de existencia de widgets (`winfo_exists()`) antes de cualquier manipulación, evitando excepciones por `TclError` cuando se dispara un `after` durante o inmediatamente después del cierre de la aplicación.
 - `2026-09-08T07:10:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T07:10:09` Corrida terminada. Total usado hoy: 168.
+- `2026-09-08T07:18:05` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-09-08T07:18:37` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_windows_process_csv` agregando una validación explícita para evitar errores de tipo al procesar los campos extraídos, asegurando que `int()` solo se ejecute tras verificar la naturaleza del dato, evitando excepciones inesperadas en el bucle de parseo.
+- `2026-09-08T07:19:06` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-08T07:19:41` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` añadiendo una validación explícita para asegurar que la ruta original es absoluta y verificable, evitando excepciones genéricas al intentar manipular rutas relativas o mal formadas antes de iniciar el proceso de aislamiento.
+- `2026-09-08T07:19:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-08T07:19:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T07:19:45` Corrida terminada. Total usado hoy: 172.
