@@ -1023,3 +1023,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-07T23:38:54` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-07T23:49:05` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-07T23:59:18` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-08T00:09:33` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-09-08T00:09:59` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-08T00:10:26` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se introdujo una protección defensiva en `_evaluate_rules` para manejar escenarios de datos inconsistentes (como `NaN` o valores extremos) que podrían haber escapado a la validación previa, garantizando que el pipeline de recomendaciones no aborte ante entradas inesperadas.
+- `2026-09-08T00:11:34` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la resiliencia del sistema ante estados de error inesperados durante la carga inicial del layout y el acceso a widgets, implementando un bloque `try-except` robusto dentro de `_tab_factory` y asegurando que las referencias a `winfo_exists()` siempre verifiquen el estado de la ventana antes de cualquier interacción, evitando *crashes* al manipular pestañas durante procesos asíncronos.
+- `2026-09-08T00:11:47` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_read_windows_snapshot` agregando una validación explícita para asegurar que la estructura Win32 devuelva valores lógicos antes de crear el `MemorySnapshot`, evitando así reportar estados de memoria corruptos o negativos ante fallos parciales de la API.
+- `2026-09-08T00:11:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T00:11:47` Corrida terminada. Total usado hoy: 4.

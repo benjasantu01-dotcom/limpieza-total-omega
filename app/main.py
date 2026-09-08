@@ -119,7 +119,7 @@ def validated_ui_operation(func: Callable) -> Callable:
     """Valida estado de la app y captura errores inesperados en callbacks de la UI."""
     @wraps(func)
     def wrapper(self: Any, *args: Any, **kwargs: Any) -> Optional[Any]:
-        if getattr(self, '_closing', False):
+        if getattr(self, '_closing', False) or (hasattr(self, 'winfo_exists') and not self.winfo_exists()):
             return None
         try:
             return func(self, *args, **kwargs)

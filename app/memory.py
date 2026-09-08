@@ -244,7 +244,10 @@ def _read_windows_snapshot() -> MemorySnapshot:
     
     try:
         if kernel32.GlobalMemoryStatusEx(ctypes.byref(_win_mem_buffer)):
-            return MemorySnapshot(total=BytesValue(_win_mem_buffer.ullTotalPhys), available=BytesValue(_win_mem_buffer.ullAvailPhys))
+            total = _win_mem_buffer.ullTotalPhys
+            avail = _win_mem_buffer.ullAvailPhys
+            if total > 0 and avail <= total:
+                return MemorySnapshot(total=BytesValue(total), available=BytesValue(avail))
     except (AttributeError, ValueError, TypeError, OverflowError, OSError):
         pass
     return _EMPTY_SNAPSHOT

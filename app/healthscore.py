@@ -204,15 +204,16 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float, findings: List[str]) -> None:
-    """Filtra y ejecuta recomendaciones in-place."""
+    """Filtra y ejecuta recomendaciones in-place protegiéndose de estados no finitos."""
+    if not math.isfinite(ratio): return
     for rule in rules:
-        if rule.check(metrics, ratio):
-            try:
+        try:
+            if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
-                if msg and msg.strip():
+                if msg and isinstance(msg, str) and msg.strip():
                     findings.append(msg.strip())
-            except Exception:
-                continue
+        except Exception:
+            continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Ejecuta el pipeline de evaluación completo sobre las métricas provistas."""
