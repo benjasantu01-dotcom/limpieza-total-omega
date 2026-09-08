@@ -327,8 +327,11 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda una copia física del SVG tras validación estricta de seguridad."""
     if destination is None: return None
     try:
-        path_raw = Path(destination)
-        # Validación: forzar conversión absoluta y evitar nombres de archivo vacíos o puntos
+        raw_val = str(destination)
+        if not raw_val or len(raw_val) > 1024: return None
+        path_raw = Path(raw_val)
+        
+        # Validación: normalización para detectar intentos de escape
         if not path_raw.name or path_raw.name in (".", ".."): return None
         path_obj = path_raw.resolve().absolute()
         parent = path_obj.parent

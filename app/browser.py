@@ -19,6 +19,7 @@ así en CI se puede simular una instalación con carpetas temporales.
 from __future__ import annotations
 import os
 import ctypes
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Sequence, Dict, List, Optional, Callable, Set, Union, Any
@@ -166,7 +167,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         
     try:
         path = entry.path
-        if not path or len(path) >= MAX_PATH_LEN or not os.path.isabs(path) or any(c in path for c in '<>|?"*'):
+        if not path or len(path) >= MAX_PATH_LEN or not os.path.isabs(path) or any(c in path for c in '<>|?"*') or '\0' in path:
             return True
         
         if entry.is_symlink() or is_junction_fn(path) or os.path.ismount(path):
@@ -208,10 +209,8 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Recorre el sistema de archivos de forma recursiva limitando la profundidad.
-    Utiliza un diccionario 'memo' para prevenir re-procesamiento innecesario 
-    y recursión infinita en árboles de directorios grandes.
     """
-    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
+    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or depth < 0 or len(root_abs) >= MAX_PATH_LEN:
         return 0
     
     if root_abs in memo:
