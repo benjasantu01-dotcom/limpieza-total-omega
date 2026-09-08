@@ -227,15 +227,15 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
     """Retorna los N archivos más pesados encontrados en el directorio base."""
     root = _validate_root(directory)
     if not root: return []
-    data = _collect_summary_data(root, skip_protected)
-    return [FileEntry(p, s) for s, p in sorted(data.top_files, reverse=True)[:max(1, limit)]]
+    data = _collect_summary_data(root, skip_protected, limit)
+    return [FileEntry(p, s) for s, p in heapq.nlargest(limit, data.top_files, key=lambda x: x[0])]
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """Agrupa el uso de espacio por extensión de archivo."""
     root = _validate_root(directory)
     if not root: return []
-    data = _collect_summary_data(root, skip_protected)
+    data = _collect_summary_data(root, skip_protected, 0)
     usage_list = [ExtensionUsage(e, data.ext_sizes[e], data.ext_counts[e]) for e in data.ext_sizes]
     return heapq.nlargest(max(1, limit), usage_list, key=lambda u: u.size_bytes)
 
@@ -264,12 +264,12 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """Retorna el total de bytes y cantidad de archivos procesados."""
     root = _validate_root(directory)
     if not root: return 0, 0
-    data = _collect_summary_data(root, skip_protected)
+    data = _collect_summary_data(root, skip_protected, 0)
     return data.total_bytes, data.total_files
 
 
-def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
-    """Motor de recolección de estadísticas: un solo recorrido para extraer todas las métricas."""
+def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 20) -> SummaryData:
+    """Motor de recolección de estadísticas: un solo recorrido eficiente usando heaps."""
     total_bytes = total_files = 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
@@ -283,10 +283,11 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
             ext_sizes[extension] += size
             ext_counts[extension] += 1
             
-            if len(top_heap) < 20:
-                heapq.heappush(top_heap, (size, path))
-            elif size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (size, path))
+            if limit > 0:
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, (size, path))
+                elif size > top_heap[0][0]:
+                    heapq.heapreplace(top_heap, (size, path))
         except (OSError, PermissionError, AttributeError):
             continue
             
@@ -297,7 +298,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     """Genera un reporte textual estructurado de los hallazgos en la carpeta dada."""
     root = _validate_root(directory)
     if not root: return ["Error: Ruta no válida."]
-    data = _collect_summary_data(root, skip_protected)
+    data = _collect_summary_data(root, skip_protected, 20)
     
     if data.total_files == 0: return ["Aviso: No hay archivos accesibles."]
 
@@ -305,5 +306,5 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     for ext, size in heapq.nlargest(8, data.ext_sizes.items(), key=lambda x: x[1]):
         lines.append(f"  {ext:<18} {format_size(size):>10}  ({data.ext_counts[ext]} archivos)")
     lines.extend(["", "Mayores archivos:"])
-    lines.extend([f"  {format_size(s):>10}  {p}" for s, p in sorted(data.top_files, reverse=True)])
+    lines.extend([f"  {format_size(s):>10}  {p}" for s, p in heapq.nlargest(20, data.top_files, key=lambda x: x[0])])
     return lines

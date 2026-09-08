@@ -9,43 +9,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 211
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 88 | 9 | 16 | 11 | 84 |
-| 2026-09-08 | 131 | 10 | 20 | 8 | 127 |
+| 2026-09-07 | 85 | 9 | 16 | 10 | 84 |
+| 2026-09-08 | 134 | 10 | 20 | 8 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **46**
-- robustez ante casos límite: **44**
-- rendimiento: **28**
+- robustez ante casos límite: **41**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **20**
 - `safety.py`: **19**
 - `settings.py`: **19**
 - `duplicates.py`: **19**
-- `assistant.py`: **19**
 - `healthscore.py`: **19**
-- `memory.py`: **18**
 - `scanner.py`: **18**
-- `quarantine.py`: **16**
+- `memory.py`: **17**
 - `browser.py`: **16**
-- `branding.py`: **13**
-- `diskreport.py`: **13**
+- `quarantine.py`: **15**
+- `branding.py`: **14**
+- `diskreport.py`: **14**
 - `main.py`: **11**
 - `startup.py`: **11**
-- `organizer.py`: **8**
+- `organizer.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-08T12:46:20` **diskreport.py** (rendimiento): Optimicé el motor `_collect_summary_data` para utilizar una estructura de datos `heapq` más eficiente y evitar la clasificación completa de listas en `largest_files`, reduciendo la carga de CPU y memoria en directorios grandes.
+- `2026-09-08T12:45:42` **branding.py** (rendimiento): Se optimizó el cálculo de la paleta y los colores de severidad utilizando `@lru_cache` para evitar la sobrecarga de consultas recurrentes en una interfaz gráfica dinámica, y se refactorizó `severity_color` y `severity_label` para centralizar la lógica de acceso a `SEVERITY_STYLES`, evitando redundancias de `lowercase` y búsquedas repetidas.
+- `2026-09-08T12:45:07` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la iteración secuencial sobre los tokens de la pregunta por una búsqueda directa en `_KEYWORD_TO_HANDLER`, evitando el overhead del regex `_TOKEN_REGEX` y el loop `for` cuando la pregunta coincide exactamente con una clave, además de reducir el uso de memoria en las operaciones de búsqueda de palabras clave.
 - `2026-09-08T12:36:10` **startup.py** (legibilidad y documentación): He refactorizado la clase `StartupEntry` para separar la lógica de validación de rutas y acceso a archivos de la lógica de negocio, documentando con docstrings claros los métodos privados y clarificando las responsabilidades de cada chequeo para mejorar la mantenibilidad y legibilidad del código.
 - `2026-09-08T12:35:56` **settings.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del código mediante la refactorización de `_Validators._run_safety_checks` para consolidar la lógica de resolución de rutas y validación, eliminando redundancias en el flujo de ejecución.
 - `2026-09-08T12:35:25` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `scanner.py` mediante la adición de docstrings detallados en los métodos de `Scanner` y funciones auxiliares, clarificando el propósito, argumentos y lógica de seguridad de cada componente.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-08T12:05:37` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código añadiendo docstrings descriptivos con el formato Google Style, especificando tipos de retorno y parámetros, y añadiendo anotaciones de tipo faltantes para mejorar la mantenibilidad y legibilidad técnica.
 - `2026-09-08T12:05:21` **branding.py** (legibilidad y documentación): Documenté el propósito técnico de las funciones críticas y clarifiqué la estructura de los tipos complejos para mejorar la mantenibilidad del módulo de branding.
 - `2026-09-08T12:04:46` **assistant.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados en funciones clave y la creación de una propiedad `is_empty` en `SystemContext` para estandarizar la verificación de estado, reemplazando chequeos manuales fragmentados.
-- `2026-09-08T12:04:07` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez en la extracción de rutas del registro mediante la validación estricta de las filas del CSV antes de operar sobre ellas, evitando errores de clave ausente cuando el output de PowerShell es inesperadamente inconsistente.
-- `2026-09-08T11:55:09` **settings.py** (manejo de errores y validación de entradas): Mejora la robustez de la función `save` ante fallos de escritura en el sistema de archivos al implementar un bloque `try-finally` para asegurar que el archivo temporal (`.tmp`) sea eliminado si ocurre una excepción inesperada durante la escritura o sincronización, evitando dejar basura en el directorio de configuración.
-- `2026-09-08T11:54:51` **scanner.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones en `scan_directory` y `_is_safe_entry` para validar tipos de entrada inesperados y evitar condiciones de carrera al acceder al sistema de archivos, asegurando que la función `is_protected_path` siempre reciba tipos de datos válidos (Path) y no valores nulos o tipos incompatibles que podrían elevar excepciones no capturadas.

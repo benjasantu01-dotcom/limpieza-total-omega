@@ -154,10 +154,12 @@ def app_title() -> str:
     """Retorna el nombre completo de la aplicación y su versión actual."""
     return f"{APP_NAME} v{APP_VERSION}"
 
+@lru_cache(maxsize=32)
 def color(name: str) -> HexColor:
     """Busca un color en la paleta global; retorna gris por defecto si no existe."""
     return PALETTE.get(name, "#808080")
 
+@lru_cache(maxsize=16)
 def font_size(name: str) -> int:
     """Retorna el tamaño de fuente configurado para un rol tipográfico dado."""
     return FONT_SIZES.get(name, UI_FONT_BODY_SIZE)
@@ -172,16 +174,21 @@ def tab_label(section: str) -> str:
     """Genera el texto formateado para pestañas, combinando icono y etiqueta."""
     return f"{icon(section)}  {section}"
 
-def severity_color(severity: Optional[str]) -> HexColor:
-    """Selecciona el color según el nivel de severidad (OK, Info, Warning, Danger)."""
+@lru_cache(maxsize=16)
+def _get_severity_style(severity: Optional[str]) -> Tuple[HexColor, str]:
+    """Helper interno para recuperar estilo de severidad mediante caché."""
     if severity and (style := SEVERITY_STYLES.get(severity.lower())):
-        return style[0]
-    return C_TEXT_MUTED
+        return style
+    return (C_TEXT_MUTED, "Desconocido")
+
+def severity_color(severity: Optional[str]) -> HexColor:
+    """Selecciona el color según el nivel de severidad."""
+    return _get_severity_style(severity)[0]
 
 def severity_label(severity: Optional[str]) -> str:
     """Retorna la etiqueta legible de una severidad dada."""
-    if severity and (style := SEVERITY_STYLES.get(severity.lower())):
-        return style[1]
+    if severity and severity.lower() in SEVERITY_STYLES:
+        return _get_severity_style(severity)[1]
     return severity.capitalize() if severity else "Desconocido"
 
 def severity_icon(severity: Optional[str]) -> str:
