@@ -211,7 +211,6 @@ def grade_for_score(score: float | int) -> str:
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float, findings: List[str]) -> None:
     """Ejecuta una lista de reglas de recomendación in-place."""
-    if not math.isfinite(ratio) or not metrics.is_finite: return
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -232,8 +231,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for area, weight, scorer, rules in _OPTIMIZED_PIPELINE:
         try:
-            raw_ratio = scorer(metrics)
-            ratio = _clamp(raw_ratio) if math.isfinite(raw_ratio) else 0.0
+            ratio = scorer(metrics)
             pts = int(round(ratio * weight))
             metric_breakdown[area] = pts
             total_pts += pts

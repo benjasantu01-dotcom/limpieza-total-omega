@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 215
 
@@ -16,24 +16,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 134 | 11 | 23 | 14 | 126 |
-| 2026-09-08 | 85 | 5 | 12 | 5 | 89 |
+| 2026-09-07 | 132 | 11 | 23 | 14 | 124 |
+| 2026-09-08 | 86 | 5 | 13 | 5 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **45**
-- robustez ante casos límite: **41**
-- rendimiento: **33**
+- robustez ante casos límite: **39**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
 - `duplicates.py`: **20**
-- `safety.py`: **19**
 - `assistant.py`: **19**
-- `healthscore.py`: **18**
+- `settings.py`: **19**
+- `healthscore.py`: **19**
+- `safety.py`: **18**
 - `browser.py`: **17**
 - `quarantine.py`: **17**
 - `scanner.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-08T08:29:58` **healthscore.py** (rendimiento): Optimicé el bucle principal de `compute_score` eliminando la llamada innecesaria a `math.isfinite` en cada iteración, ya que `SystemMetrics` garantiza la integridad de los datos en su `__post_init__`, y pre-calculé el peso normalizado para evitar multiplicaciones redundantes.
 - `2026-09-08T08:20:54` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando `os.scandir` para obtener el tamaño de archivo directamente durante la iteración (a través del objeto `DirEntry`), evitando miles de llamadas innecesarias a `path.stat()` que degradaban el rendimiento en discos mecánicos o volúmenes grandes.
 - `2026-09-08T08:20:43` **diskreport.py** (rendimiento): Optimizé la eficiencia de `_collect_summary_data` eliminando el uso de `dict()` y la creación de estructuras temporales redundantes durante la recolección, y mejoré la lógica de `walk_files` para evitar `stat` innecesarios al verificar el inodo, consolidando la lógica de obtención de atributos.
 - `2026-09-08T08:20:18` **browser.py** (rendimiento): Se implementó un cache local para los tamaños de subcarpetas durante la recursión en `_sum_directory_recursive`, evitando el re-cálculo redundante cuando múltiples navegadores comparten estructuras comunes bajo el mismo árbol de perfiles.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-08T07:49:39` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de puntuación y la expansión de los docstrings para explicar la lógica de normalización de cada métrica.
 - `2026-09-08T07:49:12` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones críticas, aclarando el propósito y el manejo de excepciones, e integrando type hints faltantes en funciones internas para mejorar la mantenibilidad y legibilidad del código.
 - `2026-09-08T07:40:34` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento al definir un tipo explícito `Inode` para los identificadores de archivos y clarificar la lógica de las funciones de recolección de datos mediante anotaciones de tipos más precisas.
-- `2026-09-08T07:40:22` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de los tipos mediante `TypeAlias` y `TypedDict` para hacer explícita la estructura del mapa de rutas de caché, facilitando el mantenimiento y la lectura de las configuraciones de los navegadores.

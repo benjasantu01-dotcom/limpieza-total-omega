@@ -605,3 +605,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-08T08:20:54` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé `_collect_candidates` utilizando `os.scandir` para obtener el tamaño de archivo directamente durante la iteración (a través del objeto `DirEntry`), evitando miles de llamadas innecesarias a `path.stat()` que degradaban el rendimiento en discos mecánicos o volúmenes grandes.
 - `2026-09-08T08:20:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T08:20:54` Corrida terminada. Total usado hoy: 196.
+- `2026-09-08T08:29:27` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-09-08T08:29:58` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle principal de `compute_score` eliminando la llamada innecesaria a `math.isfinite` en cada iteración, ya que `SystemMetrics` garantiza la integridad de los datos en su `__post_init__`, y pre-calculé el peso normalizado para evitar multiplicaciones redundantes.
+- `2026-09-08T08:30:56` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._box, LimpiezaTotalOmegaApp._get_cached, LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._invalidate_cache, LimpiezaTotalOmegaApp._is_safe_disk_operation, LimpiezaTotalOmegaApp._is_safe_file_access, LimpiezaTotalOmegaApp._is_safe_target_dir, LimpiezaTotalOmegaApp._is_valid_dir, LimpiezaTotalOmegaApp._run_heuristic_scan, LimpiezaTotalOmegaApp._safe_run, LimpiezaTotalOmegaApp._update_cards, LimpiezaTotalOmegaApp._validate_numeric_setting, LimpiezaTotalOmegaApp._verify_disk_path
+- `2026-09-08T08:31:24` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-09-08T08:31:39` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-08T08:31:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T08:31:39` Corrida terminada. Total usado hoy: 200.
