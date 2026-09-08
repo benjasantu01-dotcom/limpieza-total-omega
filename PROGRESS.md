@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-06 | 33 | 0 | 4 | 2 | 39 |
+| 2026-09-06 | 30 | 0 | 3 | 2 | 39 |
 | 2026-09-07 | 158 | 15 | 27 | 19 | 131 |
-| 2026-09-08 | 32 | 1 | 3 | 2 | 38 |
+| 2026-09-08 | 35 | 1 | 4 | 2 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **51**
 - robustez ante casos límite: **49**
+- legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **45**
-- legibilidad y documentación: **43**
-- rendimiento: **35**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
-- `safety.py`: **19**
-- `scanner.py`: **19**
 - `browser.py`: **19**
+- `memory.py`: **19**
+- `settings.py`: **19**
 - `assistant.py`: **19**
-- `memory.py`: **18**
+- `healthscore.py`: **18**
+- `safety.py`: **18**
+- `scanner.py`: **18**
 - `duplicates.py`: **18**
-- `healthscore.py`: **17**
 - `quarantine.py`: **17**
 - `branding.py`: **14**
 - `diskreport.py`: **13**
 - `main.py`: **12**
+- `organizer.py`: **10**
 - `startup.py`: **9**
-- `organizer.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-08T03:29:49` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de type hints en los retornos, clarificando las precondiciones de seguridad y el comportamiento ante errores.
+- `2026-09-08T03:29:34` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings precisos que detallan los parámetros, excepciones y el propósito de las funciones críticas de bajo nivel, asegurando que el equipo entienda los riesgos de las APIs de Win32 utilizadas.
+- `2026-09-08T03:25:58` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings de tipo Google Style a todas las funciones y clases, clarificando las responsabilidades de cada componente en el pipeline de evaluación para facilitar el mantenimiento futuro.
 - `2026-09-08T03:15:07` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints detallados y docstrings descriptivos en las funciones de procesamiento interno, clarificando la jerarquía de las estrategias de hashing para asegurar que el código sea autodocumentado y fácil de mantener.
 - `2026-09-08T03:14:56` **diskreport.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos, tipo de retorno explícito en `summarize` y eliminando la redundancia en `_collect_summary_data`, donde ahora se confía directamente en la inmutabilidad de `SummaryData`.
 - `2026-09-08T03:14:29` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código mediante type hints más específicos, normalización de rutas, y la documentación del propósito técnico de las funciones auxiliares de bajo nivel (`kernel32` y `junctions`), asegurando que la intención del autor original sobre la seguridad (no seguir enlaces ni rutas fuera de base) esté explícita en el flujo de control.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-08T02:54:17` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_sha256` y `_is_file_locked` mediante la captura de excepciones específicas y el cierre explícito de descriptores de archivo, evitando fugas de memoria o bloqueos persistentes en escenarios de errores de lectura.
 - `2026-09-08T02:46:34` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de la lógica de análisis de procesos en `parse_windows_process_csv` añadiendo una validación explícita para asegurar que los parámetros de entrada sean procesables antes de intentar iterar sobre ellos, previniendo errores en caso de entradas malformadas o inesperadas.
 - `2026-09-08T02:34:29` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_kernel32` y `__is_system_hidden` implementando validaciones de tipo y estructura más estrictas para evitar excepciones de acceso a atributos `None` o errores de tipo en tiempo de ejecución, alineado con el enfoque de validación de entradas.
-- `2026-09-08T02:34:02` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de parámetros y la captura de excepciones específicas, eliminando riesgos de fallos silenciosos por entradas malformadas.
-- `2026-09-08T02:33:26` **assistant.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `build_context` implementando una validación estricta para asegurar que el `SystemContext` sea siempre un objeto válido, evitando que entradas mal formadas o tipos inesperados propaguen estados inconsistentes durante la ingesta.
-- `2026-09-08T01:11:17` **settings.py** (seguridad defensiva): He implementado una verificación de integridad previa a la escritura más robusta en `save()` mediante `path.resolve()`, asegurando que, incluso tras seguir enlaces simbólicos o puntos de reparse inofensivos, el destino final de la configuración resida estrictamente bajo el directorio de usuario permitido, evitando potenciales ataques de "jailbreak" de rutas mediante enlaces simbólicos.

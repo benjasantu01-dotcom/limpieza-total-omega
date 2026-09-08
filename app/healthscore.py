@@ -89,23 +89,23 @@ if sum(WEIGHTS.values()) != 100:
 _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Transforma el volumen de basura (en MB) en un ratio de salud (0.0 a 1.0)."""
+    """Transforma el volumen de basura (en MB) en un ratio de salud."""
     return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula el ratio de seguridad penalizando conteo de archivos sospechosos y advertencias."""
+    """Calcula el ratio de seguridad penalizando conteo de archivos sospechosos."""
     return _clamp(1.0 - ((float(suspicious_count) * 0.05) + (float(warnings) * 0.25)))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Evalúa salud de memoria RAM: porcentaje de disponibilidad respecto al umbral crítico."""
+    """Evalúa salud de memoria RAM: porcentaje de disponibilidad."""
     return _clamp(float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Evalúa salud de disco: porcentaje de espacio libre respecto al umbral crítico."""
+    """Evalúa salud de disco: porcentaje de espacio libre."""
     return _clamp(float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de duplicados según el espacio desperdiciado (en MB)."""
+    """Calcula el ratio de duplicados según el espacio desperdiciado."""
     return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int) -> NormalizedRatio:
@@ -151,7 +151,7 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None:
-        """Validación automática tras inicialización para garantizar coherencia numérica."""
+        """Valida y normaliza las métricas tras la inicialización."""
         self.validate()
         if not self.is_finite:
             raise ValueError("Métricas de sistema contienen valores no finitos.")
@@ -169,12 +169,12 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Verifica que todos los atributos numéricos sean matemáticamente finitos."""
+        """Comprueba si todos los campos numéricos son valores finitos."""
         return all(math.isfinite(float(getattr(self, f.name))) for f in self.__dataclass_fields__.values())
 
 @dataclass
 class HealthResult:
-    """Resultado del cálculo de salud con desglose y recomendaciones."""
+    """Resultado final de la evaluación de salud del sistema."""
     score: int
     grade: str
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
@@ -182,22 +182,22 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
-        """Determina si la salud general se encuentra en un estado óptimo."""
+        """Indica si el sistema está en un estado óptimo (80-100)."""
         return 80 <= self.score <= 100
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    """Limita un valor a un rango específico [low, high]."""
+    """Fuerza a 'value' a mantenerse dentro del rango [low, high]."""
     return max(low, min(high, value))
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    """Conversor seguro de tipos a float con validación de finitud."""
+    """Conversión segura de cualquier valor a float."""
     try:
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError): return default
 
 def grade_for_score(score: float | int) -> str:
-    """Clasifica el puntaje (0-100) según una escala de letras."""
+    """Asigna una letra (A-F) basada en un puntaje numérico."""
     s = float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -206,7 +206,7 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float, findings: List[str]) -> None:
-    """Filtra y ejecuta recomendaciones in-place protegiéndose de estados no finitos."""
+    """Ejecuta una lista de reglas de recomendación in-place."""
     if not math.isfinite(ratio): return
     for rule in rules:
         try:
@@ -218,7 +218,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Ejecuta el pipeline de evaluación completo sobre las métricas provistas."""
+    """Calcula el score global y genera recomendaciones a partir de métricas."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos."])
     
@@ -251,13 +251,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(pts: int, maximo: int) -> str:
-    """Renderiza una barra de progreso textual simple."""
+    """Crea una representación visual de barra para un área específica."""
     if maximo <= 0: return ""
     puntos = _clamp(pts, 0, maximo)
     return ('#' * int(puntos)) + ('.' * int(maximo - puntos))
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Serializa un HealthResult en una lista de líneas legible para el usuario."""
+    """Genera una lista de líneas textuales formateadas para el reporte."""
     if not isinstance(result, HealthResult):
         return ["Error: Informe no disponible."]
     

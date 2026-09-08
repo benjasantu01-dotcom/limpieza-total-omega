@@ -181,8 +181,9 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado por otro proceso usando syscalls.
-    En Windows, intenta abrir el archivo solo para lectura sin pedir exclusividad.
+    Verifica si un archivo está bloqueado por otro proceso.
+    En Windows, usa CreateFileW con permisos de compartición para verificar
+    si el archivo está en uso exclusivo por otro proceso.
     """
     if path is None or _is_junction(path): return True
     if not path.exists(): return True
@@ -204,7 +205,8 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
-    Verifica si el destino está contenido en la fuente (bucle de copia).
+    Verifica si la ruta destino está contenida dentro de la ruta fuente.
+    Previene bucles de recursión al intentar mover carpetas.
     """
     if src is None or dest is None: return True
     try:
@@ -228,7 +230,8 @@ def _passes_system_checks(src: Path) -> bool:
 
 def _has_forbidden_chars(path: Path) -> bool:
     """
-    Valida la ausencia de caracteres reservados de Windows (ej. CON, NUL).
+    Valida la ausencia de nombres reservados de Windows (ej. CON, NUL) 
+    y caracteres prohibidos en el sistema de archivos NTFS.
     """
     if path is None: return True
     try:
@@ -257,7 +260,8 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 
 def _validate_file_attributes(src: Path) -> bool:
     """
-    Valida la integridad física del archivo: existencia, tipo y disponibilidad.
+    Valida la integridad física del archivo: existencia, tipo, disponibilidad
+    y verifica que no esté bloqueado ni sea un link simbólico.
     """
     try:
         if src is None or not src.exists() or not src.is_file(): return False
@@ -306,7 +310,7 @@ def _should_scan_directory(entry: os.DirEntry) -> bool:
 
 
 def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
-    """Analiza una entrada individual del sistema de archivos y la añade si es basura válida."""
+    """Analiza una entrada individual y la añade a la lista si es basura válida."""
     try:
         if entry.is_file(follow_symlinks=False) and is_valid_junk_extension(entry.name):
             info = entry.stat()
@@ -410,6 +414,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
     Traslada archivos basura validados a un área de cuarentena para revisión.
+    Retorna la ruta del directorio de cuarentena si la operación tiene éxito.
     """
     if not files or not isinstance(review_dir, str): return None
 
@@ -444,6 +449,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina archivos desde la carpeta de cuarentena de forma segura.
+    Retorna la cantidad de archivos eliminados exitosamente.
     """
     if not isinstance(review_dir, str): return 0
 

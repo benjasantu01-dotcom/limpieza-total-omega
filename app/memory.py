@@ -352,7 +352,13 @@ def _is_system_process(pid: int) -> bool:
 
 def _get_process_path(proc_handle: int) -> Optional[str]:
     """
-    Recupera la ruta absoluta del ejecutable mediante APIs de Win32 (Psapi).
+    Recupera la ruta absoluta del ejecutable de un proceso mediante GetModuleFileNameExW.
+    
+    Args:
+        proc_handle: Handle abierto del proceso.
+        
+    Returns:
+        Ruta absoluta como string si es accesible, None en caso contrario.
     """
     if not proc_handle: return None
     psapi = ctypes.windll.psapi
@@ -366,8 +372,19 @@ def _get_process_path(proc_handle: int) -> Optional[str]:
 
 def _is_safe_to_trim(proc_handle: int, pid: int) -> Tuple[bool, Optional[str]]:
     """
-    Realiza una auditoría de seguridad del proceso objetivo antes de modificar su estado.
-    Valida el estado del handle, la actividad real del PID y la integridad de la ruta.
+    Audita un proceso para determinar si es seguro ejecutar EmptyWorkingSet.
+    
+    Valida: 
+      1. Coherencia entre handle y PID.
+      2. Que el proceso no haya finalizado (EXIT_CODE).
+      3. Que la ruta del ejecutable no pertenezca a zonas restringidas.
+      
+    Args:
+        proc_handle: Handle de Win32 para el proceso (requiere privilegios de acceso).
+        pid: ID del proceso a validar.
+        
+    Returns:
+        Tuple (es_seguro, mensaje_error_opcional).
     """
     if not proc_handle: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
@@ -395,6 +412,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta liberar páginas de memoria física del working set de un proceso.
     Solo disponible en Windows tras validación estricta de seguridad.
+    
+    Args:
+        pid: Identificador entero del proceso (o string convertible).
+        
+    Returns:
+        Tuple (éxito, mensaje descriptivo).
     """
     if not _is_windows: return False, "Operación solo soportada en Windows."
     
