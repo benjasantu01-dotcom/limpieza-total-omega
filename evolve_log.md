@@ -1477,3 +1477,34 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-08T04:46:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-09-08T04:46:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-08T04:46:51` Corrida terminada. Total usado hoy: 112.
+- `2026-09-08T04:55:26` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-09-08T04:55:59` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado `_validate_structural_safety` para prevenir ataques de "drive-by download" o manipulación de rutas mediante la detección de puntos de reparse anidados y la validación estricta de componentes de ruta en Windows (evitando nombres terminados en puntos o espacios, los cuales son vectores de ofuscación de archivos).
+- `2026-09-08T04:56:22` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-08T04:57:22` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `load` y `save` ante archivos en disco potencialmente bloqueados, corruptos o con permisos denegados, integrando un manejo de excepciones más granular que evita el uso de bloques genéricos `pass` y garantiza que cualquier error de E/S retorne un estado de configuración consistente.
+- `2026-09-08T04:57:40` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.42s
+
+```
+- `2026-09-08T04:57:40` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se introdujo una validación robusta contra errores de permisos en `_resolve_and_cache_path` y se mejoró la lógica de normalización de rutas para evitar el procesamiento de cadenas que excedan los límites de longitud de Windows (`MAX_PATH`) o contengan caracteres inválidos tras la normalización, evitando así posibles excepciones silenciosas o errores de lógica en el manejo de ejecutables.
+- `2026-09-08T04:57:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-08T04:57:40` Corrida terminada. Total usado hoy: 116.

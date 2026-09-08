@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import json
 import os
-import shutil
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -327,7 +326,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         os.replace(temp_path, ruta)
         _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta
-    except (TypeError, ValueError, OSError, IOError, PermissionError, json.JSONDecodeError):
+    except (TypeError, ValueError, OSError, IOError, PermissionError):
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:

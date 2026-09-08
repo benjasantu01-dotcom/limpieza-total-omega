@@ -373,8 +373,8 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Caracteres inválidos detectados.", SafetyValidationErrorCode.INVALID_CHARS)
     
     for part in target_path.parts:
-        if not part or part.strip() != part:
-            raise UnsafePathError("Componente vacío o malformado.", SafetyValidationErrorCode.INVALID_CHARS)
+        if not part or part.strip() != part or part.endswith(('.', ' ')):
+            raise UnsafePathError(f"Componente '{part}' malformado.", SafetyValidationErrorCode.INVALID_CHARS)
         name_only = part.split('.')[0]
         if _is_reserved_device_name(name_only):
             raise UnsafePathError(f"Nombre reservado '{part}'.", SafetyValidationErrorCode.RESERVED_NAME)
