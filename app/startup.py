@@ -110,8 +110,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae y valida una ruta absoluta desde una cadena entrecomillada.
-        Busca el primer cierre de comillas y verifica integridad de la ruta resultante.
+        Extracts and validates an absolute path from a quoted string.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -139,7 +138,6 @@ class StartupEntry:
             if not os.path.lexists(p) or p.is_dir():
                 return False
             stats = p.lstat()
-            # 0x00000400 es el flag de FileAttributeReparsePoint
             return not p.is_symlink() and not (getattr(stats, 'st_file_attributes', 0) & 0x00000400)
         except (OSError, PermissionError, AttributeError):
             return False
@@ -276,24 +274,20 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f = io.StringIO(csv_text.strip())
         reader: csv.DictReader = csv.DictReader(f)
         
-        # Validar estructura mínima para evitar errores de índice en filas
         if not reader.fieldnames or len(reader.fieldnames) < 2:
             return []
             
         f_name, f_cmd = reader.fieldnames[0], reader.fieldnames[1]
             
         for row in reader:
-            if not isinstance(row, dict):
+            if not isinstance(row, dict) or None in (row.get(f_name), row.get(f_cmd)):
                 continue
                 
-            raw_n = row.get(f_name)
-            raw_c = row.get(f_cmd)
+            name_raw: str = row[f_name]
+            cmd_raw: str = row[f_cmd]
             
-            if raw_n is None or raw_c is None:
-                continue
-                
-            name: str = "".join(c for c in raw_n if ord(c) >= 32).strip()
-            cmd: str = "".join(c for c in raw_c if ord(c) >= 32).strip()
+            name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
+            cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
             
             if not name or not cmd or cmd.startswith(r"\\") or cmd in seen_commands:
                 continue

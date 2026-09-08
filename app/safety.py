@@ -252,14 +252,15 @@ def _check_file_integrity(path: Path) -> None:
         if isinstance(e, FileNotFoundError):
             return
         code = SafetyValidationErrorCode.ACCESS_DENIED if isinstance(e, PermissionError) else SafetyValidationErrorCode.IO_ERROR
-        raise UnsafePathError(f"Error de acceso en {path}", code)
+        raise UnsafePathError(f"Error de acceso en {path}: {e}", code)
         
     for rule in _VALIDATORS:
         try:
             if rule.predicate(path, file_stat):
                 code = SafetyValidationErrorCode.HARD_LINK_DETECTED if rule.reason == ProtectionReason.HARD_LINK else SafetyValidationErrorCode.GENERIC
                 raise UnsafePathError(f"Violación de integridad ({rule.reason.value})", code)
-        except (AttributeError, OSError):
+        except Exception as e:
+            # Captura errores en predicados para no comprometer la seguridad si una regla falla
             continue
 
 
@@ -375,8 +376,11 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     for part in target_path.parts:
         if not part or part.strip() != part or part.endswith(('.', ' ')):
             raise UnsafePathError(f"Componente '{part}' malformado.", SafetyValidationErrorCode.INVALID_CHARS)
-        name_only = part.split('.')[0]
-        if _is_reserved_device_name(name_only):
+        
+        # Validación defensiva contra posibles divisiones de string vacías
+        parts_split = part.split('.')
+        name_only = parts_split[0]
+        if name_only and _is_reserved_device_name(name_only):
             raise UnsafePathError(f"Nombre reservado '{part}'.", SafetyValidationErrorCode.RESERVED_NAME)
 
     if path_string.startswith(("\\\\", "//")):
@@ -395,9 +399,12 @@ def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | 
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     
-    app_root: Path = Path(os.getcwd()).resolve()
-    if target_path == app_root or app_root in target_path.parents:
-        raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
+    try:
+        app_root: Path = Path(os.getcwd()).resolve()
+        if target_path == app_root or app_root in target_path.parents:
+            raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
+    except (OSError, RuntimeError):
+        pass
         
     if is_drive_root(target_path):
         raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS)
@@ -443,9 +450,6 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     results = []
     for p in paths:
         if p is None: continue
-        path_str = str(p)
-        if not allow_sensitive and _is_sensitive_extension(Path(path_str)):
-            continue
         try:
             results.append(ensure_safe_to_modify(p, allow_sensitive=allow_sensitive))
         except (UnsafePathError, ValueError, TypeError, OSError):

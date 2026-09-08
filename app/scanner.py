@@ -159,7 +159,8 @@ class Scanner:
                 ext_low = name[ext_idx:].lower()
                 if ext_low in SUSPICIOUS_ALL_EXTS:
                     self._run_file_heuristics(Path(entry.path), entry, ext_low)
-        except (OSError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError, FileNotFoundError) as e:
+            logger.debug(f"Error accediendo a la entrada {entry.path}: {e}")
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
@@ -190,7 +191,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Punto de entrada para escanear recursivamente un directorio completo."""
-    if directory is None or (isinstance(directory, str) and not directory.strip()):
+    if not directory or (isinstance(directory, str) and not directory.strip()):
         return []
     
     try:
@@ -215,7 +216,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, directory_stack)
-        except (PermissionError, OSError, FileNotFoundError):
+        except (PermissionError, OSError, FileNotFoundError) as e:
+            logger.debug(f"Acceso denegado o error en directorio {current_dir}: {e}")
             continue
     return scanner.results
 
