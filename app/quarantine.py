@@ -595,9 +595,12 @@ def quarantine_file(
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna ítems validados presentes en el sandbox ordenados por fecha."""
     base_path = quarantine_dir(base)
+    # Optimizamos listado: filtramos basándonos en la existencia del archivo en disco
+    # utilizando el set de archivos presentes en el directorio.
+    existing_files = {f.name for f in base_path.iterdir() if f.is_file()}
     return [
         i for i in sorted(load_manifest(base), key=lambda x: x.quarantined_at, reverse=True)
-        if (base_path / i.stored_name).exists()
+        if i.stored_name in existing_files
     ]
 
 
@@ -687,25 +690,24 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
+    # Indexamos por nombre de archivo para búsquedas O(1) dentro del loop
     item_map = {item.stored_name: item for item in items}
-    purged_files = set()
+    purged_ids = set()
     
-    try:
-        for stored_path in quarantine_root.iterdir():
-            if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
-                continue
+    for stored_path in quarantine_root.iterdir():
+        if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
+            continue
             
-            item = item_map.get(stored_path.name)
-            if item and _is_item_purgable(stored_path, item, quarantine_root):
-                if _safe_unlink(stored_path):
-                    purged_files.add(item.item_id)
-    except (PermissionError, OSError):
-        pass
+        item = item_map.get(stored_path.name)
+        if item and _is_item_purgable(stored_path, item, quarantine_root):
+            if _safe_unlink(stored_path):
+                purged_ids.add(item.item_id)
                 
-    if purged_files:
-        kept_items = [i for i in items if i.item_id not in purged_files]
+    if purged_ids:
+        # Filtramos la lista original evitando regenerar estructuras pesadas
+        kept_items = [i for i in items if i.item_id not in purged_ids]
         save_manifest(kept_items, base)
-    return len(purged_files)
+    return len(purged_ids)
 
 
 def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:

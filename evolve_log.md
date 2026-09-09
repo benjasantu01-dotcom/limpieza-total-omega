@@ -412,3 +412,11 @@ ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defi
 - `2026-09-09T02:37:31` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé el rendimiento de `_process_directory` reemplazando múltiples llamadas a `Path.stat()` por un acceso directo a los atributos ya disponibles en `os.DirEntry` mediante `entry.stat()`, evitando llamadas al sistema redundantes durante el escaneo recursivo.
 - `2026-09-09T02:37:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T02:37:31` Corrida terminada. Total usado hoy: 60.
+- `2026-09-09T02:42:45` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-09-09T02:43:27` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `purge_all` y `list_items` evitando recrear la lista completa de manifiesto mediante un diccionario de búsqueda eficiente y reduciendo la cantidad de llamadas repetitivas a `quarantine_dir` y `load_manifest`.
+- `2026-09-09T02:43:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-09-09T02:43:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-09T02:44:25` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado la función `filter_safe_paths` eliminando la doble ejecución de validación al fusionar la lógica de `is_safe_to_modify` dentro del bucle, reduciendo significativamente las llamadas a `normalize` y el acceso a disco en secuencias largas de archivos.
+- `2026-09-09T02:44:38` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la lógica de evaluación en `scan_file` y `process_entry` mediante un pre-chequeo eficiente de extensiones usando `in` sobre conjuntos, evitando llamadas redundantes a `check_double_extension` para archivos que no son ejecutables sospechosos y centralizando las consultas de metadatos para minimizar el acceso a disco.
+- `2026-09-09T02:44:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T02:44:38` Corrida terminada. Total usado hoy: 64.

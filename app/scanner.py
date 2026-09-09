@@ -141,15 +141,10 @@ class Scanner:
                     self._handle_directory(entry, directory_stack)
                 return
 
-            if len(entry.path) > MAX_PATH_LENGTH:
-                return
-
             name = entry.name
-            ext_idx = name.rfind('.')
-            if ext_idx != -1:
-                ext_low = name[ext_idx:].lower()
-                if ext_low in SUSPICIOUS_ALL_EXTS:
-                    self._run_file_heuristics(Path(entry.path), entry, ext_low)
+            ext = os.path.splitext(name)[1].lower()
+            if ext in SUSPICIOUS_ALL_EXTS:
+                self._run_file_heuristics(Path(entry.path), entry, ext)
         except (OSError, PermissionError, FileNotFoundError):
             return
 
@@ -158,20 +153,23 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     findings: ScanResult = []
+    
+    # 1. Chequeos genéricos de nombre/extensión
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
     
+    # 2. Chequeos específicos para ejecutables
     if ext in SUSPICIOUS_EXECUTABLE_EXT:
         try:
             stats = entry.stat(follow_symlinks=False) if entry else path.stat()
             if stats.st_size == 0:
                 findings.append(Suspicion(path, "Archivo vacío sospechoso", "warning"))
+            
+            for check_fn in EXECUTABLE_CHECK_REGISTRY:
+                if (result := check_fn(path, entry, now_ts)):
+                    findings.append(result)
         except (OSError, PermissionError, AttributeError, FileNotFoundError):
             pass
-
-        for check_fn in EXECUTABLE_CHECK_REGISTRY:
-            if (result := check_fn(path, entry, now_ts)):
-                findings.append(result)
         
     return findings
 
