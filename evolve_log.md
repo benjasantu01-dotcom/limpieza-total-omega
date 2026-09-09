@@ -510,3 +510,10 @@ assert not {'remove'}
 - `2026-09-09T14:20:59` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-09T14:20:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T14:20:59` Corrida terminada. Total usado hoy: 336.
+- `2026-09-09T14:27:17` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-09T14:28:05` ➖ Sin cambios en assistant.py (enfoque: manejo de errores y validación de entradas). Motivo: Se mejoró la robustez de `ingest` en `SystemContext` para evitar que una fuente de datos mal formada o parcialmente corrupta provoque una falla silenciosa en la carga de métricas, validando explícitamente que los tipos de datos numéricos sean correctos antes de realizar la conversión.
+- `2026-09-09T14:28:36` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-09T14:29:04` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-09T14:29:17` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `format_size` y `_bytes_to_mb` reemplazando los chequeos genéricos y capturas masivas por validaciones explícitas de tipo y manejo de casos límite (valores negativos o nulos), evitando errores silenciosos en la UI.
+- `2026-09-09T14:29:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T14:29:17` Corrida terminada. Total usado hoy: 340.

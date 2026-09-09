@@ -66,15 +66,13 @@ def _bytes_to_mb(size_bytes: int | float) -> float:
         size_bytes: Tamaño en bytes (int o float).
         
     Returns:
-        Tamaño en MB como float. Retorna 0.0 si el valor no es numérico o es negativo.
+        Tamaño en MB como float. Retorna 0.0 si el valor es negativo o no es numérico.
     """
     if not isinstance(size_bytes, (int, float)):
         return 0.0
-    try:
-        val = float(size_bytes)
-        return round(val / MB_SIZE, 2) if val > 0 else 0.0
-    except (ValueError, TypeError, OverflowError):
+    if size_bytes < 0:
         return 0.0
+    return round(float(size_bytes) / MB_SIZE, 2)
 
 
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
@@ -208,16 +206,13 @@ def format_size(num: Union[int, float, None]) -> str:
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     
-    try:
-        value = float(num)
-        for unit in ("B", "KB", "MB", "GB", "TB"):
-            if value < 1024 or unit == "TB":
-                decimals = 0 if unit == "B" else 1
-                return f"{value:.{decimals}f} {unit}"
-            value /= 1024
-        return f"{value:.1f} TB"
-    except (ValueError, TypeError, OverflowError):
-        return "0 B"
+    value = float(num)
+    for unit in ("B", "KB", "MB", "GB", "TB"):
+        if value < 1024 or unit == "TB":
+            decimals = 0 if unit == "B" else 1
+            return f"{value:.{decimals}f} {unit}"
+        value /= 1024
+    return f"{value:.1f} TB"
 
 
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
