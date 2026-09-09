@@ -1424,3 +1424,12 @@ assert not {'remove'}
 - `2026-09-09T12:36:24` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `is_junction` y `_is_valid_candidate` integrando `Path.resolve()` en lugares críticos para evitar que accesos mediante enlaces simbólicos o rutas relativas ambigüas eludan los chequeos de `is_protected_path`.
 - `2026-09-09T12:36:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T12:36:25` Corrida terminada. Total usado hoy: 296.
+- `2026-09-09T12:45:03` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-09-09T12:45:34` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez del motor de inferencia mediante la validación estricta de tipos y valores en `_evaluate_rules`, evitando que una inyección accidental de datos no sanitizados en `message_factory` pueda corromper el reporte final o causar excepciones no controladas durante la generación de recomendaciones.
+- `2026-09-09T12:45:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-09T12:45:53` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-09T12:47:08` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se introdujo una validación explícita de seguridad al configurar los campos de entrada de la pestaña Ajustes (duplicados y top archivos), asegurando que los valores obtenidos sean numéricos y positivos antes de cualquier procesamiento, previniendo errores de lógica o inyección de valores inválidos en la configuración.
+- `2026-09-09T12:47:44` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad de la función `trim_working_set` al asegurar que los handles se cierren correctamente ante cualquier excepción mediante un bloque `finally`, además de validar la integridad del proceso antes de operar, evitando posibles vulnerabilidades de Race Condition al capturar el handle y verificar el ejecutable en pasos separados.
+- `2026-09-09T12:48:02` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-09T12:48:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T12:48:02` Corrida terminada. Total usado hoy: 300.

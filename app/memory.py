@@ -339,7 +339,6 @@ def _get_process_path(proc_handle: int) -> Optional[str]:
     
     buf = ctypes.create_unicode_buffer(4096)
     try:
-        # psapi.GetModuleFileNameExW requiere acceso PROCESS_QUERY_LIMITED_INFORMATION
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 4096) > 0:
             return str(buf.value)
     except (OSError, ctypes.ArgumentError, ValueError):
@@ -389,7 +388,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
-    # Abrimos con las máscaras mínimas necesarias
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         return False, f"Acceso denegado (código {kernel32.GetLastError()})."
@@ -407,5 +405,4 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (Exception, ctypes.ArgumentError):
         return False, "Error inesperado al intentar liberar el proceso."
     finally:
-        if proc_handle:
-            kernel32.CloseHandle(proc_handle)
+        kernel32.CloseHandle(proc_handle)
