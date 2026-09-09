@@ -166,31 +166,19 @@ class StartupEntry:
             return path_string if _EXISTS_CACHE[path_string] else path_string
         
         try:
-            abs_path: str = os.path.abspath(norm)
-            try:
-                p: Path = Path(abs_path)
-            except (ValueError, TypeError, OSError):
-                return ""
+            # Uso de resolve(strict=False) para evitar excepciones en rutas inexistentes
+            p: Path = Path(norm).resolve(strict=False)
             
             if not self._validate_file_access(p) or not p.is_absolute() or is_protected_path(p):
                 _EXISTS_CACHE[path_string] = False
                 return path_string
             
-            try:
-                real_path_str: str = os.path.realpath(abs_path)
-            except (OSError, PermissionError, FileNotFoundError):
-                real_path_str = abs_path
-
-            real_path: Path = Path(real_path_str)
-            if not real_path.exists() or real_path.is_dir() or is_protected_path(real_path):
-                _EXISTS_CACHE[path_string] = False
-                return ""
-                
-            _EXISTS_CACHE[real_path_str] = True
-            return real_path_str
-        except (OSError, ValueError, RuntimeError, TypeError, PermissionError, FileNotFoundError):
+            p_str = str(p)
+            _EXISTS_CACHE[p_str] = True
+            return p_str
+        except (OSError, ValueError, RuntimeError, TypeError, PermissionError):
             _EXISTS_CACHE[path_string] = False
-            return path_string
+            return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
         """Analiza la línea de comandos para aislar el ejecutable principal antes de procesarlo."""

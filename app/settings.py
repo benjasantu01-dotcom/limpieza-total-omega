@@ -34,7 +34,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple, TypeGuard
 
-from safety import is_safe_to_modify, is_protected_path
+from safety import is_safe_to_modify, is_protected_path, ensure_safe_to_modify
 
 PathLike: TypeAlias = str | Path
 SettingsDict: TypeAlias = dict[str, Any]
@@ -169,7 +169,6 @@ class _Validators:
             return _SAFETY_CACHE[path_str]
         
         try:
-            # Intentar resolver ruta, capturando fallos si el subsistema de archivos deniega acceso
             resolved = path_obj.resolve()
             is_safe = not _Validators._is_reparse_point(resolved) and \
                       not is_protected_path(str(resolved)) and \
@@ -319,9 +318,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             except (OSError, PermissionError):
                 return None
         
-        if not parent.exists() or (ruta.exists() and not ruta.is_file()): return None
-        if not _Validators._is_safe_path(str(parent)): return None
-        if _Validators._is_reparse_point(ruta.resolve().parent): return None
+        # Validar seguridad antes de escribir en el directorio
+        ensure_safe_to_modify(str(parent))
         
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None
