@@ -308,13 +308,15 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         ):
             cleaned_settings["asistente_activado"] = False
             
-        if not _Validators._is_safe_path(str(ruta.parent)): return None
-        if _Validators._is_reparse_point(ruta.resolve(strict=False)): return None
-        
         parent = ruta.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
-            
+        
+        # Caso límite: si existe algo con nombre igual al archivo que no es archivo
+        if ruta.exists() and not ruta.is_file(): return None
+        if not _Validators._is_safe_path(str(parent)): return None
+        if _Validators._is_reparse_point(ruta.resolve(strict=False)): return None
+        
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None
         

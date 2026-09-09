@@ -478,3 +478,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-09T03:15:56` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejora la robustez de `quarantine_file` ante fallos de E/S mediante un bloque `try/finally` explícito que garantiza que, si la copia al sandbox falla, se intente limpiar cualquier archivo temporal residual antes de propagar la excepción.
 - `2026-09-09T03:15:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T03:15:56` Corrida terminada. Total usado hoy: 76.
+- `2026-09-09T03:23:27` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-09-09T03:23:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-09T03:24:22` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se implementó un chequeo en `_validate_structural_safety` para detectar rutas que contienen caracteres de espacios en blanco (ej. espacios finales o múltiples espacios), los cuales son frecuentemente usados para ofuscar nombres de archivos o causar errores de resolución en APIs de Windows.
+- `2026-09-09T03:24:47` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-09T03:25:01` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante casos límite al añadir una validación de `path` más estricta en el método `save` (verificando que la carpeta de destino sea grabable y no un archivo existente) y añadiendo `os.fsync` para asegurar integridad al persistir el archivo.
+- `2026-09-09T03:25:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T03:25:01` Corrida terminada. Total usado hoy: 80.

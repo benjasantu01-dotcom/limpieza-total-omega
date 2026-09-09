@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 27 | 4 | 8 | 3 | 36 |
+| 2026-09-07 | 27 | 4 | 8 | 3 | 32 |
 | 2026-09-08 | 161 | 12 | 24 | 9 | 144 |
-| 2026-09-09 | 30 | 3 | 5 | 2 | 36 |
+| 2026-09-09 | 32 | 3 | 6 | 2 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **46**
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **44**
 - rendimiento: **41**
 - seguridad defensiva: **39**
 
@@ -32,12 +32,12 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `assistant.py`: **22**
 - `duplicates.py`: **20**
+- `settings.py`: **19**
 - `healthscore.py`: **18**
-- `settings.py`: **18**
 - `memory.py`: **18**
+- `safety.py`: **17**
 - `scanner.py`: **17**
 - `quarantine.py`: **17**
-- `safety.py`: **16**
 - `diskreport.py`: **16**
 - `browser.py`: **14**
 - `branding.py`: **14**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T03:25:01` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite al añadir una validación de `path` más estricta en el método `save` (verificando que la carpeta de destino sea grabable y no un archivo existente) y añadiendo `os.fsync` para asegurar integridad al persistir el archivo.
+- `2026-09-09T03:24:22` **safety.py** (robustez ante casos límite): Se implementó un chequeo en `_validate_structural_safety` para detectar rutas que contienen caracteres de espacios en blanco (ej. espacios finales o múltiples espacios), los cuales son frecuentemente usados para ofuscar nombres de archivos o causar errores de resolución en APIs de Windows.
 - `2026-09-09T03:15:56` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` ante fallos de E/S mediante un bloque `try/finally` explícito que garantiza que, si la copia al sandbox falla, se intente limpiar cualquier archivo temporal residual antes de propagar la excepción.
 - `2026-09-09T03:14:35` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de `on_memory_processes` añadiendo una validación explícita mediante un bloque `try-except` y comprobación de existencia de atributos para evitar caídas de la interfaz cuando el estado de los procesos del sistema cambia drásticamente durante la ejecución asíncrona de la tarea.
 - `2026-09-09T03:05:54` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics.validate` para prevenir valores negativos inesperados o desbordamientos en campos críticos antes de que el motor de scoring los procese, asegurando que `_clamp` trabaje siempre con rangos lógicos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T02:37:13` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria ( `read_snapshot`) eliminando lecturas innecesarias del disco y estructuras redundantes, asegurando que `_linux_mem_path.exists()` solo se ejecute cuando es estrictamente necesario.
 - `2026-09-09T02:23:59` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` para obtener metadatos (tamaño y tipo) directamente del iterador del sistema operativo, evitando llamadas adicionales a `path.stat()` para cada archivo, lo cual reduce drásticamente la latencia de E/S en carpetas con muchos archivos.
 - `2026-09-09T02:23:44` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` evitando llamadas redundantes a `.resolve()` y `Path` en el bucle interno, reemplazándolas por el uso de `os.DirEntry` y sus atributos, lo que reduce significativamente el overhead de E/S por archivo al realizar menos syscalls.
-- `2026-09-09T02:22:48` **branding.py** (rendimiento): Se ha optimizado la generación de degradados en `gradient_colors` reemplazando el uso de `tuple` y `append` en un bucle por una `list` pre-alocada con asignación directa de índices, evitando el coste de crecimiento dinámico de memoria y mejorando la eficiencia en tiempo de ejecución para renderizados frecuentes.
-- `2026-09-09T02:13:54` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` eliminando la re-tokenización innecesaria y el bucle de búsqueda en cada iteración, sustituyéndolo por un acceso directo al diccionario `_KEYWORD_TO_HANDLER` tras una única pasada de limpieza del input.

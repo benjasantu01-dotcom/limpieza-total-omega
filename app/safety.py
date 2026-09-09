@@ -367,6 +367,10 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
             if not part or part.strip() != part or part.endswith(('.', ' ')):
                 raise UnsafePathError(f"Componente '{part}' malformado.", SafetyValidationErrorCode.INVALID_CHARS)
             
+            # Detectar componentes con espacios múltiples o internos sospechosos
+            if "  " in part:
+                 raise UnsafePathError(f"Componente '{part}' con espacios excesivos.", SafetyValidationErrorCode.INVALID_CHARS)
+            
             parts_split = part.split('.')
             name_only = parts_split[0]
             if name_only and _is_reserved_device_name(name_only):
