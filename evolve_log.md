@@ -527,3 +527,14 @@ assert not {'remove'}
 - `2026-09-09T14:44:20` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_linux_meminfo` y `parse_windows_process_csv` añadiendo validaciones estrictas de tipos y estructuras de datos para prevenir errores en tiempo de ejecución ante entradas mal formadas.
 - `2026-09-09T14:44:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T14:44:20` Corrida terminada. Total usado hoy: 344.
+- `2026-09-09T14:49:21` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-09T14:49:59` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-09T14:50:40` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `save_manifest` y `quarantine_file` añadiendo validaciones de tipo explícitas y manejo de errores ante entradas mal formadas, evitando escrituras parciales o corruptas al trabajar con el manifiesto.
+- `2026-09-09T14:51:40` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-09T14:52:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-09-09T14:52:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-09T14:52:28` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-09T14:52:38` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-09T14:53:10` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_in_use` capturando errores de `ctypes` y validando el estado del `handle` de forma más estricta para evitar bloqueos inesperados, asegurando que la función siempre retorne un booleano válido incluso ante fallos del subsistema.
+- `2026-09-09T14:53:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T14:53:10` Corrida terminada. Total usado hoy: 348.

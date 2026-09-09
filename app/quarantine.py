@@ -414,6 +414,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
     
+    # Validar que todos los elementos sean instancias de QuarantineItem
     if not all(isinstance(i, QuarantineItem) for i in items):
         raise TypeError("El manifiesto contiene objetos no compatibles.")
 
@@ -422,6 +423,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     temp_path: Optional[Path] = None
     
     try:
+        # Evitar truncar manifiesto si hay error lógico en la lista procesada
         if not items and target_path.exists() and target_path.stat().st_size > 1024:
              raise RuntimeError("Prevención de corrupción: intento de persistir manifiesto vacío.")
 

@@ -155,7 +155,6 @@ def _has_invalid_chars(path_str: str | None) -> bool:
     """Detecta caracteres de control y no imprimibles que Windows rechaza en nombres de archivo."""
     if not isinstance(path_str, str) or not path_str: 
         return True
-    # Añadido chequeo de secuencias de escape/control comunes de bypass
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]|[\x00-\x1f\x7f]', path_str))
 
 
@@ -206,8 +205,10 @@ def _is_file_in_use(path_str: str) -> bool:
         return False
     try:
         kernel32 = ctypes.windll.kernel32
+        INVALID_HANDLE_VALUE = -1
+        # 0x80000000 = GENERIC_READ, 0 = FILE_SHARE_NONE (exclusivo)
         handle = kernel32.CreateFileW(path_str, 0x80000000, 0, None, 3, 0x00000080, None)
-        if handle == -1 or handle == 0xFFFFFFFF: 
+        if handle == INVALID_HANDLE_VALUE: 
             return True
         kernel32.CloseHandle(handle)
         return False
