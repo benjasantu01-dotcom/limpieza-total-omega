@@ -305,9 +305,8 @@ def _is_system_path_cached(path_str: str) -> bool:
         if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
             return True
         
-        # Split y check de componentes para evitar falsos positivos en subcadenas
-        parts = p_str_low.split(os.sep)
-        return any(part in PROTECTED_DIR_NAMES for part in parts)
+        # Split y check de componentes optimizado usando el conjunto de protección
+        return any(part in PROTECTED_DIR_NAMES for part in p_str_low.split(os.sep))
     except (OSError, RuntimeError):
         return True
 

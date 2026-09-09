@@ -615,7 +615,7 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna ítems validados presentes en el sandbox ordenados por fecha."""
     base_path = quarantine_dir(base)
     # Optimizamos listado: filtramos basándonos en la existencia del archivo en disco
-    # utilizando el set de archivos presentes en el directorio.
+    # usando un set para O(1) en búsquedas.
     existing_files = {f.name for f in base_path.iterdir() if f.is_file()}
     return [
         i for i in sorted(load_manifest(base), key=lambda x: x.quarantined_at, reverse=True)
@@ -709,7 +709,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
-    # Indexamos por nombre de archivo para búsquedas O(1) dentro del loop
+    # Indexamos por nombre de archivo para búsquedas O(1)
     item_map = {item.stored_name: item for item in items}
     purged_ids = set()
     
@@ -723,7 +723,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 purged_ids.add(item.item_id)
                 
     if purged_ids:
-        # Filtramos la lista original evitando regenerar estructuras pesadas
         kept_items = [i for i in items if i.item_id not in purged_ids]
         save_manifest(kept_items, base)
     return len(purged_ids)

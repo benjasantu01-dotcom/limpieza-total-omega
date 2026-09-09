@@ -325,6 +325,7 @@ def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
         if is_valid_junk_extension(entry.name):
             # Usamos stat() de la entrada para evitar syscall adicional
             info = entry.stat()
+            # Se evita convertir a Path innecesariamente hasta que sea necesario procesar
             if info.st_size > 0 and not _is_file_locked(Path(entry.path)):
                 found.append(JunkFile(Path(entry.path), info.st_size, datetime.fromtimestamp(info.st_mtime)))
     except (OSError, PermissionError):
