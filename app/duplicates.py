@@ -82,7 +82,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         return None
         
     try:
-        path_obj = Path(path).resolve(strict=False)
+        path_obj = Path(path).resolve(strict=True)
         if not _is_valid_candidate(path_obj) or path_obj.stat().st_size == 0:
             return None
             
@@ -107,7 +107,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
         return None
 
     try:
-        path_obj = Path(path).resolve(strict=False)
+        path_obj = Path(path).resolve(strict=True)
         if not _is_valid_candidate(path_obj) or path_obj.stat().st_size == 0:
             return None
 
@@ -123,14 +123,16 @@ def _is_valid_candidate(path: Path) -> bool:
     if not isinstance(path, Path):
         return False
     try:
-        if not path.exists() or not path.is_file() or path.is_symlink() or is_junction(path):
+        # Resolver para evitar race conditions y validar integridad de la ruta
+        resolved = path.resolve(strict=True)
+        if not resolved.is_file() or resolved.is_symlink() or is_junction(resolved):
             return False
         return (
-            not is_protected_path(path) and 
-            os.access(path, os.R_OK) and
-            path.stat().st_nlink == 1
+            not is_protected_path(resolved) and 
+            os.access(resolved, os.R_OK) and
+            resolved.stat().st_nlink == 1
         )
-    except (OSError, ValueError, TypeError):
+    except (OSError, ValueError, TypeError, RuntimeError):
         return False
 
 

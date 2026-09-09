@@ -223,8 +223,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     Calcula el score global del sistema y genera recomendaciones.
     Itera sobre el pipeline preconfigurado aplicando cada 'scorer' y 'regla'.
     """
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
-        return HealthResult(0, "F", {}, ["Error: Datos de sistema no disponibles o corruptos."])
+    if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+        return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o no disponibles."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
     total_pts: int = 0

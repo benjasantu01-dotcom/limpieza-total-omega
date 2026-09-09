@@ -281,11 +281,15 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
         if not candidate.exists() or len(c_str) >= MAX_PATH_LEN:
             return False
         real_candidate = candidate.resolve(strict=True)
+        
+        # Validar que el directorio sea hijo directo o subdirectorio de la base
+        if not _is_path_inside_base(real_candidate, base_path):
+            return False
+            
         if not is_safe_to_modify(real_candidate) or is_protected_path(real_candidate):
             return False
         if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or 
             os.path.ismount(str(real_candidate)) or not real_candidate.is_dir() or 
-            not _is_path_inside_base(real_candidate, base_path) or
             _is_excluded_file(real_candidate.name)):
             return False
         return True

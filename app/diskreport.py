@@ -275,6 +275,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(entry_path)
                         elif entry.is_file(follow_symlinks=False):
+                            if skip_protected and is_protected_path(entry_path): continue
                             st = entry.stat()
                             yield entry_path, int(getattr(st, 'st_size', 0))
                     except (PermissionError, OSError, AttributeError):
