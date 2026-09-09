@@ -461,3 +461,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-09T02:54:51` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-09-09T02:54:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T02:54:51` Corrida terminada. Total usado hoy: 68.
+- `2026-09-09T03:03:06` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-09-09T03:03:35` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-09T03:04:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-09T03:04:16` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-09T03:04:27` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-09T03:04:51` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-09T03:05:41` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `find_duplicates` ante entradas malformadas o tipos de datos inesperados en el iterador de directorios, asegurando que `_collect_candidates` no interrumpa el flujo completo si una ruta individual falla al resolverse.
+- `2026-09-09T03:05:54` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `SystemMetrics.validate` para prevenir valores negativos inesperados o desbordamientos en campos críticos antes de que el motor de scoring los procese, asegurando que `_clamp` trabaje siempre con rangos lógicos.
+- `2026-09-09T03:05:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T03:05:54` Corrida terminada. Total usado hoy: 72.

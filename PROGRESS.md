@@ -8,37 +8,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 38
+- Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 32 | 4 | 9 | 3 | 38 |
+| 2026-09-07 | 30 | 4 | 8 | 3 | 37 |
 | 2026-09-08 | 161 | 12 | 24 | 9 | 144 |
-| 2026-09-09 | 26 | 3 | 5 | 2 | 32 |
+| 2026-09-09 | 28 | 3 | 5 | 2 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **44**
+- seguridad defensiva: **42**
 - rendimiento: **41**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **22**
+- `duplicates.py`: **20**
 - `settings.py`: **19**
-- `duplicates.py`: **19**
 - `scanner.py`: **18**
+- `healthscore.py`: **18**
 - `memory.py`: **18**
-- `quarantine.py`: **17**
-- `safety.py`: **17**
-- `healthscore.py`: **17**
+- `safety.py`: **16**
 - `diskreport.py`: **16**
+- `quarantine.py`: **16**
 - `browser.py`: **14**
 - `branding.py`: **14**
 - `main.py`: **10**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T03:05:54` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics.validate` para prevenir valores negativos inesperados o desbordamientos en campos críticos antes de que el motor de scoring los procese, asegurando que `_clamp` trabaje siempre con rangos lógicos.
+- `2026-09-09T03:05:41` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `find_duplicates` ante entradas malformadas o tipos de datos inesperados en el iterador de directorios, asegurando que `_collect_candidates` no interrumpa el flujo completo si una ruta individual falla al resolverse.
 - `2026-09-09T02:54:35` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de inferencia ante entradas maliciosas o mal formadas mediante la adición de una validación explícita en `_sanitize_query` y `local_answer` para prevenir la inyección de comandos o intentos de elusión mediante caracteres especiales, asegurando que cualquier respuesta sea siempre manejable por el sistema.
 - `2026-09-09T02:53:26` **settings.py** (rendimiento): Optimicé el sistema de caché en `load` para evitar lecturas innecesarias del sistema de archivos al verificar `mtime` antes de procesar el JSON, y eliminé redundancias en el flujo de validación.
 - `2026-09-09T02:44:38` **scanner.py** (rendimiento): Optimizé la lógica de evaluación en `scan_file` y `process_entry` mediante un pre-chequeo eficiente de extensiones usando `in` sobre conjuntos, evitando llamadas redundantes a `check_double_extension` para archivos que no son ejecutables sospechosos y centralizando las consultas de metadatos para minimizar el acceso a disco.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T02:13:54` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` eliminando la re-tokenización innecesaria y el bucle de búsqueda en cada iteración, sustituyéndolo por un acceso directo al diccionario `_KEYWORD_TO_HANDLER` tras una única pasada de limpieza del input.
 - `2026-09-09T02:13:01` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo documentando exhaustivamente las funciones internas de validación mediante type hints y docstrings precisos, además de consolidar la lógica de tipos y límites en estructuras de datos más robustas.
 - `2026-09-09T02:03:02` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los type hints en `quarantine.py`, añadiendo docstrings específicos que explican las condiciones de seguridad en funciones críticas y normalizando la nomenclatura para alinearse con los estándares del proyecto.
-- `2026-09-09T01:57:35` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` documentando los contratos de las funciones críticas con type hints y docstrings precisos, además de clarificar la lógica de las máscaras de acceso y las estructuras de datos, siguiendo las directrices de documentación del proyecto.
-- `2026-09-09T01:52:08` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en las funciones de procesamiento recursivo y la unificación de la lógica de validación de archivos, facilitando la comprensión del flujo de datos en los pasos del escaneo.

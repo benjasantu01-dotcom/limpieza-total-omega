@@ -136,14 +136,14 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     
     for p in paths:
         if p is None: continue
-        path_obj = Path(p)
-        if _is_valid_candidate(path_obj):
-            try:
+        try:
+            path_obj = Path(p)
+            if _is_valid_candidate(path_obj):
                 size = path_obj.stat().st_size
                 if size > 0:
                     groups[size].append(path_obj)
-            except (OSError, PermissionError):
-                continue
+        except (OSError, PermissionError, TypeError):
+            continue
     return groups
 
 
@@ -155,7 +155,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
         root = Path(item).resolve(strict=False)
         if root.exists() and root.is_dir() and not is_protected_path(root):
             return root
-    except (OSError, ValueError, RuntimeError):
+    except (OSError, ValueError, RuntimeError, TypeError):
         pass
     return None
 
@@ -165,12 +165,7 @@ def _collect_candidates(
     min_size: int, 
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
-    """
-    Realiza un escaneo recursivo del sistema de archivos para agrupar archivos por tamaño.
-    
-    Utiliza os.scandir para optimizar el acceso a metadatos y mantiene un conjunto
-    'visited' para evitar el procesamiento redundante en presencia de enlaces simbólicos.
-    """
+    """Realiza un escaneo recursivo del sistema de archivos para agrupar archivos por tamaño."""
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[str] = set()
 
@@ -199,7 +194,12 @@ def _collect_candidates(
             return
 
     if isinstance(directories, Iterable):
-        roots = {r for item in directories if item and (r := _resolve_and_verify_root(item))}
+        roots = []
+        for item in directories:
+            if item:
+                resolved = _resolve_and_verify_root(item)
+                if resolved:
+                    roots.append(resolved)
         for root in roots:
             _scan_directory_recursive(root)
             
@@ -216,13 +216,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
-    """
-    Realiza un refinamiento jerárquico de candidatos mediante hashing.
-    
-    Aplica inicialmente un hash parcial para dividir el conjunto y luego ejecuta 
-    el hash completo (SHA256) solo en los grupos con colisiones, minimizando
-    operaciones de E/S innecesarias en archivos grandes.
-    """
+    """Realiza un refinamiento jerárquico de candidatos mediante hashing."""
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
     
@@ -250,10 +244,8 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
         return []
         
     groups: List[DuplicateGroup] = []
-    valid_dirs = [d for d in directories if d]
-    if not valid_dirs: return []
-
-    size_map = _collect_candidates(valid_dirs, min_size, skip_protected)
+    
+    size_map = _collect_candidates(directories, min_size, skip_protected)
     for size, paths in size_map.items():
         groups.extend(_decide_hash_strategy_and_process(size, paths))
         
@@ -269,10 +261,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
-    """
-    Aplica heurística de selección: sugiere conservar el archivo más antiguo (mtime).
-    En caso de empate en mtime, utiliza la longitud de la ruta como desempate.
-    """
+    """Aplica heurística de selección: sugiere conservar el archivo más antiguo (mtime)."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
         
