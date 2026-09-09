@@ -290,12 +290,10 @@ class SystemContext:
 
     def ingest(self, source: Any) -> bool:
         """Extrae y valida métricas desde una fuente externa (dict/objeto) de forma segura."""
-        if _is_input_too_deep_or_complex(source): return False
-        if not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool, type)):
+        if not isinstance(source, (dict, object)) or _is_input_too_deep_or_complex(source):
             return False
             
         found_data = False
-        # Procesar métricas numéricas
         for key, spec in _VALIDATORS.items():
             val = _get_source_value(source, key)
             if val is not None and spec.is_valid_type(val):
@@ -307,7 +305,6 @@ class SystemContext:
                 except (ValueError, TypeError):
                     continue
         
-        # Procesar calificación cualitativa (string)
         grade_val = _get_source_value(source, "grade")
         if isinstance(grade_val, str):
             clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
@@ -360,10 +357,13 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def _get_source_value(source: Any, key: str) -> Any:
     """Extrae valores de fuentes de datos de forma segura sin excepciones evitables."""
-    if isinstance(source, dict):
-        return source.get(key)
-    attr = getattr(source, key, None)
-    return attr if not callable(attr) else None
+    try:
+        if isinstance(source, dict):
+            return source.get(key)
+        attr = getattr(source, key, None)
+        return attr if not callable(attr) else None
+    except Exception:
+        return None
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Fabrica un objeto SystemContext, poblando las métricas desde diversas fuentes."""

@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
-- Rechazadas por tests: 20
+- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 37
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 213
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 17 | 3 | 6 | 2 | 2 |
+| 2026-09-07 | 14 | 3 | 6 | 1 | 2 |
 | 2026-09-08 | 161 | 12 | 24 | 9 | 144 |
-| 2026-09-09 | 43 | 5 | 7 | 2 | 67 |
+| 2026-09-09 | 44 | 6 | 7 | 2 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- legibilidad y documentación: **47**
 - robustez ante casos límite: **45**
+- legibilidad y documentación: **44**
 - rendimiento: **41**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
-- `duplicates.py`: **20**
-- `memory.py`: **19**
+- `assistant.py`: **22**
+- `duplicates.py`: **19**
 - `settings.py`: **19**
-- `healthscore.py`: **18**
 - `quarantine.py`: **18**
+- `memory.py`: **18**
+- `healthscore.py`: **17**
 - `safety.py`: **17**
 - `scanner.py`: **17**
 - `diskreport.py`: **16**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T05:28:38` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `ingest` y `_get_source_value` para evitar que tipos de datos inesperados o valores `None` causen errores de ejecución o comportamientos indefinidos al procesar métricas de entrada.
 - `2026-09-09T04:05:42` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para que ante cualquier error de acceso durante la resolución de la ruta (como archivos bloqueados por el sistema), el sistema adopte una postura restrictiva devolviendo `False` en lugar de propagar una excepción que podría interrumpir el flujo.
 - `2026-09-09T04:05:14` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva del escáner implementando un chequeo preventivo de rutas mediante `is_protected_path` en `process_entry`, asegurando que no se procese recursivamente ningún archivo o carpeta que el sistema de seguridad considere protegido, incluso si el `base_root` original era válido.
 - `2026-09-09T04:04:50` **safety.py** (seguridad defensiva): Se ha mejorado la protección contra la manipulación de puntos de reparse (symlinks/junctions) mediante la integración de una verificación mediante `GetFinalPathNameByHandleW` en `ensure_safe_to_modify`, lo que garantiza que una ruta no esté siendo redirigida fuera de los límites permitidos incluso si parece estar dentro de ellos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T03:25:01` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite al añadir una validación de `path` más estricta en el método `save` (verificando que la carpeta de destino sea grabable y no un archivo existente) y añadiendo `os.fsync` para asegurar integridad al persistir el archivo.
 - `2026-09-09T03:24:22` **safety.py** (robustez ante casos límite): Se implementó un chequeo en `_validate_structural_safety` para detectar rutas que contienen caracteres de espacios en blanco (ej. espacios finales o múltiples espacios), los cuales son frecuentemente usados para ofuscar nombres de archivos o causar errores de resolución en APIs de Windows.
 - `2026-09-09T03:15:56` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` ante fallos de E/S mediante un bloque `try/finally` explícito que garantiza que, si la copia al sandbox falla, se intente limpiar cualquier archivo temporal residual antes de propagar la excepción.
-- `2026-09-09T03:14:35` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de `on_memory_processes` añadiendo una validación explícita mediante un bloque `try-except` y comprobación de existencia de atributos para evitar caídas de la interfaz cuando el estado de los procesos del sistema cambia drásticamente durante la ejecución asíncrona de la tarea.
