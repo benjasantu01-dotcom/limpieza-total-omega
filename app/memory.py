@@ -232,28 +232,27 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 _snap_cache_time: float = 0.0
 _snap_cache_data: Optional[MemorySnapshot] = None
+_linux_available: bool = True
 
 def read_snapshot() -> MemorySnapshot:
     """Obtiene snapshot global de RAM. Implementa caché de 5 segundos."""
-    global _snap_cache_time, _snap_cache_data
+    global _snap_cache_time, _snap_cache_data, _linux_available
     now = time.time()
     if (now - _snap_cache_time) < 5 and _snap_cache_data is not None:
         return _snap_cache_data
 
     if _is_windows: 
         _snap_cache_data = _read_windows_snapshot()
-    else:
+    elif _linux_available:
         try:
-            if _linux_mem_path.exists():
-                content = _linux_mem_path.read_text(encoding="utf-8")
-                _snap_cache_data = parse_linux_meminfo(content)
-            else:
-                _snap_cache_data = _EMPTY_SNAPSHOT
+            content = _linux_mem_path.read_text(encoding="utf-8")
+            _snap_cache_data = parse_linux_meminfo(content)
         except (OSError, UnicodeDecodeError, RuntimeError):
+            _linux_available = False
             _snap_cache_data = _EMPTY_SNAPSHOT
     
     _snap_cache_time = now
-    return _snap_cache_data
+    return _snap_cache_data if _snap_cache_data else _EMPTY_SNAPSHOT
 
 _proc_cache_time: float = 0.0
 _proc_cache_data: List[ProcessMemory] = []
