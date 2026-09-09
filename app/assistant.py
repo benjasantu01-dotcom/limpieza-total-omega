@@ -545,11 +545,11 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
     
-    # Búsqueda optimizada por token
-    tokens = _TOKEN_REGEX.findall(q_sanitized)
-    for token in tokens:
-        if token in _KEYWORD_TO_HANDLER:
-            return _KEYWORD_TO_HANDLER[token](context, question)
+    # Búsqueda optimizada: un solo paso
+    for token in _TOKEN_REGEX.findall(q_sanitized):
+        handler = _KEYWORD_TO_HANDLER.get(token)
+        if handler:
+            return handler(context, question)
             
     cuerpo = _format_problem_message(
         _identify_active_problems(context), 

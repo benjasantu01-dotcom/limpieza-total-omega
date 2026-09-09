@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 48 | 4 | 10 | 3 | 41 |
+| 2026-09-07 | 44 | 4 | 10 | 3 | 41 |
 | 2026-09-08 | 161 | 12 | 24 | 9 | 144 |
-| 2026-09-09 | 14 | 2 | 4 | 2 | 26 |
+| 2026-09-09 | 16 | 2 | 4 | 2 | 28 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **51**
-- legibilidad y documentación: **49**
-- robustez ante casos límite: **46**
+- legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **46**
-- rendimiento: **31**
+- robustez ante casos límite: **42**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
-- `duplicates.py`: **20**
-- `healthscore.py`: **19**
+- `assistant.py`: **22**
+- `settings.py`: **19**
+- `duplicates.py`: **19**
 - `scanner.py`: **18**
-- `settings.py`: **18**
+- `healthscore.py`: **18**
 - `memory.py`: **18**
-- `diskreport.py`: **17**
 - `quarantine.py`: **17**
 - `safety.py`: **17**
+- `diskreport.py`: **16**
 - `browser.py`: **15**
 - `branding.py`: **13**
-- `main.py`: **12**
+- `main.py`: **11**
 - `organizer.py`: **9**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T02:13:54` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` eliminando la re-tokenización innecesaria y el bucle de búsqueda en cada iteración, sustituyéndolo por un acceso directo al diccionario `_KEYWORD_TO_HANDLER` tras una única pasada de limpieza del input.
+- `2026-09-09T02:13:01` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo documentando exhaustivamente las funciones internas de validación mediante type hints y docstrings precisos, además de consolidar la lógica de tipos y límites en estructuras de datos más robustas.
 - `2026-09-09T02:03:02` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los type hints en `quarantine.py`, añadiendo docstrings específicos que explican las condiciones de seguridad en funciones críticas y normalizando la nomenclatura para alinearse con los estándares del proyecto.
 - `2026-09-09T01:57:35` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` documentando los contratos de las funciones críticas con type hints y docstrings precisos, además de clarificar la lógica de las máscaras de acceso y las estructuras de datos, siguiendo las directrices de documentación del proyecto.
 - `2026-09-09T01:52:08` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en las funciones de procesamiento recursivo y la unificación de la lógica de validación de archivos, facilitando la comprensión del flujo de datos en los pasos del escaneo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T01:12:17` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_evaluate_rules` validando explícitamente que el `message_factory` sea ejecutable y que el resultado de la función sea un string no vacío antes de procesarlo, evitando posibles excepciones durante la generación dinámica de recomendaciones.
 - `2026-09-09T01:11:19` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` y `walk_files` incorporando una validación explícita de `size` y un manejo de errores más específico, evitando que archivos corruptos o con atributos inaccesibles interrumpan el cálculo de estadísticas.
 - `2026-09-09T01:03:04` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` mejorando la validación de parámetros, reemplazando el uso de `ensure_safe_to_modify` (que lanzaba excepciones que podían detener el flujo) por una verificación booleana `is_safe_to_modify` antes de operar, cumpliendo estrictamente con las reglas de seguridad y manejo de errores del proyecto.
-- `2026-09-09T01:02:29` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez en la ingesta de datos del `SystemContext` mediante la validación explícita de tipos numéricos y la captura de errores en `ingest` para evitar que datos malformados o tipos inesperados propaguen excepciones durante la actualización del estado.
-- `2026-09-08T14:28:03` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save()` mediante la implementación de un chequeo de integridad previo a la escritura, asegurando que el directorio padre exista y sea seguro antes de intentar manipular el archivo de configuración, mitigando riesgos ante manipulaciones del sistema de archivos.
