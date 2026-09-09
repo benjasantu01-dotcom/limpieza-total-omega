@@ -199,10 +199,8 @@ def _safe_unlink(path: Path) -> bool:
         
     try:
         st = path.stat()
-        # Verificar que solo exista este link hacia el nodo (evitar hardlinks)
         if st.st_nlink > 1:
             return False
-        # Chequeo de seguridad preventivo
         if is_safe_to_modify(path) and not _is_file_locked(path):
             path.unlink()
             return True
@@ -331,7 +329,6 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     if resolved_source.stat().st_size == 0:
         raise UnsafePathError("Operación denegada: archivos vacíos prohibidos.")
     
-    # Prevenir que el destino sea el mismo origen (físicamente)
     try:
         if os.path.samefile(resolved_source, resolved_dest_dir):
             raise UnsafePathError("Operación circular detectada.")
@@ -554,7 +551,6 @@ def quarantine_file(
 
     _validate_isolation_request(source_path, dest_dir)
     
-    # Pre-cálculo de hash para asegurar integridad antes de mover
     source_hash = _get_sha256(source_path)
     if not source_hash:
         raise RuntimeError("No se pudo calcular la firma digital del origen.")
@@ -603,13 +599,14 @@ def quarantine_file(
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna ítems validados presentes en el sandbox ordenados por fecha."""
     base_path = quarantine_dir(base)
-    # Optimizamos listado: filtramos basándonos en la existencia del archivo en disco
-    # usando un set para O(1) en búsquedas.
-    existing_files = {f.name for f in base_path.iterdir() if f.is_file()}
-    return [
-        i for i in sorted(load_manifest(base), key=lambda x: x.quarantined_at, reverse=True)
-        if i.stored_name in existing_files
-    ]
+    try:
+        existing_files = {f.name for f in base_path.iterdir() if f.is_file()}
+        return [
+            i for i in sorted(load_manifest(base), key=lambda x: x.quarantined_at, reverse=True)
+            if i.stored_name in existing_files
+        ]
+    except OSError:
+        return []
 
 
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
@@ -625,7 +622,6 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         
     stored_file = (base_path / quarantine_item.stored_name).resolve()
     
-    # Verificación estricta de contención física en el sandbox antes de tocar nada
     if not _is_within_quarantine_sandbox(stored_file, base_path.resolve()):
         raise UnsafePathError("Archivo fuera del sandbox, restauración abortada.")
     
@@ -642,7 +638,6 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     if stored_file.stat().st_dev != destination.parent.resolve().stat().st_dev:
         raise UnsafePathError("Restauración denegada: dispositivos incompatibles.")
     
-    # Pre-chequeo de seguridad del directorio destino
     parent = destination.parent
     if not is_safe_to_modify(parent):
         raise UnsafePathError("Restauración denegada: directorio padre no seguro.")
@@ -694,12 +689,10 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
     """Valida si un ítem puede ser purgado tras chequeo de seguridad e integridad."""
-    # Valida el sandbox antes de realizar cualquier operación destructiva
     is_contained = _is_within_quarantine_sandbox(file_path, base_path)
     if not file_path.is_file() or file_path.is_symlink() or not is_contained:
         return False
     
-    # Valida política de seguridad y estado de bloqueo del archivo
     if not is_safe_to_modify(file_path):
         return False
         
@@ -714,18 +707,20 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
-    # Indexamos por nombre de archivo para búsquedas O(1)
     item_map = {item.stored_name: item for item in items}
     purged_ids = set()
     
-    for stored_path in quarantine_root.iterdir():
-        if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
-            continue
-            
-        item = item_map.get(stored_path.name)
-        if item and _is_item_purgable(stored_path, item, quarantine_root):
-            if _safe_unlink(stored_path):
-                purged_ids.add(item.item_id)
+    try:
+        for stored_path in quarantine_root.iterdir():
+            if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
+                continue
+                
+            item = item_map.get(stored_path.name)
+            if item and _is_item_purgable(stored_path, item, quarantine_root):
+                if _safe_unlink(stored_path):
+                    purged_ids.add(item.item_id)
+    except OSError:
+        pass
                 
     if purged_ids:
         kept_items = [i for i in items if i.item_id not in purged_ids]

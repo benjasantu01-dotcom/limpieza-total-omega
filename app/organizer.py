@@ -186,18 +186,14 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está bloqueado exclusivamente por otro proceso en Windows.
-    
-    Intenta abrir un handle en modo lectura con permisos de compartición total (Read/Write/Delete).
-    Si `CreateFileW` retorna INVALID_HANDLE_VALUE, significa que otro proceso tiene 
-    bloqueos exclusivos incompatibles.
+    Retorna True si el archivo está inaccesible o bloqueado.
     """
     if path is None or _is_junction(path): return True
     if not path.exists(): return True
     
     if os.name == "nt":
-        # Constantes de la API de Windows para control de acceso de archivos
         GENERIC_READ: int = 0x80000000
-        FILE_SHARE_ALL: int = 0x7  # Permite lectura, escritura y borrado por otros procesos
+        FILE_SHARE_ALL: int = 0x7
         OPEN_EXISTING: int = 0x3
         FILE_ATTRIBUTE_NORMAL: int = 0x80
         INVALID_HANDLE_VALUE: int = -1
@@ -211,7 +207,7 @@ def _is_file_locked(path: Path) -> bool:
                 return True
             ctypes.windll.kernel32.CloseHandle(handle)
             return False
-        except Exception:
+        except (OSError, Exception):
             return True
     return False
 
@@ -325,11 +321,10 @@ def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
     """Analiza una entrada individual y la añade a la lista si es basura válida."""
     try:
         if is_valid_junk_extension(entry.name):
-            # Usamos stat() de la entrada para evitar syscall adicional
             info = entry.stat()
-            # Se evita convertir a Path innecesariamente hasta que sea necesario procesar
-            if info.st_size > 0 and not _is_file_locked(Path(entry.path)):
-                found.append(JunkFile(Path(entry.path), info.st_size, datetime.fromtimestamp(info.st_mtime)))
+            path_obj = Path(entry.path)
+            if info.st_size > 0 and not _is_file_locked(path_obj):
+                found.append(JunkFile(path_obj, info.st_size, datetime.fromtimestamp(info.st_mtime)))
     except (OSError, PermissionError):
         pass
 
@@ -401,7 +396,6 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         dest_base_res: Path = dest_base.resolve()
         if not dest_base_res.exists() or not dest_base_res.is_dir(): return None
         
-        # Validar espacio disponible + margen de seguridad (50MB)
         try:
             if shutil.disk_usage(dest_base_res.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): 
                 return None
@@ -444,11 +438,10 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             if not isinstance(junk_file, JunkFile) or junk_file.path is None: continue
             src: Path = junk_file.path.resolve()
             
-            if src.is_relative_to(dest_base) or not src.exists() or not src.is_file(): continue
+            if not src.exists() or src.is_relative_to(dest_base) or not src.is_file(): continue
             
             target: Optional[Path] = _can_move_file(junk_file, dest_base)
             if target and target.is_relative_to(dest_base):
-                # Validamos contra la ruta resuelta antes de la operación
                 if not is_safe_to_modify(src) or not is_safe_to_modify(target): continue
                 if _is_file_locked(src): continue
                 ensure_safe_to_modify(src)

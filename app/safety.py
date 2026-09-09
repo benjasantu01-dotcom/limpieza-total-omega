@@ -155,7 +155,8 @@ def _has_invalid_chars(path_str: str | None) -> bool:
     """Detecta caracteres de control y no imprimibles que Windows rechaza en nombres de archivo."""
     if not isinstance(path_str, str) or not path_str: 
         return True
-    return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', path_str))
+    # Añadido chequeo de secuencias de escape/control comunes de bypass
+    return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]|[\x00-\x1f\x7f]', path_str))
 
 
 @lru_cache(maxsize=128)
