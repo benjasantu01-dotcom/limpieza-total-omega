@@ -423,6 +423,19 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_boundary_conditions(p, base_dir)
     
     if p.exists():
+        # Verificación final contra redirecciones por puntos de reparse reales
+        if os.name == 'nt':
+            try:
+                kernel32 = ctypes.windll.kernel32
+                handle = kernel32.CreateFileW(str(p), 0, 0, None, 3, 0x02000000, None)
+                if handle != -1:
+                    buf = ctypes.create_unicode_buffer(1024)
+                    kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0)
+                    kernel32.CloseHandle(handle)
+                    if not Path(buf.value).resolve().as_posix().startswith(p.resolve().as_posix()[:len(str(p.parent))+1]):
+                         raise UnsafePathError("Redirección detectada vía reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+            except Exception: pass
+            
         _check_file_integrity(p)
     elif p.parent and is_protected_path(p.parent):
         raise UnsafePathError("Directorio contenedor restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)

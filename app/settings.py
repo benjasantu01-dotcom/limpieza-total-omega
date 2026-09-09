@@ -170,7 +170,7 @@ class _Validators:
             is_safe = not _Validators._is_reparse_point(resolved) and \
                       not is_protected_path(str(resolved)) and \
                       is_safe_to_modify(str(resolved))
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, RuntimeError):
             is_safe = False
             
         _SAFETY_CACHE[path_str] = is_safe

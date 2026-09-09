@@ -541,3 +541,45 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-09-09T03:55:39` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-09T03:55:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T03:55:39` Corrida terminada. Total usado hoy: 92.
+- `2026-09-09T04:04:10` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-09-09T04:04:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-09T04:04:50` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la protección contra la manipulación de puntos de reparse (symlinks/junctions) mediante la integración de una verificación mediante `GetFinalPathNameByHandleW` en `ensure_safe_to_modify`, lo que garantiza que una ruta no esté siendo redirigida fuera de los límites permitidos incluso si parece estar dentro de ellos.
+- `2026-09-09T04:05:14` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva del escáner implementando un chequeo preventivo de rutas mediante `is_protected_path` en `process_entry`, asegurando que no se procese recursivamente ningún archivo o carpeta que el sistema de seguridad considere protegido, incluso si el `base_root` original era válido.
+- `2026-09-09T04:05:42` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para que ante cualquier error de acceso durante la resolución de la ruta (como archivos bloqueados por el sistema), el sistema adopte una postura restrictiva devolviendo `False` en lugar de propagar una excepción que podría interrumpir el flujo.
+- `2026-09-09T04:05:57` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.89s
+
+```
+- `2026-09-09T04:05:57` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se endurece la validación de rutas en `_resolve_path_from_command` y `parse_registry_csv` incorporando `is_protected_path` de forma sistemática antes de cualquier procesamiento, asegurando que no se intente resolver o analizar metadatos de rutas críticas del sistema incluso si vienen de fuentes externas como el registro.
+- `2026-09-09T04:05:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T04:05:57` Corrida terminada. Total usado hoy: 96.

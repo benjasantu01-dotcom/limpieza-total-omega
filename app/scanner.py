@@ -114,6 +114,7 @@ class Scanner:
                 return False
             if RTL_CHAR_RE.search(path_str) or RESERVED_NAMES_RE.match(entry.name):
                 return False
+            # Se usa is_protected_path para bloquear recursivamente cualquier acceso a zonas críticas
             return self._is_inside_base_root(path_str) and not is_protected_path(Path(path_str))
         except (OSError, AttributeError, TypeError):
             return False

@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
-- Rechazadas por tests: 20
+- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 27 | 4 | 8 | 3 | 20 |
+| 2026-09-07 | 27 | 4 | 8 | 3 | 16 |
 | 2026-09-08 | 161 | 12 | 24 | 9 | 144 |
-| 2026-09-09 | 40 | 4 | 7 | 2 | 39 |
+| 2026-09-09 | 43 | 5 | 7 | 2 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
+- seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **46**
 - robustez ante casos límite: **45**
 - rendimiento: **41**
 
@@ -32,12 +32,12 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `assistant.py`: **23**
 - `duplicates.py`: **21**
+- `settings.py`: **20**
 - `healthscore.py`: **19**
-- `settings.py`: **19**
 - `memory.py`: **19**
+- `safety.py`: **18**
+- `scanner.py`: **18**
 - `quarantine.py`: **18**
-- `safety.py`: **17**
-- `scanner.py`: **17**
 - `diskreport.py`: **17**
 - `browser.py`: **14**
 - `branding.py`: **14**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T04:05:42` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para que ante cualquier error de acceso durante la resolución de la ruta (como archivos bloqueados por el sistema), el sistema adopte una postura restrictiva devolviendo `False` en lugar de propagar una excepción que podría interrumpir el flujo.
+- `2026-09-09T04:05:14` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva del escáner implementando un chequeo preventivo de rutas mediante `is_protected_path` en `process_entry`, asegurando que no se procese recursivamente ningún archivo o carpeta que el sistema de seguridad considere protegido, incluso si el `base_root` original era válido.
+- `2026-09-09T04:04:50` **safety.py** (seguridad defensiva): Se ha mejorado la protección contra la manipulación de puntos de reparse (symlinks/junctions) mediante la integración de una verificación mediante `GetFinalPathNameByHandleW` en `ensure_safe_to_modify`, lo que garantiza que una ruta no esté siendo redirigida fuera de los límites permitidos incluso si parece estar dentro de ellos.
 - `2026-09-09T03:55:35` **quarantine.py** (seguridad defensiva): Se ha añadido `os.path.samefile` en las validaciones de `_check_isolation_safety` para garantizar que el origen y el destino no sean físicamente el mismo archivo, protegiendo contra posibles enlaces físicos (hard links) que podrían bypassar las restricciones de `is_within_directory`.
 - `2026-09-09T03:54:31` **memory.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `trim_working_set` y sus ayudantes al asegurar que la recuperación de la ruta del ejecutable sea tratada como un recurso crítico, validando su origen de forma estricta antes de realizar cualquier operación sobre el proceso, evitando posibles condiciones de carrera al cerrar siempre el handle.
 - `2026-09-09T03:46:17` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` añadiendo una validación explícita `is_safe_to_modify` dentro del decorador `ensure_safety`, asegurando que cualquier función decorada con él valide estrictamente la ruta antes de intentar una operación de escritura, previniendo así errores de lógica donde solo se verificaba `Path.home()`.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T03:24:22` **safety.py** (robustez ante casos límite): Se implementó un chequeo en `_validate_structural_safety` para detectar rutas que contienen caracteres de espacios en blanco (ej. espacios finales o múltiples espacios), los cuales son frecuentemente usados para ofuscar nombres de archivos o causar errores de resolución en APIs de Windows.
 - `2026-09-09T03:15:56` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` ante fallos de E/S mediante un bloque `try/finally` explícito que garantiza que, si la copia al sandbox falla, se intente limpiar cualquier archivo temporal residual antes de propagar la excepción.
 - `2026-09-09T03:14:35` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de `on_memory_processes` añadiendo una validación explícita mediante un bloque `try-except` y comprobación de existencia de atributos para evitar caídas de la interfaz cuando el estado de los procesos del sistema cambia drásticamente durante la ejecución asíncrona de la tarea.
-- `2026-09-09T03:05:54` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics.validate` para prevenir valores negativos inesperados o desbordamientos en campos críticos antes de que el motor de scoring los procese, asegurando que `_clamp` trabaje siempre con rangos lógicos.
-- `2026-09-09T03:05:41` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `find_duplicates` ante entradas malformadas o tipos de datos inesperados en el iterador de directorios, asegurando que `_collect_candidates` no interrumpa el flujo completo si una ruta individual falla al resolverse.
-- `2026-09-09T02:54:35` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de inferencia ante entradas maliciosas o mal formadas mediante la adición de una validación explícita en `_sanitize_query` y `local_answer` para prevenir la inyección de comandos o intentos de elusión mediante caracteres especiales, asegurando que cualquier respuesta sea siempre manejable por el sistema.
