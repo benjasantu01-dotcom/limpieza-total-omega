@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 131 | 11 | 21 | 7 | 106 |
-| 2026-09-09 | 91 | 10 | 12 | 8 | 107 |
+| 2026-09-08 | 128 | 11 | 20 | 7 | 106 |
+| 2026-09-09 | 92 | 10 | 12 | 8 | 110 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- legibilidad y documentación: **48**
-- manejo de errores y validación de entradas: **43**
+- legibilidad y documentación: **45**
+- manejo de errores y validación de entradas: **44**
 - rendimiento: **42**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
+- `assistant.py`: **20**
+- `duplicates.py`: **20**
 - `scanner.py`: **19**
-- `assistant.py`: **19**
 - `settings.py`: **19**
-- `diskreport.py`: **18**
-- `healthscore.py`: **18**
 - `safety.py`: **18**
 - `memory.py`: **17**
+- `diskreport.py`: **17**
+- `healthscore.py`: **17**
 - `quarantine.py`: **17**
 - `organizer.py`: **12**
 - `branding.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T09:54:49` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ingest` en `SystemContext` para evitar que un diccionario malformado o un objeto inesperado provoque excepciones al intentar acceder a sus atributos, encapsulando la extracción en el método ya existente `_get_source_value` para asegurar que el proceso de ingesta sea atómico y no se interrumpa ante datos inválidos.
 - `2026-09-09T08:30:59` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para prevenir la resolución de rutas mediante enlaces simbólicos o junctions que podrían apuntar fuera de las zonas permitidas, asegurando que la validación ocurra sobre el destino final absoluto sin seguir estructuras de reparse.
 - `2026-09-09T08:30:42` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del escáner en `_is_safe_entry` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta (`resolve()`) del archivo, previniendo así posibles ataques por "path traversal" o manipulación de enlaces simbólicos que intenten escapar del directorio base.
 - `2026-09-09T08:30:16` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `ensure_safe_to_modify` agregando una validación estricta que bloquea rutas de archivos que contienen flujos de datos alternativos (ADS) usando `::` (NTFS streams), previniendo que la aplicación sea engañada por archivos que ocultan contenido malicioso detrás de una extensión aparentemente inocua.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T07:59:47` **startup.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previa utilizando `os.access(p, os.F_OK)` en `_validate_file_access` para manejar de manera robusta casos donde el sistema reporta la ruta pero el usuario no tiene permisos de lectura, evitando que el escáner se detenga ante errores de acceso denegado en archivos protegidos por el sistema.
 - `2026-09-09T07:59:17` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de la persistencia atómica en `save()` añadiendo un chequeo de existencia de `ruta.parent` antes de validar la seguridad de la carpeta, evitando errores `AttributeError` o falsos negativos si la carpeta de configuración fue borrada externamente.
 - `2026-09-09T07:50:25` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `_is_reparse_point` al incluir una validación explícita para evitar errores en directorios donde el usuario no tiene permisos de lectura de atributos, lo cual previene que el escáner se salte ramas enteras o falle ante recursos bloqueados por el sistema operativo.
-- `2026-09-09T07:50:13` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera (time-of-check to time-of-use) mediante la implementación de un chequeo de existencia previo dentro de un bloque `try-except`, evitando que la función falle abruptamente ante archivos que desaparecen entre la normalización y la validación de integridad.

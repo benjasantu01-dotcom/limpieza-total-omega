@@ -303,15 +303,15 @@ class SystemContext:
             
         found_data = False
         for key, spec in _VALIDATORS.items():
-            val = _get_source_value(source, key)
-            if val is not None and spec.is_valid_type(val):
-                try:
+            try:
+                val = _get_source_value(source, key)
+                if val is not None and spec.is_valid_type(val):
                     f_val = float(val)
                     if math.isfinite(f_val) and spec.min_val <= f_val <= spec.max_val:
                         setattr(self, key, spec.cast_func(val))
                         found_data = True
-                except (ValueError, TypeError):
-                    continue
+            except (ValueError, TypeError, AttributeError):
+                continue
         
         grade_val = _get_source_value(source, "grade")
         if isinstance(grade_val, str):
