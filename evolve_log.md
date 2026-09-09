@@ -471,3 +471,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-09T03:05:54` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `SystemMetrics.validate` para prevenir valores negativos inesperados o desbordamientos en campos críticos antes de que el motor de scoring los procese, asegurando que `_clamp` trabaje siempre con rangos lógicos.
 - `2026-09-09T03:05:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T03:05:54` Corrida terminada. Total usado hoy: 72.
+- `2026-09-09T03:13:19` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-09-09T03:14:35` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `on_memory_processes` añadiendo una validación explícita mediante un bloque `try-except` y comprobación de existencia de atributos para evitar caídas de la interfaz cuando el estado de los procesos del sistema cambia drásticamente durante la ejecución asíncrona de la tarea.
+- `2026-09-09T03:15:04` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-09T03:15:34` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-09T03:15:56` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejora la robustez de `quarantine_file` ante fallos de E/S mediante un bloque `try/finally` explícito que garantiza que, si la copia al sandbox falla, se intente limpiar cualquier archivo temporal residual antes de propagar la excepción.
+- `2026-09-09T03:15:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T03:15:56` Corrida terminada. Total usado hoy: 76.

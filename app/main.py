@@ -1522,28 +1522,31 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_memory_processes(self) -> None:
         """Reporta procesos que consumen más RAM."""
         def task() -> None:
-            procesos = memory_mod.top_memory_processes(limit=15)
-            if not procesos:
-                self.log_lines(["No se pudo obtener la lista de procesos en este sistema."],
-                               "Memoria")
-                return
-            
-            procesos_validos = [p for p in procesos if hasattr(p, 'working_set_mb')]
-            if not procesos_validos:
-                self.log_lines(["Los procesos activos cambiaron. Reintentá el diagnóstico."], "Memoria")
-                return
+            try:
+                procesos = memory_mod.top_memory_processes(limit=15)
+                if not procesos:
+                    self.log_lines(["No se pudo obtener la lista de procesos en este sistema."],
+                                   "Memoria")
+                    return
+                
+                procesos_validos = [p for p in procesos if hasattr(p, 'working_set_mb')]
+                if not procesos_validos:
+                    self.log_lines(["Los procesos activos cambiaron. Reintentá el diagnóstico."], "Memoria")
+                    return
 
-            tope = max([p.working_set_mb for p in procesos_validos], default=1) or 1
-            lineas = ["Procesos por consumo de memoria:", ""]
-            for p in procesos_validos:
-                relativo = p.working_set_mb / tope * 100
-                lineas.append(
-                    f"  {branding.bar(relativo, 18)}  {p.working_set_mb:>9} MB  "
-                    f"PID {p.pid:<7} {p.name}"
-                )
-            lineas += ["", "Cerrar el que no uses libera memoria de verdad. "
-                           "Copiá el PID si querés probar el trim manual."]
-            self.log_lines(lineas, "Memoria")
+                tope = max([p.working_set_mb for p in procesos_validos], default=1) or 1
+                lineas = ["Procesos por consumo de memoria:", ""]
+                for p in procesos_validos:
+                    relativo = p.working_set_mb / tope * 100
+                    lineas.append(
+                        f"  {branding.bar(relativo, 18)}  {p.working_set_mb:>9} MB  "
+                        f"PID {p.pid:<7} {p.name}"
+                    )
+                lineas += ["", "Cerrar el que no uses libera memoria de verdad. "
+                               "Copiá el PID si querés probar el trim manual."]
+                self.log_lines(lineas, "Memoria")
+            except Exception as e:
+                self.log(f"Error procesando lista de memoria: {e}", "Memoria")
 
         self.run_async(task)
 

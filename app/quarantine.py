@@ -559,8 +559,14 @@ def quarantine_file(
     
     item_id = uuid.uuid4().hex[:12]
     destination = dest_dir / _generate_safe_stored_name(source_path, item_id)
-    file_hash = _atomic_isolate_file(source_path, destination, original_size)
     
+    try:
+        file_hash = _atomic_isolate_file(source_path, destination, original_size)
+    except Exception:
+        if destination.exists():
+            _safe_unlink(destination)
+        raise
+
     try:
         items_list = load_manifest(dest_dir)
         quarantine_item = QuarantineItem(

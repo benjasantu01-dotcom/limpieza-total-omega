@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 30 | 4 | 8 | 3 | 37 |
+| 2026-09-07 | 27 | 4 | 8 | 3 | 36 |
 | 2026-09-08 | 161 | 12 | 24 | 9 | 144 |
-| 2026-09-09 | 28 | 3 | 5 | 2 | 34 |
+| 2026-09-09 | 30 | 3 | 5 | 2 | 36 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **42**
+- robustez ante casos límite: **42**
 - rendimiento: **41**
-- robustez ante casos límite: **40**
+- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **22**
 - `duplicates.py`: **20**
-- `settings.py`: **19**
-- `scanner.py`: **18**
 - `healthscore.py`: **18**
+- `settings.py`: **18**
 - `memory.py`: **18**
+- `scanner.py`: **17**
+- `quarantine.py`: **17**
 - `safety.py`: **16**
 - `diskreport.py`: **16**
-- `quarantine.py`: **16**
 - `browser.py`: **14**
 - `branding.py`: **14**
-- `main.py`: **10**
-- `startup.py`: **9**
+- `main.py`: **11**
 - `organizer.py`: **9**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T03:15:56` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` ante fallos de E/S mediante un bloque `try/finally` explícito que garantiza que, si la copia al sandbox falla, se intente limpiar cualquier archivo temporal residual antes de propagar la excepción.
+- `2026-09-09T03:14:35` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de `on_memory_processes` añadiendo una validación explícita mediante un bloque `try-except` y comprobación de existencia de atributos para evitar caídas de la interfaz cuando el estado de los procesos del sistema cambia drásticamente durante la ejecución asíncrona de la tarea.
 - `2026-09-09T03:05:54` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics.validate` para prevenir valores negativos inesperados o desbordamientos en campos críticos antes de que el motor de scoring los procese, asegurando que `_clamp` trabaje siempre con rangos lógicos.
 - `2026-09-09T03:05:41` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `find_duplicates` ante entradas malformadas o tipos de datos inesperados en el iterador de directorios, asegurando que `_collect_candidates` no interrumpa el flujo completo si una ruta individual falla al resolverse.
 - `2026-09-09T02:54:35` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de inferencia ante entradas maliciosas o mal formadas mediante la adición de una validación explícita en `_sanitize_query` y `local_answer` para prevenir la inyección de comandos o intentos de elusión mediante caracteres especiales, asegurando que cualquier respuesta sea siempre manejable por el sistema.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T02:23:44` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` evitando llamadas redundantes a `.resolve()` y `Path` en el bucle interno, reemplazándolas por el uso de `os.DirEntry` y sus atributos, lo que reduce significativamente el overhead de E/S por archivo al realizar menos syscalls.
 - `2026-09-09T02:22:48` **branding.py** (rendimiento): Se ha optimizado la generación de degradados en `gradient_colors` reemplazando el uso de `tuple` y `append` en un bucle por una `list` pre-alocada con asignación directa de índices, evitando el coste de crecimiento dinámico de memoria y mejorando la eficiencia en tiempo de ejecución para renderizados frecuentes.
 - `2026-09-09T02:13:54` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` eliminando la re-tokenización innecesaria y el bucle de búsqueda en cada iteración, sustituyéndolo por un acceso directo al diccionario `_KEYWORD_TO_HANDLER` tras una única pasada de limpieza del input.
-- `2026-09-09T02:13:01` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo documentando exhaustivamente las funciones internas de validación mediante type hints y docstrings precisos, además de consolidar la lógica de tipos y límites en estructuras de datos más robustas.
-- `2026-09-09T02:03:02` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los type hints en `quarantine.py`, añadiendo docstrings específicos que explican las condiciones de seguridad en funciones críticas y normalizando la nomenclatura para alinearse con los estándares del proyecto.
