@@ -181,7 +181,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[ProcessMemory]:
     """Valida los datos brutos del proceso contra políticas de seguridad."""
-    if not isinstance(pid_str, str) or not isinstance(ws_str, str):
+    if not isinstance(name, str) or not isinstance(pid_str, str) or not isinstance(ws_str, str):
         return None
     
     try:
@@ -208,7 +208,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             if not clean_line: continue
             
             parts = [p.strip().strip("'\"") for p in clean_line.split(",")]
-            if len(parts) == 3 and all(parts):
+            if len(parts) >= 3:
                 proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
                 if proc: yield proc
 

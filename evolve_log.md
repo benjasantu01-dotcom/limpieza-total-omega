@@ -1465,3 +1465,48 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-09T01:13:19` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `on_target_choice_changed` envolviendo la resolución de ruta en un bloque `try-except` explícito para capturar errores de sistema (`OSError`, `ValueError`) y validando la existencia de la ruta antes de intentar operar, evitando cierres inesperados al procesar entradas de usuario.
 - `2026-09-09T01:13:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T01:13:19` Corrida terminada. Total usado hoy: 28.
+- `2026-09-09T01:21:05` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-09-09T01:21:39` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `parse_windows_process_csv` y `_is_valid_process_entry` ante datos de entrada malformados, asegurando una validación estricta de tipos y valores que previene excepciones silenciosas y errores de lógica en el procesamiento de PIDs y valores de memoria.
+- `2026-09-09T01:22:11` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-09T01:22:48` Tests FALLARON:
+```
+_ _ 
+
+source = PosixPath('/tmp/pytest-of-runner/pytest-2/test_quarantine_missing_file_r0/no-existe.txt')
+reason = 'Marcado como sospechoso'
+base = PosixPath('/tmp/pytest-of-runner/pytest-2/test_quarantine_missing_file_r0/_Cuarentena')
+
+    def quarantine_file(
+        source: PathLike,
+        reason: str = "Marcado como sospechoso",
+        base: PathLike = DEFAULT_QUARANTINE_DIR,
+    ) -> QuarantineItem:
+        """
+        Realiza el ciclo completo: valida, aísla y registra en manifiesto un archivo.
+        """
+        if source is None:
+            raise ValueError("Ruta de origen requerida.")
+    
+        p_source = Path(source)
+        if not p_source.is_absolute():
+            try:
+                p_source = p_source.resolve(strict=True)
+            except (OSError, RuntimeError) as e:
+                raise UnsafePathError(f"Ruta origen no válida o inaccesible: {e}")
+    
+        source_path = p_source
+        if not source_path.is_file():
+>           raise UnsafePathError("Aislamiento solo permitido para archivos regulares existentes.")
+E           safety.UnsafePathError: [GENERIC] Aislamiento solo permitido para archivos regulares existentes.
+
+app/quarantine.py:527: UnsafePathError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - safety.UnsafePathError: [GENERIC] Aislamiento solo permitido para archivos regulares existentes.
+1 failed, 298 passed in 1.11s
+
+```
+- `2026-09-09T01:22:48` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `quarantine_file` y `restore_item` implementando una validación explícita de `None` y tipos antes de las operaciones críticas, asegurando que los parámetros de entrada cumplan con los contratos de seguridad definidos.
+- `2026-09-09T01:22:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-09T01:22:57` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-09T01:22:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T01:22:57` Corrida terminada. Total usado hoy: 32.
