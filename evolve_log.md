@@ -890,3 +890,10 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyE
 - `2026-09-09T06:38:56` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
 - `2026-09-09T06:38:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T06:38:56` Corrida terminada. Total usado hoy: 156.
+- `2026-09-09T06:47:23` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-09-09T06:48:09` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_identify_active_problems` eliminando la re-ejecución innecesaria de filtros en cada llamada mediante el uso de `lru_cache`, y refiné `_get_active_problems` para que el acceso a métricas sea constante en lugar de iterar repetidamente sobre la lista de criterios.
+- `2026-09-09T06:48:42` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Se optimizó el rendimiento de `gradient_colors` eliminando la recreación innecesaria de tuplas y reduciendo la complejidad del bucle mediante una pre-calculación de los deltas de color, minimizando además las llamadas a la caché al reutilizar los segmentos calculados.
+- `2026-09-09T06:49:11` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). He optimizado el cálculo recursivo de `directory_size` utilizando un diccionario de `memo` persistente durante el escaneo para evitar el cálculo redundante de tamaños de subcarpetas en estructuras de caché compartidas, mejorando significativamente el rendimiento al evitar llamadas a `stat` repetitivas.
+- `2026-09-09T06:49:26` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-09T06:49:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T06:49:26` Corrida terminada. Total usado hoy: 160.

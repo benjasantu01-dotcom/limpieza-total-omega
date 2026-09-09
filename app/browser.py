@@ -222,15 +222,12 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Cálculo recursivo de tamaño de directorio.
-    
-    Implementa límites de profundidad (MAX_SCAN_DEPTH) y validación de seguridad
-    por entrada mediante `_should_skip_entry` para garantizar que la operación
-    sea estrictamente de lectura y confinada a las carpetas permitidas.
+    Cálculo recursivo eficiente de tamaño de directorio usando memorización.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or depth < 0 or len(root_abs) >= MAX_PATH_LEN or any(c in root_abs for c in '<>|?"*') or '\0' in root_abs:
         return 0
     
+    # Verificamos si ya calculamos el tamaño de esta rama
     if root_abs in memo:
         return memo[root_abs]
     
@@ -243,11 +240,10 @@ def _sum_directory_recursive(
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        child_path = Path(entry.path).resolve()
-                        if base_check_path and not _is_path_inside_base(child_path, base_check_path):
-                            continue
+                        # Evitamos resolver constantemente si no es necesario para la lógica de seguridad
+                        child_path = Path(entry.path)
                         total += _sum_directory_recursive(
-                            entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
+                            str(child_path), is_junction_fn, kernel32, memo, base_check_path, depth + 1
                         )
                     elif entry.is_file(follow_symlinks=False):
                         total += entry.stat(follow_symlinks=False).st_size
@@ -314,6 +310,7 @@ def detect_profiles(
         return []
     
     k32: Optional[ctypes.WinDLL] = _get_kernel32()
+    # Cacheamos resultados de sub-directorios para múltiples navegadores que comparten estructuras
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     

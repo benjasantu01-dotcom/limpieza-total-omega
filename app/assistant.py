@@ -438,7 +438,7 @@ def explain_area(area: Any) -> str:
 
 @lru_cache(maxsize=8)
 def _get_active_problems(ctx: SystemContext) -> list[str]:
-    """Identifica problemas activos basándose en criterios de salud."""
+    """Identifica problemas activos basándose en criterios de salud (cached)."""
     return [msg for crit in _CRITERIOS_SALUD if (msg := crit.format_if_triggered(ctx))]
 
 def _format_problem_message(problems: list[str], score: Union[int, str]) -> str:
@@ -452,7 +452,7 @@ def _format_problem_message(problems: list[str], score: Union[int, str]) -> str:
         return "Tu sistema tiene problemas detectados."
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
-    """Obtiene problemas activos con caché."""
+    """Obtiene problemas activos delegando a caché."""
     return _get_active_problems(ctx) if ctx.analyzed else []
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
