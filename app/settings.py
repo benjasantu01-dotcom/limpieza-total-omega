@@ -286,7 +286,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     try:
-        if not ruta.exists(): return DEFAULTS.copy()
+        if not ruta.exists() or not ruta.is_file(): return DEFAULTS.copy()
         stats = ruta.stat()
         mtime = float(stats.st_mtime)
         if (cached := _CACHE.get(ruta_str)) and cached[0] == mtime:
@@ -296,7 +296,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 data = validate(json.load(f))
             _CACHE[ruta_str] = (mtime, data)
             return data
-    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
+    except (OSError, PermissionError, IsADirectoryError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
         pass
     return DEFAULTS.copy()
 

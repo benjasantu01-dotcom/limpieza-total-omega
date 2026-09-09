@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
-- Rechazadas por tests: 20
+- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 122 | 10 | 18 | 6 | 104 |
-| 2026-09-09 | 102 | 10 | 13 | 8 | 111 |
+| 2026-09-08 | 121 | 9 | 18 | 6 | 102 |
+| 2026-09-09 | 105 | 10 | 13 | 8 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **54**
+- manejo de errores y validación de entradas: **55**
 - seguridad defensiva: **49**
-- legibilidad y documentación: **41**
-- rendimiento: **40**
+- legibilidad y documentación: **43**
 - robustez ante casos límite: **40**
+- rendimiento: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **21**
+- `settings.py`: **20**
+- `assistant.py`: **20**
 - `safety.py`: **19**
 - `scanner.py`: **19**
-- `settings.py`: **19**
-- `assistant.py`: **19**
 - `healthscore.py`: **18**
 - `quarantine.py`: **18**
 - `diskreport.py`: **17**
 - `memory.py`: **17**
+- `branding.py`: **13**
 - `browser.py`: **13**
-- `main.py`: **12**
-- `branding.py`: **12**
 - `organizer.py`: **12**
+- `main.py`: **11**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T10:34:01` **branding.py** (legibilidad y documentación): Documenté el módulo `branding.py` mediante una revisión exhaustiva de docstrings para aclarar la responsabilidad de cada función y los tipos de datos utilizados, mejorando la mantenibilidad para futuros colaboradores sin alterar la funcionalidad.
+- `2026-09-09T10:33:39` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de `SystemContext` y `ProblemCriterion` con *type hints* claros y *docstrings* enriquecidos para clarificar el flujo de datos y la naturaleza de las validaciones, facilitando el mantenimiento futuro y la comprensión del modelo de datos.
+- `2026-09-09T10:32:29` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de archivos de configuración capturando excepciones específicas durante la lectura y validando que el archivo sea efectivamente un archivo regular antes de intentar abrirlo, evitando errores silenciosos en condiciones de archivo bloqueado o sistema de archivos atípico.
 - `2026-09-09T10:24:00` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `scan_directory` validando explícitamente que la entrada no sea `None` ni una cadena vacía antes de procesar, y protegiendo la conversión a `Path` con un bloque de control de errores más granular, evitando así excepciones inesperadas al procesar rutas malformadas o inaccesibles.
 - `2026-09-09T10:23:49` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de error imprevistas al añadir un bloque `try-except` envolvente en la lógica de resolución de archivos y validación de integridad, asegurando que cualquier fallo inesperado durante la inspección de metadatos no cause una excepción no controlada sino que se reporte explícitamente como `UnsafePathError`.
 - `2026-09-09T10:22:54` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` mediante la validación proactiva de parámetros de entrada en `restore_item` y `purge_item` para evitar errores de tipo o valores nulos antes de acceder al sistema de archivos, garantizando que el flujo de control no sea interrumpido por excepciones inesperadas en los argumentos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T10:01:53` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` validando la existencia de la ruta antes de intentar resolverla y utilizando una captura de excepciones más específica para evitar ocultar errores de lógica durante el desarrollo.
 - `2026-09-09T09:54:49` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ingest` en `SystemContext` para evitar que un diccionario malformado o un objeto inesperado provoque excepciones al intentar acceder a sus atributos, encapsulando la extracción en el método ya existente `_get_source_value` para asegurar que el proceso de ingesta sea atómico y no se interrumpa ante datos inválidos.
 - `2026-09-09T08:30:59` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para prevenir la resolución de rutas mediante enlaces simbólicos o junctions que podrían apuntar fuera de las zonas permitidas, asegurando que la validación ocurra sobre el destino final absoluto sin seguir estructuras de reparse.
-- `2026-09-09T08:30:42` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del escáner en `_is_safe_entry` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta (`resolve()`) del archivo, previniendo así posibles ataques por "path traversal" o manipulación de enlaces simbólicos que intenten escapar del directorio base.
-- `2026-09-09T08:30:16` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `ensure_safe_to_modify` agregando una validación estricta que bloquea rutas de archivos que contienen flujos de datos alternativos (ADS) usando `::` (NTFS streams), previniendo que la aplicación sea engañada por archivos que ocultan contenido malicioso detrás de una extensión aparentemente inocua.
-- `2026-09-09T08:21:57` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine.py` reforzando la validación de integridad previa a la restauración, asegurando mediante `is_within_directory` que el archivo a restaurar no sea un reemplazo malicioso fuera del sandbox y validando que el destino de restauración sea un directorio seguro antes de intentar cualquier operación de disco.
