@@ -62,6 +62,7 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
 # Factores de normalización inversos para transformar métricas crudas a un rango [0.0, 1.0].
+# Se calculan como 1/Umbral para que el valor 0 de métrica sea salud perfecta (1.0).
 _INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB
 _INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB
 _INV_STARTUP: Final[float] = 1.0 / float(_LIMIT_STARTUP_COUNT)
@@ -112,6 +113,7 @@ def score_startup(startup_count: int) -> NormalizedRatio:
     """Evalúa salud de inicio: penaliza linealmente el conteo de apps según el umbral."""
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
+# Pipeline interno que mapea métricas a funciones de puntuación y sus reglas asociadas.
 _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
     "seguridad": lambda m: score_security(m.suspicious_count, m.suspicious_warnings),
     "disco": lambda m: score_disk(m.disk_free_percent),
@@ -162,7 +164,6 @@ class SystemMetrics:
         self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings)))
         self.startup_count = int(max(0, _to_float(self.startup_count)))
         self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
-        # Evitamos límites negativos o mayores a 100% en porcentajes
         self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
         self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
 

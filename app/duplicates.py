@@ -74,7 +74,10 @@ class DuplicateGroup:
 
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo del archivo para confirmación de identidad."""
+    """
+    Calcula el hash SHA256 completo.
+    Retorna None si el archivo es inaccesible, protegido o ocurre un error de E/S.
+    """
     if path is None or chunk_size <= 0:
         return None
         
@@ -96,7 +99,10 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula un hash SHA256 de los primeros N bytes para filtrado rápido."""
+    """
+    Calcula hash SHA256 de los primeros N bytes para filtrado rápido.
+    Ignora errores de lectura (ej. bloqueos por el sistema operativo).
+    """
     if path is None or read_bytes <= 0:
         return None
 
@@ -194,7 +200,7 @@ def _collect_candidates(
             return
 
     if isinstance(directories, Iterable):
-        roots = []
+        roots: List[Path] = []
         for item in directories:
             if item:
                 resolved = _resolve_and_verify_root(item)
