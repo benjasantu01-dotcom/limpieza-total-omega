@@ -39,7 +39,9 @@ if TYPE_CHECKING:
 else:
     wintypes = None
 
-# Definición de tipos para seguridad semántica en cálculos de memoria
+# Tipos semánticos para evitar confusión de unidades en cálculos aritméticos:
+# BytesValue: Representa el tamaño crudo en bytes.
+# MegabytesValue: Representa tamaño ya convertido a MiB para presentación.
 BytesValue = NewType("BytesValue", int)
 MegabytesValue = NewType("MegabytesValue", float)
 
@@ -198,7 +200,11 @@ def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[Pr
     return ProcessMemory(name=name, pid=pid_val, working_set=BytesValue(ws_val))
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
-    """Parsea salida CSV de PowerShell y retorna lista ordenada de procesos pesados."""
+    """
+    Parsea texto CSV crudo proveniente de PowerShell.
+    Aplica filtros de seguridad por PID y ruta mediante `_is_valid_process_entry` 
+    antes de ordenar y truncar la lista resultante.
+    """
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
     
@@ -235,7 +241,10 @@ _snap_cache_data: Optional[MemorySnapshot] = None
 _linux_available: bool = True
 
 def read_snapshot() -> MemorySnapshot:
-    """Obtiene snapshot global de RAM. Implementa caché de 5 segundos."""
+    """
+    Obtiene el estado global de RAM. Implementa una caché de 5 segundos para
+    evitar llamadas excesivas al sistema operativo durante el renderizado de UI.
+    """
     global _snap_cache_time, _snap_cache_data, _linux_available
     now = time.time()
     if (now - _snap_cache_time) < 5 and _snap_cache_data is not None:

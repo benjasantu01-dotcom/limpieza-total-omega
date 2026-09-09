@@ -128,7 +128,9 @@ def _get_win_attributes(path_or_entry: Union[os.DirEntry, Path]) -> int:
 def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
     """
     Determina si una ruta es un punto de reparse (Junction/Symlink).
-    Vital para evitar recursión infinita en directorios montados o links circulares.
+    
+    Utiliza atributos Win32 (0x400) para detectar puntos de reparse que
+    podrían causar recursiones infinitas o acceso a volúmenes circulares.
     """
     if entry is None: return False
     is_sym = entry.is_symlink() if hasattr(entry, 'is_symlink') else Path(str(entry)).is_symlink()
@@ -146,7 +148,9 @@ def _is_junk_path(path_str: str) -> bool:
 def _is_unc_path(path: Path) -> bool:
     """
     Verifica si una ruta utiliza formato UNC (Universal Naming Convention).
-    Se bloquean para evitar el acceso a recursos de red no deseados.
+    
+    El bloqueo previene que el escáner intente operar sobre recursos de red 
+    potencialmente lentos o inaccesibles, manteniendo el foco en el disco local.
     """
     if path is None: return True
     try:
@@ -181,8 +185,10 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está siendo utilizado exclusivamente por otro proceso.
-    Utiliza constantes Win32 para abrir un handle con compartición total.
+    Verifica si un archivo está bloqueado exclusivamente por otro proceso.
+    
+    Intenta abrir un handle en modo lectura con permisos de compartición (Share Read/Write/Delete).
+    Si el handle es inválido, se asume que el archivo está en uso exclusivo.
     """
     if path is None or _is_junction(path): return True
     if not path.exists(): return True
@@ -210,8 +216,8 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
-    Valida que la operación de movimiento no cause una recursión lógica,
-    comprobando que el destino no sea subdirectorio o el mismo que el origen.
+    Valida que el movimiento no sea circular (ej. mover una carpeta dentro de sí misma).
+    Usa `is_relative_to` para confirmar que el destino no descienda del origen.
     """
     if src is None or dest is None: return True
     try:
@@ -224,8 +230,8 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 
 def _passes_system_checks(src: Path) -> bool:
     """
-    Filtra archivos con atributos especiales de Windows.
-    Rechaza archivos con atributos de Sistema, Ocultos, solo Lectura o Puntos de Reparse.
+    Filtra archivos con atributos especiales de Windows (Sistema, Oculto, Solo lectura).
+    El bitmask 0x407 asegura que archivos críticos del SO sean ignorados por el escáner.
     """
     if os.name != "nt" or src is None: return True
     mask: int = 0x407 # Reparse Point (0x400), System (0x004), Hidden (0x002), ReadOnly (0x001)
@@ -234,8 +240,8 @@ def _passes_system_checks(src: Path) -> bool:
 
 def _has_forbidden_chars(path: Path) -> bool:
     """
-    Verifica si la ruta contiene caracteres o nombres reservados por el sistema operativo
-    que impidan la correcta manipulación mediante APIs de Windows.
+    Valida que la ruta no contenga nombres reservados (como CON o NUL) 
+    ni caracteres que invaliden las operaciones de sistema de archivos en Windows.
     """
     if path is None: return True
     try:
@@ -249,8 +255,8 @@ def _has_forbidden_chars(path: Path) -> bool:
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
     """
-    Filtro de seguridad consolidado: verifica integridad de rutas, formato UNC
-    y restricciones de seguridad centralizadas (safety.py).
+    Orquestador de seguridad de rutas. Verifica integridad, formato y 
+    restricciones centralizadas contra rutas protegidas.
     """
     if src is None or dest is None: return False
     if _is_unc_path(src) or _is_unc_path(dest): return False
@@ -264,8 +270,8 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 
 def _validate_file_attributes(src: Path) -> bool:
     """
-    Valida la integridad física del archivo: existencia, tipo, disponibilidad
-    y verifica que no esté bloqueado ni sea un link simbólico.
+    Valida la viabilidad técnica de operar sobre el archivo.
+    Comprueba si es un archivo plano real, no está bloqueado y posee contenido.
     """
     try:
         if src is None or not src.exists() or not src.is_file(): return False
@@ -278,8 +284,8 @@ def _validate_file_attributes(src: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Validación de seguridad global previa a cualquier operación de I/O.
-    Unifica las verificaciones de seguridad de ruta, recursión y atributos.
+    Validación de seguridad global. Combina chequeos de integridad lógica, 
+    recursión, espacio y atributos de archivo antes de realizar I/O.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     
