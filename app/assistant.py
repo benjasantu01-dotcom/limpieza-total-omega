@@ -541,10 +541,6 @@ _KEYWORD_MAP: Final[dict[frozenset[str], Callable[[SystemContext, str], Answer]]
     frozenset(["inicio", "arranque", "arranca", "encender"]): handle_startup
 }
 
-_KEYWORD_TO_HANDLER: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
-    word: handler for keys, handler in _KEYWORD_MAP.items() for word in keys
-}
-
 def _sanitize_query(question: str) -> str:
     """Sanitiza el input del usuario eliminando vectores de ataque."""
     if not isinstance(question, str): return ""
@@ -555,7 +551,7 @@ def _sanitize_query(question: str) -> str:
     return clean
 
 def local_answer(question: str, context: SystemContext) -> Answer:
-    """Motor de inferencia local: selecciona handler según palabras clave."""
+    """Motor de inferencia local: selecciona handler mediante intersección de conjuntos."""
     q_sanitized = _sanitize_query(question)
     if not q_sanitized or not _ensure_safe_text(q_sanitized):
         return Answer("Entrada no válida.")
@@ -567,9 +563,9 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
     
-    for token in _TOKEN_REGEX.findall(q_sanitized):
-        handler = _KEYWORD_TO_HANDLER.get(token)
-        if handler:
+    query_tokens = set(_TOKEN_REGEX.findall(q_sanitized))
+    for key_set, handler in _KEYWORD_MAP.items():
+        if query_tokens.intersection(key_set):
             return handler(context, question)
             
     cuerpo = _format_problem_message(

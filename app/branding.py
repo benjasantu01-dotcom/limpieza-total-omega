@@ -98,8 +98,8 @@ UI_FONT_BOLD: Final[str] = "bold"
 UI_FONT_HEADER_SIZE: Final[int] = 23
 UI_FONT_BODY_SIZE: Final[int] = 12
 
-# Paleta centralizada: inmutable mediante MappingProxyType para prevenir efectos laterales
-PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType({
+# Diccionario mutable para acceso eficiente y MappingProxyType para exportación pública
+_PALETTE_MAP = {
     "background": "#0a0e17", "surface": "#141b2d", "surface_alt": "#1e2740",
     "surface_hover": "#28324f", "card": "#182135", "accent": "#00f0c0",
     "accent_hover": "#00d0a4", "accent_dim": "#0a6b58", "accent2": "#7c5cff",
@@ -107,17 +107,18 @@ PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType({
     "info": "#38bdf8", "warning": "#ffb020", "danger": "#ff4757",
     "danger_hover": "#e02e3d", "text": "#f0f6fc", "text_muted": "#94a3b8",
     "text_dim": "#5c6b85", "border": "#2a3654", "glow": "#00f0c0",
-})
+}
+PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType(_PALETTE_MAP)
 
-C_SURFACE: Final[HexColor] = PALETTE["surface"]
-C_BACKGROUND: Final[HexColor] = PALETTE["background"]
-C_GLOW: Final[HexColor] = PALETTE["glow"]
-C_TEXT_MUTED: Final[HexColor] = PALETTE["text_muted"]
-C_SUCCESS: Final[HexColor] = PALETTE["success"]
-C_INFO: Final[HexColor] = PALETTE["info"]
-C_WARNING: Final[HexColor] = PALETTE["warning"]
-C_DANGER: Final[HexColor] = PALETTE["danger"]
-C_SURFACE_ALT: Final[HexColor] = PALETTE["surface_alt"]
+C_SURFACE: Final[HexColor] = _PALETTE_MAP["surface"]
+C_BACKGROUND: Final[HexColor] = _PALETTE_MAP["background"]
+C_GLOW: Final[HexColor] = _PALETTE_MAP["glow"]
+C_TEXT_MUTED: Final[HexColor] = _PALETTE_MAP["text_muted"]
+C_SUCCESS: Final[HexColor] = _PALETTE_MAP["success"]
+C_INFO: Final[HexColor] = _PALETTE_MAP["info"]
+C_WARNING: Final[HexColor] = _PALETTE_MAP["warning"]
+C_DANGER: Final[HexColor] = _PALETTE_MAP["danger"]
+C_SURFACE_ALT: Final[HexColor] = _PALETTE_MAP["surface_alt"]
 
 FONT_SIZES: Final[Mapping[str, int]] = MappingProxyType({
     "display": 46, "title": 26, "subtitle": 13, "heading": 16,
@@ -154,10 +155,9 @@ def app_title() -> str:
     """Retorna el título completo de la aplicación incluyendo la versión actual."""
     return f"{APP_NAME} v{APP_VERSION}"
 
-@lru_cache(maxsize=32)
 def color(name: str) -> HexColor:
     """Busca un color en la paleta global; retorna gris por defecto si la clave es inválida."""
-    return PALETTE.get(name, "#808080")
+    return _PALETTE_MAP.get(name, "#808080")
 
 @lru_cache(maxsize=16)
 def font_size(name: str) -> int:

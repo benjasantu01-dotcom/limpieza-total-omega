@@ -225,14 +225,6 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Cálculo recursivo de tamaño de directorio usando memorización para optimizar.
-    
-    Args:
-        root_abs: Ruta absoluta a procesar.
-        is_junction_fn: Callback para detectar puntos de reparse.
-        kernel32: Instancia de WinDLL para atributos de sistema.
-        memo: Diccionario para evitar re-escaneo de ramas ya visitadas.
-        base_check_path: Restricción opcional de alcance para la recursión.
-        depth: Contador de profundidad actual para evitar recursión infinita.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or depth < 0 or len(root_abs) >= MAX_PATH_LEN or any(c in root_abs for c in '<>|?"*') or '\0' in root_abs:
         return 0
@@ -249,9 +241,9 @@ def _sum_directory_recursive(
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        child_path = Path(entry.path)
+                        child_path = entry.path
                         total += _sum_directory_recursive(
-                            str(child_path), is_junction_fn, kernel32, memo, base_check_path, depth + 1
+                            child_path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                         )
                     elif entry.is_file(follow_symlinks=False):
                         total += entry.stat(follow_symlinks=False).st_size
@@ -314,9 +306,6 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Escanea en busca de perfiles y calcula la ocupación de cada caché.
-    
-    Returns:
-        Lista de objetos BrowserCache ordenados de mayor a menor peso.
     """
     raw_bases: Sequence[Path] = bases if bases is not None else base_directories()
     browser_map: BrowserMap = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -350,6 +339,7 @@ def detect_profiles(
                         
                     c_path = candidate.resolve(strict=True)
                     
+                    # Usamos perf_cache para evitar re-escaneo profundo de nodos compartidos
                     size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
                     if size > 0:
                         found.append(BrowserCache(str(browser_name), c_path, size))
