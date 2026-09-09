@@ -371,30 +371,24 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     _check_isolation_safety(resolved_source, dest_dir)
 
 
-@lru_cache(maxsize=4)
-def _load_manifest_raw(base_str: str, _mtime: float = 0.0) -> ManifestData:
-    """Carga cruda del JSON con validación de tipo de lista."""
+@lru_cache(maxsize=8)
+def _load_manifest_raw(base_str: str, _mtime: float) -> List[QuarantineItem]:
+    """Carga y normaliza el manifiesto, usando caché para evitar I/O redundante."""
     path = _manifest_path(Path(base_str))
     if not path.is_file():
         return []
     try:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
-            return data if isinstance(data, list) else []
+            if not isinstance(data, list): return []
+            items = []
+            for d in data:
+                if isinstance(d, dict):
+                    item = QuarantineItem.from_dict(d)
+                    if item: items.append(item)
+            return items
     except (json.JSONDecodeError, OSError, PermissionError):
         return []
-
-@lru_cache(maxsize=2)
-def _cached_manifest(base_str: str, _mtime: float) -> List[QuarantineItem]:
-    """Deserializa y normaliza objetos del manifiesto mediante caché de carga."""
-    raw_data = _load_manifest_raw(base_str, _mtime)
-    items = []
-    for d in raw_data:
-        if isinstance(d, dict):
-            item = QuarantineItem.from_dict(d)
-            if item:
-                items.append(item)
-    return items
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
     """
@@ -411,9 +405,8 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
     
     if force_reload:
         _load_manifest_raw.cache_clear()
-        _cached_manifest.cache_clear()
     
-    return _cached_manifest(str(base_path), mtime)
+    return list(_load_manifest_raw(str(base_path), mtime))
 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
@@ -453,7 +446,6 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         finally: os.close(dir_fd)
         
         _load_manifest_raw.cache_clear()
-        _cached_manifest.cache_clear()
         return target_path
     except (OSError, TypeError, IOError) as e:
         if temp_path and isinstance(temp_path, Path) and temp_path.exists():

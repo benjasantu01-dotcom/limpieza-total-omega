@@ -275,9 +275,11 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if (time.time() - _proc_cache_time) < 60:
         return _proc_cache_data[:limit]
     
+    # Optimizamos filtrando en el comando de PS para no traer la lista completa de procesos
+    ps_filter = f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit + 5} -Property Name, Id, WorkingSet"
     cmd = [
         'powershell', '-NoProfile', '-NonInteractive', '-Command', 
-        f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit + 5} -Property Name, Id, WorkingSet | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
+        f"{ps_filter} | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
     ]
     try:
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
