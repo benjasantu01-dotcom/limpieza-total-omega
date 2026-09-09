@@ -538,3 +538,9 @@ assert not {'remove'}
 - `2026-09-09T14:53:10` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_in_use` capturando errores de `ctypes` y validando el estado del `handle` de forma más estricta para evitar bloqueos inesperados, asegurando que la función siempre retorne un booleano válido incluso ante fallos del subsistema.
 - `2026-09-09T14:53:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T14:53:10` Corrida terminada. Total usado hoy: 348.
+- `2026-09-09T14:59:33` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-09T15:00:03` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_safe_entry` y `scan_directory` validando explícitamente valores `None` o cadenas vacías antes de procesar, y asegurando que las conversiones a `Path` no fallen ante entradas malformadas, alineándome con el enfoque de validación de entradas.
+- `2026-09-09T15:00:42` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `validate` añadiendo una comprobación explícita para evitar que configuraciones parcialmente corruptas o con tipos incorrectos (ej. `None` en campos mandatorios) propaguen valores nulos, asegurando que el esquema `AppSettings` se mantenga siempre consistente con los `DEFAULTS`.
+- `2026-09-09T15:00:42` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-09-09T15:00:42` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T15:00:42` Corrida terminada. Total usado hoy: 350.

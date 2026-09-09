@@ -119,6 +119,7 @@ class Scanner:
         ofuscación RTL y no esté bajo una restricción definida en safety.py.
         """
         try:
+            if entry is None: return False
             path_str: str = entry.path
             name = entry.name
             if not path_str or not name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
@@ -138,7 +139,7 @@ class Scanner:
         archivo para evitar recursión infinita o saltos fuera del volumen base.
         """
         try:
-            if entry.is_symlink():
+            if entry is None or entry.is_symlink():
                 return True
             st = entry.stat(follow_symlinks=False)
             return bool(st.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
@@ -147,7 +148,7 @@ class Scanner:
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Registra un directorio para ser escaneado posteriormente si no ha sido visitado."""
-        if entry.path and entry.path not in self.seen and os.path.exists(entry.path):
+        if entry and entry.path and entry.path not in self.seen and os.path.exists(entry.path):
             self.seen.add(entry.path)
             directory_stack.append(entry.path)
 

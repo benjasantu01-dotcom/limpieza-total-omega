@@ -276,8 +276,10 @@ def validate(raw_values: Any) -> AppSettings:
         key_enum = _STR_TO_ENUM.get(key_str)
         if key_enum and (validator := _VALIDATOR_MAP.get(key_enum)):
             validated = validator(key_enum, val)
-            if validated is not None or (key_enum == ConfigKey.ULTIMA_CARPETA and val == ""):
-                config[key_enum.value] = validated if validated is not None else ""
+            if validated is not None:
+                config[key_enum.value] = validated
+            elif key_enum == ConfigKey.ULTIMA_CARPETA and val == "":
+                config[key_enum.value] = ""
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
