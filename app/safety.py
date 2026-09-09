@@ -234,7 +234,10 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 
 
 def _check_file_integrity(path: Path) -> None:
-    """Ejecuta la batería de reglas de validación sobre el estado del archivo."""
+    """
+    Ejecuta la batería de reglas definidas en `_VALIDATORS`.
+    Si alguna regla retorna True (violación detectada), se lanza `UnsafePathError`.
+    """
     try:
         file_stat = path.stat()
     except (PermissionError, OSError) as e:
@@ -306,7 +309,6 @@ def _is_system_path_cached(path_str: str) -> bool:
         if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
             return True
         
-        # Split y check de componentes optimizado usando el conjunto de protección
         return any(part in PROTECTED_DIR_NAMES for part in p_str_low.split(os.sep))
     except (OSError, RuntimeError):
         return True
@@ -353,7 +355,10 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
-    """Realiza chequeos estructurales antes de acceder al sistema de archivos."""
+    """
+    Realiza chequeos estructurales (caracteres prohibidos, nombres de dispositivos,
+    rutas UNC, longitud) antes de interactuar con el sistema de archivos.
+    """
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
     if "\0" in path_string:
@@ -361,7 +366,6 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if _has_invalid_chars(path_string):
         raise UnsafePathError("Caracteres inválidos detectados.", SafetyValidationErrorCode.INVALID_CHARS)
     
-    # Bloqueo estricto de ADS NTFS
     if _has_alternate_data_stream(path_string):
         raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED)
     
@@ -373,7 +377,6 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
             if not part or part.strip() != part or part.endswith(('.', ' ')):
                 raise UnsafePathError(f"Componente '{part}' malformado.", SafetyValidationErrorCode.INVALID_CHARS)
             
-            # Detectar componentes con espacios múltiples o internos sospechosos
             if "  " in part:
                  raise UnsafePathError(f"Componente '{part}' con espacios excesivos.", SafetyValidationErrorCode.INVALID_CHARS)
             
@@ -391,7 +394,10 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
 
 
 def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | None) -> None:
-    """Aplica restricciones de alcance para prevenir manipulación fuera del entorno."""
+    """
+    Aplica restricciones de alcance. Verifica que la ruta esté dentro del alcance
+    permitido y bloquea modificaciones en el directorio de la aplicación.
+    """
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
         
@@ -414,7 +420,10 @@ def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | 
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
-    """Valida rigurosamente si una ruta es segura para ser modificada."""
+    """
+    Valida rigurosamente si una ruta es segura para ser modificada.
+    Lanza `UnsafePathError` si la ruta viola cualquier política de seguridad.
+    """
     if path is None: 
         raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
     
@@ -430,14 +439,12 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_boundary_conditions(p, base_dir)
     
     try:
-        # Verificación de existencia segura ante condiciones de carrera
         try:
             exists = p.exists()
         except OSError:
             exists = False
         
         if exists:
-            # Verificación final contra redirecciones por puntos de reparse reales
             if os.name == 'nt':
                 try:
                     kernel32 = ctypes.windll.kernel32
@@ -474,7 +481,7 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> TypeG
 
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
-    """Iterador optimizado que filtra una lista de rutas evitando normalizaciones redundantes."""
+    """Filtra una lista de rutas, preservando solo aquellas que superan las pruebas de seguridad."""
     results = []
     for p in paths:
         try:

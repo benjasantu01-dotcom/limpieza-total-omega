@@ -3,6 +3,10 @@ scanner.py
 Detector HEURÍSTICO de archivos sospechosos. Este módulo realiza un análisis 
 estático mediante heurísticas de nombre, extensión y metadatos de archivo, 
 complementando la protección de Windows Defender.
+
+El módulo utiliza un recorrido iterativo seguro para navegar el sistema de archivos, 
+aplicando validaciones estrictas antes de cada acceso para evitar la resolución de 
+puntos de reanálisis (Junctions/Symlinks) y rutas protegidas.
 """
 
 from __future__ import annotations
@@ -105,12 +109,15 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica si la ruta está contenida dentro del directorio base del escaneo."""
+        """Determina si la ruta absoluta proporcionada está bajo la jerarquía del directorio base."""
         if not entry_path: return False
         return entry_path.lower().startswith(self.base_root_str)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida si una entrada cumple con los criterios de seguridad definidos para el recorrido."""
+        """
+        Valida que la entrada no exceda límites de longitud, no tenga caracteres de 
+        ofuscación RTL y no esté bajo una restricción definida en safety.py.
+        """
         try:
             path_str: str = entry.path
             name = entry.name
@@ -125,7 +132,10 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si la entrada es un punto de reanálisis (Junction o Symlink) para evitar bucles."""
+        """
+        Detecta si un directorio es un Symlink o Junction Point usando atributos de 
+        archivo para evitar recursión infinita o saltos fuera del volumen base.
+        """
         try:
             if entry.is_symlink():
                 return True
@@ -135,13 +145,16 @@ class Scanner:
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """Gestiona el apilamiento de directorios para el recorrido iterativo evitando duplicados."""
+        """Registra un directorio para ser escaneado posteriormente si no ha sido visitado."""
         if entry.path and entry.path not in self.seen and os.path.exists(entry.path):
             self.seen.add(entry.path)
             directory_stack.append(entry.path)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """Procesa una entrada del sistema de archivos, decidiendo si analizarla o navegarla."""
+        """
+        Evalúa una entrada: si es directorio, lo encola; si es archivo ejecutable/sospechoso,
+        lo envía al motor de heurísticas.
+        """
         try:
             if not self._is_safe_entry(entry):
                 return
@@ -158,7 +171,7 @@ class Scanner:
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
-        """Ejecuta la suite de reglas heurísticas sobre un archivo específico."""
+        """Orquesta la ejecución de los chequeos definidos en la suite de heurísticas."""
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
