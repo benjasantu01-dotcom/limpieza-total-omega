@@ -166,7 +166,10 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Barrido recursivo del disco utilizando os.scandir para rendimiento.
+    Realiza un escaneo recursivo del sistema de archivos para agrupar archivos por tamaño.
+    
+    Utiliza os.scandir para optimizar el acceso a metadatos y mantiene un conjunto
+    'visited' para evitar el procesamiento redundante en presencia de enlaces simbólicos.
     """
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[str] = set()
@@ -216,8 +219,11 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
     """
-    Refinamiento de grupos: primero agrupa por hash parcial y luego 
-    ejecuta el hash completo (SHA256) solo en los candidatos que colisionan.
+    Realiza un refinamiento jerárquico de candidatos mediante hashing.
+    
+    Aplica inicialmente un hash parcial para dividir el conjunto y luego ejecuta 
+    el hash completo (SHA256) solo en los grupos con colisiones, minimizando
+    operaciones de E/S innecesarias en archivos grandes.
     """
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
