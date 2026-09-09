@@ -308,7 +308,6 @@ def _is_system_path_cached(path_str: str) -> bool:
         p_str_low = path_str.lower()
         if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
             return True
-        
         return any(part in PROTECTED_DIR_NAMES for part in p_str_low.split(os.sep))
     except (OSError, RuntimeError):
         return True
@@ -320,8 +319,7 @@ def is_protected_path(path: PathLike) -> bool:
     if not path: return True
     try:
         p = normalize(path)
-        p_str = str(p)
-        return _is_system_path_cached(p_str) or p == Path(p.anchor)
+        return _is_system_path_cached(str(p)) or p == Path(p.anchor)
     except (ValueError, TypeError, OSError, RuntimeError): 
         return True
 
@@ -439,12 +437,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_boundary_conditions(p, base_dir)
     
     try:
-        try:
-            exists = p.exists()
-        except OSError:
-            exists = False
-        
-        if exists:
+        if p.exists():
             if os.name == 'nt':
                 try:
                     kernel32 = ctypes.windll.kernel32
@@ -458,12 +451,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
                 except Exception: pass
                 
             _check_file_integrity(p)
-        elif p.parent:
-            try:
-                if is_protected_path(p.parent):
-                    raise UnsafePathError("Directorio contenedor restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
-            except Exception:
-                pass
+        elif p.parent and is_protected_path(p.parent):
+            raise UnsafePathError("Directorio contenedor restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
     except UnsafePathError:
         raise
     except Exception as e:

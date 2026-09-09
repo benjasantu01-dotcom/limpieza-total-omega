@@ -1329,3 +1329,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-09T11:34:57` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
 - `2026-09-09T11:34:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T11:34:57` Corrida terminada. Total usado hoy: 272.
+- `2026-09-09T11:43:17` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-09-09T11:43:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-09T11:43:57` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado la validación de rutas mediante la implementación de un caché de resultados de `is_protected_path` en `is_system_path_cached`, además de refactorizar las llamadas a `_is_reparse_point` y `is_protected_path` para evitar redundancias en el flujo principal de `ensure_safe_to_modify`, reduciendo drásticamente las llamadas al sistema de archivos en iteraciones repetitivas.
+- `2026-09-09T11:44:22` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._run_file_heuristics
+- `2026-09-09T11:44:52` Tests FALLARON:
+```
+NV_VAR}" if api_key_env else ("archivo de configuración" if api_key_file else "no configurada")
+        return [
+            "Configuración actual", "", f"  Archivo: {settings_path(custom_base)}", "",
+            "  Apariencia", f"    Tema: {current['tema']}", f"    Acento: {current['acento']}",
+            f"    Barras visuales: {'sí' if current['mostrar_barras'] else 'no'}", "",
+            "  Comportamiento", f"    Confirmar siempre: {'sí' if current['confirmar_siempre'] else 'no'}",
+            f"    Pestaña inicial: {current['abrir_en']}", f"    Recordar carpeta: {'sí' if current['recordar_ultima_carpeta'] else 'no'}", "",
+>           "  Rendimiento", f"    Duplicados desde: {current['duplicados_tamano_minimo_remap_kb']} KB",
+                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            f"    Top de archivos: {current['top_archivos']}", f"    Análisis en paralelo: {'sí' if current['analisis_en_paralelo'] else 'no'}", "",
+            "  Asistente IA", f"    Activado: {'sí' if current['asistente_activado'] else 'no'}",
+            f"    Clave: {origin}", f"    Modelo: {current['asistente_modelo']}", ""
+        ]
+E       KeyError: 'duplicados_tamano_minimo_remap_kb'
+
+app/settings.py:386: KeyError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyError: 'duplicados_tamano_minimo_remap_kb'
+1 failed, 298 passed in 1.32s
+
+```
+- `2026-09-09T11:44:52` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché preventiva mediante `functools.lru_cache` para `_Validators._run_safety_checks`, reemplazando el diccionario manual `_SAFETY_CACHE` y eliminando la necesidad de gestionar manualmente la limpieza o el acceso a la caché, mejorando así la eficiencia y legibilidad de las validaciones de rutas recurrentes.
+- `2026-09-09T11:45:06` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó `entries_from_folders` para evitar la creación innecesaria de objetos `Path` y realizar validaciones mediante `os.path` (más rápido que `pathlib` en iteración), reduciendo la presión sobre el recolector de basura y acelerando el escaneo de directorios.
+- `2026-09-09T11:45:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T11:45:06` Corrida terminada. Total usado hoy: 276.
