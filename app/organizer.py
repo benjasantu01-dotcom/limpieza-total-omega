@@ -434,7 +434,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         if _is_unc_path(dest_base) or not is_safe_to_modify(dest_base): return None
         
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, TypeError):
         return None
 
     for junk_file in files:
@@ -452,7 +452,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 ensure_safe_to_modify(src)
                 ensure_safe_to_modify(target)
                 shutil.move(str(src), str(target))
-        except (FileNotFoundError, OSError, PermissionError, shutil.Error, RuntimeError) as e:
+        except (FileNotFoundError, OSError, PermissionError, shutil.Error, RuntimeError, TypeError) as e:
             logger.error(f"Error moviendo {junk_file.path}: {e}")
             continue
     return dest_base
@@ -469,18 +469,19 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         dest: Path = Path(review_dir).expanduser().resolve()
         if not dest.exists() or _is_unc_path(dest) or not is_safe_to_modify(dest): 
             return 0
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, TypeError):
         return 0
 
     count: int = 0
     for item in dest.iterdir():
         try:
+            if not isinstance(item, Path): continue
             resolved_item = item.resolve()
             if resolved_item.is_file() and resolved_item.exists() and resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
                 if _passes_system_checks(resolved_item) and not _is_file_locked(resolved_item):
                     ensure_safe_to_modify(resolved_item)
                     resolved_item.unlink()
                     count += 1
-        except (PermissionError, OSError, ValueError) as e:
+        except (PermissionError, OSError, ValueError, TypeError) as e:
             logger.error(f"Error eliminando {item}: {e}")
     return count

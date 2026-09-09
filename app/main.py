@@ -770,7 +770,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.min_dup_entry = self._entry(grilla, "64", 100)
         try:
             self.min_dup_entry.insert(0, str(self.settings.get("duplicados_tamano_minimo_kb", 64)))
-        except tk.TclError:
+        except (tk.TclError, AttributeError):
             pass
         self.min_dup_entry.grid(row=2, column=1, sticky="w")
 
@@ -778,7 +778,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.top_files_entry = self._entry(grilla, "15", 100)
         try:
             self.top_files_entry.insert(0, str(self.settings.get("top_archivos", 15)))
-        except tk.TclError:
+        except (tk.TclError, AttributeError):
             pass
         self.top_files_entry.grid(row=2, column=3, sticky="w")
 

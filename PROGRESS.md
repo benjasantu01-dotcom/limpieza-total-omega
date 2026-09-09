@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 31
+- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 217
 
@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 126 | 11 | 19 | 6 | 106 |
-| 2026-09-09 | 95 | 10 | 12 | 8 | 111 |
+| 2026-09-08 | 124 | 10 | 18 | 6 | 106 |
+| 2026-09-09 | 99 | 10 | 12 | 8 | 111 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **49**
-- manejo de errores y validación de entradas: **47**
-- legibilidad y documentación: **43**
 - rendimiento: **42**
+- legibilidad y documentación: **41**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **21**
 - `assistant.py`: **20**
-- `scanner.py`: **19**
 - `settings.py`: **19**
 - `safety.py`: **18**
+- `scanner.py`: **18**
+- `healthscore.py`: **18**
 - `diskreport.py`: **17**
-- `healthscore.py`: **17**
 - `quarantine.py`: **17**
-- `memory.py`: **16**
+- `memory.py`: **17**
 - `branding.py`: **13**
 - `browser.py`: **13**
-- `main.py`: **11**
-- `organizer.py`: **11**
-- `startup.py`: **9**
+- `main.py`: **12**
+- `organizer.py`: **12**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T10:14:02` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `stage_for_review` y `delete_reviewed` al asegurar que los objetos procesados sean siempre instancias de `Path` antes de invocar métodos que podrían fallar con entradas nulas o inesperadas, además de capturar excepciones de tipo `TypeError` en el manejo de rutas para evitar colapsos inesperados en tiempo de ejecución.
+- `2026-09-09T10:13:44` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` mediante la validación explícita de tipos y la captura de errores, evitando que valores malformados en `/proc/meminfo` (como líneas sin separadores o valores no numéricos) generen una excepción no controlada o snapshots inconsistentes.
+- `2026-09-09T10:13:13` **main.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `_build_tab_ajustes` y `_build_tab_memoria` al envolver la inserción de texto en los widgets de entrada en bloques `try...except`, evitando que una configuración inesperada o un widget no disponible bloquee la inicialización de la pestaña.
+- `2026-09-09T10:11:58` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` ante valores `None` o corruptos durante la instanciación, garantizando que `__post_init__` siempre tenga datos válidos y evitando que errores en las fábricas de mensajes de las reglas rompan el proceso de reporte.
 - `2026-09-09T10:03:01` **duplicates.py** (manejo de errores y validación de entradas): He robustecido la tolerancia a fallos en `_collect_candidates` y `_scan_directory_recursive` mediante una validación más estricta de las entradas y la adición de bloques `try-except` preventivos ante errores de sistema en la iteración de directorios, asegurando que el escaneo no se detenga inesperadamente ante rutas malformadas o permisos denegados.
 - `2026-09-09T10:02:23` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_path_inside_base` y `_is_valid_cache_path` añadiendo validaciones explícitas contra caracteres nulos (`\0`) y desbordamientos de ruta (`MAX_PATH_LEN`), previniendo errores de sistema operativo o ataques de path traversal antes de invocar `resolve(strict=True)`.
 - `2026-09-09T10:01:53` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` validando la existencia de la ruta antes de intentar resolverla y utilizando una captura de excepciones más específica para evitar ocultar errores de lógica durante el desarrollo.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T08:21:31` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones en `stage_for_review` y `delete_reviewed` al asegurar que el chequeo `is_safe_to_modify` se realice de forma absoluta sobre rutas resueltas, previniendo condiciones de carrera o ataques de enlace simbólico malintencionados durante la ejecución de operaciones de I/O.
 - `2026-09-09T08:20:31` **main.py** (seguridad defensiva): He refactorizado `run_async` para reemplazar la validación `if not self._is_safe_path(target)` (que disparaba una lógica de aborto incompleta y dependiente del estado del thread) por una pre-validación robusta y centralizada en el hilo principal antes de delegar, manteniendo el uso de `safety` para garantizar que ninguna operación insegura llegue siquiera a encolarse en el `executor`.
 - `2026-09-09T08:10:34` **healthscore.py** (seguridad defensiva): Se reforzó la validación de entrada en `compute_score` implementando un chequeo temprano de valores nulos o no finitos en `SystemMetrics` antes de procesar el pipeline, asegurando que el motor de puntuación nunca opere con datos corrompidos.
-- `2026-09-09T08:10:21` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_valid_candidate` añadiendo una comprobación explícita mediante `path.resolve()` antes de validar, para prevenir ataques de "Time-of-check to time-of-use" (TOCTOU) y asegurar que solo se procesen rutas que realmente residen en el sistema de archivos tras resolver enlaces simbólicos relativos o recursivos.
-- `2026-09-09T08:09:54` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` al añadir una verificación explícita mediante `is_protected_path` sobre la ruta resuelta de cada archivo antes de procesarlo, previniendo así el acceso a rutas que podrían haber sido alteradas o enlazadas dinámicamente hacia áreas restringidas tras la validación inicial del directorio raíz.
-- `2026-09-09T08:09:25` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la restricción estricta de las rutas de caché, validando que el `parent` de cada carpeta candidata esté efectivamente bajo la base de perfiles del usuario (`LOCALAPPDATA`), previniendo posibles escapes de directorio mediante manipulación de strings en `BROWSER_CACHE_PATHS`.
-- `2026-09-09T08:00:47` **branding.py** (seguridad defensiva): Se ha robustecido la función `save_logo_svg` implementando `ensure_safe_to_modify` para garantizar que la operación de escritura no solo sea segura según las heurísticas de `is_safe_to_modify`, sino que cumpla con el contrato estricto de seguridad requerido para cualquier modificación de disco, evitando dejar archivos en estados intermedios.

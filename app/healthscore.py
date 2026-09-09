@@ -154,6 +154,10 @@ class SystemMetrics:
 
     def __post_init__(self) -> None:
         """Valida y normaliza las métricas tras la inicialización."""
+        # Se asegura de tratar valores None que puedan venir de des/serialización
+        for field_name in self.__dataclass_fields__:
+            if getattr(self, field_name) is None:
+                setattr(self, field_name, 0.0 if "percent" not in field_name else 100.0)
         self.validate()
 
     def validate(self) -> None:
@@ -215,7 +219,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str) and msg.strip():
                     findings.append(msg.strip())
-        except (AttributeError, TypeError, ValueError, ZeroDivisionError):
+        except Exception:
+            # Captura cualquier error en la ejecución de la regla para no interrumpir el score
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -240,7 +245,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             total_pts += pts
             if rules:
                 _evaluate_rules(metrics, rules, ratio, recommendations)
-        except (AttributeError, TypeError, ValueError):
+        except Exception:
             metric_breakdown[area] = 0
             continue
             
