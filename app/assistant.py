@@ -281,31 +281,30 @@ class SystemContext:
         return _ensure_safe_text(self.grade) if self.grade else True
 
     def ingest(self, source: Any) -> bool:
-        """Extrae y valida métricas desde una fuente (dict/objeto)."""
+        """Extrae y valida métricas desde una fuente externa (dict/objeto) de forma segura."""
         if not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool, type)):
             return False
             
         found_data = False
-        try:
-            for key, spec in _VALIDATORS.items():
-                val = _get_source_value(source, key)
-                # Validar tipo numérico explícito según la especificación
-                if val is not None and spec.is_valid_type(val):
-                    try:
-                        f_val = float(val)
-                        if math.isfinite(f_val) and spec.min_val <= f_val <= spec.max_val:
-                            setattr(self, key, spec.cast_func(val))
-                            found_data = True
-                    except (ValueError, TypeError):
-                        continue
-            
-            grade_val = _get_source_value(source, "grade")
-            if isinstance(grade_val, str):
-                clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
-                if _ensure_safe_text(clean_grade):
-                    self.grade = clean_grade
-        except (AttributeError, TypeError):
-            pass
+        # Procesar métricas numéricas
+        for key, spec in _VALIDATORS.items():
+            val = _get_source_value(source, key)
+            if val is not None and spec.is_valid_type(val):
+                try:
+                    f_val = float(val)
+                    if math.isfinite(f_val) and spec.min_val <= f_val <= spec.max_val:
+                        setattr(self, key, spec.cast_func(val))
+                        found_data = True
+                except (ValueError, TypeError):
+                    continue
+        
+        # Procesar calificación cualitativa (string)
+        grade_val = _get_source_value(source, "grade")
+        if isinstance(grade_val, str):
+            clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
+            if _ensure_safe_text(clean_grade):
+                self.grade = clean_grade
+        
         return found_data
 
 @dataclass
@@ -341,7 +340,7 @@ def _is_safe_text_structure(text: str) -> bool:
     return True
 
 def _ensure_safe_text(text: Any) -> bool:
-    """Valida que el contenido sea seguro para procesamiento interno."""
+    """Valida que el contenido sea seguro para procesamiento interno o envío externo."""
     if not isinstance(text, str) or not text:
         return False
     if len(text) > _MAX_TEXT_LENGTH:
@@ -566,7 +565,7 @@ def available(base: Union[str, Path, None] = None) -> bool:
         return False
 
 def _parse_config(raw_cfg: Any) -> AssistantConfig:
-    """Parsea el diccionario de settings."""
+    """Parsea el diccionario de settings con valores por defecto seguros."""
     if not isinstance(raw_cfg, dict):
         return AssistantConfig("", "gemini-3.1-flash-lite", True)
     return AssistantConfig(
@@ -593,22 +592,16 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     """Extrae respuesta textual del payload JSON con validación estricta de estructura."""
     if not isinstance(data, dict): return None
     try:
-        # Validación paso a paso de la estructura esperada: {"candidates": [{"content": {"parts": [{"text": "..."}]}}]}
         candidates = data.get("candidates")
         if not isinstance(candidates, list) or not candidates: return None
-        
         c1 = candidates[0]
         if not isinstance(c1, dict): return None
-        
         content = c1.get("content")
         if not isinstance(content, dict): return None
-        
         parts = content.get("parts")
         if not isinstance(parts, list) or not parts: return None
-        
         first_part = parts[0]
         if not isinstance(first_part, dict): return None
-        
         text_val = first_part.get("text")
         return str(text_val) if isinstance(text_val, str) else None
     except (AttributeError, TypeError, IndexError, KeyError): 
@@ -653,20 +646,29 @@ def ask(question: str, context: Optional[SystemContext] = None,
     """Punto de entrada principal para realizar consultas al asistente."""
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")
+        
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
-    if not available(base): return respaldo
+    
+    if not available(base):
+        return respaldo
+        
     try:
         settings_data = settings.load(base)
-        if not isinstance(settings_data, dict): return respaldo
+        if not isinstance(settings_data, dict):
+            return respaldo
+            
         cfg = _parse_config(settings_data)
         if not _MODEL_NAME_REGEX.match(cfg.model):
             return respaldo
+            
         texto_contexto = context_as_text(ctx) if cfg.allow_metrics else "El usuario no autorizó enviar métricas."
         remoto = _call_gemini(question, texto_contexto, cfg.api_key, cfg.model)
+        
         if not remoto:
             respaldo.notice = "No se pudo consultar al asistente en línea, respondí con el motor local."
             return respaldo
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
+        
     except (Exception, TypeError, ValueError):
         return respaldo

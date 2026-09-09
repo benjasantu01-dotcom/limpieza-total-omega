@@ -136,8 +136,8 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     Verifica que la ruta objetivo esté bajo la base (evita path traversal).
     
     Args:
-        real_target: Ruta que se quiere validar.
-        real_base: Ruta raíz permitida.
+        real_target: Ruta que se quiere validar (debe ser absoluta).
+        real_base: Ruta raíz permitida (debe ser absoluta).
     """
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
@@ -152,14 +152,12 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
 
 
 def _is_excluded_file(name: Optional[str]) -> bool:
-    """Valida si el nombre de archivo está en la lista de sensibles."""
+    """Valida si el nombre de archivo está en la lista de elementos protegidos."""
     return name is not None and name.lower() in NEVER_TOUCH
 
 
 def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
-    """
-    Usa Win32 GetFileAttributesW para detectar atributos Oculto/Sistema.
-    """
+    """Usa Win32 GetFileAttributesW para detectar atributos Oculto/Sistema."""
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     if not hasattr(kernel32, 'GetFileAttributesW'):
@@ -174,7 +172,10 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
-    """Filtro de seguridad para os.scandir."""
+    """
+    Aplica filtros heurísticos y de seguridad sobre una entrada de directorio.
+    Retorna True si el archivo debe ser ignorado por seguridad o integridad.
+    """
     if entry is None or not hasattr(entry, 'name') or _is_excluded_file(entry.name):
         return True
         
@@ -183,6 +184,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         if not path or len(path) >= MAX_PATH_LEN or not os.path.isabs(path) or any(c in path for c in '<>|?"*') or '\0' in path:
             return True
         
+        # Ignora reparse points y montajes para evitar bucles infinitos o daños en el FS
         if entry.is_symlink() or is_junction_fn(path) or os.path.ismount(path):
             return True
             
@@ -218,7 +220,14 @@ def _sum_directory_recursive(
     base_check_path: Optional[Path] = None,
     depth: int = 0
 ) -> int:
-    """Recorre el sistema de archivos limitando profundidad y usando cache de memoización."""
+    """
+    Suma recursiva de tamaños de archivos con límites de profundidad y profundidad de seguridad.
+    
+    Args:
+        root_abs: Ruta absoluta del directorio a sumar.
+        memo: Diccionario para evitar re-cálculos de subcarpetas.
+        depth: Nivel actual de recursión para prevenir stack overflow o loops.
+    """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or depth < 0 or len(root_abs) >= MAX_PATH_LEN or any(c in root_abs for c in '<>|?"*') or '\0' in root_abs:
         return 0
     
@@ -268,7 +277,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
-    """Verifica que la carpeta sea una ubicación de caché legítima."""
+    """Verifica que la carpeta sea una ubicación de caché legítima para su inspección."""
     c_str = str(candidate)
     if not isinstance(candidate, Path) or not isinstance(base_path, Path) or not candidate.is_absolute() or any(c in c_str for c in '<>|?"*') or '\0' in c_str:
         return False

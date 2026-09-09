@@ -43,10 +43,12 @@ __all__ = [
 ]
 
 MB_SIZE: int = 1024 * 1024
+# Alias para representar identificadores únicos de sistema de archivos (dev, ino)
 Inode: TypeAlias = Tuple[int, int]
 
 
 class SummaryData(NamedTuple):
+    """Contenedor de resultados agregados durante un recorrido completo de directorio."""
     total_bytes: int
     total_files: int
     ext_sizes: Dict[str, int]
@@ -55,6 +57,7 @@ class SummaryData(NamedTuple):
 
 
 def _bytes_to_mb(size_bytes: int | float) -> float:
+    """Convierte bytes a MB con precisión de 2 decimales; devuelve 0.0 ante valores inválidos."""
     if not isinstance(size_bytes, (int, float)):
         return 0.0
     try:
@@ -65,6 +68,7 @@ def _bytes_to_mb(size_bytes: int | float) -> float:
 
 
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
+    """Normaliza y valida que el directorio de inicio sea seguro, accesible y no protegido."""
     if directory is None:
         return None
     try:
@@ -78,6 +82,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(entry: os.DirEntry) -> bool:
+    """Identifica puntos de reparse (Junctions/Mount points) para evitar bucles o escaneo redundante."""
     REPARSE_POINT_ATTR = 0x400
     try:
         if entry.is_symlink():
@@ -91,6 +96,7 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
 
 
 def _get_local_windows_drives() -> List[str]:
+    """Escanea las letras de unidad disponibles en Windows que sean accesibles."""
     import string
     drives = []
     for letter in string.ascii_uppercase:
@@ -154,7 +160,7 @@ class DriveUsage:
 
 
 def format_size(num: Union[int, float, None]) -> str:
-    """Convierte bytes a un string legible con la unidad correspondiente."""
+    """Convierte bytes a un string legible con la unidad correspondiente (B hasta TB)."""
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     
@@ -273,7 +279,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 20) -> SummaryData:
-    """Motor de recolección de estadísticas: un solo recorrido eficiente usando heaps."""
+    """Motor de recolección de estadísticas: un solo recorrido eficiente usando heaps para el tracking de archivos grandes."""
     total_bytes = total_files = 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
@@ -286,6 +292,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 20
         ext_sizes[extension] += size
         ext_counts[extension] += 1
         
+        # Mantener top N archivos usando un heap de tamaño limitado
         if limit > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size, path))
