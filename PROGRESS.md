@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 143 | 11 | 22 | 8 | 124 |
-| 2026-09-09 | 88 | 9 | 11 | 8 | 80 |
+| 2026-09-08 | 143 | 11 | 22 | 8 | 120 |
+| 2026-09-09 | 91 | 9 | 12 | 8 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **51**
-- seguridad defensiva: **46**
+- seguridad defensiva: **49**
 - rendimiento: **42**
 - robustez ante casos límite: **40**
 
@@ -31,11 +31,11 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `assistant.py`: **21**
 - `duplicates.py`: **21**
-- `scanner.py`: **19**
-- `settings.py`: **19**
+- `scanner.py`: **20**
+- `settings.py`: **20**
+- `safety.py`: **19**
 - `memory.py`: **18**
 - `quarantine.py`: **18**
-- `safety.py`: **18**
 - `diskreport.py`: **18**
 - `healthscore.py`: **18**
 - `branding.py`: **14**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T08:30:59` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para prevenir la resolución de rutas mediante enlaces simbólicos o junctions que podrían apuntar fuera de las zonas permitidas, asegurando que la validación ocurra sobre el destino final absoluto sin seguir estructuras de reparse.
+- `2026-09-09T08:30:42` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del escáner en `_is_safe_entry` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta (`resolve()`) del archivo, previniendo así posibles ataques por "path traversal" o manipulación de enlaces simbólicos que intenten escapar del directorio base.
+- `2026-09-09T08:30:16` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `ensure_safe_to_modify` agregando una validación estricta que bloquea rutas de archivos que contienen flujos de datos alternativos (ADS) usando `::` (NTFS streams), previniendo que la aplicación sea engañada por archivos que ocultan contenido malicioso detrás de una extensión aparentemente inocua.
 - `2026-09-09T08:21:57` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine.py` reforzando la validación de integridad previa a la restauración, asegurando mediante `is_within_directory` que el archivo a restaurar no sea un reemplazo malicioso fuera del sandbox y validando que el destino de restauración sea un directorio seguro antes de intentar cualquier operación de disco.
 - `2026-09-09T08:21:31` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones en `stage_for_review` y `delete_reviewed` al asegurar que el chequeo `is_safe_to_modify` se realice de forma absoluta sobre rutas resueltas, previniendo condiciones de carrera o ataques de enlace simbólico malintencionados durante la ejecución de operaciones de I/O.
 - `2026-09-09T08:20:31` **main.py** (seguridad defensiva): He refactorizado `run_async` para reemplazar la validación `if not self._is_safe_path(target)` (que disparaba una lógica de aborto incompleta y dependiente del estado del thread) por una pre-validación robusta y centralizada en el hilo principal antes de delegar, manteniendo el uso de `safety` para garantizar que ninguna operación insegura llegue siquiera a encolarse en el `executor`.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T07:59:17` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de la persistencia atómica en `save()` añadiendo un chequeo de existencia de `ruta.parent` antes de validar la seguridad de la carpeta, evitando errores `AttributeError` o falsos negativos si la carpeta de configuración fue borrada externamente.
 - `2026-09-09T07:50:25` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `_is_reparse_point` al incluir una validación explícita para evitar errores en directorios donde el usuario no tiene permisos de lectura de atributos, lo cual previene que el escáner se salte ramas enteras o falle ante recursos bloqueados por el sistema operativo.
 - `2026-09-09T07:50:13` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera (time-of-check to time-of-use) mediante la implementación de un chequeo de existencia previo dentro de un bloque `try-except`, evitando que la función falle abruptamente ante archivos que desaparecen entre la normalización y la validación de integridad.
-- `2026-09-09T07:49:19` **quarantine.py** (robustez ante casos límite): Se ha añadido un chequeo de espacio de disco previo (`_ensure_disk_space`) dentro de `restore_item` para evitar fallos de escritura truncada o interrupciones durante el movimiento del archivo, fortaleciendo la robustez ante escenarios de disco lleno.
-- `2026-09-09T07:38:53` **healthscore.py** (robustez ante casos límite): Se fortaleció la integridad de `SystemMetrics` ante valores inesperados de coma flotante (NaN, Infinity) y errores de acceso en `compute_score` mediante la adición de una validación explícita y un manejo de errores más robusto en el pipeline, asegurando que un valor mal formado no corrompa el cálculo global.
-- `2026-09-09T07:20:22` **scanner.py** (rendimiento): Optimizé la lógica de filtrado inicial en `process_entry` moviendo la validación de extensiones antes de cualquier lógica de heurística pesada, evitando invocaciones innecesarias a `Path` y `os.stat` cuando el archivo no es de interés, y unificando el acceso a `entry.name` para reducir llamadas a métodos repetitivas.

@@ -156,7 +156,10 @@ class _Validators:
     @staticmethod
     def _is_reparse_point(path: Path) -> bool:
         """Determina si una ruta es un junction o symlink para evitar recursión infinita."""
-        return path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction())
+        try:
+            return path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction())
+        except OSError:
+            return True
 
     @staticmethod
     def _run_safety_checks(path_obj: Path) -> bool:
@@ -166,7 +169,8 @@ class _Validators:
             return _SAFETY_CACHE[path_str]
         
         try:
-            resolved = path_obj.resolve(strict=False)
+            # Resolvemos sin seguir enlaces para evitar escape de entorno
+            resolved = path_obj.resolve()
             is_safe = not _Validators._is_reparse_point(resolved) and \
                       not is_protected_path(str(resolved)) and \
                       is_safe_to_modify(str(resolved))
@@ -258,7 +262,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     try:
         base = Path(custom_base).expanduser()
         if _Validators._is_safe_path(str(base)):
-            resolved = base.resolve(strict=False) / SETTINGS_FILE
+            resolved = base.resolve() / SETTINGS_FILE
             _PATH_CACHE[cache_key] = resolved
             return resolved
     except (OSError, RuntimeError):
@@ -318,7 +322,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         # Validaciones de seguridad de la ruta
         if not parent.exists() or (ruta.exists() and not ruta.is_file()): return None
         if not _Validators._is_safe_path(str(parent)): return None
-        if _Validators._is_reparse_point(ruta.resolve(strict=False).parent): return None
+        if _Validators._is_reparse_point(ruta.resolve().parent): return None
         
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None

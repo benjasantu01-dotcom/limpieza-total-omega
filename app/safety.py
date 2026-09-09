@@ -63,6 +63,7 @@ class SafetyValidationErrorCode(IntEnum):
     IO_ERROR = 14
     RELATIVE_PATH_NOT_ALLOWED = 15
     SUSPICIOUS_ENCODING = 16
+    ADS_DETECTED = 17
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
@@ -359,6 +360,10 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Inyección de carácter nulo.", SafetyValidationErrorCode.NULL_CHAR)
     if _has_invalid_chars(path_string):
         raise UnsafePathError("Caracteres inválidos detectados.", SafetyValidationErrorCode.INVALID_CHARS)
+    
+    # Bloqueo estricto de ADS NTFS
+    if _has_alternate_data_stream(path_string):
+        raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED)
     
     try:
         if not target_path.parts or len(target_path.parts) == 1 and target_path.parts[0] == os.sep:
