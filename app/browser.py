@@ -323,23 +323,26 @@ def detect_profiles(
         try:
             real_base = base.resolve(strict=True)
             for browser_name, rel_str in browser_map.items():
-                if not isinstance(rel_str, str) or not rel_str:
-                    continue
-                
-                parts = rel_str.split("\\")
-                if ".." in parts:
-                    continue
-                
-                candidate = real_base.joinpath(*parts)
-                
-                if not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
-                    continue
+                try:
+                    if not isinstance(rel_str, str) or not rel_str:
+                        continue
                     
-                c_path = candidate.resolve(strict=True)
-                
-                size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
-                if size > 0:
-                    found.append(BrowserCache(str(browser_name), c_path, size))
+                    parts = rel_str.split("\\")
+                    if ".." in parts:
+                        continue
+                    
+                    candidate = real_base.joinpath(*parts)
+                    
+                    if not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
+                        continue
+                        
+                    c_path = candidate.resolve(strict=True)
+                    
+                    size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
+                    if size > 0:
+                        found.append(BrowserCache(str(browser_name), c_path, size))
+                except (OSError, PermissionError, TypeError, ValueError):
+                    continue
         except (OSError, PermissionError, TypeError, ValueError): 
             continue
                 

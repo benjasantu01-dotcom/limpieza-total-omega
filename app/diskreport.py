@@ -213,7 +213,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         if _is_excluded_path(entry): continue
                         
-                        entry_path = Path(entry.path).resolve()
+                        entry_path = Path(entry.path).resolve(strict=False)
                         # Validación defensiva de pertenencia: impide escapes por symlinks
                         if root_path not in entry_path.parents and entry_path != root_path:
                             continue

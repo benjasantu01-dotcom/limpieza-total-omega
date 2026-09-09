@@ -241,7 +241,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             continue
             
     final_score = int(_clamp(float(total_pts), 0.0, 100.0))
-    if metrics.quarantined_count > 0:
+    if getattr(metrics, 'quarantined_count', 0) > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
     return HealthResult(
@@ -259,7 +259,7 @@ def _render_bar(pts: int, maximo: int) -> str:
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una lista de líneas textuales formateadas para el reporte."""
-    if not isinstance(result, HealthResult):
+    if result is None or not hasattr(result, 'score'):
         return ["Error: Informe no disponible."]
     
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
@@ -268,5 +268,5 @@ def summarize(result: HealthResult | None) -> List[str]:
         puntos = result.breakdown.get(area, 0)
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{_render_bar(puntos, maximo)}]")
     
-    lines.extend(["", "Recomendaciones:", *[f"  - {r}" for r in result.recommendations]])
+    lines.extend(["", "Recomendaciones:", *[f"  - {r}" for r in getattr(result, 'recommendations', []) or ["Sin recomendaciones."]]])
     return lines

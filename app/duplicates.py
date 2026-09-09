@@ -274,13 +274,16 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         except (OSError, PermissionError):
             continue
     
-    return min(candidates, key=lambda x: (x[0], x[1]))[2] if candidates else None
+    if not candidates:
+        return None
+        
+    return min(candidates, key=lambda x: (x[0], x[1]))[2]
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Genera una lista de líneas descriptivas del grupo para la interfaz."""
     if not isinstance(group, DuplicateGroup) or group.paths is None:
-        return []
+        return ["Error: Grupo inválido"]
         
     keeper = suggest_keeper(group)
     try:
