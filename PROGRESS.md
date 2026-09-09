@@ -6,30 +6,30 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Mejoras aceptadas: **240** (47.6% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 101 | 7 | 15 | 5 | 84 |
-| 2026-09-09 | 136 | 12 | 18 | 9 | 117 |
+| 2026-09-08 | 101 | 7 | 15 | 5 | 80 |
+| 2026-09-09 | 139 | 12 | 18 | 9 | 118 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **54**
 - rendimiento: **47**
-- seguridad defensiva: **42**
+- seguridad defensiva: **45**
 - robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
+- `duplicates.py`: **22**
 - `assistant.py`: **20**
 - `memory.py`: **20**
 - `safety.py`: **20**
@@ -37,15 +37,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **19**
 - `scanner.py`: **19**
 - `settings.py`: **19**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `browser.py`: **15**
 - `organizer.py`: **14**
-- `branding.py`: **12**
+- `branding.py`: **13**
 - `main.py`: **11**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T12:36:24` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `is_junction` y `_is_valid_candidate` integrando `Path.resolve()` en lugares críticos para evitar que accesos mediante enlaces simbólicos o rutas relativas ambigüas eludan los chequeos de `is_protected_path`.
+- `2026-09-09T12:36:12` **diskreport.py** (seguridad defensiva): Se mejoró la robustez de `walk_files` ante errores de resolución de rutas y permisos, asegurando que el proceso de escaneo no se interrumpa silenciosamente ni genere excepciones no controladas al acceder a rutas con caracteres especiales o restricciones de acceso.
+- `2026-09-09T12:35:13` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` al reemplazar el uso de `path_input.resolve()` (que puede seguir enlaces simbólicos o puntos de reparse externos si no se tiene cuidado) por la validación de la ruta absoluta de forma más estricta antes de realizar cualquier operación de escritura, asegurando que la operación de guardado no sea engañada por rutas ambiguas.
 - `2026-09-09T12:26:35` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al serializar las métricas para el LLM: agregué una validación estricta que impide el envío de datos si el contexto contiene caracteres de control o rutas, eliminando la posibilidad de que un valor numérico malintencionado pueda ser inyectado como una ruta en el payload.
 - `2026-09-09T12:25:36` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante fallos de E/S o permisos durante el escaneo de rutas, añadiendo un manejo de excepciones más granular en `_Validators._run_safety_checks` para evitar que el proceso de validación sea abortado por un error de acceso puntual en una carpeta del sistema protegida.
 - `2026-09-09T12:16:07` **safety.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la validación estructural al añadir una comprobación de caracteres de escape en `_validate_structural_safety` para prevenir inyecciones o bypasses mediante secuencias de control inusuales, además de asegurar que `_has_invalid_chars` verifique correctamente la existencia de la ruta.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T11:45:06` **startup.py** (rendimiento): Se optimizó `entries_from_folders` para evitar la creación innecesaria de objetos `Path` y realizar validaciones mediante `os.path` (más rápido que `pathlib` en iteración), reduciendo la presión sobre el recolector de basura y acelerando el escaneo de directorios.
 - `2026-09-09T11:43:57` **safety.py** (rendimiento): Se ha optimizado la validación de rutas mediante la implementación de un caché de resultados de `is_protected_path` en `is_system_path_cached`, además de refactorizar las llamadas a `_is_reparse_point` y `is_protected_path` para evitar redundancias en el flujo principal de `ensure_safe_to_modify`, reduciendo drásticamente las llamadas al sistema de archivos en iteraciones repetitivas.
 - `2026-09-09T11:34:50` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la redundancia en `load_manifest` mediante la eliminación de la caché de segundo nivel (`_cached_manifest`), ya que el cálculo del hash y la serialización estaban ocurriendo de forma repetitiva innecesariamente en cada acceso.
-- `2026-09-09T11:33:37` **memory.py** (rendimiento): Optimizé la consulta de procesos en `top_memory_processes` reemplazando la llamada completa a `Get-Process` (que carga todos los procesos del sistema) por una consulta filtrada directamente en PowerShell mediante `Select-Object -First`, reduciendo drásticamente el uso de CPU y memoria en cada escaneo.
-- `2026-09-09T11:25:18` **main.py** (rendimiento): Se ha optimizado la gestión de caché en el panel de Salud sustituyendo `on_full_analysis` por una lógica que evita recalcular métricas si el `snapshot` de memoria o los datos de disco ya han sido obtenidos recientemente, reduciendo el consumo de CPU y latencia al navegar entre pestañas.
-- `2026-09-09T11:24:21` **healthscore.py** (rendimiento): Se optimizó el pipeline de cómputo evitando la creación de listas intermedias y simplificando la evaluación de reglas mediante una búsqueda directa en `_RULES_BY_AREA`, eliminando la necesidad de la estructura `_OPTIMIZED_PIPELINE` que duplicaba referencias en memoria.

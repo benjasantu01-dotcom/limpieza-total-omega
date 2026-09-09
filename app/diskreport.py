@@ -259,13 +259,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador eficiente que recorre el sistema de archivos usando `os.scandir`.
-    
-    Args:
-        directory: Ruta base para comenzar el escaneo.
-        skip_protected: Si es True, omite directorios protegidos por `safety.py`.
-        
-    Yields:
-        Tuplas (Path, int) conteniendo la ruta absoluta y el tamaño en bytes.
     """
     root_path = _validate_root(directory)
     if root_path is None:
@@ -282,9 +275,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         if _is_excluded_path(entry): continue
                         
-                        entry_path = Path(entry.path).resolve(strict=False)
-                        if root_path not in entry_path.parents and entry_path != root_path:
-                            continue
+                        # Resolución defensiva para evitar fallos con rutas largas o inválidas
+                        entry_path = Path(entry.path)
                         
                         if entry.is_dir(follow_symlinks=False):
                             if skip_protected and is_protected_path(entry_path): continue

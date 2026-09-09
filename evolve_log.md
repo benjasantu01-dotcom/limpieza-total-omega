@@ -1417,3 +1417,10 @@ assert not {'remove'}
 - `2026-09-09T12:26:35` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva al serializar las métricas para el LLM: agregué una validación estricta que impide el envío de datos si el contexto contiene caracteres de control o rutas, eliminando la posibilidad de que un valor numérico malintencionado pueda ser inyectado como una ruta en el payload.
 - `2026-09-09T12:26:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T12:26:35` Corrida terminada. Total usado hoy: 292.
+- `2026-09-09T12:34:37` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-09-09T12:35:13` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` al reemplazar el uso de `path_input.resolve()` (que puede seguir enlaces simbólicos o puntos de reparse externos si no se tiene cuidado) por la validación de la ruta absoluta de forma más estricta antes de realizar cualquier operación de escritura, asegurando que la operación de guardado no sea engañada por rutas ambiguas.
+- `2026-09-09T12:35:42` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-09-09T12:36:12` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se mejoró la robustez de `walk_files` ante errores de resolución de rutas y permisos, asegurando que el proceso de escaneo no se interrumpa silenciosamente ni genere excepciones no controladas al acceder a rutas con caracteres especiales o restricciones de acceso.
+- `2026-09-09T12:36:24` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `is_junction` y `_is_valid_candidate` integrando `Path.resolve()` en lugares críticos para evitar que accesos mediante enlaces simbólicos o rutas relativas ambigüas eludan los chequeos de `is_protected_path`.
+- `2026-09-09T12:36:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T12:36:25` Corrida terminada. Total usado hoy: 296.

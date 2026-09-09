@@ -326,19 +326,19 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo vectorial en una ruta física tras validación de seguridad de escritura."""
     if destination is None: return None
     try:
-        path_input = Path(str(destination))
-        path_raw = path_input.resolve()
+        # Validación estricta: evitar .resolve() que expande symlinks dinámicos
+        path_input = Path(str(destination)).absolute()
         
         # Validar permisos de ruta utilizando los guardias de seguridad del sistema
-        if not is_safe_to_modify(path_raw) or not is_safe_to_modify(path_raw.parent):
+        if not is_safe_to_modify(path_input) or not is_safe_to_modify(path_input.parent):
             return None
-        ensure_safe_to_modify(path_raw)
+        ensure_safe_to_modify(path_input)
             
-        if not path_raw.parent.exists():
-            path_raw.parent.mkdir(parents=True, exist_ok=True)
+        if not path_input.parent.exists():
+            path_input.parent.mkdir(parents=True, exist_ok=True)
             
-        path_raw.write_text(logo_svg(), encoding="utf-8")
-        return path_raw
+        path_input.write_text(logo_svg(), encoding="utf-8")
+        return path_input
     except (OSError, PermissionError, RuntimeError): 
         return None
 

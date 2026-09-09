@@ -44,12 +44,11 @@ FILE_ATTRIBUTE_REPARSE_POINT: int = 0x400
 
 def is_junction(path: Path) -> bool:
     """Verifica si una ruta es un punto de reparse mediante atributos de sistema (Windows)."""
-    if not isinstance(path, Path):
-        return False
     try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        resolved = path.resolve()
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(resolved))
         return bool(attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT))
-    except (AttributeError, OSError):
+    except (AttributeError, OSError, RuntimeError):
         return False
 
 
@@ -120,15 +119,14 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 def _is_valid_candidate(path: Path) -> bool:
     """Validador estricto: comprueba existencia, permisos y que no sea enlace simbólico o junction."""
-    if not isinstance(path, Path):
-        return False
     try:
-        if not path.is_file() or path.is_symlink() or is_junction(path):
+        resolved = path.resolve(strict=True)
+        if not resolved.is_file() or resolved.is_symlink() or is_junction(resolved):
             return False
         return (
-            not is_protected_path(path) and 
-            os.access(path, os.R_OK) and
-            path.stat().st_nlink == 1
+            not is_protected_path(resolved) and 
+            os.access(resolved, os.R_OK) and
+            resolved.stat().st_nlink == 1
         )
     except (OSError, ValueError, TypeError, RuntimeError):
         return False
