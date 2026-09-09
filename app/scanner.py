@@ -105,6 +105,7 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
+        if not entry_path: return False
         return entry_path.lower().startswith(self.base_root_str)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
@@ -175,11 +176,15 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    if not isinstance(directory, (str, Path)) or not str(directory).strip():
+    if directory is None:
         return []
-    
+        
     try:
-        base_path = Path(directory)
+        path_input = str(directory).strip()
+        if not path_input:
+            return []
+            
+        base_path = Path(path_input)
         if not base_path.exists() or not base_path.is_dir(): 
             return []
         

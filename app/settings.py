@@ -310,10 +310,13 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             
         parent = ruta.parent
         if not parent.exists():
-            parent.mkdir(parents=True, exist_ok=True)
+            try:
+                parent.mkdir(parents=True, exist_ok=True)
+            except OSError:
+                return None
         
-        # Caso límite: si existe algo con nombre igual al archivo que no es archivo
-        if ruta.exists() and not ruta.is_file(): return None
+        # Validaciones de seguridad de la ruta
+        if not parent.exists() or (ruta.exists() and not ruta.is_file()): return None
         if not _Validators._is_safe_path(str(parent)): return None
         if _Validators._is_reparse_point(ruta.resolve(strict=False)): return None
         

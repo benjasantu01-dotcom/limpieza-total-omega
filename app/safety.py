@@ -409,12 +409,13 @@ def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """Valida rigurosamente si una ruta es segura para ser modificada."""
-    if path is None: raise UnsafePathError("Ruta nula.")
+    if path is None: 
+        raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
     
     try:
         p = normalize(path)
     except ValueError as e:
-        raise UnsafePathError(f"Ruta no normalizable: {e}")
+        raise UnsafePathError(f"Ruta no normalizable: {e}", SafetyValidationErrorCode.GENERIC)
     
     if not allow_sensitive and _is_sensitive_extension(p):
         raise UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
