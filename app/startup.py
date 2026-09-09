@@ -131,9 +131,10 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Comprueba si el archivo existe físicamente, es un archivo real (no directorio) y es seguro."""
+        """Comprueba si el archivo existe físicamente, es un archivo real y es seguro."""
         try:
-            if not os.path.lexists(p) or p.is_dir():
+            # Uso explícito de F_OK para verificar existencia sin levantar error de permiso
+            if not os.access(p, os.F_OK) or p.is_dir():
                 return False
             stats = p.lstat()
             # 0x00000400 es el atributo FILE_ATTRIBUTE_REPARSE_POINT (Junctions/Symlinks)

@@ -336,11 +336,10 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if destination is None: return None
     try:
         path_raw = Path(str(destination)).resolve()
-        # Seguridad: Valida mediante chequeos booleanos para evitar lanzar excepciones innecesarias
-        if path_raw.is_dir() or is_protected_path(path_raw) or is_protected_path(path_raw.parent):
-            return None
+        # Seguridad: Validación doble para asegurar que la ruta esté permitida y sea escribible.
         if not is_safe_to_modify(path_raw) or not is_safe_to_modify(path_raw.parent):
             return None
+        ensure_safe_to_modify(path_raw)
             
         if not path_raw.parent.exists():
             path_raw.parent.mkdir(parents=True, exist_ok=True)
