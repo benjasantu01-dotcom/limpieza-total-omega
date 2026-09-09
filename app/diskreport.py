@@ -197,13 +197,14 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Generador que recorre recursivamente el sistema de archivos evitando reparse points y rutas protegidas."""
+    """Generador eficiente que recorre el sistema de archivos usando DirEntry."""
     root_path = _validate_root(directory)
     if root_path is None:
         return
 
     visited_inodes: set[Inode] = set()
-    stack: List[Path] = [root_path]
+    stack: List[str] = [str(root_path)]
+    root_str = str(root_path)
     
     while stack:
         current_dir = stack.pop()
@@ -213,20 +214,19 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         if _is_excluded_path(entry): continue
                         
-                        entry_path = Path(entry.path).resolve()
-                        if not str(entry_path).startswith(str(root_path)): continue
-                        if skip_protected and is_protected_path(entry_path): continue
+                        entry_path_str = entry.path
+                        if not entry_path_str.startswith(root_str): continue
                         
                         if entry.is_dir(follow_symlinks=False):
+                            if skip_protected and is_protected_path(Path(entry_path_str)): continue
                             st = entry.stat(follow_symlinks=False)
                             inode = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
                             if inode[0] != 0 and inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(entry_path)
+                                stack.append(entry_path_str)
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat()
-                            size = getattr(st, 'st_size', 0)
-                            yield entry_path, max(0, int(size)) if isinstance(size, (int, float)) else 0
+                            yield Path(entry_path_str), int(getattr(st, 'st_size', 0))
                     except (PermissionError, OSError, AttributeError):
                         continue
         except (PermissionError, OSError):
