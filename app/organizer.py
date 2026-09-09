@@ -446,6 +446,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             
             target: Optional[Path] = _can_move_file(junk_file, dest_base)
             if target and target.is_relative_to(dest_base):
+                # Validamos contra la ruta resuelta antes de la operación
                 if not is_safe_to_modify(src) or not is_safe_to_modify(target): continue
                 if _is_file_locked(src): continue
                 ensure_safe_to_modify(src)
@@ -474,10 +475,11 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
-            if item.is_file() and item.exists() and item.is_relative_to(dest) and is_safe_to_modify(item):
-                if _passes_system_checks(item) and not _is_file_locked(item):
-                    ensure_safe_to_modify(item)
-                    item.unlink()
+            resolved_item = item.resolve()
+            if resolved_item.is_file() and resolved_item.exists() and resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
+                if _passes_system_checks(resolved_item) and not _is_file_locked(resolved_item):
+                    ensure_safe_to_modify(resolved_item)
+                    resolved_item.unlink()
                     count += 1
         except (PermissionError, OSError, ValueError) as e:
             logger.error(f"Error eliminando {item}: {e}")

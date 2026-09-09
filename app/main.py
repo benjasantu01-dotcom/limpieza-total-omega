@@ -1044,13 +1044,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if not self._closing:
                 self._validate_and_log_error(e, tab)
 
-    def _worker_thread_logic(self, fn: Callable[[], Any], tab: str, target: Optional[str]) -> None:
+    def _worker_thread_logic(self, fn: Callable[[], Any], tab: str) -> None:
         """Lógica de ejecución para hilos de trabajo."""
         if self._closing: return
         try:
-            if target and not self._is_safe_path(target):
-                raise safety.UnsafePathError("Operación abortada: ruta insegura detectada.")
-            
             if not self._closing:
                 self._safe_run(fn, tab)
         except Exception as e:
@@ -1060,10 +1057,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if not self._closing:
                 self._safe_run_ui_callback(lambda: (self._set_busy(False), self.set_status("Listo.")))
 
-    def run_async(self, fn: Callable[[], Any], check_safety: bool = False, target: Optional[str] = None) -> None:
-        """Envía tarea al pool de ejecución asíncrono."""
+    def run_async(self, fn: Callable[[], Any], target: Optional[str] = None) -> None:
+        """Envía tarea al pool de ejecución asíncrono con validación previa de seguridad."""
         if self._closing or not self.winfo_exists(): return
         
+        # Validación de seguridad defensiva en el hilo principal
         if target and not self._is_safe_path(target):
             self.log("Acción denegada: la ruta destino no es segura.", self._current_tab())
             return
@@ -1073,7 +1071,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         with self._task_lock:
             if not self._closing and self._executor:
-                self._executor.submit(self._worker_thread_logic, fn, tab, target)
+                self._executor.submit(self._worker_thread_logic, fn, tab)
             else:
                 self._set_busy(False)
 

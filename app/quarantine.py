@@ -634,6 +634,11 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         raise KeyError(f"Ítem no encontrado: {item_id}")
         
     stored_file = (base_path / quarantine_item.stored_name).resolve()
+    
+    # Verificación estricta de contención física en el sandbox antes de tocar nada
+    if not _is_within_quarantine_sandbox(stored_file, base_path.resolve()):
+        raise UnsafePathError("Archivo fuera del sandbox, restauración abortada.")
+    
     if not stored_file.exists() or not quarantine_item.verify_integrity(stored_file):
         raise RuntimeError("Integridad comprometida: archivo no hallado o corrompido.")
     
@@ -647,18 +652,21 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     if stored_file.stat().st_dev != destination.parent.resolve().stat().st_dev:
         raise UnsafePathError("Restauración denegada: dispositivos incompatibles.")
     
-    # Pre-chequeo de espacio de disco en destino antes de mover
-    _ensure_disk_space(destination.parent, quarantine_item.size_bytes)
-    
+    # Pre-chequeo de seguridad del directorio destino
     parent = destination.parent
+    if not is_safe_to_modify(parent):
+        raise UnsafePathError("Restauración denegada: directorio padre no seguro.")
+        
+    _ensure_disk_space(parent, quarantine_item.size_bytes)
+    
     if not parent.exists():
         try:
             parent.mkdir(parents=True, exist_ok=True)
         except OSError:
             raise RuntimeError("No se pudo crear la estructura de carpetas de destino.")
             
-    if not is_safe_to_modify(parent) or not is_safe_to_modify(destination):
-        raise UnsafePathError("Restauración denegada: destino no seguro.")
+    if not is_safe_to_modify(destination):
+        raise UnsafePathError("Restauración denegada: ruta de destino no segura.")
         
     try:
         os.replace(str(stored_file), str(destination))
