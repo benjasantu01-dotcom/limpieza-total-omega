@@ -243,6 +243,14 @@ def _validate_response_length(text: str) -> str:
     """Trunca el texto para cumplir con el límite máximo de caracteres del motor."""
     return str(text)[:_MAX_TEXT_LENGTH]
 
+def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
+    """Detecta estructuras de datos excesivamente profundas o complejas que sugieran inyección."""
+    if depth > 3: return True
+    if isinstance(val, (list, tuple, dict, set)):
+        if len(val) > 100: return True
+        return any(_is_input_too_deep_or_complex(item, depth + 1) for item in (val.values() if isinstance(val, dict) else val))
+    return False
+
 @dataclass
 class SystemContext:
     """Contenedor de estado del sistema con métricas agregadas."""
@@ -282,6 +290,7 @@ class SystemContext:
 
     def ingest(self, source: Any) -> bool:
         """Extrae y valida métricas desde una fuente externa (dict/objeto) de forma segura."""
+        if _is_input_too_deep_or_complex(source): return False
         if not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool, type)):
             return False
             

@@ -158,7 +158,10 @@ class StartupEntry:
         
         try:
             abs_path: str = os.path.abspath(norm)
-            p: Path = Path(abs_path)
+            try:
+                p: Path = Path(abs_path)
+            except (ValueError, TypeError, OSError):
+                return ""
             
             if not self._validate_file_access(p) or not p.is_absolute() or is_protected_path(p):
                 _EXISTS_CACHE[path_string] = False

@@ -485,3 +485,45 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-09T03:25:01` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante casos límite al añadir una validación de `path` más estricta en el método `save` (verificando que la carpeta de destino sea grabable y no un archivo existente) y añadiendo `os.fsync` para asegurar integridad al persistir el archivo.
 - `2026-09-09T03:25:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T03:25:01` Corrida terminada. Total usado hoy: 80.
+- `2026-09-09T03:33:38` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-09-09T03:34:15` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejoré la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un bloque `try-except` específico para manejar casos donde el comando contiene caracteres o estructuras que hacen que `Path(abs_path)` falle, evitando que el proceso completo de escaneo se bloquee ante rutas con caracteres exóticos.
+- `2026-09-09T03:34:55` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva de `assistant.py` mediante la implementación de `_is_input_too_deep_or_complex` para detectar y bloquear recursiones o estructuras anidadas inusuales en las consultas del usuario, y añadí un chequeo explícito de integridad en `SystemContext.ingest` para prevenir la inyección de tipos inesperados (como listas o instancias de clases complejas) antes de intentar procesar métricas.
+- `2026-09-09T03:35:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-09T03:36:43` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-09T03:37:49` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-09T03:38:18` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-09T03:38:45` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+....................................................F................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_detect_profiles_finds_injected_cache_folders _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_finds_inj0')
+
+    def test_detect_profiles_finds_injected_cache_folders(tmp_path):
+        cache = tmp_path / "Navegador" / "Default" / "Cache"
+        cache.mkdir(parents=True)
+        (cache / "dato.bin").write_bytes(b"a" * 500)
+    
+        encontrados = browser.detect_profiles(
+            bases=[tmp_path],
+            cache_paths={"Navegador Falso": r"Navegador\Default\Cache"},
+        )
+>       assert len(encontrados) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:739: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+1 failed, 298 passed in 1.08s
+
+```
+- `2026-09-09T03:38:45` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_is_valid_cache_path` y `detect_profiles` eliminando el uso de `joinpath` con desestructuración de partes, reemplazándolo por una validación estricta de prefijo mediante `pathlib.Path.is_relative_to` (o lógica equivalente) para prevenir vulnerabilidades de path traversal mediante nombres de archivos manipulados.
+- `2026-09-09T03:38:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T03:38:45` Corrida terminada. Total usado hoy: 84.
