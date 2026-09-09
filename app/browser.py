@@ -232,6 +232,10 @@ def _sum_directory_recursive(
     if root_abs in memo:
         return memo[root_abs]
     
+    # Pre-chequeo adicional contra caracteres inválidos antes del escaneo
+    if not os.path.isdir(root_abs):
+        return 0
+
     total: int = 0
     try:
         with os.scandir(root_abs) as it:

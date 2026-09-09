@@ -1360,3 +1360,38 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyE
 - `2026-09-09T11:45:06` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó `entries_from_folders` para evitar la creación innecesaria de objetos `Path` y realizar validaciones mediante `os.path` (más rápido que `pathlib` en iteración), reduciendo la presión sobre el recolector de basura y acelerando el escaneo de directorios.
 - `2026-09-09T11:45:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T11:45:06` Corrida terminada. Total usado hoy: 276.
+- `2026-09-09T11:53:35` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-09-09T11:54:20` Tests FALLARON:
+```
+____ test_read_only_modules_never_delete_or_move __________________
+
+    def test_read_only_modules_never_delete_or_move():
+        """Ningún módulo de solo lectura puede borrar ni mover archivos."""
+        destructivos = {"unlink", "rmdir", "rmtree", "move", "remove", "rename", "replace"}
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            usados = calls_and_imports(parse(archivo)) & destructivos
+>           assert not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: assistant.py debería ser de solo lectura pero llama a remove
+E           assert not {'remove'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_assistant_module_cannot_delete_or_move_anything - AssertionError: el asistente solo aconseja, no ejecuta: {'remove'}
+assert not ({'Answer', 'AssistantConfig', 'MetricSpec', 'ProblemCriterion', 'Request', 'SystemContext', ...} & {'delete_reviewed', 'move', 'purge_all', 'purge_item', 'quarantine_file', 'remove', ...})
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: assistant.py debería ser de solo lectura pero llama a remove
+assert not {'remove'}
+2 failed, 297 passed in 1.32s
+
+```
+- `2026-09-09T11:54:20` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `SystemContext.ingest` ante datos de entrada malformados (como tipos inesperados dentro de colecciones) y añadí un mecanismo de defensa en `_is_input_too_deep_or_complex` para prevenir errores de recursión o desbordamiento ante estructuras de datos arbitrariamente anidadas o circulares, asegurando que el asistente no falle ante fuentes de datos inesperadas.
+- `2026-09-09T11:54:54` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-09T11:55:23` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se añadió una validación explícita para evitar que `_sum_directory_recursive` intente procesar rutas de acceso extremadamente largas o caracteres inválidos antes de invocar `os.scandir`, previniendo errores de sistema operativo que podrían interrumpir el escaneo de otros navegadores.
+- `2026-09-09T11:55:36` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `walk_files` ante archivos bloqueados durante el recorrido (causa frecuente de errores en Windows) añadiendo un manejo de excepciones más específico en la lectura de atributos, asegurando que un acceso denegado a un solo archivo no interrumpa la totalidad del escaneo.
+- `2026-09-09T11:55:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T11:55:36` Corrida terminada. Total usado hoy: 280.

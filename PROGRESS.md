@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 33
-- Sin cambios (nada sustancial que mejorar): 14
+- Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 104 | 8 | 16 | 6 | 94 |
-| 2026-09-09 | 127 | 11 | 17 | 8 | 113 |
+| 2026-09-08 | 102 | 7 | 16 | 6 | 93 |
+| 2026-09-09 | 128 | 12 | 17 | 9 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **54**
 - rendimiento: **47**
-- seguridad defensiva: **44**
-- robustez ante casos límite: **31**
+- seguridad defensiva: **42**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **21**
-- `quarantine.py`: **19**
 - `settings.py`: **19**
 - `assistant.py`: **19**
 - `memory.py`: **19**
 - `safety.py`: **19**
 - `scanner.py`: **19**
 - `healthscore.py`: **18**
+- `quarantine.py`: **18**
 - `diskreport.py`: **18**
-- `browser.py`: **14**
+- `browser.py`: **15**
 - `organizer.py`: **13**
 - `branding.py`: **12**
-- `main.py`: **11**
 - `startup.py`: **10**
+- `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T11:55:23` **browser.py** (robustez ante casos límite): Se añadió una validación explícita para evitar que `_sum_directory_recursive` intente procesar rutas de acceso extremadamente largas o caracteres inválidos antes de invocar `os.scandir`, previniendo errores de sistema operativo que podrían interrumpir el escaneo de otros navegadores.
 - `2026-09-09T11:45:06` **startup.py** (rendimiento): Se optimizó `entries_from_folders` para evitar la creación innecesaria de objetos `Path` y realizar validaciones mediante `os.path` (más rápido que `pathlib` en iteración), reduciendo la presión sobre el recolector de basura y acelerando el escaneo de directorios.
 - `2026-09-09T11:43:57` **safety.py** (rendimiento): Se ha optimizado la validación de rutas mediante la implementación de un caché de resultados de `is_protected_path` en `is_system_path_cached`, además de refactorizar las llamadas a `_is_reparse_point` y `is_protected_path` para evitar redundancias en el flujo principal de `ensure_safe_to_modify`, reduciendo drásticamente las llamadas al sistema de archivos en iteraciones repetitivas.
 - `2026-09-09T11:34:50` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la redundancia en `load_manifest` mediante la eliminación de la caché de segundo nivel (`_cached_manifest`), ya que el cálculo del hash y la serialización estaban ocurriendo de forma repetitiva innecesariamente en cada acceso.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T11:13:15` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` mediante docstrings detallados en las funciones de acceso a disco y parseo, explicando el flujo de datos y las justificaciones de seguridad (bypass de dependencias de sistema y validación de rutas) para facilitar el mantenimiento futuro.
 - `2026-09-09T11:04:17` **settings.py** (legibilidad y documentación): Documenté con docstrings claros las funciones de la clase `_Validators` y las funciones públicas del módulo para clarificar la lógica de validación y los contratos de datos, facilitando el mantenimiento y la auditoría del código.
 - `2026-09-09T11:03:58` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings detallados a los métodos de la clase `Scanner` y al módulo, clarificando las responsabilidades de cada componente y explicando el propósito de los filtros de seguridad, facilitando así la legibilidad y el mantenimiento.
-- `2026-09-09T11:03:32` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y la clarificación de la intención de los chequeos de integridad, facilitando el mantenimiento y el cumplimiento de las reglas de seguridad.
