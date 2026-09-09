@@ -862,3 +862,31 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-09T06:28:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
 - `2026-09-09T06:28:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T06:28:49` Corrida terminada. Total usado hoy: 152.
+- `2026-09-09T06:37:12` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-09-09T06:37:48` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `is_protected_path` para utilizar una lógica de comparación más clara y robusta, y añadí documentación tipo docstring en las funciones críticas para clarificar el propósito de las validaciones de seguridad.
+- `2026-09-09T06:38:14` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los métodos de la clase `Scanner` y la firma de `scan_file` mediante la estandarización de docstrings siguiendo el estilo Google, además de especificar las responsabilidades de los parámetros, facilitando la comprensión de cómo se propaga el contexto del sistema de archivos durante el escaneo.
+- `2026-09-09T06:38:44` Tests FALLARON:
+```
+          "  Comportamiento", f"    Confirmar siempre: {'sí' if current['confirmar_siempre'] else 'no'}",
+            f"    Pestaña inicial: {current['abrir_en']}", f"    Recordar carpeta: {'sí' if current['recordar_ultima_carpeta'] else 'no'}", "",
+            "  Rendimiento", f"    Duplicados desde: {current['duplicados_tamano_minimo_kb']} KB",
+            f"    Top de archivos: {current['top_archivos']}", f"    Análisis en paralelo: {'sí' if current['analisis_en_paralelo'] else 'no'}", "",
+>           "  Asistente IA", f"    Activado: {'sí' if current['asistente_activado'] else 'no'}",
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            f"    Clave: {origin}", f"    Modelo: {current['asistente_modelo']}", ""
+        ]
+E       KeyError: 'asistente_activado'
+
+app/settings.py:373: KeyError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_defaults_are_complete_and_typed - AssertionError: assert 'asistente_activado' in {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...}
+ +  where {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+FAILED evolve/tests/test_assistant.py::test_assistant_is_off_by_default - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyError: 'asistente_activado'
+3 failed, 296 passed in 1.33s
+
+```
+- `2026-09-09T06:38:44` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `settings.py` documentando el contrato del validador y utilizando `typing.TypedDict` de forma más eficiente para evitar errores de clave, centralizando la lógica de validación de esquemas.
+- `2026-09-09T06:38:56` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
+- `2026-09-09T06:38:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T06:38:56` Corrida terminada. Total usado hoy: 156.

@@ -299,12 +299,15 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_system_path_cached(path_str: str) -> bool:
-    """Helper interno con cacheo para la validación de rutas del sistema."""
+    """Compara recursivamente los componentes de la ruta contra listas de directorios protegidos."""
     try:
         p_str_low = path_str.lower()
         if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
             return True
-        return any(f"{os.sep}{p}{os.sep}" in p_str_low or p_str_low.endswith(f"{os.sep}{p}") for p in PROTECTED_DIR_NAMES)
+        
+        # Split y check de componentes para evitar falsos positivos en subcadenas
+        parts = p_str_low.split(os.sep)
+        return any(part in PROTECTED_DIR_NAMES for part in parts)
     except (OSError, RuntimeError):
         return True
 
@@ -313,11 +316,10 @@ def _is_system_path_cached(path_str: str) -> bool:
 def is_protected_path(path: PathLike) -> bool:
     """Verifica si la ruta se encuentra dentro de carpetas restringidas por el sistema."""
     if not path: return True
-    p_str = str(path)
-    if _is_system_path_cached(p_str): return True
     try:
         p = normalize(path)
-        return p == Path(p.anchor)
+        p_str = str(p)
+        return _is_system_path_cached(p_str) or p == Path(p.anchor)
     except (ValueError, TypeError, OSError, RuntimeError): 
         return True
 
