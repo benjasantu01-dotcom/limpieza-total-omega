@@ -517,3 +517,13 @@ assert not {'remove'}
 - `2026-09-09T14:29:17` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `format_size` y `_bytes_to_mb` reemplazando los chequeos genéricos y capturas masivas por validaciones explícitas de tipo y manejo de casos límite (valores negativos o nulos), evitando errores silenciosos en la UI.
 - `2026-09-09T14:29:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T14:29:17` Corrida terminada. Total usado hoy: 340.
+- `2026-09-09T14:39:09` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-09T14:39:42` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `suggest_keeper` y `format_group` añadiendo validaciones de tipo y estado para evitar errores en tiempo de ejecución ante entradas malformadas o archivos eliminados durante el procesamiento.
+- `2026-09-09T14:40:09` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-09T14:41:09` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-09T14:41:20` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-09T14:42:26` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-09T14:43:38` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-09T14:44:20` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_linux_meminfo` y `parse_windows_process_csv` añadiendo validaciones estrictas de tipos y estructuras de datos para prevenir errores en tiempo de ejecución ante entradas mal formadas.
+- `2026-09-09T14:44:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T14:44:20` Corrida terminada. Total usado hoy: 344.

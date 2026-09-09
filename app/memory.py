@@ -167,17 +167,18 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
             continue
         try:
             key, value_part = line.split(":", 1)
-            numeric_part = "".join(filter(str.isdigit, value_part))
-            if numeric_part:
-                metrics[key.strip()] = int(numeric_part) * 1024
-        except (ValueError, TypeError):
+            # Extraer solo dígitos de la parte del valor, ignorando sufijos como 'kB'
+            digits = "".join(c for c in value_part if c.isdigit())
+            if digits:
+                metrics[key.strip()] = int(digits) * 1024
+        except (ValueError, TypeError, KeyError):
             continue
             
     total = metrics.get("MemTotal", 0)
     if total <= 0: 
         return _EMPTY_SNAPSHOT
     
-    available = metrics.get("MemAvailable") or metrics.get("MemFree", 0)
+    available = metrics.get("MemAvailable", metrics.get("MemFree", 0))
     return MemorySnapshot(
         total=BytesValue(total), 
         available=BytesValue(min(available, total)), 
@@ -214,12 +215,15 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         for line in raw_csv_text.splitlines():
             clean = line.strip()
             if not clean: continue
-            p = [x.strip().strip("'\"") for x in clean.split(",")]
-            if len(p) >= 3:
-                proc = _is_valid_process_entry(p[0], p[1], p[2])
+            parts = [x.strip().strip("'\"") for x in clean.split(",")]
+            if len(parts) >= 3:
+                proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
                 if proc: yield proc
 
-    return sorted(process_gen(), key=lambda p: p.working_set, reverse=True)[:limit]
+    try:
+        return sorted(process_gen(), key=lambda p: p.working_set, reverse=True)[:limit]
+    except (TypeError, ValueError):
+        return []
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Ejecuta API Win32 'GlobalMemoryStatusEx' vía ctypes para capturar RAM global."""
