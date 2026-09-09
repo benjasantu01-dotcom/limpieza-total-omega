@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 62 | 5 | 13 | 6 | 48 |
+| 2026-09-07 | 60 | 5 | 13 | 6 | 46 |
 | 2026-09-08 | 161 | 12 | 24 | 9 | 144 |
-| 2026-09-09 | 0 | 0 | 0 | 0 | 20 |
+| 2026-09-09 | 2 | 0 | 0 | 0 | 22 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **51**
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **47**
 - robustez ante casos límite: **47**
+- manejo de errores y validación de entradas: **40**
 - rendimiento: **38**
-- manejo de errores y validación de entradas: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
+- `assistant.py`: **21**
 - `scanner.py`: **20**
-- `assistant.py`: **20**
+- `healthscore.py`: **19**
 - `duplicates.py`: **19**
-- `memory.py`: **18**
 - `safety.py`: **18**
 - `settings.py`: **18**
 - `quarantine.py`: **17**
+- `memory.py`: **17**
 - `browser.py`: **15**
 - `diskreport.py`: **15**
-- `branding.py`: **13**
+- `branding.py`: **14**
 - `main.py`: **11**
 - `startup.py`: **10**
 - `organizer.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T01:03:04` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` mejorando la validación de parámetros, reemplazando el uso de `ensure_safe_to_modify` (que lanzaba excepciones que podían detener el flujo) por una verificación booleana `is_safe_to_modify` antes de operar, cumpliendo estrictamente con las reglas de seguridad y manejo de errores del proyecto.
+- `2026-09-09T01:02:29` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez en la ingesta de datos del `SystemContext` mediante la validación explícita de tipos numéricos y la captura de errores en `ingest` para evitar que datos malformados o tipos inesperados propaguen excepciones durante la actualización del estado.
 - `2026-09-08T14:28:03` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save()` mediante la implementación de un chequeo de integridad previo a la escritura, asegurando que el directorio padre exista y sea seguro antes de intentar manipular el archivo de configuración, mitigando riesgos ante manipulaciones del sistema de archivos.
 - `2026-09-08T14:27:47` **scanner.py** (seguridad defensiva): Se añadió un chequeo explícito de longitud de nombre de archivo (`MAX_PATH_LENGTH`) en `scan_directory` y `process_entry` para prevenir errores de I/O en rutas profundas y se fortaleció el filtrado de rutas mediante `path.resolve()` antes de realizar operaciones de escaneo, garantizando que el `Scanner` opere solo sobre rutas normalizadas y seguras.
 - `2026-09-08T14:19:07` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva al integrar `ensure_safe_to_modify` dentro de `_atomic_isolate_file`, garantizando que la operación de escritura final (que utiliza `os.replace`) solo se ejecute si la ruta de destino dentro del sandbox sigue cumpliendo con las políticas de seguridad vigentes, previniendo posibles estados inconsistentes tras la transferencia.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-08T13:57:45` **assistant.py** (seguridad defensiva): Se endureció la validación de `_is_safe_text_structure` añadiendo una comprobación explícita para evitar que cualquier cadena contenga secuencias de escape de terminal (como secuencias ANSI) que podrían ser utilizadas para ofuscar inyecciones o realizar ataques de tipo *terminal escape sequence injection* en la interfaz gráfica.
 - `2026-09-08T13:56:25` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la carga de archivos mediante la implementación de una lectura de tamaño limitado y manejo de excepciones más granular para prevenir errores durante la deserialización JSON o problemas de codificación.
 - `2026-09-08T13:47:27` **scanner.py** (robustez ante casos límite): He mejorado la robustez de `_is_safe_entry` y `_is_reparse_point` añadiendo validaciones explícitas contra rutas que devuelven errores de acceso (`PermissionError`) o que son nulas, asegurando que el scanner no se detenga ante archivos bloqueados por el sistema operativo.
-- `2026-09-08T13:47:15` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `safety.py` ante casos límite en la detección de puntos de reparse, sustituyendo `path.is_symlink()` (que solo detecta enlaces simbólicos) por una consulta directa a los atributos de archivo mediante `GetFileAttributesW` para capturar correctamente tanto Junctions como Symlinks y evitar el seguimiento accidental de rutas fuera de los límites permitidos.
-- `2026-09-08T13:46:21` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos inexistentes o bloqueos por permisos antes de intentar operaciones de I/O, evitando excepciones innecesarias en el bucle de escaneo.

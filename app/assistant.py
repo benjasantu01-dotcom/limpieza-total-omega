@@ -289,18 +289,22 @@ class SystemContext:
         try:
             for key, spec in _VALIDATORS.items():
                 val = _get_source_value(source, key)
+                # Validar tipo numérico explícito según la especificación
                 if val is not None and spec.is_valid_type(val):
-                    casted_val = spec.cast_func(val)
-                    if math.isfinite(float(casted_val)) and spec.min_val <= float(casted_val) <= spec.max_val:
-                        setattr(self, key, casted_val)
-                        found_data = True
+                    try:
+                        f_val = float(val)
+                        if math.isfinite(f_val) and spec.min_val <= f_val <= spec.max_val:
+                            setattr(self, key, spec.cast_func(val))
+                            found_data = True
+                    except (ValueError, TypeError):
+                        continue
             
             grade_val = _get_source_value(source, "grade")
             if isinstance(grade_val, str):
                 clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
                 if _ensure_safe_text(clean_grade):
                     self.grade = clean_grade
-        except (AttributeError, TypeError, ValueError):
+        except (AttributeError, TypeError):
             pass
         return found_data
 
