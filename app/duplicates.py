@@ -173,7 +173,16 @@ def _collect_candidates(
     min_size: int, 
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
-    """Realiza un escaneo recursivo del sistema de archivos para agrupar archivos por tamaño."""
+    """Realiza un escaneo recursivo del sistema para identificar candidatos a duplicados.
+
+    Args:
+        directories: Lista de rutas base para iniciar la búsqueda.
+        min_size: Tamaño mínimo en bytes para considerar un archivo.
+        skip_protected: Flag (no utilizado actualmente, reservado para futuras configuraciones).
+
+    Returns:
+        Un diccionario agrupando rutas por tamaño de archivo.
+    """
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[str] = set()
 
@@ -221,7 +230,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
-    """Realiza un refinamiento jerárquico de candidatos mediante hashing."""
+    """Aplica un refinamiento de hashing en dos fases: parcial primero, luego completo."""
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
     
@@ -233,7 +242,7 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona la estrategia de hashing óptima: parcial para archivos pequeños, profunda para grandes."""
+    """Determina si aplicar hash rápido o completo basándose en el tamaño del archivo."""
     if not isinstance(size, int) or size <= 0 or not paths or len(paths) < 2: 
         return []
     

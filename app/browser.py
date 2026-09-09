@@ -224,12 +224,19 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Cálculo recursivo eficiente de tamaño de directorio usando memorización.
+    Cálculo recursivo de tamaño de directorio usando memorización para optimizar.
+    
+    Args:
+        root_abs: Ruta absoluta a procesar.
+        is_junction_fn: Callback para detectar puntos de reparse.
+        kernel32: Instancia de WinDLL para atributos de sistema.
+        memo: Diccionario para evitar re-escaneo de ramas ya visitadas.
+        base_check_path: Restricción opcional de alcance para la recursión.
+        depth: Contador de profundidad actual para evitar recursión infinita.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or depth < 0 or len(root_abs) >= MAX_PATH_LEN or any(c in root_abs for c in '<>|?"*') or '\0' in root_abs:
         return 0
     
-    # Verificamos si ya calculamos el tamaño de esta rama
     if root_abs in memo:
         return memo[root_abs]
     
@@ -242,7 +249,6 @@ def _sum_directory_recursive(
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        # Evitamos resolver constantemente si no es necesario para la lógica de seguridad
                         child_path = Path(entry.path)
                         total += _sum_directory_recursive(
                             str(child_path), is_junction_fn, kernel32, memo, base_check_path, depth + 1

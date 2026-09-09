@@ -45,6 +45,8 @@ __all__ = [
 MB_SIZE: int = 1024 * 1024
 # Alias para representar identificadores únicos de sistema de archivos (dev, ino)
 Inode: TypeAlias = Tuple[int, int]
+# Alias para el reporte de (total_bytes, total_files)
+SizeReport: TypeAlias = Tuple[int, int]
 
 
 class SummaryData(NamedTuple):
@@ -80,10 +82,10 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     Normaliza una ruta de entrada y valida su existencia, accesibilidad y seguridad.
     
     Args:
-        directory: Ruta a validar.
+        directory: La ruta a verificar.
         
     Returns:
-        Objeto Path resuelto si es seguro y accesible, None en caso contrario.
+        Objeto Path resuelto si la ruta es un directorio, no es protegida y es legible; None en caso contrario.
     """
     if directory is None:
         return None
@@ -197,7 +199,11 @@ def format_size(num: Union[int, float, None]) -> str:
     """
     Formatea bytes a un string legible, escalando automáticamente de B a TB.
     
-    Ejemplo: 1024 -> "1.0 KB"
+    Args:
+        num: Tamaño en bytes.
+        
+    Returns:
+        String formateado (ej: "1.0 KB"). Retorna "0 B" para valores no válidos.
     """
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
@@ -215,7 +221,15 @@ def format_size(num: Union[int, float, None]) -> str:
 
 
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
-    """Obtiene el uso de espacio de un punto de montaje específico mediante `shutil.disk_usage`."""
+    """
+    Obtiene el uso de espacio de un punto de montaje específico.
+    
+    Args:
+        mount: Ruta o punto de montaje.
+        
+    Returns:
+        Instancia de DriveUsage si la ruta es accesible y segura, None en caso contrario.
+    """
     if mount is None:
         return None
     try:
@@ -234,6 +248,9 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     
     Args:
         mounts: Opcional, lista de puntos de montaje a escanear. Si es None, escanea todas las unidades locales.
+        
+    Returns:
+        Lista de objetos DriveUsage detectados.
     """
     targets = mounts if mounts is not None else (_get_local_windows_drives() if os.name == "nt" else ["/"])
     return [d for m in targets if (d := drive_usage(m)) is not None]
@@ -243,8 +260,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Generador eficiente que recorre el sistema de archivos usando `os.scandir`.
     
-    Evita redundancias y bucles mediante seguimiento de Inodes y validación de symlinks.
-    
+    Args:
+        directory: Ruta base para comenzar el escaneo.
+        skip_protected: Si es True, omite directorios protegidos por `safety.py`.
+        
     Yields:
         Tuplas (Path, int) conteniendo la ruta absoluta y el tamaño en bytes.
     """
@@ -321,12 +340,17 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     return heapq.nlargest(max(1, limit), results, key=lambda f: f.size_bytes)
 
 
-def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Tuple[int, int]:
-    """Retorna el total de bytes y cantidad de archivos procesados."""
+def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> SizeReport:
+    """
+    Retorna el total de bytes y cantidad de archivos procesados.
+    
+    Returns:
+        Una tupla (total_bytes, total_files).
+    """
     root = _validate_root(directory)
-    if not root: return 0, 0
+    if not root: return (0, 0)
     data = _collect_summary_data(root, skip_protected, 0)
-    return data.total_bytes, data.total_files
+    return (data.total_bytes, data.total_files)
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 20) -> SummaryData:

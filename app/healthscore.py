@@ -10,8 +10,7 @@ DISEÑO:
   la verificabilidad y los tests unitarios.
 - El pipeline utiliza una estrategia de 'Clamping' para asegurar que cualquier
   entrada de métrica, sin importar su origen, resulte en un valor entre 0 y 1.
-- Los factores de normalización (ej. _INV_JUNK) se calculan como el inverso del 
-  umbral crítico, permitiendo convertir escalas arbitrarias a una base 0.0-1.0.
+- Los factores de normalización se calculan como el inverso del umbral crítico.
 """
 
 from __future__ import annotations
@@ -19,7 +18,6 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Any, Final, Tuple, TypeAlias, NamedTuple, Annotated, Callable
 import math
 
-# Tipos semánticos para mejorar la legibilidad de la firma de funciones.
 ScoreMap: TypeAlias = Dict[str, float]
 NormalizedRatio: TypeAlias = Annotated[float, "Un valor entre 0.0 y 1.0 representando salud"]
 MetricKey: TypeAlias = str
@@ -54,27 +52,22 @@ __all__ = [
     "summarize",
 ]
 
-# Umbrales críticos utilizados para definir el punto de saturación o riesgo.
 _LIMIT_JUNK_MB: Final[float] = 5000.0          
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
 _LIMIT_STARTUP_COUNT: Final[int] = 20          
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-# Factores de normalización inversos para transformar métricas crudas a un rango [0.0, 1.0].
-# Se calculan como 1/Umbral para que el valor 0 de métrica sea salud perfecta (1.0).
 _INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB
 _INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB
 _INV_STARTUP: Final[float] = 1.0 / float(_LIMIT_STARTUP_COUNT)
 _INV_RAM: Final[float] = 1.0 / _LIMIT_RAM_PERCENT
 _INV_DISK: Final[float] = 1.0 / _LIMIT_DISK_PERCENT
 
-# Niveles de severidad para activar reglas de recomendación.
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
-# Pesos de importancia relativa para el cálculo del score final (suma total = 100).
 WEIGHTS: Final[Dict[MetricKey, int]] = {
     "seguridad": 30,
     "disco": 20,
@@ -90,7 +83,7 @@ if sum(WEIGHTS.values()) != 100:
 _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Transforma el volumen de archivos temporales (MB) en un ratio: >5GB impacta a 0.0."""
+    """Calcula el ratio de salud para archivos temporales basándose en el umbral _LIMIT_JUNK_MB."""
     return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
@@ -113,7 +106,6 @@ def score_startup(startup_count: int) -> NormalizedRatio:
     """Evalúa salud de inicio: penaliza linealmente el conteo de apps según el umbral."""
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
-# Pipeline interno que mapea métricas a funciones de puntuación y sus reglas asociadas.
 _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
     "seguridad": lambda m: score_security(m.suspicious_count, m.suspicious_warnings),
     "disco": lambda m: score_disk(m.disk_free_percent),
@@ -153,15 +145,14 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None:
-        """Valida y normaliza las métricas tras la inicialización."""
-        # Se asegura de tratar valores None que puedan venir de des/serialización
+        """Normaliza campos nulos y valida la integridad de los datos."""
         for field_name in self.__dataclass_fields__:
             if getattr(self, field_name) is None:
                 setattr(self, field_name, 0.0 if "percent" not in field_name else 100.0)
         self.validate()
 
     def validate(self) -> None:
-        """Aplica normalización defensiva para asegurar integridad de datos."""
+        """Asegura que todos los valores numéricos caigan en rangos lógicos."""
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
         self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
@@ -173,14 +164,14 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Comprueba si todos los campos numéricos son valores finitos."""
+        """Verifica que todos los campos numéricos sean valores finitos."""
         return (math.isfinite(self.junk_mb) and math.isfinite(self.duplicate_mb) and 
                 math.isfinite(self.memory_available_percent) and math.isfinite(self.disk_free_percent) and
                 math.isfinite(self.suspicious_count) and math.isfinite(self.startup_count))
 
 @dataclass
 class HealthResult:
-    """Resultado final de la evaluación de salud del sistema."""
+    """Contenedor para los resultados finales del análisis de salud."""
     score: int
     grade: str
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
@@ -192,18 +183,18 @@ class HealthResult:
         return 80 <= self.score <= 100
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    """Fuerza a 'value' a mantenerse dentro del rango [low, high]."""
+    """Restringe un valor numérico a un rango específico."""
     return float(max(low, min(high, value)))
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    """Conversión segura de cualquier valor a float."""
+    """Intenta convertir a float, retornando el valor por defecto en caso de fallo."""
     try:
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError): return default
 
 def grade_for_score(score: float | int) -> str:
-    """Asigna una letra (A-F) basada en un puntaje numérico."""
+    """Asigna una calificación de letra (A-F) basada en un puntaje numérico."""
     s = float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -212,7 +203,7 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float, findings: List[str]) -> None:
-    """Ejecuta una lista de reglas de recomendación in-place sobre la lista de hallazgos."""
+    """Aplica las reglas de recomendación in-place si se cumplen sus predicados."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -220,13 +211,16 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                 if isinstance(msg, str) and msg.strip():
                     findings.append(msg.strip())
         except Exception:
-            # Captura cualquier error en la ejecución de la regla para no interrumpir el score
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
-    Calcula el score global del sistema y genera recomendaciones.
-    Itera sobre el pipeline preconfigurado aplicando cada 'scorer' y 'regla'.
+    Ejecuta el pipeline completo de métricas para calcular el puntaje global.
+    
+    Args:
+        metrics: Instancia de SystemMetrics. Si es nula, retorna error.
+    Returns:
+        HealthResult: Objeto con score final, nota, desglose y recomendaciones.
     """
     if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o no disponibles."])
@@ -261,13 +255,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(pts: int, maximo: int) -> str:
-    """Crea una representación visual de barra para un área específica."""
+    """Genera una cadena visual de progreso para una categoría."""
     if maximo <= 0: return ""
     puntos = int(_clamp(float(pts), 0.0, float(maximo)))
     return ('#' * puntos) + ('.' * (maximo - puntos))
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera una lista de líneas textuales formateadas para el reporte."""
+    """Convierte el objeto HealthResult a una lista de líneas legible para el usuario."""
     if result is None or not hasattr(result, 'score'):
         return ["Error: Informe no disponible."]
     
