@@ -209,7 +209,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
     """Ejecuta una lista de reglas de recomendación in-place sobre la lista de hallazgos."""
     for rule in rules:
         try:
-            if rule.check(metrics, ratio):
+            if callable(rule.message_factory) and rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str) and msg.strip():
                     findings.append(msg.strip())

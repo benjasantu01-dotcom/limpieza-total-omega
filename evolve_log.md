@@ -1458,3 +1458,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-09T01:03:17` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-09T01:03:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T01:03:17` Corrida terminada. Total usado hoy: 24.
+- `2026-09-09T01:10:49` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-09-09T01:11:19` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_collect_summary_data` y `walk_files` incorporando una validación explícita de `size` y un manejo de errores más específico, evitando que archivos corruptos o con atributos inaccesibles interrumpan el cálculo de estadísticas.
+- `2026-09-09T01:11:50` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-09T01:12:17` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_evaluate_rules` validando explícitamente que el `message_factory` sea ejecutable y que el resultado de la función sea un string no vacío antes de procesarlo, evitando posibles excepciones durante la generación dinámica de recomendaciones.
+- `2026-09-09T01:13:19` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `on_target_choice_changed` envolviendo la resolución de ruta en un bloque `try-except` explícito para capturar errores de sistema (`OSError`, `ValueError`) y validando la existencia de la ruta antes de intentar operar, evitando cierres inesperados al procesar entradas de usuario.
+- `2026-09-09T01:13:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T01:13:19` Corrida terminada. Total usado hoy: 28.

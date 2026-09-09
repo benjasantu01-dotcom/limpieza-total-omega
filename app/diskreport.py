@@ -207,12 +207,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         if _is_excluded_path(entry): continue
                         
-                        _ = os.fsdecode(entry.name)
                         entry_path = Path(entry.path).resolve()
-                        
-                        # Defensivo: asegurar que el objeto no haya escapado del root
                         if not str(entry_path).startswith(str(root_path)): continue
-                        
                         if skip_protected and is_protected_path(entry_path): continue
                         
                         if entry.is_dir(follow_symlinks=False):
@@ -223,11 +219,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 stack.append(entry_path)
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat()
-                            size = st.st_size
+                            size = getattr(st, 'st_size', 0)
                             yield entry_path, max(0, int(size)) if isinstance(size, (int, float)) else 0
-                    except (PermissionError, OSError, AttributeError, UnicodeDecodeError):
+                    except (PermissionError, OSError, AttributeError):
                         continue
-        except (PermissionError, OSError, FileNotFoundError):
+        except (PermissionError, OSError):
             continue
 
 
@@ -284,20 +280,17 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 20
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        try:
-            total_bytes += size
-            total_files += 1
-            extension = path.suffix.lower() or "(sin extensión)"
-            ext_sizes[extension] += size
-            ext_counts[extension] += 1
-            
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif size > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (size, path))
-        except (OSError, PermissionError, AttributeError):
-            continue
+        total_bytes += size
+        total_files += 1
+        extension = path.suffix.lower() or "(sin extensión)"
+        ext_sizes[extension] += size
+        ext_counts[extension] += 1
+        
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
             
     return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_heap)
 
