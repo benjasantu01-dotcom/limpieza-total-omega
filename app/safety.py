@@ -424,7 +424,13 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
     
-    if p.exists():
+    # Verificación de existencia segura ante condiciones de carrera
+    try:
+        exists = p.exists()
+    except OSError:
+        exists = False
+    
+    if exists:
         # Verificación final contra redirecciones por puntos de reparse reales
         if os.name == 'nt':
             try:
@@ -439,8 +445,12 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             except Exception: pass
             
         _check_file_integrity(p)
-    elif p.parent and is_protected_path(p.parent):
-        raise UnsafePathError("Directorio contenedor restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+    elif p.parent:
+        try:
+            if is_protected_path(p.parent):
+                raise UnsafePathError("Directorio contenedor restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+        except Exception:
+            pass
             
     return p
 

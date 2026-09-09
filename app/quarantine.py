@@ -647,6 +647,9 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     if stored_file.stat().st_dev != destination.parent.resolve().stat().st_dev:
         raise UnsafePathError("Restauración denegada: dispositivos incompatibles.")
     
+    # Pre-chequeo de espacio de disco en destino antes de mover
+    _ensure_disk_space(destination.parent, quarantine_item.size_bytes)
+    
     parent = destination.parent
     if not parent.exists():
         try:

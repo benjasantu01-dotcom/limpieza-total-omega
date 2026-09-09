@@ -125,10 +125,14 @@ class Scanner:
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si la entrada es un punto de reanálisis (Junction o Symlink) para evitar bucles."""
         try:
+            # Primero chequear symlink básico, luego atributos de Windows (reparse points/junctions)
             if entry.is_symlink():
                 return True
-            return bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
-        except (OSError, AttributeError, TypeError, FileNotFoundError, PermissionError):
+            # Usar stat para obtener file_attributes sin seguir enlaces
+            st = entry.stat(follow_symlinks=False)
+            return bool(st.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
+        except (OSError, AttributeError, PermissionError):
+            # Si no podemos leer atributos, por seguridad asumimos que es inaccesible o restringido
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:

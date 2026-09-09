@@ -990,3 +990,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-09-09T07:41:53` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-09-09T07:41:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T07:41:53` Corrida terminada. Total usado hoy: 180.
+- `2026-09-09T07:48:36` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-09-09T07:49:19` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de espacio de disco previo (`_ensure_disk_space`) dentro de `restore_item` para evitar fallos de escritura truncada o interrupciones durante el movimiento del archivo, fortaleciendo la robustez ante escenarios de disco lleno.
+- `2026-09-09T07:49:39` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-09T07:50:13` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera (time-of-check to time-of-use) mediante la implementación de un chequeo de existencia previo dentro de un bloque `try-except`, evitando que la función falle abruptamente ante archivos que desaparecen entre la normalización y la validación de integridad.
+- `2026-09-09T07:50:25` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_reparse_point` al incluir una validación explícita para evitar errores en directorios donde el usuario no tiene permisos de lectura de atributos, lo cual previene que el escáner se salte ramas enteras o falle ante recursos bloqueados por el sistema operativo.
+- `2026-09-09T07:50:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T07:50:25` Corrida terminada. Total usado hoy: 184.
