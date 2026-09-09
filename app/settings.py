@@ -266,17 +266,12 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return _PATH_CACHE["default"]
 
 def validate(raw_values: Any) -> AppSettings:
-    """
-    Filtra y valida un diccionario crudo contra el esquema AppSettings.
-    Cualquier campo inválido o faltante se compensa con valores de fábrica (DEFAULTS).
-    """
+    """Filtra y valida un diccionario crudo contra el esquema AppSettings."""
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_str, val in raw_values.items():
         key_enum = _STR_TO_ENUM.get(key_str)
-        if not key_enum: continue
-        validator = _VALIDATOR_MAP.get(key_enum)
-        if validator:
+        if key_enum and (validator := _VALIDATOR_MAP.get(key_enum)):
             validated = validator(key_enum, val)
             if validated is not None or (key_enum == ConfigKey.ULTIMA_CARPETA and val == ""):
                 config[key_enum.value] = validated if validated is not None else ""
@@ -294,9 +289,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             return cached[1]
         if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
-                content = f.read(MAX_SETTINGS_SIZE + 1)
-                if len(content) > MAX_SETTINGS_SIZE: raise ValueError("Settings too large")
-                data = validate(json.loads(content))
+                data = validate(json.load(f))
             _CACHE[ruta_str] = (mtime, data)
             return data
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
@@ -331,7 +324,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 f.write(data)
                 f.flush()
                 os.fsync(f.fileno())
-            
             os.replace(temp_path, ruta)
         finally:
             if temp_path.exists():
@@ -349,8 +341,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     modified = False
     for k, v in changes.items():
         key_enum = _STR_TO_ENUM.get(k)
-        validator = _VALIDATOR_MAP.get(key_enum) if key_enum else None
-        if validator:
+        if key_enum and (validator := _VALIDATOR_MAP.get(key_enum)):
             val = validator(key_enum, v)
             if val is not None and val != current.get(k):
                 current[k] = val

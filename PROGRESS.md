@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
-- Rechazadas por tests: 18
+- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 36 | 4 | 9 | 3 | 38 |
+| 2026-09-07 | 32 | 4 | 9 | 3 | 38 |
 | 2026-09-08 | 161 | 12 | 24 | 9 | 144 |
-| 2026-09-09 | 24 | 2 | 5 | 2 | 31 |
+| 2026-09-09 | 26 | 3 | 5 | 2 | 32 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
-- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **46**
-- rendimiento: **40**
-- robustez ante casos límite: **37**
+- seguridad defensiva: **44**
+- rendimiento: **41**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
-- `duplicates.py`: **20**
-- `memory.py`: **19**
-- `healthscore.py`: **18**
+- `assistant.py`: **22**
+- `settings.py`: **19**
+- `duplicates.py`: **19**
 - `scanner.py`: **18**
-- `settings.py`: **18**
+- `memory.py`: **18**
 - `quarantine.py`: **17**
 - `safety.py`: **17**
+- `healthscore.py`: **17**
 - `diskreport.py`: **16**
 - `browser.py`: **14**
 - `branding.py`: **14**
-- `main.py`: **11**
+- `main.py`: **10**
 - `startup.py`: **9**
 - `organizer.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T02:54:35` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de inferencia ante entradas maliciosas o mal formadas mediante la adición de una validación explícita en `_sanitize_query` y `local_answer` para prevenir la inyección de comandos o intentos de elusión mediante caracteres especiales, asegurando que cualquier respuesta sea siempre manejable por el sistema.
+- `2026-09-09T02:53:26` **settings.py** (rendimiento): Optimicé el sistema de caché en `load` para evitar lecturas innecesarias del sistema de archivos al verificar `mtime` antes de procesar el JSON, y eliminé redundancias en el flujo de validación.
 - `2026-09-09T02:44:38` **scanner.py** (rendimiento): Optimizé la lógica de evaluación en `scan_file` y `process_entry` mediante un pre-chequeo eficiente de extensiones usando `in` sobre conjuntos, evitando llamadas redundantes a `check_double_extension` para archivos que no son ejecutables sospechosos y centralizando las consultas de metadatos para minimizar el acceso a disco.
 - `2026-09-09T02:44:25` **safety.py** (rendimiento): Se ha optimizado la función `filter_safe_paths` eliminando la doble ejecución de validación al fusionar la lógica de `is_safe_to_modify` dentro del bucle, reduciendo significativamente las llamadas a `normalize` y el acceso a disco en secuencias largas de archivos.
 - `2026-09-09T02:43:27` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `list_items` evitando recrear la lista completa de manifiesto mediante un diccionario de búsqueda eficiente y reduciendo la cantidad de llamadas repetitivas a `quarantine_dir` y `load_manifest`.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T02:03:02` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los type hints en `quarantine.py`, añadiendo docstrings específicos que explican las condiciones de seguridad en funciones críticas y normalizando la nomenclatura para alinearse con los estándares del proyecto.
 - `2026-09-09T01:57:35` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` documentando los contratos de las funciones críticas con type hints y docstrings precisos, además de clarificar la lógica de las máscaras de acceso y las estructuras de datos, siguiendo las directrices de documentación del proyecto.
 - `2026-09-09T01:52:08` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en las funciones de procesamiento recursivo y la unificación de la lógica de validación de archivos, facilitando la comprensión del flujo de datos en los pasos del escaneo.
-- `2026-09-09T01:43:19` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a funciones auxiliares y aclarando mediante comentarios el propósito de las constantes y estructuras de datos, mejorando la mantenibilidad sin alterar la lógica.
-- `2026-09-09T01:43:07` **browser.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación interna mediante docstrings estructurados, clarificando los contratos de las funciones de filtrado y recursión para facilitar el mantenimiento.

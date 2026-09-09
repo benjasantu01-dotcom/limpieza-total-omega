@@ -529,13 +529,14 @@ def _sanitize_query(question: str) -> str:
     clean = _CONTROL_CHARS_REGEX.sub(' ', question)
     clean = _PATH_INJECTION_REGEX.sub(' ', clean)
     clean = clean.strip()[:100].lower()
-    if is_protected_path(clean): return ""
+    # Si tras la limpieza parece un path de sistema, descartamos la consulta
+    if is_protected_path(clean) or _is_restricted_content(clean): return ""
     return clean
 
 def local_answer(question: str, context: SystemContext) -> Answer:
     """Motor de inferencia local: redirige a la respuesta adecuada."""
     q_sanitized = _sanitize_query(question)
-    if not _ensure_safe_text(q_sanitized):
+    if not q_sanitized or not _ensure_safe_text(q_sanitized):
         return Answer("Entrada no válida.")
     if context.is_empty:
         return Answer(
@@ -579,7 +580,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     if not _ensure_safe_text(context_text) or not _is_safe_text_structure(context_text): return None
     try:
         q = _sanitize_query(question)
-        if not _ensure_safe_text(q): return None
+        if not q or not _ensure_safe_text(q): return None
         data = {"contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]}]}
         encoded = json.dumps(data).encode("utf-8")
         if len(encoded) > _MAX_PROMPT_LIMIT * 2:
