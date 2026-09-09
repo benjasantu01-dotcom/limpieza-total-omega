@@ -135,6 +135,9 @@ try:
 except safety.UnsafePathError as e:
     logging.critical("Iniciando desde ruta insegura: %s", e)
     raise
+except Exception as e:
+    logging.critical("Error crítico de sistema durante validación: %s", e)
+    raise
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")

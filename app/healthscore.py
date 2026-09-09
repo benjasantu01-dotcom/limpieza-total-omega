@@ -204,8 +204,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
-                if isinstance(msg, str) and msg.strip():
-                    findings.append(msg.strip())
+                if isinstance(msg, str):
+                    clean_msg = " ".join(msg.split())
+                    if clean_msg:
+                        findings.append(clean_msg)
         except Exception:
             continue
 
@@ -270,5 +272,6 @@ def summarize(result: HealthResult | None) -> List[str]:
         puntos = result.breakdown.get(area, 0)
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{_render_bar(puntos, maximo)}]")
     
-    lines.extend(["", "Recomendaciones:", *[f"  - {r}" for r in getattr(result, 'recommendations', []) or ["Sin recomendaciones."]]])
+    recs = getattr(result, 'recommendations', [])
+    lines.extend(["", "Recomendaciones:", *[f"  - {r}" for r in (recs if recs else ["Sin recomendaciones."])]])
     return lines

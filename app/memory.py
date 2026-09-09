@@ -389,7 +389,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
-    # Abrimos con las máscaras mínimas necesarias, cerrando siempre en el finally
+    # Abrimos con las máscaras mínimas necesarias
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         return False, f"Acceso denegado (código {kernel32.GetLastError()})."
@@ -407,4 +407,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (Exception, ctypes.ArgumentError):
         return False, "Error inesperado al intentar liberar el proceso."
     finally:
-        kernel32.CloseHandle(proc_handle)
+        if proc_handle:
+            kernel32.CloseHandle(proc_handle)
