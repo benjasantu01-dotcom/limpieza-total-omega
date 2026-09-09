@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 218
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 146 | 11 | 22 | 8 | 141 |
-| 2026-09-09 | 74 | 9 | 10 | 6 | 77 |
+| 2026-09-08 | 143 | 11 | 22 | 8 | 140 |
+| 2026-09-09 | 75 | 9 | 10 | 7 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **51**
 - rendimiento: **42**
-- seguridad defensiva: **41**
-- robustez ante casos límite: **34**
+- seguridad defensiva: **38**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
 - `duplicates.py`: **20**
-- `scanner.py`: **19**
-- `settings.py`: **19**
-- `safety.py`: **18**
 - `memory.py`: **18**
+- `scanner.py`: **18**
+- `settings.py`: **18**
+- `safety.py`: **17**
 - `diskreport.py`: **17**
+- `healthscore.py`: **17**
 - `quarantine.py`: **16**
-- `healthscore.py`: **16**
 - `branding.py`: **13**
 - `browser.py`: **13**
 - `organizer.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T07:38:53` **healthscore.py** (robustez ante casos límite): Se fortaleció la integridad de `SystemMetrics` ante valores inesperados de coma flotante (NaN, Infinity) y errores de acceso en `compute_score` mediante la adición de una validación explícita y un manejo de errores más robusto en el pipeline, asegurando que un valor mal formado no corrompa el cálculo global.
 - `2026-09-09T07:20:22` **scanner.py** (rendimiento): Optimizé la lógica de filtrado inicial en `process_entry` moviendo la validación de extensiones antes de cualquier lógica de heurística pesada, evitando invocaciones innecesarias a `Path` y `os.stat` cuando el archivo no es de interés, y unificando el acceso a `entry.name` para reducir llamadas a métodos repetitivas.
 - `2026-09-09T07:09:37` **safety.py** (rendimiento): Se ha optimizado `_is_system_path_cached` mediante la eliminación de la búsqueda en una lista (`any(...)`) por cada componente, reemplazándola por una verificación de pertenencia directa en `frozenset` (`part in PROTECTED_DIR_NAMES`), mejorando la complejidad de O(N*M) a O(N) y reduciendo el uso de memoria en el cache LRU.
 - `2026-09-09T07:08:59` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` convirtiendo la búsqueda de archivos existentes en un conjunto (set) para reducir la complejidad algorítmica de O(N*M) a O(N+M), evitando iteraciones repetitivas sobre el sistema de archivos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T06:27:33` **memory.py** (legibilidad y documentación): Documenté el propósito de los tipos personalizados `BytesValue` y `MegabytesValue` y mejoré los docstrings de `parse_windows_process_csv` y `read_snapshot` para aclarar el comportamiento de sus cachés y estados internos.
 - `2026-09-09T06:18:08` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en funciones clave y clarificando mediante docstrings el propósito de los factores de normalización y la estructura del pipeline, facilitando el mantenimiento a futuro.
 - `2026-09-09T06:17:42` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de Type Hints explícitas en las funciones internas (`_scan_directory_recursive` y `_collect_candidates`) y se han aclarado las docstrings de las funciones de hash, detallando explícitamente el contrato de excepciones y el manejo de rutas, mejorando la legibilidad para futuros desarrollos.
-- `2026-09-09T06:17:17` **diskreport.py** (legibilidad y documentación): Se ha añadido documentación detallada mediante Google-style docstrings en todas las funciones y clases, clarificando las responsabilidades de los componentes, el propósito de los parámetros y el comportamiento ante casos límite, facilitando el mantenimiento futuro.

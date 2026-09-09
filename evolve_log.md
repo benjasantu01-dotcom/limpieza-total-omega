@@ -982,3 +982,11 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-09-09T07:29:53` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-09-09T07:29:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T07:29:53` Corrida terminada. Total usado hoy: 176.
+- `2026-09-09T07:38:21` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-09-09T07:38:53` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se fortaleció la integridad de `SystemMetrics` ante valores inesperados de coma flotante (NaN, Infinity) y errores de acceso en `compute_score` mediante la adición de una validación explícita y un manejo de errores más robusto en el pipeline, asegurando que un valor mal formado no corrompa el cálculo global.
+- `2026-09-09T07:39:53` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-09T07:41:09` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `main.py` ante errores inesperados en el hilo de ejecución asíncrono y problemas de accesibilidad de archivos, asegurando que `_worker_thread_logic` maneje explícitamente excepciones de sistema (como archivos bloqueados o denegados) antes de reportarlos, evitando que la aplicación quede en un estado de "busy" permanente.
+- `2026-09-09T07:41:38` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-09T07:41:53` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-09T07:41:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T07:41:53` Corrida terminada. Total usado hoy: 180.

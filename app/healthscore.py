@@ -171,7 +171,8 @@ class SystemMetrics:
     def is_finite(self) -> bool:
         """Comprueba si todos los campos numéricos son valores finitos."""
         return (math.isfinite(self.junk_mb) and math.isfinite(self.duplicate_mb) and 
-                math.isfinite(self.memory_available_percent) and math.isfinite(self.disk_free_percent))
+                math.isfinite(self.memory_available_percent) and math.isfinite(self.disk_free_percent) and
+                math.isfinite(self.suspicious_count) and math.isfinite(self.startup_count))
 
 @dataclass
 class HealthResult:
@@ -188,7 +189,7 @@ class HealthResult:
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
     """Fuerza a 'value' a mantenerse dentro del rango [low, high]."""
-    return max(low, min(high, value))
+    return float(max(low, min(high, value)))
 
 def _to_float(value: Any, default: float = 0.0) -> float:
     """Conversión segura de cualquier valor a float."""
@@ -231,8 +232,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for area, weight, scorer, rules in _OPTIMIZED_PIPELINE:
         try:
-            ratio: float = scorer(metrics)
-            pts: int = int(round(ratio * weight))
+            ratio = scorer(metrics)
+            if not math.isfinite(ratio): ratio = 0.0
+            
+            pts: int = int(round(_clamp(ratio * weight, 0, weight)))
             metric_breakdown[area] = pts
             total_pts += pts
             if rules:
