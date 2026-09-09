@@ -173,8 +173,9 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Aplica filtros heurísticos y de seguridad sobre una entrada de directorio.
-    Retorna True si el archivo debe ser ignorado por seguridad o integridad.
+    Aplica filtros heurísticos de seguridad para saltar entradas peligrosas.
+    Descarta explícitamente archivos protegidos, symlinks, junctions y rutas
+    que excedan la longitud de seguridad (MAX_PATH_LEN).
     """
     if entry is None or not hasattr(entry, 'name') or _is_excluded_file(entry.name):
         return True
@@ -221,12 +222,11 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Suma recursiva de tamaños de archivos con límites de profundidad y profundidad de seguridad.
+    Cálculo recursivo de tamaño de directorio.
     
-    Args:
-        root_abs: Ruta absoluta del directorio a sumar.
-        memo: Diccionario para evitar re-cálculos de subcarpetas.
-        depth: Nivel actual de recursión para prevenir stack overflow o loops.
+    Implementa límites de profundidad (MAX_SCAN_DEPTH) y validación de seguridad
+    por entrada mediante `_should_skip_entry` para garantizar que la operación
+    sea estrictamente de lectura y confinada a las carpetas permitidas.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or depth < 0 or len(root_abs) >= MAX_PATH_LEN or any(c in root_abs for c in '<>|?"*') or '\0' in root_abs:
         return 0

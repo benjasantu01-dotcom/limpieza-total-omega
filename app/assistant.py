@@ -98,9 +98,9 @@ class ProblemCriterion(NamedTuple):
     
     Attributes:
         metric_key: Nombre del atributo en SystemContext a evaluar.
-        threshold: Valor límite para comparación.
-        operator: Comparador lógico ('<' o '>').
-        message_format: Template de mensaje ({:.0f} para float, {:d} para int).
+        threshold: Valor límite para comparación (float).
+        operator: Comparador lógico string ('<' o '>').
+        message_format: Template de mensaje (ej. '{:.0f}% de RAM').
     """
     metric_key: str
     threshold: float
@@ -108,7 +108,7 @@ class ProblemCriterion(NamedTuple):
     message_format: str
 
     def _evaluate_metric(self, val: float) -> bool:
-        """Compara el valor de la métrica contra el umbral según el operador definido."""
+        """Realiza la comparación lógica entre la métrica y el umbral configurado."""
         if self.operator == "<": return val < self.threshold
         if self.operator == ">": return val > self.threshold
         return False
@@ -253,7 +253,15 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
 
 @dataclass
 class SystemContext:
-    """Contenedor de estado del sistema con métricas agregadas."""
+    """
+    Contenedor de estado del sistema que agrega métricas para el análisis local y remoto.
+    
+    Attributes:
+        analyzed: Indica si el sistema ha sido escaneado exitosamente.
+        score: Puntaje global (0-100).
+        junk_mb: Espacio basura detectado en MB.
+        memory_available_percent: RAM libre expresada en porcentaje (0-100).
+    """
     score: Optional[int] = None
     grade: str = ""
     junk_mb: float = 0.0

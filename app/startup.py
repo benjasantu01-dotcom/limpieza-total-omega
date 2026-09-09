@@ -282,14 +282,14 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             if not isinstance(row, dict):
                 continue
             
-            name_raw = row.get(f_name)
-            cmd_raw = row.get(f_cmd)
+            val_name = row.get(f_name)
+            val_cmd = row.get(f_cmd)
             
-            if name_raw is None or cmd_raw is None:
+            if not isinstance(val_name, str) or not isinstance(val_cmd, str):
                 continue
                 
-            name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
-            cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
+            name: str = "".join(c for c in val_name if ord(c) >= 32).strip()
+            cmd: str = "".join(c for c in val_cmd if ord(c) >= 32).strip()
             
             if not name or not cmd or cmd.startswith(r"\\") or cmd in seen_commands:
                 continue

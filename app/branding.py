@@ -240,12 +240,18 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 
 @lru_cache(maxsize=256)
 def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
-    """Codifica una tupla RGB a string hexadecimal #RRGGBB."""
+    """
+    Codifica una tupla RGB (r, g, b) a string hexadecimal #RRGGBB.
+    Clampea los valores para asegurar que permanezcan en rango [0, 255].
+    """
     return "#{:02x}{:02x}{:02x}".format(*[max(0, min(255, c)) for c in rgb])
 
 @lru_cache(maxsize=128)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """Interpolación lineal entre dos colores (ratio 0.0 a 1.0)."""
+    """
+    Interpolación lineal entre dos colores (ratio 0.0 a 1.0).
+    Calcula el gradiente ponderado componente a componente.
+    """
     if start == end: return start
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -258,7 +264,10 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 @lru_cache(maxsize=64)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
-    """Genera una rampa de colores interpolada a través de múltiples puntos de control."""
+    """
+    Genera una rampa de colores interpolada a través de múltiples puntos de control.
+    'steps' define la resolución de la rampa resultante.
+    """
     n = max(1, int(steps))
     if not stops or len(stops) < 2: return (stops[0] if stops else C_TEXT_MUTED,) * n
     
