@@ -134,15 +134,15 @@ def base_directories() -> List[Path]:
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
     Verifica que la ruta objetivo esté bajo la base (evita path traversal).
-    
-    Args:
-        real_target: Ruta que se quiere validar (debe ser absoluta).
-        real_base: Ruta raíz permitida (debe ser absoluta).
     """
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
     try:
         if not real_target.is_absolute() or not real_base.is_absolute():
+            return False
+        # Pre-validación de sanitización antes de resolver
+        target_str = str(real_target)
+        if len(target_str) >= MAX_PATH_LEN or '\0' in target_str:
             return False
         target_res = str(real_target.resolve(strict=True))
         base_res = str(real_base.resolve(strict=True))
@@ -200,8 +200,10 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
     """Validación holística de seguridad para una ruta antes de recorrerla."""
     try:
+        if not isinstance(path_obj, Path):
+            return False
         p_str = str(path_obj)
-        if not isinstance(path_obj, Path) or not path_obj.is_absolute() or len(p_str) >= MAX_PATH_LEN or any(c in p_str for c in '<>|?"*') or '\0' in p_str:
+        if not path_obj.is_absolute() or len(p_str) >= MAX_PATH_LEN or any(c in p_str for c in '<>|?"*') or '\0' in p_str:
             return False
         real_p = path_obj.resolve(strict=True)
         if not is_safe_to_modify(real_p) or is_protected_path(real_p):
@@ -274,11 +276,14 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """Verifica que la carpeta sea una ubicación de caché legítima para su inspección."""
+    if not isinstance(candidate, Path) or not isinstance(base_path, Path):
+        return False
+    
     c_str = str(candidate)
-    if not isinstance(candidate, Path) or not isinstance(base_path, Path) or not candidate.is_absolute() or any(c in c_str for c in '<>|?"*') or '\0' in c_str:
+    if not candidate.is_absolute() or len(c_str) >= MAX_PATH_LEN or any(c in c_str for c in '<>|?"*') or '\0' in c_str:
         return False
     try:
-        if not candidate.exists() or len(c_str) >= MAX_PATH_LEN:
+        if not candidate.exists():
             return False
         real_candidate = candidate.resolve(strict=True)
         

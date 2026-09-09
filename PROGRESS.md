@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 216
+- Rechazadas por guardia de seguridad: 31
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 128 | 11 | 20 | 7 | 106 |
-| 2026-09-09 | 92 | 10 | 12 | 8 | 110 |
+| 2026-09-08 | 126 | 11 | 19 | 6 | 106 |
+| 2026-09-09 | 95 | 10 | 12 | 8 | 111 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- legibilidad y documentación: **45**
-- manejo de errores y validación de entradas: **44**
+- manejo de errores y validación de entradas: **47**
+- legibilidad y documentación: **43**
 - rendimiento: **42**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
+- `duplicates.py`: **21**
 - `assistant.py`: **20**
-- `duplicates.py`: **20**
 - `scanner.py`: **19**
 - `settings.py`: **19**
 - `safety.py`: **18**
-- `memory.py`: **17**
 - `diskreport.py`: **17**
 - `healthscore.py`: **17**
 - `quarantine.py`: **17**
-- `organizer.py`: **12**
-- `branding.py`: **12**
-- `browser.py`: **12**
+- `memory.py`: **16**
+- `branding.py`: **13**
+- `browser.py`: **13**
 - `main.py`: **11**
+- `organizer.py`: **11**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T10:03:01` **duplicates.py** (manejo de errores y validación de entradas): He robustecido la tolerancia a fallos en `_collect_candidates` y `_scan_directory_recursive` mediante una validación más estricta de las entradas y la adición de bloques `try-except` preventivos ante errores de sistema en la iteración de directorios, asegurando que el escaneo no se detenga inesperadamente ante rutas malformadas o permisos denegados.
+- `2026-09-09T10:02:23` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_path_inside_base` y `_is_valid_cache_path` añadiendo validaciones explícitas contra caracteres nulos (`\0`) y desbordamientos de ruta (`MAX_PATH_LEN`), previniendo errores de sistema operativo o ataques de path traversal antes de invocar `resolve(strict=True)`.
+- `2026-09-09T10:01:53` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` validando la existencia de la ruta antes de intentar resolverla y utilizando una captura de excepciones más específica para evitar ocultar errores de lógica durante el desarrollo.
 - `2026-09-09T09:54:49` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ingest` en `SystemContext` para evitar que un diccionario malformado o un objeto inesperado provoque excepciones al intentar acceder a sus atributos, encapsulando la extracción en el método ya existente `_get_source_value` para asegurar que el proceso de ingesta sea atómico y no se interrumpa ante datos inválidos.
 - `2026-09-09T08:30:59` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para prevenir la resolución de rutas mediante enlaces simbólicos o junctions que podrían apuntar fuera de las zonas permitidas, asegurando que la validación ocurra sobre el destino final absoluto sin seguir estructuras de reparse.
 - `2026-09-09T08:30:42` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del escáner en `_is_safe_entry` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta (`resolve()`) del archivo, previniendo así posibles ataques por "path traversal" o manipulación de enlaces simbólicos que intenten escapar del directorio base.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T08:09:54` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` al añadir una verificación explícita mediante `is_protected_path` sobre la ruta resuelta de cada archivo antes de procesarlo, previniendo así el acceso a rutas que podrían haber sido alteradas o enlazadas dinámicamente hacia áreas restringidas tras la validación inicial del directorio raíz.
 - `2026-09-09T08:09:25` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la restricción estricta de las rutas de caché, validando que el `parent` de cada carpeta candidata esté efectivamente bajo la base de perfiles del usuario (`LOCALAPPDATA`), previniendo posibles escapes de directorio mediante manipulación de strings en `BROWSER_CACHE_PATHS`.
 - `2026-09-09T08:00:47` **branding.py** (seguridad defensiva): Se ha robustecido la función `save_logo_svg` implementando `ensure_safe_to_modify` para garantizar que la operación de escritura no solo sea segura según las heurísticas de `is_safe_to_modify`, sino que cumpla con el contrato estricto de seguridad requerido para cualquier modificación de disco, evitando dejar archivos en estados intermedios.
-- `2026-09-09T07:59:47` **startup.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previa utilizando `os.access(p, os.F_OK)` en `_validate_file_access` para manejar de manera robusta casos donde el sistema reporta la ruta pero el usuario no tiene permisos de lectura, evitando que el escáner se detenga ante errores de acceso denegado en archivos protegidos por el sistema.
-- `2026-09-09T07:59:17` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de la persistencia atómica en `save()` añadiendo un chequeo de existencia de `ruta.parent` antes de validar la seguridad de la carpeta, evitando errores `AttributeError` o falsos negativos si la carpeta de configuración fue borrada externamente.
-- `2026-09-09T07:50:25` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `_is_reparse_point` al incluir una validación explícita para evitar errores en directorios donde el usuario no tiene permisos de lectura de atributos, lo cual previene que el escáner se salte ramas enteras o falle ante recursos bloqueados por el sistema operativo.

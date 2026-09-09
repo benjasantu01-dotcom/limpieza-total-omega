@@ -180,7 +180,7 @@ def _collect_candidates(
     def _scan_directory_recursive(current_dir: Path) -> None:
         try:
             resolved_dir = current_dir.resolve(strict=False)
-            if str(resolved_dir) in visited or is_protected_path(resolved_dir):
+            if not resolved_dir.exists() or str(resolved_dir) in visited or is_protected_path(resolved_dir):
                 return
             visited.add(str(resolved_dir))
             
@@ -198,18 +198,15 @@ def _collect_candidates(
                                     size_map[st.st_size].append(path_obj)
                     except (OSError, PermissionError):
                         continue
-        except (OSError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError, FileNotFoundError, RuntimeError):
             return
 
     if isinstance(directories, Iterable):
-        roots: List[Path] = []
         for item in directories:
             if item:
                 resolved = _resolve_and_verify_root(item)
                 if resolved:
-                    roots.append(resolved)
-        for root in roots:
-            _scan_directory_recursive(root)
+                    _scan_directory_recursive(resolved)
             
     return {size: files for size, files in size_map.items() if len(files) > 1}
 
