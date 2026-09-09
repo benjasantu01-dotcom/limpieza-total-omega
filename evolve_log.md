@@ -943,3 +943,42 @@ FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration
 - `2026-09-09T07:22:14` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: robustez ante casos límite).
 - `2026-09-09T07:22:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T07:22:14` Corrida terminada. Total usado hoy: 172.
+- `2026-09-09T07:28:10` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-09-09T07:28:44` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-09T07:29:13` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+....................................................F................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_detect_profiles_finds_injected_cache_folders _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_finds_inj0')
+
+    def test_detect_profiles_finds_injected_cache_folders(tmp_path):
+        cache = tmp_path / "Navegador" / "Default" / "Cache"
+        cache.mkdir(parents=True)
+        (cache / "dato.bin").write_bytes(b"a" * 500)
+    
+        encontrados = browser.detect_profiles(
+            bases=[tmp_path],
+            cache_paths={"Navegador Falso": r"Navegador\Default\Cache"},
+        )
+>       assert len(encontrados) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:739: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+1 failed, 298 passed in 1.33s
+
+```
+- `2026-09-09T07:29:13` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se introdujo una comprobación explícita para evitar el procesamiento de rutas que contienen caracteres prohibidos de Windows mediante `os.path.normpath` y una validación de seguridad mejorada antes de cualquier resolución de ruta, mitigando riesgos de inyección o desbordamiento en entornos de archivos complejos.
+- `2026-09-09T07:29:42` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-09-09T07:29:53` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-09T07:29:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T07:29:53` Corrida terminada. Total usado hoy: 176.
