@@ -113,9 +113,10 @@ class Scanner:
         """Valida si una entrada cumple con los criterios de seguridad definidos para el recorrido."""
         try:
             path_str: str = entry.path
-            if not path_str or not entry.name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
+            name = entry.name
+            if not path_str or not name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
                 return False
-            if RTL_CHAR_RE.search(path_str) or RESERVED_NAMES_RE.match(entry.name):
+            if RTL_CHAR_RE.search(path_str) or RESERVED_NAMES_RE.match(name):
                 return False
             return self._is_inside_base_root(path_str) and not is_protected_path(Path(path_str))
         except (OSError, AttributeError, TypeError):
@@ -147,8 +148,7 @@ class Scanner:
                     self._handle_directory(entry, directory_stack)
                 return
 
-            name = entry.name
-            ext = os.path.splitext(name)[1].lower()
+            ext = os.path.splitext(entry.name)[1].lower()
             if ext in SUSPICIOUS_ALL_EXTS:
                 self._run_file_heuristics(Path(entry.path), entry, ext)
         except (OSError, PermissionError, FileNotFoundError):

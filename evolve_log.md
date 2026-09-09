@@ -917,3 +917,29 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyE
 - `2026-09-09T07:09:37` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado `_is_system_path_cached` mediante la eliminación de la búsqueda en una lista (`any(...)`) por cada componente, reemplazándola por una verificación de pertenencia directa en `frozenset` (`part in PROTECTED_DIR_NAMES`), mejorando la complejidad de O(N*M) a O(N) y reduciendo el uso de memoria en el cache LRU.
 - `2026-09-09T07:09:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T07:09:37` Corrida terminada. Total usado hoy: 168.
+- `2026-09-09T07:18:00` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-09-09T07:18:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-09T07:19:51` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-09T07:20:22` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la lógica de filtrado inicial en `process_entry` moviendo la validación de extensiones antes de cualquier lógica de heurística pesada, evitando invocaciones innecesarias a `Path` y `os.stat` cuando el archivo no es de interés, y unificando el acceso a `entry.name` para reducir llamadas a métodos repetitivas.
+- `2026-09-09T07:20:50` Tests FALLARON:
+```
+st be integers or slices, not str
+FAILED evolve/tests/test_assistant.py::test_update_applies_partial_changes - TypeError: 'AppSettings' object is not a mapping
+FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - TypeError: 'AppSettings' object is not a mapping
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - TypeError: 'AppSettings' object is not a mapping
+FAILED evolve/tests/test_assistant.py::test_env_var_wins_over_the_config_file - TypeError: 'AppSettings' object is not a mapping
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - TypeError: 'AppSettings' object is not a mapping
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - TypeError: 'AppSettings' object is not a mapping
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - TypeError: 'AppSettings' object is not a mapping
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - TypeError: 'AppSettings' object is not a mapping
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - TypeError: 'AppSettings' object is not a mapping
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - TypeError: 'AppSettings' object is not a mapping
+FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration - TypeError: 'AppSettings' object is not a mapping
+24 failed, 275 passed in 1.46s
+
+```
+- `2026-09-09T07:20:50` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a las configuraciones convirtiendo el `AppSettings` (un diccionario con estructura fija) en una instancia inmutable de tipo `NamedTuple` tras la carga, eliminando las búsquedas repetitivas por strings en el diccionario y mejorando la eficiencia de acceso en los bucles de la aplicación.
+- `2026-09-09T07:21:51` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-09T07:22:14` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: robustez ante casos límite).
+- `2026-09-09T07:22:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T07:22:14` Corrida terminada. Total usado hoy: 172.

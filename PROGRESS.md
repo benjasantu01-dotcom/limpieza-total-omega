@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
-- Rechazadas por tests: 18
+- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 33
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 214
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 151 | 11 | 23 | 9 | 142 |
-| 2026-09-09 | 73 | 7 | 10 | 6 | 72 |
+| 2026-09-08 | 148 | 11 | 23 | 8 | 142 |
+| 2026-09-09 | 74 | 8 | 10 | 6 | 74 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **51**
-- seguridad defensiva: **46**
-- rendimiento: **41**
+- seguridad defensiva: **43**
+- rendimiento: **42**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
 - `assistant.py`: **21**
+- `duplicates.py`: **20**
 - `memory.py`: **19**
+- `scanner.py`: **19**
 - `settings.py`: **19**
 - `safety.py`: **18**
-- `scanner.py`: **18**
-- `healthscore.py`: **17**
 - `quarantine.py`: **17**
 - `diskreport.py`: **17**
+- `healthscore.py`: **16**
 - `branding.py`: **13**
 - `browser.py`: **13**
-- `main.py`: **11**
 - `organizer.py`: **11**
+- `main.py`: **10**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T07:20:22` **scanner.py** (rendimiento): Optimizé la lógica de filtrado inicial en `process_entry` moviendo la validación de extensiones antes de cualquier lógica de heurística pesada, evitando invocaciones innecesarias a `Path` y `os.stat` cuando el archivo no es de interés, y unificando el acceso a `entry.name` para reducir llamadas a métodos repetitivas.
 - `2026-09-09T07:09:37` **safety.py** (rendimiento): Se ha optimizado `_is_system_path_cached` mediante la eliminación de la búsqueda en una lista (`any(...)`) por cada componente, reemplazándola por una verificación de pertenencia directa en `frozenset` (`part in PROTECTED_DIR_NAMES`), mejorando la complejidad de O(N*M) a O(N) y reduciendo el uso de memoria en el cache LRU.
 - `2026-09-09T07:08:59` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` convirtiendo la búsqueda de archivos existentes en un conjunto (set) para reducir la complejidad algorítmica de O(N*M) a O(N+M), evitando iteraciones repetitivas sobre el sistema de archivos.
 - `2026-09-09T07:08:20` **organizer.py** (rendimiento): Se optimizó el rendimiento de `scan_for_junk` y `_process_directory` eliminando la creación de objetos `Path` redundantes dentro del loop de escaneo y utilizando una búsqueda por `set` para `SYSTEM_FOLDER_BLOCKLIST`, reduciendo la carga de memoria y el overhead de procesamiento por cada archivo encontrado.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T06:18:08` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en funciones clave y clarificando mediante docstrings el propósito de los factores de normalización y la estructura del pipeline, facilitando el mantenimiento a futuro.
 - `2026-09-09T06:17:42` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de Type Hints explícitas en las funciones internas (`_scan_directory_recursive` y `_collect_candidates`) y se han aclarado las docstrings de las funciones de hash, detallando explícitamente el contrato de excepciones y el manejo de rutas, mejorando la legibilidad para futuros desarrollos.
 - `2026-09-09T06:17:17` **diskreport.py** (legibilidad y documentación): Se ha añadido documentación detallada mediante Google-style docstrings en todas las funciones y clases, clarificando las responsabilidades de los componentes, el propósito de los parámetros y el comportamiento ante casos límite, facilitando el mantenimiento futuro.
-- `2026-09-09T06:08:34` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `browser.py` mediante docstrings detallados en las funciones de soporte de bajo nivel y la clarificación de las restricciones de seguridad (`_should_skip_entry`, `_sum_directory_recursive`), facilitando el mantenimiento y auditoría del código.
