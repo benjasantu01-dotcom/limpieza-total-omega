@@ -307,7 +307,7 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
     """Retorna los N archivos más pesados encontrados en el directorio base utilizando un heap."""
     root = _validate_root(directory)
     if not root: return []
-    data = _collect_summary_data(root, skip_protected, limit)
+    data = _collect_summary_data(root, skip_protected, limit=limit)
     return [FileEntry(p, s) for s, p in heapq.nlargest(limit, data.top_files, key=lambda x: x[0])]
 
 
@@ -315,7 +315,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
     """Agrupa el uso de espacio por extensión de archivo y devuelve las N extensiones que más ocupan."""
     root = _validate_root(directory)
     if not root: return []
-    data = _collect_summary_data(root, skip_protected, 0)
+    data = _collect_summary_data(root, skip_protected, limit=0)
     usage_list = [ExtensionUsage(e, data.ext_sizes[e], data.ext_counts[e]) for e in data.ext_sizes]
     return heapq.nlargest(max(1, limit), usage_list, key=lambda u: u.size_bytes)
 
@@ -349,16 +349,16 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     root = _validate_root(directory)
     if not root: return (0, 0)
-    data = _collect_summary_data(root, skip_protected, 0)
+    data = _collect_summary_data(root, skip_protected, limit=0)
     return (data.total_bytes, data.total_files)
 
 
-def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 20) -> SummaryData:
+def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Recolector central de estadísticas.
     
     Realiza un solo recorrido de disco y mantiene contadores de extensión y un heap 
-    para los archivos más grandes de forma eficiente en tiempo y memoria.
+    para los archivos más grandes solo si se especifica un límite.
     """
     total_bytes = total_files = 0
     ext_sizes: Dict[str, int] = defaultdict(int)
@@ -385,7 +385,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     """Genera un reporte textual estructurado de los hallazgos en la carpeta dada para visualización en consola o UI."""
     root = _validate_root(directory)
     if not root: return ["Error: Ruta no válida."]
-    data = _collect_summary_data(root, skip_protected, 20)
+    data = _collect_summary_data(root, skip_protected, limit=20)
     
     if data.total_files == 0: return ["Aviso: No hay archivos accesibles."]
 

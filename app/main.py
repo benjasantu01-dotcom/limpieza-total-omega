@@ -1146,6 +1146,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.clear("Salud")
             self.log("Analizando... esto no modifica nada.", "Salud")
 
+            # Invalida solo si el cache de RAM es viejo, para optimizar
             self._invalidate_cache("ram_snapshot")
             metrics, snapshot, _ = self._compile_metrics()
             resultado = healthscore.compute_score(metrics)

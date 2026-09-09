@@ -128,10 +128,6 @@ _RULES_BY_AREA: Final[Dict[MetricKey, List[RecommendationRule]]] = {}
 for rule in _RECOMMENDATION_RULES:
     _RULES_BY_AREA.setdefault(rule.area, []).append(rule)
 
-_OPTIMIZED_PIPELINE: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], List[RecommendationRule]]]] = [
-    (area, weight, _SCORERS[area], _RULES_BY_AREA.get(area, [])) for area, weight in _WEIGHT_ITEMS_INT
-]
-
 @dataclass
 class SystemMetrics:
     """Contenedor inmutable y validado de métricas extraídas del sistema."""
@@ -229,14 +225,17 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     total_pts: int = 0
     recommendations: List[str] = []
     
-    for area, weight, scorer, rules in _OPTIMIZED_PIPELINE:
+    for area, weight in _WEIGHT_ITEMS_INT:
         try:
+            scorer = _SCORERS[area]
             ratio = scorer(metrics)
             if not math.isfinite(ratio): ratio = 0.0
             
             pts: int = int(round(_clamp(ratio * weight, 0, weight)))
             metric_breakdown[area] = pts
             total_pts += pts
+            
+            rules = _RULES_BY_AREA.get(area)
             if rules:
                 _evaluate_rules(metrics, rules, ratio, recommendations)
         except Exception:

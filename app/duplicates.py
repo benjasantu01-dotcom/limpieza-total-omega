@@ -123,14 +123,12 @@ def _is_valid_candidate(path: Path) -> bool:
     if not isinstance(path, Path):
         return False
     try:
-        # Resolver para evitar race conditions y validar integridad de la ruta
-        resolved = path.resolve(strict=True)
-        if not resolved.is_file() or resolved.is_symlink() or is_junction(resolved):
+        if not path.is_file() or path.is_symlink() or is_junction(path):
             return False
         return (
-            not is_protected_path(resolved) and 
-            os.access(resolved, os.R_OK) and
-            resolved.stat().st_nlink == 1
+            not is_protected_path(path) and 
+            os.access(path, os.R_OK) and
+            path.stat().st_nlink == 1
         )
     except (OSError, ValueError, TypeError, RuntimeError):
         return False
@@ -173,25 +171,17 @@ def _collect_candidates(
     min_size: int, 
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
-    """Realiza un escaneo recursivo del sistema para identificar candidatos a duplicados.
-
-    Args:
-        directories: Lista de rutas base para iniciar la búsqueda.
-        min_size: Tamaño mínimo en bytes para considerar un archivo.
-        skip_protected: Flag (no utilizado actualmente, reservado para futuras configuraciones).
-
-    Returns:
-        Un diccionario agrupando rutas por tamaño de archivo.
-    """
+    """Realiza un escaneo recursivo del sistema para identificar candidatos a duplicados."""
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[str] = set()
 
     def _scan_directory_recursive(current_dir: Path) -> None:
         try:
             resolved_dir = current_dir.resolve(strict=False)
-            if not resolved_dir.exists() or str(resolved_dir) in visited or is_protected_path(resolved_dir):
+            path_str = str(resolved_dir)
+            if not resolved_dir.exists() or path_str in visited or is_protected_path(resolved_dir):
                 return
-            visited.add(str(resolved_dir))
+            visited.add(path_str)
             
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
