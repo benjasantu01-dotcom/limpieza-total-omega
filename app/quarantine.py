@@ -625,8 +625,9 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
 
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """Restaura un archivo al destino original tras verificaciones de seguridad."""
-    if not item_id or not isinstance(item_id, str):
-        raise ValueError("ID inválido.")
+    if not isinstance(item_id, str) or not item_id:
+        raise ValueError("ID de ítem inválido o nulo.")
+        
     base_path = quarantine_dir(base)
     items = load_manifest(base)
     quarantine_item = next((i for i in items if i.item_id == item_id), None)
@@ -681,6 +682,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     """Elimina permanentemente un ítem específico de la cuarentena."""
     if not isinstance(item_id, str) or not item_id.strip():
         return False
+        
     base_path = quarantine_dir(base)
     items = load_manifest(base)
     quarantine_item = next((i for i in items if i.item_id == item_id), None)

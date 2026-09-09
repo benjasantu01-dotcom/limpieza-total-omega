@@ -209,24 +209,26 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             return []
         
         root_input = base_path.resolve()
+        # Validación extra: prevenir rutas UNC o relativas que se resolvieron incorrectamente
         if not root_input.is_absolute() or str(root_input).startswith(("\\\\", "//")) or is_protected_path(root_input):
             return []
-    except (OSError, TypeError, ValueError, RuntimeError, PermissionError):
+            
+        scanner = Scanner(base_root=root_input)
+        directory_stack: List[str] = [str(root_input)]
+        scanner.seen.add(str(root_input))
+        
+        while directory_stack:
+            current_dir = directory_stack.pop()
+            try:
+                with os.scandir(current_dir) as it:
+                    for entry in it:
+                        scanner.process_entry(entry, directory_stack)
+            except (PermissionError, OSError, FileNotFoundError):
+                continue
+        return scanner.results
+        
+    except (OSError, TypeError, ValueError, RuntimeError):
         return []
-
-    scanner = Scanner(base_root=root_input)
-    directory_stack: List[str] = [str(root_input)]
-    scanner.seen.add(str(root_input))
-    
-    while directory_stack:
-        current_dir = directory_stack.pop()
-        try:
-            with os.scandir(current_dir) as it:
-                for entry in it:
-                    scanner.process_entry(entry, directory_stack)
-        except (PermissionError, OSError, FileNotFoundError):
-            continue
-    return scanner.results
 
 def run_windows_defender_quick_scan() -> str:
     try:
