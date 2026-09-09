@@ -534,3 +534,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-09-09T03:46:17` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `main.py` añadiendo una validación explícita `is_safe_to_modify` dentro del decorador `ensure_safety`, asegurando que cualquier función decorada con él valide estrictamente la ruta antes de intentar una operación de escritura, previniendo así errores de lógica donde solo se verificaba `Path.home()`.
 - `2026-09-09T03:46:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T03:46:17` Corrida terminada. Total usado hoy: 88.
+- `2026-09-09T03:54:00` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-09-09T03:54:31` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `trim_working_set` y sus ayudantes al asegurar que la recuperación de la ruta del ejecutable sea tratada como un recurso crítico, validando su origen de forma estricta antes de realizar cualquier operación sobre el proceso, evitando posibles condiciones de carrera al cerrar siempre el handle.
+- `2026-09-09T03:54:58` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-09T03:55:35` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha añadido `os.path.samefile` en las validaciones de `_check_isolation_safety` para garantizar que el origen y el destino no sean físicamente el mismo archivo, protegiendo contra posibles enlaces físicos (hard links) que podrían bypassar las restricciones de `is_within_directory`.
+- `2026-09-09T03:55:39` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-09T03:55:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T03:55:39` Corrida terminada. Total usado hoy: 92.

@@ -333,6 +333,14 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
         raise UnsafePathError("Aislamiento de enlaces simbólicos prohibido.")
     if resolved_source.stat().st_size == 0:
         raise UnsafePathError("Operación denegada: archivos vacíos prohibidos.")
+    
+    # Prevenir que el destino sea el mismo origen (físicamente)
+    try:
+        if os.path.samefile(resolved_source, resolved_dest_dir):
+            raise UnsafePathError("Operación circular detectada.")
+    except OSError:
+        pass
+
     if resolved_source.parent == resolved_dest_dir:
         raise UnsafePathError("Operación circular detectada.")
     if is_protected_path(resolved_source):

@@ -329,19 +329,19 @@ def _get_process_path(proc_handle: int) -> Optional[str]:
     
     buf = ctypes.create_unicode_buffer(4096)
     try:
+        # psapi.GetModuleFileNameExW requiere acceso PROCESS_QUERY_LIMITED_INFORMATION
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 4096) > 0:
             return str(buf.value)
     except (OSError, ctypes.ArgumentError, ValueError):
         pass
     return None
 
-def _is_safe_to_trim(proc_handle: int, pid: int) -> Tuple[bool, Optional[str]]:
+def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
     """Audita integridad del proceso antes de intentar liberar su working set."""
     if not proc_handle: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
     
     try:
-        # Validación de estado: el proceso debe seguir vivo
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
             return False, "Imposible obtener estado del proceso."
@@ -352,7 +352,7 @@ def _is_safe_to_trim(proc_handle: int, pid: int) -> Tuple[bool, Optional[str]]:
         if not exec_path:
             return False, "No se pudo verificar el origen del proceso."
         
-        # Validación de seguridad contra listas de exclusión hardcodeadas
+        # Validación de seguridad: no modificar procesos protegidos ni fuera de política
         if is_protected_path(exec_path) or not is_safe_to_modify(exec_path):
             return False, "Operación denegada por política de seguridad."
             
@@ -379,12 +379,13 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
+    # Abrimos con las máscaras mínimas necesarias, cerrando siempre en el finally
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         return False, f"Acceso denegado (código {kernel32.GetLastError()})."
     
     try:
-        is_safe, error_reason = _is_safe_to_trim(proc_handle, target_pid)
+        is_safe, error_reason = _is_safe_to_trim(proc_handle)
         if not is_safe: 
             return False, error_reason or "Verificación de seguridad fallida."
         
@@ -395,5 +396,4 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (Exception, ctypes.ArgumentError):
         return False, "Error inesperado al intentar liberar el proceso."
     finally:
-        if proc_handle:
-            kernel32.CloseHandle(proc_handle)
+        kernel32.CloseHandle(proc_handle)

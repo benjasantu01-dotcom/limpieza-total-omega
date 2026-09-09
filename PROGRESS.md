@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 38
+- Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 27 | 4 | 8 | 3 | 24 |
+| 2026-09-07 | 27 | 4 | 8 | 3 | 20 |
 | 2026-09-08 | 161 | 12 | 24 | 9 | 144 |
-| 2026-09-09 | 38 | 4 | 6 | 2 | 38 |
+| 2026-09-09 | 40 | 4 | 7 | 2 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **46**
+- seguridad defensiva: **46**
 - robustez ante casos límite: **45**
-- seguridad defensiva: **44**
 - rendimiento: **41**
 
 ## Mejoras aceptadas por archivo
@@ -34,11 +34,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **21**
 - `healthscore.py`: **19**
 - `settings.py`: **19**
-- `memory.py`: **18**
+- `memory.py`: **19**
+- `quarantine.py`: **18**
 - `safety.py`: **17**
 - `scanner.py`: **17**
 - `diskreport.py`: **17**
-- `quarantine.py`: **17**
 - `browser.py`: **14**
 - `branding.py`: **14**
 - `main.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T03:55:35` **quarantine.py** (seguridad defensiva): Se ha añadido `os.path.samefile` en las validaciones de `_check_isolation_safety` para garantizar que el origen y el destino no sean físicamente el mismo archivo, protegiendo contra posibles enlaces físicos (hard links) que podrían bypassar las restricciones de `is_within_directory`.
+- `2026-09-09T03:54:31` **memory.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `trim_working_set` y sus ayudantes al asegurar que la recuperación de la ruta del ejecutable sea tratada como un recurso crítico, validando su origen de forma estricta antes de realizar cualquier operación sobre el proceso, evitando posibles condiciones de carrera al cerrar siempre el handle.
 - `2026-09-09T03:46:17` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` añadiendo una validación explícita `is_safe_to_modify` dentro del decorador `ensure_safety`, asegurando que cualquier función decorada con él valide estrictamente la ruta antes de intentar una operación de escritura, previniendo así errores de lógica donde solo se verificaba `Path.home()`.
 - `2026-09-09T03:45:16` **healthscore.py** (seguridad defensiva): Mejoré la robustez de `_evaluate_rules` aplicando una estrategia de defensa ante errores de ejecución en los predicados, asegurando que si una regla falla (ej. acceso a atributo inexistente en el futuro), el pipeline continúe evaluando el resto de las recomendaciones sin interrumpir el flujo.
 - `2026-09-09T03:44:48` **duplicates.py** (seguridad defensiva): Se ha robustecido la detección de archivos en `_collect_candidates` incluyendo un chequeo explícito de `is_protected_path` sobre la ruta resuelta antes de cualquier operación de I/O, garantizando que el escaneo sea incapaz de procesar recursivamente directorios sensibles incluso si las heurísticas previas fallaran.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T03:05:54` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics.validate` para prevenir valores negativos inesperados o desbordamientos en campos críticos antes de que el motor de scoring los procese, asegurando que `_clamp` trabaje siempre con rangos lógicos.
 - `2026-09-09T03:05:41` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `find_duplicates` ante entradas malformadas o tipos de datos inesperados en el iterador de directorios, asegurando que `_collect_candidates` no interrumpa el flujo completo si una ruta individual falla al resolverse.
 - `2026-09-09T02:54:35` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de inferencia ante entradas maliciosas o mal formadas mediante la adición de una validación explícita en `_sanitize_query` y `local_answer` para prevenir la inyección de comandos o intentos de elusión mediante caracteres especiales, asegurando que cualquier respuesta sea siempre manejable por el sistema.
-- `2026-09-09T02:53:26` **settings.py** (rendimiento): Optimicé el sistema de caché en `load` para evitar lecturas innecesarias del sistema de archivos al verificar `mtime` antes de procesar el JSON, y eliminé redundancias en el flujo de validación.
-- `2026-09-09T02:44:38` **scanner.py** (rendimiento): Optimizé la lógica de evaluación en `scan_file` y `process_entry` mediante un pre-chequeo eficiente de extensiones usando `in` sobre conjuntos, evitando llamadas redundantes a `check_double_extension` para archivos que no son ejecutables sospechosos y centralizando las consultas de metadatos para minimizar el acceso a disco.
