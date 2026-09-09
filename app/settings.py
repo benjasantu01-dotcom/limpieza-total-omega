@@ -318,12 +318,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         ):
             cleaned_settings["asistente_activado"] = False
             
-        if not _Validators._is_safe_path(str(ruta)): return None
+        if not _Validators._is_safe_path(str(ruta.parent)): return None
         if _Validators._is_reparse_point(ruta.resolve(strict=False)): return None
         
         parent = ruta.parent
         if not parent.exists():
-            if not _Validators._is_safe_path(str(parent)): return None
             parent.mkdir(parents=True, exist_ok=True)
             
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
@@ -336,7 +335,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 f.flush()
                 os.fsync(f.fileno())
             
-            # os.replace es atómico tanto en POSIX como en Windows
             os.replace(temp_path, ruta)
         finally:
             if temp_path.exists():

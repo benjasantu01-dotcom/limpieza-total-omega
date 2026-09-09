@@ -9,37 +9,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 37
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 214
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 55 | 4 | 12 | 5 | 46 |
+| 2026-09-07 | 53 | 4 | 12 | 5 | 44 |
 | 2026-09-08 | 161 | 12 | 24 | 9 | 144 |
-| 2026-09-09 | 6 | 1 | 1 | 0 | 24 |
+| 2026-09-09 | 8 | 1 | 1 | 1 | 25 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **51**
 - robustez ante casos límite: **47**
-- manejo de errores y validación de entradas: **44**
+- manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **43**
-- rendimiento: **37**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
-- `healthscore.py`: **20**
 - `scanner.py`: **19**
+- `settings.py`: **19**
 - `duplicates.py`: **19**
+- `healthscore.py`: **19**
 - `memory.py`: **18**
-- `settings.py`: **18**
-- `safety.py`: **17**
+- `safety.py`: **18**
 - `diskreport.py`: **16**
 - `quarantine.py`: **16**
-- `browser.py`: **15**
+- `browser.py`: **14**
 - `branding.py`: **13**
 - `main.py`: **12**
 - `organizer.py`: **9**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T01:32:46` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en `save` y `load` mediante la sanitización explícita de las rutas de origen y la prevención de excepciones durante la lectura del sistema de archivos, asegurando que cualquier entrada maliciosa o mal formada se descarte sin comprometer la ejecución.
+- `2026-09-09T01:31:54` **safety.py** (manejo de errores y validación de entradas): Mejoré `_validate_structural_safety` para capturar la posible excepción `AttributeError` al acceder a `target_path.parts` en rutas mal formadas y agregué una validación explícita para evitar procesar rutas que consistan únicamente en el separador del sistema, lo cual previene comportamientos impredecibles en el manejo de rutas raíz en Windows.
 - `2026-09-09T01:21:39` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_windows_process_csv` y `_is_valid_process_entry` ante datos de entrada malformados, asegurando una validación estricta de tipos y valores que previene excepciones silenciosas y errores de lógica en el procesamiento de PIDs y valores de memoria.
 - `2026-09-09T01:13:19` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_target_choice_changed` envolviendo la resolución de ruta en un bloque `try-except` explícito para capturar errores de sistema (`OSError`, `ValueError`) y validando la existencia de la ruta antes de intentar operar, evitando cierres inesperados al procesar entradas de usuario.
 - `2026-09-09T01:12:17` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_evaluate_rules` validando explícitamente que el `message_factory` sea ejecutable y que el resultado de la función sea un string no vacío antes de procesarlo, evitando posibles excepciones durante la generación dinámica de recomendaciones.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-08T14:18:09` **memory.py** (seguridad defensiva): Se ha mejorado la robustez y seguridad en la obtención de rutas de procesos, utilizando el flag `PROCESS_QUERY_LIMITED_INFORMATION` para abrir el handle de manera menos intrusiva y validando que el proceso no esté protegido antes de intentar cualquier operación, evitando posibles denegaciones de acceso innecesarias.
 - `2026-09-08T14:17:38` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` añadiendo `is_protected_path` como control previo obligatorio antes de cualquier operación destructiva o de movimiento en `on_stage`, `on_quarantine_findings` y `on_quarantine_duplicates`, asegurando que no solo sea "segura para modificar" (que valida permisos/bloqueos), sino también que no sea una ruta de sistema crítica definida en `safety.py`.
 - `2026-09-08T14:07:34` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` integrando `is_protected_path` directamente dentro del bucle de escaneo, asegurando que cualquier entrada encontrada (sea archivo o directorio) sea validada inmediatamente antes de cualquier procesamiento posterior, evitando así el acceso a rutas restringidas incluso si el sistema de archivos reporta cambios dinámicos.
-- `2026-09-08T14:07:08` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `drive_usage` validando que las rutas no solo sean legibles, sino que permanezcan dentro de los límites de seguridad tras resolver enlaces simbólicos y puntos de reparse, previniendo así un escape accidental del directorio raíz analizado.
-- `2026-09-08T14:06:42` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_valid_cache_path` y `_sum_directory_recursive` validando explícitamente que ninguna ruta contenga caracteres prohibidos (caracteres nulos o caracteres reservados de Windows) antes de realizar operaciones de resolución o acceso, mitigando riesgos de path traversal o manipulación de rutas externas a la base autorizada.

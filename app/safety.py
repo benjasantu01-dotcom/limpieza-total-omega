@@ -359,14 +359,20 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if _has_invalid_chars(path_string):
         raise UnsafePathError("Caracteres inválidos detectados.", SafetyValidationErrorCode.INVALID_CHARS)
     
-    for part in target_path.parts:
-        if not part or part.strip() != part or part.endswith(('.', ' ')):
-            raise UnsafePathError(f"Componente '{part}' malformado.", SafetyValidationErrorCode.INVALID_CHARS)
-        
-        parts_split = part.split('.')
-        name_only = parts_split[0]
-        if name_only and _is_reserved_device_name(name_only):
-            raise UnsafePathError(f"Nombre reservado '{part}'.", SafetyValidationErrorCode.RESERVED_NAME)
+    try:
+        if not target_path.parts or len(target_path.parts) == 1 and target_path.parts[0] == os.sep:
+             raise UnsafePathError("Ruta raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS)
+
+        for part in target_path.parts:
+            if not part or part.strip() != part or part.endswith(('.', ' ')):
+                raise UnsafePathError(f"Componente '{part}' malformado.", SafetyValidationErrorCode.INVALID_CHARS)
+            
+            parts_split = part.split('.')
+            name_only = parts_split[0]
+            if name_only and _is_reserved_device_name(name_only):
+                raise UnsafePathError(f"Nombre reservado '{part}'.", SafetyValidationErrorCode.RESERVED_NAME)
+    except AttributeError:
+        raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC)
 
     if path_string.startswith(("\\\\", "//")):
         raise UnsafePathError("Rutas UNC bloqueadas.", SafetyValidationErrorCode.UNC_PATH)

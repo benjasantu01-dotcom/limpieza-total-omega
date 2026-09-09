@@ -1510,3 +1510,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-09T01:22:57` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-09-09T01:22:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T01:22:57` Corrida terminada. Total usado hoy: 32.
+- `2026-09-09T01:31:20` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-09-09T01:31:54` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré `_validate_structural_safety` para capturar la posible excepción `AttributeError` al acceder a `target_path.parts` en rutas mal formadas y agregué una validación explícita para evitar procesar rutas que consistan únicamente en el separador del sistema, lo cual previene comportamientos impredecibles en el manejo de rutas raíz en Windows.
+- `2026-09-09T01:32:18` ➖ Sin cambios en scanner.py (enfoque: manejo de errores y validación de entradas). Motivo: Se reforzó la robustez de `scan_directory` validando la existencia de la ruta y capturando errores inesperados antes de inicializar el `Scanner`, evitando así condiciones de carrera o estados inválidos al procesar entradas nulas o rutas bloqueadas.
+- `2026-09-09T01:32:46` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del manejo de errores en `save` y `load` mediante la sanitización explícita de las rutas de origen y la prevención de excepciones durante la lectura del sistema de archivos, asegurando que cualquier entrada maliciosa o mal formada se descarte sin comprometer la ejecución.
+- `2026-09-09T01:32:56` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-09T01:32:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T01:32:56` Corrida terminada. Total usado hoy: 36.
