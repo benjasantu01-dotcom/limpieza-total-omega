@@ -371,7 +371,7 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta liberar el Working Set (RAM no paginada) de un proceso. 
-    Requiere validación previa de seguridad. Solo disponible en Windows.
+    Verifica que el proceso sea legítimo antes de invocar EmptyWorkingSet de la API de Windows.
     """
     if not _is_windows: return False, "Operación solo soportada en Windows."
     

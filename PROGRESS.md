@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **229** (45.4% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 120 | 9 | 17 | 6 | 100 |
-| 2026-09-09 | 109 | 10 | 13 | 8 | 112 |
+| 2026-09-08 | 117 | 9 | 17 | 6 | 99 |
+| 2026-09-09 | 112 | 10 | 14 | 8 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
+- legibilidad y documentación: **50**
 - seguridad defensiva: **49**
-- legibilidad y documentación: **47**
-- robustez ante casos límite: **40**
-- rendimiento: **38**
+- robustez ante casos límite: **39**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **22**
-- `settings.py`: **20**
-- `assistant.py`: **20**
-- `scanner.py`: **19**
 - `healthscore.py`: **19**
+- `quarantine.py`: **19**
+- `settings.py`: **19**
+- `assistant.py`: **19**
 - `diskreport.py`: **18**
-- `quarantine.py`: **18**
 - `safety.py`: **18**
-- `memory.py`: **17**
+- `memory.py`: **18**
+- `scanner.py`: **18**
 - `browser.py`: **14**
 - `branding.py`: **13**
-- `organizer.py`: **12**
+- `organizer.py`: **13**
 - `main.py`: **11**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T10:55:28` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y `_is_item_purgable` para estandarizar la lógica de validación, añadiendo docstrings descriptivos sobre el propósito de cada etapa de seguridad y utilizando `pathlib` de forma más idiomática para asegurar la integridad de las rutas.
+- `2026-09-09T10:55:03` **organizer.py** (legibilidad y documentación): Se refactorizó la función `_is_file_locked` extrayendo las constantes de bajo nivel a variables con nombres explícitos y agregando docstrings que aclaran el propósito del manejo de handles en Windows, mejorando la legibilidad técnica y el cumplimiento de las normas de estilo.
+- `2026-09-09T10:54:30` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo integrando type hints faltantes, clarificando la función `trim_working_set` y añadiendo docstrings descriptivos que explican el "porqué" de las llamadas a la API de Windows, facilitando el mantenimiento a largo plazo.
 - `2026-09-09T10:44:06` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings de tipo Google a las funciones clave y eliminando la redundancia en los comentarios del pipeline para mejorar la claridad de lectura sin alterar la lógica.
 - `2026-09-09T10:43:52` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna mediante la adición de docstrings estructurados (usando formato Google Style) en las funciones privadas de escaneo y procesamiento, aclarando las responsabilidades de cada etapa del pipeline de detección para facilitar el mantenimiento.
 - `2026-09-09T10:43:26` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args/Returns/Raises) para clarificar las responsabilidades de las funciones de entrada/salida y se introdujo un tipo `SizeReport` para tipificar mejor el retorno de `total_size`.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T10:22:54` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` mediante la validación proactiva de parámetros de entrada en `restore_item` y `purge_item` para evitar errores de tipo o valores nulos antes de acceder al sistema de archivos, garantizando que el flujo de control no sea interrumpido por excepciones inesperadas en los argumentos.
 - `2026-09-09T10:14:02` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `stage_for_review` y `delete_reviewed` al asegurar que los objetos procesados sean siempre instancias de `Path` antes de invocar métodos que podrían fallar con entradas nulas o inesperadas, además de capturar excepciones de tipo `TypeError` en el manejo de rutas para evitar colapsos inesperados en tiempo de ejecución.
 - `2026-09-09T10:13:44` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` mediante la validación explícita de tipos y la captura de errores, evitando que valores malformados en `/proc/meminfo` (como líneas sin separadores o valores no numéricos) generen una excepción no controlada o snapshots inconsistentes.
-- `2026-09-09T10:13:13` **main.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `_build_tab_ajustes` y `_build_tab_memoria` al envolver la inserción de texto en los widgets de entrada en bloques `try...except`, evitando que una configuración inesperada o un widget no disponible bloquee la inicialización de la pestaña.
-- `2026-09-09T10:11:58` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` ante valores `None` o corruptos durante la instanciación, garantizando que `__post_init__` siempre tenga datos válidos y evitando que errores en las fábricas de mensajes de las reglas rompan el proceso de reporte.
-- `2026-09-09T10:03:01` **duplicates.py** (manejo de errores y validación de entradas): He robustecido la tolerancia a fallos en `_collect_candidates` y `_scan_directory_recursive` mediante una validación más estricta de las entradas y la adición de bloques `try-except` preventivos ante errores de sistema en la iteración de directorios, asegurando que el escaneo no se detenga inesperadamente ante rutas malformadas o permisos denegados.

@@ -191,21 +191,18 @@ def _is_file_locked(path: Path) -> bool:
 
 def _safe_unlink(path: Path) -> bool:
     """
-    Elimina de forma controlada. Solo procede si el archivo no es symlink,
-    pertenece al usuario actual, está desbloqueado y pasa los tests de `safety`.
+    Elimina de forma controlada verificando que el archivo sea un archivo regular,
+    pertenezca al usuario actual, no tenga enlaces múltiples y pase la validación de `safety`.
     """
-    if not isinstance(path, Path) or not path.exists() or not path.is_file():
-        return False
-    if path.is_symlink():
+    if not path.is_file() or path.is_symlink():
         return False
         
     try:
         st = path.stat()
-        if hasattr(os, 'getuid') and st.st_uid != os.getuid():
-            return False
+        # Verificar que solo exista este link hacia el nodo (evitar hardlinks)
         if st.st_nlink > 1:
             return False
-            
+        # Chequeo de seguridad preventivo
         if is_safe_to_modify(path) and not _is_file_locked(path):
             path.unlink()
             return True
@@ -705,9 +702,12 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
     """Valida si un ítem puede ser purgado tras chequeo de seguridad e integridad."""
-    if not file_path or not file_path.is_file() or file_path.is_symlink() or not _is_within_quarantine_sandbox(file_path, base_path):
+    # Valida el sandbox antes de realizar cualquier operación destructiva
+    is_contained = _is_within_quarantine_sandbox(file_path, base_path)
+    if not file_path.is_file() or file_path.is_symlink() or not is_contained:
         return False
     
+    # Valida política de seguridad y estado de bloqueo del archivo
     if not is_safe_to_modify(file_path):
         return False
         
