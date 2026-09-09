@@ -1795,7 +1795,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         for clave, variable in self.setting_vars.items():
             try:
                 if hasattr(variable, 'get'):
-                    valores[clave] = variable.get()  # type: ignore
+                    val = variable.get()
+                    if isinstance(val, str):
+                        val = "".join(c for c in val if c.isprintable())
+                    valores[clave] = val  # type: ignore
             except (tk.TclError, Exception):
                 continue
         

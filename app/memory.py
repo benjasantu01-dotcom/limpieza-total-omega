@@ -338,13 +338,13 @@ def _get_process_path(proc_handle: int) -> Optional[str]:
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
     """Audita integridad del proceso antes de intentar liberar su working set."""
-    if not proc_handle: return False, "Handle inválido."
+    if not isinstance(proc_handle, int) or proc_handle <= 0: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
     
     try:
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
-            return False, "Imposible obtener estado del proceso."
+            return False, f"Error {kernel32.GetLastError()}: imposible obtener estado del proceso."
         if exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso no está activo."
             
@@ -390,7 +390,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, error_reason or "Verificación de seguridad fallida."
         
         if not psapi.EmptyWorkingSet(proc_handle): 
-            return False, "El sistema denegó la operación (EmptyWorkingSet falló)."
+            err = kernel32.GetLastError()
+            return False, f"El sistema denegó la operación (Error {err})."
             
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (Exception, ctypes.ArgumentError):

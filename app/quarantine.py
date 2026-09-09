@@ -565,6 +565,11 @@ def quarantine_file(
 
     _validate_isolation_request(source_path, dest_dir)
     
+    # Pre-cálculo de hash para asegurar integridad antes de mover
+    source_hash = _get_sha256(source_path)
+    if not source_hash:
+        raise RuntimeError("No se pudo calcular la firma digital del origen.")
+    
     item_id = uuid.uuid4().hex[:12]
     destination = dest_dir / _generate_safe_stored_name(source_path, item_id)
     
