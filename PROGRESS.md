@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-07 | 27 | 4 | 8 | 3 | 28 |
+| 2026-09-07 | 27 | 4 | 8 | 3 | 24 |
 | 2026-09-08 | 161 | 12 | 24 | 9 | 144 |
-| 2026-09-09 | 34 | 4 | 6 | 2 | 38 |
+| 2026-09-09 | 38 | 4 | 6 | 2 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **45**
+- seguridad defensiva: **44**
 - rendimiento: **41**
-- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **23**
-- `duplicates.py`: **20**
+- `duplicates.py`: **21**
+- `healthscore.py`: **19**
 - `settings.py`: **19**
-- `healthscore.py`: **18**
 - `memory.py`: **18**
 - `safety.py`: **17**
 - `scanner.py`: **17**
+- `diskreport.py`: **17**
 - `quarantine.py`: **17**
-- `diskreport.py`: **16**
 - `browser.py`: **14**
 - `branding.py`: **14**
-- `main.py`: **11**
+- `main.py`: **12**
 - `organizer.py`: **9**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T03:46:17` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` añadiendo una validación explícita `is_safe_to_modify` dentro del decorador `ensure_safety`, asegurando que cualquier función decorada con él valide estrictamente la ruta antes de intentar una operación de escritura, previniendo así errores de lógica donde solo se verificaba `Path.home()`.
+- `2026-09-09T03:45:16` **healthscore.py** (seguridad defensiva): Mejoré la robustez de `_evaluate_rules` aplicando una estrategia de defensa ante errores de ejecución en los predicados, asegurando que si una regla falla (ej. acceso a atributo inexistente en el futuro), el pipeline continúe evaluando el resto de las recomendaciones sin interrumpir el flujo.
+- `2026-09-09T03:44:48` **duplicates.py** (seguridad defensiva): Se ha robustecido la detección de archivos en `_collect_candidates` incluyendo un chequeo explícito de `is_protected_path` sobre la ruta resuelta antes de cualquier operación de I/O, garantizando que el escaneo sea incapaz de procesar recursivamente directorios sensibles incluso si las heurísticas previas fallaran.
+- `2026-09-09T03:44:20` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` implementando una validación estricta de prefijo tras resolver rutas mediante `Path.resolve()`, evitando así que posibles ataques de salto de directorio (traversal) o enlaces simbólicos maliciosos escapen del alcance definido por `root_path`.
 - `2026-09-09T03:34:55` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva de `assistant.py` mediante la implementación de `_is_input_too_deep_or_complex` para detectar y bloquear recursiones o estructuras anidadas inusuales en las consultas del usuario, y añadí un chequeo explícito de integridad en `SystemContext.ingest` para prevenir la inyección de tipos inesperados (como listas o instancias de clases complejas) antes de intentar procesar métricas.
 - `2026-09-09T03:34:15` **startup.py** (robustez ante casos límite): Mejoré la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un bloque `try-except` específico para manejar casos donde el comando contiene caracteres o estructuras que hacen que `Path(abs_path)` falle, evitando que el proceso completo de escaneo se bloquee ante rutas con caracteres exóticos.
 - `2026-09-09T03:25:01` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite al añadir una validación de `path` más estricta en el método `save` (verificando que la carpeta de destino sea grabable y no un archivo existente) y añadiendo `os.fsync` para asegurar integridad al persistir el archivo.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T02:54:35` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de inferencia ante entradas maliciosas o mal formadas mediante la adición de una validación explícita en `_sanitize_query` y `local_answer` para prevenir la inyección de comandos o intentos de elusión mediante caracteres especiales, asegurando que cualquier respuesta sea siempre manejable por el sistema.
 - `2026-09-09T02:53:26` **settings.py** (rendimiento): Optimicé el sistema de caché en `load` para evitar lecturas innecesarias del sistema de archivos al verificar `mtime` antes de procesar el JSON, y eliminé redundancias en el flujo de validación.
 - `2026-09-09T02:44:38` **scanner.py** (rendimiento): Optimizé la lógica de evaluación en `scan_file` y `process_entry` mediante un pre-chequeo eficiente de extensiones usando `in` sobre conjuntos, evitando llamadas redundantes a `check_double_extension` para archivos que no son ejecutables sospechosos y centralizando las consultas de metadatos para minimizar el acceso a disco.
-- `2026-09-09T02:44:25` **safety.py** (rendimiento): Se ha optimizado la función `filter_safe_paths` eliminando la doble ejecución de validación al fusionar la lógica de `is_safe_to_modify` dentro del bucle, reduciendo significativamente las llamadas a `normalize` y el acceso a disco en secuencias largas de archivos.
-- `2026-09-09T02:43:27` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `list_items` evitando recrear la lista completa de manifiesto mediante un diccionario de búsqueda eficiente y reduciendo la cantidad de llamadas repetitivas a `quarantine_dir` y `load_manifest`.
-- `2026-09-09T02:37:31` **organizer.py** (rendimiento): Optimizé el rendimiento de `_process_directory` reemplazando múltiples llamadas a `Path.stat()` por un acceso directo a los atributos ya disponibles en `os.DirEntry` mediante `entry.stat()`, evitando llamadas al sistema redundantes durante el escaneo recursivo.
-- `2026-09-09T02:37:13` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria ( `read_snapshot`) eliminando lecturas innecesarias del disco y estructuras redundantes, asegurando que `_linux_mem_path.exists()` solo se ejecute cuando es estrictamente necesario.

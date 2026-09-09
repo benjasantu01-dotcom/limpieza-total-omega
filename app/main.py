@@ -100,6 +100,7 @@ def ensure_safety(func: Callable) -> Callable:
     """Decorador para asegurar que las operaciones de disco siempre validen la ruta raíz."""
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
+        # Validar la ruta raíz y asegurar que la operación es segura globalmente
         safety.ensure_safe_to_modify(Path.home().resolve())
         return func(*args, **kwargs)
     return wrapper
