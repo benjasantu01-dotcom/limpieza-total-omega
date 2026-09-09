@@ -202,23 +202,21 @@ def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[Pr
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
     Parsea texto CSV crudo proveniente de PowerShell.
-    Aplica filtros de seguridad por PID y ruta mediante `_is_valid_process_entry` 
-    antes de ordenar y truncar la lista resultante.
+    Usa generadores para filtrar y ordenar eficientemente sin copias innecesarias.
     """
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
     
-    def process_generator():
+    def process_gen():
         for line in raw_csv_text.splitlines():
-            clean_line = line.strip()
-            if not clean_line: continue
-            
-            parts = [p.strip().strip("'\"") for p in clean_line.split(",")]
-            if len(parts) >= 3:
-                proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
+            clean = line.strip()
+            if not clean: continue
+            p = [x.strip().strip("'\"") for x in clean.split(",")]
+            if len(p) >= 3:
+                proc = _is_valid_process_entry(p[0], p[1], p[2])
                 if proc: yield proc
 
-    return sorted(process_generator(), key=lambda p: p.working_set, reverse=True)[:limit]
+    return sorted(process_gen(), key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Ejecuta API Win32 'GlobalMemoryStatusEx' vía ctypes para capturar RAM global."""
@@ -267,26 +265,24 @@ _proc_cache_time: float = 0.0
 _proc_cache_data: List[ProcessMemory] = []
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Consulta procesos pesados mediante PowerShell. Implementa caché de 60s."""
+    """Consulta procesos pesados mediante PowerShell. Cacheo de 60s."""
     global _proc_cache_time, _proc_cache_data
     if not _is_windows: return []
     
-    now = time.time()
-    if (now - _proc_cache_time) > 60:
-        fetch_limit = limit + 5
-        cmd = [
-            'powershell', '-NoProfile', '-NonInteractive', '-Command', 
-            f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {fetch_limit} -Property Name, Id, WorkingSet | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
-        ]
-        try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
-            if proc.returncode == 0 and proc.stdout:
-                parsed = parse_windows_process_csv(proc.stdout, limit=limit)
-                if parsed:
-                    _proc_cache_data = parsed
-                    _proc_cache_time = now
-        except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): 
-            pass
+    if (time.time() - _proc_cache_time) < 60:
+        return _proc_cache_data[:limit]
+    
+    cmd = [
+        'powershell', '-NoProfile', '-NonInteractive', '-Command', 
+        f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit + 5} -Property Name, Id, WorkingSet | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
+    ]
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
+        if proc.returncode == 0 and proc.stdout:
+            _proc_cache_data = parse_windows_process_csv(proc.stdout, limit=limit)
+            _proc_cache_time = time.time()
+    except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): 
+        pass
             
     return _proc_cache_data[:limit]
 

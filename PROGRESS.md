@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 33
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 213
+- Rechazadas por guardia de seguridad: 32
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 157 | 12 | 24 | 9 | 142 |
-| 2026-09-09 | 68 | 7 | 9 | 5 | 71 |
+| 2026-09-08 | 154 | 12 | 23 | 9 | 142 |
+| 2026-09-09 | 70 | 7 | 9 | 6 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **51**
 - seguridad defensiva: **49**
-- robustez ante casos límite: **37**
-- rendimiento: **36**
+- rendimiento: **38**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **22**
-- `settings.py`: **20**
-- `duplicates.py`: **20**
-- `scanner.py`: **19**
-- `safety.py`: **18**
-- `memory.py`: **18**
+- `duplicates.py`: **21**
+- `memory.py`: **19**
+- `settings.py`: **19**
+- `scanner.py`: **18**
 - `healthscore.py`: **17**
+- `safety.py`: **17**
 - `diskreport.py`: **17**
 - `quarantine.py`: **16**
 - `branding.py`: **14**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T07:05:30` **memory.py** (rendimiento): Se optimizó la eficiencia de `parse_windows_process_csv` reemplazando la creación de una lista intermedia mediante `list()` (implícita en el uso de `sorted` sobre un generador) por una estructura que minimiza la sobrecarga de memoria, y se optimizó `top_memory_processes` eliminando la ejecución redundante de PowerShell al aprovechar el cacheo ya existente de forma más estricta.
+- `2026-09-09T06:59:23` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` eliminando la llamada redundante a `is_protected_path` (que ya se valida en `_is_valid_candidate`) y reduciendo las llamadas a `path.stat()` mediante el uso directo del objeto `os.DirEntry` ya obtenido por `scandir`, evitando miles de llamadas innecesarias al sistema de archivos durante el escaneo recursivo.
 - `2026-09-09T06:49:11` **browser.py** (rendimiento): He optimizado el cálculo recursivo de `directory_size` utilizando un diccionario de `memo` persistente durante el escaneo para evitar el cálculo redundante de tamaños de subcarpetas en estructuras de caché compartidas, mejorando significativamente el rendimiento al evitar llamadas a `stat` repetitivas.
 - `2026-09-09T06:48:09` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` eliminando la re-ejecución innecesaria de filtros en cada llamada mediante el uso de `lru_cache`, y refiné `_get_active_problems` para que el acceso a métricas sea constante en lugar de iterar repetidamente sobre la lista de criterios.
 - `2026-09-09T06:38:14` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de la clase `Scanner` y la firma de `scan_file` mediante la estandarización de docstrings siguiendo el estilo Google, además de especificar las responsabilidades de los parámetros, facilitando la comprensión de cómo se propaga el contexto del sistema de archivos durante el escaneo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T06:08:20` **branding.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en los helpers de transformación de color y dibujo para clarificar las expectativas de tipos (especialmente en los rangos de normalización RGB y coordenadas), mejorando la mantenibilidad sin cambiar la lógica funcional.
 - `2026-09-09T06:07:47` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las clases `SystemContext` y `ProblemCriterion`, añadiendo detalles sobre las unidades y los rangos esperados para facilitar la mantenibilidad, además de encapsular la lógica de validación de métricas dentro de los métodos de la propia clase.
 - `2026-09-09T06:07:06` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación de tipo y contenido sobre `row.get` para prevenir excepciones por tipos inesperados, y refiné el manejo de la lectura del CSV al asegurar que las columnas extraídas sean siempre cadenas, evitando así fallos en operaciones de string posteriores.
-- `2026-09-09T05:58:03` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando explícitamente errores en la creación de directorios y validando la existencia de la ruta padre antes de escribir, asegurando que cualquier fallo de sistema sea manejado sin colapsar la app.
-- `2026-09-09T05:57:47` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `_is_safe_entry` validando explícitamente valores nulos y tipos de datos antes de operar sobre ellos, evitando errores de ejecución ante entradas inesperadas del sistema de archivos.
