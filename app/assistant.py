@@ -395,7 +395,7 @@ def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
 @lru_cache(maxsize=16)
 def _generate_context_lines_cached(score_s: str, grade: str, junk_s: str, susp_s: str, ram_s: str, disk_s: str, dup_s: str, start_s: str) -> str:
     """Representación en texto estandarizado para prompts de LLM."""
-    return (
+    content = (
         f"Puntaje de salud: {score_s}{f' nota {grade}' if grade else ''}\n"
         f"Basura: {junk_s}\n"
         f"Sospechosos: {susp_s}\n"
@@ -404,6 +404,8 @@ def _generate_context_lines_cached(score_s: str, grade: str, junk_s: str, susp_s
         f"Duplicados: {dup_s}\n"
         f"Inicio: {start_s} items"
     )
+    # Seguridad defensiva: validar integridad antes de retornar para evitar inyecciones en el payload
+    return content if _ensure_safe_text(content) else "Datos de contexto corruptos."
 
 def context_as_text(context: SystemContext) -> str:
     """Serializa las métricas en un texto apto para ser enviado al motor remoto."""

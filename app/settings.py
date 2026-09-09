@@ -158,7 +158,7 @@ class _Validators:
         """Determina si una ruta es un junction o symlink para evitar recursión infinita."""
         try:
             return path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction())
-        except OSError:
+        except (OSError, PermissionError):
             return True
 
     @staticmethod
@@ -169,6 +169,7 @@ class _Validators:
             return _SAFETY_CACHE[path_str]
         
         try:
+            # Intentar resolver ruta, capturando fallos si el subsistema de archivos deniega acceso
             resolved = path_obj.resolve()
             is_safe = not _Validators._is_reparse_point(resolved) and \
                       not is_protected_path(str(resolved)) and \
@@ -264,7 +265,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
             resolved = base.resolve() / SETTINGS_FILE
             _PATH_CACHE[cache_key] = resolved
             return resolved
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, PermissionError):
         pass
     return _PATH_CACHE["default"]
 
@@ -315,7 +316,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not parent.exists():
             try:
                 parent.mkdir(parents=True, exist_ok=True)
-            except OSError:
+            except (OSError, PermissionError):
                 return None
         
         if not parent.exists() or (ruta.exists() and not ruta.is_file()): return None
@@ -335,7 +336,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         finally:
             if temp_path.exists():
                 try: os.remove(temp_path)
-                except OSError: pass
+                except (OSError, PermissionError): pass
         
         _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta

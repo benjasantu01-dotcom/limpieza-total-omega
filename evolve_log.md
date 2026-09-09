@@ -1409,3 +1409,11 @@ assert not {'remove'}
 - `2026-09-09T12:16:07` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de la validación estructural al añadir una comprobación de caracteres de escape en `_validate_structural_safety` para prevenir inyecciones o bypasses mediante secuencias de control inusuales, además de asegurar que `_has_invalid_chars` verifique correctamente la existencia de la ruta.
 - `2026-09-09T12:16:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T12:16:07` Corrida terminada. Total usado hoy: 288.
+- `2026-09-09T12:24:26` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-09-09T12:24:56` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-09T12:25:36` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante fallos de E/S o permisos durante el escaneo de rutas, añadiendo un manejo de excepciones más granular en `_Validators._run_safety_checks` para evitar que el proceso de validación sea abortado por un error de acceso puntual en una carpeta del sistema protegida.
+- `2026-09-09T12:26:05` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-09T12:26:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-09T12:26:35` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva al serializar las métricas para el LLM: agregué una validación estricta que impide el envío de datos si el contexto contiene caracteres de control o rutas, eliminando la posibilidad de que un valor numérico malintencionado pueda ser inyectado como una ruta en el payload.
+- `2026-09-09T12:26:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T12:26:35` Corrida terminada. Total usado hoy: 292.
