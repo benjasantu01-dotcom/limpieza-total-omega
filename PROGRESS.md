@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **242** (48.0% de aceptación)
+- Mejoras aceptadas: **244** (48.4% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 191
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 101 | 7 | 15 | 5 | 76 |
-| 2026-09-09 | 141 | 12 | 18 | 10 | 119 |
+| 2026-09-08 | 101 | 7 | 15 | 5 | 72 |
+| 2026-09-09 | 143 | 12 | 20 | 10 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **54**
+- seguridad defensiva: **49**
 - rendimiento: **47**
-- seguridad defensiva: **47**
 - robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
@@ -33,9 +33,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **21**
 - `assistant.py`: **20**
 - `healthscore.py`: **20**
+- `quarantine.py`: **20**
 - `safety.py`: **20**
-- `quarantine.py`: **19**
-- `scanner.py`: **19**
+- `scanner.py`: **20**
 - `settings.py`: **19**
 - `diskreport.py`: **19**
 - `browser.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-09T12:56:50` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva del método `_is_safe_entry` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta (`p`), asegurando que no se procesen entradas cuya resolución apunte a directorios protegidos, incluso si el nombre base aparenta ser seguro.
+- `2026-09-09T12:55:43` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_atomic_isolate_file` y `restore_item` al validar estrictamente que la operación de `os.replace` ocurra únicamente entre el mismo sistema de archivos (dispositivo), evitando intentos de movimiento a través de límites de volúmenes que podrían ser inseguros o fallar parcialmente.
 - `2026-09-09T12:47:44` **memory.py** (seguridad defensiva): Se reforzó la seguridad de la función `trim_working_set` al asegurar que los handles se cierren correctamente ante cualquier excepción mediante un bloque `finally`, además de validar la integridad del proceso antes de operar, evitando posibles vulnerabilidades de Race Condition al capturar el handle y verificar el ejecutable en pasos separados.
 - `2026-09-09T12:45:34` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de inferencia mediante la validación estricta de tipos y valores en `_evaluate_rules`, evitando que una inyección accidental de datos no sanitizados en `message_factory` pueda corromper el reporte final o causar excepciones no controladas durante la generación de recomendaciones.
 - `2026-09-09T12:36:24` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `is_junction` y `_is_valid_candidate` integrando `Path.resolve()` en lugares críticos para evitar que accesos mediante enlaces simbólicos o rutas relativas ambigüas eludan los chequeos de `is_protected_path`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T12:06:17` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una comprobación explícita de `kernel32.CloseHandle` y garantizando que el `proc_handle` sea siempre cerrado en un bloque `finally`, además de asegurar que las llamadas a la API de Windows manejen correctamente situaciones donde el handle es nulo o la operación falla debido a cambios de estado del proceso (Race condition entre `OpenProcess` y `EmptyWorkingSet`).
 - `2026-09-09T12:06:00` **main.py** (robustez ante casos límite): Mejora la robustez del manejo de errores al iniciar la aplicación mediante la adición de una validación de escritura crítica y una limpieza de estado previa, evitando que la app intente operar desde rutas bloqueadas o bloqueos de sistema que podrían causar estados inconsistentes.
 - `2026-09-09T12:04:48` **healthscore.py** (robustez ante casos límite): Mejora la robustez del motor de inferencia evitando fallos en la renderización de recomendaciones cuando el estado de los datos es parcial o los mensajes generados contienen saltos de línea inesperados que romperían la consistencia visual.
-- `2026-09-09T11:55:23` **browser.py** (robustez ante casos límite): Se añadió una validación explícita para evitar que `_sum_directory_recursive` intente procesar rutas de acceso extremadamente largas o caracteres inválidos antes de invocar `os.scandir`, previniendo errores de sistema operativo que podrían interrumpir el escaneo de otros navegadores.
-- `2026-09-09T11:45:06` **startup.py** (rendimiento): Se optimizó `entries_from_folders` para evitar la creación innecesaria de objetos `Path` y realizar validaciones mediante `os.path` (más rápido que `pathlib` en iteración), reduciendo la presión sobre el recolector de basura y acelerando el escaneo de directorios.

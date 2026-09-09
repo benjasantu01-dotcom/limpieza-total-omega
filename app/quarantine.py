@@ -481,6 +481,10 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
         
         ensure_safe_to_modify(destination, allow_sensitive=True)
         
+        # Validar consistencia de dispositivos antes de mover
+        if temp_path.stat().st_dev != destination.parent.resolve().stat().st_dev:
+            raise OSError("Operación denegada: dispositivos incompatibles para reemplazo atómico.")
+            
         os.replace(temp_path, destination)
         
         dir_fd = os.open(str(destination.parent), os.O_RDONLY)
@@ -635,6 +639,7 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     if destination.exists():
         raise FileExistsError("El destino ya existe.")
     
+    # Validar consistencia de dispositivos antes de mover
     if stored_file.stat().st_dev != destination.parent.resolve().stat().st_dev:
         raise UnsafePathError("Restauración denegada: dispositivos incompatibles.")
     

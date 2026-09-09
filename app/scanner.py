@@ -127,6 +127,7 @@ class Scanner:
                 return False
             
             p = Path(path_str).resolve()
+            # Validación doble: debe estar bajo el root y explícitamente no ser una ruta protegida
             return self._is_inside_base_root(str(p)) and not is_protected_path(p)
         except (OSError, AttributeError, TypeError, RuntimeError):
             return False

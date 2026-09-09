@@ -1433,3 +1433,10 @@ assert not {'remove'}
 - `2026-09-09T12:48:02` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-09-09T12:48:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-09T12:48:02` Corrida terminada. Total usado hoy: 300.
+- `2026-09-09T12:55:05` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-09T12:55:43` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_atomic_isolate_file` y `restore_item` al validar estrictamente que la operación de `os.replace` ocurra únicamente entre el mismo sistema de archivos (dispositivo), evitando intentos de movimiento a través de límites de volúmenes que podrían ser inseguros o fallar parcialmente.
+- `2026-09-09T12:56:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-09T12:56:39` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 372): unterminated string literal (detected at line 372)
+- `2026-09-09T12:56:50` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva del método `_is_safe_entry` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta (`p`), asegurando que no se procesen entradas cuya resolución apunte a directorios protegidos, incluso si el nombre base aparenta ser seguro.
+- `2026-09-09T12:56:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-09T12:56:50` Corrida terminada. Total usado hoy: 304.
