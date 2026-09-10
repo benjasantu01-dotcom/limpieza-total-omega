@@ -128,7 +128,6 @@ _RULES_BY_AREA: Final[Dict[MetricKey, List[RecommendationRule]]] = {}
 for rule in _RECOMMENDATION_RULES:
     _RULES_BY_AREA.setdefault(rule.area, []).append(rule)
 
-# Cacheamos funciones para evitar búsquedas en bucle
 _CACHE_SCORERS: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], List[RecommendationRule] | None]]] = [
     (a, w, _SCORERS[a], _RULES_BY_AREA.get(a)) for a, w in _WEIGHT_ITEMS_INT
 ]
@@ -166,7 +165,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que todos los campos numéricos sean valores finitos."""
-        return all(math.isfinite(getattr(self, f.name)) for f in self.__dataclass_fields__.values())
+        return all(math.isfinite(float(getattr(self, f.name))) for f in self.__dataclass_fields__.values())
 
 @dataclass
 class HealthResult:
@@ -236,7 +235,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             if not math.isfinite(ratio):
                 ratio = 0.0
             
-            pts = int(round(_clamp(ratio * weight, 0, weight)))
+            pts = int(round(_clamp(ratio * weight, 0.0, float(weight))))
             metric_breakdown[area] = pts
             total_pts += pts
             

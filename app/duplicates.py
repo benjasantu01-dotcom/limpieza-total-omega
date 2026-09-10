@@ -82,6 +82,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         
     try:
         path_obj = Path(path).resolve(strict=True)
+        # Verificación doble por condiciones de carrera
         if not _is_valid_candidate(path_obj) or path_obj.stat().st_size == 0:
             return None
             
@@ -123,10 +124,13 @@ def _is_valid_candidate(path: Path) -> bool:
         resolved = path.resolve(strict=True)
         if not resolved.is_file() or resolved.is_symlink() or is_junction(resolved):
             return False
+        # Verificación de integridad: el archivo debe ser accesible y no un hardlink (st_nlink=1)
+        st = resolved.stat()
         return (
             not is_protected_path(resolved) and 
             os.access(resolved, os.R_OK) and
-            resolved.stat().st_nlink == 1
+            st.st_nlink == 1 and
+            st.st_size > 0
         )
     except (OSError, ValueError, TypeError, RuntimeError):
         return False

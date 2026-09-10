@@ -365,7 +365,10 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        # Aseguramos que size sea un entero válido
+        # Validar nuevamente que es un archivo antes de procesar, por seguridad concurrente
+        if not path.is_file():
+            continue
+            
         safe_size = int(size) if isinstance(size, (int, float)) else 0
         total_bytes += safe_size
         total_files += 1
