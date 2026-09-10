@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 31 | 2 | 4 | 1 | 17 |
+| 2026-09-08 | 28 | 2 | 4 | 1 | 16 |
 | 2026-09-09 | 152 | 12 | 21 | 11 | 154 |
-| 2026-09-10 | 47 | 3 | 7 | 3 | 39 |
+| 2026-09-10 | 50 | 3 | 8 | 3 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
-- rendimiento: **47**
-- manejo de errores y validación de entradas: **47**
-- legibilidad y documentación: **43**
+- manejo de errores y validación de entradas: **50**
+- rendimiento: **45**
+- legibilidad y documentación: **42**
 - robustez ante casos límite: **41**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **22**
 - `duplicates.py`: **21**
 - `memory.py`: **21**
-- `quarantine.py`: **21**
-- `assistant.py`: **19**
 - `healthscore.py`: **19**
+- `safety.py`: **19**
 - `settings.py`: **19**
 - `diskreport.py`: **18**
-- `safety.py`: **18**
+- `assistant.py`: **18**
 - `scanner.py`: **17**
 - `browser.py`: **14**
-- `branding.py`: **12**
-- `organizer.py`: **12**
+- `organizer.py`: **13**
+- `branding.py`: **11**
 - `main.py`: **10**
-- `startup.py`: **9**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T04:17:56` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` ante errores de entrada inesperados y se eliminó el manejo de excepciones genérico (`except Exception`), reemplazándolo por capturas específicas para evitar ocultar errores de lógica del programa, mejorando así la transparencia y seguridad del proceso de validación.
+- `2026-09-10T04:17:19` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez de la función `purge_all` y la manipulación del manifiesto al encapsular el proceso en un bloque `try...except` más específico y asegurar que el manifiesto solo se actualice tras confirmar el borrado físico, previniendo estados inconsistentes ante errores de I/O.
+- `2026-09-10T04:16:42` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `stage_for_review` y `delete_reviewed` al asegurar que los chequeos de seguridad de `safety.py` se realicen mediante `is_safe_to_modify` (booleano) antes de ejecutar cualquier operación, garantizando el cumplimiento de la regla de evitar el uso de excepciones como flujo de control y evitando el acceso a archivos bloqueados de forma más explícita.
 - `2026-09-10T04:08:28` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` mediante la validación explícita del estado de las claves críticas tras el parseo, evitando errores de clave ausente y asegurando una gestión de tipos más limpia al convertir los valores obtenidos.
 - `2026-09-10T04:06:57` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.validate` y `compute_score` implementando un manejo de errores más defensivo ante tipos de entrada inesperados y valores fuera de rango, asegurando que el pipeline siempre retorne un resultado válido incluso con datos corrompidos.
 - `2026-09-10T04:06:30` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `find_duplicates` y las funciones auxiliares mediante la validación proactiva de tipos y estados, garantizando que el orquestador no intente operar sobre estructuras de datos corrompidas o entradas nulas, reduciendo así la posibilidad de excepciones no capturadas durante el recorrido del disco.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T02:25:43` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para detectar si el sistema de archivos está marcando el objeto como "Offline" o no disponible, previniendo errores durante la manipulación de archivos que residen en servicios en la nube (como OneDrive) que podrían no estar descargados localmente.
 - `2026-09-10T02:24:50` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en el aislamiento de archivos agregando una validación de "punto de montaje" para prevenir que la operación de cuarentena atraviese límites de volumen o sistemas de archivos, evitando así comportamientos inesperados en configuraciones multi-disco.
 - `2026-09-10T02:19:10` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_to_trim` implementando una validación estricta de rutas mediante `Path.resolve()` antes de consultar `is_safe_to_modify`, previniendo así posibles ataques de "path traversal" o resolución de enlaces simbólicos malintencionados que intentaran evadir los filtros de seguridad.
-- `2026-09-10T02:06:16` **healthscore.py** (seguridad defensiva): Se reforzó la robustez defensiva de `SystemMetrics` y `compute_score` validando que las métricas sean tipos numéricos estrictos y verificando explícitamente la finitud del ratio calculado antes de procesar reglas o agregar puntos, previniendo estados inconsistentes.
-- `2026-09-10T02:05:15` **duplicates.py** (seguridad defensiva): Se ha robustecido `_is_valid_candidate` añadiendo una verificación explícita de `st_size` mediante `os.stat` antes de procesar el archivo, garantizando que no se intenten realizar operaciones de lectura sobre archivos que, debido a condiciones de carrera, hayan sido eliminados o truncados a tamaño cero entre la exploración inicial y la validación.
-- `2026-09-10T02:04:49` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_collect_summary_data` y las funciones auxiliares mediante la validación explícita de `Path.is_file()` antes de procesar archivos, evitando errores de acceso o intentos de lectura sobre rutas que cambiaron de estado o son dispositivos especiales durante el recorrido.

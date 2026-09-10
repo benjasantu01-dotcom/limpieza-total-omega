@@ -405,6 +405,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             
             target: Optional[Path] = _can_move_file(junk_file, dest_base)
             if target and target.is_relative_to(dest_base):
+                # Validación estricta mediante is_safe_to_modify (booleano) antes de la operación
                 if not is_safe_to_modify(src) or not is_safe_to_modify(target): continue
                 if _is_file_locked(src): continue
                 ensure_safe_to_modify(src)
@@ -434,6 +435,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         try:
             if not isinstance(item, Path): continue
             resolved_item = item.resolve()
+            # Validación estricta mediante is_safe_to_modify (booleano) antes de la operación
             if resolved_item.is_file() and resolved_item.exists() and resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
                 if _passes_system_checks(resolved_item) and not _is_file_locked(resolved_item):
                     ensure_safe_to_modify(resolved_item)

@@ -705,30 +705,28 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     """Limpia todos los archivos validados de la cuarentena."""
     try:
         quarantine_root = quarantine_dir(base)
-    except Exception:
+    except (OSError, RuntimeError, UnsafePathError):
         return 0
         
     items = load_manifest(base)
-    # Indexado O(1) para evitar búsquedas O(N) dentro del loop
     item_map = {item.stored_name: item for item in items}
-    purged_ids = []
+    purged_ids = set()
     
     try:
         for stored_path in quarantine_root.iterdir():
             if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
                 continue
-                
             item = item_map.get(stored_path.name)
             if item and _is_item_purgable(stored_path, item, quarantine_root):
-                purged_ids.append(item.item_id)
-    except OSError:
-        pass
+                purged_ids.add(item.item_id)
                 
-    if purged_ids:
-        # Filtro eficiente del manifiesto
-        purged_set = set(purged_ids)
-        kept_items = [i for i in items if i.item_id not in purged_set]
-        save_manifest(kept_items, base)
+        if purged_ids:
+            remaining_items = [i for i in items if i.item_id not in purged_ids]
+            save_manifest(remaining_items, base)
+            
+    except (OSError, PermissionError):
+        pass
+        
     return len(purged_ids)
 
 

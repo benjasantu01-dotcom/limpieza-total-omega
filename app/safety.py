@@ -257,7 +257,7 @@ def _check_file_integrity(path: Path) -> None:
                 code = SafetyValidationErrorCode.HARD_LINK_DETECTED if rule.reason == ProtectionReason.HARD_LINK else (
                     SafetyValidationErrorCode.OFFLINE_FILE if rule.reason == ProtectionReason.OFFLINE else SafetyValidationErrorCode.GENERIC)
                 raise UnsafePathError(f"Violación de integridad ({rule.reason.value})", code)
-        except (PermissionError, OSError, AttributeError):
+        except (PermissionError, OSError, AttributeError, ctypes.ArgumentError):
             continue
 
 
@@ -391,7 +391,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
             name_only = parts_split[0]
             if name_only and _is_reserved_device_name(name_only):
                 raise UnsafePathError(f"Nombre reservado '{part}'.", SafetyValidationErrorCode.RESERVED_NAME)
-    except AttributeError:
+    except (AttributeError, TypeError):
         raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC)
 
     if path_string.startswith(("\\\\", "//")):
@@ -436,7 +436,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     
     try:
         p = normalize(path)
-    except ValueError as e:
+    except (ValueError, TypeError) as e:
         raise UnsafePathError(f"Ruta no normalizable: {e}", SafetyValidationErrorCode.GENERIC)
     
     if not allow_sensitive and _is_sensitive_extension(p):
@@ -445,27 +445,22 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
     
-    try:
-        if p.exists():
-            if os.name == 'nt':
-                try:
-                    kernel32 = ctypes.windll.kernel32
-                    handle = kernel32.CreateFileW(str(p), 0, 0, None, 3, 0x02000000, None)
-                    if handle != -1:
-                        buf = ctypes.create_unicode_buffer(1024)
-                        kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0)
-                        kernel32.CloseHandle(handle)
-                        if not Path(buf.value).resolve().as_posix().startswith(p.resolve().as_posix()[:len(str(p.parent))+1]):
-                             raise UnsafePathError("Redirección detectada vía reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
-                except Exception: pass
-                
-            _check_file_integrity(p)
-        elif p.parent and is_protected_path(p.parent):
-            raise UnsafePathError("Directorio contenedor restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
-    except UnsafePathError:
-        raise
-    except Exception as e:
-        raise UnsafePathError(f"Error inesperado al validar integridad: {e}", SafetyValidationErrorCode.IO_ERROR)
+    if p.exists():
+        if os.name == 'nt':
+            try:
+                kernel32 = ctypes.windll.kernel32
+                handle = kernel32.CreateFileW(str(p), 0, 0, None, 3, 0x02000000, None)
+                if handle != -1:
+                    buf = ctypes.create_unicode_buffer(1024)
+                    kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0)
+                    kernel32.CloseHandle(handle)
+                    if not Path(buf.value).resolve().as_posix().startswith(p.resolve().as_posix()[:len(str(p.parent))+1]):
+                         raise UnsafePathError("Redirección detectada vía reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+            except (AttributeError, OSError, ctypes.ArgumentError): pass
+            
+        _check_file_integrity(p)
+    elif p.parent and is_protected_path(p.parent):
+        raise UnsafePathError("Directorio contenedor restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
             
     return p
 
@@ -514,7 +509,7 @@ def describe_protection(path: PathLike) -> str:
             if p.is_file() and p.stat().st_size == 0: return f"'{p}' archivo vacío."
             if p.is_file() and p.stat().st_size > MAX_FILE_SIZE: return f"'{p}' tamaño excesivo."
             if p.is_file() and p.stat().st_nlink > 1: return f"'{p}' detectado como hard link."
-    except (OSError, FileNotFoundError):
+    except (OSError, FileNotFoundError, AttributeError):
         pass
     if _is_sensitive_extension(p): return f"'{p.name}' extensión sensible."
     return f"'{p}' es candidata a modificación."
