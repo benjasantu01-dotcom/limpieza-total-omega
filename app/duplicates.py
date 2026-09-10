@@ -83,12 +83,12 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         return None
         
     try:
-        path_obj = Path(path).resolve(strict=True)
-        if not _is_valid_candidate(path_obj) or path_obj.stat().st_size == 0:
+        p = Path(path).resolve(strict=True)
+        if not _is_valid_candidate(p) or p.stat().st_size == 0:
             return None
             
         digest = hashlib.sha256()
-        with open(path_obj, "rb") as f:
+        with open(p, "rb") as f:
             while True:
                 buffer = f.read(chunk_size)
                 if not buffer:
@@ -108,11 +108,11 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
         return None
 
     try:
-        path_obj = Path(path).resolve(strict=True)
-        if not _is_valid_candidate(path_obj) or path_obj.stat().st_size == 0:
+        p = Path(path).resolve(strict=True)
+        if not _is_valid_candidate(p) or p.stat().st_size == 0:
             return None
 
-        with open(path_obj, "rb") as f:
+        with open(p, "rb") as f:
             content = f.read(read_bytes)
             return hashlib.sha256(content).hexdigest() if content else None
     except (OSError, PermissionError, IOError, TypeError, ValueError):
@@ -121,7 +121,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 def _is_valid_candidate(path: Path) -> bool:
     """Validador estricto: comprueba existencia, permisos y que no sea enlace simbólico o junction."""
-    if not isinstance(path, Path):
+    if not isinstance(path, Path) or not path.is_absolute():
         return False
     try:
         resolved = path.resolve(strict=True)
@@ -147,7 +147,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     for p in paths:
         if p is None: continue
         try:
-            path_obj = Path(p)
+            path_obj = Path(p).absolute()
             if _is_valid_candidate(path_obj):
                 size = path_obj.stat().st_size
                 if size > 0:
@@ -198,7 +198,7 @@ def _collect_candidates(
                     elif entry.is_file(follow_symlinks=False):
                         st = entry.stat()
                         if st.st_size >= min_size:
-                            path_obj = Path(entry.path)
+                            path_obj = Path(entry.path).absolute()
                             if _is_valid_candidate(path_obj):
                                 size_map[st.st_size].append(path_obj)
         except (OSError, PermissionError, FileNotFoundError, RuntimeError):

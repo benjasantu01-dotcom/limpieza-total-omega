@@ -148,11 +148,10 @@ class SystemMetrics:
         """Inicializa valores faltantes y asegura la integridad de los datos."""
         for field_name in self.__dataclass_fields__:
             val = getattr(self, field_name)
+            # Defensa: forzamos limpieza antes de la validación lógica
             if val is None:
                 setattr(self, field_name, 100.0 if "percent" in field_name else 0.0)
         self.validate()
-        if not self.is_finite:
-            self.__init__() # Reset ante valores infinitos o NaN
 
     def validate(self) -> None:
         """Asegura que todos los valores numéricos caigan en rangos lógicos y finitos."""
@@ -165,8 +164,13 @@ class SystemMetrics:
             self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
             self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
             self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, OverflowError):
             self.junk_mb = 0.0
+            self.duplicate_mb = 0.0
+            self.suspicious_count = 0
+            self.suspicious_warnings = 0
+            self.startup_count = 0
+            self.quarantined_count = 0
             self.memory_available_percent = 100.0
             self.disk_free_percent = 100.0
 
@@ -197,7 +201,7 @@ def _to_float(value: Any, default: float = 0.0) -> float:
     try:
         val = float(value)
         return val if math.isfinite(val) else default
-    except (TypeError, ValueError): return default
+    except (TypeError, ValueError, OverflowError): return default
 
 def grade_for_score(score: float | int) -> str:
     """Asigna una calificación de letra (A-F) basada en un puntaje numérico."""
@@ -231,7 +235,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         HealthResult: Objeto con score final, nota, desglose y recomendaciones.
     """
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
-        return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o no disponibles."])
+        return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos."])
     
     recommendations: List[str] = []
     

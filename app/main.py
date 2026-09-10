@@ -1099,7 +1099,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if not folder:
                 return None
             
-            p = Path(folder).resolve()
+            p = Path(folder).resolve(strict=True)
+            if p.is_symlink():
+                 raise safety.UnsafePathError("Ruta no permitida: enlace simbólico.")
             if safety.is_protected_path(p) or not safety.is_safe_to_modify(p):
                 messagebox.showwarning("Ruta no segura", "Operación no permitida en esta ruta.")
                 return None
