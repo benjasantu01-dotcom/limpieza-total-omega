@@ -166,14 +166,14 @@ class _Validators:
 
     @staticmethod
     def _run_safety_checks(path_obj: Path) -> bool:
-        """Valida una ruta contra `safety.py` cacheando resultados para reducir I/O."""
+        """Valida una ruta contra `safety.py` cacheando resultados. Retorna False si no es segura o accesible."""
         path_str = str(path_obj)
         if path_str in _SAFETY_CACHE:
             return _SAFETY_CACHE[path_str]
         
         try:
             resolved = path_obj.resolve()
-            # Validar integridad antes de cualquier operación
+            # Validar integridad: ensure_safe_to_modify lanza error si el path es de sistema
             ensure_safe_to_modify(str(resolved))
             is_safe = not _Validators._is_reparse_point(resolved) and \
                       not is_protected_path(str(resolved)) and \

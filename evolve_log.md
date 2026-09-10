@@ -466,3 +466,14 @@ ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defi
 - `2026-09-10T09:23:51` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult
 - `2026-09-10T09:23:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T09:23:51` Corrida terminada. Total usado hoy: 223.
+- `2026-09-10T09:32:19` Arrancando corrida. Quedan hoy ~77 peticiones objetivo.
+- `2026-09-10T09:32:22` Gemini devolvió 500 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-10T09:32:50` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el tipado de `scanner.py`, clarificando mediante docstrings detallados la lógica de los chequeos heurísticos, corrigiendo la semántica de `_is_safe_entry` (ahora documentada como excluyente) y unificando el formato de los comentarios para cumplir con los estándares de mantenibilidad exigidos.
+- `2026-09-10T09:33:20` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en los retornos de funciones, consolidando la estructura del módulo mediante una organización de constantes de validación más explícita, y clarificando las docstrings de las funciones de seguridad mediante la especificación de sus precondiciones y comportamiento ante errores.
+- `2026-09-10T09:33:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-10T09:33:24` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-10T09:33:30` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-10T09:34:10` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Documenté con mayor precisión el propósito de los métodos privados de `StartupEntry` y las funciones de escaneo, clarificando la lógica de seguridad y el manejo de excepciones para facilitar el mantenimiento futuro.
+- `2026-09-10T09:34:37` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé `_get_active_problems` eliminando la recreación de listas en cada llamada mediante el uso de `lru_cache`, y mejoré el rendimiento de `local_answer` convirtiendo el `_KEYWORD_MAP` en una estructura de búsqueda más eficiente mediante una comprensión de diccionario indexada por tokens únicos.
+- `2026-09-10T09:34:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T09:34:37` Corrida terminada. Total usado hoy: 227.

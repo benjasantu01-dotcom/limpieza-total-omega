@@ -124,6 +124,8 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
+        Valida que la entrada sea segura para procesar.
+        
         Aplica filtros de seguridad: rechaza rutas prohibidas por safety.py, 
         nombres reservados, longitudes excesivas, rutas UNC y extensiones .lnk peligrosas.
         """

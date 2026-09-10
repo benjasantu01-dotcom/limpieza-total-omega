@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 126 | 9 | 16 | 9 | 121 |
-| 2026-09-10 | 101 | 7 | 19 | 8 | 88 |
+| 2026-09-09 | 123 | 9 | 16 | 9 | 120 |
+| 2026-09-10 | 105 | 7 | 19 | 8 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
 - seguridad defensiva: **53**
-- legibilidad y documentación: **47**
-- robustez ante casos límite: **39**
-- rendimiento: **34**
+- legibilidad y documentación: **50**
+- robustez ante casos límite: **36**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **23**
-- `healthscore.py`: **20**
-- `duplicates.py`: **19**
+- `settings.py`: **20**
 - `safety.py`: **19**
-- `settings.py`: **19**
+- `healthscore.py`: **19**
 - `memory.py`: **19**
-- `assistant.py`: **17**
+- `assistant.py`: **18**
+- `duplicates.py`: **18**
 - `browser.py`: **17**
+- `scanner.py`: **16**
 - `diskreport.py`: **15**
-- `scanner.py`: **15**
 - `branding.py`: **13**
 - `organizer.py`: **12**
-- `main.py`: **10**
-- `startup.py`: **9**
+- `startup.py`: **10**
+- `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T09:34:37` **assistant.py** (rendimiento): Optimicé `_get_active_problems` eliminando la recreación de listas en cada llamada mediante el uso de `lru_cache`, y mejoré el rendimiento de `local_answer` convirtiendo el `_KEYWORD_MAP` en una estructura de búsqueda más eficiente mediante una comprensión de diccionario indexada por tokens únicos.
+- `2026-09-10T09:34:10` **startup.py** (legibilidad y documentación): Documenté con mayor precisión el propósito de los métodos privados de `StartupEntry` y las funciones de escaneo, clarificando la lógica de seguridad y el manejo de excepciones para facilitar el mantenimiento futuro.
+- `2026-09-10T09:33:20` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en los retornos de funciones, consolidando la estructura del módulo mediante una organización de constantes de validación más explícita, y clarificando las docstrings de las funciones de seguridad mediante la especificación de sus precondiciones y comportamiento ante errores.
+- `2026-09-10T09:32:50` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `scanner.py`, clarificando mediante docstrings detallados la lógica de los chequeos heurísticos, corrigiendo la semántica de `_is_safe_entry` (ahora documentada como excluyente) y unificando el formato de los comentarios para cumplir con los estándares de mantenibilidad exigidos.
 - `2026-09-10T09:23:14` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo el estilo Google/NumPy) y la adición de Type Hints en funciones críticas para clarificar las intenciones de diseño y facilitar el mantenimiento futuro en un entorno de desarrollo profesional.
 - `2026-09-10T09:14:12` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos con tipado formal y detalles de comportamiento en funciones críticas, junto con la clarificación de constantes de arquitectura Win32 para facilitar el mantenimiento y la auditoría de seguridad.
 - `2026-09-10T08:53:36` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `save()` y `load()` capturando específicamente `OSError` al realizar operaciones de archivo (como `stat` o `mkdir`) para evitar el colapso de la aplicación ante problemas transitorios de acceso al sistema de archivos, siguiendo el enfoque de validación de entradas y manejo de excepciones.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T08:32:28` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `SystemMetrics` mediante la adición de una validación explícita `is_finite` en el `__post_init__` y una mejora en `_evaluate_rules` para manejar fallos en las factorías de mensajes, evitando que una excepción en una regla individual corrompa el reporte completo de salud.
 - `2026-09-10T08:32:00` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez ante entradas inesperadas en `find_duplicates` y `format_group` mediante validaciones de tipo y estructura más estrictas, asegurando que el módulo no falle ante argumentos mal formados.
 - `2026-09-10T08:23:30` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_path_inside_base` y `_is_safe_to_traverse` para manejar entradas malformadas mediante la validación explícita de `None` y el uso de `ValueError` en lugar de una captura genérica, asegurando que los caminos no resuelvan a rutas fuera del entorno esperado.
-- `2026-09-10T08:23:18` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `score_color` añadiendo validaciones de tipo y rangos más estrictas, y un manejo de errores explícito que evita fallos silenciosos al procesar entradas inválidas.
-- `2026-09-10T08:22:44` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de los `handler` de métricas envolviendo sus llamadas en bloques `try/except` para prevenir fallos en cadena si alguna métrica llega con formato inesperado o valores nulos, asegurando que la interfaz siempre reciba una respuesta válida aunque el análisis tenga datos parciales.
-- `2026-09-10T07:00:16` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para que el uso de `ensure_safe_to_modify` sea preventivo antes de intentar cualquier operación de resolución de rutas, evitando que una ruta maliciosa o inaccesible detenga el hilo de ejecución mediante el manejo explícito de la excepción de seguridad dentro del validador.
-- `2026-09-10T06:50:55` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_encrypted_or_compressed` en el flujo de integridad para evitar intentos de modificación sobre archivos con atributos NTFS de cifrado o compresión, reforzando la seguridad defensiva al evitar corrupciones accidentales en datos protegidos por el sistema de archivos.
