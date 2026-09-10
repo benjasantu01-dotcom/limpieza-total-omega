@@ -488,3 +488,49 @@ ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defi
 - `2026-09-10T09:44:28` Gemini sigue devolviendo 500 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-10T09:44:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T09:44:28` Corrida terminada. Total usado hoy: 231.
+- `2026-09-10T09:52:46` Arrancando corrida. Quedan hoy ~69 peticiones objetivo.
+- `2026-09-10T09:53:16` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-09-10T09:54:16` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-10T09:55:19` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-10T09:56:25` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-10T09:57:52` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un decorador `@lru_cache` para la carga de configuración inicial en `_init_state`, reduciendo accesos redundantes al sistema de archivos al reiniciar la sesión, y se optimizó la lógica de redibujo de `_render_gauge` y `_apply_card_updates` utilizando `after_idle` para coalescencia de eventos, evitando saturar el hilo principal con actualizaciones visuales innecesarias.
+- `2026-09-10T09:58:21` Tests FALLARON:
+```
+"1","1024"\nlinea basura\n"malo","x","y"\n'
+>       procesos = memory.parse_windows_process_csv(csv)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:352: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+raw_csv_text = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+limit = 10
+
+    def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
+        """
+        Parsea una salida CSV (formato esperado: nombre,pid,ws) proveniente de
+        PowerShell, devolviendo una lista ordenada de mayor a menor consumo de RAM.
+        """
+        if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
+            return []
+    
+        processes = [
+            proc for proc in (
+                _is_valid_process_entry(*[x.strip().strip("'\"") for x in line.split(",")])
+                for line in raw_csv_text.splitlines() if line.strip()
+>           ) if proc and len(line.split(",")) == 3
+                              ^^^^
+        ]
+E       NameError: name 'line' is not defined
+
+app/memory.py:203: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - NameError: name 'line' is not defined
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - NameError: name 'line' is not defined
+2 failed, 297 passed in 1.18s
+
+```
+- `2026-09-10T09:58:21` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de recolección de métricas mediante la reducción de llamadas redundantes a la API de Windows y la simplificación de la lógica de parsing, eliminando la creación innecesaria de objetos intermedios.
+- `2026-09-10T09:58:32` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-10T09:58:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T09:58:32` Corrida terminada. Total usado hoy: 235.

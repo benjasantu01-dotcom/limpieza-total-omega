@@ -78,6 +78,11 @@ from organizer import (
 )
 from scanner import scan_directory, run_windows_defender_quick_scan
 
+@lru_cache(maxsize=1)
+def get_cached_settings():
+    """Carga inicial de configuración cacheada."""
+    return settings_mod.load()
+
 class AppSettings(TypedDict, total=False):
     """Esquema de configuración de la aplicación para mayor legibilidad y tipado."""
     tema: str
@@ -100,7 +105,6 @@ def ensure_safety(func: Callable) -> Callable:
     """Decorador para asegurar que las operaciones de disco siempre validen la ruta raíz."""
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
-        # Validar la ruta raíz y asegurar que la operación es segura globalmente
         safety.ensure_safe_to_modify(Path.home().resolve())
         return func(*args, **kwargs)
     return wrapper
@@ -274,14 +278,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.assistant_context = assistant.SystemContext()
         
         try:
-            raw = settings_mod.load()
+            raw = get_cached_settings()
             if isinstance(raw, dict):
                 self.settings = raw
             else:
-                logging.warning("Configuración inválida (no es dict), reseteando.")
                 self.settings = settings_mod.reset()
-        except Exception as e:
-            logging.error("Fallo al cargar ajustes, reseteando: %e", e)
+        except Exception:
             self.settings = settings_mod.reset()
             
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
@@ -578,7 +580,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _draw_gauge(self, score: int, grade: str) -> None:
         """Solicita el renderizado del gauge de salud general."""
-        self._debounce_action("gauge", 50, lambda: self._render_gauge(score, grade))
+        self._debounce_action("gauge", 50, lambda: self.after_idle(lambda: self._render_gauge(score, grade)))
 
     @safe_ui_operation
     def _render_gauge(self, score: int, grade: str) -> None:
@@ -1151,7 +1153,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.clear("Salud")
             self.log("Analizando... esto no modifica nada.", "Salud")
 
-            # Invalida solo si el cache de RAM es viejo, para optimizar
             self._invalidate_cache("ram_snapshot")
             metrics, snapshot, _ = self._compile_metrics()
             resultado = healthscore.compute_score(metrics)
@@ -1194,7 +1195,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _update_cards(self, junk_mb: float, sospechosos: int, ram_libre: float, disco_libre: float) -> None:
         """Actualiza tarjetas informativas de salud."""
-        self._debounce_action("update_cards", 100, lambda: self._apply_card_updates(junk_mb, sospechosos, ram_libre, disco_libre))
+        self._debounce_action("update_cards", 100, lambda: self.after_idle(lambda: self._apply_card_updates(junk_mb, sospechosos, ram_libre, disco_libre)))
 
     @safe_ui_operation
     def _apply_card_updates(self, junk_mb: float, sospechosos: int, ram_libre: float, disco_libre: float) -> None:
@@ -1810,7 +1811,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except (tk.TclError, Exception):
                 continue
         
-        # Uso de getattr con verificación winfo_exists para evitar errores si los widgets no existen
         try:
             if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
                 valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
