@@ -172,9 +172,8 @@ class _Validators:
             return _SAFETY_CACHE[path_str]
         
         try:
-            # resolve() puede fallar si la ruta no existe, por eso buscamos el padre existente
-            anchor = path_obj if path_obj.exists() else path_obj.parents[0]
-            resolved = anchor.resolve()
+            resolved = path_obj.resolve()
+            # Validación estricta: asegurar que es segura y que no tiene puntos de reparse
             ensure_safe_to_modify(str(resolved))
             is_safe = not _Validators._is_reparse_point(resolved) and \
                       not is_protected_path(str(resolved)) and \

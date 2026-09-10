@@ -607,3 +607,34 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-10T11:16:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-10T11:16:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T11:16:00` Corrida terminada. Total usado hoy: 267.
+- `2026-09-10T11:24:35` Arrancando corrida. Quedan hoy ~33 peticiones objetivo.
+- `2026-09-10T11:25:11` ➖ Sin cambios en safety.py (enfoque: seguridad defensiva). Motivo: Se ha añadido una verificación de "reparse points" y atributos de archivo en el nivel de `_validate_boundary_conditions` para asegurar que, incluso si una ruta parece legítima, no estamos tratando con un acceso indirecto a directorios restringidos mediante enlaces simbólicos o junctions que podrían haber eludido la lógica inicial.
+- `2026-09-10T11:25:40` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al añadir una validación de longitud de ruta en `scan_directory` y asegurar que la ruta inicial no sea una ruta UNC, evitando errores de resolución de `Path.resolve()` en entornos restringidos.
+- `2026-09-10T11:26:13` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para que el uso de `ensure_safe_to_modify` sea siempre una comprobación de seguridad pura, evitando que la resolución de rutas mediante `resolve()` pueda ser interceptada o comprometida por comportamientos inesperados del sistema de archivos al tratar con rutas no existentes.
+- `2026-09-10T11:26:26` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.30s
+
+```
+- `2026-09-10T11:26:26` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_extract_quoted_path` y `_resolve_and_cache_path` asegurando que las rutas extraídas sean validadas explícitamente mediante `is_protected_path` antes de ser procesadas o devueltas, evitando la resolución de rutas potencialmente maliciosas.
+- `2026-09-10T11:26:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T11:26:26` Corrida terminada. Total usado hoy: 271.

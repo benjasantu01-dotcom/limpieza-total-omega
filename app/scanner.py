@@ -226,7 +226,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         
     try:
         path_input: str = str(directory).strip()
-        if not path_input:
+        if not path_input or len(path_input) > MAX_PATH_LENGTH or path_input.startswith(("\\\\", "//")):
             return []
             
         base_path: Path = Path(path_input)
@@ -234,7 +234,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             return []
         
         root_input: Path = base_path.resolve()
-        if not root_input.is_absolute() or str(root_input).startswith(("\\\\", "//")) or is_protected_path(root_input):
+        if not root_input.is_absolute() or is_protected_path(root_input):
             return []
             
         scanner = Scanner(base_root=root_input)
