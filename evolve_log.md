@@ -1034,3 +1034,4 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-09-10T14:51:56` Corrida terminada. Total usado hoy: 350.
 - `2026-09-10T14:59:42` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-10T15:10:01` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-10T15:20:09` Presupuesto diario agotado (350 usados). Corte hasta mañana.
