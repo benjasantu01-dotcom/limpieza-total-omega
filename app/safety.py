@@ -253,6 +253,14 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _IntegrityCheck(ProtectionReason.INVALID_TYPE, lambda _, st: not (stat.S_ISREG(st.st_mode) or stat.S_ISDIR(st.st_mode))),
 ]
 
+_REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
+    ProtectionReason.HARD_LINK: SafetyValidationErrorCode.HARD_LINK_DETECTED,
+    ProtectionReason.OFFLINE: SafetyValidationErrorCode.OFFLINE_FILE,
+    ProtectionReason.ENCRYPTED_OR_COMPRESSED: SafetyValidationErrorCode.ENCRYPTED_OR_COMPRESSED,
+    ProtectionReason.IN_USE: SafetyValidationErrorCode.FILE_IN_USE,
+    ProtectionReason.REPARSE_POINT: SafetyValidationErrorCode.REPARSE_POINT_DETECTED,
+    ProtectionReason.ADS: SafetyValidationErrorCode.ADS_DETECTED
+}
 
 def _check_file_integrity(path: Path) -> None:
     """
@@ -267,15 +275,7 @@ def _check_file_integrity(path: Path) -> None:
     for rule in _VALIDATORS:
         try:
             if rule.predicate(path, file_stat):
-                mapping = {
-                    ProtectionReason.HARD_LINK: SafetyValidationErrorCode.HARD_LINK_DETECTED,
-                    ProtectionReason.OFFLINE: SafetyValidationErrorCode.OFFLINE_FILE,
-                    ProtectionReason.ENCRYPTED_OR_COMPRESSED: SafetyValidationErrorCode.ENCRYPTED_OR_COMPRESSED,
-                    ProtectionReason.IN_USE: SafetyValidationErrorCode.FILE_IN_USE,
-                    ProtectionReason.REPARSE_POINT: SafetyValidationErrorCode.REPARSE_POINT_DETECTED,
-                    ProtectionReason.ADS: SafetyValidationErrorCode.ADS_DETECTED
-                }
-                code = mapping.get(rule.reason, SafetyValidationErrorCode.GENERIC)
+                code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
                 raise UnsafePathError(f"Violación de integridad ({rule.reason.value})", code)
         except (OSError, Exception):
             continue

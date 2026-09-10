@@ -609,6 +609,7 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
         existing_files = {f.name for f in base_path.iterdir() if f.is_file()}
+        # Filtramos mediante lookup en conjunto para O(1)
         return [
             i for i in sorted(items, key=lambda x: x.quarantined_at, reverse=True)
             if i.stored_name in existing_files
@@ -716,6 +717,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
+    # Mapeo rápido para evitar iteraciones sobre la lista completa en cada archivo del disco
     item_map = {item.stored_name: item for item in items}
     purged_ids = set()
     

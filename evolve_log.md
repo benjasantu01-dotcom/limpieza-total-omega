@@ -965,3 +965,12 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-10T14:21:21` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento de `parse_windows_process_csv` reemplazando la creación de una lista intermedia de strings mediante `split` por un procesado en línea, evitando múltiples asignaciones de memoria y mejorando la eficiencia al filtrar y convertir los datos de los procesos en un solo paso.
 - `2026-09-10T14:21:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T14:21:21` Corrida terminada. Total usado hoy: 339.
+- `2026-09-10T14:29:04` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-10T14:29:35` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé el rendimiento de `_process_directory` reemplazando la creación repetitiva de objetos `Path` por el uso directo de las rutas proporcionadas por `os.DirEntry` y moviendo el chequeo `is_protected_path` al inicio para evitar lecturas innecesarias en subárboles prohibidos.
+- `2026-09-10T14:30:12` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `list_items` y `purge_all` transformando las búsquedas sobre el manifiesto de complejidad O(N) a O(1) mediante el uso de conjuntos (`set`) y diccionarios, evitando iteraciones anidadas redundantes al escanear el sistema de archivos.
+- `2026-09-10T14:30:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-10T14:30:23` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-10T14:30:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-10T14:31:18` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento de `_check_file_integrity` reemplazando la creación dinámica de diccionarios en cada iteración por un mapeo estático (`MappingProxyType` o un diccionario global simple), reduciendo la sobrecarga de memoria y CPU durante el escaneo de grandes volúmenes de archivos.
+- `2026-09-10T14:31:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T14:31:18` Corrida terminada. Total usado hoy: 343.

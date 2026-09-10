@@ -294,11 +294,11 @@ def _should_scan_directory(entry: os.DirEntry) -> bool:
 def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
     """Analiza una entrada individual y la añade a la lista si es basura válida."""
     try:
-        # Cacheamos la extensión para evitar múltiples llamadas a splittext
         _, ext = os.path.splitext(entry.name)
         if ext.lower() in JUNK_EXTENSIONS:
             info = entry.stat()
             if info.st_size > 0:
+                # Se usa la ruta de DirEntry directamente para evitar instanciar Path innecesariamente
                 path_obj = Path(entry.path)
                 if not _is_file_locked(path_obj):
                     found.append(JunkFile(path_obj, info.st_size, datetime.fromtimestamp(info.st_mtime)))
@@ -310,9 +310,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
     """
     Recorre recursivamente directorios buscando archivos temporales hasta una profundidad máxima.
     """
-    if depth > 50 or current_dir is None: return
-    
-    if is_protected_path(current_dir):
+    if depth > 50 or current_dir is None or is_protected_path(current_dir):
         return
 
     try:

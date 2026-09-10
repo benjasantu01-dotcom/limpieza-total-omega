@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 36
+- Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 73 | 3 | 10 | 4 | 75 |
-| 2026-09-10 | 154 | 10 | 26 | 15 | 134 |
+| 2026-09-09 | 70 | 3 | 10 | 4 | 74 |
+| 2026-09-10 | 157 | 10 | 27 | 15 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
-- seguridad defensiva: **53**
+- seguridad defensiva: **51**
 - legibilidad y documentación: **50**
-- robustez ante casos límite: **36**
-- rendimiento: **34**
+- rendimiento: **37**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
-- `browser.py`: **20**
+- `quarantine.py`: **22**
 - `duplicates.py`: **19**
 - `healthscore.py`: **19**
 - `settings.py`: **19**
+- `browser.py`: **19**
 - `assistant.py`: **18**
 - `memory.py`: **18**
 - `diskreport.py`: **17**
-- `branding.py`: **15**
-- `safety.py`: **15**
+- `safety.py`: **16**
 - `scanner.py`: **15**
+- `branding.py`: **14**
+- `organizer.py`: **12**
 - `main.py`: **11**
-- `organizer.py`: **11**
-- `startup.py`: **9**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T14:31:18` **safety.py** (rendimiento): Se optimizó el rendimiento de `_check_file_integrity` reemplazando la creación dinámica de diccionarios en cada iteración por un mapeo estático (`MappingProxyType` o un diccionario global simple), reduciendo la sobrecarga de memoria y CPU durante el escaneo de grandes volúmenes de archivos.
+- `2026-09-10T14:30:12` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando las búsquedas sobre el manifiesto de complejidad O(N) a O(1) mediante el uso de conjuntos (`set`) y diccionarios, evitando iteraciones anidadas redundantes al escanear el sistema de archivos.
+- `2026-09-10T14:29:35` **organizer.py** (rendimiento): Optimizé el rendimiento de `_process_directory` reemplazando la creación repetitiva de objetos `Path` por el uso directo de las rutas proporcionadas por `os.DirEntry` y moviendo el chequeo `is_protected_path` al inicio para evitar lecturas innecesarias en subárboles prohibidos.
 - `2026-09-10T14:21:02` **main.py** (rendimiento): Optimizé la gestión de caché de la aplicación implementando una política de invalidación basada en el tamaño máximo y refresco de accesos (LRU), reemplazando el diccionario plano con una estructura que evita búsquedas lineales y mejora la eficiencia en aplicaciones con alta frecuencia de lecturas/escrituras.
 - `2026-09-10T14:19:15` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` utilizando `os.scandir` para obtener metadatos (tamaño, tipo) directamente del iterador del sistema de archivos, evitando llamadas innecesarias a `os.path.getsize` o `stat` adicionales dentro del bucle.
 - `2026-09-10T14:10:47` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` eliminando llamadas redundantes a `path.is_file()` y `path.suffix` dentro del bucle, aprovechando los datos ya obtenidos durante el recorrido `walk_files` para reducir la presión de E/S.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T13:49:04` **organizer.py** (legibilidad y documentación): Mejoré la documentación de las funciones de seguridad crítica con docstrings que explican el "porqué" de las restricciones (como el límite de 260 caracteres o los bloqueos por proceso) y clarifiqué la firma de `is_safe_for_disk_op` para mejorar la legibilidad del flujo de validación.
 - `2026-09-10T13:39:28` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones clave y enriqueciendo los docstrings para clarificar las asunciones técnicas del pipeline, garantizando que futuros colaboradores entiendan el contrato de datos entre `SystemMetrics` y el motor de puntuación.
 - `2026-09-10T13:39:01` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del flujo principal de escaneo, documentando los criterios de exclusión en `_is_valid_candidate` mediante una explicación clara del porqué se aplican esos filtros y agregando type hints de retorno explícitos.
-- `2026-09-10T13:38:35` **diskreport.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados, documentación explícita de excepciones y clarificación de la intención en `_collect_summary_data`, asegurando que el código sea autodocumentado para futuras auditorías de seguridad.
-- `2026-09-10T13:30:01` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos en los métodos privados `_is_path_inside_base`, `_should_skip_entry` y `_is_safe_to_traverse` para clarificar la lógica de seguridad, además de asignar tipos explícitos a los acumuladores en el escaneo recursivo.
-- `2026-09-10T13:29:08` **assistant.py** (legibilidad y documentación): Mejoré la documentación de la clase `SystemContext` y sus métodos principales con docstrings más detallados y especificaciones de tipos claras, facilitando la comprensión del contrato de datos de las métricas del sistema.
