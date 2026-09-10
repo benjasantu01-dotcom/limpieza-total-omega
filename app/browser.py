@@ -240,6 +240,10 @@ def _sum_directory_recursive(
                     continue
                 
                 try:
+                    # Chequeo defensivo: garantizar que la entrada resida dentro de la base permitida
+                    if base_check_path and not _is_path_inside_base(Path(entry.path).resolve(), base_check_path):
+                        continue
+
                     if entry.is_dir(follow_symlinks=False):
                         total += _sum_directory_recursive(
                             entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1

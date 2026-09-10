@@ -329,15 +329,11 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         if destination is None: return None
         path_input = Path(str(destination)).absolute()
         
-        # Validaciones de seguridad pre-escritura
-        if not is_safe_to_modify(path_input) or not is_safe_to_modify(path_input.parent):
+        # Validaciones: si es directorio o ruta protegida, abortar.
+        if path_input.is_dir() or is_protected_path(path_input):
             return None
         
-        # Asegura que la ruta no sea un directorio existente
-        if path_input.is_dir():
-            return None
-            
-        # Lanzará excepción si falla, que capturamos para abortar operación
+        # Verifica integridad y permisos antes de cualquier operación
         ensure_safe_to_modify(path_input)
             
         if not path_input.parent.exists():

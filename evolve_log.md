@@ -582,3 +582,14 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-10T10:45:21` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante estados inconsistentes del sistema de archivos agregando un chequeo preventivo de existencias y permisos en `_Validators.path` para evitar que `Path.resolve()` —que falla si la ruta no existe— bloquee el acceso a configuraciones legítimas que simplemente aún no fueron creadas.
 - `2026-09-10T10:45:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T10:45:21` Corrida terminada. Total usado hoy: 255.
+- `2026-09-10T10:53:57` Arrancando corrida. Quedan hoy ~45 peticiones objetivo.
+- `2026-09-10T10:54:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-10T10:55:00` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-10T10:55:43` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva del asistente restringiendo el acceso a atributos y métodos mediante `_get_source_value` para prevenir que `ingest` pueda invocar accidentalmente métodos críticos de los objetos recibidos como métricas, protegiendo así la integridad de la ejecución en caso de inyección de objetos maliciosos.
+- `2026-09-10T10:56:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-10T10:57:12` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré `save_logo_svg` aplicando una validación de ruta mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, asegurando que la ruta no sea un directorio y que el directorio padre sea seguro según `safety.py`.
+- `2026-09-10T10:57:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-10T10:58:24` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-10T10:58:41` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_sum_directory_recursive` mediante la implementación de un chequeo estricto de rutas "fuera de base" durante la recursión, evitando así posibles escapes de directorio si un enlace simbólico o junction dentro de la caché apuntara a una ubicación fuera del perfil del usuario.
+- `2026-09-10T10:58:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T10:58:41` Corrida terminada. Total usado hoy: 259.

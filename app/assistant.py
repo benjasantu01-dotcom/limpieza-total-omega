@@ -395,14 +395,18 @@ def _ensure_safe_text(text: Any) -> bool:
 def _get_source_value(source: Any, key: str) -> Any:
     """
     Accede de forma genérica a una clave en un diccionario o atributo de objeto.
-    Aísla la lógica de acceso de posibles excepciones en el acceso a propiedades.
+    Asegura que no se acceda a métodos, propiedades dinámicas inseguras o miembros internos.
     """
     try:
         if isinstance(source, dict):
             return source.get(key)
-        # Solo acceder a atributos que no sean callables ni métodos internos (dunder)
-        attr = getattr(source, key, None)
-        return attr if not callable(attr) and not key.startswith("__") else None
+        
+        # Solo acceder a atributos que no sean callables y eviten dunders/privados
+        if hasattr(source, key):
+            val = getattr(source, key)
+            if not callable(val) and not key.startswith("_"):
+                return val
+        return None
     except Exception:
         return None
 

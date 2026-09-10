@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 109 | 7 | 14 | 9 | 110 |
-| 2026-09-10 | 116 | 8 | 21 | 10 | 100 |
+| 2026-09-09 | 109 | 7 | 14 | 9 | 106 |
+| 2026-09-10 | 119 | 8 | 21 | 10 | 101 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
 - legibilidad y documentación: **50**
-- seguridad defensiva: **43**
+- seguridad defensiva: **46**
 - robustez ante casos límite: **41**
 - rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
-- `browser.py`: **19**
+- `browser.py`: **20**
+- `assistant.py`: **19**
 - `healthscore.py`: **19**
 - `memory.py`: **19**
 - `settings.py`: **19**
-- `assistant.py`: **18**
 - `duplicates.py`: **18**
 - `safety.py`: **17**
 - `scanner.py`: **16**
 - `diskreport.py`: **15**
-- `branding.py`: **13**
+- `branding.py`: **14**
 - `organizer.py`: **12**
 - `main.py`: **10**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T10:58:41` **browser.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_sum_directory_recursive` mediante la implementación de un chequeo estricto de rutas "fuera de base" durante la recursión, evitando así posibles escapes de directorio si un enlace simbólico o junction dentro de la caché apuntara a una ubicación fuera del perfil del usuario.
+- `2026-09-10T10:57:12` **branding.py** (seguridad defensiva): Mejoré `save_logo_svg` aplicando una validación de ruta mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, asegurando que la ruta no sea un directorio y que el directorio padre sea seguro según `safety.py`.
+- `2026-09-10T10:55:43` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva del asistente restringiendo el acceso a atributos y métodos mediante `_get_source_value` para prevenir que `ingest` pueda invocar accidentalmente métodos críticos de los objetos recibidos como métricas, protegiendo así la integridad de la ejecución en caso de inyección de objetos maliciosos.
 - `2026-09-10T10:45:21` **settings.py** (robustez ante casos límite): Se reforzó la robustez ante estados inconsistentes del sistema de archivos agregando un chequeo preventivo de existencias y permisos en `_Validators.path` para evitar que `Path.resolve()` —que falla si la ruta no existe— bloquee el acceso a configuraciones legítimas que simplemente aún no fueron creadas.
 - `2026-09-10T10:45:05` **scanner.py** (robustez ante casos límite): Se mejora la robustez de `scanner.py` ante archivos bloqueados o sin permisos mediante la implementación de una validación explícita `is_file()` en el dispatching, evitando excepciones innecesarias en `scan_file` al intentar leer metadatos de rutas que podrían haber cambiado o sido eliminadas durante el recorrido.
 - `2026-09-10T10:36:22` **memory.py** (robustez ante casos límite): Mejora la robustez de `top_memory_processes` añadiendo una validación explícita para evitar que la ejecución de `powershell` falle si el sistema está bajo alta presión de I/O o si el comando retorna una salida malformada, asegurando que no se inyecten datos inválidos al caché tras errores parciales.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T09:57:52` **main.py** (rendimiento): Se implementó un decorador `@lru_cache` para la carga de configuración inicial en `_init_state`, reduciendo accesos redundantes al sistema de archivos al reiniciar la sesión, y se optimizó la lógica de redibujo de `_render_gauge` y `_apply_card_updates` utilizando `after_idle` para coalescencia de eventos, evitando saturar el hilo principal con actualizaciones visuales innecesarias.
 - `2026-09-10T09:43:40` **browser.py** (rendimiento): He optimizado la recursión del escaneo de directorios introduciendo un mecanismo de memoización persistente dentro del bucle de `detect_profiles`, evitando que múltiples navegadores que comparten estructuras de directorios (common cache paths) tengan que re-leer los mismos subdirectorios en disco.
 - `2026-09-10T09:34:37` **assistant.py** (rendimiento): Optimicé `_get_active_problems` eliminando la recreación de listas en cada llamada mediante el uso de `lru_cache`, y mejoré el rendimiento de `local_answer` convirtiendo el `_KEYWORD_MAP` en una estructura de búsqueda más eficiente mediante una comprensión de diccionario indexada por tokens únicos.
-- `2026-09-10T09:34:10` **startup.py** (legibilidad y documentación): Documenté con mayor precisión el propósito de los métodos privados de `StartupEntry` y las funciones de escaneo, clarificando la lógica de seguridad y el manejo de excepciones para facilitar el mantenimiento futuro.
-- `2026-09-10T09:33:20` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en los retornos de funciones, consolidando la estructura del módulo mediante una organización de constantes de validación más explícita, y clarificando las docstrings de las funciones de seguridad mediante la especificación de sus precondiciones y comportamiento ante errores.
-- `2026-09-10T09:32:50` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `scanner.py`, clarificando mediante docstrings detallados la lógica de los chequeos heurísticos, corrigiendo la semántica de `_is_safe_entry` (ahora documentada como excluyente) y unificando el formato de los comentarios para cumplir con los estándares de mantenibilidad exigidos.
