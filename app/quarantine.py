@@ -700,6 +700,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
     """Valida si un ítem puede ser purgado tras chequeo de seguridad e integridad."""
     return (
+        file_path.exists() and
         _is_within_quarantine_sandbox(file_path, base_path) and
         item.verify_integrity(file_path) and
         _safe_unlink(file_path)

@@ -1218,3 +1218,10 @@ FAILED evolve/tests/test_assistant.py::test_a_protected_folder_is_never_remember
 - `2026-09-10T06:00:22` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una gestión robusta de estados intermedios y excepciones durante el ciclo de vida de los widgets (específicamente en la inicialización de pestañas y redibujos) para evitar cierres inesperados al interactuar con rutas o configuraciones que pueden cambiar durante el runtime.
 - `2026-09-10T06:00:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T06:00:22` Corrida terminada. Total usado hoy: 143.
+- `2026-09-10T06:08:20` Arrancando corrida. Quedan hoy ~157 peticiones objetivo.
+- `2026-09-10T06:08:53` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-10T06:09:21` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-10T06:09:57` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine.py` ante errores de lectura/escritura (I/O) al implementar bloques `try-finally` para asegurar el cierre de descriptores de archivos, y añadí validación de existencia para archivos aislados antes de intentar cualquier operación de verificación o borrado en el bucle de `purge_all`.
+- `2026-09-10T06:10:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-10T06:10:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T06:10:02` Corrida terminada. Total usado hoy: 147.
