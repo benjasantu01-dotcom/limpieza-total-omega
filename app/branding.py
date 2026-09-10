@@ -265,7 +265,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     
     rgb_stops = tuple(_hex_to_rgb(s) for s in stops)
     tramos = len(stops) - 1
-    res: List[HexColor] = [C_TEXT_MUTED] * n
+    res = [C_TEXT_MUTED] * n
     
     for i in range(n):
         pos = (i / (n - 1) * tramos) if n > 1 else 0

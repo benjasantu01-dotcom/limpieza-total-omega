@@ -359,16 +359,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        # El try-except interno aísla errores de IO por cambios de estado en el FS
+        # El try-except interno aísla errores de IO
         try:
-            if not path.is_file(): continue
-            
-            # Validación estricta del tamaño para evitar métricas corruptas
             safe_size: int = max(0, int(size))
             total_bytes += safe_size
             total_files += 1
             
-            # Extracción segura de la extensión
+            # La extensión ya está en el path.suffix, no requiere acceso a disco
             ext = path.suffix.lower() if path.suffix else "(sin extensión)"
             
             ext_sizes[ext] += safe_size
@@ -382,7 +379,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                     heapq.heapreplace(top_heap, (safe_size, path))
                     
         except (ValueError, TypeError, OSError):
-            # Ignoramos archivos inaccesibles durante el recorrido por seguridad/robustez
             continue
             
     return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_heap)

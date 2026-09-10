@@ -185,7 +185,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
             return True
         
         # Validar tipo de entrada antes de operar para evitar errores de acceso
-        if entry.is_symlink() or is_junction_fn(path) or os.path.ismount(path):
+        if entry.is_symlink() or is_junction_fn(path):
             return True
             
         if __is_system_hidden(path, kernel32):
@@ -242,12 +242,6 @@ def _sum_directory_recursive(
                     continue
                 
                 try:
-                    if not entry.path:
-                        continue
-                        
-                    if base_check_path and not _is_path_inside_base(Path(entry.path).resolve(), base_check_path):
-                        continue
-
                     if entry.is_dir(follow_symlinks=False):
                         total += _sum_directory_recursive(
                             entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
@@ -296,7 +290,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
             return False
             
         if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or 
-            os.path.ismount(str(real_candidate)) or _is_excluded_file(real_candidate.name)):
+            _is_excluded_file(real_candidate.name)):
             return False
         return True
     except (OSError, PermissionError, RuntimeError, ValueError):
@@ -321,21 +315,18 @@ def detect_profiles(
         try:
             real_base = base.resolve(strict=True)
             for browser_name, rel_str in browser_map.items():
-                try:
-                    if not rel_str:
-                        continue
-                    candidate = real_base.joinpath(*rel_str.split("\\"))
-                    
-                    if not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
-                        continue
-                        
-                    c_path = candidate.resolve(strict=True)
-                    size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
-                    if size > 0:
-                        found.append(BrowserCache(str(browser_name), c_path, size))
-                except (OSError, PermissionError, TypeError, ValueError):
+                if not rel_str:
                     continue
-        except (OSError, PermissionError, TypeError, ValueError): 
+                candidate = real_base.joinpath(*rel_str.split("\\"))
+                
+                if not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
+                    continue
+                    
+                c_path = candidate.resolve(strict=True)
+                size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
+                if size > 0:
+                    found.append(BrowserCache(str(browser_name), c_path, size))
+        except (OSError, PermissionError, TypeError, ValueError):
             continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)
