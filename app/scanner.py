@@ -109,14 +109,14 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Determina si la ruta absoluta proporcionada está bajo la jerarquía del directorio base."""
+        """Verifica que la ruta resuelta pertenezca a la jerarquía del directorio de escaneo inicial."""
         if not entry_path: return False
         return entry_path.lower().startswith(self.base_root_str)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida que la entrada no exceda límites de longitud, no tenga caracteres de 
-        ofuscación RTL y no esté bajo una restricción definida en safety.py.
+        Aplica filtros de seguridad: rechaza rutas prohibidas por safety.py, 
+        nombres reservados, longitudes excesivas o caracteres de ofuscación RTL.
         """
         try:
             if entry is None: return False
@@ -128,15 +128,14 @@ class Scanner:
                 return False
             
             p = Path(path_str).resolve()
-            # Validación doble: debe estar bajo el root y explícitamente no ser una ruta protegida
             return self._is_inside_base_root(str(p)) and not is_protected_path(p)
         except (OSError, AttributeError, TypeError, RuntimeError):
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
-        Detecta si un directorio es un Symlink o Junction Point usando atributos de 
-        archivo para evitar recursión infinita o saltos fuera del volumen base.
+        Detecta mediante atributos de archivo si la entrada es una unión o enlace 
+        simbólico, evitando el seguimiento accidental hacia fuera de la jerarquía.
         """
         try:
             if entry is None or entry.is_symlink():
@@ -147,15 +146,15 @@ class Scanner:
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """Registra un directorio para ser escaneado posteriormente si no ha sido visitado."""
+        """Agrega un directorio al stack de procesamiento si no fue visitado previamente."""
         if entry and entry.path and entry.path not in self.seen and os.path.exists(entry.path):
             self.seen.add(entry.path)
             directory_stack.append(entry.path)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """
-        Evalúa una entrada: si es directorio, lo encola; si es archivo ejecutable/sospechoso,
-        lo envía al motor de heurísticas.
+        Dispatcher que clasifica la entrada como directorio para recursión o archivo 
+        para análisis heurístico basándose en la extensión.
         """
         try:
             if not self._is_safe_entry(entry):
@@ -173,21 +172,13 @@ class Scanner:
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
-        """Orquesta la ejecución de los chequeos definidos en la suite de heurísticas."""
+        """Encapsula la invocación del motor de análisis de archivos."""
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """
-    Analiza un archivo individual usando heurísticas estáticas.
-
-    Args:
-        path: Objeto Path del archivo.
-        now_ts: Timestamp de la iteración actual.
-        entry: Objeto DirEntry opcional con metadatos ya obtenidos.
-        ext: Extensión del archivo si es conocida.
-
-    Returns:
-        Lista de objetos Suspicion encontrados.
+    Motor de ejecución para reglas heurísticas. Aplica validaciones básicas de 
+    integridad y luego delega en el registro de chequeos especializados.
     """
     findings: ScanResult = []
     
@@ -211,6 +202,10 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
+    """
+    Función de entrada para iniciar un escaneo completo de directorio. 
+    Inicializa el escáner y gestiona el ciclo de vida del stack de recursión.
+    """
     if directory is None:
         return []
         
@@ -224,7 +219,6 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             return []
         
         root_input = base_path.resolve()
-        # Validación extra: prevenir rutas UNC o relativas que se resolvieron incorrectamente
         if not root_input.is_absolute() or str(root_input).startswith(("\\\\", "//")) or is_protected_path(root_input):
             return []
             
@@ -246,6 +240,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         return []
 
 def run_windows_defender_quick_scan() -> str:
+    """Invoca la API de PowerShell para verificar el estado de Defender y realizar un escaneo rápido."""
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],

@@ -81,7 +81,7 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
-        """Valida si el nombre del archivo colisiona con dispositivos reservados del kernel (ej. NUL, CON)."""
+        """Determina si el nombre de archivo es un dispositivo reservado de Windows (ej. NUL, CON) que podría causar bloqueos."""
         reserved: Set[str] = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
         try:
             if "\0" in path_str:
@@ -91,27 +91,27 @@ class StartupEntry:
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:
-        """Verifica la presencia de caracteres peligrosos para shell injection o rutas UNC externas."""
+        """Detecta caracteres inusuales en rutas que sugieran inyección de comandos o intentos de escape UNC."""
         suspicious_chars = '<>|?*\0&;%'
         return any(c in path_string for c in suspicious_chars) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Determina si un archivo es ejecutable válido excluyendo enlaces simbólicos por riesgo de seguridad."""
+        """Verifica si el archivo posee una extensión ejecutable permitida y no es un enlace simbólico (seguridad)."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Elimina caracteres de control y espacios no deseados de una línea de comando cruda."""
+        """Limpia caracteres de control no imprimibles (ASCII < 32) de una línea de comando."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae la ruta contenida entre comillas dobles. 
-        Valida que no contenga caracteres sospechosos ni rutas protegidas por sistema.
+        Extrae y valida una ruta absoluta desde una cadena de comando entrecomillada.
+        Implementa verificación contra `is_protected_path` para evitar acceso a zonas restringidas.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -135,22 +135,22 @@ class StartupEntry:
 
     def _validate_file_access(self, p: Path) -> bool:
         """
-        Realiza una validación de seguridad de bajo nivel usando lstat para evitar 
-        la resolución automática de enlaces simbólicos o puntos de reparse.
+        Realiza una validación de seguridad de bajo nivel mediante lstat, evitando seguir 
+        enlaces simbólicos o puntos de reparse (Reparse Points) durante la inspección.
         """
         try:
             if not os.access(p, os.F_OK) or p.is_dir():
                 return False
             stats = p.lstat()
-            # 0x00000400 corresponde a FILE_ATTRIBUTE_REPARSE_POINT en Windows
+            # 0x00000400 es la constante para FILE_ATTRIBUTE_REPARSE_POINT
             return not p.is_symlink() and not (getattr(stats, 'st_file_attributes', 0) & 0x00000400)
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
-        Normaliza, valida contra listas protegidas y resuelve rutas absolutas.
-        Implementa caché en memoria para reducir llamadas al sistema de archivos.
+        Normaliza una ruta, valida contra listas de seguridad y almacena el resultado en caché.
+        Previene la resolución recursiva mediante strict=False.
         """
         if not path_string or self._is_path_suspicious(path_string) or self._is_reserved_device_name(path_string):
             return ""
@@ -166,7 +166,6 @@ class StartupEntry:
             return path_string if _EXISTS_CACHE[path_string] else path_string
         
         try:
-            # Uso de resolve(strict=False) para evitar excepciones en rutas inexistentes
             p: Path = Path(norm).resolve(strict=False)
             
             if not self._validate_file_access(p) or not p.is_absolute() or is_protected_path(p):
@@ -181,7 +180,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Analiza la línea de comandos para aislar el ejecutable principal antes de procesarlo."""
+        """Aísla el ejecutable principal de una línea de comandos compleja."""
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -198,7 +197,7 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Retorna la ruta absoluta del ejecutable tras una evaluación perezosa (lazy evaluation)."""
+        """Retorna la ruta absoluta del ejecutable tras una evaluación perezosa."""
         if self._checked_exists:
             return self._exec_cache or ""
             
@@ -260,10 +259,8 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Parsea la salida CSV del registro de Windows (PowerShell).
-    
-    Valida nombres y comandos, filtrando entradas corruptas, rutas protegidas
-    y comandos de consola (PS*) que no representan ejecutables estándar.
+    Parsea la salida CSV del registro de Windows (PowerShell) mediante filtros de seguridad.
+    Descarta entradas corruptas, comandos de PowerShell (PS*) y rutas protegidas.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -316,7 +313,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
     """
     Consulta las claves de registro Run mediante una ejecución aislada de PowerShell.
-    Solo requiere lectura de datos, por lo que no necesita permisos elevados.
+    Es un proceso de solo lectura y no requiere privilegios elevados.
     """
     if os.name != "nt":
         return []
