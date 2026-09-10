@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 33
-- Sin cambios (nada sustancial que mejorar): 15
+- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 32
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 130 | 10 | 17 | 9 | 123 |
-| 2026-09-10 | 99 | 6 | 16 | 6 | 88 |
+| 2026-09-09 | 127 | 10 | 16 | 9 | 123 |
+| 2026-09-10 | 100 | 7 | 16 | 8 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
 - seguridad defensiva: **53**
-- legibilidad y documentación: **45**
+- legibilidad y documentación: **46**
 - robustez ante casos límite: **40**
-- rendimiento: **37**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `safety.py`: **20**
-- `settings.py`: **20**
 - `healthscore.py`: **20**
 - `duplicates.py`: **19**
+- `safety.py`: **19**
+- `settings.py`: **19**
+- `memory.py`: **19**
 - `assistant.py`: **18**
-- `memory.py`: **18**
 - `browser.py`: **17**
-- `scanner.py`: **16**
 - `diskreport.py`: **15**
+- `scanner.py`: **15**
 - `branding.py`: **13**
 - `organizer.py`: **12**
 - `main.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T09:14:12` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos con tipado formal y detalles de comportamiento en funciones críticas, junto con la clarificación de constantes de arquitectura Win32 para facilitar el mantenimiento y la auditoría de seguridad.
 - `2026-09-10T08:53:36` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `save()` y `load()` capturando específicamente `OSError` al realizar operaciones de archivo (como `stat` o `mkdir`) para evitar el colapso de la aplicación ante problemas transitorios de acceso al sistema de archivos, siguiendo el enfoque de validación de entradas y manejo de excepciones.
 - `2026-09-10T08:52:10` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_check_file_integrity` al reemplazar la lógica de control basada en excepciones por una validación más controlada, asegurando que `_check_file_integrity` no falle silenciosamente ni lance errores inesperados ante objetos inexistentes o bloqueados, alineándose con el enfoque de validación defensiva.
 - `2026-09-10T08:42:58` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` ante errores de entrada y condiciones de carrera al validar explícitamente los parámetros en `restore_item` y `purge_item` antes de realizar operaciones de disco, siguiendo estrictamente el enfoque de manejo de errores y validación.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T07:00:16` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para que el uso de `ensure_safe_to_modify` sea preventivo antes de intentar cualquier operación de resolución de rutas, evitando que una ruta maliciosa o inaccesible detenga el hilo de ejecución mediante el manejo explícito de la excepción de seguridad dentro del validador.
 - `2026-09-10T06:50:55` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_encrypted_or_compressed` en el flujo de integridad para evitar intentos de modificación sobre archivos con atributos NTFS de cifrado o compresión, reforzando la seguridad defensiva al evitar corrupciones accidentales en datos protegidos por el sistema de archivos.
 - `2026-09-10T06:50:18` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` mediante la implementación de una validación de `st_ino` (número de inodo) en `_check_isolation_safety` para prevenir ataques de sustitución de archivos (file swapping) mediante enlaces duros, asegurando que el archivo que se va a mover sea efectivamente el mismo que se acaba de validar.
-- `2026-09-10T06:49:42` **organizer.py** (seguridad defensiva): Se ha mejorado `_is_safe_for_disk_op` para verificar la existencia del archivo fuente (`src.exists()`) utilizando el `Path` resuelto antes de realizar cualquier validación de atributos o movimiento, evitando excepciones innecesarias y comportamientos indefinidos al manejar rutas no existentes o enlaces rotos.

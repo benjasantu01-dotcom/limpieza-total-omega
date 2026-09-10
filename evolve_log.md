@@ -434,3 +434,28 @@ FAILED evolve/tests/test_assistant.py::test_a_protected_folder_is_never_remember
 - `2026-09-10T09:03:54` Gemini sigue devolviendo 500 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-10T09:03:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T09:03:54` Corrida terminada. Total usado hoy: 215.
+- `2026-09-10T09:11:53` Arrancando corrida. Quedan hoy ~85 peticiones objetivo.
+- `2026-09-10T09:12:20` ➖ Sin cambios en duplicates.py (enfoque: legibilidad y documentación). Motivo: Mejoré la documentación técnica del módulo mediante la adición de Type Hints en las firmas de funciones internas y la clarificación de los propósitos de las funciones de filtrado, lo que facilita el mantenimiento del flujo de ejecución de los hashes.
+- `2026-09-10T09:12:46` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:25: in <module>
+    import healthscore  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^
+app/healthscore.py:132: in <module>
+    _CacheItem: TypeAlias = Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], Optional[List[RecommendationRule]]]
+                                                            ^^^^^^^^^^^^^
+E   NameError: name 'SystemMetrics' is not defined
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defined
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.29s
+
+```
+- `2026-09-10T09:12:46` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación interna y mantenibilidad del módulo mediante la adición de Type Hints explícitos para los objetos de datos internos (`_CACHE_SCORERS`) y una clarificación en los Docstrings de las funciones críticas (`_evaluate_rules` y `compute_score`), asegurando que las intenciones de diseño sean evidentes para futuras expansiones del pipeline.
+- `2026-09-10T09:13:57` ➖ Sin cambios en main.py (enfoque: legibilidad y documentación). Motivo: Mejoré la legibilidad y mantenibilidad de `main.py` mediante la refactorización de `_build_single_health_bar`, extrayendo la lógica de configuración visual a métodos auxiliares y documentando explícitamente los parámetros de las barras de estado, facilitando la comprensión del flujo de datos en la pestaña Salud.
+- `2026-09-10T09:14:12` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos con tipado formal y detalles de comportamiento en funciones críticas, junto con la clarificación de constantes de arquitectura Win32 para facilitar el mantenimiento y la auditoría de seguridad.
+- `2026-09-10T09:14:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T09:14:12` Corrida terminada. Total usado hoy: 219.
