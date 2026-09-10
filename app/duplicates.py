@@ -40,6 +40,8 @@ __all__ = [
 
 PARTIAL_READ_BYTES: int = 64 * 1024
 FILE_ATTRIBUTE_REPARSE_POINT: int = 0x400
+FILE_ATTRIBUTE_HIDDEN: int = 0x2
+FILE_ATTRIBUTE_SYSTEM: int = 0x4
 
 
 def is_junction(path: Path) -> bool:
@@ -50,6 +52,17 @@ def is_junction(path: Path) -> bool:
         resolved = path.resolve()
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(resolved))
         return bool(attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT))
+    except (AttributeError, OSError, RuntimeError):
+        return False
+
+
+def is_system_or_hidden(path: Path) -> bool:
+    """Verifica si un archivo tiene atributos de sistema u oculto en Windows."""
+    try:
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        if attrs == -1:
+            return False
+        return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM))
     except (AttributeError, OSError, RuntimeError):
         return False
 
@@ -120,12 +133,14 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 
 def _is_valid_candidate(path: Path) -> bool:
-    """Validador estricto: comprueba existencia, permisos y que no sea enlace simbólico o junction."""
+    """Validador estricto: comprueba existencia, permisos, atributos y que no sea enlace."""
     if not isinstance(path, Path) or not path.is_absolute():
         return False
     try:
         resolved = path.resolve(strict=True)
         if not resolved.is_file() or resolved.is_symlink() or is_junction(resolved):
+            return False
+        if is_system_or_hidden(resolved):
             return False
         st = resolved.stat()
         return (

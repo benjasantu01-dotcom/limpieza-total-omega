@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 207
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 109 | 7 | 14 | 9 | 106 |
-| 2026-09-10 | 119 | 8 | 21 | 10 | 101 |
+| 2026-09-09 | 109 | 7 | 14 | 9 | 102 |
+| 2026-09-10 | 122 | 8 | 21 | 11 | 101 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
 - legibilidad y documentación: **50**
-- seguridad defensiva: **46**
+- seguridad defensiva: **49**
 - robustez ante casos límite: **41**
 - rendimiento: **37**
 
@@ -31,14 +31,14 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `quarantine.py`: **21**
 - `browser.py`: **20**
+- `healthscore.py`: **20**
 - `assistant.py`: **19**
-- `healthscore.py`: **19**
+- `duplicates.py`: **19**
 - `memory.py`: **19**
 - `settings.py`: **19**
-- `duplicates.py`: **18**
 - `safety.py`: **17**
+- `diskreport.py`: **16**
 - `scanner.py`: **16**
-- `diskreport.py`: **15**
 - `branding.py`: **14**
 - `organizer.py`: **12**
 - `main.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T11:05:36` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `healthscore.py` validando explícitamente la integridad de los resultados de las fábricas de mensajes en `_evaluate_rules`, asegurando que no se inyecten datos inesperados o no sanitizados al reporte final, manteniendo la inmutabilidad del pipeline.
+- `2026-09-10T11:05:08` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_valid_candidate` añadiendo una comprobación explícita para evitar que archivos con el bit `FILE_ATTRIBUTE_HIDDEN` o `FILE_ATTRIBUTE_SYSTEM` sean procesados, previniendo manipulaciones inesperadas en archivos críticos del sistema.
+- `2026-09-10T11:04:42` **diskreport.py** (seguridad defensiva): Se ha implementado una validación de seguridad defensiva en `_collect_summary_data` para garantizar que la ruta, aunque fue validada inicialmente, siga siendo un archivo válido y no haya sido alterada o sustituida por un directorio durante el procesamiento, previniendo errores de lectura inesperados.
 - `2026-09-10T10:58:41` **browser.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_sum_directory_recursive` mediante la implementación de un chequeo estricto de rutas "fuera de base" durante la recursión, evitando así posibles escapes de directorio si un enlace simbólico o junction dentro de la caché apuntara a una ubicación fuera del perfil del usuario.
 - `2026-09-10T10:57:12` **branding.py** (seguridad defensiva): Mejoré `save_logo_svg` aplicando una validación de ruta mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, asegurando que la ruta no sea un directorio y que el directorio padre sea seguro según `safety.py`.
 - `2026-09-10T10:55:43` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva del asistente restringiendo el acceso a atributos y métodos mediante `_get_source_value` para prevenir que `ingest` pueda invocar accidentalmente métodos críticos de los objetos recibidos como métricas, protegiendo así la integridad de la ejecución en caso de inyección de objetos maliciosos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T10:24:19` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_collect_summary_data` para manejar archivos cuyo tamaño haya cambiado o desaparecido entre el listado inicial y la lectura de estadísticas, evitando que el recolector colapse ante archivos efímeros o bloqueados.
 - `2026-09-10T10:23:51` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_get_kernel32` al verificar la existencia del atributo `GetFileAttributesW` mediante `hasattr` antes de intentar usarlo, evitando errores de acceso a memoria o excepciones inesperadas si la DLL cargada fuera incompatible o estuviera en un estado degradado.
 - `2026-09-10T10:14:49` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` y la ingesta de datos en `SystemContext.ingest` añadiendo una validación explícita de tipos que evita errores ante fuentes de datos malformadas o tipos inesperados, reforzando la tolerancia a fallos del módulo ante configuraciones externas corruptas.
-- `2026-09-10T09:57:52` **main.py** (rendimiento): Se implementó un decorador `@lru_cache` para la carga de configuración inicial en `_init_state`, reduciendo accesos redundantes al sistema de archivos al reiniciar la sesión, y se optimizó la lógica de redibujo de `_render_gauge` y `_apply_card_updates` utilizando `after_idle` para coalescencia de eventos, evitando saturar el hilo principal con actualizaciones visuales innecesarias.
-- `2026-09-10T09:43:40` **browser.py** (rendimiento): He optimizado la recursión del escaneo de directorios introduciendo un mecanismo de memoización persistente dentro del bucle de `detect_profiles`, evitando que múltiples navegadores que comparten estructuras de directorios (common cache paths) tengan que re-leer los mismos subdirectorios en disco.
-- `2026-09-10T09:34:37` **assistant.py** (rendimiento): Optimicé `_get_active_problems` eliminando la recreación de listas en cada llamada mediante el uso de `lru_cache`, y mejoré el rendimiento de `local_answer` convirtiendo el `_KEYWORD_MAP` en una estructura de búsqueda más eficiente mediante una comprensión de diccionario indexada por tokens únicos.

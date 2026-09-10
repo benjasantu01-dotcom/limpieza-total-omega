@@ -365,8 +365,9 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     for path, size in walk_files(directory, skip_protected):
         # Asegurar un manejo robusto ante cambios en el FS durante el recorrido
         try:
-            current_size = path.stat().st_size
-            safe_size = int(current_size)
+            if not path.is_file(): continue
+            current_st = path.stat()
+            safe_size = int(current_st.st_size)
             total_bytes += safe_size
             total_files += 1
             
