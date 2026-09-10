@@ -560,3 +560,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-10T10:15:07` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-09-10T10:15:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T10:15:07` Corrida terminada. Total usado hoy: 243.
+- `2026-09-10T10:23:21` Arrancando corrida. Quedan hoy ~57 peticiones objetivo.
+- `2026-09-10T10:23:51` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_get_kernel32` al verificar la existencia del atributo `GetFileAttributesW` mediante `hasattr` antes de intentar usarlo, evitando errores de acceso a memoria o excepciones inesperadas si la DLL cargada fuera incompatible o estuviera en un estado degradado.
+- `2026-09-10T10:24:19` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `_collect_summary_data` para manejar archivos cuyo tamaño haya cambiado o desaparecido entre el listado inicial y la lectura de estadísticas, evitando que el recolector colapse ante archivos efímeros o bloqueados.
+- `2026-09-10T10:24:45` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una capa de validación robusta ante archivos inaccesibles o bloqueados durante el proceso de hashing (`hash_file` y `partial_hash`) capturando excepciones de sistema de forma específica y asegurando que las rutas existentes no cambien su estado de archivo a directorio o enlace mientras se procesan.
+- `2026-09-10T10:24:59` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` ante estados inesperados de los datos de origen (como valores infinitos o NaN generados por errores de sensores externos) reforzando la validación en `__post_init__` y asegurando que `_to_float` maneje de forma explícita el caso de `float('inf')` o `nan`.
+- `2026-09-10T10:24:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T10:24:59` Corrida terminada. Total usado hoy: 247.

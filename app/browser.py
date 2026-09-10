@@ -159,6 +159,9 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
+        # Verificación explícita de atributo para evitar llamadas inválidas
+        if not hasattr(kernel32, 'GetFileAttributesW'):
+            return False
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False 

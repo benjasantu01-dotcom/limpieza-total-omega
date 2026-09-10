@@ -84,7 +84,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         
     try:
         p = Path(path).resolve(strict=True)
-        if not _is_valid_candidate(p) or p.stat().st_size == 0:
+        if not p.is_file() or p.stat().st_size == 0:
             return None
             
         digest = hashlib.sha256()
@@ -109,7 +109,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
     try:
         p = Path(path).resolve(strict=True)
-        if not _is_valid_candidate(p) or p.stat().st_size == 0:
+        if not p.is_file() or p.stat().st_size == 0:
             return None
 
         with open(p, "rb") as f:

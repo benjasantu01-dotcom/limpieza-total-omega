@@ -363,9 +363,10 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        # Asegurar un manejo robusto de los datos del archivo
+        # Asegurar un manejo robusto ante cambios en el FS durante el recorrido
         try:
-            safe_size = int(size)
+            current_size = path.stat().st_size
+            safe_size = int(current_size)
             total_bytes += safe_size
             total_files += 1
             

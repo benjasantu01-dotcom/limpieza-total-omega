@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 113 | 8 | 15 | 9 | 116 |
-| 2026-09-10 | 108 | 8 | 20 | 8 | 99 |
+| 2026-09-09 | 111 | 8 | 14 | 9 | 115 |
+| 2026-09-10 | 112 | 8 | 20 | 8 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
 - legibilidad y documentación: **50**
-- seguridad defensiva: **47**
+- seguridad defensiva: **45**
 - rendimiento: **37**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
+- `quarantine.py`: **21**
 - `settings.py`: **19**
-- `safety.py`: **18**
+- `browser.py`: **19**
+- `healthscore.py`: **19**
 - `assistant.py`: **18**
-- `browser.py`: **18**
-- `healthscore.py`: **18**
+- `duplicates.py`: **18**
 - `memory.py`: **18**
-- `duplicates.py`: **17**
+- `safety.py`: **17**
 - `scanner.py`: **16**
-- `diskreport.py`: **14**
+- `diskreport.py`: **15**
 - `branding.py`: **13**
 - `organizer.py`: **12**
 - `main.py`: **9**
@@ -46,6 +46,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T10:24:59` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante estados inesperados de los datos de origen (como valores infinitos o NaN generados por errores de sensores externos) reforzando la validación en `__post_init__` y asegurando que `_to_float` maneje de forma explícita el caso de `float('inf')` o `nan`.
+- `2026-09-10T10:24:45` **duplicates.py** (robustez ante casos límite): Se introdujo una capa de validación robusta ante archivos inaccesibles o bloqueados durante el proceso de hashing (`hash_file` y `partial_hash`) capturando excepciones de sistema de forma específica y asegurando que las rutas existentes no cambien su estado de archivo a directorio o enlace mientras se procesan.
+- `2026-09-10T10:24:19` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_collect_summary_data` para manejar archivos cuyo tamaño haya cambiado o desaparecido entre el listado inicial y la lectura de estadísticas, evitando que el recolector colapse ante archivos efímeros o bloqueados.
+- `2026-09-10T10:23:51` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_get_kernel32` al verificar la existencia del atributo `GetFileAttributesW` mediante `hasattr` antes de intentar usarlo, evitando errores de acceso a memoria o excepciones inesperadas si la DLL cargada fuera incompatible o estuviera en un estado degradado.
 - `2026-09-10T10:14:49` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` y la ingesta de datos en `SystemContext.ingest` añadiendo una validación explícita de tipos que evita errores ante fuentes de datos malformadas o tipos inesperados, reforzando la tolerancia a fallos del módulo ante configuraciones externas corruptas.
 - `2026-09-10T09:57:52` **main.py** (rendimiento): Se implementó un decorador `@lru_cache` para la carga de configuración inicial en `_init_state`, reduciendo accesos redundantes al sistema de archivos al reiniciar la sesión, y se optimizó la lógica de redibujo de `_render_gauge` y `_apply_card_updates` utilizando `after_idle` para coalescencia de eventos, evitando saturar el hilo principal con actualizaciones visuales innecesarias.
 - `2026-09-10T09:43:40` **browser.py** (rendimiento): He optimizado la recursión del escaneo de directorios introduciendo un mecanismo de memoización persistente dentro del bucle de `detect_profiles`, evitando que múltiples navegadores que comparten estructuras de directorios (common cache paths) tengan que re-leer los mismos subdirectorios en disco.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T09:14:12` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos con tipado formal y detalles de comportamiento en funciones críticas, junto con la clarificación de constantes de arquitectura Win32 para facilitar el mantenimiento y la auditoría de seguridad.
 - `2026-09-10T08:53:36` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `save()` y `load()` capturando específicamente `OSError` al realizar operaciones de archivo (como `stat` o `mkdir`) para evitar el colapso de la aplicación ante problemas transitorios de acceso al sistema de archivos, siguiendo el enfoque de validación de entradas y manejo de excepciones.
 - `2026-09-10T08:52:10` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_check_file_integrity` al reemplazar la lógica de control basada en excepciones por una validación más controlada, asegurando que `_check_file_integrity` no falle silenciosamente ni lance errores inesperados ante objetos inexistentes o bloqueados, alineándose con el enfoque de validación defensiva.
-- `2026-09-10T08:42:58` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` ante errores de entrada y condiciones de carrera al validar explícitamente los parámetros en `restore_item` y `purge_item` antes de realizar operaciones de disco, siguiendo estrictamente el enfoque de manejo de errores y validación.
-- `2026-09-10T08:42:20` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` reemplazando los chequeos de seguridad "en cascada" por una validación centralizada en `_is_safe_for_disk_op`, eliminando redundancias y asegurando que las excepciones críticas de `ensure_safe_to_modify` se gestionen de forma consistente.
-- `2026-09-10T08:41:51` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_windows_process_csv` añadiendo una validación estricta de la estructura del CSV mediante un chequeo de longitud de `parts` y capturando errores inesperados por línea, garantizando que una línea malformada no silencie el resto del análisis.
-- `2026-09-10T08:33:28` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_ask_assistant` y `_collect_settings` agregando saneamiento de texto y manejo de excepciones ante widgets de UI potencialmente inexistentes o valores de entrada corruptos, evitando así cierres inesperados de la aplicación.

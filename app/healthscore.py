@@ -151,31 +151,17 @@ class SystemMetrics:
             if val is None:
                 setattr(self, field_name, 100.0 if "percent" in field_name else 0.0)
         self.validate()
-        if not self.is_finite:
-            # Fallback seguro ante estados de datos no representables
-            for f in self.__dataclass_fields__:
-                setattr(self, f, 0.0 if "percent" not in f else 100.0)
 
     def validate(self) -> None:
         """Asegura que todos los valores numéricos caigan en rangos lógicos y finitos."""
-        try:
-            self.junk_mb = max(0.0, _to_float(self.junk_mb))
-            self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
-            self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
-            self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings)))
-            self.startup_count = int(max(0, _to_float(self.startup_count)))
-            self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
-            self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
-            self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
-        except (ValueError, TypeError, OverflowError):
-            self.junk_mb = 0.0
-            self.duplicate_mb = 0.0
-            self.suspicious_count = 0
-            self.suspicious_warnings = 0
-            self.startup_count = 0
-            self.quarantined_count = 0
-            self.memory_available_percent = 100.0
-            self.disk_free_percent = 100.0
+        self.junk_mb = max(0.0, _to_float(self.junk_mb))
+        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
+        self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
+        self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings)))
+        self.startup_count = int(max(0, _to_float(self.startup_count)))
+        self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
+        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
+        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
 
     @property
     def is_finite(self) -> bool:
@@ -200,7 +186,7 @@ def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
     return float(max(low, min(high, value)))
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    """Intenta convertir a float, retornando el valor por defecto en caso de fallo."""
+    """Intenta convertir a float, retornando el valor por defecto si falla o es infinito."""
     try:
         val = float(value)
         return val if math.isfinite(val) else default
@@ -225,7 +211,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                     clean_msg = " ".join(msg.split())
                     findings.append(clean_msg)
         except Exception:
-            # Una regla fallida no debería detener el procesamiento del resto del reporte
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
