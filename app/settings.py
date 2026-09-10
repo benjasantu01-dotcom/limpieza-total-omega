@@ -345,7 +345,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             os.fsync(f.fileno())
         
         if ruta.exists():
-            shutil.copy2(ruta, bak_path)
+            try:
+                shutil.copy2(ruta, bak_path)
+            except OSError:
+                pass
             
         os.replace(temp_path, ruta)
         

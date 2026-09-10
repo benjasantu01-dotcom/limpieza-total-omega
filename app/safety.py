@@ -260,24 +260,22 @@ def _check_file_integrity(path: Path) -> None:
     """
     try:
         file_stat = path.stat()
-    except (PermissionError, OSError) as e:
-        if isinstance(e, FileNotFoundError):
-            return
-        code = SafetyValidationErrorCode.ACCESS_DENIED if isinstance(e, PermissionError) else SafetyValidationErrorCode.IO_ERROR
-        raise UnsafePathError(f"Error de acceso en {path}: {e}", code)
+    except (PermissionError, OSError):
+        # Si no podemos acceder al stat, asumimos riesgo o error de sistema
+        raise UnsafePathError(f"Acceso denegado a {path}", SafetyValidationErrorCode.ACCESS_DENIED)
         
     for rule in _VALIDATORS:
-        try:
-            if rule.predicate(path, file_stat):
-                mapping = {
-                    ProtectionReason.HARD_LINK: SafetyValidationErrorCode.HARD_LINK_DETECTED,
-                    ProtectionReason.OFFLINE: SafetyValidationErrorCode.OFFLINE_FILE,
-                    ProtectionReason.ENCRYPTED_OR_COMPRESSED: SafetyValidationErrorCode.ENCRYPTED_OR_COMPRESSED
-                }
-                code = mapping.get(rule.reason, SafetyValidationErrorCode.GENERIC)
-                raise UnsafePathError(f"Violación de integridad ({rule.reason.value})", code)
-        except (PermissionError, OSError, AttributeError, ctypes.ArgumentError):
-            continue
+        if rule.predicate(path, file_stat):
+            mapping = {
+                ProtectionReason.HARD_LINK: SafetyValidationErrorCode.HARD_LINK_DETECTED,
+                ProtectionReason.OFFLINE: SafetyValidationErrorCode.OFFLINE_FILE,
+                ProtectionReason.ENCRYPTED_OR_COMPRESSED: SafetyValidationErrorCode.ENCRYPTED_OR_COMPRESSED,
+                ProtectionReason.IN_USE: SafetyValidationErrorCode.FILE_IN_USE,
+                ProtectionReason.REPARSE_POINT: SafetyValidationErrorCode.REPARSE_POINT_DETECTED,
+                ProtectionReason.ADS: SafetyValidationErrorCode.ADS_DETECTED
+            }
+            code = mapping.get(rule.reason, SafetyValidationErrorCode.GENERIC)
+            raise UnsafePathError(f"Violación de integridad ({rule.reason.value})", code)
 
 
 @lru_cache(maxsize=2048)
