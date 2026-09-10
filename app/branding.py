@@ -98,7 +98,6 @@ UI_FONT_BOLD: Final[str] = "bold"
 UI_FONT_HEADER_SIZE: Final[int] = 23
 UI_FONT_BODY_SIZE: Final[int] = 12
 
-# Diccionario mutable para acceso eficiente y MappingProxyType para exportación pública
 _PALETTE_MAP: Final[dict[str, HexColor]] = {
     "background": "#0a0e17", "surface": "#141b2d", "surface_alt": "#1e2740",
     "surface_hover": "#28324f", "card": "#182135", "accent": "#00f0c0",
@@ -293,11 +292,11 @@ def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, .
     segments.append(ColorSegment(current_color, start, len(colors)))
     return tuple(segments)
 
-@lru_cache(maxsize=16)
+@lru_cache(maxsize=8)
 def _get_shield_coords(s: float) -> Tuple[float, ...]:
     """Calcula coordenadas escaladas para el trazado del icono del escudo."""
     base: Final[Tuple[float, ...]] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
-    return tuple(v * max(0.0, s) for v in base)
+    return tuple(v * s for v in base)
 
 @lru_cache(maxsize=8)
 def logo_svg(size: int = 128) -> str:
@@ -330,7 +329,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         if not is_safe_to_modify(path_input) or not is_safe_to_modify(path_input.parent):
             return None
         
-        # ensure_safe_to_modify lanza excepción si es inseguro, usándola solo donde corresponde.
         ensure_safe_to_modify(path_input)
             
         if not path_input.parent.exists():
@@ -379,10 +377,11 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         scale = max(0.1, min(10.0, s / 128.0))
         
         # Generar puntos del polígono desplazados al origen (canvas_x, canvas_y)
-        coords_raw = _get_shield_coords(scale)
+        coords = _get_shield_coords(scale)
         poly_points: List[float] = []
-        for i in range(0, len(coords_raw), 2):
-            poly_points.extend([canvas_x + coords_raw[i], canvas_y + coords_raw[i+1]])
+        for i in range(0, len(coords), 2):
+            poly_points.append(canvas_x + coords[i])
+            poly_points.append(canvas_y + coords[i+1])
             
         # Dibujar elementos base del logo
         canvas.create_oval(

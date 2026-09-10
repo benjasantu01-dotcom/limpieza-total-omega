@@ -416,12 +416,10 @@ def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
 
 @lru_cache(maxsize=16)
 def _generate_context_lines_cached(score_s: str, grade: str, junk_s: str, susp_s: str, ram_s: str, disk_s: str, dup_s: str, start_s: str) -> str:
-    """
-    Crea el bloque de texto con el resumen del sistema.
-    Usa lru_cache para evitar re-procesamiento innecesario del prompt del LLM.
-    """
-    content = (
-        f"Puntaje de salud: {score_s}{f' nota {grade}' if grade else ''}\n"
+    """Crea el bloque de texto con el resumen del sistema usando lru_cache."""
+    grade_line = f" nota {grade}" if grade else ""
+    return (
+        f"Puntaje de salud: {score_s}{grade_line}\n"
         f"Basura: {junk_s}\n"
         f"Sospechosos: {susp_s}\n"
         f"RAM disponible: {ram_s}\n"
@@ -429,7 +427,6 @@ def _generate_context_lines_cached(score_s: str, grade: str, junk_s: str, susp_s
         f"Duplicados: {dup_s}\n"
         f"Inicio: {start_s} items"
     )
-    return content if _ensure_safe_text(content) else ""
 
 def context_as_text(context: SystemContext) -> str:
     """
@@ -449,8 +446,7 @@ def context_as_text(context: SystemContext) -> str:
     s_start = _fmt_metric_sanitized(context.startup_count)
     
     try:
-        texto_unificado = _generate_context_lines_cached(s_score, s_grade, s_junk, s_susp, s_ram, s_disk, s_dup, s_start)
-        return texto_unificado if _ensure_safe_text(texto_unificado) else "Error en el contexto."
+        return _generate_context_lines_cached(s_score, s_grade, s_junk, s_susp, s_ram, s_disk, s_dup, s_start)
     except Exception:
         return "Error crítico al procesar métricas de seguridad."
 

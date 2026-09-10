@@ -110,7 +110,8 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extracts and validates an absolute path from a quoted command string.
+        Extrae la ruta absoluta delimitada por comillas dobles. 
+        Valida que no contenga caracteres sospechosos y que no pertenezca a directorios protegidos.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -149,6 +150,7 @@ class StartupEntry:
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
         Normaliza una ruta, valida contra listas de seguridad y almacena el resultado en caché.
+        Aplica límites de longitud de ruta de Windows (MAX_PATH) y bloquea rutas UNC.
         """
         if not path_string or self._is_path_suspicious(path_string) or self._is_reserved_device_name(path_string):
             return ""
@@ -178,7 +180,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Aísla el ejecutable principal de una línea de comandos compleja."""
+        """Aísla el ejecutable principal de una línea de comandos compleja, manejando sintaxis con comillas."""
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -210,7 +212,10 @@ class StartupEntry:
 
 
 def startup_folders() -> List[Path]:
-    """Retorna rutas de carpetas de inicio de Windows, aplicando filtros de seguridad."""
+    """
+    Retorna rutas de carpetas de inicio de Windows, aplicando filtros de seguridad.
+    Combina las carpetas locales del usuario y las del sistema (ProgramData).
+    """
     if os.name != "nt":
         return []
     candidates: List[Path] = []
@@ -227,7 +232,10 @@ def startup_folders() -> List[Path]:
 
 
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
-    """Escanea las carpetas de inicio físicas buscando archivos ejecutables válidos."""
+    """
+    Escanea las carpetas de inicio físicas buscando archivos ejecutables válidos.
+    Ignora enlaces simbólicos para evitar recorridos recursivos no deseados.
+    """
     found_entries: List[StartupEntry] = []
     scan_folders = folders if folders is not None else startup_folders()
     
@@ -253,7 +261,8 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Parsea la salida CSV del registro de Windows (PowerShell) mediante filtros de seguridad.
+    Parsea la salida CSV del registro de Windows (obtenida vía PowerShell).
+    Filtra entradas basadas en rutas protegidas, nombres de dispositivos y valores duplicados.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -299,7 +308,10 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
 
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
-    """Consulta las claves de registro Run mediante una ejecución aislada de PowerShell."""
+    """
+    Consulta las claves de registro Run mediante una ejecución aislada de PowerShell.
+    Utiliza -ExcludeProperty PS* para limpiar la salida de metadatos del objeto PowerShell.
+    """
     if os.name != "nt":
         return []
     
@@ -349,7 +361,7 @@ def estimate_impact(entries: Sequence[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera un informe descriptivo y legible por el usuario final."""
+    """Genera un informe descriptivo y legible por el usuario final, incluyendo impacto y origen."""
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         

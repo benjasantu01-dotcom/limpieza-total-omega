@@ -154,6 +154,8 @@ def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
     return wrapper
 
 class _Validators:
+    """Namespace de validadores estáticos para asegurar la integridad de la configuración."""
+
     @staticmethod
     def _is_reparse_point(path: Path) -> bool:
         """Determina si una ruta es un junction o symlink para prevenir bucles de recursión."""
