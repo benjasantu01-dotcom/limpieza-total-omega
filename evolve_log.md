@@ -974,3 +974,13 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-10T14:31:18` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento de `_check_file_integrity` reemplazando la creación dinámica de diccionarios en cada iteración por un mapeo estático (`MappingProxyType` o un diccionario global simple), reduciendo la sobrecarga de memoria y CPU durante el escaneo de grandes volúmenes de archivos.
 - `2026-09-10T14:31:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T14:31:18` Corrida terminada. Total usado hoy: 343.
+- `2026-09-10T14:39:13` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-10T14:39:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-10T14:39:47` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el método `process_entry` reemplazando la construcción repetitiva de objetos `Path` por el uso directo de `entry.path` y `entry.name`, y reduje llamadas redundantes a métodos del sistema operativo al utilizar la información ya disponible en el objeto `os.DirEntry`.
+- `2026-09-10T14:40:18` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Se optimizó el rendimiento de las operaciones de lectura persistiendo el resultado de `load` en el caché de memoria (`_CACHE`) basándose en la fecha de modificación (`mtime`) del archivo, evitando así re-parsear el JSON y re-validar los datos si el archivo en disco no ha cambiado desde la última lectura.
+- `2026-09-10T14:40:47` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-10T14:40:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-10T14:40:57` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-10T14:41:30` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: robustez ante casos límite).
+- `2026-09-10T14:41:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T14:41:30` Corrida terminada. Total usado hoy: 347.

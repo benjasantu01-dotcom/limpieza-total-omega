@@ -127,14 +127,8 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
         Valida que la entrada del sistema de archivos no viole las políticas de seguridad.
-        
-        Evalúa: longitud de ruta, rutas UNC, caracteres RTL, nombres reservados, 
-        accesibilidad de enlaces simbólicos y protección definida en safety.py.
         """
         try:
-            if entry is None: return False
-            if entry.is_symlink(): return False
-            
             path_str: str = entry.path
             name = entry.name
             if not path_str or not name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
@@ -151,16 +145,13 @@ class Scanner:
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si un directorio es un punto de reanálisis para omitir su recursión."""
         try:
-            if entry is None or entry.is_symlink():
-                return True
-            st = entry.stat(follow_symlinks=False)
-            return bool(st.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
+            return bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, PermissionError):
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Gestiona la inserción de nuevos directorios válidos en el stack de búsqueda."""
-        if entry and entry.path and entry.path not in self.seen and os.path.exists(entry.path):
+        if entry.path not in self.seen:
             self.seen.add(entry.path)
             directory_stack.append(entry.path)
 
@@ -218,21 +209,17 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     Punto de entrada para el escaneo de directorios. 
     Inicializa el escáner, el stack de trabajo y coordina la iteración profunda.
     """
-    if directory is None:
-        return []
+    if directory is None: return []
         
     try:
         path_input: str = str(directory).strip()
-        if not path_input or len(path_input) > MAX_PATH_LENGTH or path_input.startswith(("\\\\", "//")):
-            return []
+        if not path_input or len(path_input) > MAX_PATH_LENGTH or path_input.startswith(("\\\\", "//")): return []
             
         base_path: Path = Path(path_input)
-        if not base_path.exists() or not base_path.is_dir(): 
-            return []
+        if not base_path.is_dir(): return []
         
         root_input: Path = base_path.resolve()
-        if not root_input.is_absolute() or is_protected_path(root_input):
-            return []
+        if not root_input.is_absolute() or is_protected_path(root_input): return []
             
         scanner = Scanner(base_root=root_input)
         directory_stack: List[str] = [str(root_input)]
@@ -247,7 +234,6 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             except (PermissionError, OSError, FileNotFoundError):
                 continue
         return scanner.results
-        
     except (OSError, TypeError, ValueError, RuntimeError):
         return []
 
