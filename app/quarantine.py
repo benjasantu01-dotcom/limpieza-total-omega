@@ -543,7 +543,7 @@ def quarantine_file(
     if not source_path.is_file():
         raise FileNotFoundError("El archivo origen ha desaparecido antes de la operación.")
         
-    original_size = source_path.stat().st_st_size if hasattr(source_path.stat(), 'st_st_size') else source_path.stat().st_size
+    original_size = source_path.stat().st_size
     dest_dir = quarantine_dir(base)
     
     if _is_within_quarantine_sandbox(source_path, dest_dir.resolve()):
@@ -600,9 +600,10 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna ítems validados presentes en el sandbox ordenados por fecha."""
     base_path = quarantine_dir(base)
     try:
+        items = load_manifest(base)
         existing_files = {f.name for f in base_path.iterdir() if f.is_file()}
         return [
-            i for i in sorted(load_manifest(base), key=lambda x: x.quarantined_at, reverse=True)
+            i for i in sorted(items, key=lambda x: x.quarantined_at, reverse=True)
             if i.stored_name in existing_files
         ]
     except OSError:
@@ -704,6 +705,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
+    # Indexado O(1) para evitar búsquedas O(N) dentro del loop
     item_map = {item.stored_name: item for item in items}
     purged_ids = []
     
@@ -719,7 +721,9 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         pass
                 
     if purged_ids:
-        kept_items = [i for i in items if i.item_id not in purged_ids]
+        # Filtro eficiente del manifiesto
+        purged_set = set(purged_ids)
+        kept_items = [i for i in items if i.item_id not in purged_set]
         save_manifest(kept_items, base)
     return len(purged_ids)
 

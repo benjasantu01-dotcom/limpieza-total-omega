@@ -721,3 +721,11 @@ assert 'rectangle' in ['oval', 'polygon', 'line', 'line', 'line', 'line', ...]
 - `2026-09-10T00:54:51` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `parse_windows_process_csv` para evitar la creación de una lista intermedia y el uso de `sorted` con una función `lambda` dentro de cada llamada, utilizando en su lugar un `heapq.nlargest` para obtener solo los procesos más pesados de forma eficiente (O(N log K) en lugar de O(N log N)).
 - `2026-09-10T00:54:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T00:54:51` Corrida terminada. Total usado hoy: 24.
+- `2026-09-10T01:02:39` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-09-10T01:03:11` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_for_junk` y `_process_directory` transformando `JUNK_EXTENSIONS` en un `frozenset` para búsquedas O(1) y eliminando llamadas redundantes a `Path` y `resolve()` dentro del bucle de escaneo, que es el cuello de botella principal.
+- `2026-09-10T01:03:46` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `purge_all` y `list_items` evitando I/O redundante al convertir el manifiesto a un diccionario de búsqueda indexado por `stored_name` antes de iterar, reemplazando búsquedas lineales `O(N)` por accesos constantes `O(1)`.
+- `2026-09-10T01:04:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-09-10T01:04:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-10T01:04:29` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento del chequeo de rutas del sistema reemplazando el cálculo recursivo de `os.sep` mediante `str.split(os.sep)` por una búsqueda eficiente en conjunto (set) de los padres de la ruta, aprovechando además que `pathlib.Path.parts` ya viene calculado por el sistema operativo, evitando así procesamiento redundante de strings.
+- `2026-09-10T01:04:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T01:04:29` Corrida terminada. Total usado hoy: 28.

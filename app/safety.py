@@ -307,10 +307,13 @@ def is_drive_root(path: PathLike) -> bool:
 def _is_system_path_cached(path_str: str) -> bool:
     """Compara recursivamente los componentes de la ruta contra listas de directorios protegidos."""
     try:
+        p = Path(path_str)
+        # Verificación rápida de raíces del sistema
         p_str_low = path_str.lower()
         if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
             return True
-        return any(part in PROTECTED_DIR_NAMES for part in p_str_low.split(os.sep))
+        # Verificación de componentes usando set lookup (O(1) promedio)
+        return any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts)
     except (OSError, RuntimeError):
         return True
 

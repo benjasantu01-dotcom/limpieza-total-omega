@@ -123,9 +123,6 @@ def _get_win_attributes(path_or_entry: Union[os.DirEntry, Path]) -> int:
 def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
     """
     Determina si una ruta es un punto de reparse (Junction/Symlink).
-    
-    Utiliza atributos Win32 (0x400) para detectar puntos de reparse que
-    podrían causar recursiones infinitas o acceso a volúmenes circulares.
     """
     if entry is None: return False
     is_sym = entry.is_symlink() if hasattr(entry, 'is_symlink') else Path(str(entry)).is_symlink()
@@ -155,7 +152,6 @@ def _is_unc_path(path: Path) -> bool:
 def _generate_unique_target(target: Path) -> Path:
     """
     Genera una ruta única para evitar colisiones de nombres durante el movimiento.
-    Si el destino existe, añade un sufijo numérico incremental (ej: archivo_1.tmp).
     """
     if target is None:
         return target
@@ -178,14 +174,12 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está bloqueado exclusivamente por otro proceso en Windows.
-    Abre un handle en modo lectura compartida; si falla, el archivo está bloqueado.
     """
     if path is None or _is_junction(path) or not path.exists(): 
         return True
     
     if os.name == "nt":
         INVALID_HANDLE_VALUE = -1
-        # Flags para CreateFileW: Lectura, Compartir todo, Abrir existente
         handle = ctypes.windll.kernel32.CreateFileW(
             str(path), 0x80000000, 0x7, None, 0x3, 0x80, None
         )
@@ -198,7 +192,7 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
-    Valida que el movimiento no sea circular (ej. mover una carpeta dentro de sí misma).
+    Valida que el movimiento no sea circular.
     """
     if src is None or dest is None: return True
     try:
@@ -220,7 +214,7 @@ def _passes_system_checks(src: Path) -> bool:
 
 def _has_forbidden_chars(path: Path) -> bool:
     """
-    Valida nombres reservados de Windows (CON, NUL, etc) y caracteres inválidos.
+    Valida nombres reservados de Windows y caracteres inválidos.
     """
     if path is None: return True
     try:
@@ -234,7 +228,7 @@ def _has_forbidden_chars(path: Path) -> bool:
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
     """
-    Orquestador de seguridad: verifica formato, longitud y rutas protegidas.
+    Orquestador de seguridad.
     """
     if src is None or dest is None: return False
     if _is_unc_path(src) or _is_unc_path(dest): return False
@@ -292,11 +286,14 @@ def _should_scan_directory(entry: os.DirEntry) -> bool:
 def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
     """Analiza una entrada individual y la añade a la lista si es basura válida."""
     try:
-        if is_valid_junk_extension(entry.name):
+        # Cacheamos la extensión para evitar múltiples llamadas a splittext
+        _, ext = os.path.splitext(entry.name)
+        if ext.lower() in JUNK_EXTENSIONS:
             info = entry.stat()
-            path_obj = Path(entry.path)
-            if info.st_size > 0 and not _is_file_locked(path_obj):
-                found.append(JunkFile(path_obj, info.st_size, datetime.fromtimestamp(info.st_mtime)))
+            if info.st_size > 0:
+                path_obj = Path(entry.path)
+                if not _is_file_locked(path_obj):
+                    found.append(JunkFile(path_obj, info.st_size, datetime.fromtimestamp(info.st_mtime)))
     except (OSError, PermissionError):
         pass
 
@@ -304,7 +301,6 @@ def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0) -> None:
     """
     Recorre recursivamente directorios buscando archivos temporales.
-    Límite: profundidad 50.
     """
     if depth > 50 or current_dir is None: return
     
@@ -337,9 +333,7 @@ def scan_for_junk(directories: Optional[Sequence[str]] = None) -> List[JunkFile]
         try:
             path_obj: Path = d.expanduser()
             if path_obj.is_dir() and not _is_unc_path(path_obj):
-                resolved: Path = path_obj.resolve()
-                if not is_protected_path(resolved):
-                    _process_directory(resolved, found)
+                _process_directory(path_obj.resolve(), found)
         except (OSError, RuntimeError, TypeError):
             continue
     return found
