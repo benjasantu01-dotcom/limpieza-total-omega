@@ -300,7 +300,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 return cached[1]
             if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
                 with open(r, "r", encoding="utf-8") as f:
-                    data = validate(json.load(f))
+                    content = json.load(f)
+                    data = validate(content)
                 _CACHE[ruta_str] = (mtime, data)
                 return data
         except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
@@ -321,10 +322,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             
         parent = ruta.parent
         if not parent.exists():
-            try:
-                parent.mkdir(parents=True, exist_ok=True)
-            except (OSError, PermissionError):
-                return None
+            parent.mkdir(parents=True, exist_ok=True)
         
         # Validar seguridad tanto del directorio contenedor como del archivo destino
         ensure_safe_to_modify(str(parent))
@@ -350,6 +348,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta
     except (TypeError, ValueError, OSError, IOError, PermissionError):
+        if 'temp_path' in locals() and temp_path.exists():
+            try: temp_path.unlink()
+            except OSError: pass
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:

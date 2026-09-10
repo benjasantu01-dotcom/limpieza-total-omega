@@ -108,18 +108,27 @@ class ProblemCriterion(NamedTuple):
     message_format: str
 
     def _evaluate_metric(self, val: float) -> bool:
-        """Ejecuta la comparación matemática entre la métrica y el umbral."""
+        """
+        Realiza la comparación lógica entre la métrica actual y su umbral.
+        Usa operadores definidos en la instancia para determinar si existe una anomalía.
+        """
         if self.operator == "<": return val < self.threshold
         if self.operator == ">": return val > self.threshold
         return False
 
     def is_triggered_by(self, ctx: SystemContext) -> bool:
-        """Retorna True si el contexto actual viola el criterio definido."""
+        """
+        Determina si el contexto del sistema viola el umbral establecido.
+        Retorna False si la métrica no existe o es negativa (inválida).
+        """
         val = ctx.get_metric(self.metric_key, -1.0)
         return val >= 0 and self._evaluate_metric(val)
 
     def format_if_triggered(self, ctx: SystemContext) -> Optional[str]:
-        """Devuelve un string descriptivo si se cumple el criterio, filtrando inyecciones."""
+        """
+        Genera un mensaje de advertencia solo si el criterio es superado.
+        Aplica restricciones de longitud y validaciones de seguridad antes de retornar.
+        """
         try:
             if not self.is_triggered_by(ctx):
                 return None
@@ -296,7 +305,10 @@ class SystemContext:
         return _ensure_safe_text(self.grade) if self.grade else True
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> bool:
-        """Valida y aplica una métrica individual si cumple las restricciones."""
+        """
+        Intenta mapear un valor desde la fuente de datos al atributo correspondiente.
+        Realiza comprobaciones de tipo y rango antes de realizar la asignación.
+        """
         try:
             val = _get_source_value(source, key)
             if val is not None and spec.is_valid_type(val):
@@ -310,10 +322,8 @@ class SystemContext:
 
     def ingest(self, source: Any) -> bool:
         """
-        Pobla los atributos de la clase desde una fuente externa.
-        
-        Realiza validaciones de tipo, rango y seguridad por cada clave detectada
-        en el diccionario o objeto proporcionado.
+        Carga datos externos (dict u objeto) en la instancia del contexto.
+        Filtra y valida cada campo siguiendo la especificación en _VALIDATORS.
         """
         if not isinstance(source, (dict, object)) or _is_input_too_deep_or_complex(source):
             return False
@@ -345,16 +355,19 @@ class Answer:
         return self.source == "gemini"
 
 def _is_restricted_content(text: str) -> bool:
-    """Detecta patrones peligrosos como inyección de código."""
+    """Verifica si el texto contiene palabras clave relacionadas con la ejecución arbitraria."""
     restricted_patterns = [r"exec", r"eval", r"subprocess", r"system\s*\(", r"rm\s+", r"del\s+"]
     return any(re.search(p, text, re.IGNORECASE) for p in restricted_patterns)
 
 def _is_sensitive_structure(text: str) -> bool:
-    """Verifica si el texto contiene rutas de sistema o estructuras prohibidas."""
+    """Detecta la presencia de patrones de ruta de sistema (UNC, Drive Letters, Unix roots)."""
     return bool(re.search(r"(\\\\|[a-z]:\\|/etc/|\\\\UNC)", text, re.IGNORECASE))
 
 def _is_safe_text_structure(text: str) -> bool:
-    """Valida la integridad de un texto contra inyecciones, rutas y escapes ANSI."""
+    """
+    Realiza una validación profunda de integridad del texto.
+    Verifica inyecciones, rutas prohibidas, secuencias ANSI y comandos peligrosos.
+    """
     if not text: return True
     if (_PATH_INJECTION_REGEX.search(text) or 
         is_protected_path(text) or 
@@ -365,7 +378,7 @@ def _is_safe_text_structure(text: str) -> bool:
     return True
 
 def _ensure_safe_text(text: Any) -> bool:
-    """Wrapper principal para validar contenido seguro en todo el módulo."""
+    """Wrapper de validación universal; rechaza cualquier input inseguro o malformado."""
     if not isinstance(text, str) or not text:
         return False
     if len(text) > _MAX_TEXT_LENGTH:
@@ -375,7 +388,10 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _get_source_value(source: Any, key: str) -> Any:
-    """Accede a valores de la fuente independientemente de si es dict o instancia."""
+    """
+    Accede de forma genérica a una clave en un diccionario o atributo de objeto.
+    Aísla la lógica de acceso de posibles excepciones en el acceso a propiedades.
+    """
     try:
         if isinstance(source, dict):
             return source.get(key)
@@ -385,7 +401,7 @@ def _get_source_value(source: Any, key: str) -> Any:
         return None
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
-    """Crea y llena un objeto SystemContext a partir de fuentes de métricas."""
+    """Inicializa un SystemContext completo a partir de múltiples fuentes opcionales."""
     ctx = SystemContext()
     for s in (metrics, health, extra):
         if isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str, int, float, bool, type)):
@@ -394,13 +410,16 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     return ctx
 
 def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
-    """Formatea una métrica, limpiando caracteres prohibidos."""
+    """Formatea una métrica numérica como cadena, eliminando caracteres de control."""
     raw = _fmt_metric(val, unit, decimal)
     return _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))
 
 @lru_cache(maxsize=16)
 def _generate_context_lines_cached(score_s: str, grade: str, junk_s: str, susp_s: str, ram_s: str, disk_s: str, dup_s: str, start_s: str) -> str:
-    """Representación en texto estandarizado para prompts de LLM."""
+    """
+    Crea el bloque de texto con el resumen del sistema.
+    Usa lru_cache para evitar re-procesamiento innecesario del prompt del LLM.
+    """
     content = (
         f"Puntaje de salud: {score_s}{f' nota {grade}' if grade else ''}\n"
         f"Basura: {junk_s}\n"
@@ -410,11 +429,13 @@ def _generate_context_lines_cached(score_s: str, grade: str, junk_s: str, susp_s
         f"Duplicados: {dup_s}\n"
         f"Inicio: {start_s} items"
     )
-    # Seguridad defensiva: validar integridad antes de retornar para evitar inyecciones en el payload
     return content if _ensure_safe_text(content) else ""
 
 def context_as_text(context: SystemContext) -> str:
-    """Serializa las métricas en un texto apto para ser enviado al motor remoto."""
+    """
+    Serializa las métricas en un formato de texto optimizado para prompts.
+    Asegura que todos los campos pasen por filtros de saneamiento antes de ser concatenados.
+    """
     if context.is_empty:
         return "No hay métricas disponibles todavía."
     
@@ -434,7 +455,10 @@ def context_as_text(context: SystemContext) -> str:
         return "Error crítico al procesar métricas de seguridad."
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
-    """Formatea métricas con manejo de errores para valores inválidos."""
+    """
+    Formatea valores numéricos a cadenas con precisión definida.
+    Retorna "N/A" ante valores nulos o no finitos para mantener la robustez del output.
+    """
     f = _safe_float(val, -1.0)
     if f < 0:
         return "N/A"
@@ -444,18 +468,18 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
         return "N/A"
 
 def explain_area(area: Any) -> str:
-    """Devuelve la definición pedagógica de un área del sistema."""
+    """Devuelve la definición pedagógica de un área del sistema consultando el mapa de explicaciones."""
     if not isinstance(area, str):
         return "No tengo una explicación para esa área."
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
 @lru_cache(maxsize=8)
 def _get_active_problems(ctx: SystemContext) -> list[str]:
-    """Identifica problemas activos comparando el contexto contra criterios de salud."""
+    """Identifica problemas activos comparando el contexto contra criterios de salud definidos."""
     return [msg for crit in _CRITERIOS_SALUD if (msg := crit.format_if_triggered(ctx))]
 
 def _format_problem_message(problems: list[str], score: Union[int, str]) -> str:
-    """Crea una oración descriptiva con los problemas encontrados."""
+    """Construye una oración descriptiva con los problemas encontrados, priorizando por impacto."""
     try:
         clean_score = str(score)
         if not problems:
@@ -465,11 +489,11 @@ def _format_problem_message(problems: list[str], score: Union[int, str]) -> str:
         return "Tu sistema tiene problemas detectados."
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
-    """Retorna lista de problemas activos tras validar que el sistema esté analizado."""
+    """Valida la integridad del escaneo y retorna los problemas identificados."""
     return _get_active_problems(ctx) if ctx.analyzed else []
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
-    """Handler local para preguntas relacionadas a memoria."""
+    """Procesa consultas sobre memoria RAM basándose en las métricas actuales del contexto."""
     if ctx.is_empty: return Answer("Primero analizá el sistema.")
     mem_pct = ctx.get_metric("memory_available_percent", 50.0)
     total_gb = ctx.get_metric("memory_total_gb", 0.0)
@@ -487,7 +511,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(" ".join(parts)), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
-    """Handler local para preguntas sobre espacio en disco."""
+    """Procesa consultas sobre el espacio disponible en disco y basura recuperable."""
     if ctx.is_empty: return Answer("Primero analizá el sistema.")
     junk = ctx.get_metric("junk_mb", 0.0)
     dup = ctx.get_metric("duplicate_mb", 0.0)
@@ -504,7 +528,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(msg), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
-    """Handler local para preguntas sobre seguridad."""
+    """Procesa consultas sobre archivos sospechosos y medidas de cuarentena."""
     if ctx.is_empty: return Answer("Primero analizá el sistema.")
     count: int = int(ctx.get_metric("suspicious_count", 0.0))
     warn: int = int(ctx.get_metric("suspicious_warnings", 0.0))
@@ -517,7 +541,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
-    """Handler local para obtener el resumen del puntaje."""
+    """Responde al usuario explicando los componentes de su puntaje de salud."""
     if ctx.is_empty: return Answer("Primero analizá el sistema.")
     
     score_val = ctx.score if ctx.score is not None else "N/A"
@@ -533,7 +557,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
         return Answer(_validate_response_length(f"{score_display} El detalle de problemas no está disponible."), notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
-    """Handler local para programas de arranque."""
+    """Procesa preguntas relacionadas con los programas de inicio del sistema."""
     if ctx.is_empty: return Answer("Primero analizá el sistema.")
     count: int = int(ctx.get_metric("startup_count", 0.0))
     estado = f"Tenés {count} programas que arrancan con Windows."
@@ -550,7 +574,7 @@ _KEYWORD_MAP: Final[dict[frozenset[str], Callable[[SystemContext, str], Answer]]
 }
 
 def _sanitize_query(question: str) -> str:
-    """Sanitiza el input del usuario eliminando vectores de ataque."""
+    """Limpia el input del usuario eliminando caracteres prohibidos y posibles vectores de inyección."""
     if not isinstance(question, str): return ""
     clean = _CONTROL_CHARS_REGEX.sub(' ', question)
     clean = _PATH_INJECTION_REGEX.sub(' ', clean)
@@ -559,7 +583,11 @@ def _sanitize_query(question: str) -> str:
     return clean
 
 def local_answer(question: str, context: SystemContext) -> Answer:
-    """Motor de inferencia local: selecciona handler mediante intersección de conjuntos."""
+    """
+    Motor principal de inferencia local.
+    Analiza palabras clave en el input para seleccionar el handler más adecuado
+    o generar un diagnóstico general basado en problemas activos.
+    """
     q_sanitized = _sanitize_query(question)
     if not q_sanitized or not _ensure_safe_text(q_sanitized):
         return Answer("Entrada no válida.")
@@ -583,14 +611,14 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     return Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
 
 def available(base: Union[str, Path, None] = None) -> bool:
-    """Verifica habilitación del asistente remoto."""
+    """Verifica si el asistente remoto está habilitado en los ajustes del usuario."""
     try:
         return settings.assistant_enabled(base)
     except Exception:
         return False
 
 def _parse_config(raw_cfg: Any) -> AssistantConfig:
-    """Parsea configuración externa con valores por defecto seguros."""
+    """Parsea el diccionario de configuración externa, asegurando valores seguros por defecto."""
     if not isinstance(raw_cfg, dict):
         return AssistantConfig("", "gemini-3.1-flash-lite", True)
     return AssistantConfig(
@@ -600,7 +628,7 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
     )
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
-    """Crea un cuerpo JSON para la API externa tras validar la integridad del payload."""
+    """Serializa el mensaje y el contexto en un JSON compatible con el formato de API de Google."""
     if not _ensure_safe_text(context_text) or not _is_safe_text_structure(context_text): return None
     try:
         q = _sanitize_query(question)
@@ -614,7 +642,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
         return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Extrae de forma robusta la respuesta de texto desde el JSON de la API."""
+    """Extrae el contenido de texto de la estructura JSON compleja devuelta por Gemini."""
     if not isinstance(data, dict): return None
     try:
         candidates = data.get("candidates")
@@ -633,7 +661,7 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
-    """Gestiona la petición HTTP a la API externa."""
+    """Realiza la llamada HTTP POST al endpoint de Gemini siguiendo protocolos de seguridad."""
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): 
         return None
         
@@ -668,7 +696,10 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
 
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Union[str, Path, None] = None) -> Answer:
-    """Punto de acceso para consultas al asistente (local o remoto)."""
+    """
+    Punto de entrada unificado para consultas de usuario.
+    Selecciona entre respuesta local o remota basándose en la configuración persistida.
+    """
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")
         
