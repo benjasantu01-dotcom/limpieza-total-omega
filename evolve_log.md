@@ -600,3 +600,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-10T11:06:31` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva en `on_stage`, `on_quarantine_findings`, `on_quarantine_duplicates` y `on_restore_quarantine` mediante el uso de `is_safe_to_modify` antes de cualquier operación potencialmente destructiva, garantizando que el filtrado de rutas protegidas ocurra siempre antes de interactuar con el sistema de archivos.
 - `2026-09-10T11:06:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T11:06:31` Corrida terminada. Total usado hoy: 263.
+- `2026-09-10T11:14:18` Arrancando corrida. Quedan hoy ~37 peticiones objetivo.
+- `2026-09-10T11:14:53` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad de la función `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre el PID objetivo ANTES de abrir cualquier handle, evitando interacciones innecesarias con procesos del sistema y mitigando riesgos de manipulación de privilegios.
+- `2026-09-10T11:15:20` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-10T11:15:56` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se implementó un bloqueo contra ataques de "Time-of-check to time-of-use" (TOCTOU) durante el aislamiento de archivos, verificando que el inodo/dispositivo del archivo origen no cambie después de abrir el descriptor de archivo, garantizando la integridad de la operación de lectura y copiado.
+- `2026-09-10T11:16:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-10T11:16:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T11:16:00` Corrida terminada. Total usado hoy: 267.

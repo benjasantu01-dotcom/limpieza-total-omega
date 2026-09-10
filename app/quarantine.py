@@ -454,21 +454,27 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 
 
 def _write_temp_to_final(source: Path, destination: Path) -> str:
-    """Copia al sandbox y valida integridad."""
+    """Copia al sandbox y valida integridad contra TOCTOU."""
     fd, temp_file_path = tempfile.mkstemp(dir=destination.parent, prefix=".tmp_q_")
     temp_path = Path(temp_file_path)
     try:
-        src_ino = source.stat().st_ino
+        # Captura de estado para verificar inmutabilidad
+        src_stat = source.stat()
+        src_ino = src_stat.st_ino
+        src_dev = src_stat.st_dev
+        
         with os.fdopen(fd, 'wb') as tmp:
             with open(source, 'rb') as src:
                 shutil.copyfileobj(src, tmp)
             tmp.flush()
             os.fsync(tmp.fileno())
         
-        if source.stat().st_ino != src_ino:
-             raise OSError("Alerta: origen modificado durante copia.")
+        # Validación anti-TOCTOU: asegurar que el origen no cambió de archivo
+        final_src_stat = source.stat()
+        if final_src_stat.st_ino != src_ino or final_src_stat.st_dev != src_dev:
+             raise OSError("Alerta de seguridad: origen reemplazado durante copia.")
         
-        if temp_path.stat().st_size != source.stat().st_size or temp_path.stat().st_size == 0:
+        if temp_path.stat().st_size != src_stat.st_size or temp_path.stat().st_size == 0:
             raise OSError("Error de integridad post-escritura.")
             
         _check_windows_file_attributes(str(temp_path))
