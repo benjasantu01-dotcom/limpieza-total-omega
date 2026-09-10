@@ -1225,3 +1225,10 @@ FAILED evolve/tests/test_assistant.py::test_a_protected_folder_is_never_remember
 - `2026-09-10T06:10:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-10T06:10:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T06:10:02` Corrida terminada. Total usado hoy: 147.
+- `2026-09-10T06:18:30` Arrancando corrida. Quedan hoy ~153 peticiones objetivo.
+- `2026-09-10T06:19:03` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-09-10T06:19:28` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta para el manejo de archivos vacíos o inaccesibles dentro de `scan_file`, garantizando que el escáner no aborte ante condiciones de carrera (archivos bloqueados durante el acceso) o inconsistencias del sistema de archivos mediante un bloque `try-except` más granular.
+- `2026-09-10T06:19:59` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save()` ante fallos de escritura en disco, asegurando que si ocurre un error durante el volcado de bytes (como falta de espacio o desconexión), se realice una limpieza exhaustiva del archivo temporal para evitar dejar estados corruptos.
+- `2026-09-10T06:20:10` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-10T06:20:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T06:20:10` Corrida terminada. Total usado hoy: 151.

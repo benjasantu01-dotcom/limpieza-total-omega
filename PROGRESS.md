@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 0 | 0 | 0 | 0 | 7 |
+| 2026-09-08 | 0 | 0 | 0 | 0 | 3 |
 | 2026-09-09 | 152 | 12 | 21 | 11 | 154 |
-| 2026-09-10 | 74 | 6 | 14 | 6 | 47 |
+| 2026-09-10 | 76 | 6 | 14 | 6 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,20 +26,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **44**
 - seguridad defensiva: **41**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
+- `settings.py`: **20**
 - `assistant.py`: **19**
 - `healthscore.py`: **19**
 - `memory.py`: **19**
 - `safety.py`: **19**
-- `settings.py`: **19**
 - `duplicates.py`: **19**
 - `diskreport.py`: **17**
 - `browser.py`: **16**
-- `scanner.py`: **15**
+- `scanner.py`: **16**
 - `branding.py`: **13**
 - `organizer.py`: **11**
 - `main.py`: **9**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T06:19:59` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante fallos de escritura en disco, asegurando que si ocurre un error durante el volcado de bytes (como falta de espacio o desconexión), se realice una limpieza exhaustiva del archivo temporal para evitar dejar estados corruptos.
+- `2026-09-10T06:19:28` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta para el manejo de archivos vacíos o inaccesibles dentro de `scan_file`, garantizando que el escáner no aborte ante condiciones de carrera (archivos bloqueados durante el acceso) o inconsistencias del sistema de archivos mediante un bloque `try-except` más granular.
 - `2026-09-10T06:09:57` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de lectura/escritura (I/O) al implementar bloques `try-finally` para asegurar el cierre de descriptores de archivos, y añadí validación de existencia para archivos aislados antes de intentar cualquier operación de verificación o borrado en el bucle de `purge_all`.
 - `2026-09-10T05:59:27` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemMetrics` ante valores extremos o inesperados añadiendo una validación explícita para `is_finite` en el constructor y reforzando `validate` contra el desbordamiento de enteros o valores negativos antes de cualquier cálculo.
 - `2026-09-10T05:58:37` **diskreport.py** (robustez ante casos límite): Se ha robustecido el motor de escaneo añadiendo un manejo de excepciones más granular en `_collect_summary_data` y `walk_files` para evitar que un error puntual de lectura en un archivo individual (como un archivo bloqueado por el sistema o con metadatos corruptos) interrumpa el análisis del resto del árbol de directorios.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T05:17:56` **browser.py** (rendimiento): Se optimizó `_sum_directory_recursive` para evitar el re-procesamiento de subdirectorios ya calculados durante el mismo ciclo de escaneo, permitiendo que `detect_profiles` comparta un único diccionario `memo` entre todos los navegadores, reduciendo drásticamente las llamadas a `os.scandir` y el acceso a disco cuando múltiples navegadores comparten estructuras o rutas base.
 - `2026-09-10T05:09:18` **branding.py** (rendimiento): Optimicé el cálculo de `draw_logo` cacheando el resultado de las coordenadas del polígono en `_get_shield_coords` y eliminé la reconstrucción innecesaria de listas de puntos en cada llamada, delegando el escalado a una operación más eficiente.
 - `2026-09-10T05:09:00` **assistant.py** (rendimiento): Optimicé el rendimiento de `_generate_context_lines_cached` eliminando la recreación innecesaria de strings mediante `f-strings` dinámicos y reduciendo la complejidad del cacheo, aprovechando que las métricas ya vienen sanitizadas y formateadas desde `context_as_text`.
-- `2026-09-10T05:08:19` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados en las funciones de procesamiento, clarificando las responsabilidades de cada componente y los criterios de filtrado aplicados.
-- `2026-09-10T05:07:42` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando docstrings que explican el propósito de las clases de validación y enriquecí las anotaciones de tipo para mejorar la legibilidad del flujo de datos sin alterar la lógica.

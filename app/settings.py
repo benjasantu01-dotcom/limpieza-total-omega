@@ -316,6 +316,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     ruta = settings_path(custom_base)
     cleaned_settings = validate(values)
     
+    temp_path: Optional[Path] = None
     try:
         if cleaned_settings.get("asistente_activado") and not (
             cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
@@ -326,7 +327,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
         
-        # Validar seguridad tanto del directorio contenedor como del archivo destino
         ensure_safe_to_modify(str(parent))
         if ruta.exists():
             ensure_safe_to_modify(str(ruta))
@@ -350,7 +350,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta
     except (TypeError, ValueError, OSError, IOError, PermissionError):
-        if 'temp_path' in locals() and temp_path.exists():
+        if temp_path and temp_path.exists():
             try: temp_path.unlink()
             except OSError: pass
         return None
