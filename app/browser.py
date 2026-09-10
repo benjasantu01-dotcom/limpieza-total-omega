@@ -159,14 +159,11 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
-        # Verificación explícita de atributo para evitar llamadas inválidas
-        if not hasattr(kernel32, 'GetFileAttributesW'):
-            return False
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False 
         return bool(attrs & SYSTEM_HIDDEN_FLAGS)
-    except (AttributeError, TypeError, ctypes.ArgumentError):
+    except (AttributeError, TypeError, ctypes.ArgumentError, OSError):
         return False
 
 
@@ -187,13 +184,14 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         if not path or len(path) >= MAX_PATH_LEN or any(c in path for c in '\0\r\n'):
             return True
         
+        # Validar tipo de entrada antes de operar para evitar errores de acceso
         if entry.is_symlink() or is_junction_fn(path) or os.path.ismount(path):
             return True
             
         if __is_system_hidden(path, kernel32):
             return True
             
-    except (OSError, PermissionError, FileNotFoundError, UnicodeEncodeError):
+    except (OSError, PermissionError, UnicodeEncodeError):
         return True
     return False
 
@@ -240,7 +238,10 @@ def _sum_directory_recursive(
                     continue
                 
                 try:
-                    # Chequeo defensivo: garantizar que la entrada resida dentro de la base permitida
+                    # Validar existencia antes de calcular
+                    if not entry.path:
+                        continue
+                        
                     if base_check_path and not _is_path_inside_base(Path(entry.path).resolve(), base_check_path):
                         continue
 
@@ -277,8 +278,10 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """Verifica si una carpeta candidata es una ubicación de caché legítima y segura."""
+    if candidate is None:
+        return False
     try:
-        if candidate is None or not candidate.exists() or not candidate.is_dir():
+        if not candidate.exists() or not candidate.is_dir():
             return False
         
         real_candidate = candidate.resolve(strict=True)
@@ -306,22 +309,24 @@ def detect_profiles(
     browser_map: BrowserMap = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
     k32: Optional[ctypes.WinDLL] = _get_kernel32()
-    # Cache global para evitar re-escaneo de subdirectorios comunes entre navegadores
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
     for base in raw_bases:
+        if not isinstance(base, Path):
+            continue
         try:
             real_base = base.resolve(strict=True)
             for browser_name, rel_str in browser_map.items():
                 try:
+                    if not rel_str:
+                        continue
                     candidate = real_base.joinpath(*rel_str.split("\\"))
                     
                     if not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                         continue
                         
                     c_path = candidate.resolve(strict=True)
-                    # La memoización ocurre internamente en _sum_directory_recursive via perf_cache
                     size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
                     if size > 0:
                         found.append(BrowserCache(str(browser_name), c_path, size))

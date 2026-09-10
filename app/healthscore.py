@@ -208,7 +208,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str) and msg.strip():
-                    # Sanitización defensiva: limitar longitud y eliminar caracteres de control
                     clean_msg = " ".join(msg.split())[:200]
                     findings.append(clean_msg)
         except Exception:
@@ -234,7 +233,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             if rules:
                 _evaluate_rules(metrics, rules, ratio, recommendations)
             return area, int(round(ratio * weight))
-        except Exception:
+        except (ValueError, TypeError, ZeroDivisionError):
             return area, 0
 
     metric_breakdown = dict(process_area(a, w, s, r) for a, w, s, r in _CACHE_SCORERS)
