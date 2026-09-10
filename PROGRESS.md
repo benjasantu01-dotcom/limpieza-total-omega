@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 215
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 92 | 6 | 13 | 9 | 85 |
-| 2026-09-10 | 126 | 9 | 22 | 12 | 130 |
+| 2026-09-09 | 89 | 6 | 13 | 8 | 85 |
+| 2026-09-10 | 128 | 9 | 22 | 12 | 132 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **53**
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **43**
+- manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **41**
 - rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
-- `healthscore.py`: **19**
-- `memory.py`: **19**
 - `settings.py`: **19**
-- `duplicates.py`: **18**
+- `assistant.py`: **18**
 - `browser.py`: **18**
-- `assistant.py`: **17**
+- `memory.py`: **18**
+- `healthscore.py`: **18**
+- `duplicates.py`: **17**
 - `safety.py`: **16**
 - `scanner.py`: **16**
+- `branding.py`: **14**
 - `diskreport.py`: **14**
-- `branding.py`: **13**
 - `organizer.py`: **11**
 - `main.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T12:49:36` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_ring` validando los parámetros de entrada antes de operar y utilizando un manejo de excepciones más granular para evitar fallos silenciosos en la UI.
+- `2026-09-10T12:49:14` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de los `handler` de `assistant.py` envolviendo el acceso a métricas en una lógica de validación más estricta (`get_metric` ya provee defaults seguros) y unificando el manejo de errores para evitar que una métrica faltante o malformada silencie la respuesta útil al usuario.
 - `2026-09-10T11:26:13` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para que el uso de `ensure_safe_to_modify` sea siempre una comprobación de seguridad pura, evitando que la resolución de rutas mediante `resolve()` pueda ser interceptada o comprometida por comportamientos inesperados del sistema de archivos al tratar con rutas no existentes.
 - `2026-09-10T11:25:40` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva al añadir una validación de longitud de ruta en `scan_directory` y asegurar que la ruta inicial no sea una ruta UNC, evitando errores de resolución de `Path.resolve()` en entornos restringidos.
 - `2026-09-10T11:15:56` **quarantine.py** (seguridad defensiva): Se implementó un bloqueo contra ataques de "Time-of-check to time-of-use" (TOCTOU) durante el aislamiento de archivos, verificando que el inodo/dispositivo del archivo origen no cambie después de abrir el descriptor de archivo, garantizando la integridad de la operación de lectura y copiado.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T10:45:21` **settings.py** (robustez ante casos límite): Se reforzó la robustez ante estados inconsistentes del sistema de archivos agregando un chequeo preventivo de existencias y permisos en `_Validators.path` para evitar que `Path.resolve()` —que falla si la ruta no existe— bloquee el acceso a configuraciones legítimas que simplemente aún no fueron creadas.
 - `2026-09-10T10:45:05` **scanner.py** (robustez ante casos límite): Se mejora la robustez de `scanner.py` ante archivos bloqueados o sin permisos mediante la implementación de una validación explícita `is_file()` en el dispatching, evitando excepciones innecesarias en `scan_file` al intentar leer metadatos de rutas que podrían haber cambiado o sido eliminadas durante el recorrido.
 - `2026-09-10T10:36:22` **memory.py** (robustez ante casos límite): Mejora la robustez de `top_memory_processes` añadiendo una validación explícita para evitar que la ejecución de `powershell` falle si el sistema está bajo alta presión de I/O o si el comando retorna una salida malformada, asegurando que no se inyecten datos inválidos al caché tras errores parciales.
-- `2026-09-10T10:35:52` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_ask_assistant` y `on_save_settings` validando la existencia de los widgets antes de intentar leer o modificar sus valores, evitando errores de `TclError` si la pestaña Ajustes o Asistente no han sido cargadas mediante la carga perezosa.
-- `2026-09-10T10:24:59` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante estados inesperados de los datos de origen (como valores infinitos o NaN generados por errores de sensores externos) reforzando la validación en `__post_init__` y asegurando que `_to_float` maneje de forma explícita el caso de `float('inf')` o `nan`.

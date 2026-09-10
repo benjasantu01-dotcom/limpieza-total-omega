@@ -541,8 +541,8 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     """Procesa consultas sobre archivos sospechosos y medidas de cuarentena."""
     try:
         if ctx.is_empty: return Answer("Primero analizá el sistema.")
-        count: int = int(ctx.get_metric("suspicious_count", 0.0))
-        warn: int = int(ctx.get_metric("suspicious_warnings", 0.0))
+        count = int(ctx.get_metric("suspicious_count", 0.0))
+        warn = int(ctx.get_metric("suspicious_warnings", 0.0))
         if count == 0:
             texto = "No hay archivos sospechosos. La app nunca borra sola, todo va a revisión."
         else:
@@ -573,7 +573,7 @@ def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     """Procesa preguntas relacionadas con los programas de inicio del sistema."""
     try:
         if ctx.is_empty: return Answer("Primero analizá el sistema.")
-        count: int = int(ctx.get_metric("startup_count", 0.0))
+        count = int(ctx.get_metric("startup_count", 0.0))
         estado = f"Tenés {count} programas que arrancan con Windows."
         valoracion = "Son bastantes, y cada uno suma tiempo de encendido." if count > 15 else ("Es normal." if count > 8 else "Está bien.")
         cierre = " La app los lista, pero desactivalos desde el Administrador de tareas de Windows."

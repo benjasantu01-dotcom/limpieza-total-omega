@@ -329,7 +329,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         if destination is None: return None
         path_input = Path(str(destination)).absolute()
         
-        # Validaciones: si es directorio o ruta protegida, abortar.
+        # Validaciones de seguridad antes de operar
         if path_input.is_dir() or is_protected_path(path_input):
             return None
         
@@ -418,5 +418,7 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         borde = thick / 2.0
         caja = (canvas_x + borde, canvas_y + borde, canvas_x + diam - borde, canvas_y + diam - borde)
         canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)
-        if val > 0: canvas.create_arc(*caja, start=90, extent=-(val / 100 * 359.9), style="arc", outline=fill or score_color(val), width=thick)
-    except (Exception, ValueError, TypeError): return
+        if val > 0: 
+            canvas.create_arc(*caja, start=90, extent=-(val / 100 * 359.9), style="arc", outline=fill or score_color(val), width=thick)
+    except (ValueError, TypeError, ZeroDivisionError, Exception): 
+        return
