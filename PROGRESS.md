@@ -8,35 +8,35 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 123 | 9 | 16 | 9 | 120 |
-| 2026-09-10 | 105 | 7 | 19 | 8 | 88 |
+| 2026-09-09 | 122 | 9 | 15 | 9 | 118 |
+| 2026-09-10 | 106 | 7 | 19 | 8 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
 - seguridad defensiva: **53**
 - legibilidad y documentación: **50**
-- robustez ante casos límite: **36**
-- rendimiento: **35**
+- rendimiento: **36**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **23**
+- `quarantine.py`: **22**
 - `settings.py`: **20**
 - `safety.py`: **19**
 - `healthscore.py`: **19**
 - `memory.py`: **19**
 - `assistant.py`: **18**
 - `duplicates.py`: **18**
-- `browser.py`: **17**
+- `browser.py`: **18**
 - `scanner.py`: **16**
 - `diskreport.py`: **15**
 - `branding.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T09:43:40` **browser.py** (rendimiento): He optimizado la recursión del escaneo de directorios introduciendo un mecanismo de memoización persistente dentro del bucle de `detect_profiles`, evitando que múltiples navegadores que comparten estructuras de directorios (common cache paths) tengan que re-leer los mismos subdirectorios en disco.
 - `2026-09-10T09:34:37` **assistant.py** (rendimiento): Optimicé `_get_active_problems` eliminando la recreación de listas en cada llamada mediante el uso de `lru_cache`, y mejoré el rendimiento de `local_answer` convirtiendo el `_KEYWORD_MAP` en una estructura de búsqueda más eficiente mediante una comprensión de diccionario indexada por tokens únicos.
 - `2026-09-10T09:34:10` **startup.py** (legibilidad y documentación): Documenté con mayor precisión el propósito de los métodos privados de `StartupEntry` y las funciones de escaneo, clarificando la lógica de seguridad y el manejo de excepciones para facilitar el mantenimiento futuro.
 - `2026-09-10T09:33:20` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en los retornos de funciones, consolidando la estructura del módulo mediante una organización de constantes de validación más explícita, y clarificando las docstrings de las funciones de seguridad mediante la especificación de sus precondiciones y comportamiento ante errores.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T08:33:28` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_ask_assistant` y `_collect_settings` agregando saneamiento de texto y manejo de excepciones ante widgets de UI potencialmente inexistentes o valores de entrada corruptos, evitando así cierres inesperados de la aplicación.
 - `2026-09-10T08:32:28` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `SystemMetrics` mediante la adición de una validación explícita `is_finite` en el `__post_init__` y una mejora en `_evaluate_rules` para manejar fallos en las factorías de mensajes, evitando que una excepción en una regla individual corrompa el reporte completo de salud.
 - `2026-09-10T08:32:00` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez ante entradas inesperadas en `find_duplicates` y `format_group` mediante validaciones de tipo y estructura más estrictas, asegurando que el módulo no falle ante argumentos mal formados.
-- `2026-09-10T08:23:30` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_path_inside_base` y `_is_safe_to_traverse` para manejar entradas malformadas mediante la validación explícita de `None` y el uso de `ValueError` en lugar de una captura genérica, asegurando que los caminos no resuelvan a rutas fuera del entorno esperado.

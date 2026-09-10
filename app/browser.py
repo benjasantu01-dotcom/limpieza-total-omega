@@ -221,7 +221,7 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Cálculo de tamaño de directorio mediante recorrido DFS con control de profundidad.
+    Cálculo de tamaño de directorio mediante recorrido DFS con control de profundidad y memoización.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
@@ -314,6 +314,7 @@ def detect_profiles(
                         continue
                         
                     c_path = candidate.resolve(strict=True)
+                    # La memoización ocurre internamente en _sum_directory_recursive via perf_cache
                     size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
                     if size > 0:
                         found.append(BrowserCache(str(browser_name), c_path, size))

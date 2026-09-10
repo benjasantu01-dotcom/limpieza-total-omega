@@ -477,3 +477,14 @@ ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defi
 - `2026-09-10T09:34:37` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé `_get_active_problems` eliminando la recreación de listas en cada llamada mediante el uso de `lru_cache`, y mejoré el rendimiento de `local_answer` convirtiendo el `_KEYWORD_MAP` en una estructura de búsqueda más eficiente mediante una comprensión de diccionario indexada por tokens únicos.
 - `2026-09-10T09:34:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T09:34:37` Corrida terminada. Total usado hoy: 227.
+- `2026-09-10T09:42:32` Arrancando corrida. Quedan hoy ~73 peticiones objetivo.
+- `2026-09-10T09:42:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-10T09:43:13` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-10T09:43:40` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). He optimizado la recursión del escaneo de directorios introduciendo un mecanismo de memoización persistente dentro del bucle de `detect_profiles`, evitando que múltiples navegadores que comparten estructuras de directorios (common cache paths) tengan que re-leer los mismos subdirectorios en disco.
+- `2026-09-10T09:44:06` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-10T09:44:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-10T09:44:10` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-10T09:44:16` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-10T09:44:28` Gemini sigue devolviendo 500 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-10T09:44:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T09:44:28` Corrida terminada. Total usado hoy: 231.
