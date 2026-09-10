@@ -354,28 +354,20 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """
     Valida espacio y permisos antes de autorizar el movimiento.
     """
-    if junk_file is None or dest_base is None: return None
-    if not isinstance(junk_file, JunkFile) or junk_file.path is None or not isinstance(dest_base, Path): return None
-    if _is_unc_path(dest_base) or is_protected_path(dest_base) or is_protected_path(junk_file.path): return None
+    if not _is_safe_to_move(junk_file, dest_base): return None
     try:
         dest_base_res: Path = dest_base.resolve()
-        if not dest_base_res.exists() or not dest_base_res.is_dir(): return None
-        
+        # Verificar espacio
         try:
             if shutil.disk_usage(dest_base_res.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): 
                 return None
         except (OSError, ValueError):
             pass 
             
-        if not _is_safe_to_move(junk_file, dest_base_res): return None
-        
         src_res: Path = junk_file.path.resolve()
-        if src_res.is_relative_to(dest_base_res): return None
-        
         safe_name: str = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
         target: Path = _generate_unique_target(dest_base_res / safe_name)
         
-        if target.parent.resolve() != dest_base_res: return None
         if target.exists() and os.path.samefile(src_res, target): return None
             
         return target
@@ -391,27 +383,18 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
 
     try:
         dest_base: Path = Path(review_dir).expanduser().resolve()
-        if _is_unc_path(dest_base) or not is_safe_to_modify(dest_base): return None
-        
+        if not is_safe_to_modify(dest_base): return None
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
     except (OSError, RuntimeError, TypeError):
         return None
 
     for junk_file in files:
         try:
-            if not isinstance(junk_file, JunkFile) or junk_file.path is None: continue
-            src: Path = junk_file.path.resolve()
-            
-            if not src.exists() or src.is_relative_to(dest_base) or not src.is_file(): continue
-            
-            target: Optional[Path] = _can_move_file(junk_file, dest_base)
-            if target and target.is_relative_to(dest_base):
-                # Validación estricta mediante is_safe_to_modify (booleano) antes de la operación
-                if not is_safe_to_modify(src) or not is_safe_to_modify(target): continue
-                if _is_file_locked(src): continue
-                ensure_safe_to_modify(src)
+            target = _can_move_file(junk_file, dest_base)
+            if target and is_safe_to_modify(junk_file.path) and is_safe_to_modify(target):
+                ensure_safe_to_modify(junk_file.path)
                 ensure_safe_to_modify(target)
-                shutil.move(str(src), str(target))
+                shutil.move(str(junk_file.path), str(target))
         except (FileNotFoundError, OSError, PermissionError, shutil.Error, RuntimeError, TypeError) as e:
             logger.error(f"Error moviendo {junk_file.path}: {e}")
             continue
@@ -426,7 +409,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
 
     try:
         dest: Path = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or _is_unc_path(dest) or not is_safe_to_modify(dest): 
+        if not dest.exists() or not is_safe_to_modify(dest): 
             return 0
     except (OSError, RuntimeError, TypeError):
         return 0
@@ -436,12 +419,10 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         try:
             if not isinstance(item, Path): continue
             resolved_item = item.resolve()
-            # Validación estricta mediante is_safe_to_modify (booleano) antes de la operación
-            if resolved_item.is_file() and resolved_item.exists() and resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
-                if _passes_system_checks(resolved_item) and not _is_file_locked(resolved_item):
-                    ensure_safe_to_modify(resolved_item)
-                    resolved_item.unlink()
-                    count += 1
+            if resolved_item.is_file() and is_safe_to_modify(resolved_item):
+                ensure_safe_to_modify(resolved_item)
+                resolved_item.unlink()
+                count += 1
         except (PermissionError, OSError, ValueError, TypeError) as e:
             logger.error(f"Error eliminando {item}: {e}")
     return count

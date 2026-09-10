@@ -622,7 +622,7 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
 
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """Restaura un archivo al destino original tras verificaciones de seguridad."""
-    if not isinstance(item_id, str) or not item_id:
+    if not isinstance(item_id, str) or not item_id.strip():
         raise ValueError("ID de ítem inválido o nulo.")
         
     base_path = quarantine_dir(base)
@@ -633,11 +633,14 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         
     stored_file = (base_path / quarantine_item.stored_name).resolve()
     
+    if not stored_file.exists() or not stored_file.is_file():
+        raise RuntimeError("Archivo en cuarentena no localizado en disco.")
+        
     if not _is_within_quarantine_sandbox(stored_file, base_path.resolve()):
         raise UnsafePathError("Archivo fuera del sandbox, restauración abortada.")
     
-    if not stored_file.exists() or not quarantine_item.verify_integrity(stored_file):
-        raise RuntimeError("Integridad comprometida: archivo no hallado o corrompido.")
+    if not quarantine_item.verify_integrity(stored_file):
+        raise RuntimeError("Integridad comprometida: archivo corrompido.")
     
     destination = Path(quarantine_item.original_path).resolve()
     _check_path_syntax_integrity(destination)
@@ -658,8 +661,8 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     if not parent.exists():
         try:
             parent.mkdir(parents=True, exist_ok=True)
-        except OSError:
-            raise RuntimeError("No se pudo crear la estructura de carpetas de destino.")
+        except OSError as e:
+            raise RuntimeError(f"No se pudo crear el destino: {e}")
             
     if not is_safe_to_modify(destination):
         raise UnsafePathError("Restauración denegada: ruta de destino no segura.")
