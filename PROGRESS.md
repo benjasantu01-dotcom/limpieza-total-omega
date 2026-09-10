@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 117 | 8 | 15 | 9 | 116 |
-| 2026-09-10 | 107 | 8 | 19 | 8 | 97 |
+| 2026-09-09 | 113 | 8 | 15 | 9 | 116 |
+| 2026-09-10 | 108 | 8 | 20 | 8 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
-- seguridad defensiva: **51**
 - legibilidad y documentación: **50**
+- seguridad defensiva: **47**
 - rendimiento: **37**
-- robustez ante casos límite: **32**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `healthscore.py`: **19**
-- `memory.py`: **19**
 - `settings.py`: **19**
-- `duplicates.py`: **18**
 - `safety.py`: **18**
+- `assistant.py`: **18**
 - `browser.py`: **18**
-- `assistant.py`: **17**
+- `healthscore.py`: **18**
+- `memory.py`: **18**
+- `duplicates.py`: **17**
 - `scanner.py`: **16**
 - `diskreport.py`: **14**
 - `branding.py`: **13**
 - `organizer.py`: **12**
-- `main.py`: **10**
+- `main.py`: **9**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T10:14:49` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` y la ingesta de datos en `SystemContext.ingest` añadiendo una validación explícita de tipos que evita errores ante fuentes de datos malformadas o tipos inesperados, reforzando la tolerancia a fallos del módulo ante configuraciones externas corruptas.
 - `2026-09-10T09:57:52` **main.py** (rendimiento): Se implementó un decorador `@lru_cache` para la carga de configuración inicial en `_init_state`, reduciendo accesos redundantes al sistema de archivos al reiniciar la sesión, y se optimizó la lógica de redibujo de `_render_gauge` y `_apply_card_updates` utilizando `after_idle` para coalescencia de eventos, evitando saturar el hilo principal con actualizaciones visuales innecesarias.
 - `2026-09-10T09:43:40` **browser.py** (rendimiento): He optimizado la recursión del escaneo de directorios introduciendo un mecanismo de memoización persistente dentro del bucle de `detect_profiles`, evitando que múltiples navegadores que comparten estructuras de directorios (common cache paths) tengan que re-leer los mismos subdirectorios en disco.
 - `2026-09-10T09:34:37` **assistant.py** (rendimiento): Optimicé `_get_active_problems` eliminando la recreación de listas en cada llamada mediante el uso de `lru_cache`, y mejoré el rendimiento de `local_answer` convirtiendo el `_KEYWORD_MAP` en una estructura de búsqueda más eficiente mediante una comprensión de diccionario indexada por tokens únicos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T08:42:20` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` reemplazando los chequeos de seguridad "en cascada" por una validación centralizada en `_is_safe_for_disk_op`, eliminando redundancias y asegurando que las excepciones críticas de `ensure_safe_to_modify` se gestionen de forma consistente.
 - `2026-09-10T08:41:51` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_windows_process_csv` añadiendo una validación estricta de la estructura del CSV mediante un chequeo de longitud de `parts` y capturando errores inesperados por línea, garantizando que una línea malformada no silencie el resto del análisis.
 - `2026-09-10T08:33:28` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_ask_assistant` y `_collect_settings` agregando saneamiento de texto y manejo de excepciones ante widgets de UI potencialmente inexistentes o valores de entrada corruptos, evitando así cierres inesperados de la aplicación.
-- `2026-09-10T08:32:28` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `SystemMetrics` mediante la adición de una validación explícita `is_finite` en el `__post_init__` y una mejora en `_evaluate_rules` para manejar fallos en las factorías de mensajes, evitando que una excepción en una regla individual corrompa el reporte completo de salud.

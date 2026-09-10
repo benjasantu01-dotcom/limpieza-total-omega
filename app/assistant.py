@@ -400,8 +400,9 @@ def _get_source_value(source: Any, key: str) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
+        # Solo acceder a atributos que no sean callables ni métodos internos (dunder)
         attr = getattr(source, key, None)
-        return attr if not callable(attr) else None
+        return attr if not callable(attr) and not key.startswith("__") else None
     except Exception:
         return None
 

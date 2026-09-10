@@ -553,3 +553,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-10T10:05:12` Gemini sigue devolviendo 500 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-10T10:05:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T10:05:12` Corrida terminada. Total usado hoy: 239.
+- `2026-09-10T10:13:09` Arrancando corrida. Quedan hoy ~61 peticiones objetivo.
+- `2026-09-10T10:13:41` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 380): invalid syntax. Perhaps you forgot a comma?
+- `2026-09-10T10:14:07` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-10T10:14:49` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_get_source_value` y la ingesta de datos en `SystemContext.ingest` añadiendo una validación explícita de tipos que evita errores ante fuentes de datos malformadas o tipos inesperados, reforzando la tolerancia a fallos del módulo ante configuraciones externas corruptas.
+- `2026-09-10T10:15:07` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-10T10:15:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T10:15:07` Corrida terminada. Total usado hoy: 243.
