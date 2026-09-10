@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 37
+- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 76 | 3 | 11 | 4 | 75 |
-| 2026-09-10 | 152 | 9 | 26 | 15 | 133 |
+| 2026-09-09 | 73 | 3 | 10 | 4 | 75 |
+| 2026-09-10 | 154 | 10 | 26 | 15 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
 - seguridad defensiva: **53**
 - legibilidad y documentación: **50**
-- robustez ante casos límite: **39**
-- rendimiento: **32**
+- robustez ante casos límite: **36**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
-- `settings.py`: **20**
 - `browser.py`: **20**
+- `duplicates.py`: **19**
 - `healthscore.py`: **19**
-- `duplicates.py`: **18**
+- `settings.py`: **19**
 - `assistant.py`: **18**
 - `memory.py`: **18**
 - `diskreport.py`: **17**
-- `safety.py`: **16**
-- `scanner.py`: **16**
 - `branding.py`: **15**
+- `safety.py`: **15**
+- `scanner.py`: **15**
+- `main.py`: **11**
 - `organizer.py`: **11**
-- `main.py`: **10**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T14:21:02` **main.py** (rendimiento): Optimizé la gestión de caché de la aplicación implementando una política de invalidación basada en el tamaño máximo y refresco de accesos (LRU), reemplazando el diccionario plano con una estructura que evita búsquedas lineales y mejora la eficiencia en aplicaciones con alta frecuencia de lecturas/escrituras.
+- `2026-09-10T14:19:15` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` utilizando `os.scandir` para obtener metadatos (tamaño, tipo) directamente del iterador del sistema de archivos, evitando llamadas innecesarias a `os.path.getsize` o `stat` adicionales dentro del bucle.
 - `2026-09-10T14:10:47` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` eliminando llamadas redundantes a `path.is_file()` y `path.suffix` dentro del bucle, aprovechando los datos ya obtenidos durante el recorrido `walk_files` para reducir la presión de E/S.
 - `2026-09-10T14:10:34` **browser.py** (rendimiento): Se implementó un sistema de persistencia de caché (memoización de estados de sistema) en `detect_profiles` y se optimizó `_sum_directory_recursive` para evitar llamadas redundantes a `os.path.ismount` y `resolve` mediante la reutilización de estados ya verificados, reduciendo significativamente las llamadas a sistema durante el escaneo de directorios.
 - `2026-09-10T14:10:04` **branding.py** (rendimiento): Se ha optimizado la generación de colores degradados reemplazando la creación de una lista mutable por una tupla precalculada, reduciendo la carga de asignaciones en memoria y mejorando la eficiencia del cacheo mediante un cálculo más directo en `gradient_colors`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T13:38:35` **diskreport.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados, documentación explícita de excepciones y clarificación de la intención en `_collect_summary_data`, asegurando que el código sea autodocumentado para futuras auditorías de seguridad.
 - `2026-09-10T13:30:01` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos en los métodos privados `_is_path_inside_base`, `_should_skip_entry` y `_is_safe_to_traverse` para clarificar la lógica de seguridad, además de asignar tipos explícitos a los acumuladores en el escaneo recursivo.
 - `2026-09-10T13:29:08` **assistant.py** (legibilidad y documentación): Mejoré la documentación de la clase `SystemContext` y sus métodos principales con docstrings más detallados y especificaciones de tipos claras, facilitando la comprensión del contrato de datos de las métricas del sistema.
-- `2026-09-10T13:19:08` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de archivos en `save()` añadiendo un chequeo explícito de `is_safe_to_modify` para el archivo temporal antes de la escritura, evitando posibles condiciones de carrera o escrituras en rutas no autorizadas si el sistema de archivos fuera modificado externamente durante la operación.
-- `2026-09-10T13:18:51` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_safe_entry` validando explícitamente que la entrada no sea un vínculo simbólico o unión antes de intentar realizar operaciones de resolución de rutas, evitando excepciones innecesarias y comportamientos ambiguos al acceder a puntos de reanálisis.

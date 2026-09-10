@@ -135,10 +135,6 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 def _is_valid_candidate(path: Path) -> bool:
     """
     Validador estricto de candidatos.
-    Se excluyen: rutas relativas, symlinks/junctions para evitar recursión circular,
-    archivos de sistema/ocultos por seguridad, rutas protegidas por configuración,
-    archivos sin permisos de lectura o archivos con hardlinks (st_nlink > 1) 
-    para evitar borrar inadvertidamente datos compartidos por el SO.
     """
     if not isinstance(path, Path) or not path.is_absolute():
         return False
@@ -198,7 +194,7 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Escaneo recursivo del sistema recolectando candidatos por tamaño.
-    Mantiene un set 'visited' para evitar bucles infinitos en enlaces circulares.
+    Usa os.scandir para evitar llamadas extra de stat() en el bucle principal.
     """
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[str] = set()
@@ -213,16 +209,19 @@ def _collect_candidates(
             
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    if entry.is_dir(follow_symlinks=False):
-                        if not is_junction(Path(entry.path)):
-                            _scan_directory_recursive(Path(entry.path))
-                    elif entry.is_file(follow_symlinks=False):
-                        st = entry.stat()
-                        if st.st_size >= min_size:
-                            path_obj = Path(entry.path).absolute()
-                            if _is_valid_candidate(path_obj):
-                                size_map[st.st_size].append(path_obj)
-        except (OSError, PermissionError, FileNotFoundError, RuntimeError):
+                    try:
+                        if entry.is_dir(follow_symlinks=False):
+                            if not is_junction(Path(entry.path)):
+                                _scan_directory_recursive(Path(entry.path))
+                        elif entry.is_file(follow_symlinks=False):
+                            st = entry.stat()
+                            if st.st_size >= min_size:
+                                path_obj = Path(entry.path).absolute()
+                                if _is_valid_candidate(path_obj):
+                                    size_map[st.st_size].append(path_obj)
+                    except (OSError, PermissionError):
+                        continue
+        except (OSError, PermissionError, RuntimeError):
             return
 
     if isinstance(directories, Iterable):
@@ -234,7 +233,7 @@ def _collect_candidates(
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Agrupa una lista de archivos aplicando una función hash (parcial o completa)."""
+    """Agrupa una lista de archivos aplicando una función hash."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if path is not None and (digest := hash_func(path)):

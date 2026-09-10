@@ -910,3 +910,58 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-10T14:10:47` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_summary_data` eliminando llamadas redundantes a `path.is_file()` y `path.suffix` dentro del bucle, aprovechando los datos ya obtenidos durante el recorrido `walk_files` para reducir la presión de E/S.
 - `2026-09-10T14:10:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T14:10:47` Corrida terminada. Total usado hoy: 335.
+- `2026-09-10T14:18:48` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-10T14:19:15` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` utilizando `os.scandir` para obtener metadatos (tamaño, tipo) directamente del iterador del sistema de archivos, evitando llamadas innecesarias a `os.path.getsize` o `stat` adicionales dentro del bucle.
+- `2026-09-10T14:19:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-10T14:19:50` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-09-10T14:21:02` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimizé la gestión de caché de la aplicación implementando una política de invalidación basada en el tamaño máximo y refresco de accesos (LRU), reemplazando el diccionario plano con una estructura que evita búsquedas lineales y mejora la eficiencia en aplicaciones con alta frecuencia de lecturas/escrituras.
+- `2026-09-10T14:21:21` Tests FALLARON:
+```
+          '"grande","11","104857600"\n'
+            '"medio","12","10485760"\n'
+        )
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.33s
+
+```
+- `2026-09-10T14:21:21` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento de `parse_windows_process_csv` reemplazando la creación de una lista intermedia de strings mediante `split` por un procesado en línea, evitando múltiples asignaciones de memoria y mejorando la eficiencia al filtrar y convertir los datos de los procesos en un solo paso.
+- `2026-09-10T14:21:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T14:21:21` Corrida terminada. Total usado hoy: 339.

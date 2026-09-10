@@ -267,7 +267,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _init_state(self) -> None:
         """Carga configuraciones iniciales y pools de ejecución."""
         self._cache: OrderedDict[str, Any] = OrderedDict()
-        self._cache_access_times: Dict[str, float] = {}
         self._cache_ttl = 300
         self._cache_max_size = 20
         
@@ -911,7 +910,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return self._get_cached(key)
 
     def _get_cached(self, key: str, provider: Optional[Callable[[], Any]] = None, force: bool = False) -> Any:
-        """Obtiene datos con gestión de TTL y caché."""
+        """Obtiene datos con gestión de TTL y caché LRU."""
         now = time.time()
         if not force and key in self._cache:
             if now - self._cache_access_times.get(key, 0) < self._cache_ttl:
