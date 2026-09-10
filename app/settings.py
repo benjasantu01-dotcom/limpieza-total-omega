@@ -35,7 +35,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple, TypeGuard
 
-from safety import is_safe_to_modify, is_protected_path, ensure_safe_to_modify
+from safety import is_safe_to_modify, is_protected_path, ensure_safe_to_modify, UnsafePathError
 
 PathLike: TypeAlias = str | Path
 SettingsDict: TypeAlias = dict[str, Any]
@@ -173,10 +173,12 @@ class _Validators:
         
         try:
             resolved = path_obj.resolve()
+            # Validar integridad antes de cualquier operación
+            ensure_safe_to_modify(str(resolved))
             is_safe = not _Validators._is_reparse_point(resolved) and \
                       not is_protected_path(str(resolved)) and \
                       is_safe_to_modify(str(resolved))
-        except (OSError, PermissionError, RuntimeError):
+        except (OSError, PermissionError, RuntimeError, UnsafePathError):
             is_safe = False
             
         _SAFETY_CACHE[path_str] = is_safe
@@ -349,7 +351,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         
         _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta
-    except (TypeError, ValueError, OSError, IOError, PermissionError):
+    except (TypeError, ValueError, OSError, IOError, PermissionError, UnsafePathError):
         if temp_path and temp_path.exists():
             try: temp_path.unlink()
             except OSError: pass

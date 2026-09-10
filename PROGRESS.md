@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **239** (47.4% de aceptación)
+- Mejoras aceptadas: **240** (47.6% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 194
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 152 | 12 | 21 | 11 | 145 |
-| 2026-09-10 | 87 | 6 | 15 | 6 | 49 |
+| 2026-09-09 | 152 | 12 | 21 | 11 | 141 |
+| 2026-09-10 | 88 | 6 | 15 | 6 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
+- seguridad defensiva: **53**
 - legibilidad y documentación: **52**
-- seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **44**
 - robustez ante casos límite: **40**
@@ -30,11 +30,11 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **23**
+- `settings.py`: **21**
 - `assistant.py`: **20**
 - `healthscore.py`: **20**
 - `memory.py`: **20**
 - `safety.py`: **20**
-- `settings.py`: **20**
 - `duplicates.py`: **20**
 - `diskreport.py`: **18**
 - `browser.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T07:00:16` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para que el uso de `ensure_safe_to_modify` sea preventivo antes de intentar cualquier operación de resolución de rutas, evitando que una ruta maliciosa o inaccesible detenga el hilo de ejecución mediante el manejo explícito de la excepción de seguridad dentro del validador.
 - `2026-09-10T06:50:55` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_encrypted_or_compressed` en el flujo de integridad para evitar intentos de modificación sobre archivos con atributos NTFS de cifrado o compresión, reforzando la seguridad defensiva al evitar corrupciones accidentales en datos protegidos por el sistema de archivos.
 - `2026-09-10T06:50:18` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` mediante la implementación de una validación de `st_ino` (número de inodo) en `_check_isolation_safety` para prevenir ataques de sustitución de archivos (file swapping) mediante enlaces duros, asegurando que el archivo que se va a mover sea efectivamente el mismo que se acaba de validar.
 - `2026-09-10T06:49:42` **organizer.py** (seguridad defensiva): Se ha mejorado `_is_safe_for_disk_op` para verificar la existencia del archivo fuente (`src.exists()`) utilizando el `Path` resuelto antes de realizar cualquier validación de atributos o movimiento, evitando excepciones innecesarias y comportamientos indefinidos al manejar rutas no existentes o enlaces rotos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T06:19:59` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante fallos de escritura en disco, asegurando que si ocurre un error durante el volcado de bytes (como falta de espacio o desconexión), se realice una limpieza exhaustiva del archivo temporal para evitar dejar estados corruptos.
 - `2026-09-10T06:19:28` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta para el manejo de archivos vacíos o inaccesibles dentro de `scan_file`, garantizando que el escáner no aborte ante condiciones de carrera (archivos bloqueados durante el acceso) o inconsistencias del sistema de archivos mediante un bloque `try-except` más granular.
 - `2026-09-10T06:09:57` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de lectura/escritura (I/O) al implementar bloques `try-finally` para asegurar el cierre de descriptores de archivos, y añadí validación de existencia para archivos aislados antes de intentar cualquier operación de verificación o borrado en el bucle de `purge_all`.
-- `2026-09-10T05:59:27` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemMetrics` ante valores extremos o inesperados añadiendo una validación explícita para `is_finite` en el constructor y reforzando `validate` contra el desbordamiento de enteros o valores negativos antes de cualquier cálculo.
