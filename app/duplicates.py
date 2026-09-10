@@ -276,8 +276,8 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path) or not p.exists(): continue
         try:
+            if not p.exists(): continue
             stat_info = p.stat()
             candidates.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError):
@@ -309,7 +309,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
         elif not _is_valid_candidate(path):
             lines.append(f"   [inaccesible] {path}")
         else:
-            label = 'conservar' if keeper and path == keeper else 'duplicado'
+            label = 'conservar' if (keeper and path == keeper) else 'duplicado'
             lines.append(f"   [{label}] {path}")
             
     return lines

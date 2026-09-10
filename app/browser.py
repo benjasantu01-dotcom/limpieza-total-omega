@@ -99,14 +99,16 @@ class BrowserCache:
 def _get_kernel32() -> Optional[ctypes.WinDLL]:
     """
     Carga kernel32.dll para acceder a atributos de archivo de bajo nivel.
-    
-    Returns:
-        Instancia de WinDLL si es Windows y es accesible, None en otro caso.
     """
-    if os.name != 'nt' or not hasattr(ctypes, 'WinDLL'):
+    if os.name != 'nt':
         return None
     try:
-        return ctypes.WinDLL('kernel32.dll', use_last_error=True)
+        # Se fuerza el uso de la API W (Wide) para manejar Unicode correctamente.
+        # use_last_error=True permite capturar errores de sistema sin excepciones.
+        dll = ctypes.WinDLL('kernel32.dll', use_last_error=True)
+        if hasattr(dll, 'GetFileAttributesW'):
+            return dll
+        return None
     except (OSError, RuntimeError, AttributeError):
         return None
 
@@ -159,8 +161,6 @@ def _is_excluded_file(name: Optional[str]) -> bool:
 def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """Usa Win32 GetFileAttributesW para detectar atributos Oculto/Sistema."""
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
-        return False
-    if not hasattr(kernel32, 'GetFileAttributesW'):
         return False
     try:
         attrs: int = kernel32.GetFileAttributesW(entry_path)

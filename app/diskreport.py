@@ -284,7 +284,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file(follow_symlinks=False):
                             if skip_protected and is_protected_path(entry_path): continue
                             st = entry.stat()
-                            yield entry_path, int(getattr(st, 'st_size', 0))
+                            size = getattr(st, 'st_size', 0)
+                            yield entry_path, int(size) if size is not None else 0
                     except (PermissionError, OSError, AttributeError):
                         continue
         except (PermissionError, OSError):
@@ -364,17 +365,19 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        total_bytes += size
+        # Aseguramos que size sea un entero válido
+        safe_size = int(size) if isinstance(size, (int, float)) else 0
+        total_bytes += safe_size
         total_files += 1
         extension = path.suffix.lower() or "(sin extensión)"
-        ext_sizes[extension] += size
+        ext_sizes[extension] += safe_size
         ext_counts[extension] += 1
         
         if limit > 0:
             if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size, path))
-            elif size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (size, path))
+                heapq.heappush(top_heap, (safe_size, path))
+            elif safe_size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (safe_size, path))
             
     return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_heap)
 
