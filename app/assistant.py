@@ -618,13 +618,13 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     if not isinstance(data, dict): return None
     try:
         candidates = data.get("candidates")
-        if not isinstance(candidates, list) or not candidates: return None
+        if not isinstance(candidates, list) or len(candidates) == 0: return None
         c1 = candidates[0]
         if not isinstance(c1, dict): return None
         content = c1.get("content")
         if not isinstance(content, dict): return None
         parts = content.get("parts")
-        if not isinstance(parts, list) or not parts: return None
+        if not isinstance(parts, list) or len(parts) == 0: return None
         first_part = parts[0]
         if not isinstance(first_part, dict): return None
         text_val = first_part.get("text")

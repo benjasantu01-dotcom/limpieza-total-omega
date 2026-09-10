@@ -329,6 +329,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         path_input = Path(str(destination)).absolute()
         if not is_safe_to_modify(path_input) or not is_safe_to_modify(path_input.parent):
             return None
+        
+        # ensure_safe_to_modify lanza excepción si es inseguro, usándola solo donde corresponde.
         ensure_safe_to_modify(path_input)
             
         if not path_input.parent.exists():
@@ -399,4 +401,4 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         caja = (canvas_x + borde, canvas_y + borde, canvas_x + diam - borde, canvas_y + diam - borde)
         canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)
         if val > 0: canvas.create_arc(*caja, start=90, extent=-(val / 100 * 359.9), style="arc", outline=fill or score_color(val), width=thick)
-    except Exception: return
+    except (Exception, ValueError, TypeError): return

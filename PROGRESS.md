@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
-- Rechazadas por tests: 18
+- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 210
@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 36 | 3 | 6 | 1 | 17 |
+| 2026-09-08 | 33 | 2 | 6 | 1 | 17 |
 | 2026-09-09 | 152 | 12 | 21 | 11 | 154 |
-| 2026-09-10 | 40 | 3 | 7 | 2 | 39 |
+| 2026-09-10 | 44 | 3 | 7 | 2 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
-- legibilidad y documentación: **48**
 - rendimiento: **47**
+- legibilidad y documentación: **45**
+- manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
 - `quarantine.py`: **21**
 - `settings.py`: **20**
 - `duplicates.py`: **20**
+- `memory.py`: **20**
+- `assistant.py`: **19**
 - `scanner.py`: **18**
-- `assistant.py`: **18**
+- `diskreport.py`: **18**
 - `healthscore.py`: **18**
 - `safety.py`: **18**
-- `diskreport.py`: **17**
-- `organizer.py`: **13**
-- `browser.py`: **13**
-- `main.py`: **11**
-- `branding.py`: **11**
+- `browser.py`: **14**
+- `branding.py`: **12**
+- `organizer.py`: **12**
+- `main.py`: **10**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T03:59:28` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` validando que los datos procesados provengan de fuentes legibles y manejando excepciones al acceder a `path.suffix` o propiedades del sistema de archivos, asegurando que el recorrido no aborte ante archivos bloqueados o con nombres inválidos.
+- `2026-09-10T03:59:09` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez y seguridad del módulo mediante la validación estricta de parámetros en funciones críticas (como `directory_size` y `total_cache_bytes`) y la mejora en el manejo de excepciones al verificar rutas, asegurando que cualquier entrada malformada o inesperada sea descartada sin interrumpir el flujo.
+- `2026-09-10T03:57:32` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo eliminando condiciones propensas a errores (como el uso de `ensure_safe_to_modify` como booleano en `if`) y fortaleciendo la validación de parámetros de entrada (como `size` o `canvas_element`) para prevenir excepciones innecesarias en tiempo de ejecución.
+- `2026-09-10T03:56:56` **assistant.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_extract_text_from_gemini_json` para manejar estructuras de datos anidadas de forma segura mediante comprobaciones explícitas de tipo y longitud, evitando posibles `AttributeError` o accesos fuera de rango si la respuesta de la API es inesperada.
 - `2026-09-10T02:34:54` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita de `ensure_safe_to_modify` para el archivo final de configuración (`ruta`), asegurando que no solo el directorio padre sea seguro, sino que el archivo de destino no sea un enlace simbólico o un archivo protegido antes de realizar el reemplazo atómico.
 - `2026-09-10T02:25:54` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escáner en `_is_safe_entry` al agregar una verificación explícita para evitar el procesamiento de rutas UNC (`\\`) y prevenir la resolución de accesos directos (shortcuts `.lnk`) que podrían apuntar a ubicaciones externas, asegurando que el proceso se mantenga estrictamente dentro de la jerarquía validada.
 - `2026-09-10T02:25:43` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para detectar si el sistema de archivos está marcando el objeto como "Offline" o no disponible, previniendo errores durante la manipulación de archivos que residen en servicios en la nube (como OneDrive) que podrían no estar descargados localmente.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T02:04:21` **browser.py** (seguridad defensiva): Se reforzó la seguridad de `browser.py` implementando una validación estricta de "Path Traversal" mediante la normalización de rutas (`resolve`) previa a cualquier operación de sistema, y asegurando que `_is_valid_cache_path` y `_is_path_inside_base` verifiquen que la ruta final resuelta permanezca dentro del espacio de trabajo permitido, evitando escapes hacia directorios superiores mediante manipulaciones de string.
 - `2026-09-10T01:55:18` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al serializar las métricas para el LLM: agregué una validación estricta que impide que la función retorne datos si el string resultante contiene patrones prohibidos, evitando que el payload enviado a la API contenga inyecciones incluso si los datos fuente fueran manipulados.
 - `2026-09-10T01:54:11` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante archivos de configuración corruptos o bloqueados añadiendo un mecanismo de respaldo automático: si `load()` detecta un error de lectura, intenta leer un backup (`.bak`) antes de ceder y retornar los valores por defecto.
-- `2026-09-10T01:45:14` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de metadatos de archivos dentro de `scan_file`, reemplazando el acceso directo a `path.stat()` (que puede fallar por permisos o archivos bloqueados) por una gestión de excepciones más granular que evita la interrupción del escaneo al encontrar archivos en uso o con bloqueos de acceso exclusivos.
-- `2026-09-10T01:44:08` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante casos límite mediante la validación de archivos con longitud cero o corruptos durante el proceso de aislamiento, evitando que `_atomic_isolate_file` intente persistir estados inconsistentes.
-- `2026-09-10T01:35:26` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` y `_get_process_path` para prevenir fallos por manejadores de procesos nulos, excepciones durante la interacción con APIs de Win32 y bloqueos inesperados al manipular rutas de sistema inaccesibles.
-- `2026-09-10T01:34:57` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_trim_process` añadiendo una validación explícita de `psutil` (usando `memory_mod.process_exists`) y asegurando que la operación solo proceda si el proceso no es protegido, mitigando errores de concurrencia y permisos en procesos críticos.

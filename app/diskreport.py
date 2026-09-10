@@ -365,22 +365,28 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        # Validar nuevamente que es un archivo antes de procesar, por seguridad concurrente
+        # Validar nuevamente que es un archivo antes de procesar
         if not path.is_file():
             continue
             
-        safe_size = int(size) if isinstance(size, (int, float)) else 0
-        total_bytes += safe_size
-        total_files += 1
-        extension = path.suffix.lower() or "(sin extensión)"
-        ext_sizes[extension] += safe_size
-        ext_counts[extension] += 1
-        
-        if limit > 0:
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, (safe_size, path))
-            elif safe_size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (safe_size, path))
+        try:
+            safe_size = int(size) if isinstance(size, (int, float)) else 0
+            total_bytes += safe_size
+            total_files += 1
+            
+            # Captura de error en caso de fallo al leer suffix
+            extension = path.suffix.lower() if path.suffix else "(sin extensión)"
+            
+            ext_sizes[extension] += safe_size
+            ext_counts[extension] += 1
+            
+            if limit > 0:
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, (safe_size, path))
+                elif safe_size > top_heap[0][0]:
+                    heapq.heapreplace(top_heap, (safe_size, path))
+        except (OSError, AttributeError, TypeError):
+            continue
             
     return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_heap)
 

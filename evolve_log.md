@@ -1036,3 +1036,14 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-10T03:49:46` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-10T03:49:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T03:49:46` Corrida terminada. Total usado hoy: 91.
+- `2026-09-10T03:55:47` Arrancando corrida. Quedan hoy ~209 peticiones objetivo.
+- `2026-09-10T03:55:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-10T03:56:56` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_extract_text_from_gemini_json` para manejar estructuras de datos anidadas de forma segura mediante comprobaciones explícitas de tipo y longitud, evitando posibles `AttributeError` o accesos fuera de rango si la respuesta de la API es inesperada.
+- `2026-09-10T03:57:32` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y las funciones de dibujo eliminando condiciones propensas a errores (como el uso de `ensure_safe_to_modify` como booleano en `if`) y fortaleciendo la validación de parámetros de entrada (como `size` o `canvas_element`) para prevenir excepciones innecesarias en tiempo de ejecución.
+- `2026-09-10T03:58:32` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-10T03:58:36` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-10T03:59:09` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez y seguridad del módulo mediante la validación estricta de parámetros en funciones críticas (como `directory_size` y `total_cache_bytes`) y la mejora en el manejo de excepciones al verificar rutas, asegurando que cualquier entrada malformada o inesperada sea descartada sin interrumpir el flujo.
+- `2026-09-10T03:59:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-10T03:59:28` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_collect_summary_data` validando que los datos procesados provengan de fuentes legibles y manejando excepciones al acceder a `path.suffix` o propiedades del sistema de archivos, asegurando que el recorrido no aborte ante archivos bloqueados o con nombres inválidos.
+- `2026-09-10T03:59:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T03:59:28` Corrida terminada. Total usado hoy: 95.

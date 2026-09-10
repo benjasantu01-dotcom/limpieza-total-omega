@@ -184,6 +184,8 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
     """Validación holística de seguridad para una ruta antes de recorrerla."""
     try:
+        if not path_obj.exists():
+            return False
         p_res = path_obj.resolve(strict=True)
         if not is_safe_to_modify(p_res) or is_protected_path(p_res):
             return False
@@ -237,10 +239,12 @@ def directory_size(path: Union[str, Path, None]) -> int:
     if path is None:
         return 0
     try:
-        p = Path(path).resolve(strict=True)
-        if not p.is_dir() or not _is_safe_to_traverse(p, None):
+        p = Path(path)
+        if not p.is_absolute():
             return 0
-        return _sum_directory_recursive(str(p), _IS_JUNCTION_FN, _get_kernel32(), {})
+        if not _is_safe_to_traverse(p, None):
+            return 0
+        return _sum_directory_recursive(str(p.resolve(strict=True)), _IS_JUNCTION_FN, _get_kernel32(), {})
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
 
@@ -304,9 +308,12 @@ def detect_profiles(
 
 def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
     """Calcula el peso total acumulado en bytes."""
-    if caches is None or not isinstance(caches, Iterable):
+    if caches is None:
         return 0
-    return sum(cache.size_bytes for cache in caches)
+    try:
+        return sum(cache.size_bytes for cache in caches if isinstance(cache, BrowserCache))
+    except (TypeError, AttributeError):
+        return 0
 
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
