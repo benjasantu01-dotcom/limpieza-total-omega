@@ -865,3 +865,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-10T13:19:08` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del manejo de archivos en `save()` añadiendo un chequeo explícito de `is_safe_to_modify` para el archivo temporal antes de la escritura, evitando posibles condiciones de carrera o escrituras en rutas no autorizadas si el sistema de archivos fuera modificado externamente durante la operación.
 - `2026-09-10T13:19:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T13:19:08` Corrida terminada. Total usado hoy: 315.
+- `2026-09-10T13:27:41` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-10T13:27:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-10T13:27:50` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-10T13:28:27` ➖ Sin cambios en startup.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de `parse_registry_csv` ante entradas de registro malformadas o inesperadas, asegurando que la validación de seguridad sea explícita y se manejen correctamente los errores de tipo en las columnas esperadas, evitando que una entrada corrupta invalide el procesamiento de todo el conjunto.
+- `2026-09-10T13:29:08` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación de la clase `SystemContext` y sus métodos principales con docstrings más detallados y especificaciones de tipos claras, facilitando la comprensión del contrato de datos de las métricas del sistema.
+- `2026-09-10T13:29:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-10T13:29:50` 🛑 Propuesta bloqueada por la guardia en branding.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: FontSizesDict
+- `2026-09-10T13:30:01` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos en los métodos privados `_is_path_inside_base`, `_should_skip_entry` y `_is_safe_to_traverse` para clarificar la lógica de seguridad, además de asignar tipos explícitos a los acumuladores en el escaneo recursivo.
+- `2026-09-10T13:30:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T13:30:01` Corrida terminada. Total usado hoy: 319.

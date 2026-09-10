@@ -135,7 +135,7 @@ def base_directories() -> List[Path]:
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
     Verifica mediante resolución absoluta que la ruta objetivo esté bajo la base.
-    Previene el escape de directorios mediante enlaces simbólicos o rutas relativas.
+    Evita el 'Directory Traversal' comparando las cadenas resueltas.
     """
     if real_target is None or real_base is None:
         return False
@@ -169,8 +169,8 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Aplica filtros de seguridad: omite rutas prohibidas, symlinks, junctions,
-    montajes de disco y archivos con atributos de sistema/oculto.
+    Filtro de seguridad para ignorar entradas que sean symlinks, junctions, 
+    montajes de red o archivos de sistema críticos según las políticas internas.
     """
     if entry is None:
         return True
@@ -197,7 +197,10 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
-    """Validación holística: asegura que la ruta sea segura, exista y resida bajo la base esperada."""
+    """
+    Valida que la ruta exista, sea segura de modificar según `safety.py` 
+    y mantenga la integridad jerárquica frente a la carpeta base definida.
+    """
     if path_obj is None:
         return False
     try:
@@ -222,7 +225,8 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Cálculo de tamaño de directorio mediante recorrido DFS con control de profundidad y memoización.
+    Cálculo de tamaño mediante DFS con control de profundidad.
+    Utiliza memoización para evitar re-escaneo de subcarpetas en árboles compartidos.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
@@ -238,7 +242,6 @@ def _sum_directory_recursive(
                     continue
                 
                 try:
-                    # Validar existencia antes de calcular
                     if not entry.path:
                         continue
                         
@@ -251,7 +254,7 @@ def _sum_directory_recursive(
                         )
                     elif entry.is_file(follow_symlinks=False):
                         s = entry.stat(follow_symlinks=False)
-                        total += s.st_size
+                        total += int(s.st_size)
                 except (OSError, PermissionError):
                     continue
     except (PermissionError, OSError):

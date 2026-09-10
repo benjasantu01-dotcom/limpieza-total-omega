@@ -266,10 +266,24 @@ class SystemContext:
     """
     Agregador de estado del sistema utilizado para diagnósticos.
     
+    Esta clase centraliza las métricas recolectadas por los módulos de análisis.
+    Mantiene la integridad de los datos mediante validación contra _VALIDATORS
+    y asegura que el contenido sea seguro para ser procesado por LLMs.
+
     Attributes:
-        analyzed: True si el escaneo previo fue exitoso.
-        score: Puntaje general de salud (0-100).
-        grade: Calificación alfabética (ej. "A", "B").
+        analyzed: Indicador de si el escaneo se completó exitosamente.
+        score: Puntaje de salud global (0-100).
+        grade: Calificación alfabética obtenida.
+        junk_mb: Cantidad de archivos temporales detectados en MB.
+        suspicious_count: Total de archivos marcados como potencialmente peligrosos.
+        suspicious_warnings: Cantidad de archivos sospechosos con advertencias activas.
+        memory_available_percent: Porcentaje actual de RAM disponible.
+        memory_total_gb: Capacidad total de memoria RAM instalada.
+        disk_free_percent: Porcentaje de espacio libre en la unidad principal.
+        duplicate_mb: Espacio ocupado por archivos duplicados en MB.
+        startup_count: Número de aplicaciones configuradas para iniciar con el SO.
+        quarantined_count: Cantidad de archivos aislados en la cuarentena.
+        browser_cache_mb: Tamaño del caché detectado en navegadores soportados.
     """
     score: Optional[int] = None
     grade: str = ""
