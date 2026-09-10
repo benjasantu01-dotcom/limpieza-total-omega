@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **230** (45.6% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 210
 
@@ -16,30 +16,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 15 | 0 | 2 | 0 | 14 |
+| 2026-09-08 | 13 | 0 | 1 | 0 | 13 |
 | 2026-09-09 | 152 | 12 | 21 | 11 | 154 |
-| 2026-09-10 | 63 | 4 | 10 | 4 | 42 |
+| 2026-09-10 | 65 | 5 | 10 | 4 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **51**
-- rendimiento: **39**
-- robustez ante casos límite: **36**
+- rendimiento: **41**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
 - `settings.py`: **21**
+- `quarantine.py`: **21**
 - `duplicates.py`: **20**
-- `safety.py`: **19**
 - `assistant.py`: **19**
 - `memory.py`: **19**
+- `healthscore.py`: **18**
+- `safety.py`: **18**
 - `scanner.py`: **17**
 - `diskreport.py`: **17**
-- `healthscore.py`: **17**
-- `browser.py`: **15**
+- `browser.py`: **16**
 - `branding.py`: **13**
 - `organizer.py`: **12**
 - `main.py`: **10**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T05:18:57` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global reemplazando la lógica de bucles con una comprensión de diccionario y pre-calculando los pesos totales para evitar operaciones redundantes, mejorando la eficiencia en cada ejecución.
+- `2026-09-10T05:17:56` **browser.py** (rendimiento): Se optimizó `_sum_directory_recursive` para evitar el re-procesamiento de subdirectorios ya calculados durante el mismo ciclo de escaneo, permitiendo que `detect_profiles` comparta un único diccionario `memo` entre todos los navegadores, reduciendo drásticamente las llamadas a `os.scandir` y el acceso a disco cuando múltiples navegadores comparten estructuras o rutas base.
 - `2026-09-10T05:09:18` **branding.py** (rendimiento): Optimicé el cálculo de `draw_logo` cacheando el resultado de las coordenadas del polígono en `_get_shield_coords` y eliminé la reconstrucción innecesaria de listas de puntos en cada llamada, delegando el escalado a una operación más eficiente.
 - `2026-09-10T05:09:00` **assistant.py** (rendimiento): Optimicé el rendimiento de `_generate_context_lines_cached` eliminando la recreación innecesaria de strings mediante `f-strings` dinámicos y reduciendo la complejidad del cacheo, aprovechando que las métricas ya vienen sanitizadas y formateadas desde `context_as_text`.
 - `2026-09-10T05:08:19` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados en las funciones de procesamiento, clarificando las responsabilidades de cada componente y los criterios de filtrado aplicados.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T04:37:10` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `draw_logo` para que utilice una estructura de datos clara en lugar de índices mágicos, y añadí docstrings detallados en las funciones de renderizado para explicar el flujo de transformación de coordenadas.
 - `2026-09-10T04:28:12` **assistant.py** (legibilidad y documentación): Se introdujo documentación técnica detallada mediante docstrings estructurados en los métodos críticos de `assistant.py` y se reemplazaron comentarios vagos por explicaciones funcionales claras, facilitando la comprensión del flujo de datos y las salvaguardas de seguridad.
 - `2026-09-10T04:27:21` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando validaciones más estrictas en `load()` y `save()` para manejar correctamente errores de E/S y asegurar la integridad de la configuración, evitando la propagación de excepciones que podrían dejar la aplicación en un estado inconsistente.
-- `2026-09-10T04:17:56` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` ante errores de entrada inesperados y se eliminó el manejo de excepciones genérico (`except Exception`), reemplazándolo por capturas específicas para evitar ocultar errores de lógica del programa, mejorando así la transparencia y seguridad del proceso de validación.
-- `2026-09-10T04:17:19` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez de la función `purge_all` y la manipulación del manifiesto al encapsular el proceso en un bloque `try...except` más específico y asegurar que el manifiesto solo se actualice tras confirmar el borrado físico, previniendo estados inconsistentes ante errores de I/O.

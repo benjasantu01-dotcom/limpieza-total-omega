@@ -289,6 +289,7 @@ def detect_profiles(
     browser_map: BrowserMap = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
     k32: Optional[ctypes.WinDLL] = _get_kernel32()
+    # Cache global para evitar re-escaneo de subdirectorios comunes entre navegadores
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     

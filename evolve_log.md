@@ -1120,3 +1120,44 @@ FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not
 - `2026-09-10T05:09:18` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de `draw_logo` cacheando el resultado de las coordenadas del polígono en `_get_shield_coords` y eliminé la reconstrucción innecesaria de listas de puntos en cada llamada, delegando el escalado a una operación más eficiente.
 - `2026-09-10T05:09:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T05:09:18` Corrida terminada. Total usado hoy: 123.
+- `2026-09-10T05:17:28` Arrancando corrida. Quedan hoy ~177 peticiones objetivo.
+- `2026-09-10T05:17:56` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó `_sum_directory_recursive` para evitar el re-procesamiento de subdirectorios ya calculados durante el mismo ciclo de escaneo, permitiendo que `detect_profiles` comparta un único diccionario `memo` entre todos los navegadores, reduciendo drásticamente las llamadas a `os.scandir` y el acceso a disco cuando múltiples navegadores comparten estructuras o rutas base.
+- `2026-09-10T05:18:23` Tests FALLARON:
+```
+/pytest-of-runner/pytest-2/test_walk_files_finds_everythi0')
+
+    def test_walk_files_finds_everything_recursively(tmp_path):
+        (tmp_path / "raiz.txt").write_text("12345")
+        sub = tmp_path / "sub" / "mas"
+        sub.mkdir(parents=True)
+        (sub / "hondo.txt").write_text("1234567890")
+>       encontrados = {p.name: s for p, s in diskreport.walk_files(tmp_path)}
+                       ^^^^^^
+E       AttributeError: 'str' object has no attribute 'name'
+
+evolve/tests/test_modules.py:568: AttributeError
+_____________________ test_walk_files_skips_system_folders _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_walk_files_skips_system_f0')
+
+    def test_walk_files_skips_system_folders(tmp_path):
+        (tmp_path / "normal.txt").write_text("x")
+        sistema = tmp_path / "Program Files"
+        sistema.mkdir()
+        (sistema / "oculto.txt").write_text("y")
+>       nombres = {p.name for p, _ in diskreport.walk_files(tmp_path)}
+                   ^^^^^^
+E       AttributeError: 'str' object has no attribute 'name'
+
+evolve/tests/test_modules.py:577: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_walk_files_finds_everything_recursively - AttributeError: 'str' object has no attribute 'name'
+FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - AttributeError: 'str' object has no attribute 'name'
+2 failed, 297 passed in 1.15s
+
+```
+- `2026-09-10T05:18:23` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando la creación innecesaria de objetos `Path` dentro de los bucles críticos por el uso directo de las cadenas de texto (`entry.path`), reduciendo la presión sobre el recolector de basura y acelerando el escaneo de directorios grandes.
+- `2026-09-10T05:18:46` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-10T05:18:57` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje global reemplazando la lógica de bucles con una comprensión de diccionario y pre-calculando los pesos totales para evitar operaciones redundantes, mejorando la eficiencia en cada ejecución.
+- `2026-09-10T05:18:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T05:18:57` Corrida terminada. Total usado hoy: 127.

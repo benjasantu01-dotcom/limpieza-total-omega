@@ -231,27 +231,20 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o no disponibles."])
     
-    metric_breakdown: Dict[MetricKey, int] = {}
-    total_pts: int = 0
     recommendations: List[str] = []
     
-    for area, weight, scorer, rules in _CACHE_SCORERS:
+    def process_area(area: MetricKey, weight: int, scorer: Callable, rules: List[RecommendationRule] | None) -> Tuple[MetricKey, int]:
         try:
-            ratio = scorer(metrics)
-            if not math.isfinite(ratio):
-                ratio = 0.0
-            
-            pts = int(round(_clamp(ratio * weight, 0.0, float(weight))))
-            metric_breakdown[area] = pts
-            total_pts += pts
-            
+            ratio = _clamp(scorer(metrics))
             if rules:
                 _evaluate_rules(metrics, rules, ratio, recommendations)
+            return area, int(round(ratio * weight))
         except Exception:
-            metric_breakdown[area] = 0
-            continue
-            
-    final_score = int(_clamp(float(total_pts), 0.0, 100.0))
+            return area, 0
+
+    metric_breakdown = dict(process_area(a, w, s, r) for a, w, s, r in _CACHE_SCORERS)
+    final_score = int(_clamp(float(sum(metric_breakdown.values())), 0.0, 100.0))
+    
     if getattr(metrics, 'quarantined_count', 0) > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
