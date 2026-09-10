@@ -895,3 +895,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-10T13:50:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-09-10T13:50:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T13:50:14` Corrida terminada. Total usado hoy: 327.
+- `2026-09-10T13:58:16` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-10T13:58:52` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación para clarificar los contratos de datos y la lógica de seguridad, facilitando el mantenimiento y auditoría del código.
+- `2026-09-10T13:59:18` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings detallados en la clase `Scanner` y sus métodos, se introdujo una constante `DOCS_SUPPORTED_EXTS` para clarificar qué tipos de archivos se analizan, y se unificó la lógica de extracción de extensiones para mejorar la legibilidad y mantenimiento.
+- `2026-09-10T13:59:43` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): el archivo se encogió al 52% del original (posible pérdida de código)
+- `2026-09-10T13:59:56` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Documenté con type hints más precisos y docstrings técnicos el comportamiento de `StartupEntry` para clarificar la lógica de resolución de rutas y validación de seguridad, facilitando el mantenimiento del motor de escaneo.
+- `2026-09-10T13:59:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T13:59:56` Corrida terminada. Total usado hoy: 331.

@@ -13,7 +13,7 @@ import re
 import ctypes
 from enum import Enum, auto, IntEnum
 from pathlib import Path
-from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, TypeGuard
+from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, TypeGuard, Optional
 from functools import lru_cache
 import unicodedata
 
@@ -139,7 +139,7 @@ class _IntegrityCheck(NamedTuple):
 class _CheckResult(NamedTuple):
     """Resultado del chequeo de integridad para fines de reporte."""
     is_safe: bool
-    reason: ProtectionReason | None = None
+    reason: Optional[ProtectionReason] = None
 
 
 @lru_cache(maxsize=1)
@@ -157,7 +157,7 @@ def is_running_as_admin() -> bool:
         return False
 
 
-def _has_invalid_chars(path_str: str | None) -> bool:
+def _has_invalid_chars(path_str: Optional[str]) -> bool:
     """Detecta caracteres de control y no imprimibles que Windows rechaza en nombres de archivo."""
     if not isinstance(path_str, str) or not path_str: 
         return True
@@ -177,7 +177,7 @@ def _has_alternate_data_stream(path_name: str) -> bool:
 
 
 @lru_cache(maxsize=2048)
-def _is_system_or_hidden(path_str: str | None) -> bool:
+def _is_system_or_hidden(path_str: Optional[str]) -> bool:
     """Verifica mediante la estructura de atributos de archivo si es oculto o de sistema."""
     if not path_str: return False
     try:
@@ -421,7 +421,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Ruta excede MAX_PATH.", SafetyValidationErrorCode.PATH_TOO_LONG)
 
 
-def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | None) -> None:
+def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
     """
     Aplica restricciones de alcance. Verifica que la ruta esté dentro del alcance
     permitido y bloquea modificaciones en el directorio de la aplicación.
@@ -462,7 +462,7 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
         pass
 
 
-def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
+def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
     Valida rigurosamente si una ruta es segura para ser modificada.
     Lanza `UnsafePathError` si la ruta viola cualquier política de seguridad.

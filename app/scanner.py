@@ -107,8 +107,10 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 
 class Scanner:
     """
-    Clase principal responsable de recorrer el sistema de archivos de forma 
-    iterativa, aplicando filtros de seguridad y delegando análisis a las reglas heurísticas.
+    Motor principal que coordina el escaneo de directorios.
+    
+    Gestiona el estado del escaneo, el cumplimiento de las restricciones de seguridad
+    de ruta y la delegación de archivos sospechosos a las heurísticas configuradas.
     """
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
@@ -118,27 +120,26 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica que la ruta resuelta pertenezca a la jerarquía del directorio de escaneo inicial."""
+        """Verifica la contención de la ruta para evitar escapar del directorio objetivo."""
         if not entry_path: return False
         return entry_path.lower().startswith(self.base_root_str)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida que la entrada sea segura para procesar.
+        Valida que la entrada del sistema de archivos no viole las políticas de seguridad.
         
-        Aplica filtros de seguridad: rechaza rutas prohibidas por safety.py, 
-        nombres reservados, longitudes excesivas, rutas UNC y extensiones .lnk peligrosas.
+        Evalúa: longitud de ruta, rutas UNC, caracteres RTL, nombres reservados, 
+        accesibilidad de enlaces simbólicos y protección definida en safety.py.
         """
         try:
             if entry is None: return False
-            # Evitar procesar junctions/links directamente
             if entry.is_symlink(): return False
             
             path_str: str = entry.path
             name = entry.name
             if not path_str or not name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
                 return False
-            # Bloquear shortcuts (.lnk) que podrían saltar fuera del árbol mediante el destino
+            
             if name.lower().endswith(".lnk") or RTL_CHAR_RE.search(path_str) or RESERVED_NAMES_RE.match(name):
                 return False
             
@@ -148,10 +149,7 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """
-        Detecta mediante atributos de archivo si la entrada es una unión o enlace 
-        simbólico, evitando el seguimiento accidental hacia fuera de la jerarquía.
-        """
+        """Determina si un directorio es un punto de reanálisis para omitir su recursión."""
         try:
             if entry is None or entry.is_symlink():
                 return True
@@ -161,15 +159,15 @@ class Scanner:
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """Agrega un directorio al stack de procesamiento si no fue visitado previamente."""
+        """Gestiona la inserción de nuevos directorios válidos en el stack de búsqueda."""
         if entry and entry.path and entry.path not in self.seen and os.path.exists(entry.path):
             self.seen.add(entry.path)
             directory_stack.append(entry.path)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """
-        Dispatcher que clasifica la entrada como directorio para recursión o archivo 
-        para análisis heurístico basándose en la extensión.
+        Analiza una entrada del sistema. Si es directorio, lo encola; 
+        si es un archivo ejecutable/sospechoso, activa las heurísticas.
         """
         try:
             if not self._is_safe_entry(entry):
@@ -181,32 +179,29 @@ class Scanner:
                 return
 
             if entry.is_file(follow_symlinks=False):
-                ext = os.path.splitext(entry.name)[1].lower()
-                if ext in SUSPICIOUS_ALL_EXTS:
-                    self._run_file_heuristics(Path(entry.path), entry, ext)
+                _, ext = os.path.splitext(entry.name)
+                ext_low = ext.lower()
+                if ext_low in SUSPICIOUS_ALL_EXTS:
+                    self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, FileNotFoundError):
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
-        """Encapsula la invocación del motor de análisis de archivos."""
+        """Invoca el motor de heurísticas y agrega resultados a la cola global."""
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """
-    Motor de ejecución para reglas heurísticas. Aplica validaciones básicas de 
-    integridad y luego delega en el registro de chequeos especializados.
+    Ejecuta el conjunto de reglas heurísticas sobre un archivo específico.
     """
     findings: ScanResult = []
     
-    # 1. Chequeos genéricos de nombre/extensión
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
     
-    # 2. Chequeos específicos para ejecutables
     if ext in SUSPICIOUS_EXECUTABLE_EXT:
         try:
             stats = entry.stat(follow_symlinks=False) if entry else path.stat()
-            # Validación robusta de existencia y metadatos
             if stats.st_size == 0:
                 findings.append(Suspicion(path, "Archivo vacío sospechoso", "warning"))
             
@@ -214,15 +209,14 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
                 if (result := check_fn(path, entry, now_ts)):
                     findings.append(result)
         except (OSError, PermissionError, AttributeError, FileNotFoundError):
-            # Omitir archivos bloqueados o inaccesibles durante la corrida
             pass
         
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
-    Función de entrada para iniciar un escaneo completo de directorio. 
-    Inicializa el escáner y gestiona el ciclo de vida del stack de recursión.
+    Punto de entrada para el escaneo de directorios. 
+    Inicializa el escáner, el stack de trabajo y coordina la iteración profunda.
     """
     if directory is None:
         return []

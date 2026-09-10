@@ -67,7 +67,9 @@ HOW_TO_DISABLE: str = (
 class StartupEntry:
     """
     Representa una entrada de inicio (archivo en carpeta o clave de registro).
-    Gestiona la validación de seguridad de la ruta mediante evaluación perezosa.
+    
+    Gestiona la validación de seguridad mediante evaluación perezosa: el ejecutable 
+    solo se resuelve físicamente cuando se accede a la propiedad .executable.
     """
     name: str
     command: str
@@ -88,7 +90,7 @@ class StartupEntry:
 
     def _is_path_suspicious(self, path_string: str) -> bool:
         """Detecta patrones de inyección o rutas UNC que exceden el alcance de escaneo local."""
-        suspicious_chars = '<>|?*\0&;%'
+        suspicious_chars: str = '<>|?*\0&;%'
         return any(c in path_string for c in suspicious_chars) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
@@ -127,7 +129,10 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Verifica existencia física mediante lstat para ignorar enlaces simbólicos o puntos de reparse."""
+        """
+        Verifica existencia física y seguridad del archivo.
+        Usa lstat para evitar resolución recursiva de puntos de reparse o junctions.
+        """
         try:
             if not os.access(p, os.F_OK) or p.is_dir():
                 return False
@@ -138,7 +143,10 @@ class StartupEntry:
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Normaliza y valida una ruta absoluta contra listas de seguridad y caché de existencia."""
+        """
+        Normaliza una ruta absoluta y la valida contra listas de seguridad.
+        Utiliza _EXISTS_CACHE para minimizar llamadas costosas al sistema de archivos.
+        """
         if not path_string or self._is_path_suspicious(path_string) or self._is_reserved_device_name(path_string):
             return ""
         
@@ -159,7 +167,7 @@ class StartupEntry:
                 _EXISTS_CACHE[path_string] = False
                 return path_string
             
-            p_str = str(p)
+            p_str: str = str(p)
             _EXISTS_CACHE[p_str] = True
             return p_str
         except (OSError, ValueError, RuntimeError, TypeError, PermissionError):
