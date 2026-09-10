@@ -369,8 +369,12 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             total_bytes += safe_size
             total_files += 1
             
-            # Normalizar extensión: manejar ausencia de sufijo
-            ext = path.suffix.lower() if path.suffix else "(sin extensión)"
+            # Normalizar extensión con protección ante errores de codificación
+            try:
+                ext = path.suffix.lower() if path.suffix else "(sin extensión)"
+            except Exception:
+                ext = "(desconocido)"
+            
             ext_sizes[ext] += safe_size
             ext_counts[ext] += 1
             

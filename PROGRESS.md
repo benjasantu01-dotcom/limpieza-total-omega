@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 0 | 0 | 0 | 0 | 3 |
-| 2026-09-09 | 152 | 12 | 21 | 11 | 154 |
-| 2026-09-10 | 76 | 6 | 14 | 6 | 49 |
+| 2026-09-09 | 152 | 12 | 21 | 11 | 153 |
+| 2026-09-10 | 80 | 6 | 14 | 6 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **51**
+- seguridad defensiva: **45**
 - rendimiento: **44**
-- seguridad defensiva: **41**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
+- `assistant.py`: **20**
 - `settings.py`: **20**
-- `assistant.py`: **19**
 - `healthscore.py`: **19**
 - `memory.py`: **19**
 - `safety.py`: **19**
 - `duplicates.py`: **19**
-- `diskreport.py`: **17**
-- `browser.py`: **16**
+- `diskreport.py`: **18**
+- `browser.py`: **17**
 - `scanner.py`: **16**
-- `branding.py`: **13**
+- `branding.py`: **14**
 - `organizer.py`: **11**
 - `main.py`: **9**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T06:30:37` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y `_collect_summary_data` al capturar excepciones específicas de `path.suffix` y validaciones de ruta, evitando que rutas con caracteres corruptos o problemas de codificación interrumpan prematuramente el escaneo completo de disco.
+- `2026-09-10T06:30:24` **browser.py** (seguridad defensiva): Se ha implementado una validación de integridad en `_should_skip_entry` y `_is_path_inside_base` para asegurar que las rutas procesadas no contengan caracteres de control o longitudes que excedan los límites del sistema (MAX_PATH), mitigando riesgos de inyección de rutas o desbordamientos al interactuar con APIs de bajo nivel en Windows.
+- `2026-09-10T06:29:57` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia de la ruta de destino antes de intentar operaciones de escritura y asegurando que las excepciones durante el proceso de manipulación de archivos no expongan información del sistema.
+- `2026-09-10T06:29:23` **assistant.py** (seguridad defensiva): Se endureció la seguridad de la validación de texto en `_is_safe_text_structure` añadiendo una comprobación explícita para evitar que el asistente procese o devuelva contenido que parezca un comando de PowerShell o una ruta de sistema absoluta/relativa (patrones de inyección), reforzando la naturaleza "solo lectura" del módulo.
 - `2026-09-10T06:19:59` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante fallos de escritura en disco, asegurando que si ocurre un error durante el volcado de bytes (como falta de espacio o desconexión), se realice una limpieza exhaustiva del archivo temporal para evitar dejar estados corruptos.
 - `2026-09-10T06:19:28` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta para el manejo de archivos vacíos o inaccesibles dentro de `scan_file`, garantizando que el escáner no aborte ante condiciones de carrera (archivos bloqueados durante el acceso) o inconsistencias del sistema de archivos mediante un bloque `try-except` más granular.
 - `2026-09-10T06:09:57` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de lectura/escritura (I/O) al implementar bloques `try-finally` para asegurar el cierre de descriptores de archivos, y añadí validación de existencia para archivos aislados antes de intentar cualquier operación de verificación o borrado en el bucle de `purge_all`.
@@ -58,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T05:38:39` **safety.py** (rendimiento): Se optimizó el rendimiento del módulo mediante la implementación de un sistema de caché a nivel de módulo para `_is_system_path_cached` y `is_protected_path`, evitando la re-evaluación costosa de rutas en cada iteración del bucle, y se reemplazó la iteración sobre `PROTECTED_DIR_NAMES` por un check de `set` más eficiente (O(1)).
 - `2026-09-10T05:29:59` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante una caché basada en un hash del contenido del archivo de manifiesto (utilizando `hashlib.sha256` sobre el contenido completo del archivo) en lugar de depender únicamente de `st_mtime`, lo cual es propenso a errores en sistemas de archivos con baja resolución de tiempo o actualizaciones rápidas.
 - `2026-09-10T05:29:11` **memory.py** (rendimiento): Se optimizó `parse_windows_process_csv` reemplazando la creación de listas intermedias y el uso de `heapq.nlargest` (que requiere iterar todo el generador) por una lógica de filtrado y ordenamiento en una sola pasada, mejorando la eficiencia y legibilidad sin sacrificar la seguridad.
-- `2026-09-10T05:18:57` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global reemplazando la lógica de bucles con una comprensión de diccionario y pre-calculando los pesos totales para evitar operaciones redundantes, mejorando la eficiencia en cada ejecución.
-- `2026-09-10T05:17:56` **browser.py** (rendimiento): Se optimizó `_sum_directory_recursive` para evitar el re-procesamiento de subdirectorios ya calculados durante el mismo ciclo de escaneo, permitiendo que `detect_profiles` comparta un único diccionario `memo` entre todos los navegadores, reduciendo drásticamente las llamadas a `os.scandir` y el acceso a disco cuando múltiples navegadores comparten estructuras o rutas base.
-- `2026-09-10T05:09:18` **branding.py** (rendimiento): Optimicé el cálculo de `draw_logo` cacheando el resultado de las coordenadas del polígono en `_get_shield_coords` y eliminé la reconstrucción innecesaria de listas de puntos en cada llamada, delegando el escalado a una operación más eficiente.
-- `2026-09-10T05:09:00` **assistant.py** (rendimiento): Optimicé el rendimiento de `_generate_context_lines_cached` eliminando la recreación innecesaria de strings mediante `f-strings` dinámicos y reduciendo la complejidad del cacheo, aprovechando que las métricas ya vienen sanitizadas y formateadas desde `context_as_text`.

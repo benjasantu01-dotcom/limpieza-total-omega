@@ -200,6 +200,7 @@ _TIMEOUT_SECONDS: Final[int] = 30
 _PATH_INJECTION_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:[\\/]|/|\\|\.\.|\0|[\u202e\u202d])")
 _CONTROL_CHARS_REGEX: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f\u0080-\u009f\u202b-\u202f]")
 _ANSI_ESCAPE_REGEX: Final[re.Pattern] = re.compile(r"\x1B\[[0-9;]*[mK]")
+_PS_COMMAND_REGEX: Final[re.Pattern] = re.compile(r"(Get-|Remove-|Set-|Stop-|Start-)[a-zA-Z]+", re.IGNORECASE)
 _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
 _MODEL_NAME_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9\.\-_]{1,64}$")
 _API_KEY_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9_\-\.]{1,128}$")
@@ -359,12 +360,12 @@ class Answer:
 
 def _is_restricted_content(text: str) -> bool:
     """Verifica si el texto contiene palabras clave relacionadas con la ejecución arbitraria."""
-    restricted_patterns = [r"exec", r"eval", r"subprocess", r"system\s*\(", r"rm\s+", r"del\s+"]
+    restricted_patterns = [r"exec", r"eval", r"subprocess", r"system\s*\(", r"rm\s+", r"del\s+", r"cmd\.exe", r"powershell"]
     return any(re.search(p, text, re.IGNORECASE) for p in restricted_patterns)
 
 def _is_sensitive_structure(text: str) -> bool:
     """Detecta la presencia de patrones de ruta de sistema (UNC, Drive Letters, Unix roots)."""
-    return bool(re.search(r"(\\\\|[a-z]:\\|/etc/|\\\\UNC)", text, re.IGNORECASE))
+    return bool(re.search(r"(\\\\|[a-z]:\\|/etc/|\\\\UNC|C:\\Windows)", text, re.IGNORECASE))
 
 def _is_safe_text_structure(text: str) -> bool:
     """
@@ -376,7 +377,8 @@ def _is_safe_text_structure(text: str) -> bool:
         is_protected_path(text) or 
         _is_restricted_content(text) or 
         _is_sensitive_structure(text) or
-        _ANSI_ESCAPE_REGEX.search(text)):
+        _ANSI_ESCAPE_REGEX.search(text) or
+        _PS_COMMAND_REGEX.search(text)):
         return False
     return True
 

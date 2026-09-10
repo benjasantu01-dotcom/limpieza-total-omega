@@ -331,6 +331,10 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         if not is_safe_to_modify(path_input) or not is_safe_to_modify(path_input.parent):
             return None
         
+        # Asegura que la ruta no sea un directorio existente y que la escritura esté permitida
+        if path_input.is_dir():
+            return None
+            
         ensure_safe_to_modify(path_input)
             
         if not path_input.parent.exists():

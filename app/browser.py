@@ -138,9 +138,11 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     Previene el escape de directorios mediante enlaces simbólicos o rutas relativas.
     """
     try:
-        target_res = real_target.resolve(strict=True)
-        base_res = real_base.resolve(strict=True)
-        return str(target_res).startswith(str(base_res) + os.sep) or target_res == base_res
+        target_str = str(real_target.resolve(strict=True))
+        base_str = str(real_base.resolve(strict=True))
+        if len(target_str) >= MAX_PATH_LEN or any(c in target_str for c in '\0\r\n'):
+            return False
+        return target_str.startswith(base_str + os.sep) or target_str == base_str
     except (OSError, RuntimeError):
         return False
 
@@ -171,17 +173,13 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     if entry is None:
         return True
     
-    # Validar nombre antes de acceder a rutas
     try:
         name = entry.name
         if not name or _is_excluded_file(name):
             return True
-    except OSError:
-        return True
-        
-    try:
+            
         path = entry.path
-        if not path or len(path) >= MAX_PATH_LEN or '\0' in path:
+        if not path or len(path) >= MAX_PATH_LEN or any(c in path for c in '\0\r\n'):
             return True
         
         if entry.is_symlink() or is_junction_fn(path) or os.path.ismount(path):
@@ -240,7 +238,6 @@ def _sum_directory_recursive(
                             entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                         )
                     elif entry.is_file(follow_symlinks=False):
-                        # Obtenemos stat con tolerancia a fallos por bloqueo de archivo
                         s = entry.stat(follow_symlinks=False)
                         total += s.st_size
                 except (OSError, PermissionError):
