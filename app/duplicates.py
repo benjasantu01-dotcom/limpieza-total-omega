@@ -44,6 +44,8 @@ FILE_ATTRIBUTE_REPARSE_POINT: int = 0x400
 
 def is_junction(path: Path) -> bool:
     """Verifica si una ruta es un punto de reparse mediante atributos de sistema (Windows)."""
+    if not isinstance(path, Path):
+        return False
     try:
         resolved = path.resolve()
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(resolved))
@@ -120,6 +122,8 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 def _is_valid_candidate(path: Path) -> bool:
     """Validador estricto: comprueba existencia, permisos y que no sea enlace simbólico o junction."""
+    if not isinstance(path, Path):
+        return False
     try:
         resolved = path.resolve(strict=True)
         if not resolved.is_file() or resolved.is_symlink() or is_junction(resolved):
@@ -260,7 +264,8 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
     
     size_map = _collect_candidates(directories, min_size, skip_protected)
     for size, paths in size_map.items():
-        groups.extend(_decide_hash_strategy_and_process(size, paths))
+        if isinstance(size, int) and isinstance(paths, list):
+            groups.extend(_decide_hash_strategy_and_process(size, paths))
         
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
     return groups
@@ -281,7 +286,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         try:
-            if not p.exists(): continue
+            if not isinstance(p, Path) or not p.exists(): continue
             stat_info = p.stat()
             candidates.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError):

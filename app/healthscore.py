@@ -84,27 +84,27 @@ _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud para archivos temporales (inverso de MB detectados)."""
-    return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
+    return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
     """Calcula salud de seguridad: cada archivo sospechoso resta 5%, cada advertencia 25%."""
-    return _clamp(1.0 - ((float(suspicious_count) * 0.05) + (float(warnings) * 0.25)))
+    return _clamp(1.0 - ((_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Evalúa salud de memoria: normaliza el % de RAM libre respecto al umbral crítico."""
-    return _clamp(float(available_percent) * _INV_RAM)
+    return _clamp(_to_float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
     """Evalúa salud de almacenamiento: normaliza el % de espacio libre respecto al umbral crítico."""
-    return _clamp(float(free_percent) * _INV_DISK)
+    return _clamp(_to_float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
     """Calcula salud de duplicados: penaliza el espacio desperdiciado sobre el límite de 2GB."""
-    return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
+    return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
     """Evalúa salud de inicio: penaliza linealmente el conteo de apps según el umbral."""
-    return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
+    return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
 _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
     "seguridad": lambda m: score_security(m.suspicious_count, m.suspicious_warnings),
@@ -147,20 +147,26 @@ class SystemMetrics:
     def __post_init__(self) -> None:
         """Inicializa valores faltantes y asegura la integridad de los datos."""
         for field_name in self.__dataclass_fields__:
-            if getattr(self, field_name) is None:
+            val = getattr(self, field_name)
+            if val is None:
                 setattr(self, field_name, 100.0 if "percent" in field_name else 0.0)
         self.validate()
 
     def validate(self) -> None:
         """Asegura que todos los valores numéricos caigan en rangos lógicos y finitos."""
-        self.junk_mb = max(0.0, _to_float(self.junk_mb))
-        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
-        self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
-        self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings)))
-        self.startup_count = int(max(0, _to_float(self.startup_count)))
-        self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
-        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
-        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
+        try:
+            self.junk_mb = max(0.0, _to_float(self.junk_mb))
+            self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
+            self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
+            self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings)))
+            self.startup_count = int(max(0, _to_float(self.startup_count)))
+            self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
+            self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
+            self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
+        except (ValueError, TypeError):
+            self.junk_mb = 0.0
+            self.memory_available_percent = 100.0
+            self.disk_free_percent = 100.0
 
     @property
     def is_finite(self) -> bool:
@@ -210,7 +216,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                     clean_msg = " ".join(msg.split())
                     if clean_msg:
                         findings.append(clean_msg)
-        except (ValueError, TypeError, AttributeError):
+        except (ValueError, TypeError, AttributeError, ZeroDivisionError):
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -246,7 +252,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             continue
             
     final_score = int(_clamp(float(total_pts), 0.0, 100.0))
-    if metrics.quarantined_count > 0:
+    if getattr(metrics, 'quarantined_count', 0) > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
     return HealthResult(

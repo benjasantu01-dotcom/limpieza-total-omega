@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 14
+- Rechazadas por guardia de seguridad: 32
+- Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 33 | 2 | 6 | 1 | 17 |
+| 2026-09-08 | 31 | 2 | 4 | 1 | 17 |
 | 2026-09-09 | 152 | 12 | 21 | 11 | 154 |
-| 2026-09-10 | 44 | 3 | 7 | 2 | 39 |
+| 2026-09-10 | 47 | 3 | 7 | 3 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
 - rendimiento: **47**
-- legibilidad y documentación: **45**
-- manejo de errores y validación de entradas: **44**
+- manejo de errores y validación de entradas: **47**
+- legibilidad y documentación: **43**
 - robustez ante casos límite: **41**
 
 ## Mejoras aceptadas por archivo
 
+- `duplicates.py`: **21**
+- `memory.py`: **21**
 - `quarantine.py`: **21**
-- `settings.py`: **20**
-- `duplicates.py`: **20**
-- `memory.py`: **20**
 - `assistant.py`: **19**
-- `scanner.py`: **18**
+- `healthscore.py`: **19**
+- `settings.py`: **19**
 - `diskreport.py`: **18**
-- `healthscore.py`: **18**
 - `safety.py`: **18**
+- `scanner.py`: **17**
 - `browser.py`: **14**
 - `branding.py`: **12**
 - `organizer.py`: **12**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T04:08:28` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` mediante la validación explícita del estado de las claves críticas tras el parseo, evitando errores de clave ausente y asegurando una gestión de tipos más limpia al convertir los valores obtenidos.
+- `2026-09-10T04:06:57` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.validate` y `compute_score` implementando un manejo de errores más defensivo ante tipos de entrada inesperados y valores fuera de rango, asegurando que el pipeline siempre retorne un resultado válido incluso con datos corrompidos.
+- `2026-09-10T04:06:30` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `find_duplicates` y las funciones auxiliares mediante la validación proactiva de tipos y estados, garantizando que el orquestador no intente operar sobre estructuras de datos corrompidas o entradas nulas, reduciendo así la posibilidad de excepciones no capturadas durante el recorrido del disco.
 - `2026-09-10T03:59:28` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` validando que los datos procesados provengan de fuentes legibles y manejando excepciones al acceder a `path.suffix` o propiedades del sistema de archivos, asegurando que el recorrido no aborte ante archivos bloqueados o con nombres inválidos.
 - `2026-09-10T03:59:09` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez y seguridad del módulo mediante la validación estricta de parámetros en funciones críticas (como `directory_size` y `total_cache_bytes`) y la mejora en el manejo de excepciones al verificar rutas, asegurando que cualquier entrada malformada o inesperada sea descartada sin interrumpir el flujo.
 - `2026-09-10T03:57:32` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo eliminando condiciones propensas a errores (como el uso de `ensure_safe_to_modify` como booleano en `if`) y fortaleciendo la validación de parámetros de entrada (como `size` o `canvas_element`) para prevenir excepciones innecesarias en tiempo de ejecución.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T02:06:16` **healthscore.py** (seguridad defensiva): Se reforzó la robustez defensiva de `SystemMetrics` y `compute_score` validando que las métricas sean tipos numéricos estrictos y verificando explícitamente la finitud del ratio calculado antes de procesar reglas o agregar puntos, previniendo estados inconsistentes.
 - `2026-09-10T02:05:15` **duplicates.py** (seguridad defensiva): Se ha robustecido `_is_valid_candidate` añadiendo una verificación explícita de `st_size` mediante `os.stat` antes de procesar el archivo, garantizando que no se intenten realizar operaciones de lectura sobre archivos que, debido a condiciones de carrera, hayan sido eliminados o truncados a tamaño cero entre la exploración inicial y la validación.
 - `2026-09-10T02:04:49` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_collect_summary_data` y las funciones auxiliares mediante la validación explícita de `Path.is_file()` antes de procesar archivos, evitando errores de acceso o intentos de lectura sobre rutas que cambiaron de estado o son dispositivos especiales durante el recorrido.
-- `2026-09-10T02:04:21` **browser.py** (seguridad defensiva): Se reforzó la seguridad de `browser.py` implementando una validación estricta de "Path Traversal" mediante la normalización de rutas (`resolve`) previa a cualquier operación de sistema, y asegurando que `_is_valid_cache_path` y `_is_path_inside_base` verifiquen que la ruta final resuelta permanezca dentro del espacio de trabajo permitido, evitando escapes hacia directorios superiores mediante manipulaciones de string.
-- `2026-09-10T01:55:18` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al serializar las métricas para el LLM: agregué una validación estricta que impide que la función retorne datos si el string resultante contiene patrones prohibidos, evitando que el payload enviado a la API contenga inyecciones incluso si los datos fuente fueran manipulados.
-- `2026-09-10T01:54:11` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante archivos de configuración corruptos o bloqueados añadiendo un mecanismo de respaldo automático: si `load()` detecta un error de lectura, intenta leer un backup (`.bak`) antes de ceder y retornar los valores por defecto.

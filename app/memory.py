@@ -175,14 +175,16 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
             continue
             
     total = metrics.get("MemTotal", 0)
-    if total <= 0: 
+    if not isinstance(total, int) or total <= 0: 
         return _EMPTY_SNAPSHOT
     
     available = metrics.get("MemAvailable", metrics.get("MemFree", 0))
+    cached = metrics.get("Cached", 0)
+    
     return MemorySnapshot(
         total=BytesValue(total), 
         available=BytesValue(min(available, total)), 
-        cached=BytesValue(max(0, metrics.get("Cached", 0)))
+        cached=BytesValue(max(0, cached))
     )
 
 def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[ProcessMemory]:
