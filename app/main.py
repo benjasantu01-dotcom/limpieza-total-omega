@@ -1763,14 +1763,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @validated_ui_operation
     def on_ask_assistant(self, question: Optional[str] = None) -> None:
         """Envía pregunta al asistente IA."""
-        texto = (question or (self.question_entry.get() if hasattr(self, 'question_entry') else "")).strip()
+        entry_val = ""
+        if hasattr(self, 'question_entry') and self.question_entry.winfo_exists():
+            entry_val = self.question_entry.get()
+            
+        texto = (question or entry_val).strip()
         texto = "".join(c for c in texto if c.isprintable())[:500]
         
         if not texto:
             self.log("Escribí una pregunta válida.", "Asistente")
             return
         
-        if question is None and hasattr(self, 'question_entry'):
+        if question is None and hasattr(self, 'question_entry') and self.question_entry.winfo_exists():
             self.question_entry.delete(0, "end")
 
         def task() -> None:
@@ -1806,20 +1810,24 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except (tk.TclError, Exception):
                 continue
         
-        if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
-            valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
-                self._safe_get_entry_value(self.min_dup_entry, None, numeric=True), 64
-            )
-            
-        if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists():
-            valores["top_archivos"] = self._validate_numeric_setting(
-                self._safe_get_entry_value(self.top_files_entry, None, numeric=True), 15
-            )
-            
-        if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
-            clave_raw = self._safe_get_entry_value(self.api_key_entry, "")
-            if clave_raw:
-                valores["asistente_clave_api"] = clave_raw
+        # Uso de getattr con verificación winfo_exists para evitar errores si los widgets no existen
+        try:
+            if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
+                valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
+                    self._safe_get_entry_value(self.min_dup_entry, None, numeric=True), 64
+                )
+                
+            if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists():
+                valores["top_archivos"] = self._validate_numeric_setting(
+                    self._safe_get_entry_value(self.top_files_entry, None, numeric=True), 15
+                )
+                
+            if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
+                clave_raw = self._safe_get_entry_value(self.api_key_entry, "")
+                if clave_raw:
+                    valores["asistente_clave_api"] = clave_raw
+        except Exception:
+            pass
             
         return valores
 

@@ -235,7 +235,7 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Selecciona estrategia de hashing según tamaño para optimizar rendimiento."""
-    if size <= 0 or len(paths) < 2: 
+    if size <= 0 or not paths or len(paths) < 2: 
         return []
     
     results = _group_paths_by_hash(paths, partial_hash) if size <= PARTIAL_READ_BYTES else _refine_by_deep_hash(paths)
@@ -254,7 +254,8 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
     size_map = _collect_candidates(directories, min_size, skip_protected)
     
     for size, paths in size_map.items():
-        groups.extend(_decide_hash_strategy_and_process(size, paths))
+        if isinstance(paths, list):
+            groups.extend(_decide_hash_strategy_and_process(size, paths))
         
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
     return groups
@@ -286,7 +287,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Genera una lista de líneas descriptivas del grupo para la interfaz."""
-    if not isinstance(group, DuplicateGroup) or group.paths is None:
+    if not isinstance(group, DuplicateGroup) or not hasattr(group, 'paths') or group.paths is None:
         return ["Error: Grupo inválido"]
         
     keeper = suggest_keeper(group)

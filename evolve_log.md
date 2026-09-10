@@ -1466,3 +1466,10 @@ FAILED evolve/tests/test_assistant.py::test_a_protected_folder_is_never_remember
 - `2026-09-10T08:23:30` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_path_inside_base` y `_is_safe_to_traverse` para manejar entradas malformadas mediante la validación explícita de `None` y el uso de `ValueError` en lugar de una captura genérica, asegurando que los caminos no resuelvan a rutas fuera del entorno esperado.
 - `2026-09-10T08:23:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T08:23:30` Corrida terminada. Total usado hoy: 199.
+- `2026-09-10T08:31:06` Arrancando corrida. Quedan hoy ~101 peticiones objetivo.
+- `2026-09-10T08:31:35` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-10T08:32:00` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez ante entradas inesperadas en `find_duplicates` y `format_group` mediante validaciones de tipo y estructura más estrictas, asegurando que el módulo no falle ante argumentos mal formados.
+- `2026-09-10T08:32:28` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `SystemMetrics` mediante la adición de una validación explícita `is_finite` en el `__post_init__` y una mejora en `_evaluate_rules` para manejar fallos en las factorías de mensajes, evitando que una excepción en una regla individual corrompa el reporte completo de salud.
+- `2026-09-10T08:33:28` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `on_ask_assistant` y `_collect_settings` agregando saneamiento de texto y manejo de excepciones ante widgets de UI potencialmente inexistentes o valores de entrada corruptos, evitando así cierres inesperados de la aplicación.
+- `2026-09-10T08:33:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T08:33:28` Corrida terminada. Total usado hoy: 203.

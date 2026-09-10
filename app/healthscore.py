@@ -148,10 +148,13 @@ class SystemMetrics:
         """Inicializa valores faltantes y asegura la integridad de los datos."""
         for field_name in self.__dataclass_fields__:
             val = getattr(self, field_name)
-            # Defensa: forzamos limpieza antes de la validación lógica
             if val is None:
                 setattr(self, field_name, 100.0 if "percent" in field_name else 0.0)
         self.validate()
+        if not self.is_finite:
+            # Fallback seguro ante estados de datos no representables
+            for f in self.__dataclass_fields__:
+                setattr(self, f, 0.0 if "percent" not in f else 100.0)
 
     def validate(self) -> None:
         """Asegura que todos los valores numéricos caigan en rangos lógicos y finitos."""
@@ -177,7 +180,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que todos los campos numéricos sean valores finitos."""
-        return all(math.isfinite(float(getattr(self, f.name))) for f in self.__dataclass_fields__.values())
+        return all(math.isfinite(float(getattr(self, f))) for f in self.__dataclass_fields__)
 
 @dataclass
 class HealthResult:
@@ -218,11 +221,11 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
-                if isinstance(msg, str):
+                if isinstance(msg, str) and msg.strip():
                     clean_msg = " ".join(msg.split())
-                    if clean_msg:
-                        findings.append(clean_msg)
-        except (ValueError, TypeError, AttributeError, ZeroDivisionError):
+                    findings.append(clean_msg)
+        except Exception:
+            # Una regla fallida no debería detener el procesamiento del resto del reporte
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
