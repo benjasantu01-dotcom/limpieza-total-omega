@@ -151,6 +151,8 @@ class SystemMetrics:
             if val is None:
                 setattr(self, field_name, 100.0 if "percent" in field_name else 0.0)
         self.validate()
+        if not self.is_finite:
+            self.__init__() # Reset ante valores infinitos o NaN
 
     def validate(self) -> None:
         """Asegura que todos los valores numéricos caigan en rangos lógicos y finitos."""

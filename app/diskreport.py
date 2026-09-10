@@ -284,8 +284,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file(follow_symlinks=False):
                             if skip_protected and is_protected_path(entry_path): continue
                             st = entry.stat()
-                            size = getattr(st, 'st_size', 0)
-                            yield entry_path, int(size) if size is not None else 0
+                            yield entry_path, int(getattr(st, 'st_size', 0))
                     except (PermissionError, OSError, AttributeError):
                         continue
         except (PermissionError, OSError):
@@ -364,28 +363,25 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        # Asegurar que el tamaño sea un entero manejable
-        safe_size = int(size) if isinstance(size, (int, float)) else 0
-        
+        # Asegurar un manejo robusto de los datos del archivo
         try:
+            safe_size = int(size)
             total_bytes += safe_size
             total_files += 1
             
             # Normalizar extensión: manejar ausencia de sufijo
-            extension = path.suffix.lower() if path.suffix else "(sin extensión)"
-            ext_sizes[extension] += safe_size
-            ext_counts[extension] += 1
+            ext = path.suffix.lower() if path.suffix else "(sin extensión)"
+            ext_sizes[ext] += safe_size
+            ext_counts[ext] += 1
             
             # Gestión del heap para encontrar los N archivos más grandes
             if limit > 0:
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (safe_size, path))
                 elif safe_size > top_heap[0][0]:
-                    # Reemplaza el más pequeño del top N si encontramos uno mayor
                     heapq.heapreplace(top_heap, (safe_size, path))
                     
-        except (OSError, AttributeError, TypeError):
-            # Ignorar errores de metadatos puntuales durante el escaneo
+        except (ValueError, TypeError, OSError):
             continue
             
     return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_heap)

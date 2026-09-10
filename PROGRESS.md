@@ -8,38 +8,38 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 16
+- Rechazadas por guardia de seguridad: 34
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 3 | 0 | 1 | 0 | 11 |
+| 2026-09-08 | 1 | 0 | 0 | 0 | 10 |
 | 2026-09-09 | 152 | 12 | 21 | 11 | 154 |
-| 2026-09-10 | 71 | 6 | 13 | 5 | 44 |
+| 2026-09-10 | 73 | 6 | 13 | 6 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **44**
 - rendimiento: **44**
-- robustez ante casos límite: **35**
+- seguridad defensiva: **42**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
+- `quarantine.py`: **21**
 - `settings.py`: **20**
 - `assistant.py`: **19**
+- `healthscore.py`: **19**
 - `memory.py`: **19**
 - `safety.py`: **19**
 - `duplicates.py`: **19**
-- `healthscore.py`: **18**
-- `scanner.py`: **16**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
 - `browser.py`: **16**
+- `scanner.py`: **15**
 - `branding.py`: **13**
 - `organizer.py`: **11**
 - `main.py`: **9**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T05:59:27` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemMetrics` ante valores extremos o inesperados añadiendo una validación explícita para `is_finite` en el constructor y reforzando `validate` contra el desbordamiento de enteros o valores negativos antes de cualquier cálculo.
+- `2026-09-10T05:58:37` **diskreport.py** (robustez ante casos límite): Se ha robustecido el motor de escaneo añadiendo un manejo de excepciones más granular en `_collect_summary_data` y `walk_files` para evitar que un error puntual de lectura en un archivo individual (como un archivo bloqueado por el sistema o con metadatos corruptos) interrumpa el análisis del resto del árbol de directorios.
 - `2026-09-10T05:49:49` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_sum_directory_recursive` y `_should_skip_entry` ante el manejo de rutas malformadas o nombres de archivo inválidos mediante la validación temprana de `entry.name` y una mayor tolerancia a fallos en `entry.stat()`, evitando abortos innecesarios en directorios con archivos bloqueados o con nombres con caracteres especiales.
 - `2026-09-10T05:49:39` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y problemas de permisos mediante una validación estricta de rutas antes de cualquier operación de I/O, previniendo excepciones no controladas al manejar tipos de entrada no esperados.
 - `2026-09-10T05:49:06` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_build_payload` ante datos inesperados mediante validaciones de tipo más estrictas y manejo de excepciones, evitando que entradas mal formadas inyecten estados inválidos en el asistente.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T05:08:19` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados en las funciones de procesamiento, clarificando las responsabilidades de cada componente y los criterios de filtrado aplicados.
 - `2026-09-10T05:07:42` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando docstrings que explican el propósito de las clases de validación y enriquecí las anotaciones de tipo para mejorar la legibilidad del flujo de datos sin alterar la lógica.
 - `2026-09-10T04:58:40` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad técnica del módulo mediante la adición de Type Hints en la firma de `scan_directory` y la expansión de los docstrings en las funciones heurísticas para explicar explícitamente el "porqué" de las validaciones de seguridad.
-- `2026-09-10T04:58:28` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `ensure_safe_to_modify` extrayendo la lógica compleja de detección de redirecciones de reparse points (NTFS) a un método privado dedicado y bien documentado, facilitando su comprensión sin alterar la lógica de validación.
-- `2026-09-10T04:57:36` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `quarantine.py` mediante la refactorización de `_safe_unlink` y `_is_file_locked`, extrayendo la lógica de bloqueo a una función independiente (`_is_file_locked`) y añadiendo type hints y docstrings precisos que clarifican el flujo de seguridad, facilitando futuras auditorías.
