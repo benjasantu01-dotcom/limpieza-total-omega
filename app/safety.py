@@ -426,6 +426,21 @@ def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | 
         raise UnsafePathError("Nodo de reparse detectado.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
 
+def _validate_ntfs_reparse_redirection(path: Path) -> None:
+    """Verifica si la ruta real difiere del path esperado tras resolver links/junctions."""
+    try:
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.CreateFileW(str(path), 0, 0, None, 3, 0x02000000, None)
+        if handle != -1:
+            buf = ctypes.create_unicode_buffer(1024)
+            kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0)
+            kernel32.CloseHandle(handle)
+            if not Path(buf.value).resolve().as_posix().startswith(path.resolve().as_posix()[:len(str(path.parent))+1]):
+                    raise UnsafePathError("Redirección detectada vía reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+    except (AttributeError, OSError, ctypes.ArgumentError): 
+        pass
+
+
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
     Valida rigurosamente si una ruta es segura para ser modificada.
@@ -447,16 +462,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     
     if p.exists():
         if os.name == 'nt':
-            try:
-                kernel32 = ctypes.windll.kernel32
-                handle = kernel32.CreateFileW(str(p), 0, 0, None, 3, 0x02000000, None)
-                if handle != -1:
-                    buf = ctypes.create_unicode_buffer(1024)
-                    kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0)
-                    kernel32.CloseHandle(handle)
-                    if not Path(buf.value).resolve().as_posix().startswith(p.resolve().as_posix()[:len(str(p.parent))+1]):
-                         raise UnsafePathError("Redirección detectada vía reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
-            except (AttributeError, OSError, ctypes.ArgumentError): pass
+            _validate_ntfs_reparse_redirection(p)
             
         _check_file_integrity(p)
     elif p.parent and is_protected_path(p.parent):

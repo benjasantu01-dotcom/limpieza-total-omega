@@ -64,13 +64,19 @@ MAX_PATH_LENGTH: Final[int] = 260
 WIN_FILE_ATTR_REPARSE_POINT: Final[int] = 0x400
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Valida si el nombre del archivo termina con una extensión 'inocente' seguida de una ejecutable."""
+    """
+    Detecta técnicas de engaño donde el atacante usa una extensión benigna 
+    falsa antes de la extensión real ejecutable (ej: documento.pdf.exe).
+    """
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Verifica si un ejecutable fue creado recientemente en carpetas sensibles (ej. Descargas)."""
+    """
+    Identifica ejecutables nuevos en carpetas de alta exposición (Descargas/Temp).
+    El motivo es detectar descargas maliciosas recientes no autorizadas.
+    """
     if path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     
@@ -83,7 +89,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Identifica ejecutables con nombres de servicios críticos que se encuentran fuera de system32."""
+    """
+    Detecta archivos con nombres de procesos del sistema ubicados fuera de 
+    System32, una técnica común para ocultar malware con nombres confiables.
+    """
     if path.name.lower() in SYSTEM_LOOKALIKES:
         path_str = str(path).lower()
         if SYSTEM32_LOWER not in path_str:
@@ -213,15 +222,15 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         return []
         
     try:
-        path_input = str(directory).strip()
+        path_input: str = str(directory).strip()
         if not path_input:
             return []
             
-        base_path = Path(path_input)
+        base_path: Path = Path(path_input)
         if not base_path.exists() or not base_path.is_dir(): 
             return []
         
-        root_input = base_path.resolve()
+        root_input: Path = base_path.resolve()
         if not root_input.is_absolute() or str(root_input).startswith(("\\\\", "//")) or is_protected_path(root_input):
             return []
             

@@ -177,12 +177,13 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Intenta verificar acceso exclusivo al archivo. Un error de apertura 
-    indica que el archivo está siendo bloqueado por otro proceso.
+    Comprueba si un archivo está bloqueado por otro proceso intentando abrirlo en modo lectura/escritura.
+    Retorna True si el acceso es denegado o el archivo no puede ser modificado.
     """
     if not isinstance(path, Path) or not path.exists():
         return False
     try:
+        # Intenta abrir el archivo para escritura exclusiva (test de bloqueo)
         with open(path, "r+b") as f:
             f.flush()
             os.fsync(f.fileno())
@@ -193,13 +194,13 @@ def _is_file_locked(path: Path) -> bool:
 
 def _safe_unlink(path: Path) -> bool:
     """
-    Elimina de forma controlada verificando que el archivo sea un archivo regular,
-    pertenezca al usuario actual y pase la validación de `safety` y bloqueo.
+    Elimina de forma segura un archivo tras validar permisos, estado de bloqueo y políticas.
     """
     if not path.is_file() or path.is_symlink():
         return False
         
     try:
+        # Verificación explícita de seguridad antes de cualquier acción destructiva
         if is_safe_to_modify(path) and not _is_file_locked(path):
             path.unlink()
             return True
