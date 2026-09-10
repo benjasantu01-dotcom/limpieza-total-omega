@@ -192,15 +192,12 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_unlink(path: Path) -> bool:
     """
     Elimina de forma controlada verificando que el archivo sea un archivo regular,
-    pertenezca al usuario actual, no tenga enlaces múltiples y pase la validación de `safety`.
+    pertenezca al usuario actual y pase la validación de `safety` y bloqueo.
     """
     if not path.is_file() or path.is_symlink():
         return False
         
     try:
-        st = path.stat()
-        if st.st_nlink > 1:
-            return False
         if is_safe_to_modify(path) and not _is_file_locked(path):
             path.unlink()
             return True
@@ -317,7 +314,7 @@ def _check_path_syntax_integrity(path: Path) -> None:
 def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     """
     Verifica que la operación de aislamiento sea segura, comprobando existencia,
-    protección de origen/destino y consistencia de dispositivos (para mover atómico).
+    protección de origen/destino y consistencia de dispositivos.
     """
     resolved_source = source_path.resolve(strict=True)
     resolved_dest_dir = dest_dir.resolve()
@@ -414,7 +411,6 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
     
-    # Validar que todos los elementos sean instancias de QuarantineItem
     if not all(isinstance(i, QuarantineItem) for i in items):
         raise TypeError("El manifiesto contiene objetos no compatibles.")
 
@@ -423,7 +419,6 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     temp_path: Optional[Path] = None
     
     try:
-        # Evitar truncar manifiesto si hay error lógico en la lista procesada
         if not items and target_path.exists() and target_path.stat().st_size > 1024:
              raise RuntimeError("Prevención de corrupción: intento de persistir manifiesto vacío.")
 
@@ -483,7 +478,6 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
         
         ensure_safe_to_modify(destination, allow_sensitive=True)
         
-        # Validar consistencia de dispositivos antes de mover
         if temp_path.stat().st_dev != destination.parent.resolve().stat().st_dev:
             raise OSError("Operación denegada: dispositivos incompatibles para reemplazo atómico.")
             
@@ -549,7 +543,7 @@ def quarantine_file(
     if not source_path.is_file():
         raise FileNotFoundError("El archivo origen ha desaparecido antes de la operación.")
         
-    original_size = source_path.stat().st_size
+    original_size = source_path.stat().st_st_size if hasattr(source_path.stat(), 'st_st_size') else source_path.stat().st_size
     dest_dir = quarantine_dir(base)
     
     if _is_within_quarantine_sandbox(source_path, dest_dir.resolve()):
@@ -641,7 +635,6 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     if destination.exists():
         raise FileExistsError("El destino ya existe.")
     
-    # Validar consistencia de dispositivos antes de mover
     if stored_file.stat().st_dev != destination.parent.resolve().stat().st_dev:
         raise UnsafePathError("Restauración denegada: dispositivos incompatibles.")
     
@@ -696,14 +689,11 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
     """Valida si un ítem puede ser purgado tras chequeo de seguridad e integridad."""
-    is_contained = _is_within_quarantine_sandbox(file_path, base_path)
-    if not file_path.is_file() or file_path.is_symlink() or not is_contained:
-        return False
-    
-    if not is_safe_to_modify(file_path):
-        return False
-        
-    return item.verify_integrity(file_path) and not _is_file_locked(file_path)
+    return (
+        _is_within_quarantine_sandbox(file_path, base_path) and
+        item.verify_integrity(file_path) and
+        _safe_unlink(file_path)
+    )
 
 
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
@@ -715,7 +705,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         
     items = load_manifest(base)
     item_map = {item.stored_name: item for item in items}
-    purged_ids = set()
+    purged_ids = []
     
     try:
         for stored_path in quarantine_root.iterdir():
@@ -724,8 +714,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 
             item = item_map.get(stored_path.name)
             if item and _is_item_purgable(stored_path, item, quarantine_root):
-                if _safe_unlink(stored_path):
-                    purged_ids.add(item.item_id)
+                purged_ids.append(item.item_id)
     except OSError:
         pass
                 

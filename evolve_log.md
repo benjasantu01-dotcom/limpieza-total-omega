@@ -665,3 +665,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-09-10T00:13:48` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._init_state
 - `2026-09-10T00:13:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T00:13:48` Corrida terminada. Total usado hoy: 8.
+- `2026-09-10T00:21:50` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-09-10T00:22:23` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la documentación y mantenibilidad del archivo añadiendo type hints faltantes, tipado explícito para la estructura `MEMORYSTATUSEX` y docstrings detallados que explican el "porqué" de las validaciones de seguridad, facilitando la comprensión del flujo para futuros cambios.
+- `2026-09-10T00:22:52` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del módulo `organizer.py` mediante la refactorización de `_is_file_locked` para utilizar un gestor de contexto simplificado y la adición de docstrings técnicos detallados en funciones críticas, aclarando el propósito de las validaciones de seguridad de bajo nivel.
+- `2026-09-10T00:23:30` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y `_is_item_purgable` para estandarizar la lógica de validación de seguridad, eliminando redundancias en las verificaciones de estado del archivo.
+- `2026-09-10T00:23:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-10T00:23:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T00:23:35` Corrida terminada. Total usado hoy: 12.

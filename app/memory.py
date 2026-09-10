@@ -186,7 +186,11 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     )
 
 def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[ProcessMemory]:
-    """Valida datos brutos de proceso contra políticas de seguridad (is_protected_path)."""
+    """
+    Valida datos brutos de proceso contra políticas de seguridad.
+    Verifica que el PID no sea crítico y que el nombre del proceso no esté en
+    la lista de bloqueos o protegido por el sistema.
+    """
     if not isinstance(name, str) or not isinstance(pid_str, str) or not isinstance(ws_str, str):
         return None
     
@@ -279,7 +283,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if (time.time() - _proc_cache_time) < 60:
         return _proc_cache_data[:limit]
     
-    # Optimizamos filtrando en el comando de PS para no traer la lista completa de procesos
     ps_filter = f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit + 5} -Property Name, Id, WorkingSet"
     cmd = [
         'powershell', '-NoProfile', '-NonInteractive', '-Command', 
@@ -306,7 +309,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
     return "danger"
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Genera diagnóstico textual con recomendaciones de salud de RAM basándose en el estado global."""
+    """Genera diagnóstico textual con recomendaciones de salud de RAM."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
     
@@ -350,7 +353,11 @@ def _get_process_path(proc_handle: int) -> Optional[str]:
     return None
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
-    """Audita integridad del proceso antes de intentar liberar su working set."""
+    """
+    Audita integridad del proceso antes de intentar liberar su working set.
+    Valida que el proceso esté vivo y que su ubicación física cumpla con
+    las reglas de seguridad definidas en safety.py.
+    """
     if not isinstance(proc_handle, int) or proc_handle <= 0: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
     
