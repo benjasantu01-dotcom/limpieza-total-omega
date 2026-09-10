@@ -182,6 +182,7 @@ def _is_system_or_hidden(path_str: str | None) -> bool:
     if not path_str: return False
     try:
         path = Path(path_str)
+        if not path.exists(): return False
         st = path.lstat()
         attrs = getattr(st, 'st_file_attributes', 0)
         return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
@@ -260,29 +261,33 @@ def _check_file_integrity(path: Path) -> None:
     """
     try:
         file_stat = path.stat()
-    except (PermissionError, OSError):
-        # Si no podemos acceder al stat, asumimos riesgo o error de sistema
-        raise UnsafePathError(f"Acceso denegado a {path}", SafetyValidationErrorCode.ACCESS_DENIED)
+    except (PermissionError, OSError) as e:
+        raise UnsafePathError(f"No se pudo acceder a los metadatos: {e}", SafetyValidationErrorCode.ACCESS_DENIED)
         
     for rule in _VALIDATORS:
-        if rule.predicate(path, file_stat):
-            mapping = {
-                ProtectionReason.HARD_LINK: SafetyValidationErrorCode.HARD_LINK_DETECTED,
-                ProtectionReason.OFFLINE: SafetyValidationErrorCode.OFFLINE_FILE,
-                ProtectionReason.ENCRYPTED_OR_COMPRESSED: SafetyValidationErrorCode.ENCRYPTED_OR_COMPRESSED,
-                ProtectionReason.IN_USE: SafetyValidationErrorCode.FILE_IN_USE,
-                ProtectionReason.REPARSE_POINT: SafetyValidationErrorCode.REPARSE_POINT_DETECTED,
-                ProtectionReason.ADS: SafetyValidationErrorCode.ADS_DETECTED
-            }
-            code = mapping.get(rule.reason, SafetyValidationErrorCode.GENERIC)
-            raise UnsafePathError(f"Violación de integridad ({rule.reason.value})", code)
+        try:
+            if rule.predicate(path, file_stat):
+                mapping = {
+                    ProtectionReason.HARD_LINK: SafetyValidationErrorCode.HARD_LINK_DETECTED,
+                    ProtectionReason.OFFLINE: SafetyValidationErrorCode.OFFLINE_FILE,
+                    ProtectionReason.ENCRYPTED_OR_COMPRESSED: SafetyValidationErrorCode.ENCRYPTED_OR_COMPRESSED,
+                    ProtectionReason.IN_USE: SafetyValidationErrorCode.FILE_IN_USE,
+                    ProtectionReason.REPARSE_POINT: SafetyValidationErrorCode.REPARSE_POINT_DETECTED,
+                    ProtectionReason.ADS: SafetyValidationErrorCode.ADS_DETECTED
+                }
+                code = mapping.get(rule.reason, SafetyValidationErrorCode.GENERIC)
+                raise UnsafePathError(f"Violación de integridad ({rule.reason.value})", code)
+        except (OSError, Exception):
+            continue
 
 
 @lru_cache(maxsize=2048)
 def _is_readonly(path_str: str) -> bool:
     """Verifica el bit de modo POSIX/Windows para determinar si el archivo es de solo lectura."""
     try:
-        return not bool(Path(path_str).stat().st_mode & stat.S_IWRITE)
+        path = Path(path_str)
+        if not path.exists(): return True
+        return not bool(path.stat().st_mode & stat.S_IWRITE)
     except (OSError, PermissionError, FileNotFoundError):
         return True
 

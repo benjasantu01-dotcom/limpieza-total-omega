@@ -131,6 +131,9 @@ class Scanner:
         """
         try:
             if entry is None: return False
+            # Evitar procesar junctions/links directamente
+            if entry.is_symlink(): return False
+            
             path_str: str = entry.path
             name = entry.name
             if not path_str or not name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):

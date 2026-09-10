@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 216
+- Rechazadas por guardia de seguridad: 35
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 85 | 5 | 12 | 7 | 84 |
-| 2026-09-10 | 136 | 9 | 22 | 12 | 132 |
+| 2026-09-09 | 83 | 5 | 12 | 6 | 83 |
+| 2026-09-10 | 139 | 9 | 23 | 12 | 132 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **54**
 - seguridad defensiva: **53**
-- manejo de errores y validación de entradas: **51**
 - robustez ante casos límite: **41**
 - legibilidad y documentación: **40**
-- rendimiento: **36**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `browser.py`: **19**
+- `settings.py`: **20**
 - `memory.py`: **19**
 - `healthscore.py`: **19**
-- `settings.py`: **19**
-- `duplicates.py`: **18**
+- `browser.py`: **18**
+- `duplicates.py`: **17**
 - `assistant.py`: **17**
-- `safety.py`: **15**
-- `scanner.py`: **15**
+- `safety.py`: **16**
+- `scanner.py`: **16**
 - `diskreport.py`: **15**
 - `branding.py`: **14**
 - `organizer.py`: **11**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T13:19:08` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de archivos en `save()` añadiendo un chequeo explícito de `is_safe_to_modify` para el archivo temporal antes de la escritura, evitando posibles condiciones de carrera o escrituras en rutas no autorizadas si el sistema de archivos fuera modificado externamente durante la operación.
+- `2026-09-10T13:18:51` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_safe_entry` validando explícitamente que la entrada no sea un vínculo simbólico o unión antes de intentar realizar operaciones de resolución de rutas, evitando excepciones innecesarias y comportamientos ambiguos al acceder a puntos de reanálisis.
+- `2026-09-10T13:18:24` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante situaciones de acceso parcial o archivos bloqueados mediante un manejo de excepciones explícito en `_check_file_integrity` y la validación de `path.exists()` antes de consultar metadatos, evitando que fallos de sistema interrumpan la validación.
 - `2026-09-10T13:09:55` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `purge_all` y `list_items` para evitar fallos silenciosos ante condiciones inesperadas, utilizando chequeos de existencia y tipos más robustos conforme a las directivas de seguridad.
 - `2026-09-10T13:09:35` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` para que maneje correctamente el cierre de handles incluso ante excepciones durante la operación de I/O, evitando filtraciones de recursos del sistema que podrían bloquear archivos innecesariamente.
 - `2026-09-10T13:09:04` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y `_is_safe_to_trim` al capturar el error específico `ERROR_ACCESS_DENIED` y asegurar que la validación de seguridad sea explícita antes de ejecutar la llamada a la API, evitando así excepciones no controladas durante la manipulación de handles.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T12:49:14` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de los `handler` de `assistant.py` envolviendo el acceso a métricas en una lógica de validación más estricta (`get_metric` ya provee defaults seguros) y unificando el manejo de errores para evitar que una métrica faltante o malformada silencie la respuesta útil al usuario.
 - `2026-09-10T11:26:13` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para que el uso de `ensure_safe_to_modify` sea siempre una comprobación de seguridad pura, evitando que la resolución de rutas mediante `resolve()` pueda ser interceptada o comprometida por comportamientos inesperados del sistema de archivos al tratar con rutas no existentes.
 - `2026-09-10T11:25:40` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva al añadir una validación de longitud de ruta en `scan_directory` y asegurar que la ruta inicial no sea una ruta UNC, evitando errores de resolución de `Path.resolve()` en entornos restringidos.
-- `2026-09-10T11:15:56` **quarantine.py** (seguridad defensiva): Se implementó un bloqueo contra ataques de "Time-of-check to time-of-use" (TOCTOU) durante el aislamiento de archivos, verificando que el inodo/dispositivo del archivo origen no cambie después de abrir el descriptor de archivo, garantizando la integridad de la operación de lectura y copiado.
-- `2026-09-10T11:14:53` **memory.py** (seguridad defensiva): Se reforzó la seguridad de la función `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre el PID objetivo ANTES de abrir cualquier handle, evitando interacciones innecesarias con procesos del sistema y mitigando riesgos de manipulación de privilegios.
-- `2026-09-10T11:05:36` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `healthscore.py` validando explícitamente la integridad de los resultados de las fábricas de mensajes en `_evaluate_rules`, asegurando que no se inyecten datos inesperados o no sanitizados al reporte final, manteniendo la inmutabilidad del pipeline.

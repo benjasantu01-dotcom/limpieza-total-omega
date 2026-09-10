@@ -337,6 +337,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if len(data) > MAX_SETTINGS_SIZE: return None
         
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
+        ensure_safe_to_modify(str(temp_path))
+        
         bak_path = ruta.with_suffix(f"{ruta.suffix}.bak")
         
         with open(temp_path, "wb") as f:
