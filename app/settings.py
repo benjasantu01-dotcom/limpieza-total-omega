@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -285,22 +286,25 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga y valida el JSON de configuración utilizando un caché de tiempo de modificación."""
+    """Carga y valida el JSON de configuración, intentando con un respaldo si el original falla."""
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
-    try:
-        if not ruta.exists() or not ruta.is_file(): return DEFAULTS.copy()
-        stats = ruta.stat()
-        mtime = float(stats.st_mtime)
-        if (cached := _CACHE.get(ruta_str)) and cached[0] == mtime:
-            return cached[1]
-        if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
-            with open(ruta, "r", encoding="utf-8") as f:
-                data = validate(json.load(f))
-            _CACHE[ruta_str] = (mtime, data)
-            return data
-    except (OSError, PermissionError, IsADirectoryError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
-        pass
+    rutas_a_probar = [ruta, ruta.with_suffix(".json.bak")]
+    
+    for r in rutas_a_probar:
+        try:
+            if not r.exists() or not r.is_file(): continue
+            stats = r.stat()
+            mtime = float(stats.st_mtime)
+            if (cached := _CACHE.get(ruta_str)) and cached[0] == mtime:
+                return cached[1]
+            if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
+                with open(r, "r", encoding="utf-8") as f:
+                    data = validate(json.load(f))
+                _CACHE[ruta_str] = (mtime, data)
+                return data
+        except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
+            continue
     return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
@@ -328,16 +332,17 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if len(data) > MAX_SETTINGS_SIZE: return None
         
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
-        try:
-            with open(temp_path, "wb") as f:
-                f.write(data)
-                f.flush()
-                os.fsync(f.fileno())
-            os.replace(temp_path, ruta)
-        finally:
-            if temp_path.exists():
-                try: os.remove(temp_path)
-                except (OSError, PermissionError): pass
+        bak_path = ruta.with_suffix(f"{ruta.suffix}.bak")
+        
+        with open(temp_path, "wb") as f:
+            f.write(data)
+            f.flush()
+            os.fsync(f.fileno())
+        
+        if ruta.exists():
+            shutil.copy2(ruta, bak_path)
+            
+        os.replace(temp_path, ruta)
         
         _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta

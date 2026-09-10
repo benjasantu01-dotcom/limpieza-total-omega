@@ -411,7 +411,7 @@ def _generate_context_lines_cached(score_s: str, grade: str, junk_s: str, susp_s
         f"Inicio: {start_s} items"
     )
     # Seguridad defensiva: validar integridad antes de retornar para evitar inyecciones en el payload
-    return content if _ensure_safe_text(content) else "Datos de contexto corruptos."
+    return content if _ensure_safe_text(content) else ""
 
 def context_as_text(context: SystemContext) -> str:
     """Serializa las métricas en un texto apto para ser enviado al motor remoto."""

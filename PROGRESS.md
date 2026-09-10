@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Mejoras aceptadas: **238** (47.2% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 203
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 55 | 3 | 7 | 1 | 44 |
+| 2026-09-08 | 55 | 3 | 7 | 1 | 40 |
 | 2026-09-09 | 152 | 12 | 21 | 11 | 154 |
-| 2026-09-10 | 29 | 3 | 6 | 1 | 5 |
+| 2026-09-10 | 31 | 3 | 6 | 2 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **53**
 - rendimiento: **47**
-- seguridad defensiva: **42**
-- robustez ante casos límite: **40**
+- seguridad defensiva: **43**
+- robustez ante casos límite: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **21**
 - `memory.py`: **21**
 - `quarantine.py`: **21**
-- `assistant.py`: **19**
+- `assistant.py`: **20**
+- `settings.py`: **20**
 - `healthscore.py`: **19**
-- `settings.py`: **19**
 - `diskreport.py`: **18**
 - `safety.py`: **18**
 - `scanner.py`: **18**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T01:55:18` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al serializar las métricas para el LLM: agregué una validación estricta que impide que la función retorne datos si el string resultante contiene patrones prohibidos, evitando que el payload enviado a la API contenga inyecciones incluso si los datos fuente fueran manipulados.
+- `2026-09-10T01:54:11` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante archivos de configuración corruptos o bloqueados añadiendo un mecanismo de respaldo automático: si `load()` detecta un error de lectura, intenta leer un backup (`.bak`) antes de ceder y retornar los valores por defecto.
 - `2026-09-10T01:45:14` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de metadatos de archivos dentro de `scan_file`, reemplazando el acceso directo a `path.stat()` (que puede fallar por permisos o archivos bloqueados) por una gestión de excepciones más granular que evita la interrupción del escaneo al encontrar archivos en uso o con bloqueos de acceso exclusivos.
 - `2026-09-10T01:44:08` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante casos límite mediante la validación de archivos con longitud cero o corruptos durante el proceso de aislamiento, evitando que `_atomic_isolate_file` intente persistir estados inconsistentes.
 - `2026-09-10T01:35:26` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` y `_get_process_path` para prevenir fallos por manejadores de procesos nulos, excepciones durante la interacción con APIs de Win32 y bloqueos inesperados al manipular rutas de sistema inaccesibles.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T01:19:41` **settings.py** (rendimiento): Optimicé el rendimiento del módulo implementando una estrategia de "short-circuit" en el validador `_is_safe_path`, evitando realizar operaciones de I/O costosas (como `.resolve()` y `.expanduser()`) cuando el string de entrada es trivialmente inválido o ya ha sido validado previamente, reduciendo el overhead en cada lectura de configuración.
 - `2026-09-10T01:04:29` **safety.py** (rendimiento): Se optimizó el rendimiento del chequeo de rutas del sistema reemplazando el cálculo recursivo de `os.sep` mediante `str.split(os.sep)` por una búsqueda eficiente en conjunto (set) de los padres de la ruta, aprovechando además que `pathlib.Path.parts` ya viene calculado por el sistema operativo, evitando así procesamiento redundante de strings.
 - `2026-09-10T01:03:46` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `list_items` evitando I/O redundante al convertir el manifiesto a un diccionario de búsqueda indexado por `stored_name` antes de iterar, reemplazando búsquedas lineales `O(N)` por accesos constantes `O(1)`.
-- `2026-09-10T01:03:11` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` y `_process_directory` transformando `JUNK_EXTENSIONS` en un `frozenset` para búsquedas O(1) y eliminando llamadas redundantes a `Path` y `resolve()` dentro del bucle de escaneo, que es el cuello de botella principal.
-- `2026-09-10T00:54:51` **memory.py** (rendimiento): Optimizé `parse_windows_process_csv` para evitar la creación de una lista intermedia y el uso de `sorted` con una función `lambda` dentro de cada llamada, utilizando en su lugar un `heapq.nlargest` para obtener solo los procesos más pesados de forma eficiente (O(N log K) en lugar de O(N log N)).
