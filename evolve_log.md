@@ -829,3 +829,20 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-10T02:25:54` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva del escáner en `_is_safe_entry` al agregar una verificación explícita para evitar el procesamiento de rutas UNC (`\\`) y prevenir la resolución de accesos directos (shortcuts `.lnk`) que podrían apuntar a ubicaciones externas, asegurando que el proceso se mantenga estrictamente dentro de la jerarquía validada.
 - `2026-09-10T02:25:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T02:25:54` Corrida terminada. Total usado hoy: 59.
+- `2026-09-10T02:34:23` Arrancando corrida. Quedan hoy ~241 peticiones objetivo.
+- `2026-09-10T02:34:54` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita de `ensure_safe_to_modify` para el archivo final de configuración (`ruta`), asegurando que no solo el directorio padre sea seguro, sino que el archivo de destino no sea un enlace simbólico o un archivo protegido antes de realizar el reemplazo atómico.
+- `2026-09-10T02:35:20` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-09-10T02:35:20` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-10T02:35:20` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-10T02:35:40` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-10T02:35:40` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-10T02:36:11` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-10T02:36:11` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-10T02:36:26` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-10T02:36:26` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-10T02:36:46` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-10T02:36:46` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-10T02:37:16` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-10T02:37:16` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-10T02:37:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T02:37:16` Corrida terminada. Total usado hoy: 63.

@@ -326,7 +326,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             except (OSError, PermissionError):
                 return None
         
+        # Validar seguridad tanto del directorio contenedor como del archivo destino
         ensure_safe_to_modify(str(parent))
+        if ruta.exists():
+            ensure_safe_to_modify(str(ruta))
         
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None

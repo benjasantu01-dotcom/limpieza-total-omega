@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **246** (48.8% de aceptación)
+- Mejoras aceptadas: **247** (49.0% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 191
+- Sin respuesta de la IA (error o límite): 190
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 55 | 3 | 7 | 1 | 29 |
+| 2026-09-08 | 55 | 3 | 7 | 1 | 25 |
 | 2026-09-09 | 152 | 12 | 21 | 11 | 154 |
-| 2026-09-10 | 39 | 3 | 7 | 2 | 8 |
+| 2026-09-10 | 40 | 3 | 7 | 2 | 11 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **53**
-- seguridad defensiva: **51**
+- seguridad defensiva: **52**
 - rendimiento: **47**
 - robustez ante casos límite: **41**
 
@@ -33,9 +33,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **22**
 - `memory.py`: **22**
 - `quarantine.py`: **22**
+- `settings.py`: **21**
 - `assistant.py`: **20**
 - `healthscore.py`: **20**
-- `settings.py`: **20**
 - `diskreport.py`: **19**
 - `safety.py`: **19**
 - `scanner.py`: **19**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T02:34:54` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita de `ensure_safe_to_modify` para el archivo final de configuración (`ruta`), asegurando que no solo el directorio padre sea seguro, sino que el archivo de destino no sea un enlace simbólico o un archivo protegido antes de realizar el reemplazo atómico.
 - `2026-09-10T02:25:54` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escáner en `_is_safe_entry` al agregar una verificación explícita para evitar el procesamiento de rutas UNC (`\\`) y prevenir la resolución de accesos directos (shortcuts `.lnk`) que podrían apuntar a ubicaciones externas, asegurando que el proceso se mantenga estrictamente dentro de la jerarquía validada.
 - `2026-09-10T02:25:43` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para detectar si el sistema de archivos está marcando el objeto como "Offline" o no disponible, previniendo errores durante la manipulación de archivos que residen en servicios en la nube (como OneDrive) que podrían no estar descargados localmente.
 - `2026-09-10T02:24:50` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en el aislamiento de archivos agregando una validación de "punto de montaje" para prevenir que la operación de cuarentena atraviese límites de volumen o sistemas de archivos, evitando así comportamientos inesperados en configuraciones multi-disco.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T01:44:08` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante casos límite mediante la validación de archivos con longitud cero o corruptos durante el proceso de aislamiento, evitando que `_atomic_isolate_file` intente persistir estados inconsistentes.
 - `2026-09-10T01:35:26` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` y `_get_process_path` para prevenir fallos por manejadores de procesos nulos, excepciones durante la interacción con APIs de Win32 y bloqueos inesperados al manipular rutas de sistema inaccesibles.
 - `2026-09-10T01:34:57` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_trim_process` añadiendo una validación explícita de `psutil` (usando `memory_mod.process_exists`) y asegurando que la operación solo proceda si el proceso no es protegido, mitigando errores de concurrencia y permisos en procesos críticos.
-- `2026-09-10T01:33:45` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del cálculo de puntajes añadiendo una verificación de finitud en el resultado de `scorer(metrics)` dentro del bucle principal de `compute_score`, previniendo que valores no numéricos o `NaN` resultantes de posibles errores de cálculo en los normalizadores propaguen estados inválidos al puntaje final.
