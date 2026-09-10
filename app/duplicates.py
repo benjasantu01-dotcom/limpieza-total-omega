@@ -133,7 +133,13 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 
 def _is_valid_candidate(path: Path) -> bool:
-    """Validador estricto: comprueba existencia, permisos, atributos y que no sea enlace."""
+    """
+    Validador estricto de candidatos.
+    Se excluyen: rutas relativas, symlinks/junctions para evitar recursión circular,
+    archivos de sistema/ocultos por seguridad, rutas protegidas por configuración,
+    archivos sin permisos de lectura o archivos con hardlinks (st_nlink > 1) 
+    para evitar borrar inadvertidamente datos compartidos por el SO.
+    """
     if not isinstance(path, Path) or not path.is_absolute():
         return False
     try:

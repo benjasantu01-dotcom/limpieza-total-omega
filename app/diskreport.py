@@ -123,7 +123,7 @@ def _get_local_windows_drives() -> List[str]:
     Filtra unidades de red o protegidas según `safety.is_protected_path`.
     """
     import string
-    drives = []
+    drives: List[str] = []
     for letter in string.ascii_uppercase:
         drive = f"{letter}:\\"
         try:
@@ -293,9 +293,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """
-    Retorna los N archivos más pesados.
-    
-    Utiliza `_collect_summary_data` para realizar un único recorrido eficiente.
+    Retorna los N archivos más pesados mediante un recorrido eficiente.
     """
     root = _validate_root(directory)
     if not root: return []
@@ -306,8 +304,6 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """
     Agrupa el uso de espacio por extensión de archivo.
-    
-    Realiza un único recorrido para totalizar tamaños y conteos.
     """
     root = _validate_root(directory)
     if not root: return []
@@ -319,8 +315,6 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
     Calcula el peso total por subcarpeta inmediata en la raíz indicada.
-    
-    Nota: Este método realiza una agregación post-recorrido basada en la profundidad relativa.
     """
     root = _validate_root(directory)
     if not root: return []
@@ -352,35 +346,35 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Recolector central de estadísticas (motor de lectura única).
+    Motor central de agregación de estadísticas. 
     
-    Procesa un único flujo de archivos, acumulando métricas globales y
-    manteniendo un heap de los archivos más grandes encontrados.
+    Recorre el sistema de archivos una sola vez para minimizar IO, procesando 
+    métricas globales, conteos por extensión y manteniendo un min-heap para 
+    los N archivos más grandes.
     """
-    total_bytes = total_files = 0
+    total_bytes: int = 0
+    total_files: int = 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        # Asegurar un manejo robusto ante cambios en el FS durante el recorrido
+        # El try-except interno aísla errores de IO por cambios de estado en el FS
         try:
             if not path.is_file(): continue
-            # Validar que el tamaño sea un entero válido y no negativo antes de procesar
-            safe_size = max(0, int(size))
+            
+            # Validación estricta del tamaño para evitar métricas corruptas
+            safe_size: int = max(0, int(size))
             total_bytes += safe_size
             total_files += 1
             
-            # Normalizar extensión con protección ante errores de codificación
-            try:
-                ext = path.suffix.lower() if path.suffix else "(sin extensión)"
-            except Exception:
-                ext = "(desconocido)"
+            # Extracción segura de la extensión
+            ext = path.suffix.lower() if path.suffix else "(sin extensión)"
             
             ext_sizes[ext] += safe_size
             ext_counts[ext] += 1
             
-            # Gestión del heap para encontrar los N archivos más grandes
+            # Mantenimiento eficiente del top N (Heap de tamaño fijo O(log N))
             if limit > 0:
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (safe_size, path))
@@ -388,6 +382,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                     heapq.heapreplace(top_heap, (safe_size, path))
                     
         except (ValueError, TypeError, OSError):
+            # Ignoramos archivos inaccesibles durante el recorrido por seguridad/robustez
             continue
             
     return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_heap)
@@ -396,9 +391,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
     """
     Genera un reporte textual estructurado de los hallazgos en la carpeta dada.
-    
-    Combina los datos recolectados en `_collect_summary_data` para presentar 
-    la vista de resumen de uso de disco.
     """
     root = _validate_root(directory)
     if not root: return ["Error: Ruta no válida."]

@@ -227,7 +227,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     recommendations: List[str] = []
     
-    def process_area(area: MetricKey, weight: int, scorer: Callable, rules: List[RecommendationRule] | None) -> Tuple[MetricKey, int]:
+    def process_area(area: MetricKey, weight: int, scorer: Callable[[SystemMetrics], NormalizedRatio], rules: List[RecommendationRule] | None) -> Tuple[MetricKey, int]:
+        """Aplica la función de puntuación específica y evalúa reglas de recomendación para un área."""
         try:
             ratio = _clamp(scorer(metrics))
             if rules:
