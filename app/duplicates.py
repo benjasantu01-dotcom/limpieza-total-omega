@@ -175,9 +175,8 @@ def _collect_candidates(
 
     def _scan_directory_recursive(current_dir: Path) -> None:
         try:
-            resolved_dir = current_dir.resolve(strict=False)
-            path_str = str(resolved_dir)
-            if not resolved_dir.exists() or path_str in visited or is_protected_path(resolved_dir):
+            path_str = str(current_dir.resolve(strict=False))
+            if path_str in visited or is_protected_path(current_dir):
                 return
             visited.add(path_str)
             

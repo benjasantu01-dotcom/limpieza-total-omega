@@ -128,6 +128,11 @@ _RULES_BY_AREA: Final[Dict[MetricKey, List[RecommendationRule]]] = {}
 for rule in _RECOMMENDATION_RULES:
     _RULES_BY_AREA.setdefault(rule.area, []).append(rule)
 
+# Cacheamos funciones para evitar búsquedas en bucle
+_CACHE_SCORERS: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], List[RecommendationRule] | None]]] = [
+    (a, w, _SCORERS[a], _RULES_BY_AREA.get(a)) for a, w in _WEIGHT_ITEMS_INT
+]
+
 @dataclass
 class SystemMetrics:
     """Contenedor inmutable y validado de métricas extraídas del sistema."""
@@ -225,14 +230,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     total_pts: int = 0
     recommendations: List[str] = []
     
-    for area, weight in _WEIGHT_ITEMS_INT:
+    for area, weight, scorer, rules in _CACHE_SCORERS:
         try:
-            ratio = _SCORERS[area](metrics)
+            ratio = scorer(metrics)
             pts = int(round(_clamp(ratio * weight, 0, weight)))
             metric_breakdown[area] = pts
             total_pts += pts
             
-            rules = _RULES_BY_AREA.get(area)
             if rules:
                 _evaluate_rules(metrics, rules, ratio, recommendations)
         except Exception:
@@ -267,5 +271,6 @@ def summarize(result: HealthResult | None) -> List[str]:
         puntos = result.breakdown.get(area, 0)
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{_render_bar(puntos, maximo)}]")
     
-    lines.extend(["", "Recomendaciones:", *[f"  - {r}" for r in (result.recommendations if result.recommendations else ["Sin recomendaciones."])]])
+    recs = result.recommendations if result.recommendations else ["Sin recomendaciones."]
+    lines.extend(["", "Recomendaciones:", *(f"  - {r}" for r in recs)])
     return lines

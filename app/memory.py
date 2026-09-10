@@ -28,6 +28,7 @@ import subprocess
 import math
 import ctypes
 import time
+import heapq
 from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
@@ -210,7 +211,7 @@ def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[Pr
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
     Parsea texto CSV crudo proveniente de PowerShell.
-    Usa generadores para filtrar y ordenar eficientemente sin copias innecesarias.
+    Usa heapq para extraer los top N elementos eficientemente sin ordenar todo.
     """
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
@@ -225,7 +226,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
                 if proc: yield proc
 
     try:
-        return sorted(process_gen(), key=lambda p: p.working_set, reverse=True)[:limit]
+        return heapq.nlargest(limit, process_gen(), key=lambda p: p.working_set)
     except (TypeError, ValueError):
         return []
 
