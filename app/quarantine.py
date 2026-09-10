@@ -371,8 +371,8 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 
 @lru_cache(maxsize=8)
-def _load_manifest_raw(base_str: str, _mtime: float) -> List[QuarantineItem]:
-    """Carga y normaliza el manifiesto, usando caché para evitar I/O redundante."""
+def _load_manifest_raw(base_str: str, content_hash: str) -> List[QuarantineItem]:
+    """Carga y normaliza el manifiesto, usando caché robusta basada en contenido."""
     path = _manifest_path(Path(base_str))
     if not path.is_file():
         return []
@@ -392,20 +392,24 @@ def _load_manifest_raw(base_str: str, _mtime: float) -> List[QuarantineItem]:
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
     """
     Carga y sincroniza la lista de ítems en cuarentena. 
-    Usa el mtime para invalidar la caché automáticamente si cambia el disco.
+    Usa un hash de contenido para invalidar la caché de forma precisa.
     """
     base_path = quarantine_dir(base)
     m_path = _manifest_path(base_path)
     
-    try:
-        mtime = m_path.stat().st_mtime if m_path.exists() else 0.0
-    except OSError:
-        mtime = 0.0
+    # Calcular hash de archivo para invalidar caché correctamente
+    current_hash = "none"
+    if m_path.exists():
+        try:
+            with open(m_path, "rb") as f:
+                current_hash = hashlib.sha256(f.read()).hexdigest()
+        except OSError:
+            pass
     
     if force_reload:
         _load_manifest_raw.cache_clear()
     
-    return list(_load_manifest_raw(str(base_path), mtime))
+    return list(_load_manifest_raw(str(base_path), current_hash))
 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:

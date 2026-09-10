@@ -28,7 +28,6 @@ import subprocess
 import math
 import ctypes
 import time
-import heapq
 from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
@@ -212,24 +211,24 @@ def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[Pr
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
     Parsea texto CSV crudo proveniente de PowerShell.
-    Usa heapq para extraer los top N elementos eficientemente sin ordenar todo.
+    Extrae, valida y ordena los procesos de forma eficiente.
     """
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
     
-    def process_gen():
-        for line in raw_csv_text.splitlines():
-            clean = line.strip()
-            if not clean: continue
-            parts = [x.strip().strip("'\"") for x in clean.split(",")]
-            if len(parts) >= 3:
-                proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
-                if proc: yield proc
-
-    try:
-        return heapq.nlargest(limit, process_gen(), key=lambda p: p.working_set)
-    except (TypeError, ValueError):
-        return []
+    processes: List[ProcessMemory] = []
+    for line in raw_csv_text.splitlines():
+        clean = line.strip()
+        if not clean: continue
+        parts = [x.strip().strip("'\"") for x in clean.split(",")]
+        if len(parts) >= 3:
+            proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
+            if proc:
+                processes.append(proc)
+    
+    # Ordenar por working set descendente y limitar resultados
+    processes.sort(key=lambda p: p.working_set, reverse=True)
+    return processes[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Ejecuta API Win32 'GlobalMemoryStatusEx' vía ctypes para capturar RAM global."""

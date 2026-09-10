@@ -1161,3 +1161,10 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-09-10T05:18:57` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje global reemplazando la lógica de bucles con una comprensión de diccionario y pre-calculando los pesos totales para evitar operaciones redundantes, mejorando la eficiencia en cada ejecución.
 - `2026-09-10T05:18:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T05:18:57` Corrida terminada. Total usado hoy: 127.
+- `2026-09-10T05:27:33` Arrancando corrida. Quedan hoy ~173 peticiones objetivo.
+- `2026-09-10T05:28:42` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimicé el sistema de caché implementando una invalidación granular basada en prefijos en `_invalidate_cache`, permitiendo que tareas específicas (como `on_scan_junk` o `on_heuristic_scan`) limpien solo los datos relacionados sin descartar innecesariamente otros resultados de análisis, reduciendo la re-ejecución redundante de tareas pesadas.
+- `2026-09-10T05:29:11` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó `parse_windows_process_csv` reemplazando la creación de listas intermedias y el uso de `heapq.nlargest` (que requiere iterar todo el generador) por una lógica de filtrado y ordenamiento en una sola pasada, mejorando la eficiencia y legibilidad sin sacrificar la seguridad.
+- `2026-09-10T05:29:38` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-10T05:29:59` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` mediante una caché basada en un hash del contenido del archivo de manifiesto (utilizando `hashlib.sha256` sobre el contenido completo del archivo) en lugar de depender únicamente de `st_mtime`, lo cual es propenso a errores en sistemas de archivos con baja resolución de tiempo o actualizaciones rápidas.
+- `2026-09-10T05:29:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T05:29:59` Corrida terminada. Total usado hoy: 131.
