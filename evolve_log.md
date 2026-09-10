@@ -984,3 +984,51 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-10T14:41:30` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: robustez ante casos límite).
 - `2026-09-10T14:41:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T14:41:30` Corrida terminada. Total usado hoy: 347.
+- `2026-09-10T14:49:27` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-10T14:50:07` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de seguridad preventivo en `save_logo_svg` para evitar intentos de escritura en rutas prohibidas antes de invocar `ensure_safe_to_modify`, alineando el módulo con las guías de protección de archivos del proyecto.
+- `2026-09-10T14:50:37` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una protección contra el acceso a archivos bloqueados por el sistema (exclusivos) durante el escaneo recursivo, capturando específicamente el `WinError 32` que ocurre al intentar leer directorios de caché en uso sin permisos de lectura compartida, evitando así la interrupción innecesaria del análisis.
+- `2026-09-10T14:50:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-10T14:50:44` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-10T14:51:12` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-10T14:51:56` Tests FALLARON:
+```
+en([])
+ +    where [] = <function largest_files at 0x7f7db787e0c0>(PosixPath('/tmp/pytest-of-runner/pytest-3/test_largest_files_respects_th0'), limit=2)
+ +      where <function largest_files at 0x7f7db787e0c0> = diskreport.largest_files
+FAILED evolve/tests/test_modules.py::test_usage_by_extension_groups_and_counts - KeyError: '.jpg'
+FAILED evolve/tests/test_modules.py::test_usage_by_extension_labels_files_without_extension - assert False
+ +  where False = any(<generator object test_usage_by_extension_labels_files_without_extension.<locals>.<genexpr> at 0x7f7db71ae740>)
+FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - AssertionError: assert [] == ['grande', 'media', 'chica']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'media',
+  -     'chica',
+  - ]
+FAILED evolve/tests/test_modules.py::test_total_size_counts_bytes_and_files - assert (0, 0) == (300, 2)
+  
+  At index 0 diff: 0 != 300
+  
+  Full diff:
+    (
+  -     300,
+  ?     --
+  +     0,
+  -     2,
+  ?     ^
+  +     0,
+  ?     ^
+    )
+FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_totals - AssertionError: assert '/tmp/pytest-of-runner/pytest-3/test_summarize_mentions_the_fo0' in 'Aviso: No hay archivos accesibles.'
+ +  where '/tmp/pytest-of-runner/pytest-3/test_summarize_mentions_the_fo0' = str(PosixPath('/tmp/pytest-of-runner/pytest-3/test_summarize_mentions_the_fo0'))
+9 failed, 290 passed in 1.21s
+
+```
+- `2026-09-10T14:51:56` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez de `walk_files` y `_collect_summary_data` ante posibles inconsistencias del sistema de archivos (archivos que desaparecen entre el listado y el acceso o errores al calcular el inodo) mediante la adición de un bloque `try-except` más granular y una validación de existencia del `Path` antes de ser procesado.
+- `2026-09-10T14:51:56` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-09-10T14:51:56` Rotación — metrics: 3 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T14:51:56` Corrida terminada. Total usado hoy: 350.

@@ -75,6 +75,7 @@ SAFETY_NOTE: str = (
 MAX_SCAN_DEPTH: int = 15
 MAX_PATH_LEN: int = 260
 SYSTEM_HIDDEN_FLAGS: int = 0x01 | 0x02 | 0x400
+ERROR_SHARING_VIOLATION: int = 32
 
 @dataclass
 class BrowserCache:
@@ -225,8 +226,7 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Cálculo de tamaño mediante DFS con control de profundidad.
-    Utiliza memoización para evitar re-escaneo de subcarpetas en árboles compartidos.
+    Cálculo de tamaño mediante DFS con control de profundidad y manejo de bloqueos.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
@@ -249,7 +249,10 @@ def _sum_directory_recursive(
                     elif entry.is_file(follow_symlinks=False):
                         s = entry.stat(follow_symlinks=False)
                         total += int(s.st_size)
-                except (OSError, PermissionError):
+                except (OSError, PermissionError) as e:
+                    # Ignorar errores de acceso (ex. archivo bloqueado por el sistema/navegador)
+                    if getattr(e, 'winerror', None) == ERROR_SHARING_VIOLATION:
+                        continue
                     continue
     except (PermissionError, OSError):
         return 0

@@ -329,8 +329,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         if destination is None: return None
         path_input = Path(str(destination)).absolute()
         
-        # Validaciones de seguridad antes de operar
-        if path_input.is_dir() or is_protected_path(path_input):
+        # Validaciones preventivas de seguridad
+        if not is_safe_to_modify(path_input) or is_protected_path(path_input):
             return None
         
         # Verifica integridad y permisos antes de cualquier operación
