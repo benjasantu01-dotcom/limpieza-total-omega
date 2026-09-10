@@ -168,12 +168,20 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     Aplica filtros de seguridad: omite rutas prohibidas, symlinks, junctions,
     montajes de disco y archivos con atributos de sistema/oculto.
     """
-    if entry is None or not hasattr(entry, 'name') or _is_excluded_file(entry.name):
+    if entry is None:
+        return True
+    
+    # Validar nombre antes de acceder a rutas
+    try:
+        name = entry.name
+        if not name or _is_excluded_file(name):
+            return True
+    except OSError:
         return True
         
     try:
         path = entry.path
-        if not path or len(path) >= MAX_PATH_LEN or '\0' in path or any(c in path for c in '<>|?"*'):
+        if not path or len(path) >= MAX_PATH_LEN or '\0' in path:
             return True
         
         if entry.is_symlink() or is_junction_fn(path) or os.path.ismount(path):
@@ -212,7 +220,6 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Cálculo de tamaño de directorio mediante recorrido DFS con control de profundidad.
-    Utiliza un diccionario 'memo' para evitar ciclos y redundantemente procesar rutas ya calculadas.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
@@ -224,16 +231,18 @@ def _sum_directory_recursive(
     try:
         with os.scandir(root_abs) as it:
             for entry in it:
+                if _should_skip_entry(entry, kernel32, is_junction_fn):
+                    continue
+                
                 try:
-                    if _should_skip_entry(entry, kernel32, is_junction_fn):
-                        continue
-                    
                     if entry.is_dir(follow_symlinks=False):
                         total += _sum_directory_recursive(
                             entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                         )
                     elif entry.is_file(follow_symlinks=False):
-                        total += entry.stat(follow_symlinks=False).st_size
+                        # Obtenemos stat con tolerancia a fallos por bloqueo de archivo
+                        s = entry.stat(follow_symlinks=False)
+                        total += s.st_size
                 except (OSError, PermissionError):
                     continue
     except (PermissionError, OSError):

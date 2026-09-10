@@ -316,7 +316,7 @@ class SystemContext:
                 if math.isfinite(f_val) and spec.min_val <= f_val <= spec.max_val:
                     setattr(self, key, spec.cast_func(val))
                     return True
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, AttributeError):
             return False
         return False
 
@@ -333,11 +333,14 @@ class SystemContext:
             if self._apply_field(source, key, spec):
                 found_data = True
         
-        grade_val = _get_source_value(source, "grade")
-        if isinstance(grade_val, str):
-            clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
-            if _ensure_safe_text(clean_grade):
-                self.grade = clean_grade
+        try:
+            grade_val = _get_source_value(source, "grade")
+            if isinstance(grade_val, str):
+                clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
+                if _ensure_safe_text(clean_grade):
+                    self.grade = clean_grade
+        except Exception:
+            pass
         
         return found_data
 
@@ -625,8 +628,8 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa el mensaje y el contexto en un JSON compatible con el formato de API de Google."""
-    if not _ensure_safe_text(context_text) or not _is_safe_text_structure(context_text): return None
     try:
+        if not _ensure_safe_text(context_text) or not _is_safe_text_structure(context_text): return None
         q = _sanitize_query(question)
         if not q or not _ensure_safe_text(q): return None
         data = {"contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]}]}
@@ -634,7 +637,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
         if len(encoded) > _MAX_PROMPT_LIMIT * 2:
             return None
         return encoded
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, AttributeError):
         return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:

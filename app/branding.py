@@ -323,9 +323,11 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo vectorial en una ruta física tras validación de seguridad de escritura."""
-    if destination is None: return None
     try:
+        if destination is None: return None
         path_input = Path(str(destination)).absolute()
+        
+        # Validaciones de seguridad pre-escritura
         if not is_safe_to_modify(path_input) or not is_safe_to_modify(path_input.parent):
             return None
         
@@ -336,7 +338,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
             
         path_input.write_text(logo_svg(), encoding="utf-8")
         return path_input
-    except (OSError, PermissionError, RuntimeError): 
+    except (OSError, PermissionError, RuntimeError, ValueError): 
         return None
 
 def logo_ascii() -> str:

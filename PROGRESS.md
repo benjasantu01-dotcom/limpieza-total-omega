@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 6 | 0 | 1 | 0 | 12 |
+| 2026-09-08 | 3 | 0 | 1 | 0 | 11 |
 | 2026-09-09 | 152 | 12 | 21 | 11 | 154 |
-| 2026-09-10 | 68 | 6 | 12 | 5 | 44 |
+| 2026-09-10 | 71 | 6 | 13 | 5 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **47**
+- seguridad defensiva: **44**
 - rendimiento: **44**
-- robustez ante casos límite: **32**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `memory.py`: **20**
 - `settings.py`: **20**
+- `assistant.py`: **19**
+- `memory.py`: **19**
 - `safety.py`: **19**
 - `duplicates.py`: **19**
-- `assistant.py`: **18**
 - `healthscore.py`: **18**
 - `scanner.py`: **16**
 - `diskreport.py`: **16**
-- `browser.py`: **15**
-- `organizer.py`: **12**
-- `branding.py`: **12**
-- `main.py`: **10**
+- `browser.py`: **16**
+- `branding.py`: **13**
+- `organizer.py`: **11**
+- `main.py`: **9**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T05:49:49` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_sum_directory_recursive` y `_should_skip_entry` ante el manejo de rutas malformadas o nombres de archivo inválidos mediante la validación temprana de `entry.name` y una mayor tolerancia a fallos en `entry.stat()`, evitando abortos innecesarios en directorios con archivos bloqueados o con nombres con caracteres especiales.
+- `2026-09-10T05:49:39` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y problemas de permisos mediante una validación estricta de rutas antes de cualquier operación de I/O, previniendo excepciones no controladas al manejar tipos de entrada no esperados.
+- `2026-09-10T05:49:06` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_build_payload` ante datos inesperados mediante validaciones de tipo más estrictas y manejo de excepciones, evitando que entradas mal formadas inyecten estados inválidos en el asistente.
 - `2026-09-10T05:38:39` **safety.py** (rendimiento): Se optimizó el rendimiento del módulo mediante la implementación de un sistema de caché a nivel de módulo para `_is_system_path_cached` y `is_protected_path`, evitando la re-evaluación costosa de rutas en cada iteración del bucle, y se reemplazó la iteración sobre `PROTECTED_DIR_NAMES` por un check de `set` más eficiente (O(1)).
 - `2026-09-10T05:29:59` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante una caché basada en un hash del contenido del archivo de manifiesto (utilizando `hashlib.sha256` sobre el contenido completo del archivo) en lugar de depender únicamente de `st_mtime`, lo cual es propenso a errores en sistemas de archivos con baja resolución de tiempo o actualizaciones rápidas.
 - `2026-09-10T05:29:11` **memory.py** (rendimiento): Se optimizó `parse_windows_process_csv` reemplazando la creación de listas intermedias y el uso de `heapq.nlargest` (que requiere iterar todo el generador) por una lógica de filtrado y ordenamiento en una sola pasada, mejorando la eficiencia y legibilidad sin sacrificar la seguridad.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T04:58:40` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad técnica del módulo mediante la adición de Type Hints en la firma de `scan_directory` y la expansión de los docstrings en las funciones heurísticas para explicar explícitamente el "porqué" de las validaciones de seguridad.
 - `2026-09-10T04:58:28` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `ensure_safe_to_modify` extrayendo la lógica compleja de detección de redirecciones de reparse points (NTFS) a un método privado dedicado y bien documentado, facilitando su comprensión sin alterar la lógica de validación.
 - `2026-09-10T04:57:36` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `quarantine.py` mediante la refactorización de `_safe_unlink` y `_is_file_locked`, extrayendo la lógica de bloqueo a una función independiente (`_is_file_locked`) y añadiendo type hints y docstrings precisos que clarifican el flujo de seguridad, facilitando futuras auditorías.
-- `2026-09-10T04:38:18` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad del núcleo de escaneo mediante type hints explícitos, documentación con docstrings detallados que clarifican el flujo de datos y la eliminación de lógica redundante en la recursión, alineándose con las técnicas de mantenimiento de código robusto exigidas.
-- `2026-09-10T04:38:07` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad del motor de recolección (`_collect_summary_data`) documentando la lógica de manejo de errores y tipos de los tamaños de archivos, y clarifiqué las intenciones en el bloque del heap mediante una estructura más explícita, manteniendo la integridad del único recorrido.
-- `2026-09-10T04:37:38` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código mediante la adición de docstrings técnicos detallados en las funciones de recorrido, clarificando el propósito de los filtros de seguridad y los límites de profundidad para facilitar el mantenimiento y auditoría del módulo.
