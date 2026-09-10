@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 32
+- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 210
 
@@ -16,37 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 10 | 0 | 1 | 0 | 12 |
+| 2026-09-08 | 6 | 0 | 1 | 0 | 12 |
 | 2026-09-09 | 152 | 12 | 21 | 11 | 154 |
-| 2026-09-10 | 67 | 5 | 10 | 5 | 44 |
+| 2026-09-10 | 68 | 6 | 12 | 5 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
-- seguridad defensiva: **51**
 - manejo de errores y validación de entradas: **51**
-- rendimiento: **43**
+- seguridad defensiva: **47**
+- rendimiento: **44**
 - robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `duplicates.py`: **20**
 - `memory.py`: **20**
 - `settings.py`: **20**
+- `safety.py`: **19**
+- `duplicates.py`: **19**
 - `assistant.py`: **18**
 - `healthscore.py`: **18**
-- `safety.py`: **18**
-- `diskreport.py`: **17**
-- `browser.py`: **16**
 - `scanner.py`: **16**
-- `branding.py`: **13**
+- `diskreport.py`: **16**
+- `browser.py`: **15**
 - `organizer.py`: **12**
+- `branding.py`: **12**
 - `main.py`: **10**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T05:38:39` **safety.py** (rendimiento): Se optimizó el rendimiento del módulo mediante la implementación de un sistema de caché a nivel de módulo para `_is_system_path_cached` y `is_protected_path`, evitando la re-evaluación costosa de rutas en cada iteración del bucle, y se reemplazó la iteración sobre `PROTECTED_DIR_NAMES` por un check de `set` más eficiente (O(1)).
 - `2026-09-10T05:29:59` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante una caché basada en un hash del contenido del archivo de manifiesto (utilizando `hashlib.sha256` sobre el contenido completo del archivo) en lugar de depender únicamente de `st_mtime`, lo cual es propenso a errores en sistemas de archivos con baja resolución de tiempo o actualizaciones rápidas.
 - `2026-09-10T05:29:11` **memory.py** (rendimiento): Se optimizó `parse_windows_process_csv` reemplazando la creación de listas intermedias y el uso de `heapq.nlargest` (que requiere iterar todo el generador) por una lógica de filtrado y ordenamiento en una sola pasada, mejorando la eficiencia y legibilidad sin sacrificar la seguridad.
 - `2026-09-10T05:18:57` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global reemplazando la lógica de bucles con una comprensión de diccionario y pre-calculando los pesos totales para evitar operaciones redundantes, mejorando la eficiencia en cada ejecución.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T04:38:18` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad del núcleo de escaneo mediante type hints explícitos, documentación con docstrings detallados que clarifican el flujo de datos y la eliminación de lógica redundante en la recursión, alineándose con las técnicas de mantenimiento de código robusto exigidas.
 - `2026-09-10T04:38:07` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad del motor de recolección (`_collect_summary_data`) documentando la lógica de manejo de errores y tipos de los tamaños de archivos, y clarifiqué las intenciones en el bloque del heap mediante una estructura más explícita, manteniendo la integridad del único recorrido.
 - `2026-09-10T04:37:38` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código mediante la adición de docstrings técnicos detallados en las funciones de recorrido, clarificando el propósito de los filtros de seguridad y los límites de profundidad para facilitar el mantenimiento y auditoría del módulo.
-- `2026-09-10T04:37:10` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `draw_logo` para que utilice una estructura de datos clara en lugar de índices mágicos, y añadí docstrings detallados en las funciones de renderizado para explicar el flujo de transformación de coordenadas.

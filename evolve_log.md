@@ -1168,3 +1168,39 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-09-10T05:29:59` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` mediante una caché basada en un hash del contenido del archivo de manifiesto (utilizando `hashlib.sha256` sobre el contenido completo del archivo) en lugar de depender únicamente de `st_mtime`, lo cual es propenso a errores en sistemas de archivos con baja resolución de tiempo o actualizaciones rápidas.
 - `2026-09-10T05:29:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T05:29:59` Corrida terminada. Total usado hoy: 131.
+- `2026-09-10T05:37:46` Arrancando corrida. Quedan hoy ~169 peticiones objetivo.
+- `2026-09-10T05:38:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 99): unterminated string literal (detected at line 99)
+- `2026-09-10T05:38:39` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento del módulo mediante la implementación de un sistema de caché a nivel de módulo para `_is_system_path_cached` y `is_protected_path`, evitando la re-evaluación costosa de rutas en cada iteración del bucle, y se reemplazó la iteración sobre `PROTECTED_DIR_NAMES` por un check de `set` más eficiente (O(1)).
+- `2026-09-10T05:39:02` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._is_inside_base_root, Scanner._run_file_heuristics
+- `2026-09-10T05:39:16` Tests FALLARON:
+```
+........................... [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_a_protected_folder_is_never_remembered __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_a_protected_folder_is_nev0')
+
+    def test_a_protected_folder_is_never_remembered(tmp_path):
+        """Una preferencia mal puesta no puede terminar en un borrado en el sistema."""
+        peligrosa = str(tmp_path / "Windows" / "System32")
+        resultado = settings.validate({"ultima_carpeta": peligrosa})
+>       assert resultado["ultima_carpeta"] == ""
+E       AssertionError: assert '/tmp/pytest-...dows/System32' == ''
+E         
+E         + /tmp/pytest-of-runner/pytest-2/test_a_protected_folder_is_nev0/Windows/System32
+
+evolve/tests/test_assistant.py:119: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_a_protected_folder_is_never_remembered - AssertionError: assert '/tmp/pytest-...dows/System32' == ''
+  
+  + /tmp/pytest-of-runner/pytest-2/test_a_protected_folder_is_nev0/Windows/System32
+1 failed, 298 passed in 1.31s
+
+```
+- `2026-09-10T05:39:16` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimizé la validación de rutas mediante la implementación de un caché de resultados de seguridad (`_SAFETY_CACHE`) más robusto y agregué un mecanismo de validación temprana en `_is_safe_path` para evitar consultas innecesarias al sistema de archivos, mejorando significativamente el rendimiento al validar configuraciones frecuentemente.
+- `2026-09-10T05:39:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T05:39:16` Corrida terminada. Total usado hoy: 135.
