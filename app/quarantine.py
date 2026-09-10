@@ -142,7 +142,7 @@ class QuarantineItem:
         Args:
             stored_path: Ruta del archivo dentro del sandbox.
         """
-        if not stored_path: return False
+        if not stored_path or not stored_path.exists(): return False
         try:
             st = stored_path.stat()
             return (
@@ -599,8 +599,8 @@ def quarantine_file(
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna ítems validados presentes en el sandbox."""
-    base_path = quarantine_dir(base)
     try:
+        base_path = quarantine_dir(base)
         items = load_manifest(base)
         existing_files = {f.name for f in base_path.iterdir() if f.is_file()}
         return [

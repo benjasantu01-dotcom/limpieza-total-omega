@@ -368,13 +368,15 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
     try:
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
-            return False, f"Error {kernel32.GetLastError()}: imposible obtener estado del proceso."
+            err = kernel32.GetLastError()
+            return False, f"Imposible obtener estado del proceso (Error {err})."
+            
         if exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso no está activo."
             
         exec_path_str = _get_process_path(proc_handle)
         if not exec_path_str:
-            return False, "Acceso denegado o proceso protegido por sistema."
+            return False, "Acceso denegado o proceso del sistema."
         
         exec_path = Path(exec_path_str).resolve()
         path_str = str(exec_path)
@@ -407,7 +409,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
-        return False, f"Acceso denegado (código {kernel32.GetLastError()})."
+        err = kernel32.GetLastError()
+        reason = "Acceso denegado" if err == ERROR_ACCESS_DENIED else f"Error {err}"
+        return False, f"{reason} al abrir el proceso."
     
     try:
         is_safe, error_reason = _is_safe_to_trim(proc_handle)

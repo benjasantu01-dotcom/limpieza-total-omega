@@ -180,13 +180,16 @@ def _is_file_locked(path: Path) -> bool:
     
     if os.name == "nt":
         INVALID_HANDLE_VALUE = -1
+        # Se abre en modo lectura para testear bloqueo sin escribir
         handle = ctypes.windll.kernel32.CreateFileW(
-            str(path), 0x80000000, 0x7, None, 0x3, 0x80, None
+            str(path), 0x80000000, 0x1, None, 0x3, 0x80, None
         )
         if handle == INVALID_HANDLE_VALUE:
             return True
-        ctypes.windll.kernel32.CloseHandle(handle)
-        return False
+        try:
+            return False
+        finally:
+            ctypes.windll.kernel32.CloseHandle(handle)
     return False
 
 

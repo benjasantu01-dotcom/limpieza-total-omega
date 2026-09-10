@@ -1799,7 +1799,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return default
 
     def _collect_settings(self) -> AppSettings:
-        """Recopila ajustes de la UI."""
+        """Recopila ajustes de la UI con validación de seguridad de datos."""
         valores: AppSettings = dict(self.settings)  # type: ignore
         for clave, variable in self.setting_vars.items():
             try:
@@ -1825,7 +1825,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
                 clave_raw = self._safe_get_entry_value(self.api_key_entry, "")
                 if clave_raw:
-                    valores["asistente_clave_api"] = clave_raw
+                    valores["asistente_clave_api"] = "".join(c for c in clave_raw if c.isprintable())
         except Exception:
             pass
             
