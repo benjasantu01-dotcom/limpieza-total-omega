@@ -369,15 +369,29 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     except Exception: pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza la representación vectorial del escudo corporativo en el canvas."""
+    """
+    Renderiza la representación vectorial del escudo corporativo en el canvas.
+    Aplica una transformación de escala basada en un tamaño base de 128x128.
+    """
     try:
         s = float(size)
         if s <= 0: return
         scale = max(0.1, min(10.0, s / 128.0))
-        coords = _get_shield_coords(scale)
-        contorno = [canvas_x + coords[i] if i % 2 == 0 else canvas_y + coords[i] for i in range(len(coords))]
-        canvas.create_oval(canvas_x + 64 * scale - 75 * scale, canvas_y + 58 * scale - 75 * scale, canvas_x + 64 * scale + 75 * scale, canvas_y + 58 * scale + 75 * scale, fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
-        canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
+        
+        # Generar puntos del polígono desplazados al origen (canvas_x, canvas_y)
+        coords_raw = _get_shield_coords(scale)
+        poly_points: List[float] = []
+        for i in range(0, len(coords_raw), 2):
+            poly_points.extend([canvas_x + coords_raw[i], canvas_y + coords_raw[i+1]])
+            
+        # Dibujar elementos base del logo
+        canvas.create_oval(
+            canvas_x + 64 * scale - 75 * scale, canvas_y + 58 * scale - 75 * scale, 
+            canvas_x + 64 * scale + 75 * scale, canvas_y + 58 * scale + 75 * scale, 
+            fill=blend(C_SURFACE, C_GLOW, 0.15), outline=""
+        )
+        canvas.create_polygon(poly_points, fill=GRADIENT_STOPS[1], outline="")
+        
         _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
         _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, scale)
     except Exception: pass

@@ -355,9 +355,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Recolector central de estadísticas (motor de lectura única).
     
-    Optimiza el rendimiento evitando recorridos redundantes: calcula tamaños, 
-    conteos de extensiones y mantiene un heap para los archivos más grandes 
-    (si limit > 0) simultáneamente durante el recorrido de `walk_files`.
+    Procesa un único flujo de archivos, acumulando métricas globales y
+    manteniendo un heap de los archivos más grandes encontrados.
     """
     total_bytes = total_files = 0
     ext_sizes: Dict[str, int] = defaultdict(int)
@@ -365,27 +364,28 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        # Validar nuevamente que es un archivo antes de procesar
-        if not path.is_file():
-            continue
-            
+        # Asegurar que el tamaño sea un entero manejable
+        safe_size = int(size) if isinstance(size, (int, float)) else 0
+        
         try:
-            safe_size = int(size) if isinstance(size, (int, float)) else 0
             total_bytes += safe_size
             total_files += 1
             
-            # Captura de error en caso de fallo al leer suffix
+            # Normalizar extensión: manejar ausencia de sufijo
             extension = path.suffix.lower() if path.suffix else "(sin extensión)"
-            
             ext_sizes[extension] += safe_size
             ext_counts[extension] += 1
             
+            # Gestión del heap para encontrar los N archivos más grandes
             if limit > 0:
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (safe_size, path))
                 elif safe_size > top_heap[0][0]:
+                    # Reemplaza el más pequeño del top N si encontramos uno mayor
                     heapq.heapreplace(top_heap, (safe_size, path))
+                    
         except (OSError, AttributeError, TypeError):
+            # Ignorar errores de metadatos puntuales durante el escaneo
             continue
             
     return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_heap)

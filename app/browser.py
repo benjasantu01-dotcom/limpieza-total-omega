@@ -99,6 +99,7 @@ class BrowserCache:
 def _get_kernel32() -> Optional[ctypes.WinDLL]:
     """
     Carga kernel32.dll para acceder a atributos de archivo de bajo nivel.
+    Retorna None si no es Windows o si la carga falla.
     """
     if os.name != 'nt':
         return None
@@ -116,6 +117,7 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
 def base_directories() -> List[Path]:
     """
     Determina la ruta raíz de perfiles de usuario (%LOCALAPPDATA%).
+    Valida la existencia y seguridad de la ruta antes de retornarla.
     """
     local_env = os.environ.get("LOCALAPPDATA")
     if not isinstance(local_env, str) or not local_env:
@@ -133,6 +135,7 @@ def base_directories() -> List[Path]:
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
     Verifica mediante resolución absoluta que la ruta objetivo esté bajo la base.
+    Previene el escape de directorios mediante enlaces simbólicos o rutas relativas.
     """
     try:
         target_res = real_target.resolve(strict=True)
@@ -161,7 +164,10 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
-    """Aplica filtros heurísticos de seguridad para saltar entradas peligrosas."""
+    """
+    Aplica filtros de seguridad: omite rutas prohibidas, symlinks, junctions,
+    montajes de disco y archivos con atributos de sistema/oculto.
+    """
     if entry is None or not hasattr(entry, 'name') or _is_excluded_file(entry.name):
         return True
         
@@ -182,7 +188,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
-    """Validación holística de seguridad para una ruta antes de recorrerla."""
+    """Validación holística: asegura que la ruta sea segura, exista y resida bajo la base esperada."""
     try:
         if not path_obj.exists():
             return False
@@ -204,7 +210,10 @@ def _sum_directory_recursive(
     base_check_path: Optional[Path] = None,
     depth: int = 0
 ) -> int:
-    """Cálculo recursivo de tamaño de directorio usando memorización."""
+    """
+    Cálculo de tamaño de directorio mediante recorrido DFS con control de profundidad.
+    Utiliza un diccionario 'memo' para evitar ciclos y redundantemente procesar rutas ya calculadas.
+    """
     if not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
     
@@ -250,7 +259,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
-    """Verifica que la carpeta sea una ubicación de caché legítima."""
+    """Verifica si una carpeta candidata es una ubicación de caché legítima y segura."""
     try:
         if not candidate.exists() or not candidate.is_dir():
             return False

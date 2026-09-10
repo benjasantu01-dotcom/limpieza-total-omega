@@ -84,7 +84,6 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         
     try:
         path_obj = Path(path).resolve(strict=True)
-        # Verificación doble por condiciones de carrera
         if not _is_valid_candidate(path_obj) or path_obj.stat().st_size == 0:
             return None
             
@@ -128,7 +127,6 @@ def _is_valid_candidate(path: Path) -> bool:
         resolved = path.resolve(strict=True)
         if not resolved.is_file() or resolved.is_symlink() or is_junction(resolved):
             return False
-        # Verificación de integridad: el archivo debe ser accesible y no un hardlink (st_nlink=1)
         st = resolved.stat()
         return (
             not is_protected_path(resolved) and 
@@ -177,40 +175,39 @@ def _collect_candidates(
     min_size: int, 
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
-    """Realiza un escaneo recursivo del sistema para identificar candidatos a duplicados."""
+    """
+    Escaneo recursivo del sistema recolectando candidatos por tamaño.
+    Mantiene un set 'visited' para evitar bucles infinitos en enlaces circulares.
+    """
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[str] = set()
 
     def _scan_directory_recursive(current_dir: Path) -> None:
         try:
-            path_str = str(current_dir.resolve(strict=False))
-            if path_str in visited or is_protected_path(current_dir):
+            resolved_dir = current_dir.resolve(strict=False)
+            dir_key = str(resolved_dir)
+            if dir_key in visited or is_protected_path(current_dir):
                 return
-            visited.add(path_str)
+            visited.add(dir_key)
             
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    try:
-                        if entry.is_dir(follow_symlinks=False):
-                            if not is_junction(Path(entry.path)):
-                                _scan_directory_recursive(Path(entry.path))
-                        elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat()
-                            if st.st_size >= min_size:
-                                path_obj = Path(entry.path)
-                                if _is_valid_candidate(path_obj):
-                                    size_map[st.st_size].append(path_obj)
-                    except (OSError, PermissionError):
-                        continue
+                    if entry.is_dir(follow_symlinks=False):
+                        if not is_junction(Path(entry.path)):
+                            _scan_directory_recursive(Path(entry.path))
+                    elif entry.is_file(follow_symlinks=False):
+                        st = entry.stat()
+                        if st.st_size >= min_size:
+                            path_obj = Path(entry.path)
+                            if _is_valid_candidate(path_obj):
+                                size_map[st.st_size].append(path_obj)
         except (OSError, PermissionError, FileNotFoundError, RuntimeError):
             return
 
     if isinstance(directories, Iterable):
         for item in directories:
-            if item:
-                resolved = _resolve_and_verify_root(item)
-                if resolved:
-                    _scan_directory_recursive(resolved)
+            if (resolved := _resolve_and_verify_root(item)):
+                _scan_directory_recursive(resolved)
             
     return {size: files for size, files in size_map.items() if len(files) > 1}
 
@@ -225,7 +222,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
-    """Aplica un refinamiento de hashing en dos fases: parcial primero, luego completo."""
+    """Refina grupos candidatos: aplica hashing parcial rápido y luego SHA256 completo."""
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
     
@@ -237,18 +234,11 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """
-    Selecciona la estrategia de hashing según el tamaño:
-    - Archivos pequeños (<= PARTIAL_READ_BYTES): basta con hash parcial.
-    - Archivos grandes: requiere refinamiento mediante hash completo para asegurar identidad.
-    """
-    if not isinstance(size, int) or size <= 0 or not paths or len(paths) < 2: 
+    """Selecciona estrategia de hashing según tamaño para optimizar rendimiento."""
+    if size <= 0 or len(paths) < 2: 
         return []
     
-    if size <= PARTIAL_READ_BYTES:
-        results = _group_paths_by_hash(paths, partial_hash)
-    else:
-        results = _refine_by_deep_hash(paths)
+    results = _group_paths_by_hash(paths, partial_hash) if size <= PARTIAL_READ_BYTES else _refine_by_deep_hash(paths)
         
     return [DuplicateGroup(digest, size, sorted(confirmed_paths)) for digest, confirmed_paths in results.items()]
 
@@ -261,11 +251,10 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
         return []
         
     groups: List[DuplicateGroup] = []
-    
     size_map = _collect_candidates(directories, min_size, skip_protected)
+    
     for size, paths in size_map.items():
-        if isinstance(size, int) and isinstance(paths, list):
-            groups.extend(_decide_hash_strategy_and_process(size, paths))
+        groups.extend(_decide_hash_strategy_and_process(size, paths))
         
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
     return groups
@@ -292,10 +281,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         except (OSError, PermissionError):
             continue
     
-    if not candidates:
-        return None
-        
-    return min(candidates, key=lambda x: (x[0], x[1]))[2]
+    return min(candidates, key=lambda x: (x[0], x[1]))[2] if candidates else None
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
