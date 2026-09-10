@@ -679,3 +679,37 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-09-10T00:33:40` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica y la mantenibilidad de `StartupEntry` añadiendo type hints faltantes en los métodos de validación y enriqueciendo los docstrings para clarificar el propósito de seguridad de cada lógica de filtrado.
 - `2026-09-10T00:33:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T00:33:40` Corrida terminada. Total usado hoy: 16.
+- `2026-09-10T00:42:17` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-09-10T00:42:56` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `_get_active_problems` eliminando la recreación de listas y búsquedas repetitivas mediante la pre-compilación de criterios y el uso de `lru_cache`, evitando recálculos costosos cada vez que se pregunta por el estado del sistema.
+- `2026-09-10T00:43:56` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-10T00:44:32` Tests FALLARON:
+```
+..................F................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+____________________ test_logo_draws_a_gradient_and_a_halo _____________________
+
+    def test_logo_draws_a_gradient_and_a_halo():
+        canvas = _CanvasFalso()
+        branding.draw_logo(canvas, size=72)
+        assert "oval" in canvas.llamadas, "falta el halo detrás del escudo"
+>       assert "rectangle" in canvas.llamadas, "falta el degradado del escudo"
+E       AssertionError: falta el degradado del escudo
+E       assert 'rectangle' in ['oval', 'polygon', 'line', 'line', 'line', 'line', ...]
+E        +  where ['oval', 'polygon', 'line', 'line', 'line', 'line', ...] = <test_modules._CanvasFalso object at 0x7f5c82c7c470>.llamadas
+
+evolve/tests/test_modules.py:273: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - AssertionError: falta el degradado del escudo
+assert 'rectangle' in ['oval', 'polygon', 'line', 'line', 'line', 'line', ...]
+ +  where ['oval', 'polygon', 'line', 'line', 'line', 'line', ...] = <test_modules._CanvasFalso object at 0x7f5c82c7c470>.llamadas
+1 failed, 298 passed in 1.00s
+
+```
+- `2026-09-10T00:44:32` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del sistema de renderizado delegando la creación de rectángulos de franjas decorativas a una única llamada `canvas.create_line` con `width` variable en `_draw_shield_stripes`, reduciendo drásticamente la carga de objetos en el Canvas y eliminando cálculos redundantes dentro del bucle de dibujo.
+- `2026-09-10T00:44:58` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-09-10T00:45:10` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-10T00:45:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T00:45:10` Corrida terminada. Total usado hoy: 20.
