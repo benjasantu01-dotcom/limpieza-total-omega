@@ -517,6 +517,30 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         raise RuntimeError(f"Error durante aislamiento: {e}")
 
 
+def _register_quarantine_item(
+    destination: Path,
+    source_path: Path,
+    file_hash: str,
+    reason: str,
+    original_size: int,
+    base: PathLike
+) -> QuarantineItem:
+    """Registra y persiste el ítem en el manifiesto tras aislamiento exitoso."""
+    items_list = load_manifest(base)
+    quarantine_item = QuarantineItem(
+        item_id=uuid.uuid4().hex[:12],
+        original_path=str(source_path),
+        stored_name=destination.name,
+        size_bytes=original_size,
+        reason=str(reason) if reason else "Sin motivo",
+        quarantined_at=datetime.now().isoformat(timespec="seconds"),
+        sha256=file_hash,
+    )
+    items_list.append(quarantine_item)
+    save_manifest(items_list, base)
+    return quarantine_item
+
+
 def quarantine_file(
     source: PathLike,
     reason: str = "Marcado como sospechoso",
@@ -556,37 +580,19 @@ def quarantine_file(
     if not source_hash:
         raise RuntimeError("No se pudo calcular firma digital.")
     
-    item_id = uuid.uuid4().hex[:12]
-    destination = dest_dir / _generate_safe_stored_name(source_path, item_id)
+    destination = dest_dir / _generate_safe_stored_name(source_path, uuid.uuid4().hex[:12])
     
     try:
         file_hash = _atomic_isolate_file(source_path, destination, original_size)
-    except Exception:
-        if destination.exists():
-            _safe_unlink(destination)
-        raise
-
-    try:
-        items_list = load_manifest(dest_dir)
-        quarantine_item = QuarantineItem(
-            item_id=item_id,
-            original_path=str(source_path),
-            stored_name=destination.name,
-            size_bytes=original_size,
-            reason=str(reason) if reason else "Sin motivo",
-            quarantined_at=datetime.now().isoformat(timespec="seconds"),
-            sha256=file_hash,
-        )
-        items_list.append(quarantine_item)
-        save_manifest(items_list, base)
+        item = _register_quarantine_item(destination, source_path, file_hash, reason, original_size, base)
         
-        if destination.exists() and quarantine_item.verify_integrity(destination):
+        if item.verify_integrity(destination):
             try:
                 source_path.unlink()
             except OSError as e:
                 _safe_unlink(destination)
                 raise RuntimeError(f"Falla al eliminar original: {e}")
-            return quarantine_item
+            return item
         else:
             raise RuntimeError("Fallo de integridad post-persistencia.")
     except Exception:
