@@ -110,8 +110,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae y valida una ruta absoluta desde una cadena de comando entrecomillada.
-        Implementa verificación contra `is_protected_path` para evitar acceso a zonas restringidas.
+        Extracts and validates an absolute path from a quoted command string.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -150,7 +149,6 @@ class StartupEntry:
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
         Normaliza una ruta, valida contra listas de seguridad y almacena el resultado en caché.
-        Previene la resolución recursiva mediante strict=False.
         """
         if not path_string or self._is_path_suspicious(path_string) or self._is_reserved_device_name(path_string):
             return ""
@@ -234,25 +232,21 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
     scan_folders = folders if folders is not None else startup_folders()
     
     for folder in scan_folders:
-        folder_path = str(folder)
         try:
-            if not os.path.isdir(folder_path):
-                continue
-            with os.scandir(folder_path) as it:
+            with os.scandir(folder) as it:
                 for entry in it:
-                    try:
-                        if entry.is_file(follow_symlinks=False):
-                            ext = os.path.splitext(entry.name)[1].lower()
-                            if ext in EXECUTABLE_EXTS:
-                                if not is_protected_path(Path(entry.path)):
-                                    found_entries.append(StartupEntry(
-                                        name="".join(c for c in os.path.splitext(entry.name)[0] if ord(c) >= 32),
-                                        command=entry.path,
-                                        source="carpeta"
-                                    ))
-                    except (OSError, PermissionError):
-                        continue
-        except (OSError, PermissionError, ValueError):
+                    if entry.is_file(follow_symlinks=False):
+                        _, ext = os.path.splitext(entry.name)
+                        if ext.lower() in EXECUTABLE_EXTS:
+                            if not is_protected_path(Path(entry.path)):
+                                name = os.path.splitext(entry.name)[0]
+                                clean_name = "".join(c for c in name if ord(c) >= 32)
+                                found_entries.append(StartupEntry(
+                                    name=clean_name,
+                                    command=entry.path,
+                                    source="carpeta"
+                                ))
+        except (OSError, PermissionError):
             continue
     return found_entries
 
@@ -260,7 +254,6 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
     """
     Parsea la salida CSV del registro de Windows (PowerShell) mediante filtros de seguridad.
-    Descarta entradas corruptas, comandos de PowerShell (PS*) y rutas protegidas.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -278,29 +271,24 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f_name, f_cmd = reader.fieldnames[0], reader.fieldnames[1]
             
         for row in reader:
-            if not isinstance(row, dict):
-                continue
+            if not isinstance(row, dict): continue
             
             val_name = row.get(f_name)
             val_cmd = row.get(f_cmd)
             
-            if not isinstance(val_name, str) or not isinstance(val_cmd, str):
-                continue
+            if not isinstance(val_name, str) or not isinstance(val_cmd, str): continue
                 
-            name: str = "".join(c for c in val_name if ord(c) >= 32).strip()
-            cmd: str = "".join(c for c in val_cmd if ord(c) >= 32).strip()
+            name = "".join(c for c in val_name if ord(c) >= 32).strip()
+            cmd = "".join(c for c in val_cmd if ord(c) >= 32).strip()
             
-            if not name or not cmd or cmd.startswith(r"\\") or cmd in seen_commands:
-                continue
-            if name.upper().startswith("PS"):
+            if not name or not cmd or cmd.startswith(r"\\") or cmd in seen_commands or name.upper().startswith("PS"):
                 continue
             
             try:
                 p_cmd: Path = Path(cmd)
                 if not p_cmd.parts or is_protected_path(p_cmd):
                     continue
-            except (ValueError, TypeError):
-                continue
+            except (ValueError, TypeError): continue
                 
             seen_commands.add(cmd)
             parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
@@ -311,10 +299,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
 
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
-    """
-    Consulta las claves de registro Run mediante una ejecución aislada de PowerShell.
-    Es un proceso de solo lectura y no requiere privilegios elevados.
-    """
+    """Consulta las claves de registro Run mediante una ejecución aislada de PowerShell."""
     if os.name != "nt":
         return []
     
@@ -327,7 +312,7 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
             capture_output=True, text=True, timeout=30,
         )
         if result.returncode == 0 and result.stdout:
-            clean_out: str = "".join(c for c in result.stdout if ord(c) >= 32 or c in "\r\n")
+            clean_out = "".join(c for c in result.stdout if ord(c) >= 32 or c in "\r\n")
             return parse_registry_csv(clean_out)
     except (OSError, subprocess.SubprocessError):
         pass
@@ -344,7 +329,7 @@ def list_startup_entries() -> List[StartupEntry]:
     unique_entries: List[StartupEntry] = []
     
     for entry in itertools.chain(entries_from_folders(), entries_from_registry()):
-        key: Tuple[str, str] = (entry.name.lower(), entry.command.lower())
+        key = (entry.name.lower(), entry.command.lower())
         if key not in seen_items:
             seen_items.add(key)
             unique_entries.append(entry)

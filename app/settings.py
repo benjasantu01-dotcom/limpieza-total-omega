@@ -183,9 +183,11 @@ class _Validators:
     def _is_safe_path(path_str: str) -> bool:
         """Verifica que el string de ruta sea absoluto, saneado contra null-bytes y seguro para I/O."""
         if not path_str or len(path_str) > 2048 or "\0" in path_str: return False
+        if path_str in _SAFETY_CACHE: return _SAFETY_CACHE[path_str]
         try:
             p = Path(path_str).expanduser()
-            return p.is_absolute() and _Validators._run_safety_checks(p)
+            if not p.is_absolute(): return False
+            return _Validators._run_safety_checks(p)
         except (OSError, RuntimeError, PermissionError, AttributeError, ValueError):
             return False
 

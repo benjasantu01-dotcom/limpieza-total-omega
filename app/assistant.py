@@ -297,12 +297,15 @@ class SystemContext:
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> bool:
         """Valida y aplica una métrica individual si cumple las restricciones."""
-        val = _get_source_value(source, key)
-        if val is not None and spec.is_valid_type(val):
-            f_val = float(val)
-            if math.isfinite(f_val) and spec.min_val <= f_val <= spec.max_val:
-                setattr(self, key, spec.cast_func(val))
-                return True
+        try:
+            val = _get_source_value(source, key)
+            if val is not None and spec.is_valid_type(val):
+                f_val = float(val)
+                if math.isfinite(f_val) and spec.min_val <= f_val <= spec.max_val:
+                    setattr(self, key, spec.cast_func(val))
+                    return True
+        except (ValueError, TypeError):
+            return False
         return False
 
     def ingest(self, source: Any) -> bool:
