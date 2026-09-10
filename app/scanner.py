@@ -177,9 +177,10 @@ class Scanner:
                     self._handle_directory(entry, directory_stack)
                 return
 
-            ext = os.path.splitext(entry.name)[1].lower()
-            if ext in SUSPICIOUS_ALL_EXTS:
-                self._run_file_heuristics(Path(entry.path), entry, ext)
+            if entry.is_file(follow_symlinks=False):
+                ext = os.path.splitext(entry.name)[1].lower()
+                if ext in SUSPICIOUS_ALL_EXTS:
+                    self._run_file_heuristics(Path(entry.path), entry, ext)
         except (OSError, PermissionError, FileNotFoundError):
             return
 

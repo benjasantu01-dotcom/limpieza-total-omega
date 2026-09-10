@@ -172,13 +172,14 @@ class _Validators:
             return _SAFETY_CACHE[path_str]
         
         try:
-            resolved = path_obj.resolve()
-            # Validar integridad: ensure_safe_to_modify lanza error si el path es de sistema
+            # resolve() puede fallar si la ruta no existe, por eso buscamos el padre existente
+            anchor = path_obj if path_obj.exists() else path_obj.parents[0]
+            resolved = anchor.resolve()
             ensure_safe_to_modify(str(resolved))
             is_safe = not _Validators._is_reparse_point(resolved) and \
                       not is_protected_path(str(resolved)) and \
                       is_safe_to_modify(str(resolved))
-        except (OSError, PermissionError, RuntimeError, UnsafePathError):
+        except (OSError, PermissionError, RuntimeError, UnsafePathError, IndexError):
             is_safe = False
             
         _SAFETY_CACHE[path_str] = is_safe
