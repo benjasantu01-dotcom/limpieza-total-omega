@@ -168,7 +168,6 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
             continue
         try:
             key, value_part = line.split(":", 1)
-            # Extraer solo dígitos de la parte del valor, ignorando sufijos como 'kB'
             digits = "".join(c for c in value_part if c.isdigit())
             if digits:
                 metrics[key.strip()] = int(digits) * 1024
@@ -347,9 +346,10 @@ def _get_process_path(proc_handle: int) -> Optional[str]:
     
     buf = ctypes.create_unicode_buffer(4096)
     try:
+        # Se requiere un buffer válido y handle abierto con privilegios adecuados
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 4096) > 0:
             return str(buf.value)
-    except (OSError, ctypes.ArgumentError, ValueError):
+    except (OSError, ctypes.ArgumentError, ValueError, MemoryError):
         pass
     return None
 
@@ -371,7 +371,8 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
             
         exec_path = _get_process_path(proc_handle)
         if not exec_path:
-            return False, "No se pudo verificar el origen del proceso."
+            # Si el handle existe pero no podemos leer su path, es una operación de riesgo incierto
+            return False, "Acceso denegado o proceso protegido por sistema."
         
         # Validación de seguridad: no modificar procesos protegidos ni fuera de política
         if is_protected_path(exec_path) or not is_safe_to_modify(exec_path):

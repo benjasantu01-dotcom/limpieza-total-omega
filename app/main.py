@@ -1561,6 +1561,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
             return
         
+        # Validar si es un proceso del sistema para evitar errores de permisos
         if pid < 100:
             self.log(f"Error: PID {pid} es un proceso protegido del sistema.", "Memoria")
             return
@@ -1569,7 +1570,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            self._ensure_path_writable_and_clean(Path.home())
             if not memory_mod.process_exists(pid):
                 self._safe_run_ui_callback(lambda: self.log(f"Error: El proceso {pid} ya no está activo.", "Memoria"))
                 return

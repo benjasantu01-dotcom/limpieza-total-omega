@@ -749,3 +749,10 @@ assert 'rectangle' in ['oval', 'polygon', 'line', 'line', 'line', 'line', ...]
 - `2026-09-10T01:24:49` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `suggest_keeper` y `format_group` para manejar situaciones donde el archivo indicado como "keeper" es inaccesible o fue eliminado del disco durante la ejecución, evitando que el sistema falle silenciosamente o sugiera una ruta inexistente como referencia válida.
 - `2026-09-10T01:24:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T01:24:49` Corrida terminada. Total usado hoy: 36.
+- `2026-09-10T01:33:17` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-09-10T01:33:45` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Reforcé la robustez del cálculo de puntajes añadiendo una verificación de finitud en el resultado de `scorer(metrics)` dentro del bucle principal de `compute_score`, previniendo que valores no numéricos o `NaN` resultantes de posibles errores de cálculo en los normalizadores propaguen estados inválidos al puntaje final.
+- `2026-09-10T01:34:57` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `on_trim_process` añadiendo una validación explícita de `psutil` (usando `memory_mod.process_exists`) y asegurando que la operación solo proceda si el proceso no es protegido, mitigando errores de concurrencia y permisos en procesos críticos.
+- `2026-09-10T01:35:26` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `trim_working_set` y `_get_process_path` para prevenir fallos por manejadores de procesos nulos, excepciones durante la interacción con APIs de Win32 y bloqueos inesperados al manipular rutas de sistema inaccesibles.
+- `2026-09-10T01:35:37` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-10T01:35:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T01:35:37` Corrida terminada. Total usado hoy: 40.

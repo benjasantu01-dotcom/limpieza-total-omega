@@ -233,6 +233,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for area, weight, scorer, rules in _CACHE_SCORERS:
         try:
             ratio = scorer(metrics)
+            if not math.isfinite(ratio):
+                ratio = 0.0
+            
             pts = int(round(_clamp(ratio * weight, 0, weight)))
             metric_breakdown[area] = pts
             total_pts += pts

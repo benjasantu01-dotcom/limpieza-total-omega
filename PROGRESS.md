@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 58 | 3 | 7 | 1 | 49 |
+| 2026-09-08 | 55 | 3 | 7 | 1 | 48 |
 | 2026-09-09 | 152 | 12 | 21 | 11 | 154 |
-| 2026-09-10 | 24 | 2 | 5 | 1 | 4 |
+| 2026-09-10 | 27 | 2 | 5 | 1 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **53**
 - rendimiento: **47**
-- seguridad defensiva: **45**
-- robustez ante casos límite: **35**
+- seguridad defensiva: **42**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **21**
-- `settings.py`: **20**
-- `memory.py`: **20**
+- `memory.py`: **21**
 - `quarantine.py`: **20**
-- `safety.py`: **19**
 - `assistant.py`: **19**
-- `scanner.py`: **18**
+- `healthscore.py`: **19**
+- `settings.py`: **19**
 - `diskreport.py`: **18**
-- `healthscore.py`: **18**
+- `safety.py`: **18**
+- `scanner.py`: **17**
 - `browser.py`: **14**
 - `organizer.py`: **14**
+- `main.py`: **12**
 - `branding.py`: **12**
-- `main.py`: **11**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T01:35:26` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` y `_get_process_path` para prevenir fallos por manejadores de procesos nulos, excepciones durante la interacción con APIs de Win32 y bloqueos inesperados al manipular rutas de sistema inaccesibles.
+- `2026-09-10T01:34:57` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_trim_process` añadiendo una validación explícita de `psutil` (usando `memory_mod.process_exists`) y asegurando que la operación solo proceda si el proceso no es protegido, mitigando errores de concurrencia y permisos en procesos críticos.
+- `2026-09-10T01:33:45` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del cálculo de puntajes añadiendo una verificación de finitud en el resultado de `scorer(metrics)` dentro del bucle principal de `compute_score`, previniendo que valores no numéricos o `NaN` resultantes de posibles errores de cálculo en los normalizadores propaguen estados inválidos al puntaje final.
 - `2026-09-10T01:24:49` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `suggest_keeper` y `format_group` para manejar situaciones donde el archivo indicado como "keeper" es inaccesible o fue eliminado del disco durante la ejecución, evitando que el sistema falle silenciosamente o sugiera una ruta inexistente como referencia válida.
 - `2026-09-10T01:24:38` **diskreport.py** (robustez ante casos límite): Se ha robustecido el motor de escaneo `_collect_summary_data` (y por extensión `walk_files`) para manejar correctamente archivos con tamaño de 0 bytes o lecturas fallidas que retornen `None` o valores inesperados, evitando excepciones innecesarias en el reporte.
 - `2026-09-10T01:24:09` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_get_kernel32` al implementar un bloqueo preventivo del archivo `kernel32.dll` mediante el uso de `ctypes.WinDLL` con `use_last_error=True`, asegurando que no se intente acceder a atributos de archivo en condiciones donde la DLL no está cargable o el sistema no es Windows, evitando excepciones no controladas durante el escaneo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T00:54:51` **memory.py** (rendimiento): Optimizé `parse_windows_process_csv` para evitar la creación de una lista intermedia y el uso de `sorted` con una función `lambda` dentro de cada llamada, utilizando en su lugar un `heapq.nlargest` para obtener solo los procesos más pesados de forma eficiente (O(N log K) en lugar de O(N log N)).
 - `2026-09-10T00:53:25` **healthscore.py** (rendimiento): Optimicé el bucle de cálculo en `compute_score` eliminando la búsqueda repetitiva por clave en diccionarios y cacheando el acceso a las reglas de recomendación, además de reemplazar la creación de listas temporales en el resumen por un generador eficiente.
 - `2026-09-10T00:52:55` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` eliminando la resolución redundante de rutas dentro del bucle mediante el uso de `os.scandir` (que ya proporciona atributos `stat`), lo que reduce drásticamente las llamadas a `os.stat` y las consultas al sistema de archivos al evitar `path_obj.stat()` y múltiples `resolve()` innecesarios por cada archivo detectado.
-- `2026-09-10T00:33:40` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad de `StartupEntry` añadiendo type hints faltantes en los métodos de validación y enriqueciendo los docstrings para clarificar el propósito de seguridad de cada lógica de filtrado.
-- `2026-09-10T00:33:28` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la actualización de los docstrings en las funciones críticas de validación, clarificando explícitamente el flujo de control y la responsabilidad de cada método dentro de `_Validators`.
-- `2026-09-10T00:32:59` **scanner.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en los métodos de `Scanner` y funciones auxiliares, clarificando las responsabilidades de cada componente heurístico y el manejo de excepciones, asegurando el cumplimiento con los estándares de documentación exigidos.
