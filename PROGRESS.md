@@ -5,33 +5,33 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **242** (48.0% de aceptación)
+- Iteraciones totales: **503**
+- Mejoras aceptadas: **243** (48.3% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 196
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 55 | 3 | 7 | 1 | 36 |
+| 2026-09-08 | 55 | 3 | 7 | 1 | 32 |
 | 2026-09-09 | 152 | 12 | 21 | 11 | 154 |
-| 2026-09-10 | 35 | 3 | 6 | 2 | 6 |
+| 2026-09-10 | 36 | 3 | 6 | 2 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **53**
+- seguridad defensiva: **48**
 - rendimiento: **47**
-- seguridad defensiva: **47**
 - robustez ante casos límite: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **22**
-- `memory.py`: **21**
+- `memory.py`: **22**
 - `quarantine.py`: **21**
 - `assistant.py`: **20**
 - `healthscore.py`: **20**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T02:19:10` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_to_trim` implementando una validación estricta de rutas mediante `Path.resolve()` antes de consultar `is_safe_to_modify`, previniendo así posibles ataques de "path traversal" o resolución de enlaces simbólicos malintencionados que intentaran evadir los filtros de seguridad.
 - `2026-09-10T02:06:16` **healthscore.py** (seguridad defensiva): Se reforzó la robustez defensiva de `SystemMetrics` y `compute_score` validando que las métricas sean tipos numéricos estrictos y verificando explícitamente la finitud del ratio calculado antes de procesar reglas o agregar puntos, previniendo estados inconsistentes.
 - `2026-09-10T02:05:15` **duplicates.py** (seguridad defensiva): Se ha robustecido `_is_valid_candidate` añadiendo una verificación explícita de `st_size` mediante `os.stat` antes de procesar el archivo, garantizando que no se intenten realizar operaciones de lectura sobre archivos que, debido a condiciones de carrera, hayan sido eliminados o truncados a tamaño cero entre la exploración inicial y la validación.
 - `2026-09-10T02:04:49` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_collect_summary_data` y las funciones auxiliares mediante la validación explícita de `Path.is_file()` antes de procesar archivos, evitando errores de acceso o intentos de lectura sobre rutas que cambiaron de estado o son dispositivos especiales durante el recorrido.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T01:24:49` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `suggest_keeper` y `format_group` para manejar situaciones donde el archivo indicado como "keeper" es inaccesible o fue eliminado del disco durante la ejecución, evitando que el sistema falle silenciosamente o sugiera una ruta inexistente como referencia válida.
 - `2026-09-10T01:24:38` **diskreport.py** (robustez ante casos límite): Se ha robustecido el motor de escaneo `_collect_summary_data` (y por extensión `walk_files`) para manejar correctamente archivos con tamaño de 0 bytes o lecturas fallidas que retornen `None` o valores inesperados, evitando excepciones innecesarias en el reporte.
 - `2026-09-10T01:24:09` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_get_kernel32` al implementar un bloqueo preventivo del archivo `kernel32.dll` mediante el uso de `ctypes.WinDLL` con `use_last_error=True`, asegurando que no se intente acceder a atributos de archivo en condiciones donde la DLL no está cargable o el sistema no es Windows, evitando excepciones no controladas durante el escaneo.
-- `2026-09-10T01:20:29` **assistant.py** (robustez ante casos límite): Mejora la robustez del manejo de métricas en `SystemContext.ingest` y `ProblemCriterion.format_if_triggered` al añadir validaciones ante valores `None` o inesperados, evitando que la ejecución se detenga por excepciones durante la iteración sobre fuentes externas.

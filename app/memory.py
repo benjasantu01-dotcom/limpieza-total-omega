@@ -369,17 +369,17 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
         if exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso no está activo."
             
-        exec_path = _get_process_path(proc_handle)
-        if not exec_path:
-            # Si el handle existe pero no podemos leer su path, es una operación de riesgo incierto
+        exec_path_str = _get_process_path(proc_handle)
+        if not exec_path_str:
             return False, "Acceso denegado o proceso protegido por sistema."
         
-        # Validación de seguridad: no modificar procesos protegidos ni fuera de política
-        if is_protected_path(exec_path) or not is_safe_to_modify(exec_path):
+        # Validación de seguridad: resolución de ruta absoluta y chequeo de política
+        exec_path = Path(exec_path_str).resolve()
+        if is_protected_path(str(exec_path)) or not is_safe_to_modify(str(exec_path)):
             return False, "Operación denegada por política de seguridad."
             
         return True, None
-    except (AttributeError, ValueError, ctypes.ArgumentError):
+    except (AttributeError, ValueError, ctypes.ArgumentError, OSError):
         return False, "Error interno durante la verificación de integridad."
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
