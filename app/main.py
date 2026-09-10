@@ -1764,10 +1764,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @validated_ui_operation
     def on_ask_assistant(self, question: Optional[str] = None) -> None:
         """Envía pregunta al asistente IA."""
-        entry_val = ""
-        if hasattr(self, 'question_entry') and self.question_entry.winfo_exists():
-            entry_val = self.question_entry.get()
+        if not hasattr(self, 'question_entry') or not self.question_entry.winfo_exists():
+            return
             
+        entry_val = self.question_entry.get()
         texto = (question or entry_val).strip()
         texto = "".join(c for c in texto if c.isprintable())[:500]
         
@@ -1775,7 +1775,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log("Escribí una pregunta válida.", "Asistente")
             return
         
-        if question is None and hasattr(self, 'question_entry') and self.question_entry.winfo_exists():
+        if question is None:
             self.question_entry.delete(0, "end")
 
         def task() -> None:
@@ -1836,6 +1836,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Persiste configuración de ajustes."""
         try:
             propuestos = self._collect_settings()
+            
+            # Validación de seguridad antes de procesar cambios del asistente
             if propuestos.get("asistente_activado") and not self.settings.get("asistente_activado"):
                 if not self._confirm(
                     "Activar asistente en línea",

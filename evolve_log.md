@@ -567,3 +567,11 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-10T10:24:59` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` ante estados inesperados de los datos de origen (como valores infinitos o NaN generados por errores de sensores externos) reforzando la validación en `__post_init__` y asegurando que `_to_float` maneje de forma explícita el caso de `float('inf')` o `nan`.
 - `2026-09-10T10:24:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T10:24:59` Corrida terminada. Total usado hoy: 247.
+- `2026-09-10T10:33:32` Arrancando corrida. Quedan hoy ~53 peticiones objetivo.
+- `2026-09-10T10:34:35` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-10T10:35:52` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `on_ask_assistant` y `on_save_settings` validando la existencia de los widgets antes de intentar leer o modificar sus valores, evitando errores de `TclError` si la pestaña Ajustes o Asistente no han sido cargadas mediante la carga perezosa.
+- `2026-09-10T10:36:22` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejora la robustez de `top_memory_processes` añadiendo una validación explícita para evitar que la ejecución de `powershell` falle si el sistema está bajo alta presión de I/O o si el comando retorna una salida malformada, asegurando que no se inyecten datos inválidos al caché tras errores parciales.
+- `2026-09-10T10:36:52` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-10T10:37:13` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `purge_all` y `list_items` para que no colapsen ante errores de sistema al iterar sobre la carpeta de cuarentena, añadiendo manejo de excepciones específico para archivos que pudieran haber sido bloqueados o eliminados externamente durante el proceso.
+- `2026-09-10T10:37:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T10:37:13` Corrida terminada. Total usado hoy: 251.
