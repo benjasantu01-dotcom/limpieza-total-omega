@@ -262,6 +262,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     
     try:
         s_res: Path = src.resolve()
+        if not s_res.exists(): return False
         if dest.exists() and (_is_junction(dest) or dest.is_symlink()): return False
         if _is_recursive_violation(s_res, dest): return False
         target_dir: Path = dest.parent if dest.is_file() else dest

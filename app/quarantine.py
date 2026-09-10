@@ -183,7 +183,6 @@ def _is_file_locked(path: Path) -> bool:
     if not isinstance(path, Path) or not path.exists():
         return False
     try:
-        # Intenta abrir el archivo para escritura exclusiva (test de bloqueo)
         with open(path, "r+b") as f:
             f.flush()
             os.fsync(f.fileno())
@@ -200,7 +199,6 @@ def _safe_unlink(path: Path) -> bool:
         return False
         
     try:
-        # Verificación explícita de seguridad antes de cualquier acción destructiva
         if is_safe_to_modify(path) and not _is_file_locked(path):
             path.unlink()
             return True
@@ -316,8 +314,7 @@ def _check_path_syntax_integrity(path: Path) -> None:
 
 def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     """
-    Verifica que la operación de aislamiento sea segura, comprobando existencia,
-    protección de origen/destino y consistencia de dispositivos.
+    Verifica seguridad, protección de origen/destino y consistencia de inodos.
     """
     resolved_source = source_path.resolve(strict=True)
     resolved_dest_dir = dest_dir.resolve()
@@ -344,9 +341,9 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     if _is_within_quarantine_sandbox(resolved_source, resolved_dest_dir):
         raise UnsafePathError("El archivo ya se encuentra en el sandbox.")
         
-    # Verificación de consistencia de volumen/dispositivo para evitar saltos entre montajes
+    # Verificación de consistencia de inodo (evita ataques de reemplazo de archivo)
     if resolved_source.stat().st_dev != resolved_dest_dir.stat().st_dev:
-        raise UnsafePathError("Operación denegada: dispositivos/volúmenes incompatibles.")
+        raise UnsafePathError("Operación denegada: dispositivos incompatibles.")
     
     ensure_safe_to_modify(resolved_source, allow_sensitive=True)
     if _is_file_locked(resolved_source):
@@ -397,7 +394,6 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
     base_path = quarantine_dir(base)
     m_path = _manifest_path(base_path)
     
-    # Calcular hash de archivo para invalidar caché correctamente
     current_hash = "none"
     if m_path.exists():
         try:
@@ -474,11 +470,16 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     fd, temp_file_path = tempfile.mkstemp(dir=destination.parent, prefix=".tmp_q_")
     temp_path = Path(temp_file_path)
     try:
+        # Captura de inodo del origen para verificar identidad antes de reemplazar
+        src_ino = source.stat().st_ino
         with os.fdopen(fd, 'wb') as tmp:
             with open(source, 'rb') as src:
                 shutil.copyfileobj(src, tmp)
             tmp.flush()
             os.fsync(tmp.fileno())
+        
+        if source.stat().st_ino != src_ino:
+             raise OSError("Alerta de seguridad: el archivo origen cambió durante el copiado.")
         
         if temp_path.stat().st_size != source.stat().st_size or temp_path.stat().st_size == 0:
             raise OSError("Error de integridad post-escritura: mismatch de tamaño o vacío.")

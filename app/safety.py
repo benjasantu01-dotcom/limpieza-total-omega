@@ -41,6 +41,8 @@ FILE_ATTRIBUTE_HIDDEN: Final[int] = 0x02
 FILE_ATTRIBUTE_SYSTEM: Final[int] = 0x04
 FILE_ATTRIBUTE_OFFLINE: Final[int] = 0x1000
 FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x400
+FILE_ATTRIBUTE_COMPRESSED: Final[int] = 0x800
+FILE_ATTRIBUTE_ENCRYPTED: Final[int] = 0x4000
 MAX_PATH_LENGTH: Final[int] = 260
 MAX_FILE_SIZE: Final[int] = 2 * 1024 * 1024 * 1024  # 2GB límite de seguridad
 
@@ -65,6 +67,7 @@ class SafetyValidationErrorCode(IntEnum):
     SUSPICIOUS_ENCODING = 16
     ADS_DETECTED = 17
     OFFLINE_FILE = 18
+    ENCRYPTED_OR_COMPRESSED = 19
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
@@ -88,6 +91,7 @@ class ProtectionReason(Enum):
     EXCESSIVE_SIZE = "tamaño de archivo excedido"
     INVALID_TYPE = "tipo de archivo no soportado"
     OFFLINE = "archivo offline (nube)"
+    ENCRYPTED_OR_COMPRESSED = "cifrado o comprimido"
 
 
 class ValidationContext(Enum):
@@ -197,6 +201,16 @@ def _is_reparse_point(path_str: str) -> bool:
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         return False
 
+@lru_cache(maxsize=2048)
+def _is_encrypted_or_compressed(path_str: str) -> bool:
+    """Verifica atributos NTFS de compresión o cifrado."""
+    if os.name != 'nt': return False
+    try:
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(path_str)
+        return bool(attrs & (FILE_ATTRIBUTE_COMPRESSED | FILE_ATTRIBUTE_ENCRYPTED))
+    except (AttributeError, OSError, TypeError):
+        return False
+
 
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
@@ -229,6 +243,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _IntegrityCheck(ProtectionReason.IN_USE, lambda p, _: _is_file_in_use(str(p))),
     _IntegrityCheck(ProtectionReason.SYSTEM_HIDDEN, lambda p, _: _is_system_or_hidden(str(p))),
     _IntegrityCheck(ProtectionReason.OFFLINE, lambda p, _: bool(ctypes.windll.kernel32.GetFileAttributesW(str(p)) & FILE_ATTRIBUTE_OFFLINE) if os.name == 'nt' else False),
+    _IntegrityCheck(ProtectionReason.ENCRYPTED_OR_COMPRESSED, lambda p, _: _is_encrypted_or_compressed(str(p))),
     _IntegrityCheck(ProtectionReason.HARD_LINK, lambda p, st: p.is_file() and st.st_nlink > 1),
     _IntegrityCheck(ProtectionReason.ADS, lambda p, _: _has_alternate_data_stream(p.name)),
     _IntegrityCheck(ProtectionReason.EMPTY_FILE, lambda p, st: p.is_file() and st.st_size == 0),
@@ -254,8 +269,12 @@ def _check_file_integrity(path: Path) -> None:
     for rule in _VALIDATORS:
         try:
             if rule.predicate(path, file_stat):
-                code = SafetyValidationErrorCode.HARD_LINK_DETECTED if rule.reason == ProtectionReason.HARD_LINK else (
-                    SafetyValidationErrorCode.OFFLINE_FILE if rule.reason == ProtectionReason.OFFLINE else SafetyValidationErrorCode.GENERIC)
+                mapping = {
+                    ProtectionReason.HARD_LINK: SafetyValidationErrorCode.HARD_LINK_DETECTED,
+                    ProtectionReason.OFFLINE: SafetyValidationErrorCode.OFFLINE_FILE,
+                    ProtectionReason.ENCRYPTED_OR_COMPRESSED: SafetyValidationErrorCode.ENCRYPTED_OR_COMPRESSED
+                }
+                code = mapping.get(rule.reason, SafetyValidationErrorCode.GENERIC)
                 raise UnsafePathError(f"Violación de integridad ({rule.reason.value})", code)
         except (PermissionError, OSError, AttributeError, ctypes.ArgumentError):
             continue
@@ -508,6 +527,7 @@ def describe_protection(path: PathLike) -> str:
             if os.path.ismount(p): return f"'{p}' es un punto de montaje."
             if _is_readonly(str(p)): return f"'{p}' es solo lectura."
             if _is_file_in_use(str(p)): return f"'{p}' en uso."
+            if _is_encrypted_or_compressed(str(p)): return f"'{p}' archivo cifrado o comprimido."
             if _is_system_or_hidden(str(p)): return f"'{p}' atributo oculto/sistema/offline."
             if _has_alternate_data_stream(p.name): return f"'{p}' contiene ADS."
             if not (p.is_file() or p.is_dir()): return f"'{p}' tipo de objeto no soportado."
