@@ -230,11 +230,19 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Determina si aplicar hash rápido o completo basándose en el tamaño del archivo."""
+    """
+    Selecciona la estrategia de hashing según el tamaño:
+    - Archivos pequeños (<= PARTIAL_READ_BYTES): basta con hash parcial.
+    - Archivos grandes: requiere refinamiento mediante hash completo para asegurar identidad.
+    """
     if not isinstance(size, int) or size <= 0 or not paths or len(paths) < 2: 
         return []
     
-    results = _group_paths_by_hash(paths, partial_hash) if size <= PARTIAL_READ_BYTES else _refine_by_deep_hash(paths)
+    if size <= PARTIAL_READ_BYTES:
+        results = _group_paths_by_hash(paths, partial_hash)
+    else:
+        results = _refine_by_deep_hash(paths)
+        
     return [DuplicateGroup(digest, size, sorted(confirmed_paths)) for digest, confirmed_paths in results.items()]
 
 

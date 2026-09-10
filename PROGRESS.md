@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 75 | 7 | 11 | 4 | 53 |
+| 2026-09-08 | 72 | 7 | 10 | 4 | 53 |
 | 2026-09-09 | 152 | 12 | 21 | 11 | 154 |
-| 2026-09-10 | 3 | 1 | 0 | 0 | 0 |
+| 2026-09-10 | 6 | 1 | 1 | 0 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - seguridad defensiva: **51**
-- legibilidad y documentación: **45**
-- rendimiento: **42**
+- legibilidad y documentación: **48**
 - robustez ante casos límite: **39**
+- rendimiento: **39**
 
 ## Mejoras aceptadas por archivo
 
+- `duplicates.py`: **21**
 - `assistant.py`: **20**
-- `duplicates.py`: **20**
 - `memory.py`: **20**
-- `quarantine.py`: **19**
-- `safety.py`: **19**
-- `scanner.py`: **19**
+- `diskreport.py`: **19**
 - `settings.py`: **19**
-- `diskreport.py`: **18**
-- `healthscore.py`: **17**
+- `scanner.py`: **18**
+- `healthscore.py`: **18**
+- `safety.py`: **18**
+- `quarantine.py`: **18**
 - `browser.py`: **14**
 - `organizer.py`: **13**
 - `branding.py`: **12**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T00:12:56` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings normalizados y precisos, agregué type hints faltantes en los parámetros de las funciones de score y simplifiqué la lógica de validación en `SystemMetrics` para mejorar la mantenibilidad del pipeline.
+- `2026-09-10T00:12:31` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del flujo de procesamiento en `duplicates.py` mediante la refactorización de `_decide_hash_strategy_and_process` a una función que documenta explícitamente su lógica de decisión, facilitando la comprensión del pipeline de hashing.
+- `2026-09-10T00:12:06` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de las funciones de alto nivel y el recolector central `_collect_summary_data` para aclarar que la eficiencia de los reportes depende de un único recorrido de disco, mejorando la legibilidad técnica del flujo de datos.
 - `2026-09-10T00:03:26` **browser.py** (legibilidad y documentación): Se introdujeron type hints específicos y se refactorizó la lógica de validación de rutas en `_should_skip_entry` y `_is_valid_cache_path` para mejorar la legibilidad y asegurar una aplicación consistente de las restricciones de seguridad.
 - `2026-09-10T00:03:15` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de type hints precisos en las constantes y la estandarización de las descripciones de los métodos, asegurando que el propósito y las restricciones de seguridad de las funciones gráficas estén explícitamente detallados para evitar malentendidos durante el desarrollo.
 - `2026-09-10T00:02:41` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `ingest` en `SystemContext`, extrayendo la lógica repetitiva de validación y seteo en un método privado `_apply_field`, lo que reduce el ruido cognitivo y mejora la claridad del flujo de control.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-09T14:29:17` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `format_size` y `_bytes_to_mb` reemplazando los chequeos genéricos y capturas masivas por validaciones explícitas de tipo y manejo de casos límite (valores negativos o nulos), evitando errores silenciosos en la UI.
 - `2026-09-09T13:06:16` **startup.py** (seguridad defensiva): Reforcé la seguridad defensiva al limitar la expansión de rutas en `_resolve_and_cache_path` mediante `Path.resolve(strict=False)`, evitando que el código intente acceder a rutas inexistentes o malformadas que podrían arrojar excepciones inesperadas en entornos con permisos restringidos.
 - `2026-09-09T13:05:49` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save()` aplicando `ensure_safe_to_modify` sobre el directorio padre antes de realizar operaciones de escritura, alineando la persistencia con las garantías de seguridad de la aplicación y evitando la manipulación de rutas externas a la estructura definida.
-- `2026-09-09T12:56:50` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva del método `_is_safe_entry` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta (`p`), asegurando que no se procesen entradas cuya resolución apunte a directorios protegidos, incluso si el nombre base aparenta ser seguro.
-- `2026-09-09T12:55:43` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_atomic_isolate_file` y `restore_item` al validar estrictamente que la operación de `os.replace` ocurra únicamente entre el mismo sistema de archivos (dispositivo), evitando intentos de movimiento a través de límites de volúmenes que podrían ser inseguros o fallar parcialmente.
-- `2026-09-09T12:47:44` **memory.py** (seguridad defensiva): Se reforzó la seguridad de la función `trim_working_set` al asegurar que los handles se cierren correctamente ante cualquier excepción mediante un bloque `finally`, además de validar la integridad del proceso antes de operar, evitando posibles vulnerabilidades de Race Condition al capturar el handle y verificar el ejecutable en pasos separados.

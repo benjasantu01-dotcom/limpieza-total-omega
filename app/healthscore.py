@@ -83,7 +83,7 @@ if sum(WEIGHTS.values()) != 100:
 _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud para archivos temporales basándose en el umbral _LIMIT_JUNK_MB."""
+    """Calcula el ratio de salud para archivos temporales (inverso de MB detectados)."""
     return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
@@ -102,7 +102,7 @@ def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
     """Calcula salud de duplicados: penaliza el espacio desperdiciado sobre el límite de 2GB."""
     return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
 
-def score_startup(startup_count: int) -> NormalizedRatio:
+def score_startup(startup_count: int | float) -> NormalizedRatio:
     """Evalúa salud de inicio: penaliza linealmente el conteo de apps según el umbral."""
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
@@ -141,14 +141,14 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None:
-        """Normaliza campos nulos y valida la integridad de los datos."""
+        """Inicializa valores faltantes y asegura la integridad de los datos."""
         for field_name in self.__dataclass_fields__:
             if getattr(self, field_name) is None:
-                setattr(self, field_name, 0.0 if "percent" not in field_name else 100.0)
+                setattr(self, field_name, 100.0 if "percent" in field_name else 0.0)
         self.validate()
 
     def validate(self) -> None:
-        """Asegura que todos los valores numéricos caigan en rangos lógicos."""
+        """Asegura que todos los valores numéricos caigan en rangos lógicos y finitos."""
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
         self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
@@ -161,9 +161,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que todos los campos numéricos sean valores finitos."""
-        return (math.isfinite(self.junk_mb) and math.isfinite(self.duplicate_mb) and 
-                math.isfinite(self.memory_available_percent) and math.isfinite(self.disk_free_percent) and
-                math.isfinite(self.suspicious_count) and math.isfinite(self.startup_count))
+        return all(math.isfinite(getattr(self, f.name)) for f in self.__dataclass_fields__.values())
 
 @dataclass
 class HealthResult:
@@ -213,14 +211,14 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
-    Ejecuta el pipeline completo de métricas para calcular el puntaje global.
+    Ejecuta el pipeline de métricas y calcula el puntaje global.
     
     Args:
-        metrics: Instancia de SystemMetrics. Si es nula, retorna error.
+        metrics: Instancia de SystemMetrics.
     Returns:
         HealthResult: Objeto con score final, nota, desglose y recomendaciones.
     """
-    if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o no disponibles."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -229,11 +227,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for area, weight in _WEIGHT_ITEMS_INT:
         try:
-            scorer = _SCORERS[area]
-            ratio = scorer(metrics)
-            if not math.isfinite(ratio): ratio = 0.0
-            
-            pts: int = int(round(_clamp(ratio * weight, 0, weight)))
+            ratio = _SCORERS[area](metrics)
+            pts = int(round(_clamp(ratio * weight, 0, weight)))
             metric_breakdown[area] = pts
             total_pts += pts
             
@@ -245,7 +240,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             continue
             
     final_score = int(_clamp(float(total_pts), 0.0, 100.0))
-    if getattr(metrics, 'quarantined_count', 0) > 0:
+    if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
     return HealthResult(
@@ -272,6 +267,5 @@ def summarize(result: HealthResult | None) -> List[str]:
         puntos = result.breakdown.get(area, 0)
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{_render_bar(puntos, maximo)}]")
     
-    recs = getattr(result, 'recommendations', [])
-    lines.extend(["", "Recomendaciones:", *[f"  - {r}" for r in (recs if recs else ["Sin recomendaciones."])]])
+    lines.extend(["", "Recomendaciones:", *[f"  - {r}" for r in (result.recommendations if result.recommendations else ["Sin recomendaciones."])]])
     return lines

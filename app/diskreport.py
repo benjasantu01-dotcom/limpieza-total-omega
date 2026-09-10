@@ -253,7 +253,9 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador eficiente que recorre el sistema de archivos usando `os.scandir`.
+    Generador que recorre recursivamente el sistema de archivos usando `os.scandir`.
+    
+    Implementa prevención de ciclos mediante chequeo de inodos y omisión de puntos de reparse.
     """
     root_path = _validate_root(directory)
     if root_path is None:
@@ -270,7 +272,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         if _is_excluded_path(entry): continue
                         
-                        # Resolución defensiva para evitar fallos con rutas largas o inválidas
                         entry_path = Path(entry.path)
                         
                         if entry.is_dir(follow_symlinks=False):
@@ -291,7 +292,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Retorna los N archivos más pesados encontrados en el directorio base utilizando un heap."""
+    """
+    Retorna los N archivos más pesados.
+    
+    Utiliza `_collect_summary_data` para realizar un único recorrido eficiente.
+    """
     root = _validate_root(directory)
     if not root: return []
     data = _collect_summary_data(root, skip_protected, limit=limit)
@@ -299,7 +304,11 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
-    """Agrupa el uso de espacio por extensión de archivo y devuelve las N extensiones que más ocupan."""
+    """
+    Agrupa el uso de espacio por extensión de archivo.
+    
+    Realiza un único recorrido para totalizar tamaños y conteos.
+    """
     root = _validate_root(directory)
     if not root: return []
     data = _collect_summary_data(root, skip_protected, limit=0)
@@ -308,7 +317,11 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Calcula el peso total por subcarpeta inmediata en la raíz indicada."""
+    """
+    Calcula el peso total por subcarpeta inmediata en la raíz indicada.
+    
+    Nota: Este método realiza una agregación post-recorrido basada en la profundidad relativa.
+    """
     root = _validate_root(directory)
     if not root: return []
     folder_total_bytes: Dict[Path, int] = defaultdict(int)
@@ -329,10 +342,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> SizeReport:
     """
-    Retorna el total de bytes y cantidad de archivos procesados.
-    
-    Returns:
-        Una tupla (total_bytes, total_files).
+    Calcula el total de bytes y cantidad de archivos en un único recorrido.
     """
     root = _validate_root(directory)
     if not root: return (0, 0)
@@ -342,10 +352,11 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Recolector central de estadísticas.
+    Recolector central de estadísticas (motor de lectura única).
     
-    Realiza un solo recorrido de disco y mantiene contadores de extensión y un heap 
-    para los archivos más grandes solo si se especifica un límite.
+    Optimiza el rendimiento evitando recorridos redundantes: calcula tamaños, 
+    conteos de extensiones y mantiene un heap para los archivos más grandes 
+    (si limit > 0) simultáneamente durante el recorrido de `walk_files`.
     """
     total_bytes = total_files = 0
     ext_sizes: Dict[str, int] = defaultdict(int)
@@ -369,7 +380,12 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
-    """Genera un reporte textual estructurado de los hallazgos en la carpeta dada para visualización en consola o UI."""
+    """
+    Genera un reporte textual estructurado de los hallazgos en la carpeta dada.
+    
+    Combina los datos recolectados en `_collect_summary_data` para presentar 
+    la vista de resumen de uso de disco.
+    """
     root = _validate_root(directory)
     if not root: return ["Error: Ruta no válida."]
     data = _collect_summary_data(root, skip_protected, limit=20)

@@ -658,3 +658,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-09-10T00:03:26` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se introdujeron type hints específicos y se refactorizó la lógica de validación de rutas en `_should_skip_entry` y `_is_valid_cache_path` para mejorar la legibilidad y asegurar una aplicación consistente de las restricciones de seguridad.
 - `2026-09-10T00:03:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T00:03:26` Corrida terminada. Total usado hoy: 4.
+- `2026-09-10T00:11:39` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-09-10T00:12:06` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación de las funciones de alto nivel y el recolector central `_collect_summary_data` para aclarar que la eficiencia de los reportes depende de un único recorrido de disco, mejorando la legibilidad técnica del flujo de datos.
+- `2026-09-10T00:12:31` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad del flujo de procesamiento en `duplicates.py` mediante la refactorización de `_decide_hash_strategy_and_process` a una función que documenta explícitamente su lógica de decisión, facilitando la comprensión del pipeline de hashing.
+- `2026-09-10T00:12:56` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante docstrings normalizados y precisos, agregué type hints faltantes en los parámetros de las funciones de score y simplifiqué la lógica de validación en `SystemMetrics` para mejorar la mantenibilidad del pipeline.
+- `2026-09-10T00:13:48` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._init_state
+- `2026-09-10T00:13:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T00:13:48` Corrida terminada. Total usado hoy: 8.
