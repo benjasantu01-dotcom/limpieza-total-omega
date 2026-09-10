@@ -99,7 +99,7 @@ UI_FONT_HEADER_SIZE: Final[int] = 23
 UI_FONT_BODY_SIZE: Final[int] = 12
 
 # Diccionario mutable para acceso eficiente y MappingProxyType para exportación pública
-_PALETTE_MAP = {
+_PALETTE_MAP: Final[dict[str, HexColor]] = {
     "background": "#0a0e17", "surface": "#141b2d", "surface_alt": "#1e2740",
     "surface_hover": "#28324f", "card": "#182135", "accent": "#00f0c0",
     "accent_hover": "#00d0a4", "accent_dim": "#0a6b58", "accent2": "#7c5cff",
@@ -192,7 +192,7 @@ def severity_label(severity: Optional[str]) -> str:
     return severity.capitalize() if severity else "Desconocido"
 
 def severity_icon(severity: Optional[str]) -> str:
-    """Devuelve el carácter representativo del nivel de severidad (visto, exclamación, etc.)."""
+    """Devuelve el carácter representativo del nivel de severidad."""
     return _SEVERITY_MAP.get(severity.lower(), "\u2022") if isinstance(severity, str) else "\u2022"
 
 def grade_color(grade: Optional[str]) -> HexColor:
@@ -326,10 +326,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo vectorial en una ruta física tras validación de seguridad de escritura."""
     if destination is None: return None
     try:
-        # Validación estricta: evitar .resolve() que expande symlinks dinámicos
         path_input = Path(str(destination)).absolute()
-        
-        # Validar permisos de ruta utilizando los guardias de seguridad del sistema
         if not is_safe_to_modify(path_input) or not is_safe_to_modify(path_input.parent):
             return None
         ensure_safe_to_modify(path_input)

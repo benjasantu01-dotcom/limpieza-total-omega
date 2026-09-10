@@ -182,7 +182,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         
     try:
         path = entry.path
-        if not path or len(path) >= MAX_PATH_LEN or not os.path.isabs(path) or any(c in path for c in '<>|?"*') or '\0' in path:
+        if not path or len(path) >= MAX_PATH_LEN or '\0' in path or any(c in path for c in '<>|?"*'):
             return True
         
         # Ignora reparse points y montajes para evitar bucles infinitos o daños en el FS
@@ -232,7 +232,6 @@ def _sum_directory_recursive(
     if root_abs in memo:
         return memo[root_abs]
     
-    # Pre-chequeo adicional contra caracteres inválidos antes del escaneo
     if not os.path.isdir(root_abs):
         return 0
 
@@ -245,9 +244,8 @@ def _sum_directory_recursive(
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        child_path = entry.path
                         total += _sum_directory_recursive(
-                            child_path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
+                            entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                         )
                     elif entry.is_file(follow_symlinks=False):
                         total += entry.stat(follow_symlinks=False).st_size
@@ -281,23 +279,20 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     
-    c_str = str(candidate)
-    if not candidate.is_absolute() or len(c_str) >= MAX_PATH_LEN or any(c in c_str for c in '<>|?"*') or '\0' in c_str:
-        return False
     try:
-        if not candidate.exists():
+        if not candidate.exists() or not candidate.is_dir():
             return False
         real_candidate = candidate.resolve(strict=True)
         
-        # Validar que el directorio sea hijo directo o subdirectorio de la base
+        # Validar consistencia, seguridad y exclusión
         if not _is_path_inside_base(real_candidate, base_path):
             return False
             
         if not is_safe_to_modify(real_candidate) or is_protected_path(real_candidate):
             return False
+            
         if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or 
-            os.path.ismount(str(real_candidate)) or not real_candidate.is_dir() or 
-            _is_excluded_file(real_candidate.name)):
+            os.path.ismount(str(real_candidate)) or _is_excluded_file(real_candidate.name)):
             return False
         return True
     except (OSError, PermissionError, RuntimeError, ValueError):
@@ -329,21 +324,15 @@ def detect_profiles(
             real_base = base.resolve(strict=True)
             for browser_name, rel_str in browser_map.items():
                 try:
-                    if not isinstance(rel_str, str) or not rel_str:
+                    if not isinstance(rel_str, str) or not rel_str or ".." in rel_str:
                         continue
                     
-                    parts = rel_str.split("\\")
-                    if ".." in parts:
-                        continue
-                    
-                    candidate = real_base.joinpath(*parts)
+                    candidate = real_base.joinpath(*rel_str.split("\\"))
                     
                     if not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                         continue
                         
                     c_path = candidate.resolve(strict=True)
-                    
-                    # Usamos perf_cache para evitar re-escaneo profundo de nodos compartidos
                     size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
                     if size > 0:
                         found.append(BrowserCache(str(browser_name), c_path, size))

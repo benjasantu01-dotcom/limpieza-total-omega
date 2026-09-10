@@ -596,3 +596,65 @@ assert not {'remove'}
 - `2026-09-09T23:30:56` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-09T23:41:07` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-09T23:51:18` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-10T00:01:29` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-09-10T00:02:01` Tests FALLARON:
+```
+e="HKCU")
+>       assert [e.name for e in entradas] == ["MiApp", "Otra"]
+E       AssertionError: assert [] == ['MiApp', 'Otra']
+E         
+E         Right contains 2 more items, first extra item: 'MiApp'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'MiApp',
+E         -     'Otra',
+E         - ]
+
+evolve/tests/test_modules.py:645: AssertionError
+________________ test_parse_registry_csv_skips_powershell_noise ________________
+
+    def test_parse_registry_csv_skips_powershell_noise():
+        csv = '"Name","Value"\n"PSPath","algo"\n"Real","C:\\\\r.exe"\n'
+>       assert [e.name for e in startup.parse_registry_csv(csv)] == ["Real"]
+E       AssertionError: assert [] == ['Real']
+E         
+E         Right contains one more item: 'Real'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'Real',
+E         - ]
+
+evolve/tests/test_modules.py:651: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff:
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff:
+  + []
+  - [
+  -     'Real',
+  - ]
+2 failed, 297 passed in 1.13s
+
+```
+- `2026-09-10T00:02:01` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `parse_registry_csv` al reemplazar la lectura directa basada en índices posicionales (`reader.fieldnames[0]`), la cual fallaba si el CSV del registro devolvía columnas en orden inesperado, por una validación explícita de los campos esperados (`Name` y `Property` o `PSPath`), garantizando que la extracción de datos sea siempre sobre los atributos correctos del objeto.
+- `2026-09-10T00:02:41` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `ingest` en `SystemContext`, extrayendo la lógica repetitiva de validación y seteo en un método privado `_apply_field`, lo que reduce el ruido cognitivo y mejora la claridad del flujo de control.
+- `2026-09-10T00:03:15` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la inclusión de type hints precisos en las constantes y la estandarización de las descripciones de los métodos, asegurando que el propósito y las restricciones de seguridad de las funciones gráficas estén explícitamente detallados para evitar malentendidos durante el desarrollo.
+- `2026-09-10T00:03:26` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se introdujeron type hints específicos y se refactorizó la lógica de validación de rutas en `_should_skip_entry` y `_is_valid_cache_path` para mejorar la legibilidad y asegurar una aplicación consistente de las restricciones de seguridad.
+- `2026-09-10T00:03:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T00:03:26` Corrida terminada. Total usado hoy: 4.

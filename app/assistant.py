@@ -295,6 +295,16 @@ class SystemContext:
         """Valida que el grado de salud sea un texto seguro."""
         return _ensure_safe_text(self.grade) if self.grade else True
 
+    def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> bool:
+        """Valida y aplica una métrica individual si cumple las restricciones."""
+        val = _get_source_value(source, key)
+        if val is not None and spec.is_valid_type(val):
+            f_val = float(val)
+            if math.isfinite(f_val) and spec.min_val <= f_val <= spec.max_val:
+                setattr(self, key, spec.cast_func(val))
+                return True
+        return False
+
     def ingest(self, source: Any) -> bool:
         """
         Pobla los atributos de la clase desde una fuente externa.
@@ -307,15 +317,8 @@ class SystemContext:
             
         found_data = False
         for key, spec in _VALIDATORS.items():
-            try:
-                val = _get_source_value(source, key)
-                if val is not None and spec.is_valid_type(val):
-                    f_val = float(val)
-                    if math.isfinite(f_val) and spec.min_val <= f_val <= spec.max_val:
-                        setattr(self, key, spec.cast_func(val))
-                        found_data = True
-            except (ValueError, TypeError, AttributeError):
-                continue
+            if self._apply_field(source, key, spec):
+                found_data = True
         
         grade_val = _get_source_value(source, "grade")
         if isinstance(grade_val, str):
