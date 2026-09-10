@@ -1454,3 +1454,15 @@ FAILED evolve/tests/test_assistant.py::test_a_protected_folder_is_never_remember
 - `2026-09-10T08:14:51` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-10T08:14:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T08:14:51` Corrida terminada. Total usado hoy: 195.
+- `2026-09-10T08:20:53` Arrancando corrida. Quedan hoy ~105 peticiones objetivo.
+- `2026-09-10T08:20:56` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-10T08:20:56` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-10T08:21:16` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-10T08:21:16` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-10T08:21:46` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-10T08:21:46` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-10T08:22:44` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de los `handler` de métricas envolviendo sus llamadas en bloques `try/except` para prevenir fallos en cadena si alguna métrica llega con formato inesperado o valores nulos, asegurando que la interfaz siempre reciba una respuesta válida aunque el análisis tenga datos parciales.
+- `2026-09-10T08:23:18` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y `score_color` añadiendo validaciones de tipo y rangos más estrictas, y un manejo de errores explícito que evita fallos silenciosos al procesar entradas inválidas.
+- `2026-09-10T08:23:30` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_path_inside_base` y `_is_safe_to_traverse` para manejar entradas malformadas mediante la validación explícita de `None` y el uso de `ValueError` en lugar de una captura genérica, asegurando que los caminos no resuelvan a rutas fuera del entorno esperado.
+- `2026-09-10T08:23:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T08:23:30` Corrida terminada. Total usado hoy: 199.

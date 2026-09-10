@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 35
+- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 209
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 140 | 11 | 20 | 9 | 129 |
-| 2026-09-10 | 88 | 6 | 15 | 6 | 80 |
+| 2026-09-09 | 139 | 10 | 19 | 9 | 128 |
+| 2026-09-10 | 91 | 6 | 15 | 6 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **53**
-- legibilidad y documentación: **48**
+- legibilidad y documentación: **47**
+- manejo de errores y validación de entradas: **46**
 - rendimiento: **44**
-- manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **23**
 - `settings.py`: **20**
-- `memory.py`: **19**
+- `assistant.py`: **19**
 - `duplicates.py`: **19**
 - `safety.py`: **19**
 - `healthscore.py`: **19**
-- `assistant.py`: **18**
+- `memory.py`: **18**
+- `browser.py`: **17**
 - `diskreport.py`: **16**
 - `scanner.py`: **16**
-- `browser.py`: **16**
-- `branding.py`: **13**
+- `branding.py`: **14**
 - `organizer.py`: **12**
 - `main.py`: **9**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T08:23:30` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_path_inside_base` y `_is_safe_to_traverse` para manejar entradas malformadas mediante la validación explícita de `None` y el uso de `ValueError` en lugar de una captura genérica, asegurando que los caminos no resuelvan a rutas fuera del entorno esperado.
+- `2026-09-10T08:23:18` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `score_color` añadiendo validaciones de tipo y rangos más estrictas, y un manejo de errores explícito que evita fallos silenciosos al procesar entradas inválidas.
+- `2026-09-10T08:22:44` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de los `handler` de métricas envolviendo sus llamadas en bloques `try/except` para prevenir fallos en cadena si alguna métrica llega con formato inesperado o valores nulos, asegurando que la interfaz siempre reciba una respuesta válida aunque el análisis tenga datos parciales.
 - `2026-09-10T07:00:16` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para que el uso de `ensure_safe_to_modify` sea preventivo antes de intentar cualquier operación de resolución de rutas, evitando que una ruta maliciosa o inaccesible detenga el hilo de ejecución mediante el manejo explícito de la excepción de seguridad dentro del validador.
 - `2026-09-10T06:50:55` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_encrypted_or_compressed` en el flujo de integridad para evitar intentos de modificación sobre archivos con atributos NTFS de cifrado o compresión, reforzando la seguridad defensiva al evitar corrupciones accidentales en datos protegidos por el sistema de archivos.
 - `2026-09-10T06:50:18` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` mediante la implementación de una validación de `st_ino` (número de inodo) en `_check_isolation_safety` para prevenir ataques de sustitución de archivos (file swapping) mediante enlaces duros, asegurando que el archivo que se va a mover sea efectivamente el mismo que se acaba de validar.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T06:30:24` **browser.py** (seguridad defensiva): Se ha implementado una validación de integridad en `_should_skip_entry` y `_is_path_inside_base` para asegurar que las rutas procesadas no contengan caracteres de control o longitudes que excedan los límites del sistema (MAX_PATH), mitigando riesgos de inyección de rutas o desbordamientos al interactuar con APIs de bajo nivel en Windows.
 - `2026-09-10T06:29:57` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia de la ruta de destino antes de intentar operaciones de escritura y asegurando que las excepciones durante el proceso de manipulación de archivos no expongan información del sistema.
 - `2026-09-10T06:29:23` **assistant.py** (seguridad defensiva): Se endureció la seguridad de la validación de texto en `_is_safe_text_structure` añadiendo una comprobación explícita para evitar que el asistente procese o devuelva contenido que parezca un comando de PowerShell o una ruta de sistema absoluta/relativa (patrones de inyección), reforzando la naturaleza "solo lectura" del módulo.
-- `2026-09-10T06:19:59` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante fallos de escritura en disco, asegurando que si ocurre un error durante el volcado de bytes (como falta de espacio o desconexión), se realice una limpieza exhaustiva del archivo temporal para evitar dejar estados corruptos.
-- `2026-09-10T06:19:28` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta para el manejo de archivos vacíos o inaccesibles dentro de `scan_file`, garantizando que el escáner no aborte ante condiciones de carrera (archivos bloqueados durante el acceso) o inconsistencias del sistema de archivos mediante un bloque `try-except` más granular.
-- `2026-09-10T06:09:57` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de lectura/escritura (I/O) al implementar bloques `try-finally` para asegurar el cierre de descriptores de archivos, y añadí validación de existencia para archivos aislados antes de intentar cualquier operación de verificación o borrado en el bucle de `purge_all`.

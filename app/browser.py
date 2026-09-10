@@ -137,13 +137,15 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     Verifica mediante resolución absoluta que la ruta objetivo esté bajo la base.
     Previene el escape de directorios mediante enlaces simbólicos o rutas relativas.
     """
+    if real_target is None or real_base is None:
+        return False
     try:
         target_str = str(real_target.resolve(strict=True))
         base_str = str(real_base.resolve(strict=True))
         if len(target_str) >= MAX_PATH_LEN or any(c in target_str for c in '\0\r\n'):
             return False
         return target_str.startswith(base_str + os.sep) or target_str == base_str
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, ValueError):
         return False
 
 
@@ -195,6 +197,8 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
     """Validación holística: asegura que la ruta sea segura, exista y resida bajo la base esperada."""
+    if path_obj is None:
+        return False
     try:
         if not path_obj.exists():
             return False
@@ -204,7 +208,7 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
         if base_check_path and not _is_path_inside_base(p_res, base_check_path):
             return False
         return True
-    except (OSError, RuntimeError, PermissionError):
+    except (OSError, RuntimeError, PermissionError, ValueError):
         return False
 
 
@@ -267,7 +271,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """Verifica si una carpeta candidata es una ubicación de caché legítima y segura."""
     try:
-        if not candidate.exists() or not candidate.is_dir():
+        if candidate is None or not candidate.exists() or not candidate.is_dir():
             return False
         
         real_candidate = candidate.resolve(strict=True)

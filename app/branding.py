@@ -203,15 +203,17 @@ def grade_color(grade: Optional[str]) -> HexColor:
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> HexColor:
     """Determina el color según puntaje (0-100) basándose en umbrales de salud definidos."""
-    if score is None: return C_TEXT_MUTED
+    if score is None: 
+        return C_TEXT_MUTED
     try:
         valor = float(score)
-        if not math.isfinite(valor): return C_TEXT_MUTED
-    except (TypeError, ValueError): return C_TEXT_MUTED
-    if not (0.0 <= valor <= 100.0): return C_TEXT_MUTED
-    for limit, color_val in SCORE_THRESHOLDS:
-        if valor >= limit: return color_val
-    return C_DANGER
+        if not math.isfinite(valor) or not (0.0 <= valor <= 100.0):
+            return C_TEXT_MUTED
+        for limit, color_val in SCORE_THRESHOLDS:
+            if valor >= limit: return color_val
+        return C_DANGER
+    except (TypeError, ValueError):
+        return C_TEXT_MUTED
 
 @lru_cache(maxsize=64)
 def bar(percent: Union[float, int, None], width: int = 24,
@@ -331,10 +333,11 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         if not is_safe_to_modify(path_input) or not is_safe_to_modify(path_input.parent):
             return None
         
-        # Asegura que la ruta no sea un directorio existente y que la escritura esté permitida
+        # Asegura que la ruta no sea un directorio existente
         if path_input.is_dir():
             return None
             
+        # Lanzará excepción si falla, que capturamos para abortar operación
         ensure_safe_to_modify(path_input)
             
         if not path_input.parent.exists():
@@ -342,7 +345,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
             
         path_input.write_text(logo_svg(), encoding="utf-8")
         return path_input
-    except (OSError, PermissionError, RuntimeError, ValueError): 
+    except (OSError, PermissionError, RuntimeError, ValueError, TypeError): 
         return None
 
 def logo_ascii() -> str:
