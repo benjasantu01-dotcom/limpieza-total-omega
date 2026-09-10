@@ -5,26 +5,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **503**
-- Mejoras aceptadas: **243** (48.3% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **246** (48.8% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 194
+- Sin respuesta de la IA (error o límite): 191
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 55 | 3 | 7 | 1 | 32 |
+| 2026-09-08 | 55 | 3 | 7 | 1 | 29 |
 | 2026-09-09 | 152 | 12 | 21 | 11 | 154 |
-| 2026-09-10 | 36 | 3 | 6 | 2 | 8 |
+| 2026-09-10 | 39 | 3 | 7 | 2 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **53**
-- seguridad defensiva: **48**
+- seguridad defensiva: **51**
 - rendimiento: **47**
 - robustez ante casos límite: **41**
 
@@ -32,13 +32,13 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `duplicates.py`: **22**
 - `memory.py`: **22**
-- `quarantine.py`: **21**
+- `quarantine.py`: **22**
 - `assistant.py`: **20**
 - `healthscore.py`: **20**
 - `settings.py`: **20**
 - `diskreport.py`: **19**
-- `safety.py`: **18**
-- `scanner.py`: **18**
+- `safety.py`: **19**
+- `scanner.py`: **19**
 - `browser.py`: **15**
 - `organizer.py`: **14**
 - `main.py`: **12**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T02:25:54` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escáner en `_is_safe_entry` al agregar una verificación explícita para evitar el procesamiento de rutas UNC (`\\`) y prevenir la resolución de accesos directos (shortcuts `.lnk`) que podrían apuntar a ubicaciones externas, asegurando que el proceso se mantenga estrictamente dentro de la jerarquía validada.
+- `2026-09-10T02:25:43` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para detectar si el sistema de archivos está marcando el objeto como "Offline" o no disponible, previniendo errores durante la manipulación de archivos que residen en servicios en la nube (como OneDrive) que podrían no estar descargados localmente.
+- `2026-09-10T02:24:50` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en el aislamiento de archivos agregando una validación de "punto de montaje" para prevenir que la operación de cuarentena atraviese límites de volumen o sistemas de archivos, evitando así comportamientos inesperados en configuraciones multi-disco.
 - `2026-09-10T02:19:10` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_to_trim` implementando una validación estricta de rutas mediante `Path.resolve()` antes de consultar `is_safe_to_modify`, previniendo así posibles ataques de "path traversal" o resolución de enlaces simbólicos malintencionados que intentaran evadir los filtros de seguridad.
 - `2026-09-10T02:06:16` **healthscore.py** (seguridad defensiva): Se reforzó la robustez defensiva de `SystemMetrics` y `compute_score` validando que las métricas sean tipos numéricos estrictos y verificando explícitamente la finitud del ratio calculado antes de procesar reglas o agregar puntos, previniendo estados inconsistentes.
 - `2026-09-10T02:05:15` **duplicates.py** (seguridad defensiva): Se ha robustecido `_is_valid_candidate` añadiendo una verificación explícita de `st_size` mediante `os.stat` antes de procesar el archivo, garantizando que no se intenten realizar operaciones de lectura sobre archivos que, debido a condiciones de carrera, hayan sido eliminados o truncados a tamaño cero entre la exploración inicial y la validación.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T01:35:26` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` y `_get_process_path` para prevenir fallos por manejadores de procesos nulos, excepciones durante la interacción con APIs de Win32 y bloqueos inesperados al manipular rutas de sistema inaccesibles.
 - `2026-09-10T01:34:57` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_trim_process` añadiendo una validación explícita de `psutil` (usando `memory_mod.process_exists`) y asegurando que la operación solo proceda si el proceso no es protegido, mitigando errores de concurrencia y permisos en procesos críticos.
 - `2026-09-10T01:33:45` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del cálculo de puntajes añadiendo una verificación de finitud en el resultado de `scorer(metrics)` dentro del bucle principal de `compute_score`, previniendo que valores no numéricos o `NaN` resultantes de posibles errores de cálculo en los normalizadores propaguen estados inválidos al puntaje final.
-- `2026-09-10T01:24:49` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `suggest_keeper` y `format_group` para manejar situaciones donde el archivo indicado como "keeper" es inaccesible o fue eliminado del disco durante la ejecución, evitando que el sistema falle silenciosamente o sugiera una ruta inexistente como referencia válida.
-- `2026-09-10T01:24:38` **diskreport.py** (robustez ante casos límite): Se ha robustecido el motor de escaneo `_collect_summary_data` (y por extensión `walk_files`) para manejar correctamente archivos con tamaño de 0 bytes o lecturas fallidas que retornen `None` o valores inesperados, evitando excepciones innecesarias en el reporte.
-- `2026-09-10T01:24:09` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_get_kernel32` al implementar un bloqueo preventivo del archivo `kernel32.dll` mediante el uso de `ctypes.WinDLL` con `use_last_error=True`, asegurando que no se intente acceder a atributos de archivo en condiciones donde la DLL no está cargable o el sistema no es Windows, evitando excepciones no controladas durante el escaneo.

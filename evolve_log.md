@@ -822,3 +822,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-10T02:22:23` Corte de seguridad: se alcanzó el límite de 480s para esta corrida. Termino prolijo.
 - `2026-09-10T02:22:23` Rotación — metrics: 3 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T02:22:23` Corrida terminada. Total usado hoy: 55.
+- `2026-09-10T02:24:12` Arrancando corrida. Quedan hoy ~245 peticiones objetivo.
+- `2026-09-10T02:24:50` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad en el aislamiento de archivos agregando una validación de "punto de montaje" para prevenir que la operación de cuarentena atraviese límites de volumen o sistemas de archivos, evitando así comportamientos inesperados en configuraciones multi-disco.
+- `2026-09-10T02:25:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-10T02:25:43` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se reforzó `ensure_safe_to_modify` para detectar si el sistema de archivos está marcando el objeto como "Offline" o no disponible, previniendo errores durante la manipulación de archivos que residen en servicios en la nube (como OneDrive) que podrían no estar descargados localmente.
+- `2026-09-10T02:25:54` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva del escáner en `_is_safe_entry` al agregar una verificación explícita para evitar el procesamiento de rutas UNC (`\\`) y prevenir la resolución de accesos directos (shortcuts `.lnk`) que podrían apuntar a ubicaciones externas, asegurando que el proceso se mantenga estrictamente dentro de la jerarquía validada.
+- `2026-09-10T02:25:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T02:25:54` Corrida terminada. Total usado hoy: 59.

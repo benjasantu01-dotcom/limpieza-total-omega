@@ -116,7 +116,7 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
         Aplica filtros de seguridad: rechaza rutas prohibidas por safety.py, 
-        nombres reservados, longitudes excesivas o caracteres de ofuscación RTL.
+        nombres reservados, longitudes excesivas, rutas UNC y extensiones .lnk peligrosas.
         """
         try:
             if entry is None: return False
@@ -124,7 +124,8 @@ class Scanner:
             name = entry.name
             if not path_str or not name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
                 return False
-            if RTL_CHAR_RE.search(path_str) or RESERVED_NAMES_RE.match(name):
+            # Bloquear shortcuts (.lnk) que podrían saltar fuera del árbol mediante el destino
+            if name.lower().endswith(".lnk") or RTL_CHAR_RE.search(path_str) or RESERVED_NAMES_RE.match(name):
                 return False
             
             p = Path(path_str).resolve()

@@ -64,6 +64,7 @@ class SafetyValidationErrorCode(IntEnum):
     RELATIVE_PATH_NOT_ALLOWED = 15
     SUSPICIOUS_ENCODING = 16
     ADS_DETECTED = 17
+    OFFLINE_FILE = 18
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
@@ -86,6 +87,7 @@ class ProtectionReason(Enum):
     MOUNT_POINT = "punto de montaje detectado"
     EXCESSIVE_SIZE = "tamaño de archivo excedido"
     INVALID_TYPE = "tipo de archivo no soportado"
+    OFFLINE = "archivo offline (nube)"
 
 
 class ValidationContext(Enum):
@@ -226,6 +228,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _IntegrityCheck(ProtectionReason.READ_ONLY, lambda _, st: not bool(st.st_mode & stat.S_IWRITE)),
     _IntegrityCheck(ProtectionReason.IN_USE, lambda p, _: _is_file_in_use(str(p))),
     _IntegrityCheck(ProtectionReason.SYSTEM_HIDDEN, lambda p, _: _is_system_or_hidden(str(p))),
+    _IntegrityCheck(ProtectionReason.OFFLINE, lambda p, _: bool(ctypes.windll.kernel32.GetFileAttributesW(str(p)) & FILE_ATTRIBUTE_OFFLINE) if os.name == 'nt' else False),
     _IntegrityCheck(ProtectionReason.HARD_LINK, lambda p, st: p.is_file() and st.st_nlink > 1),
     _IntegrityCheck(ProtectionReason.ADS, lambda p, _: _has_alternate_data_stream(p.name)),
     _IntegrityCheck(ProtectionReason.EMPTY_FILE, lambda p, st: p.is_file() and st.st_size == 0),
@@ -251,7 +254,8 @@ def _check_file_integrity(path: Path) -> None:
     for rule in _VALIDATORS:
         try:
             if rule.predicate(path, file_stat):
-                code = SafetyValidationErrorCode.HARD_LINK_DETECTED if rule.reason == ProtectionReason.HARD_LINK else SafetyValidationErrorCode.GENERIC
+                code = SafetyValidationErrorCode.HARD_LINK_DETECTED if rule.reason == ProtectionReason.HARD_LINK else (
+                    SafetyValidationErrorCode.OFFLINE_FILE if rule.reason == ProtectionReason.OFFLINE else SafetyValidationErrorCode.GENERIC)
                 raise UnsafePathError(f"Violación de integridad ({rule.reason.value})", code)
         except (PermissionError, OSError, AttributeError):
             continue

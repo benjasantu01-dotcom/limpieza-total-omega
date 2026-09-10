@@ -342,8 +342,10 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
         raise UnsafePathError("Destino de cuarentena en ruta protegida.")
     if _is_within_quarantine_sandbox(resolved_source, resolved_dest_dir):
         raise UnsafePathError("El archivo ya se encuentra en el sandbox.")
+        
+    # Verificación de consistencia de volumen/dispositivo para evitar saltos entre montajes
     if resolved_source.stat().st_dev != resolved_dest_dir.stat().st_dev:
-        raise UnsafePathError("Operación denegada: dispositivos distintos.")
+        raise UnsafePathError("Operación denegada: dispositivos/volúmenes incompatibles.")
     
     ensure_safe_to_modify(resolved_source, allow_sensitive=True)
     if _is_file_locked(resolved_source):
