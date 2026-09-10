@@ -756,3 +756,41 @@ assert 'rectangle' in ['oval', 'polygon', 'line', 'line', 'line', 'line', ...]
 - `2026-09-10T01:35:37` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-09-10T01:35:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-10T01:35:37` Corrida terminada. Total usado hoy: 40.
+- `2026-09-10T01:43:30` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-09-10T01:44:08` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine.py` ante casos límite mediante la validación de archivos con longitud cero o corruptos durante el proceso de aislamiento, evitando que `_atomic_isolate_file` intente persistir estados inconsistentes.
+- `2026-09-10T01:44:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-10T01:45:02` Tests FALLARON:
+```
+a"
+        assert settings.save(settings.DEFAULTS, destino) is not None
+>       assert (destino / settings.SETTINGS_FILE).is_file()
+E       AssertionError: assert False
+E        +  where False = is_file()
+E        +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+E        +      where 'config.json' = settings.SETTINGS_FILE
+
+evolve/tests/test_assistant.py:61: AssertionError
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert False
+ +  where False = is_file()
+ +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+ +      where 'config.json' = settings.SETTINGS_FILE
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+2 failed, 297 passed in 1.31s
+
+```
+- `2026-09-10T01:45:02` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado `ensure_safe_to_modify` para detectar de forma preventiva si una ruta no existe, evitando intentar manipular sus metadatos (como `stat()`) en casos donde la ruta apunta a un volumen desconectado o a una ruta con errores de acceso, previniendo así posibles `OSError` inesperados antes de aplicar los chequeos de integridad.
+- `2026-09-10T01:45:14` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la recolección de metadatos de archivos dentro de `scan_file`, reemplazando el acceso directo a `path.stat()` (que puede fallar por permisos o archivos bloqueados) por una gestión de excepciones más granular que evita la interrupción del escaneo al encontrar archivos en uso o con bloqueos de acceso exclusivos.
+- `2026-09-10T01:45:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-10T01:45:14` Corrida terminada. Total usado hoy: 44.

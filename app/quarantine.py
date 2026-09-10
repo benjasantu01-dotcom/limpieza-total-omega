@@ -137,10 +137,12 @@ class QuarantineItem:
         """
         if not stored_path: return False
         try:
+            st = stored_path.stat()
             return (
                 stored_path.is_file() and 
                 not stored_path.is_symlink() and 
-                stored_path.stat().st_size == self.size_bytes
+                st.st_size == self.size_bytes and
+                st.st_size > 0
             )
         except (OSError, PermissionError):
             return False
@@ -471,8 +473,8 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
             tmp.flush()
             os.fsync(tmp.fileno())
         
-        if temp_path.stat().st_size != source.stat().st_size:
-            raise OSError("Error de integridad post-escritura: mismatch de tamaño.")
+        if temp_path.stat().st_size != source.stat().st_size or temp_path.stat().st_size == 0:
+            raise OSError("Error de integridad post-escritura: mismatch de tamaño o vacío.")
             
         _check_windows_file_attributes(str(temp_path))
         

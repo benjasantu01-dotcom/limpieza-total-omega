@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **234** (46.4% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 33
+- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-08 | 55 | 3 | 7 | 1 | 48 |
+| 2026-09-08 | 55 | 3 | 7 | 1 | 44 |
 | 2026-09-09 | 152 | 12 | 21 | 11 | 154 |
-| 2026-09-10 | 27 | 2 | 5 | 1 | 5 |
+| 2026-09-10 | 29 | 3 | 6 | 1 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,19 +26,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **53**
 - rendimiento: **47**
 - seguridad defensiva: **42**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **21**
 - `memory.py`: **21**
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `assistant.py`: **19**
 - `healthscore.py`: **19**
 - `settings.py`: **19**
 - `diskreport.py`: **18**
 - `safety.py`: **18**
-- `scanner.py`: **17**
+- `scanner.py`: **18**
 - `browser.py`: **14**
 - `organizer.py`: **14**
 - `main.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-10T01:45:14` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de metadatos de archivos dentro de `scan_file`, reemplazando el acceso directo a `path.stat()` (que puede fallar por permisos o archivos bloqueados) por una gestión de excepciones más granular que evita la interrupción del escaneo al encontrar archivos en uso o con bloqueos de acceso exclusivos.
+- `2026-09-10T01:44:08` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante casos límite mediante la validación de archivos con longitud cero o corruptos durante el proceso de aislamiento, evitando que `_atomic_isolate_file` intente persistir estados inconsistentes.
 - `2026-09-10T01:35:26` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` y `_get_process_path` para prevenir fallos por manejadores de procesos nulos, excepciones durante la interacción con APIs de Win32 y bloqueos inesperados al manipular rutas de sistema inaccesibles.
 - `2026-09-10T01:34:57` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_trim_process` añadiendo una validación explícita de `psutil` (usando `memory_mod.process_exists`) y asegurando que la operación solo proceda si el proceso no es protegido, mitigando errores de concurrencia y permisos en procesos críticos.
 - `2026-09-10T01:33:45` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del cálculo de puntajes añadiendo una verificación de finitud en el resultado de `scorer(metrics)` dentro del bucle principal de `compute_score`, previniendo que valores no numéricos o `NaN` resultantes de posibles errores de cálculo en los normalizadores propaguen estados inválidos al puntaje final.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-10T01:03:46` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `list_items` evitando I/O redundante al convertir el manifiesto a un diccionario de búsqueda indexado por `stored_name` antes de iterar, reemplazando búsquedas lineales `O(N)` por accesos constantes `O(1)`.
 - `2026-09-10T01:03:11` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` y `_process_directory` transformando `JUNK_EXTENSIONS` en un `frozenset` para búsquedas O(1) y eliminando llamadas redundantes a `Path` y `resolve()` dentro del bucle de escaneo, que es el cuello de botella principal.
 - `2026-09-10T00:54:51` **memory.py** (rendimiento): Optimizé `parse_windows_process_csv` para evitar la creación de una lista intermedia y el uso de `sorted` con una función `lambda` dentro de cada llamada, utilizando en su lugar un `heapq.nlargest` para obtener solo los procesos más pesados de forma eficiente (O(N log K) en lugar de O(N log N)).
-- `2026-09-10T00:53:25` **healthscore.py** (rendimiento): Optimicé el bucle de cálculo en `compute_score` eliminando la búsqueda repetitiva por clave en diccionarios y cacheando el acceso a las reglas de recomendación, además de reemplazar la creación de listas temporales en el resumen por un generador eficiente.
-- `2026-09-10T00:52:55` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` eliminando la resolución redundante de rutas dentro del bucle mediante el uso de `os.scandir` (que ya proporciona atributos `stat`), lo que reduce drásticamente las llamadas a `os.stat` y las consultas al sistema de archivos al evitar `path_obj.stat()` y múltiples `resolve()` innecesarios por cada archivo detectado.

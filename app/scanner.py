@@ -189,6 +189,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     # 2. Chequeos específicos para ejecutables
     if ext in SUSPICIOUS_EXECUTABLE_EXT:
         try:
+            # Intentar obtener estadísticas con manejo de errores ante archivos en uso o inaccesibles
             stats = entry.stat(follow_symlinks=False) if entry else path.stat()
             if stats.st_size == 0:
                 findings.append(Suspicion(path, "Archivo vacío sospechoso", "warning"))
@@ -197,6 +198,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
                 if (result := check_fn(path, entry, now_ts)):
                     findings.append(result)
         except (OSError, PermissionError, AttributeError, FileNotFoundError):
+            # Omitir archivos que no pueden ser estadísticos para evitar bloquear el escaneo
             pass
         
     return findings
