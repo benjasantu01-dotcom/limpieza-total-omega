@@ -83,8 +83,8 @@ TRIM_WARNING: Final[str] = (
 
 class MEMORYSTATUSEX(ctypes.Structure):
     """
-    Representa el layout de memoria del sistema según la estructura MEMORYSTATUSEX 
-    de la API de Windows para GlobalMemoryStatusEx.
+    Estructura de datos win32 (MEMORYSTATUSEX) utilizada por GlobalMemoryStatusEx.
+    Almacena estadísticas de memoria física y virtual del sistema.
     """
     _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),
@@ -144,7 +144,7 @@ def format_bytes(num: Optional[int | float]) -> str:
     return f"{val:.{0 if idx == 0 else 1}f} {BYTE_UNITS[idx]}"
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
-    """Crea una instancia de MEMORYSTATUSEX inicializando su campo dwLength correctamente."""
+    """Instancia la estructura MEMORYSTATUSEX configurando el tamaño requerido por el sistema operativo."""
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return stat
@@ -191,8 +191,8 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[ProcessMemory]:
     """
-    Filtra entradas de procesos basándose en PIDs críticos, rutas protegidas 
-    y validación de tipos de los datos de origen.
+    Valida y filtra entradas de procesos crudas. Excluye procesos críticos y 
+    aquellos ubicados en rutas del sistema protegidas.
     """
     if not isinstance(name, str) or not isinstance(pid_str, str) or not isinstance(ws_str, str):
         return None
@@ -212,8 +212,8 @@ def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[Pr
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Parsea una salida CSV (formato esperado: nombre,pid,ws) proveniente de 
-    PowerShell, devolviendo una lista ordenada de mayor a menor consumo de RAM.
+    Procesa la salida CSV proveniente de un pipeline de PowerShell.
+    Retorna una lista ordenada de instancias de ProcessMemory por uso decreciente.
     """
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
@@ -235,7 +235,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     return processes[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Interroga a la API GlobalMemoryStatusEx para obtener el estado físico de la RAM."""
+    """Invoca la API win32 GlobalMemoryStatusEx para obtener el estado físico actual de la RAM."""
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "GlobalMemoryStatusEx"):
         return _EMPTY_SNAPSHOT
@@ -278,14 +278,13 @@ _proc_cache_time: float = 0.0
 _proc_cache_data: List[ProcessMemory] = []
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Retorna los procesos que más memoria consumen mediante consulta PowerShell (caché 60s)."""
+    """Consulta los procesos de usuario más costosos en RAM mediante PowerShell. Usa caché de 60s."""
     global _proc_cache_time, _proc_cache_data
     if not _is_windows: return []
     
     if (time.time() - _proc_cache_time) < 60:
         return _proc_cache_data[:limit]
     
-    # Optimizamos filtrando procesos de usuario y limitando la carga de trabajo de PS
     ps_cmd = (
         "Get-Process | Where-Object {$_.WorkingSet -ne $null} | "
         "Sort-Object WorkingSet -Descending | Select-Object -First 20 -Property Name, Id, WorkingSet | "
@@ -342,11 +341,11 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def _is_system_process(pid: int) -> bool:
-    """Determina si el PID corresponde a procesos del sistema o a la propia instancia."""
+    """Determina si un PID refiere a procesos de sistema o al proceso actual de la app."""
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: int) -> Optional[str]:
-    """Obtiene la ruta completa del ejecutable del proceso dado mediante la API PSAPI."""
+    """Usa PSAPI GetModuleFileNameExW para resolver la ruta absoluta del ejecutable desde un handle."""
     if not proc_handle: return None
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
@@ -364,8 +363,8 @@ def _get_process_path(proc_handle: int) -> Optional[str]:
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
     """
-    Verifica si un proceso es candidato seguro para la liberación de memoria,
-    auditando su estado activo y la ubicación del ejecutable.
+    Verifica si un proceso es candidato seguro para liberación de memoria.
+    Valida: proceso activo, ruta del ejecutable permitida y políticas de seguridad locales.
     """
     if not isinstance(proc_handle, int) or proc_handle <= 0: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
@@ -393,8 +392,8 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Ejecuta el trim del Working Set para un proceso dado si cumple las validaciones de seguridad.
-    Esta acción es destructiva en rendimiento y debe ser invocada solo bajo demanda.
+    Ejecuta el trim del Working Set para un PID específico tras validaciones de seguridad.
+    Acción no destructiva de datos, pero impactante en rendimiento.
     """
     if not _is_windows: return False, "Operación solo soportada en Windows."
     

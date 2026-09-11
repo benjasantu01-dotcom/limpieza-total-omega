@@ -89,15 +89,17 @@ class DuplicateGroup:
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo.
-    Retorna None si el archivo es inaccesible, protegido o ocurre un error de E/S.
+    Calcula el hash SHA256 completo del archivo.
+    
+    Aplica chequeos de seguridad obligatorios antes de procesar para evitar
+    acceder a rutas restringidas. Retorna None en caso de error o restricción.
     """
     if path is None or chunk_size <= 0:
         return None
         
     try:
         p = Path(path).resolve(strict=True)
-        # Validación explícita de seguridad y accesibilidad antes de abrir el descriptor
+        # Verificación estricta: evita procesar archivos protegidos o bloqueados
         if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p):
             return None
             
@@ -116,7 +118,8 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Calcula hash SHA256 de los primeros N bytes para filtrado rápido.
-    Ignora errores de lectura (ej. bloqueos por el sistema operativo).
+    
+    Útil para descartar archivos distintos rápidamente sin leer la totalidad del archivo.
     """
     if path is None or read_bytes <= 0:
         return None
@@ -137,8 +140,10 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 def _is_valid_candidate(path: Path) -> bool:
     """
-    Validador estricto para determinar si un archivo debe ser considerado en el análisis.
-    Verifica seguridad, accesibilidad y que no sea un enlace simbólico o unión.
+    Validador estricto para filtrar candidatos a duplicados.
+    
+    Asegura que el archivo no sea un enlace simbólico, punto de reparse, 
+    archivo de sistema u oculto, y que esté en una ubicación permitida.
     """
     if not isinstance(path, Path) or not path.is_absolute():
         return False
@@ -198,8 +203,10 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Escaneo recursivo del sistema recolectando candidatos por tamaño.
-    Evita procesar puntos de unión (junctions) y rutas protegidas.
+    Escaneo recursivo para recolectar candidatos indexados por tamaño.
+    
+    Implementa un mecanismo de 'visited' para evitar ciclos por enlaces simbólicos
+    o puntos de reparse, respetando estrictamente la política de seguridad.
     """
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[str] = set()
@@ -242,7 +249,7 @@ def _collect_candidates(
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Agrupa una lista de archivos aplicando una función hash, ignorando fallos individuales."""
+    """Agrupa una lista de archivos aplicando una función hash, ignorando fallos de acceso."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         try:
@@ -254,7 +261,11 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
-    """Refina grupos candidatos: aplica hashing parcial rápido y luego SHA256 completo."""
+    """
+    Refina grupos candidatos usando una estrategia jerárquica de hashing.
+    1. Hash Parcial: Identificación rápida.
+    2. Hash SHA256 Completo: Confirmación de integridad para evitar falsos positivos.
+    """
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
     
@@ -266,11 +277,12 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona estrategia de hashing según tamaño, garantizando robustez ante errores de acceso."""
+    """Selecciona estrategia de hashing según tamaño y robustez ante E/S."""
     if size <= 0 or not paths or len(paths) < 2: 
         return []
     
     try:
+        # Si el archivo es pequeño, el hash parcial es suficiente; si no, refinamos.
         results = _group_paths_by_hash(paths, partial_hash) if size <= PARTIAL_READ_BYTES else _refine_by_deep_hash(paths)
         return [DuplicateGroup(digest, size, sorted(confirmed_paths)) for digest, confirmed_paths in results.items()]
     except Exception:
@@ -303,7 +315,11 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
-    """Aplica heurística de selección: sugiere conservar el archivo más antiguo (mtime)."""
+    """
+    Heurística de selección: sugiere conservar el archivo más antiguo.
+    
+    En caso de empate en mtime, utiliza la longitud de la ruta como desempate determinista.
+    """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
         
