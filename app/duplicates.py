@@ -87,6 +87,15 @@ class DuplicateGroup:
         return (self.count - 1) * self.size_bytes
 
 
+def _is_file_locked(path: Path) -> bool:
+    """Intenta abrir el archivo en modo exclusivo para detectar si está bloqueado."""
+    try:
+        with open(path, 'ab'):
+            return False
+    except (OSError, PermissionError):
+        return True
+
+
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo.
@@ -99,7 +108,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         
     try:
         p = Path(path).resolve(strict=True)
-        if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p):
+        if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p) or _is_file_locked(p):
             return None
             
         digest = hashlib.sha256()
@@ -125,7 +134,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
     try:
         p = Path(path).resolve(strict=True)
-        if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p):
+        if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p) or _is_file_locked(p):
             return None
 
         with open(p, "rb") as f:

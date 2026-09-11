@@ -139,6 +139,8 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
     try:
+        if not real_target.exists():
+            return False
         target_abs = str(real_target.resolve(strict=True))
         base_abs = str(real_base.resolve(strict=True))
         
@@ -183,7 +185,11 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     try:
         if _is_excluded_file(entry.name):
             return True
-            
+        
+        # Validar existencia física previa a cualquier resolución para evitar errores en hilos
+        if not os.path.lexists(entry.path):
+            return True
+
         path = entry.path
         if len(path) >= MAX_PATH_LEN or any(c in path for c in '\0\r\n'):
             return True
