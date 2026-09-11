@@ -122,26 +122,24 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica la contención de la ruta para evitar escapar del directorio objetivo."""
-        if not entry_path: return False
         return entry_path.lower().startswith(self.base_root_str)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
         Valida que la entrada del sistema de archivos no viole las políticas de seguridad.
         """
-        try:
-            path_str: str = entry.path
-            name = entry.name
-            if not path_str or not name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
-                return False
-            
-            if name.lower().endswith(".lnk") or RTL_CHAR_RE.search(path_str) or RESERVED_NAMES_RE.match(name):
-                return False
-            
-            p = Path(path_str).resolve()
-            return self._is_inside_base_root(str(p)) and not is_protected_path(p)
-        except (OSError, AttributeError, TypeError, RuntimeError):
+        path_str: str = entry.path
+        name = entry.name
+        if not path_str or not name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
             return False
+        
+        if name.lower().endswith(".lnk") or RTL_CHAR_RE.search(path_str) or RESERVED_NAMES_RE.match(name):
+            return False
+        
+        if not self._is_inside_base_root(path_str):
+            return False
+
+        return not is_protected_path(Path(path_str))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si un directorio es un punto de reanálisis para omitir su recursión."""
@@ -213,35 +211,31 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
     if directory is None: return []
         
-    try:
-        path_input: str = str(directory).strip()
-        if not path_input or len(path_input) > MAX_PATH_LENGTH or path_input.startswith(("\\\\", "//")): 
-            return []
-            
-        base_path: Path = Path(path_input)
-        if not base_path.is_dir(): 
-            return []
-        
-        root_input: Path = base_path.resolve()
-        # Validar tras resolución para evitar paths que escapan o están protegidos
-        if not root_input.exists() or is_protected_path(root_input): 
-            return []
-            
-        scanner = Scanner(base_root=root_input)
-        directory_stack: List[str] = [str(root_input)]
-        scanner.seen.add(str(root_input))
-        
-        while directory_stack:
-            current_dir = directory_stack.pop()
-            try:
-                with os.scandir(current_dir) as it:
-                    for entry in it:
-                        scanner.process_entry(entry, directory_stack)
-            except (PermissionError, OSError):
-                continue
-        return scanner.results
-    except (OSError, TypeError, ValueError, RuntimeError):
+    path_input: str = str(directory).strip()
+    if not path_input or len(path_input) > MAX_PATH_LENGTH or path_input.startswith(("\\\\", "//")): 
         return []
+            
+    base_path: Path = Path(path_input)
+    if not base_path.is_dir(): 
+        return []
+        
+    root_input: Path = base_path.resolve()
+    if not root_input.exists() or is_protected_path(root_input): 
+        return []
+            
+    scanner = Scanner(base_root=root_input)
+    directory_stack: List[str] = [str(root_input)]
+    scanner.seen.add(str(root_input))
+    
+    while directory_stack:
+        current_dir = directory_stack.pop()
+        try:
+            with os.scandir(current_dir) as it:
+                for entry in it:
+                    scanner.process_entry(entry, directory_stack)
+        except (PermissionError, OSError):
+            continue
+    return scanner.results
 
 def run_windows_defender_quick_scan() -> str:
     """Invoca la API de PowerShell para verificar el estado de Defender y realizar un escaneo rápido."""

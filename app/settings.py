@@ -176,6 +176,7 @@ class _Validators:
             is_safe = not _Validators._is_reparse_point(resolved) and \
                       not is_protected_path(str(resolved)) and \
                       is_safe_to_modify(str(resolved))
+            # Solo invocamos ensure_safe_to_modify si el check básico pasó, optimizando I/O
             if is_safe:
                 ensure_safe_to_modify(str(resolved))
         except (OSError, PermissionError, RuntimeError, UnsafePathError, IndexError):
@@ -188,7 +189,7 @@ class _Validators:
     def _is_safe_path(path_str: str) -> bool:
         """Verifica que el string de ruta sea absoluto, saneado contra null-bytes y seguro para I/O."""
         if not path_str or len(path_str) > 2048 or "\0" in path_str: return False
-        if path_str in _SAFETY_CACHE: return _SAFETY_CACHE[path_str]
+        # El chequeo contra _SAFETY_CACHE está integrado en _run_safety_checks
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False

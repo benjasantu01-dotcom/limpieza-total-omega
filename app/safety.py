@@ -343,16 +343,11 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_system_path_cached(path_str: str) -> bool:
-    """Compara recursivamente los componentes de la ruta contra listas de directorios protegidos."""
-    try:
-        p = Path(path_str)
-        p_str_low = path_str.lower()
-        if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
-            return True
-        # Verificación O(1) contra el set
-        return any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts)
-    except (OSError, RuntimeError):
+    """Compara la ruta normalizada contra listas de directorios protegidos."""
+    path_lower = path_str.lower()
+    if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
         return True
+    return any(part in PROTECTED_DIR_NAMES for part in path_lower.split(os.sep))
 
 
 @lru_cache(maxsize=2048)
