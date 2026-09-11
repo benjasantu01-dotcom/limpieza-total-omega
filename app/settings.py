@@ -114,7 +114,7 @@ VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
 VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))
 VALID_MODELS: Final[frozenset[str]] = frozenset(("gemini-3.1-flash-lite", "gemini-3.1-pro"))
 
-_STR_TO_ENUM: Final[dict[str, ConfigKey]] = {k.value: k for k in ConfigKey}
+_KEY_TO_ENUM: Final[dict[str, ConfigKey]] = {k.value: k for k in ConfigKey}
 
 DEFAULTS: Final[AppSettings] = {
     "tema": "oscuro",
@@ -286,7 +286,7 @@ def validate(raw_values: Any) -> AppSettings:
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_str, val in raw_values.items():
-        key_enum = _STR_TO_ENUM.get(key_str)
+        key_enum = _KEY_TO_ENUM.get(key_str)
         if key_enum and key_enum in _VALIDATOR_MAP:
             validator = _VALIDATOR_MAP[key_enum].func
             validated = validator(key_enum, val)
@@ -371,7 +371,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     current = load(custom_base)
     modified = False
     for k, v in changes.items():
-        key_enum = _STR_TO_ENUM.get(k)
+        key_enum = _KEY_TO_ENUM.get(k)
         if key_enum and key_enum in _VALIDATOR_MAP:
             val = _VALIDATOR_MAP[key_enum].func(key_enum, v)
             if val is not None and val != current.get(k):

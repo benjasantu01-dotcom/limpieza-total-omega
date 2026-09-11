@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 81 | 5 | 13 | 10 | 87 |
-| 2026-09-11 | 143 | 12 | 26 | 8 | 119 |
+| 2026-09-10 | 77 | 5 | 13 | 10 | 87 |
+| 2026-09-11 | 145 | 12 | 27 | 8 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **61**
-- seguridad defensiva: **47**
 - legibilidad y documentación: **45**
-- robustez ante casos límite: **38**
-- rendimiento: **33**
+- seguridad defensiva: **43**
+- robustez ante casos límite: **39**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
+- `duplicates.py`: **20**
 - `quarantine.py`: **19**
 - `browser.py`: **19**
-- `diskreport.py`: **17**
-- `main.py`: **17**
+- `settings.py`: **18**
+- `assistant.py`: **18**
 - `memory.py`: **17**
-- `settings.py`: **17**
-- `assistant.py`: **17**
-- `healthscore.py`: **16**
+- `main.py`: **16**
+- `diskreport.py`: **16**
 - `branding.py`: **15**
+- `healthscore.py`: **15**
 - `organizer.py`: **14**
 - `safety.py`: **14**
 - `scanner.py`: **14**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T13:07:33` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar de forma segura entradas inesperadas o parcialmente corruptas mediante la adición de verificaciones de tipo y estructura antes de realizar cualquier operación de seteo, previniendo fallos en tiempo de ejecución por datos malformados.
+- `2026-09-11T13:06:41` **settings.py** (rendimiento): Se optimizó el rendimiento del módulo implementando `_KEY_TO_ENUM` para evitar la búsqueda lineal repetitiva mediante `_STR_TO_ENUM.get()` en cada ciclo de validación de `validate` y `update`, consolidando el mapeo de claves de forma más eficiente.
 - `2026-09-11T12:57:24` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la recarga redundante al final de `quarantine_file` y mejoré la eficiencia de `list_items` y `purge_all` transformando búsquedas lineales en búsquedas mediante conjuntos, reduciendo la complejidad algorítmica y el I/O innecesario.
 - `2026-09-11T12:50:32` **memory.py** (rendimiento): Se optimizó el proceso de recolección de datos de `top_memory_processes` eliminando el filtrado redundante de duplicados y minimizando las llamadas de I/O dentro del pipeline de PowerShell, mejorando el tiempo de respuesta y reduciendo la carga de CPU durante el análisis.
 - `2026-09-11T12:48:03` **duplicates.py** (rendimiento): Optimizado el rendimiento del escaneo recursivo mediante el uso de un `set` para `visited_dirs` con rutas resueltas (`Path.resolve()`) y la consolidación del filtrado de archivos, evitando llamadas innecesarias a `stat()` mediante el uso de los atributos proporcionados por `os.scandir`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T12:15:04` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `memory.py` mediante la adición de Type Hints detallados, la unificación de docstrings siguiendo el estándar de estilo y la mejora de la claridad en las funciones de diagnóstico, manteniendo estrictamente el comportamiento original.
 - `2026-09-11T12:06:46` **main.py** (legibilidad y documentación): Se ha mejorado la documentación del archivo `main.py` mediante la adición de docstrings estructurados y específicos en los métodos de construcción de la interfaz, facilitando el mantenimiento y la comprensión de la jerarquía visual para futuros colaboradores, sin alterar la funcionalidad.
 - `2026-09-11T12:05:19` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y el tipado de `_collect_candidates` para clarificar la recursión, y refiné los nombres de las variables internas para reflejar su propósito sin ambigüedad, alineándome con el enfoque de legibilidad exigido.
-- `2026-09-11T12:04:52` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del motor de recolección de estadísticas (`_collect_summary_data`) y refiné el manejo de errores en el ciclo principal de escaneo, clarificando el propósito de cada variable y asegurando que las excepciones operativas no interrumpan el flujo de datos.
-- `2026-09-11T11:58:59` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de Type Hints explícitos, la corrección de una inconsistencia en el docstring de `_is_path_inside_base` (aclarando que usa `commonpath`) y la adición de docstrings detallados en funciones internas que carecían de explicaciones sobre su propósito y contrato de seguridad.

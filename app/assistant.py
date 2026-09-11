@@ -309,8 +309,10 @@ class SystemContext:
             if val is not None and spec.is_valid_type(val):
                 f_val = float(val)
                 if math.isfinite(f_val) and spec.min_val <= f_val <= spec.max_val:
-                    setattr(self, key, spec.cast_func(val))
-                    return True
+                    # Validar existencia antes de asignar
+                    if hasattr(self, key):
+                        setattr(self, key, spec.cast_func(val))
+                        return True
         except (ValueError, TypeError, AttributeError):
             pass
         return False

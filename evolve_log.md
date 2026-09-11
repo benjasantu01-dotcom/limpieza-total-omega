@@ -1193,3 +1193,10 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Valu
 - `2026-09-11T12:58:26` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult
 - `2026-09-11T12:58:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T12:58:26` Corrida terminada. Total usado hoy: 308.
+- `2026-09-11T13:05:47` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-11T13:06:12` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._is_inside_base_root, Scanner._run_file_heuristics
+- `2026-09-11T13:06:41` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el rendimiento del módulo implementando `_KEY_TO_ENUM` para evitar la búsqueda lineal repetitiva mediante `_STR_TO_ENUM.get()` en cada ciclo de validación de `validate` y `update`, consolidando el mapeo de claves de forma más eficiente.
+- `2026-09-11T13:07:08` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-11T13:07:33` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar de forma segura entradas inesperadas o parcialmente corruptas mediante la adición de verificaciones de tipo y estructura antes de realizar cualquier operación de seteo, previniendo fallos en tiempo de ejecución por datos malformados.
+- `2026-09-11T13:07:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T13:07:33` Corrida terminada. Total usado hoy: 312.
