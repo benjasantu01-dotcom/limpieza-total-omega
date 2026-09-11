@@ -252,7 +252,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     final_score = int(_clamp(total_score, 0.0, 100.0))
     
     if metrics.quarantined_count > 0:
-        recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")
+        safe_msg = f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena."
+        recommendations.append(safe_msg)
     
     return HealthResult(
         score=final_score, 

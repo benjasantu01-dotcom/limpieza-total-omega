@@ -200,6 +200,7 @@ def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[Pr
         pid_val, ws_val = int(pid_str), int(ws_str)
         if not name.strip() or pid_val <= 0 or ws_val < 0 or pid_val in SYSTEM_CRITICAL_PIDS:
             return None
+        # Validamos ruta base si es posible para prevenir filtrado incompleto
         if is_protected_path(name):
             return None
         return ProcessMemory(name=name, pid=pid_val, working_set=BytesValue(ws_val))
@@ -349,9 +350,8 @@ def _get_process_path(proc_handle: int) -> Optional[str]:
     try:
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 1024) > 0:
             path = Path(str(buf.value))
-            if not path.is_absolute():
-                return None
-            return str(path.resolve())
+            # Resolvemos contra el sistema de archivos real antes de validar
+            return str(path.resolve(strict=False))
     except (OSError, ctypes.ArgumentError, ValueError, MemoryError):
         pass
     return None
@@ -367,20 +367,18 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
     try:
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
-            err = kernel32.GetLastError()
-            return False, f"Imposible obtener estado del proceso (Error {err})."
+            return False, f"Imposible verificar estado (Error {kernel32.GetLastError()})."
             
         if exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso no está activo."
             
         exec_path_str = _get_process_path(proc_handle)
         if not exec_path_str:
-            return False, "Acceso denegado, proceso inexistente o no válido."
+            return False, "Acceso denegado o ejecutable no localizable."
         
-        # Validaciones de seguridad exigentes: debe normalizarse antes de verificar
-        safe_path = str(Path(exec_path_str).resolve())
-        if is_protected_path(safe_path) or not is_safe_to_modify(safe_path):
-            return False, "Operación denegada por política de seguridad."
+        # Validaciones de seguridad exigentes sobre la ruta resuelta
+        if is_protected_path(exec_path_str) or not is_safe_to_modify(exec_path_str):
+            return False, "Operación denegada: ruta protegida."
             
         return True, None
     except (AttributeError, ValueError, ctypes.ArgumentError, OSError):
@@ -403,12 +401,11 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
 
     kernel32 = ctypes.windll.kernel32
     psapi = getattr(ctypes.windll, "psapi", None)
-    if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs de memoria no disponibles."
+    if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
-        err = kernel32.GetLastError()
-        return False, f"Acceso denegado (Error {err}) al abrir el proceso."
+        return False, f"Acceso denegado (Error {kernel32.GetLastError()})."
     
     try:
         is_safe, error_reason = _is_safe_to_trim(proc_handle)
@@ -416,11 +413,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, error_reason or "Verificación de seguridad fallida."
         
         if not psapi.EmptyWorkingSet(proc_handle): 
-            err = kernel32.GetLastError()
-            return False, f"El sistema denegó la operación (Error {err})."
+            return False, f"Sistema denegó la operación (Error {kernel32.GetLastError()})."
             
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, OSError, ValueError) as e:
-        return False, f"Error de sistema al ejecutar el trim: {str(e)}"
+        return False, f"Error de sistema: {str(e)}"
     finally:
         kernel32.CloseHandle(proc_handle)

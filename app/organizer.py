@@ -244,6 +244,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if _is_recursive_violation(s_res, dest): return False
         target_dir: Path = dest.parent if dest.is_file() else dest
         if not target_dir.exists(): return False
+        # Mismo sistema de archivos (unidad) para garantizar operación atómica
         if s_res.drive != target_dir.resolve().drive: return False
         return _validate_file_attributes(s_res)
     except (OSError, RuntimeError, AttributeError):
