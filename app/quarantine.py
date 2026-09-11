@@ -200,11 +200,14 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def _safe_unlink(path: Path) -> bool:
-    """Elimina archivo tras validar permisos y estado de bloqueo."""
+    """Elimina archivo tras validar permisos, estado de bloqueo y protección."""
     if not path.is_file() or path.is_symlink():
         return False
         
     try:
+        # Validación de seguridad defensiva: no borrar nada protegido
+        if is_protected_path(path):
+            return False
         if is_safe_to_modify(path) and not _is_file_locked(path):
             path.unlink()
             return True

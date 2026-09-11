@@ -212,6 +212,14 @@ def _is_encrypted_or_compressed(path_str: str) -> bool:
     except (AttributeError, OSError, TypeError):
         return False
 
+@lru_cache(maxsize=2048)
+def _is_offline(path_str: str) -> bool:
+    """Verifica si el archivo está marcado como offline (ej: placeholder de nube)."""
+    if os.name != 'nt': return False
+    try:
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(path_str)
+        return bool(attrs & FILE_ATTRIBUTE_OFFLINE)
+    except (AttributeError, OSError, TypeError): return False
 
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
@@ -243,7 +251,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _IntegrityCheck(ProtectionReason.READ_ONLY, lambda _, st: not bool(st.st_mode & stat.S_IWRITE)),
     _IntegrityCheck(ProtectionReason.IN_USE, lambda p, _: _is_file_in_use(str(p))),
     _IntegrityCheck(ProtectionReason.SYSTEM_HIDDEN, lambda p, _: _is_system_or_hidden(str(p))),
-    _IntegrityCheck(ProtectionReason.OFFLINE, lambda p, _: bool(ctypes.windll.kernel32.GetFileAttributesW(str(p)) & FILE_ATTRIBUTE_OFFLINE) if os.name == 'nt' else False),
+    _IntegrityCheck(ProtectionReason.OFFLINE, lambda p, _: _is_offline(str(p))),
     _IntegrityCheck(ProtectionReason.ENCRYPTED_OR_COMPRESSED, lambda p, _: _is_encrypted_or_compressed(str(p))),
     _IntegrityCheck(ProtectionReason.HARD_LINK, lambda p, st: p.is_file() and st.st_nlink > 1),
     _IntegrityCheck(ProtectionReason.ADS, lambda p, _: _has_alternate_data_stream(p.name)),
@@ -531,7 +539,8 @@ def describe_protection(path: PathLike) -> str:
             if _is_readonly(str(p)): return f"'{p}' es solo lectura."
             if _is_file_in_use(str(p)): return f"'{p}' en uso."
             if _is_encrypted_or_compressed(str(p)): return f"'{p}' archivo cifrado o comprimido."
-            if _is_system_or_hidden(str(p)): return f"'{p}' atributo oculto/sistema/offline."
+            if _is_offline(str(p)): return f"'{p}' archivo offline/nube."
+            if _is_system_or_hidden(str(p)): return f"'{p}' atributo oculto/sistema."
             if _has_alternate_data_stream(p.name): return f"'{p}' contiene ADS."
             if not (p.is_file() or p.is_dir()): return f"'{p}' tipo de objeto no soportado."
             if p.is_file() and p.stat().st_size == 0: return f"'{p}' archivo vacío."
