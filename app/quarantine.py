@@ -628,9 +628,6 @@ def quarantine_file(
         if destination.exists():
             _safe_unlink(destination)
         raise
-    finally:
-        try: load_manifest(dest_dir, force_reload=True)
-        except: pass
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna ítems validados presentes en el sandbox y purga huérfanos."""
@@ -639,6 +636,7 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
         items = load_manifest(base)
         existing_files = {f.name for f in base_path.iterdir() if f.is_file()}
         
+        # Filtramos ítems cuyos archivos existen en el directorio (O(1) lookup)
         valid_items = [i for i in items if i.stored_name in existing_files]
         if len(valid_items) != len(items):
             save_manifest(valid_items, base)
@@ -752,6 +750,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     purged_ids: Set[str] = set()
     
     try:
+        # iterdir() es eficiente; validamos contra el mapa de manifiesto una sola vez
         for stored_path in quarantine_root.iterdir():
             if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
                 continue
