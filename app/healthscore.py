@@ -146,7 +146,7 @@ class SystemMetrics:
 
     def __post_init__(self) -> None:
         """Inicializa valores faltantes y asegura la integridad de los datos."""
-        for field_name, field_def in self.__dataclass_fields__.items():
+        for field_name in self.__dataclass_fields__:
             val = getattr(self, field_name)
             if val is None:
                 default = 100.0 if "percent" in field_name else 0.0
@@ -235,7 +235,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             if rules:
                 _evaluate_rules(metrics, rules, ratio, recommendations)
             return area, int(round(ratio * weight))
-        except (ValueError, TypeError, ZeroDivisionError):
+        except (ValueError, TypeError, ZeroDivisionError, Exception):
             return area, 0
 
     metric_breakdown = dict(process_area(a, w, s, r) for a, w, s, r in _CACHE_SCORERS)

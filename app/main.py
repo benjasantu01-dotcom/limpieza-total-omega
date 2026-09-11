@@ -1770,6 +1770,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             
         entry_val = self.question_entry.get()
         texto = (question or entry_val).strip()
+        # Sanitización estricta: solo caracteres imprimibles y límite razonable
         texto = "".join(c for c in texto if c.isprintable())[:500]
         
         if not texto:

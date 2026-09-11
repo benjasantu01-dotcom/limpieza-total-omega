@@ -298,8 +298,9 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
+        if not isinstance(p, Path):
+            continue
         try:
-            if not isinstance(p, Path) or not p.exists(): continue
             stat_info = p.stat()
             candidates.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError):
@@ -310,7 +311,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Genera una lista de líneas descriptivas del grupo para la interfaz."""
-    if not isinstance(group, DuplicateGroup) or not getattr(group, 'paths', None):
+    if not isinstance(group, DuplicateGroup) or not hasattr(group, 'paths'):
         return ["Error: Grupo inválido"]
         
     keeper = suggest_keeper(group)
@@ -322,7 +323,8 @@ def format_group(group: DuplicateGroup) -> List[str]:
 
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     for path in group.paths:
-        if not isinstance(path, Path): continue
+        if not isinstance(path, Path): 
+            continue
         if not path.exists():
             lines.append(f"   [desaparecido] {path}")
         elif not _is_valid_candidate(path):
