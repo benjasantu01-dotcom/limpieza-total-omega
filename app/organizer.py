@@ -175,23 +175,26 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está bloqueado exclusivamente por otro proceso en Windows.
-    Abre un handle en modo lectura; si falla, el archivo está en uso exclusivo.
     """
     if path is None or _is_junction(path) or not path.exists(): 
         return True
     
     if os.name == "nt":
         INVALID_HANDLE_VALUE = -1
-        # 0x80000000 = GENERIC_READ, 0x1 = FILE_SHARE_READ
-        handle = ctypes.windll.kernel32.CreateFileW(
-            str(path), 0x80000000, 0x1, None, 0x3, 0x80, None
-        )
-        if handle == INVALID_HANDLE_VALUE:
-            return True
+        handle = None
         try:
+            # 0x80000000 = GENERIC_READ, 0x1 = FILE_SHARE_READ
+            handle = ctypes.windll.kernel32.CreateFileW(
+                str(path), 0x80000000, 0x1, None, 0x3, 0x80, None
+            )
+            if handle == INVALID_HANDLE_VALUE:
+                return True
             return False
+        except Exception:
+            return True
         finally:
-            ctypes.windll.kernel32.CloseHandle(handle)
+            if handle is not None and handle != INVALID_HANDLE_VALUE:
+                ctypes.windll.kernel32.CloseHandle(handle)
     return False
 
 

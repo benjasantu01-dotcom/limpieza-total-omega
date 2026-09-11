@@ -1092,3 +1092,42 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-09-11T00:03:04` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-09-11T00:03:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T00:03:04` Corrida terminada. Total usado hoy: 4.
+- `2026-09-11T00:10:53` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-09-11T00:11:24` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `_is_file_locked` para manejar correctamente archivos inexistentes o bloqueos por permisos mediante un bloque `try-except` más robusto, asegurando que el cierre del handle ocurra incluso bajo excepciones inesperadas durante la apertura del archivo.
+- `2026-09-11T00:12:02` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine.py` ante errores de entrada y concurrencia implementando una limpieza más agresiva de archivos huérfanos en el manifiesto durante `list_items` y endureciendo la validación de archivos mediante `stat().st_size` en la carga del manifiesto.
+- `2026-09-11T00:12:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-11T00:12:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-11T00:12:51` Tests FALLARON:
+```
+a"
+        assert settings.save(settings.DEFAULTS, destino) is not None
+>       assert (destino / settings.SETTINGS_FILE).is_file()
+E       AssertionError: assert False
+E        +  where False = is_file()
+E        +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-3/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+E        +      where 'config.json' = settings.SETTINGS_FILE
+
+evolve/tests/test_assistant.py:61: AssertionError
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert False
+ +  where False = is_file()
+ +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-3/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+ +      where 'config.json' = settings.SETTINGS_FILE
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+2 failed, 297 passed in 1.41s
+
+```
+- `2026-09-11T00:12:51` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha implementado una validación de existencia de rutas padre en `ensure_safe_to_modify` y se mejoró la resiliencia ante `PermissionError` durante la normalización de rutas inexistentes, asegurando que el bucle no aborte ante directorios con permisos restringidos pero de estructura válida.
+- `2026-09-11T00:12:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T00:12:51` Corrida terminada. Total usado hoy: 8.

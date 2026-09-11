@@ -604,16 +604,18 @@ def quarantine_file(
         except: pass
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
-    """Retorna ítems validados presentes en el sandbox."""
+    """Retorna ítems validados presentes en el sandbox y purga huérfanos."""
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
         existing_files = {f.name for f in base_path.iterdir() if f.is_file()}
-        # Filtramos mediante lookup en conjunto para O(1)
-        return [
-            i for i in sorted(items, key=lambda x: x.quarantined_at, reverse=True)
-            if i.stored_name in existing_files
-        ]
+        
+        # Limpieza: Si el ítem no tiene archivo, es un error de estado. Sincronizamos.
+        valid_items = [i for i in items if i.stored_name in existing_files]
+        if len(valid_items) != len(items):
+            save_manifest(valid_items, base)
+            
+        return sorted(valid_items, key=lambda x: x.quarantined_at, reverse=True)
     except OSError:
         return []
 
