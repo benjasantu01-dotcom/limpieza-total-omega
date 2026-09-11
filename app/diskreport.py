@@ -334,7 +334,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
                 top_level_folder = root / rel.parts[0]
                 folder_total_bytes[top_level_folder] += max(0, size)
                 folder_file_counts[top_level_folder] += 1
-        except (ValueError, OSError): continue
+        except (ValueError, OSError, RuntimeError): continue
 
     results = [FolderUsage(p, folder_total_bytes[p], folder_file_counts[p]) for p in folder_total_bytes]
     return heapq.nlargest(safe_limit, results, key=lambda f: f.size_bytes)
@@ -368,7 +368,11 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         total_bytes += safe_size
         total_files += 1
         
-        ext = path.suffix.lower() if path.suffix else "(sin extensión)"
+        try:
+            ext = path.suffix.lower() if path.suffix else "(sin extensión)"
+        except Exception:
+            ext = "(error lectura)"
+        
         ext_sizes[ext] += safe_size
         ext_counts[ext] += 1
         

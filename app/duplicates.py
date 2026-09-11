@@ -269,14 +269,11 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Selecciona estrategia de hashing según tamaño y robustez ante E/S."""
-    if size <= 0 or not paths or len(paths) < 2: 
+    if not isinstance(size, int) or size <= 0 or not isinstance(paths, list) or len(paths) < 2:
         return []
     
-    try:
-        results = _group_paths_by_hash(paths, partial_hash) if size <= PARTIAL_READ_BYTES else _refine_by_deep_hash(paths)
-        return [DuplicateGroup(digest, size, sorted(confirmed_paths)) for digest, confirmed_paths in results.items()]
-    except Exception:
-        return []
+    results = _group_paths_by_hash(paths, partial_hash) if size <= PARTIAL_READ_BYTES else _refine_by_deep_hash(paths)
+    return [DuplicateGroup(digest, size, sorted(confirmed_paths)) for digest, confirmed_paths in results.items()]
 
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:

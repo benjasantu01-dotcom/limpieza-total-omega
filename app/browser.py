@@ -133,22 +133,20 @@ def base_directories() -> List[Path]:
 
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
-    Verifica mediante resolución absoluta que la ruta objetivo esté bajo la base.
-    Incluye sanitización estricta contra caracteres de control y longitud.
+    Verifica mediante resolución de base común que la ruta objetivo esté bajo la base.
     """
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
     try:
-        target_str: str = str(real_target.resolve(strict=True))
-        base_str: str = str(real_base.resolve(strict=True))
+        target_abs = str(real_target.resolve(strict=True))
+        base_abs = str(real_base.resolve(strict=True))
         
-        # Filtros defensivos: rechazar rutas con caracteres ilegales o sospechosos
-        invalid_chars = {'\0', '\r', '\n', '\t', '<', '>', '|', '?', '*'}
-        if len(target_str) >= MAX_PATH_LEN or any(c in target_str for c in invalid_chars):
+        # Validar longitud mínima de seguridad antes de comparar
+        if len(target_abs) >= MAX_PATH_LEN:
             return False
             
-        return target_str == base_str or target_str.startswith(base_str + os.sep)
-    except (OSError, RuntimeError, ValueError):
+        return os.path.commonpath([target_abs, base_abs]) == base_abs
+    except (OSError, ValueError):
         return False
 
 
@@ -199,10 +197,11 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
     if not isinstance(path_obj, Path):
         return False
     try:
-        if not path_obj.exists() or not path_obj.is_dir():
+        # Validación temprana de existencia sin resolver, luego validación estricta
+        if not path_obj.exists():
             return False
         p_res = path_obj.resolve(strict=True)
-        if not is_safe_to_modify(p_res) or is_protected_path(p_res):
+        if not p_res.is_dir() or not is_safe_to_modify(p_res) or is_protected_path(p_res):
             return False
         if base_check_path and not _is_path_inside_base(p_res, base_check_path):
             return False
