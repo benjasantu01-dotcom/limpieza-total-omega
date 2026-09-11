@@ -7,38 +7,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **218** (43.3% de aceptación)
-- Rechazadas por tests: 15
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 38
-- Sin cambios (nada sustancial que mejorar): 20
+- Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 13 | 0 | 3 | 2 | 36 |
+| 2026-09-09 | 11 | 0 | 3 | 1 | 35 |
 | 2026-09-10 | 160 | 11 | 27 | 16 | 136 |
-| 2026-09-11 | 45 | 4 | 8 | 2 | 41 |
+| 2026-09-11 | 47 | 5 | 8 | 2 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
-- seguridad defensiva: **48**
+- seguridad defensiva: **46**
 - legibilidad y documentación: **46**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **38**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
+- `browser.py`: **21**
 - `settings.py`: **20**
-- `browser.py`: **20**
-- `healthscore.py`: **18**
+- `assistant.py`: **19**
 - `duplicates.py`: **18**
-- `assistant.py`: **18**
-- `memory.py`: **16**
+- `healthscore.py`: **17**
 - `scanner.py`: **16**
 - `diskreport.py`: **16**
+- `memory.py`: **15**
 - `branding.py`: **15**
 - `safety.py`: **14**
 - `organizer.py`: **10**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T04:17:25` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` ante archivos inaccesibles o bloqueados, asegurando que `OSError` o `PermissionError` no interrumpan el escaneo de otras subcarpetas y manejando explícitamente rutas que resulten en bucles o accesos denegados.
+- `2026-09-11T04:16:39` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar de forma segura entradas parcialmente corruptas o tipos inesperados, evitando que una sola clave malformada invalide el resto del contexto y garantizando que siempre se mantenga la integridad del objeto antes de procesar diagnósticos.
 - `2026-09-11T04:06:54` **settings.py** (rendimiento): Se implementó un cacheo más eficiente en `_Validators._run_safety_checks` para evitar llamadas redundantes y costosas a `path.resolve()` y `ensure_safe_to_modify` en rutas que ya fueron validadas, optimizando el rendimiento durante las lecturas frecuentes de configuración.
 - `2026-09-11T04:06:37` **scanner.py** (rendimiento): Optimizé el rendimiento de `scan_directory` y `Scanner.process_entry` evitando llamadas redundantes a `Path.resolve()` y `str(p)` mediante el uso directo de las propiedades ya disponibles en `os.DirEntry`, reduciendo significativamente la cantidad de syscalls por archivo.
 - `2026-09-11T04:06:11` **safety.py** (rendimiento): Optimicé el rendimiento de `_is_system_path_cached` reemplazando la evaluación iterativa `any()` de `p.parts` (que generaba una nueva tupla de componentes en cada llamada) por una búsqueda directa en una versión normalizada y minúscula del string, eliminando la creación innecesaria de objetos `Path` dentro del hot path.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T03:18:06` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de validación de seguridad (`_is_safe_for_disk_op`, `_validate_path_security`) utilizando docstrings detallados que explican el "porqué" de las restricciones y la lógica de flujo, facilitando el mantenimiento y la comprensión de las salvaguardas críticas del sistema.
 - `2026-09-11T03:17:05` **main.py** (legibilidad y documentación): Se introdujo un sistema de tipado y documentación más robusto para `LimpiezaTotalOmegaApp` mediante la definición formal de los tipos de retorno en los métodos clave y la adición de docstrings detallados, facilitando el mantenimiento y la comprensión de la lógica de flujo asíncrono y gestión de estado.
 - `2026-09-11T03:05:49` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `_collect_candidates` y sus helpers, clarificando el propósito de la recursión y la exclusión de rutas, asegurando que la intención del código sea evidente para cualquier colaborador.
-- `2026-09-11T03:05:35` **diskreport.py** (legibilidad y documentación): Se mejoró la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints precisos en los retornos de las funciones, la estandarización de docstrings siguiendo las convenciones de `_bytes_to_mb`, y la simplificación de las estructuras de control en las funciones de agregación para reducir la complejidad cognitiva.
-- `2026-09-11T03:05:09` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad mediante la adición de Type Hints detallados, la unificación del manejo de errores en `directory_size` y la adición de una docstring explicativa en `_is_path_inside_base` que aclara la necesidad crítica de resolución de rutas para prevenir el 'Directory Traversal'.

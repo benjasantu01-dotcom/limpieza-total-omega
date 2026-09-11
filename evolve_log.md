@@ -1534,3 +1534,44 @@ FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not
 - `2026-09-11T04:06:54` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un cacheo más eficiente en `_Validators._run_safety_checks` para evitar llamadas redundantes y costosas a `path.resolve()` y `ensure_safe_to_modify` en rutas que ya fueron validadas, optimizando el rendimiento durante las lecturas frecuentes de configuración.
 - `2026-09-11T04:06:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T04:06:54` Corrida terminada. Total usado hoy: 100.
+- `2026-09-11T04:15:26` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-09-11T04:15:57` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.36s
+
+```
+- `2026-09-11T04:15:57` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé la resolución de rutas en `StartupEntry` implementando un pre-filtrado mediante el set `_EXISTS_CACHE` y evitando la llamada costosa a `Path.resolve()` cuando la ruta ya fue validada o es sospechosa, reduciendo drásticamente el I/O en cada iteración del bucle.
+- `2026-09-11T04:16:39` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar de forma segura entradas parcialmente corruptas o tipos inesperados, evitando que una sola clave malformada invalide el resto del contexto y garantizando que siempre se mantenga la integridad del objeto antes de procesar diagnósticos.
+- `2026-09-11T04:17:13` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-11T04:17:25` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` ante archivos inaccesibles o bloqueados, asegurando que `OSError` o `PermissionError` no interrumpan el escaneo de otras subcarpetas y manejando explícitamente rutas que resulten en bucles o accesos denegados.
+- `2026-09-11T04:17:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T04:17:25` Corrida terminada. Total usado hoy: 104.

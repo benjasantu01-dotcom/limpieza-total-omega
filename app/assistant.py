@@ -265,25 +265,6 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
 class SystemContext:
     """
     Agregador de estado del sistema utilizado para diagnósticos.
-    
-    Esta clase centraliza las métricas recolectadas por los módulos de análisis.
-    Mantiene la integridad de los datos mediante validación contra _VALIDATORS
-    y asegura que el contenido sea seguro para ser procesado por LLMs.
-
-    Attributes:
-        analyzed: Indicador de si el escaneo se completó exitosamente.
-        score: Puntaje de salud global (0-100).
-        grade: Calificación alfabética obtenida.
-        junk_mb: Cantidad de archivos temporales detectados en MB.
-        suspicious_count: Total de archivos marcados como potencialmente peligrosos.
-        suspicious_warnings: Cantidad de archivos sospechosos con advertencias activas.
-        memory_available_percent: Porcentaje actual de RAM disponible.
-        memory_total_gb: Capacidad total de memoria RAM instalada.
-        disk_free_percent: Porcentaje de espacio libre en la unidad principal.
-        duplicate_mb: Espacio ocupado por archivos duplicados en MB.
-        startup_count: Número de aplicaciones configuradas para iniciar con el SO.
-        quarantined_count: Cantidad de archivos aislados en la cuarentena.
-        browser_cache_mb: Tamaño del caché detectado en navegadores soportados.
     """
     score: Optional[int] = None
     grade: str = ""
@@ -322,7 +303,6 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> bool:
         """
         Intenta mapear un valor desde la fuente de datos al atributo correspondiente.
-        Realiza comprobaciones de tipo y rango antes de realizar la asignación.
         """
         try:
             val = _get_source_value(source, key)
@@ -332,7 +312,7 @@ class SystemContext:
                     setattr(self, key, spec.cast_func(val))
                     return True
         except (ValueError, TypeError, AttributeError):
-            return False
+            pass
         return False
 
     def _clean_grade(self, val: Any) -> str:
@@ -343,21 +323,22 @@ class SystemContext:
 
     def ingest(self, source: Any) -> bool:
         """
-        Carga datos externos (dict u objeto) en la instancia del contexto.
-        Filtra y valida cada campo siguiendo la especificación en _VALIDATORS.
+        Carga datos externos en la instancia del contexto de forma robusta.
         """
         if not isinstance(source, (dict, object)) or _is_input_too_deep_or_complex(source):
             return False
             
         found_data = False
         for key, spec in _VALIDATORS.items():
-            if self._apply_field(source, key, spec):
+            self._apply_field(source, key, spec)
+            if getattr(self, key, None) is not None:
                 found_data = True
         
         grade_val = _get_source_value(source, "grade")
-        clean_grade = self._clean_grade(grade_val)
-        if clean_grade:
-            self.grade = clean_grade
+        if isinstance(grade_val, str):
+            clean_grade = self._clean_grade(grade_val)
+            if clean_grade:
+                self.grade = clean_grade
         
         return found_data
 
@@ -386,7 +367,6 @@ def _is_sensitive_structure(text: str) -> bool:
 def _is_safe_text_structure(text: str) -> bool:
     """
     Realiza una validación profunda de integridad del texto.
-    Verifica inyecciones, rutas prohibidas, secuencias ANSI y comandos peligrosos.
     """
     if not text: return True
     if (_PATH_INJECTION_REGEX.search(text) or 
@@ -411,13 +391,11 @@ def _ensure_safe_text(text: Any) -> bool:
 def _get_source_value(source: Any, key: str) -> Any:
     """
     Accede de forma genérica a una clave en un diccionario o atributo de objeto.
-    Asegura que no se acceda a métodos, propiedades dinámicas inseguras o miembros internos.
     """
     try:
         if isinstance(source, dict):
             return source.get(key)
         
-        # Uso defensivo de getattr para evitar excepciones al consultar atributos inexistentes
         val = getattr(source, key, None)
         if val is not None and not callable(val) and not key.startswith("_"):
             return val
@@ -456,7 +434,6 @@ def _generate_context_lines_cached(score_s: str, grade: str, junk_s: str, susp_s
 def context_as_text(context: SystemContext) -> str:
     """
     Serializa las métricas en un formato de texto optimizado para prompts.
-    Asegura que todos los campos pasen por filtros de saneamiento antes de ser concatenados.
     """
     if context.is_empty:
         return "No hay métricas disponibles todavía."
@@ -478,7 +455,6 @@ def context_as_text(context: SystemContext) -> str:
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """
     Formatea valores numéricos a cadenas con precisión definida.
-    Retorna "N/A" ante valores nulos o no finitos para mantener la robustez del output.
     """
     f = _safe_float(val, -1.0)
     if f < 0:
@@ -619,8 +595,6 @@ def _sanitize_query(question: str) -> str:
 def local_answer(question: str, context: SystemContext) -> Answer:
     """
     Motor principal de inferencia local.
-    Analiza palabras clave en el input para seleccionar el handler más adecuado
-    o generar un diagnóstico general basado en problemas activos.
     """
     q_sanitized = _sanitize_query(question)
     if not q_sanitized or not _ensure_safe_text(q_sanitized):
@@ -647,7 +621,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 def available(base: Union[str, Path, None] = None) -> bool:
     """Verifica si el asistente remoto está habilitado, validando el acceso a configuraciones."""
     try:
-        # Solo permitir acceso si la base es None o un objeto seguro/vacio
         if base is not None and not isinstance(base, (str, Path)):
             return False
         return settings.assistant_enabled(base)
@@ -742,7 +715,6 @@ def ask(question: str, context: Optional[SystemContext] = None,
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
     
-    # Validacion defensiva del origen antes de intentar cargar settings
     if base is not None and not isinstance(base, (str, Path)):
         return respaldo
         

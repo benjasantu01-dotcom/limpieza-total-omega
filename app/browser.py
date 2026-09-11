@@ -192,7 +192,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
     """Valida que la ruta sea segura de acceder."""
     try:
-        if not path_obj.is_dir():
+        if not path_obj.exists() or not path_obj.is_dir():
             return False
         p_res = path_obj.resolve(strict=True)
         if not is_safe_to_modify(p_res) or is_protected_path(p_res):
@@ -227,9 +227,8 @@ def _sum_directory_recursive(
                         total += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, depth + 1)
                     else:
                         total += entry.stat(follow_symlinks=False).st_size
-                except (OSError, PermissionError) as e:
-                    if getattr(e, 'winerror', None) == ERROR_SHARING_VIOLATION:
-                        continue
+                except (OSError, PermissionError):
+                    continue
     except (PermissionError, OSError):
         return 0
     
