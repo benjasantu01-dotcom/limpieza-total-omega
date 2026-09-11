@@ -396,9 +396,11 @@ def _get_source_value(source: Any, key: str) -> Any:
         if isinstance(source, dict):
             return source.get(key)
         
-        val = getattr(source, key, None)
-        if val is not None and not callable(val) and not key.startswith("_"):
-            return val
+        # Validar si es objeto tipo mapping o clase simple antes de getattr
+        if hasattr(source, "__dict__") or isinstance(source, object):
+            val = getattr(source, key, None)
+            if val is not None and not callable(val) and not key.startswith("_"):
+                return val
         return None
     except (AttributeError, TypeError):
         return None

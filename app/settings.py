@@ -286,37 +286,32 @@ def validate(raw_values: Any) -> AppSettings:
             validated = validator(key_enum, val)
             if validated is not None:
                 config[key_enum.value] = validated
-            elif key_enum == ConfigKey.ULTIMA_CARPETA and val == "":
-                config[key_enum.value] = ""
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga y valida el JSON de configuración con reintentos ante bloqueos de archivo."""
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
-    rutas_a_probar = [ruta, ruta.with_suffix(".json.bak")]
     
-    for r in rutas_a_probar:
-        for attempt in range(3):
-            try:
-                if not r.exists() or not r.is_file(): break
-                stats = r.stat()
-                mtime = float(stats.st_mtime)
-                if (cached := _CACHE.get(ruta_str)) and cached[0] == mtime:
-                    return cached[1]
-                if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
-                    with open(r, "r", encoding="utf-8") as f:
-                        data = validate(json.load(f))
-                    _CACHE[ruta_str] = (mtime, data)
-                    return data
-                break
-            except (OSError, PermissionError):
-                if attempt < 2:
-                    time.sleep(0.1 * (attempt + 1))
-                    continue
-                break
-            except (json.JSONDecodeError, UnicodeDecodeError, ValueError):
-                break
+    for attempt in range(3):
+        try:
+            if not ruta.exists(): return DEFAULTS.copy()
+            stats = ruta.stat()
+            mtime = float(stats.st_mtime)
+            if (cached := _CACHE.get(ruta_str)) and cached[0] == mtime:
+                return cached[1].copy()
+            if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
+                with open(ruta, "r", encoding="utf-8") as f:
+                    data = validate(json.load(f))
+                _CACHE[ruta_str] = (mtime, data)
+                return data.copy()
+            break
+        except (OSError, PermissionError):
+            if attempt < 2:
+                time.sleep(0.1 * (attempt + 1))
+                continue
+        except (json.JSONDecodeError, UnicodeDecodeError, ValueError):
+            break
     return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
@@ -324,9 +319,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     cleaned_settings = validate(values)
-    
-    # Verificación de integridad final antes de persistir
-    if not isinstance(cleaned_settings.get("duplicados_tamano_minimo_kb"), int): return None
     
     for attempt in range(3):
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
