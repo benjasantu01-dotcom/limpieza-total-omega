@@ -99,7 +99,6 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         
     try:
         p = Path(path).resolve(strict=True)
-        # Verificación estricta: evita procesar archivos protegidos o bloqueados
         if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p):
             return None
             
@@ -138,29 +137,27 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
         return None
 
 
-def _is_valid_candidate(path: Path) -> bool:
+def _is_valid_candidate(path: Path, st: Optional[os.stat_result] = None) -> bool:
     """
     Validador estricto para filtrar candidatos a duplicados.
     
     Asegura que el archivo no sea un enlace simbólico, punto de reparse, 
     archivo de sistema u oculto, y que esté en una ubicación permitida.
     """
-    if not isinstance(path, Path) or not path.is_absolute():
-        return False
     try:
+        if not path.is_absolute():
+            path = path.absolute()
+        
+        # Uso de resolución optimizada si el stat ya está disponible
         resolved = path.resolve(strict=True)
-        if not resolved.is_file() or resolved.is_symlink() or is_junction(resolved):
+        if resolved.is_symlink() or is_junction(resolved) or is_protected_path(resolved) or not is_safe_to_modify(resolved):
             return False
+            
         if is_system_or_hidden(resolved):
             return False
-        st = resolved.stat()
-        return (
-            not is_protected_path(resolved) and 
-            is_safe_to_modify(resolved) and
-            os.access(resolved, os.R_OK) and
-            st.st_nlink == 1 and
-            st.st_size > 0
-        )
+            
+        st = st or resolved.stat()
+        return st.st_size > 0 and st.st_nlink == 1 and os.access(resolved, os.R_OK)
     except (OSError, ValueError, TypeError, RuntimeError):
         return False
 
@@ -204,9 +201,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Escaneo recursivo para recolectar candidatos indexados por tamaño.
-    
-    Implementa un mecanismo de 'visited' para evitar ciclos por enlaces simbólicos
-    o puntos de reparse, respetando estrictamente la política de seguridad.
     """
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[str] = set()
@@ -222,19 +216,15 @@ def _collect_candidates(
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Si es directorio: evaluar recursión evitando puntos de unión
                         if entry.is_dir(follow_symlinks=False):
                             if not is_junction(Path(entry.path)):
                                 _scan_directory_recursive(Path(entry.path))
-                        # Si es archivo: verificar tamaño y validez antes de mapear
                         elif entry.is_file(follow_symlinks=False):
-                            p = Path(entry.path)
-                            if not is_protected_path(p) and is_safe_to_modify(p):
-                                st = entry.stat()
-                                if st.st_size >= min_size:
-                                    path_obj = p.absolute()
-                                    if _is_valid_candidate(path_obj):
-                                        size_map[st.st_size].append(path_obj)
+                            st = entry.stat()
+                            if st.st_size >= min_size:
+                                path_obj = Path(entry.path)
+                                if _is_valid_candidate(path_obj, st):
+                                    size_map[st.st_size].append(path_obj)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError, RuntimeError):
@@ -282,7 +272,6 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
         return []
     
     try:
-        # Si el archivo es pequeño, el hash parcial es suficiente; si no, refinamos.
         results = _group_paths_by_hash(paths, partial_hash) if size <= PARTIAL_READ_BYTES else _refine_by_deep_hash(paths)
         return [DuplicateGroup(digest, size, sorted(confirmed_paths)) for digest, confirmed_paths in results.items()]
     except Exception:

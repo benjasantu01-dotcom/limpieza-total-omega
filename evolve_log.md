@@ -715,3 +715,36 @@ FAILED evolve/tests/test_assistant.py::test_space_question_adds_up_what_can_be_r
 - `2026-09-11T08:01:22` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): el archivo se encogió al 58% del original (posible pérdida de código)
 - `2026-09-11T08:01:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T08:01:22` Corrida terminada. Total usado hoy: 192.
+- `2026-09-11T08:09:56` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-09-11T08:10:30` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se implementó un sistema de `MappingProxyType` recursivo para los diccionarios de configuración (`_PALETTE_MAP` y `FONT_SIZES`) y se consolidó el cálculo de `_SEVERITY_MAP` como constante inmutable, evitando la creación de objetos innecesarios y permitiendo el acceso directo de solo lectura con rendimiento óptimo.
+- `2026-09-11T08:10:55` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de directorios en `detect_profiles` pasando un diccionario `memo` compartido a través de todas las búsquedas de navegadores, lo cual evita recálculos redundantes si múltiples navegadores o subcarpetas comparten rutas raíz o dependencias de archivos comunes.
+- `2026-09-11T08:11:20` Tests FALLARON:
+```
+ema / "oculto.txt").write_text("y")
+>       nombres = {p.name for p, _ in diskreport.walk_files(tmp_path)}
+                   ^^^^^^
+E       AttributeError: 'str' object has no attribute 'name'
+
+evolve/tests/test_modules.py:577: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:113: SyntaxWarning: invalid escape sequence '\A'
+    """Aísla y valida una ruta dentro de comillas (ej: "C:\App\test.exe")."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_walk_files_finds_everything_recursively - AttributeError: 'str' object has no attribute 'name'
+FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - AttributeError: 'str' object has no attribute 'name'
+2 failed, 297 passed, 7 warnings in 1.08s
+
+```
+- `2026-09-11T08:11:20` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Optimicé el motor de recolección `_collect_summary_data` evitando la creación innecesaria de objetos `Path` y delegando la lógica de filtrado de extensiones al nivel más bajo para reducir el overhead por iteración en recorridos profundos.
+- `2026-09-11T08:11:30` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `is_protected_path` al consolidar el filtrado en `_is_valid_candidate`, y reduje el costo de las llamadas a `os.scandir` integrando la comprobación de `is_file()` y `stat()` mediante `entry` para evitar operaciones de I/O adicionales por ruta.
+- `2026-09-11T08:11:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T08:11:30` Corrida terminada. Total usado hoy: 196.

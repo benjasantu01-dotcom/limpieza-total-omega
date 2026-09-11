@@ -216,23 +216,11 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula el tamaño total de una carpeta mediante DFS recursivo.
-    
-    Usa un diccionario 'memo' para evitar el re-procesamiento de subcarpetas en 
-    árboles complejos y aplica una restricción de profundidad (MAX_SCAN_DEPTH) 
-    para prevenir ataques de desbordamiento de pila en estructuras cíclicas.
-    
-    Args:
-        root_abs: Ruta absoluta del directorio a sumar.
-        is_junction_fn: Callback para detectar puntos de reparse.
-        kernel32: DLL opcional para inspección de atributos de sistema.
-        memo: Diccionario para persistir resultados de subrutas ya procesadas.
-        depth: Profundidad de recursión actual.
-    
-    Returns:
-        Suma en bytes de los archivos encontrados, retornando 0 en caso de error.
     """
-    if not root_abs or depth > MAX_SCAN_DEPTH or root_abs in memo:
-        return memo.get(root_abs, 0)
+    if not root_abs or depth > MAX_SCAN_DEPTH:
+        return 0
+    if root_abs in memo:
+        return memo[root_abs]
     
     total: int = 0
     try:
@@ -247,7 +235,6 @@ def _sum_directory_recursive(
                     else:
                         total += entry.stat(follow_symlinks=False).st_size
                 except (OSError, PermissionError):
-                    # Ignoramos archivos bloqueados o inaccesibles para evitar abortar el reporte completo
                     continue
     except (PermissionError, OSError):
         return 0
@@ -290,6 +277,7 @@ def detect_profiles(
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
     k32 = _get_kernel32()
+    # Cacheamos resultados intermedios de carpetas para evitar re-escaneo
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
@@ -303,6 +291,7 @@ def detect_profiles(
                 if not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                     continue
                 
+                # Pasamos el diccionario persistente para optimizar recorridos compartidos
                 size = _sum_directory_recursive(str(candidate.resolve(strict=True)), _IS_JUNCTION_FN, k32, perf_cache)
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), candidate.resolve(strict=True), size))

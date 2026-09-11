@@ -149,7 +149,7 @@ SCORE_THRESHOLDS: Final[Tuple[Tuple[float, HexColor], ...]] = (
     (90.0, C_SUCCESS), (80.0, C_INFO), (65.0, C_WARNING), (50.0, "#ff7b39")
 )
 
-_SEVERITY_MAP: Final[Mapping[str, str]] = MappingProxyType({"ok": "\u2713", "info": "\u2139", "warning": "\u26a0", "danger": "\u2716"})
+SEVERITY_MAP: Final[Mapping[str, str]] = MappingProxyType({"ok": "\u2713", "info": "\u2139", "warning": "\u26a0", "danger": "\u2716"})
 
 def app_title() -> str:
     """Retorna el título completo de la aplicación incluyendo la versión actual."""
@@ -193,7 +193,7 @@ def severity_label(severity: Optional[str]) -> str:
 
 def severity_icon(severity: Optional[str]) -> str:
     """Devuelve el carácter representativo del nivel de severidad."""
-    return _SEVERITY_MAP.get(severity.lower(), "\u2022") if isinstance(severity, str) else "\u2022"
+    return SEVERITY_MAP.get(severity.lower(), "\u2022") if isinstance(severity, str) else "\u2022"
 
 def grade_color(grade: Optional[str]) -> HexColor:
     """Asigna un color a las calificaciones escolares (A-F)."""
