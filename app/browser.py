@@ -135,14 +135,15 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
     Verifica mediante resolución absoluta que la ruta objetivo esté bajo la base.
     """
-    if real_target is None or real_base is None:
+    if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
     try:
         target_str: str = str(real_target.resolve(strict=True))
         base_str: str = str(real_base.resolve(strict=True))
         if len(target_str) >= MAX_PATH_LEN or any(c in target_str for c in '\0\r\n'):
             return False
-        return target_str.startswith(base_str + os.sep) or target_str == base_str
+        # Se asegura de que sea subdirectorio o igual, evitando ataques de prefijo
+        return target_str == base_str or target_str.startswith(base_str + os.sep)
     except (OSError, RuntimeError, ValueError):
         return False
 
@@ -191,6 +192,8 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
     """Valida que la ruta sea segura de acceder."""
+    if not isinstance(path_obj, Path):
+        return False
     try:
         if not path_obj.exists() or not path_obj.is_dir():
             return False
@@ -249,7 +252,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """Verifica si una carpeta candidata es una ubicación de caché legítima."""
     try:
-        if not candidate.exists() or not candidate.is_dir():
+        if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir():
             return False
         real_candidate = candidate.resolve(strict=True)
         if not _is_path_inside_base(real_candidate, base_path):

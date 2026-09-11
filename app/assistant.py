@@ -330,8 +330,7 @@ class SystemContext:
             
         found_data = False
         for key, spec in _VALIDATORS.items():
-            self._apply_field(source, key, spec)
-            if getattr(self, key, None) is not None:
+            if self._apply_field(source, key, spec):
                 found_data = True
         
         grade_val = _get_source_value(source, "grade")
@@ -408,7 +407,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """Inicializa un SystemContext completo a partir de múltiples fuentes opcionales."""
     ctx = SystemContext()
     for s in (metrics, health, extra):
-        if isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str, int, float, bool, type)):
+        if s is not None and isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str, int, float, bool, type)):
             if ctx.ingest(s):
                 ctx.analyzed = True
     return ctx
