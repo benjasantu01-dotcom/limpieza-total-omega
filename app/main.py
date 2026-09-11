@@ -269,6 +269,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._cache: OrderedDict[str, Any] = OrderedDict()
         self._cache_ttl = 300
         self._cache_max_size = 20
+        self._cache_access_times: Dict[str, float] = {}
         
         self._last_health_state: Optional[Tuple] = None
         self.scan_target: Optional[str] = None
@@ -285,7 +286,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         except Exception:
             self.settings = settings_mod.reset()
             
-        self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
+        with self._task_lock:
+            self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
         self._debounces: Dict[str, str] = {}
             
     @safe_ui_operation
@@ -1013,16 +1015,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 if self._tasks_running == 1:
                     self._toggle_ui_availability(False)
                     self._safe_run_ui_callback(lambda: (
-                        self.activity.pack(side="right") if self.activity.winfo_exists() else None,
-                        self.activity.start() if (self.activity.winfo_exists() and self.activity.winfo_ismapped()) else None
+                        self.activity.pack(side="right") if (hasattr(self, 'activity') and self.activity.winfo_exists()) else None,
+                        self.activity.start() if (hasattr(self, 'activity') and self.activity.winfo_exists() and self.activity.winfo_ismapped()) else None
                     ))
             else:
                 self._tasks_running = max(0, self._tasks_running - 1)
                 if self._tasks_running == 0:
                     self._toggle_ui_availability(True)
                     self._safe_run_ui_callback(lambda: (
-                        self.activity.stop() if self.activity.winfo_exists() else None,
-                        self.activity.pack_forget() if self.activity.winfo_exists() else None
+                        self.activity.stop() if (hasattr(self, 'activity') and self.activity.winfo_exists()) else None,
+                        self.activity.pack_forget() if (hasattr(self, 'activity') and self.activity.winfo_exists()) else None
                     ))
 
     def _validate_and_log_error(self, e: Exception, tab: str) -> None:

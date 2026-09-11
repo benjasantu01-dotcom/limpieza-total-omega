@@ -1085,3 +1085,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-09-10T23:30:08` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-10T23:40:28` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-10T23:50:36` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-11T00:00:43` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-09-11T00:01:11` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se mejora la robustez de `suggest_keeper` y `format_group` ante archivos que se eliminan o bloquean durante la ejecución del proceso de escaneo, añadiendo validaciones de existencia antes de realizar operaciones de metadatos o formateo.
+- `2026-09-11T00:01:38` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `SystemMetrics` ante valores inesperados en el constructor mediante la implementación de una validación exhaustiva de tipos y rangos, asegurando que cualquier entrada malformada sea corregida antes de entrar al pipeline de cálculo, previniendo así errores en cascada.
+- `2026-09-11T00:02:51` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `main.py` ante el escenario de concurrencia y cierre inesperado, añadiendo una comprobación de existencia de widget en `_set_busy` y protegiendo el `executor` con un bloqueo más estricto durante la inicialización y el cierre para evitar `RuntimeError` al intentar registrar tareas en un pool ya apagado.
+- `2026-09-11T00:03:04` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-11T00:03:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T00:03:04` Corrida terminada. Total usado hoy: 4.

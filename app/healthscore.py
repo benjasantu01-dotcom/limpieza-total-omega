@@ -146,10 +146,11 @@ class SystemMetrics:
 
     def __post_init__(self) -> None:
         """Inicializa valores faltantes y asegura la integridad de los datos."""
-        for field_name in self.__dataclass_fields__:
+        for field_name, field_def in self.__dataclass_fields__.items():
             val = getattr(self, field_name)
             if val is None:
-                setattr(self, field_name, 100.0 if "percent" in field_name else 0.0)
+                default = 100.0 if "percent" in field_name else 0.0
+                setattr(self, field_name, default)
         self.validate()
 
     def validate(self) -> None:
