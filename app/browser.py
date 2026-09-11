@@ -136,13 +136,16 @@ def base_directories() -> List[Path]:
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
     Verifica mediante resolución absoluta que la ruta objetivo esté bajo la base.
-    Evita el 'Directory Traversal' comparando las cadenas resueltas.
+    
+    Es fundamental resolver ambas rutas antes de comparar para neutralizar 
+    ataques de 'Directory Traversal' (ej. uso de '..') y asegurar que el 
+    alcance se limita estrictamente a los directorios permitidos.
     """
     if real_target is None or real_base is None:
         return False
     try:
-        target_str = str(real_target.resolve(strict=True))
-        base_str = str(real_base.resolve(strict=True))
+        target_str: str = str(real_target.resolve(strict=True))
+        base_str: str = str(real_base.resolve(strict=True))
         if len(target_str) >= MAX_PATH_LEN or any(c in target_str for c in '\0\r\n'):
             return False
         return target_str.startswith(base_str + os.sep) or target_str == base_str
@@ -270,7 +273,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
     if path is None:
         return 0
     try:
-        p = Path(path)
+        p: Path = Path(path)
         if not p.is_absolute() or not p.is_dir():
             return 0
         if not _is_safe_to_traverse(p, None):

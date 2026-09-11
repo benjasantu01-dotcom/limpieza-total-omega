@@ -134,7 +134,8 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 def _is_valid_candidate(path: Path) -> bool:
     """
-    Validador estricto de candidatos.
+    Validador estricto para determinar si un archivo debe ser considerado en el análisis.
+    Verifica seguridad, accesibilidad y que no sea un enlace simbólico o unión.
     """
     if not isinstance(path, Path) or not path.is_absolute():
         return False
@@ -194,7 +195,7 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Escaneo recursivo del sistema recolectando candidatos por tamaño.
-    Usa os.scandir para evitar llamadas extra de stat() en el bucle principal.
+    Evita procesar puntos de unión (junctions) y rutas protegidas.
     """
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[str] = set()
@@ -210,12 +211,13 @@ def _collect_candidates(
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Si es directorio: evaluar recursión evitando puntos de unión
                         if entry.is_dir(follow_symlinks=False):
                             if not is_junction(Path(entry.path)):
                                 _scan_directory_recursive(Path(entry.path))
+                        # Si es archivo: verificar tamaño y validez antes de mapear
                         elif entry.is_file(follow_symlinks=False):
                             p = Path(entry.path)
-                            # Doble chequeo de seguridad antes de procesar
                             if not is_protected_path(p):
                                 st = entry.stat()
                                 if st.st_size >= min_size:
