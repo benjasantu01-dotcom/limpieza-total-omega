@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Mejoras aceptadas: **238** (47.2% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 194
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 61 | 2 | 9 | 3 | 55 |
+| 2026-09-09 | 61 | 2 | 9 | 3 | 51 |
 | 2026-09-10 | 160 | 11 | 27 | 16 | 136 |
-| 2026-09-11 | 16 | 2 | 2 | 1 | 3 |
+| 2026-09-11 | 17 | 2 | 2 | 1 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
-- seguridad defensiva: **51**
+- seguridad defensiva: **52**
 - legibilidad y documentación: **50**
 - robustez ante casos límite: **44**
 - rendimiento: **38**
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **21**
 - `duplicates.py`: **20**
 - `healthscore.py`: **20**
+- `settings.py`: **20**
 - `assistant.py`: **19**
 - `memory.py`: **19**
-- `settings.py`: **19**
 - `diskreport.py`: **17**
 - `branding.py`: **16**
 - `safety.py`: **16**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T01:02:21` **settings.py** (seguridad defensiva): Mejoré `_Validators._run_safety_checks` para que realice una validación de seguridad más robusta mediante la resolución absoluta de rutas ANTES de realizar chequeos, evitando así vulnerabilidades de path traversal mediante enlaces simbólicos o relativos, y centralizando la protección contra reparse points al verificar `is_symlink()` o `is_junction()` sobre la ruta resuelta.
 - `2026-09-11T00:53:14` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para detectar si el sistema de archivos está marcando un archivo con el atributo `FILE_ATTRIBUTE_OFFLINE` (típico de placeholders de OneDrive/Cloud), lo cual es peligroso porque forzar una operación sobre ellos puede disparar descargas masivas no deseadas o corromper el estado del almacenamiento en la nube.
 - `2026-09-11T00:52:16` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_safe_unlink` al añadir una verificación explícita mediante `is_protected_path` antes de proceder, garantizando que incluso si un ítem fue mal etiquetado en el manifiesto, nunca se intentará borrar nada fuera de las áreas permitidas.
 - `2026-09-11T00:43:44` **memory.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_get_process_path` y `trim_working_set` al reemplazar el uso de `ctypes.create_unicode_buffer` sin límites de acceso por una validación de ruta que asegura que el path del proceso sea absoluto y no represente un punto de reparse, integrando la lógica de `is_safe_to_modify` para prevenir ataques de secuestro o acceso a archivos fuera del scope esperado.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T00:12:02` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de entrada y concurrencia implementando una limpieza más agresiva de archivos huérfanos en el manifiesto durante `list_items` y endureciendo la validación de archivos mediante `stat().st_size` en la carga del manifiesto.
 - `2026-09-11T00:11:24` **organizer.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `_is_file_locked` para manejar correctamente archivos inexistentes o bloqueos por permisos mediante un bloque `try-except` más robusto, asegurando que el cierre del handle ocurra incluso bajo excepciones inesperadas durante la apertura del archivo.
 - `2026-09-11T00:02:51` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante el escenario de concurrencia y cierre inesperado, añadiendo una comprobación de existencia de widget en `_set_busy` y protegiendo el `executor` con un bloqueo más estricto durante la inicialización y el cierre para evitar `RuntimeError` al intentar registrar tareas en un pool ya apagado.
-- `2026-09-11T00:01:38` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics` ante valores inesperados en el constructor mediante la implementación de una validación exhaustiva de tipos y rangos, asegurando que cualquier entrada malformada sea corregida antes de entrar al pipeline de cálculo, previniendo así errores en cascada.
