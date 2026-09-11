@@ -97,7 +97,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         
     try:
         p = Path(path).resolve(strict=True)
-        if not p.is_file() or p.stat().st_size == 0:
+        if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p):
             return None
             
         digest = hashlib.sha256()
@@ -122,7 +122,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
     try:
         p = Path(path).resolve(strict=True)
-        if not p.is_file() or p.stat().st_size == 0:
+        if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p):
             return None
 
         with open(p, "rb") as f:
@@ -214,11 +214,14 @@ def _collect_candidates(
                             if not is_junction(Path(entry.path)):
                                 _scan_directory_recursive(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat()
-                            if st.st_size >= min_size:
-                                path_obj = Path(entry.path).absolute()
-                                if _is_valid_candidate(path_obj):
-                                    size_map[st.st_size].append(path_obj)
+                            p = Path(entry.path)
+                            # Doble chequeo de seguridad antes de procesar
+                            if not is_protected_path(p):
+                                st = entry.stat()
+                                if st.st_size >= min_size:
+                                    path_obj = p.absolute()
+                                    if _is_valid_candidate(path_obj):
+                                        size_map[st.st_size].append(path_obj)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError, RuntimeError):
