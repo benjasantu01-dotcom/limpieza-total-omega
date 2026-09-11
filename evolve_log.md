@@ -755,3 +755,10 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-09-11T08:22:51` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-09-11T08:22:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T08:22:51` Corrida terminada. Total usado hoy: 200.
+- `2026-09-11T08:30:22` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-09-11T08:31:02` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `list_items` y `purge_all` convirtiendo las búsquedas sobre el manifiesto en operaciones `O(1)` mediante un diccionario (`mapping`), evitando así iteraciones anidadas repetitivas sobre la lista completa de archivos en cada paso del proceso.
+- `2026-09-11T08:31:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-11T08:31:56` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó `filter_safe_paths` sustituyendo el manejo de excepciones (que es costoso en Python) por una lógica de pre-validación que evita llamar a `ensure_safe_to_modify` (que es una función pesada con múltiples llamadas a disco) cuando la ruta falla criterios básicos, mejorando drásticamente el rendimiento al procesar listas largas.
+- `2026-09-11T08:32:03` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory
+- `2026-09-11T08:32:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T08:32:03` Corrida terminada. Total usado hoy: 204.
