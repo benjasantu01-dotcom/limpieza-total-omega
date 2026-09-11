@@ -1143,3 +1143,37 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-11T12:30:38` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Documenté el propósito y las restricciones de seguridad de los métodos internos de `StartupEntry` y las funciones de escaneo mediante docstrings detallados, aclarando el uso de `safety.py` y la distinción entre resolución de rutas y validación de acceso para mejorar la mantenibilidad.
 - `2026-09-11T12:30:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T12:30:38` Corrida terminada. Total usado hoy: 296.
+- `2026-09-11T12:35:17` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-09-11T12:36:00` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé la generación de texto del contexto para el asistente mediante la sustitución de concatenaciones de strings repetitivas por el uso de `str.join`, reduciendo la carga de memoria y mejorando la eficiencia en la serialización de datos de cara al prompt.
+- `2026-09-11T12:36:34` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el rendimiento de `branding.py` reemplazando cálculos repetitivos y costosos en `draw_ring` y `gradient_colors` mediante el uso de `lru_cache` y la pre-computación de valores constantes fuera de los bucles de renderizado.
+- `2026-09-11T12:36:58` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-09-11T12:37:11` Tests FALLARON:
+```
+dir()
+        (sistema / "oculto.txt").write_text("y")
+>       nombres = {p.name for p, _ in diskreport.walk_files(tmp_path)}
+                              ^^^^
+E       ValueError: too many values to unpack (expected 2)
+
+evolve/tests/test_modules.py:577: ValueError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:114: SyntaxWarning: invalid escape sequence '\A'
+    Extrae una ruta entre comillas (ej: "C:\App\test.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_walk_files_finds_everything_recursively - ValueError: too many values to unpack (expected 2)
+FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - ValueError: too many values to unpack (expected 2)
+2 failed, 297 passed, 7 warnings in 1.56s
+
+```
+- `2026-09-11T12:37:11` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_collect_summary_data` y las funciones que lo consumen evitando llamadas innecesarias al sistema de archivos y reduciendo la complejidad de las estructuras, al mover la lógica de categorización de extensiones a una sola pasada y reutilizar datos calculados.
+- `2026-09-11T12:37:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T12:37:11` Corrida terminada. Total usado hoy: 300.

@@ -421,16 +421,16 @@ def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
 @lru_cache(maxsize=16)
 def _generate_context_lines_cached(score_s: str, grade: str, junk_s: str, susp_s: str, ram_s: str, disk_s: str, dup_s: str, start_s: str) -> str:
     """Crea el bloque de texto con el resumen del sistema usando lru_cache."""
-    grade_line = f" nota {grade}" if grade else ""
-    return (
-        f"Puntaje de salud: {score_s}{grade_line}\n"
-        f"Basura: {junk_s}\n"
-        f"Sospechosos: {susp_s}\n"
-        f"RAM disponible: {ram_s}\n"
-        f"Disco libre: {disk_s}\n"
-        f"Duplicados: {dup_s}\n"
+    lines = [
+        f"Puntaje de salud: {score_s}{f' nota {grade}' if grade else ''}",
+        f"Basura: {junk_s}",
+        f"Sospechosos: {susp_s}",
+        f"RAM disponible: {ram_s}",
+        f"Disco libre: {disk_s}",
+        f"Duplicados: {dup_s}",
         f"Inicio: {start_s} items"
-    )
+    ]
+    return "\n".join(lines)
 
 def context_as_text(context: SystemContext) -> str:
     """

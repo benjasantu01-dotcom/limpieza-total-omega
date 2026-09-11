@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 37
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 207
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 87 | 5 | 14 | 11 | 91 |
-| 2026-09-11 | 138 | 11 | 23 | 8 | 116 |
+| 2026-09-10 | 86 | 5 | 14 | 10 | 89 |
+| 2026-09-11 | 140 | 12 | 23 | 8 | 117 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **61**
 - seguridad defensiva: **50**
 - legibilidad y documentación: **45**
-- robustez ante casos límite: **41**
-- rendimiento: **28**
+- robustez ante casos límite: **40**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **20**
 - `duplicates.py`: **20**
-- `quarantine.py`: **19**
 - `settings.py`: **18**
-- `assistant.py`: **17**
+- `assistant.py`: **18**
+- `quarantine.py`: **18**
 - `diskreport.py`: **17**
 - `main.py`: **17**
+- `branding.py`: **16**
 - `healthscore.py`: **16**
 - `memory.py`: **16**
 - `scanner.py`: **15**
-- `branding.py`: **15**
 - `organizer.py`: **14**
 - `safety.py`: **14**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T12:36:34` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` reemplazando cálculos repetitivos y costosos en `draw_ring` y `gradient_colors` mediante el uso de `lru_cache` y la pre-computación de valores constantes fuera de los bucles de renderizado.
+- `2026-09-11T12:36:00` **assistant.py** (rendimiento): Optimizé la generación de texto del contexto para el asistente mediante la sustitución de concatenaciones de strings repetitivas por el uso de `str.join`, reduciendo la carga de memoria y mejorando la eficiencia en la serialización de datos de cara al prompt.
 - `2026-09-11T12:30:38` **startup.py** (legibilidad y documentación): Documenté el propósito y las restricciones de seguridad de los métodos internos de `StartupEntry` y las funciones de escaneo mediante docstrings detallados, aclarando el uso de `safety.py` y la distinción entre resolución de rutas y validación de acceso para mejorar la mantenibilidad.
 - `2026-09-11T12:30:26` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `settings.py` reemplazando los diccionarios de validación por una estructura de datos `NamedTuple` dedicada, lo que permite aprovechar el chequeo estático de tipos y hace explícita la relación entre cada clave de configuración y su función validadora.
 - `2026-09-11T12:26:36` **safety.py** (legibilidad y documentación): Se han añadido type hints completos y docstrings detallados en las funciones de validación interna y el motor de chequeo (`_VALIDATORS`, `_check_file_integrity`), clarificando las responsabilidades de cada componente para mejorar la mantenibilidad del módulo de seguridad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T11:58:48` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints precisos en los parámetros de los métodos de dibujo (Canvas) y se ha extraído la lógica de cálculo de polígonos del escudo a una constante tipada, facilitando el mantenimiento y mejorando la legibilidad del código.
 - `2026-09-11T11:54:35` **startup.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `parse_registry_csv` añadiendo una validación robusta de los datos devueltos por el CSV, asegurando que `f_name` y `f_cmd` no sean `None` y capturando posibles fallos de parseo individual sin abortar la lectura de todo el registro.
 - `2026-09-11T11:45:36` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando una validación estricta y explícita de `ConfigKey` en `validate` y `update`, eliminando la dependencia implícita de `ConfigKey.value` en las iteraciones y asegurando que solo claves definidas en el esquema sean procesadas, previniendo inyecciones de datos basura.
-- `2026-09-11T11:45:20` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_entry` y `scan_directory` validando explícitamente `None` o valores vacíos tras operaciones de sistema y antes de procesar rutas, evitando posibles fallos ante entradas inesperadas del sistema de archivos.
-- `2026-09-11T11:44:50` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` capturando excepciones de sistema adicionales durante el manejo de handles y refiné la lógica de validación en `_validate_boundary_conditions` para evitar fallos cuando las rutas no tienen "anchors" definidos.
