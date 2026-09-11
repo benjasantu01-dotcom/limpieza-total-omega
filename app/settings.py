@@ -328,8 +328,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         parent = ruta.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
-        
         ensure_safe_to_modify(str(parent))
+        
         if ruta.exists():
             ensure_safe_to_modify(str(ruta))
         
@@ -339,8 +339,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
         ensure_safe_to_modify(str(temp_path))
         
-        bak_path = ruta.with_suffix(f"{ruta.suffix}.bak")
-        
         with open(temp_path, "wb") as f:
             f.write(data)
             f.flush()
@@ -348,14 +346,14 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         
         if ruta.exists():
             try:
-                shutil.copy2(ruta, bak_path)
+                shutil.copy2(ruta, ruta.with_suffix(".bak"))
             except OSError:
                 pass
             
         os.replace(temp_path, ruta)
-        
         _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta
+        
     except (TypeError, ValueError, OSError, IOError, PermissionError, UnsafePathError):
         if temp_path and temp_path.exists():
             try: temp_path.unlink()

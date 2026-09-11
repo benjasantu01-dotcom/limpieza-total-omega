@@ -81,10 +81,12 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
     
     try:
-        stats = entry.stat(follow_symlinks=False) if entry else path.stat()
-        if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
-            return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
-    except (OSError, AttributeError, ValueError, PermissionError, FileNotFoundError):
+        # Verificamos si existe antes de obtener stats para evitar race conditions
+        if entry and entry.is_file(follow_symlinks=False):
+            stats = entry.stat()
+            if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
+                return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
+    except (OSError, AttributeError, ValueError, PermissionError):
         pass
     return None
 
@@ -192,13 +194,15 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     
     if ext in SUSPICIOUS_EXECUTABLE_EXT:
         try:
-            stats = entry.stat(follow_symlinks=False) if entry else path.stat()
-            if stats.st_size == 0:
-                findings.append(Suspicion(path, "Archivo vacío sospechoso", "warning"))
-            
-            for check_fn in EXECUTABLE_CHECK_REGISTRY:
-                if (result := check_fn(path, entry, now_ts)):
-                    findings.append(result)
+            # Validación robusta de existencia antes de verificar tamaño o heurísticas
+            if entry and entry.is_file(follow_symlinks=False):
+                stats = entry.stat()
+                if stats.st_size == 0:
+                    findings.append(Suspicion(path, "Archivo vacío sospechoso", "warning"))
+                
+                for check_fn in EXECUTABLE_CHECK_REGISTRY:
+                    if (result := check_fn(path, entry, now_ts)):
+                        findings.append(result)
         except (OSError, PermissionError, AttributeError, FileNotFoundError):
             pass
         

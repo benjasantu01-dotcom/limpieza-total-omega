@@ -643,8 +643,11 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     return Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
 
 def available(base: Union[str, Path, None] = None) -> bool:
-    """Verifica si el asistente remoto está habilitado en los ajustes del usuario."""
+    """Verifica si el asistente remoto está habilitado, validando el acceso a configuraciones."""
     try:
+        # Solo permitir acceso si la base es None o un objeto seguro/vacio
+        if base is not None and not isinstance(base, (str, Path)):
+            return False
         return settings.assistant_enabled(base)
     except Exception:
         return False
@@ -729,8 +732,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Union[str, Path, None] = None) -> Answer:
     """
-    Punto de entrada unificado para consultas de usuario.
-    Selecciona entre respuesta local o remota basándose en la configuración persistida.
+    Punto de entrada unificado para consultas de usuario, validando estrictamente el acceso a settings.
     """
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")
@@ -738,6 +740,10 @@ def ask(question: str, context: Optional[SystemContext] = None,
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
     
+    # Validacion defensiva del origen antes de intentar cargar settings
+    if base is not None and not isinstance(base, (str, Path)):
+        return respaldo
+        
     if not available(base):
         return respaldo
         
