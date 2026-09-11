@@ -350,12 +350,17 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Motor central de agregación de estadísticas de uso de disco.
+    Agregador central que procesa archivos mediante `walk_files` y genera un
+    resumen consolidado del estado del sistema de archivos.
     
-    Realiza un único recorrido del sistema de archivos y acumula simultáneamente:
-    - Espacio total y conteo de archivos.
-    - Distribución de uso por extensión.
-    - Heap de los N archivos más grandes.
+    Args:
+        directory: Ruta base desde donde comenzar el análisis.
+        skip_protected: Si es True, ignora directorios restringidos por `safety.py`.
+        limit: Cantidad de archivos más grandes a mantener en memoria (heap).
+        
+    Returns:
+        Objeto SummaryData conteniendo estadísticas totales, conteos por extensión
+        y la lista de archivos más pesados.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -363,11 +368,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     ext_counts: Dict[str, int] = defaultdict(int)
     top_heap: List[Tuple[int, Path]] = []
     
+    # Procesamiento iterativo de archivos encontrados en el sistema
     for path, size in walk_files(directory, skip_protected):
         safe_size = max(0, int(size))
         total_bytes += safe_size
         total_files += 1
         
+        # Categorización por extensión para reporte de uso
         try:
             ext = path.suffix.lower() if path.suffix else "(sin extensión)"
         except Exception:
@@ -376,6 +383,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         ext_sizes[ext] += safe_size
         ext_counts[ext] += 1
         
+        # Mantenimiento de heap para los N archivos más pesados
         if limit > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (safe_size, path))

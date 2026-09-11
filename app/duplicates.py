@@ -148,7 +148,6 @@ def _is_valid_candidate(path: Path, st: Optional[os.stat_result] = None) -> bool
         if not path.is_absolute():
             path = path.absolute()
         
-        # Uso de resolución optimizada si el stat ya está disponible
         resolved = path.resolve(strict=True)
         if resolved.is_symlink() or is_junction(resolved) or is_protected_path(resolved) or not is_safe_to_modify(resolved):
             return False
@@ -200,18 +199,19 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Escaneo recursivo para recolectar candidatos indexados por tamaño.
+    Escaneo recursivo para recolectar candidatos indexados por tamaño en bytes.
+    Mantiene un set de rutas visitadas para evitar ciclos en enlaces simbólicos.
     """
-    size_map: Dict[int, List[Path]] = defaultdict(list)
-    visited: set[str] = set()
+    size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
+    visited_dirs: set[str] = set()
 
     def _scan_directory_recursive(current_dir: Path) -> None:
         try:
             resolved_dir = current_dir.resolve(strict=False)
-            dir_key = str(resolved_dir)
-            if dir_key in visited or is_protected_path(current_dir) or not is_safe_to_modify(current_dir):
+            dir_str = str(resolved_dir)
+            if dir_str in visited_dirs or is_protected_path(current_dir) or not is_safe_to_modify(current_dir):
                 return
-            visited.add(dir_key)
+            visited_dirs.add(dir_str)
             
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -221,11 +221,11 @@ def _collect_candidates(
                             if not is_junction(entry_path) and is_safe_to_modify(entry_path):
                                 _scan_directory_recursive(entry_path)
                         elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat()
-                            if st.st_size >= min_size:
+                            file_stat = entry.stat()
+                            if file_stat.st_size >= min_size:
                                 path_obj = Path(entry.path)
-                                if _is_valid_candidate(path_obj, st):
-                                    size_map[st.st_size].append(path_obj)
+                                if _is_valid_candidate(path_obj, file_stat):
+                                    size_to_paths_map[file_stat.st_size].append(path_obj)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError, RuntimeError):
@@ -233,10 +233,10 @@ def _collect_candidates(
 
     if isinstance(directories, Iterable):
         for item in directories:
-            if (resolved := _resolve_and_verify_root(item)):
-                _scan_directory_recursive(resolved)
+            if (root_path := _resolve_and_verify_root(item)):
+                _scan_directory_recursive(root_path)
             
-    return {size: files for size, files in size_map.items() if len(files) > 1}
+    return {size: files for size, files in size_to_paths_map.items() if len(files) > 1}
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
@@ -315,7 +315,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if not isinstance(p, Path):
             continue
         try:
-            # Captura de posibles fallos de E/S ante archivos que ya no existen
             stat_info = p.stat()
             candidates.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError, FileNotFoundError):

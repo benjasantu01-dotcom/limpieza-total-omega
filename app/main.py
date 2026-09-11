@@ -456,7 +456,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 break
 
     def _build_header(self) -> None:
-        """Renderiza la cabecera superior."""
+        """Renderiza la cabecera superior con logo, título y versión."""
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", padx=18, pady=(16, 0))
 
@@ -503,7 +503,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.activity.pack_forget()
 
     def _build_tab_salud(self) -> None:
-        """Construye la interfaz de la pestaña Salud."""
+        """Construye la interfaz de la pestaña Salud con indicadores y métricas globales."""
         tab = self.tabs["Salud"]
         row = self._button_row(tab)
         self._action(row, "Analizar el sistema", self.on_full_analysis, column=0)
@@ -540,7 +540,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.cards[clave] = self._metric_card(container, titulo, i)
 
     def _metric_card(self, parent: ctk.CTk, title: str, column_idx: int) -> ctk.CTkLabel:
-        """Crea una tarjeta de métrica individual."""
+        """Crea una tarjeta de métrica individual para Salud."""
         tarjeta = ctk.CTkFrame(
             parent, fg_color=branding.color("card"), corner_radius=12,
             border_width=1, border_color=branding.color("border"),
@@ -562,7 +562,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._health_bars_initialized = True
 
     def _build_single_health_bar(self, container: ctk.CTkFrame, clave: str, etiqueta: str, row_idx: int) -> None:
-        """Renderiza una barra de progreso detallada por área."""
+        """Renderiza una barra de progreso detallada por área de salud."""
         self._create_styled_label(container, etiqueta, "body", anchor="w", width=150).grid(row=row_idx, column=0, sticky="w", pady=4)
         
         barra = ctk.CTkProgressBar(
@@ -605,7 +605,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                                 font=("Segoe UI", branding.font_size("body"), "bold"))
 
     def _build_tab_limpieza(self) -> None:
-        """Construye la interfaz de la pestaña Limpieza."""
+        """Construye la interfaz de la pestaña Limpieza para gestión de basura."""
         tab = self.tabs["Limpieza"]
         row = self._button_row(tab)
         self._action(row, "Buscar basura", self.on_scan_junk, column=0)
@@ -635,7 +635,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                    lambda _: self.refresh_list(), width=110).grid(row=0, column=4, padx=4)
 
     def _build_tab_seguridad(self) -> None:
-        """Construye la interfaz de la pestaña Seguridad."""
+        """Construye la interfaz de la pestaña Seguridad con herramientas de escaneo."""
         tab = self.tabs["Seguridad"]
         row = self._button_row(tab)
         self._action(row, "Escaneo heurístico", self.on_heuristic_scan, column=0)
@@ -648,7 +648,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Seguridad", tab)
 
     def _build_tab_cuarentena(self) -> None:
-        """Construye la interfaz de la pestaña Cuarentena."""
+        """Construye la interfaz de la pestaña Cuarentena para gestionar archivos aislados."""
         tab = self.tabs["Cuarentena"]
         row = self._button_row(tab)
         self._action(row, "Ver cuarentena", self.on_list_quarantine, column=0)
@@ -665,7 +665,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Cuarentena", tab)
 
     def _build_tab_memoria(self) -> None:
-        """Construye la interfaz de la pestaña Memoria."""
+        """Construye la interfaz de la pestaña Memoria para diagnóstico de RAM."""
         tab = self.tabs["Memoria"]
         row = self._button_row(tab)
         self._action(row, "Diagnóstico de RAM", self.on_memory_report, column=0)
@@ -682,7 +682,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Memoria", tab)
 
     def _build_tab_disco(self) -> None:
-        """Construye la interfaz de la pestaña Disco."""
+        """Construye la interfaz de la pestaña Disco para reportes de uso."""
         tab = self.tabs["Disco"]
         row = self._button_row(tab)
         self._action(row, "Espacio por unidad", self.on_drives_report, column=0)
@@ -691,7 +691,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Disco", tab)
 
     def _build_tab_duplicados(self) -> None:
-        """Construye la interfaz de la pestaña Duplicados."""
+        """Construye la interfaz de la pestaña Duplicados para gestión de archivos redundantes."""
         tab = self.tabs["Duplicados"]
         row = self._button_row(tab)
         self._action(row, "Buscar duplicados", self.on_find_duplicates, column=0)
@@ -700,21 +700,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Duplicados", tab)
 
     def _build_tab_navegadores(self) -> None:
-        """Construye la interfaz de la pestaña Navegadores."""
+        """Construye la interfaz de la pestaña Navegadores para limpieza de caché."""
         tab = self.tabs["Navegadores"]
         row = self._button_row(tab)
         self._action(row, "Detectar caché", self.on_browser_report, column=0)
         self._make_output("Navegadores", tab)
 
     def _build_tab_inicio(self) -> None:
-        """Construye la interfaz de la pestaña Inicio."""
+        """Construye la interfaz de la pestaña Inicio para inventario de arranque."""
         tab = self.tabs["Inicio"]
         row = self._button_row(tab)
         self._action(row, "Ver programas de inicio", self.on_startup_report, column=0)
         self._make_output("Inicio", tab)
 
     def _build_tab_informe(self) -> None:
-        """Construye la interfaz de la pestaña Informe."""
+        """Construye la interfaz de la pestaña Informe para exportación de resultados."""
         tab = self.tabs["Informe"]
         row = self._button_row(tab)
         self._action(row, "Armar informe", self.on_build_report, column=0)
@@ -725,7 +725,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Informe", tab)
 
     def _build_tab_asistente(self) -> None:
-        """Construye la interfaz de la pestaña Asistente."""
+        """Construye la interfaz de la pestaña Asistente para interacción local/IA."""
         tab = self.tabs["Asistente"]
         row = self._button_row(tab)
         self._action(row, "Preguntar", self.on_ask_assistant, column=0)
@@ -756,7 +756,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Asistente", tab)
 
     def _build_tab_ajustes(self) -> None:
-        """Construye la interfaz de la pestaña Ajustes."""
+        """Construye la interfaz de la pestaña Ajustes para configuración general."""
         tab = self.tabs["Ajustes"]
         row = self._button_row(tab)
         self._action(row, "Guardar ajustes", self.on_save_settings, column=0)
