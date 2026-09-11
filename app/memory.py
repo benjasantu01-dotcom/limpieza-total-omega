@@ -374,8 +374,9 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
         if not exec_path_str:
             return False, "Acceso denegado, proceso inexistente o no válido."
         
-        # Validaciones de seguridad exigentes sobre la ruta del ejecutable
-        if is_protected_path(exec_path_str) or not is_safe_to_modify(exec_path_str):
+        # Validaciones de seguridad exigentes: debe normalizarse antes de verificar
+        safe_path = str(Path(exec_path_str).resolve())
+        if is_protected_path(safe_path) or not is_safe_to_modify(safe_path):
             return False, "Operación denegada por política de seguridad."
             
         return True, None

@@ -470,11 +470,13 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     """
     Copia al sandbox y valida integridad contra condiciones TOCTOU.
     
-    Utiliza descriptores de archivo y comparaciones de inodos para garantizar
-    que el archivo origen no sea sustituido durante la transferencia.
+    Utiliza descriptores de archivo con O_EXCL y comparaciones de inodos.
     """
-    fd, temp_file_path = tempfile.mkstemp(dir=destination.parent, prefix=".tmp_q_")
-    temp_path = Path(temp_file_path)
+    # Usar O_CREAT | O_EXCL para asegurar que el archivo no existía previamente.
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    fd = os.open(str(destination), flags, 0o600)
+    temp_path = destination
+    
     try:
         src_stat = source.stat()
         src_ino = src_stat.st_ino
@@ -496,11 +498,6 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
         _check_windows_file_attributes(str(temp_path))
         ensure_safe_to_modify(destination, allow_sensitive=True)
         
-        if temp_path.stat().st_dev != destination.parent.resolve().stat().st_dev:
-            raise OSError("Dispositivos incompatibles.")
-            
-        os.replace(temp_path, destination)
-        
         dir_fd = os.open(str(destination.parent), os.O_RDONLY)
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)
@@ -510,8 +507,8 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
             raise OSError("Falla de integridad: hash no generado.")
         return file_hash
     except Exception as e:
-        if temp_path.exists():
-            try: os.remove(temp_path)
+        if os.path.exists(destination):
+            try: os.remove(destination)
             except OSError: pass
         raise e
 
@@ -519,14 +516,10 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
     """
     Realiza el aislamiento atómico de un archivo dentro del sandbox.
-    
-    Verifica pre-condiciones de existencias y contención antes de invocar la
-    transferencia protegida.
     """
     if not source.exists():
         raise FileNotFoundError("Archivo origen inexistente.")
-    if destination.exists():
-        raise FileExistsError("Colisión de destino.")
+    # El archivo destino NO debe existir aquí (manejado por O_EXCL en _write_temp_to_final)
     if not _is_within_quarantine_sandbox(destination.resolve(), destination.parent.resolve()):
         raise UnsafePathError("Escritura fuera del sandbox.")
     if len(str(destination)) >= 250:

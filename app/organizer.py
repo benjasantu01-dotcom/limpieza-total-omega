@@ -314,7 +314,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
     """
     Recorre recursivamente directorios buscando archivos temporales hasta una profundidad máxima.
     """
-    if depth > 50 or current_dir is None or is_protected_path(current_dir):
+    if depth > 50 or current_dir is None or is_protected_path(current_dir) or _is_junction(current_dir):
         return
 
     try:
