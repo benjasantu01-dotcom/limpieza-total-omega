@@ -355,7 +355,7 @@ def _get_process_path(proc_handle: int) -> Optional[str]:
     try:
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 1024) > 0:
             path = Path(str(buf.value))
-            if not path.is_absolute() or path.is_symlink():
+            if not path.is_absolute():
                 return None
             return str(path.resolve())
     except (OSError, ctypes.ArgumentError, ValueError, MemoryError):
@@ -383,6 +383,7 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
         if not exec_path_str:
             return False, "Acceso denegado, proceso inexistente o no válido."
         
+        # Validaciones de seguridad exigentes sobre la ruta del ejecutable
         if is_protected_path(exec_path_str) or not is_safe_to_modify(exec_path_str):
             return False, "Operación denegada por política de seguridad."
             

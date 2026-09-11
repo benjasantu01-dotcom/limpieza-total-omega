@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Union, Callable, TypeAlias, Tuple
 
-from safety import is_protected_path
+from safety import is_protected_path, is_safe_to_modify
 
 PathLike: TypeAlias = Union[str, Path]
 
@@ -204,7 +204,7 @@ def _collect_candidates(
         try:
             resolved_dir = current_dir.resolve(strict=False)
             dir_key = str(resolved_dir)
-            if dir_key in visited or is_protected_path(current_dir):
+            if dir_key in visited or is_protected_path(current_dir) or not is_safe_to_modify(current_dir):
                 return
             visited.add(dir_key)
             
@@ -218,7 +218,7 @@ def _collect_candidates(
                         # Si es archivo: verificar tamaño y validez antes de mapear
                         elif entry.is_file(follow_symlinks=False):
                             p = Path(entry.path)
-                            if not is_protected_path(p):
+                            if not is_protected_path(p) and is_safe_to_modify(p):
                                 st = entry.stat()
                                 if st.st_size >= min_size:
                                     path_obj = p.absolute()

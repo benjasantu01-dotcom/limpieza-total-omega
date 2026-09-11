@@ -1147,6 +1147,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return metrics, snapshot, disk_info or diskreport.DriveInfo(0, 0, 0, "")
 
     @validated_ui_operation
+    @ensure_safety
     def on_full_analysis(self) -> None:
         """Inicia análisis de salud completo."""
         def task() -> None:
@@ -1267,6 +1268,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 update_label("")
 
     @validated_ui_operation
+    @ensure_safety
     def on_scan_junk(self) -> None:
         """Realiza escaneo de archivos basura."""
         def task() -> None:
@@ -1302,6 +1304,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             box.insert("1.0", "\n".join(lines))
 
     @validated_ui_operation
+    @ensure_safety
     def on_stage(self) -> None:
         """Prepara archivos basura para revisión."""
         junk = self._get_cached("junk") or []
@@ -1335,6 +1338,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task, target=str(Path.home()))
 
     @validated_ui_operation
+    @ensure_safety
     def on_delete_reviewed(self) -> None:
         """Elimina permanentemente archivos revisados."""
         if not self._confirm(
@@ -1383,6 +1387,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task, target=folder)
 
     @validated_ui_operation
+    @ensure_safety
     def on_heuristic_scan(self) -> None:
         """Inicia escaneo heurístico en descargas."""
         downloads_path = Path.home() / "Downloads"
@@ -1392,6 +1397,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._run_heuristic_scan(str(downloads_path))
 
     @validated_ui_operation
+    @ensure_safety
     def on_heuristic_scan_folder(self) -> None:
         """Inicia escaneo heurístico en carpeta específica."""
         folder = self._ask_folder()
@@ -1399,6 +1405,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._run_heuristic_scan(folder)
 
     @validated_ui_operation
+    @ensure_safety
     def on_quarantine_findings(self) -> None:
         """Mueve archivos sospechosos a cuarentena."""
         suspicions = self._get_cached("suspicions") or []
@@ -1457,6 +1464,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     @validated_ui_operation
+    @ensure_safety
     def on_restore_quarantine(self) -> None:
         """Restaura item desde cuarentena."""
         raw_id = self._safe_get_entry_value(getattr(self, 'quarantine_id', None), "")
@@ -1487,6 +1495,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task, target=str(Path.home()))
 
     @validated_ui_operation
+    @ensure_safety
     def on_purge_quarantine(self) -> None:
         """Borra todos los elementos de cuarentena."""
         items = quarantine.list_items()
@@ -1559,6 +1568,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     @validated_ui_operation
+    @ensure_safety
     def on_trim_process(self) -> None:
         """Intenta liberar working set de un proceso."""
         pid = self._safe_get_entry_value(getattr(self, 'pid_entry', None), None, numeric=True)
@@ -1612,6 +1622,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     @validated_ui_operation
+    @ensure_safety
     def on_disk_analysis(self) -> None:
         """Inicia análisis de estructura de archivos."""
         folder = self._ask_folder()
@@ -1629,6 +1640,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task, target=folder)
 
     @validated_ui_operation
+    @ensure_safety
     def on_find_duplicates(self) -> None:
         """Inicia búsqueda de duplicados."""
         folder = self._ask_folder()
@@ -1663,6 +1675,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task, target=folder)
 
     @validated_ui_operation
+    @ensure_safety
     def on_quarantine_duplicates(self) -> None:
         """Aísla copias de archivos duplicados."""
         dups = self._get_cached("dups") or []
