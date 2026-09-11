@@ -212,13 +212,16 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
     
-    # Procesamiento eficiente usando comprensión de lista y mapeo directo
-    lines = (line.strip() for line in raw_csv_text.splitlines() if line.strip())
-    processes = [
-        proc for line in lines
-        if (parts := [x.strip().strip("'\"") for x in line.split(",")]) and len(parts) == 3
-        if (proc := _is_valid_process_entry(parts[0], parts[1], parts[2]))
-    ]
+    processes: List[ProcessMemory] = []
+    for line in raw_csv_text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        parts = [x.strip().strip("'\"") for x in line.split(",")]
+        if len(parts) == 3:
+            proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
+            if proc:
+                processes.append(proc)
     
     processes.sort(key=lambda p: p.working_set, reverse=True)
     return processes[:limit]

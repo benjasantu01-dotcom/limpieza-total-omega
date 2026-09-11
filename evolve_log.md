@@ -807,3 +807,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-11T08:52:19` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se fortalece la resiliencia del pipeline ante casos límite, asegurando que `_evaluate_rules` sea totalmente inmune a errores en las funciones inyectadas (como `message_factory`) y garantizando que el `SystemMetrics` siempre sea válido mediante una validación profunda antes de procesar, previniendo estados inconsistentes o divisiones por cero.
 - `2026-09-11T08:52:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T08:52:19` Corrida terminada. Total usado hoy: 212.
+- `2026-09-11T09:00:53` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-09-11T09:01:55` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-11T09:03:13` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez ante errores de ejecución asíncrona mediante la validación explícita del estado de existencia de los widgets de la interfaz antes de cada actualización, evitando `TclError` y `RuntimeError` en casos donde el hilo de trabajo intenta actualizar componentes que ya fueron destruidos o están siendo redibujados durante el cierre de la aplicación.
+- `2026-09-11T09:03:43` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha mejorado `parse_windows_process_csv` para añadir una validación robusta ante entradas malformadas de PowerShell, garantizando que si una línea no contiene exactamente 3 campos esperados (Nombre, PID, WorkingSet), se descarte silenciosamente en lugar de generar una excepción, mejorando la tolerancia ante datos inesperados del entorno.
+- `2026-09-11T09:04:10` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-11T09:04:34` Tests FALLARON:
+```
+)
+E           safety.UnsafePathError: [GENERIC] Ruta origen no válida o inaccesible: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-3/test_quarantine_missing_file_r0/no-existe.txt'
+
+app/quarantine.py:586: UnsafePathError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:113: SyntaxWarning: invalid escape sequence '\A'
+    """Aísla y valida una ruta dentro de comillas (ej: "C:\App\test.exe")."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - safety.UnsafePathError: [GENERIC] Ruta origen no válida o inaccesible: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-3/test_quarantine_missing_file_r0/no-existe.txt'
+1 failed, 298 passed, 7 warnings in 1.39s
+
+```
+- `2026-09-11T09:04:34` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `quarantine_file` ante fallas de entrada (archivos con rutas no absolutas o inexistentes) centralizando la normalización y añadiendo validaciones de tipo/existencia antes de interactuar con el sistema de archivos.
+- `2026-09-11T09:04:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T09:04:34` Corrida terminada. Total usado hoy: 216.

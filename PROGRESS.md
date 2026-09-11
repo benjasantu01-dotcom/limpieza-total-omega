@@ -7,24 +7,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **221** (43.8% de aceptación)
-- Rechazadas por tests: 18
+- Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 122 | 8 | 20 | 14 | 128 |
-| 2026-09-11 | 99 | 10 | 18 | 6 | 79 |
+| 2026-09-10 | 120 | 8 | 20 | 14 | 126 |
+| 2026-09-11 | 101 | 11 | 18 | 6 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **59**
 - legibilidad y documentación: **44**
-- seguridad defensiva: **42**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **43**
+- seguridad defensiva: **40**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
@@ -33,19 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `assistant.py`: **19**
 - `duplicates.py`: **19**
-- `settings.py`: **18**
 - `branding.py`: **17**
 - `diskreport.py`: **17**
 - `healthscore.py`: **17**
+- `settings.py`: **17**
+- `memory.py`: **15**
 - `safety.py`: **15**
-- `scanner.py`: **14**
-- `memory.py`: **14**
-- `main.py`: **13**
+- `main.py`: **14**
+- `scanner.py`: **13**
 - `organizer.py`: **12**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T09:03:43` **memory.py** (robustez ante casos límite): Se ha mejorado `parse_windows_process_csv` para añadir una validación robusta ante entradas malformadas de PowerShell, garantizando que si una línea no contiene exactamente 3 campos esperados (Nombre, PID, WorkingSet), se descarte silenciosamente en lugar de generar una excepción, mejorando la tolerancia ante datos inesperados del entorno.
+- `2026-09-11T09:03:13` **main.py** (robustez ante casos límite): Mejoré la robustez ante errores de ejecución asíncrona mediante la validación explícita del estado de existencia de los widgets de la interfaz antes de cada actualización, evitando `TclError` y `RuntimeError` en casos donde el hilo de trabajo intenta actualizar componentes que ya fueron destruidos o están siendo redibujados durante el cierre de la aplicación.
 - `2026-09-11T08:52:19` **healthscore.py** (robustez ante casos límite): Se fortalece la resiliencia del pipeline ante casos límite, asegurando que `_evaluate_rules` sea totalmente inmune a errores en las funciones inyectadas (como `message_factory`) y garantizando que el `SystemMetrics` siempre sea válido mediante una validación profunda antes de procesar, previniendo estados inconsistentes o divisiones por cero.
 - `2026-09-11T08:52:05` **duplicates.py** (robustez ante casos límite): He mejorado la robustez de `suggest_keeper` y `format_group` añadiendo un manejo de excepciones más granular y defensivo ante archivos que pueden desaparecer durante la ejecución (condición de carrera), garantizando que la aplicación no falle si un archivo cambia de estado mientras se genera el reporte.
 - `2026-09-11T08:51:38` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos bloqueados por el sistema operativo mediante la captura explícita de `OSError` durante la lectura de metadatos (`stat`), evitando que una denegación de acceso o una condición de carrera (archivo eliminado mientras se escanea) interrumpa el recorrido completo de la unidad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T08:11:30` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `is_protected_path` al consolidar el filtrado en `_is_valid_candidate`, y reduje el costo de las llamadas a `os.scandir` integrando la comprobación de `is_file()` y `stat()` mediante `entry` para evitar operaciones de I/O adicionales por ruta.
 - `2026-09-11T08:10:55` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios en `detect_profiles` pasando un diccionario `memo` compartido a través de todas las búsquedas de navegadores, lo cual evita recálculos redundantes si múltiples navegadores o subcarpetas comparten rutas raíz o dependencias de archivos comunes.
 - `2026-09-11T08:10:30` **branding.py** (rendimiento): Se implementó un sistema de `MappingProxyType` recursivo para los diccionarios de configuración (`_PALETTE_MAP` y `FONT_SIZES`) y se consolidó el cálculo de `_SEVERITY_MAP` como constante inmutable, evitando la creación de objetos innecesarios y permitiendo el acceso directo de solo lectura con rendimiento óptimo.
-- `2026-09-11T08:01:07` **startup.py** (legibilidad y documentación): Mejora la legibilidad del módulo `StartupEntry` documentando el ciclo de vida y la intención de seguridad de sus métodos internos, asegurando que la arquitectura de resolución perezosa quede clara para futuros colaboradores.
-- `2026-09-11T07:50:45` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reemplazaron los `tuple` implícitos en `__all__` y `required` por `tuple` literales para mayor legibilidad y consistencia con las prácticas de tipado moderno de Python, mejorando la documentación del contrato de interfaces.

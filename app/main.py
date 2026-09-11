@@ -117,6 +117,9 @@ def safe_ui_operation(func: Callable) -> Callable:
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Optional[Any]:
         try:
+            # Si el primer argumento es una instancia de la app, chequear existencia
+            if args and hasattr(args[0], 'winfo_exists') and not args[0].winfo_exists():
+                return None
             return func(*args, **kwargs)
         except (tk.TclError, RuntimeError, AttributeError) as e:
             logging.debug("Ignorando error de UI en %s: %s", func.__name__, e)
@@ -127,7 +130,7 @@ def validated_ui_operation(func: Callable) -> Callable:
     """Decorador: valida que la instancia de la app siga viva antes de ejecutar callbacks de UI."""
     @wraps(func)
     def wrapper(self: Any, *args: Any, **kwargs: Any) -> Optional[Any]:
-        if getattr(self, '_closing', False) or (hasattr(self, 'winfo_exists') and not self.winfo_exists()):
+        if getattr(self, '_closing', False) or not self.winfo_exists():
             return None
         try:
             return func(self, *args, **kwargs)
@@ -223,8 +226,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @safe_ui_operation
     def _safe_run_ui_callback(self, callback: AsyncCallback) -> None:
         """Ejecuta una actualización de UI de forma segura mediante el ciclo de eventos."""
-        if not self._closing and self.winfo_exists():
-            self.after_idle(callback)
+        self.after_idle(callback)
 
     def _validate_environment(self) -> None:
         """Verifica que el entorno de ejecución sea seguro y accesible."""
@@ -305,8 +307,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Ejecuta una acción con retraso (debounce) para optimizar eventos de UI."""
         if key in self._debounces:
             self.after_cancel(self._debounces[key])
-        if not self._closing:
-            self._debounces[key] = self.after(delay, callback)
+        self._debounces[key] = self.after(delay, callback)
 
     def _create_styled_label(self, parent: ctk.CTk, text: str, style: str, **kwargs: Any) -> ctk.CTkLabel:
         """Genera etiquetas estilizadas según la paleta definida en branding."""
@@ -584,7 +585,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _draw_gauge(self, score: int, grade: str) -> None:
         """Solicita el renderizado del gauge de salud general con debounce."""
-        self._debounce_action("gauge", 50, lambda: self.after_idle(lambda: self._render_gauge(score, grade)))
+        self._debounce_action("gauge", 50, lambda: self._safe_run_ui_callback(lambda: self._render_gauge(score, grade)))
 
     @safe_ui_operation
     def _render_gauge(self, score: int, grade: str) -> None:
@@ -968,7 +969,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _flush_logs(self) -> None:
         """Renderiza los logs pendientes en la UI con gestión de colas."""
         self._log_scheduled = False
-        if self._closing or not self.winfo_exists(): return
         
         with self._log_lock:
             if not self._log_queue: return
@@ -995,7 +995,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @safe_ui_operation
     def set_status(self, text: str) -> None:
         """Actualiza el texto en la barra de estado inferior."""
-        if not self._closing and hasattr(self, 'status') and self.status.winfo_exists():
+        if hasattr(self, 'status') and self.status.winfo_exists():
             self.status.configure(text=text)
 
     @safe_ui_operation
@@ -1010,8 +1010,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _set_busy(self, busy: bool) -> None:
         """Gestiona el estado de bloqueo de la UI durante la ejecución de tareas."""
-        if self._closing or not self.winfo_exists(): return
-        
         with self._task_lock:
             if busy:
                 self._tasks_running += 1
@@ -1200,13 +1198,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _update_cards(self, junk_mb: float, sospechosos: int, ram_libre: float, disco_libre: float) -> None:
         """Actualiza tarjetas informativas de salud con debounce."""
-        self._debounce_action("update_cards", 100, lambda: self.after_idle(lambda: self._apply_card_updates(junk_mb, sospechosos, ram_libre, disco_libre)))
+        self._debounce_action("update_cards", 100, lambda: self._safe_run_ui_callback(lambda: self._apply_card_updates(junk_mb, sospechosos, ram_libre, disco_libre)))
 
     @safe_ui_operation
     def _apply_card_updates(self, junk_mb: float, sospechosos: int, ram_libre: float, disco_libre: float) -> None:
         """Aplica los nuevos valores calculados a las etiquetas de tarjetas."""
-        if self._closing or not self.winfo_exists(): return
-        
         valores = {
             "basura": f"{junk_mb:.0f} MB",
             "sospechosos": str(sospechosos),
