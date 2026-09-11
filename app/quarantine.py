@@ -200,12 +200,15 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def _safe_unlink(path: Path) -> bool:
-    """Elimina archivo tras validar permisos, estado de bloqueo y protección."""
+    """
+    Elimina un archivo tras validar permisos, estado de bloqueo y protección.
+    
+    Asegura que no se operen rutas protegidas ni enlaces simbólicos.
+    """
     if not path.is_file() or path.is_symlink():
         return False
         
     try:
-        # Validación de seguridad defensiva: no borrar nada protegido
         if is_protected_path(path):
             return False
         if is_safe_to_modify(path) and not _is_file_locked(path):
@@ -460,11 +463,15 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 
 
 def _write_temp_to_final(source: Path, destination: Path) -> str:
-    """Copia al sandbox y valida integridad contra TOCTOU."""
+    """
+    Copia al sandbox y valida integridad contra condiciones TOCTOU.
+    
+    Utiliza descriptores de archivo y comparaciones de inodos para garantizar
+    que el archivo origen no sea sustituido durante la transferencia.
+    """
     fd, temp_file_path = tempfile.mkstemp(dir=destination.parent, prefix=".tmp_q_")
     temp_path = Path(temp_file_path)
     try:
-        # Captura de estado para verificar inmutabilidad
         src_stat = source.stat()
         src_ino = src_stat.st_ino
         src_dev = src_stat.st_dev
@@ -475,7 +482,6 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
             tmp.flush()
             os.fsync(tmp.fileno())
         
-        # Validación anti-TOCTOU: asegurar que el origen no cambió de archivo
         final_src_stat = source.stat()
         if final_src_stat.st_ino != src_ino or final_src_stat.st_dev != src_dev:
              raise OSError("Alerta de seguridad: origen reemplazado durante copia.")
@@ -507,7 +513,12 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
 
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
-    """Aislamiento atómico dentro del sandbox."""
+    """
+    Realiza el aislamiento atómico de un archivo dentro del sandbox.
+    
+    Verifica pre-condiciones de existencias y contención antes de invocar la
+    transferencia protegida.
+    """
     if not source.exists():
         raise FileNotFoundError("Archivo origen inexistente.")
     if destination.exists():
@@ -553,7 +564,12 @@ def quarantine_file(
     base: PathLike = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
     """
-    Ejecuta el ciclo de vida de un archivo en cuarentena: aislamiento y manifiesto.
+    Ejecuta el ciclo de vida completo de aislamiento y registro de un archivo.
+    
+    1. Valida el origen.
+    2. Aisla el archivo atómicamente.
+    3. Registra en el manifiesto.
+    4. Elimina el archivo original solo tras confirmar integridad.
     """
     if not source:
         raise ValueError("Ruta de origen vacía.")
@@ -616,7 +632,6 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
         items = load_manifest(base)
         existing_files = {f.name for f in base_path.iterdir() if f.is_file()}
         
-        # Limpieza: Si el ítem no tiene archivo, es un error de estado. Sincronizamos.
         valid_items = [i for i in items if i.stored_name in existing_files]
         if len(valid_items) != len(items):
             save_manifest(valid_items, base)
@@ -725,7 +740,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
-    # Mapeo rápido para evitar iteraciones sobre la lista completa en cada archivo del disco
     item_map = {item.stored_name: item for item in items}
     purged_ids = set()
     

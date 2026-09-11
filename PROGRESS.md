@@ -7,33 +7,33 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **220** (43.7% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 214
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 37
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 25 | 1 | 4 | 3 | 41 |
+| 2026-09-09 | 24 | 0 | 4 | 2 | 40 |
 | 2026-09-10 | 160 | 11 | 27 | 16 | 136 |
-| 2026-09-11 | 35 | 4 | 3 | 1 | 37 |
+| 2026-09-11 | 36 | 4 | 6 | 1 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - seguridad defensiva: **52**
-- robustez ante casos límite: **44**
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **45**
+- robustez ante casos límite: **43**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
-- `browser.py`: **20**
+- `quarantine.py`: **22**
 - `settings.py`: **19**
 - `duplicates.py`: **19**
+- `browser.py`: **19**
 - `healthscore.py`: **18**
 - `assistant.py`: **18**
 - `diskreport.py`: **17**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T03:25:17` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en funciones críticas (`_atomic_isolate_file`, `_safe_unlink`, `quarantine_file`) y la estandarización de tipos en las firmas de funciones para mejorar la mantenibilidad y claridad del flujo de datos.
 - `2026-09-11T03:18:06` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de validación de seguridad (`_is_safe_for_disk_op`, `_validate_path_security`) utilizando docstrings detallados que explican el "porqué" de las restricciones y la lógica de flujo, facilitando el mantenimiento y la comprensión de las salvaguardas críticas del sistema.
 - `2026-09-11T03:17:05` **main.py** (legibilidad y documentación): Se introdujo un sistema de tipado y documentación más robusto para `LimpiezaTotalOmegaApp` mediante la definición formal de los tipos de retorno en los métodos clave y la adición de docstrings detallados, facilitando el mantenimiento y la comprensión de la lógica de flujo asíncrono y gestión de estado.
 - `2026-09-11T03:05:49` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `_collect_candidates` y sus helpers, clarificando el propósito de la recursión y la exclusión de rutas, asegurando que la intención del código sea evidente para cualquier colaborador.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T02:35:36` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_ask_assistant` y `on_save_settings` validando los datos de entrada del usuario (sanitización de strings y validación de tipos) antes de procesarlos, asegurando que el asistente no intente procesar comandos vacíos o con caracteres de control, y evitando estados inconsistentes en los ajustes.
 - `2026-09-11T02:34:24` **healthscore.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `compute_score` asegurando que una falla en una categoría específica no detenga el cómputo total, además de garantizar que `SystemMetrics` siempre sea procesable incluso si `__post_init__` recibiera valores None inicialmente inesperados.
 - `2026-09-11T02:33:57` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones de tipo explícitas y manejo de errores ante estados de archivo inconsistentes (archivos eliminados entre el escaneo y el reporte).
-- `2026-09-11T02:25:16` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros numéricos y de ruta en las funciones públicas, garantizando que valores inesperados (como un `limit` menor a 0) no provoquen comportamientos inconsistentes o errores en tiempo de ejecución.
