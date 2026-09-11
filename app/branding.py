@@ -18,6 +18,7 @@ NOTA DE SEGURIDAD:
 """
 
 from __future__ import annotations
+import os
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List, Optional, Union, TypedDict, Protocol, NamedTuple
 from types import MappingProxyType
@@ -340,9 +341,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     try:
         path_input = Path(str(destination)).resolve()
         
-        # Validaciones de seguridad no destructivas
-        if is_protected_path(path_input) or not is_safe_to_modify(path_input):
-            return None
+        # Validaciones de seguridad centralizadas
+        ensure_safe_to_modify(path_input)
         
         # Validar permisos de directorio padre
         parent = path_input.parent
