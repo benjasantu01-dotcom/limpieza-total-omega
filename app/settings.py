@@ -86,6 +86,10 @@ class _NumericRange(NamedTuple):
     min: int
     max: int
 
+class _ValidatorEntry(NamedTuple):
+    """Vincula una función validadora con la lógica de procesamiento necesaria."""
+    func: Callable[[ConfigKey, Any], Any]
+
 def _is_dict(val: Any) -> TypeGuard[SettingsDict]:
     """Verifica que el objeto sea un diccionario válido para la configuración."""
     return isinstance(val, dict)
@@ -242,23 +246,23 @@ class _Validators:
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(key, text)
         return _Validators._validate_enum_str(text, key)
 
-_VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, Callable[[ConfigKey, Any], Any]]] = MappingProxyType({
-    ConfigKey.TEMA: _Validators.str,
-    ConfigKey.ACENTO: _Validators.str,
-    ConfigKey.ABRIR_EN: _Validators.str,
-    ConfigKey.ULTIMA_CARPETA: _Validators.path,
-    ConfigKey.ASISTENTE_CLAVE_API: _Validators.str,
-    ConfigKey.ASISTENTE_MODELO: _Validators.str,
-    ConfigKey.MOSTRAR_BARRAS: _Validators.bool,
-    ConfigKey.ANIMACIONES: _Validators.bool,
-    ConfigKey.CONFIRMAR_SIEMPRE: _Validators.bool,
-    ConfigKey.RECORDAR_ULTIMA_CARPETA: _Validators.bool,
-    ConfigKey.ANALISIS_EN_PARALELO: _Validators.bool,
-    ConfigKey.ASISTENTE_ACTIVADO: _Validators.bool,
-    ConfigKey.ASISTENTE_ENVIAR_METRICAS: _Validators.bool,
-    ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: _Validators.int,
-    ConfigKey.TOP_ARCHIVOS: _Validators.int,
-    ConfigKey.TOP_PROCESOS: _Validators.int
+_VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingProxyType({
+    ConfigKey.TEMA: _ValidatorEntry(_Validators.str),
+    ConfigKey.ACENTO: _ValidatorEntry(_Validators.str),
+    ConfigKey.ABRIR_EN: _ValidatorEntry(_Validators.str),
+    ConfigKey.ULTIMA_CARPETA: _ValidatorEntry(_Validators.path),
+    ConfigKey.ASISTENTE_CLAVE_API: _ValidatorEntry(_Validators.str),
+    ConfigKey.ASISTENTE_MODELO: _ValidatorEntry(_Validators.str),
+    ConfigKey.MOSTRAR_BARRAS: _ValidatorEntry(_Validators.bool),
+    ConfigKey.ANIMACIONES: _ValidatorEntry(_Validators.bool),
+    ConfigKey.CONFIRMAR_SIEMPRE: _ValidatorEntry(_Validators.bool),
+    ConfigKey.RECORDAR_ULTIMA_CARPETA: _ValidatorEntry(_Validators.bool),
+    ConfigKey.ANALISIS_EN_PARALELO: _ValidatorEntry(_Validators.bool),
+    ConfigKey.ASISTENTE_ACTIVADO: _ValidatorEntry(_Validators.bool),
+    ConfigKey.ASISTENTE_ENVIAR_METRICAS: _ValidatorEntry(_Validators.bool),
+    ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: _ValidatorEntry(_Validators.int),
+    ConfigKey.TOP_ARCHIVOS: _ValidatorEntry(_Validators.int),
+    ConfigKey.TOP_PROCESOS: _ValidatorEntry(_Validators.int)
 })
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
@@ -284,7 +288,7 @@ def validate(raw_values: Any) -> AppSettings:
     for key_str, val in raw_values.items():
         key_enum = _STR_TO_ENUM.get(key_str)
         if key_enum and key_enum in _VALIDATOR_MAP:
-            validator = _VALIDATOR_MAP[key_enum]
+            validator = _VALIDATOR_MAP[key_enum].func
             validated = validator(key_enum, val)
             if validated is not None:
                 config[key_enum.value] = validated
@@ -369,7 +373,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     for k, v in changes.items():
         key_enum = _STR_TO_ENUM.get(k)
         if key_enum and key_enum in _VALIDATOR_MAP:
-            val = _VALIDATOR_MAP[key_enum](key_enum, v)
+            val = _VALIDATOR_MAP[key_enum].func(key_enum, v)
             if val is not None and val != current.get(k):
                 current[k] = val
                 modified = True

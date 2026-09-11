@@ -82,7 +82,7 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
-        """Determina si la ruta apunta a un dispositivo reservado (ej. NUL, CON) que cause bloqueos."""
+        """Determina si la ruta apunta a dispositivos del sistema (ej. NUL, CON) para evitar bloqueos."""
         reserved: Set[str] = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
         try:
             if "\0" in path_str:
@@ -92,25 +92,28 @@ class StartupEntry:
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:
-        """Verifica si la cadena contiene caracteres de inyección o rutas UNC bloqueadas por política."""
+        """Verifica si la cadena contiene caracteres de inyección o rutas UNC bloqueadas."""
         suspicious_chars: str = '<>|?*\0&;%'
         return any(c in path_string for c in suspicious_chars) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Valida que la extensión sea permitida y que no se trate de un enlace simbólico."""
+        """Valida extensión según `EXECUTABLE_EXTS` y prohíbe explícitamente enlaces simbólicos."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Limpia la línea de comando eliminando caracteres de control no imprimibles."""
+        """Filtra caracteres de control para evitar inyección o errores de renderizado de texto."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Aísla y valida una ruta dentro de comillas (ej: "C:\App\test.exe")."""
+        """
+        Extrae una ruta entre comillas (ej: "C:\App\test.exe"). 
+        Valida que la ruta no esté protegida y sea absoluta antes de proceder.
+        """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
         
@@ -132,7 +135,10 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Verifica la existencia física y los permisos del archivo, evitando seguir punteros de reparse."""
+        """
+        Verifica existencia y permisos del archivo. Utiliza `lstat` para detectar 
+        puntos de reparse, los cuales son ignorados por motivos de seguridad.
+        """
         try:
             if not os.access(p, os.F_OK) or p.is_dir():
                 return False
@@ -143,7 +149,10 @@ class StartupEntry:
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Normaliza, valida y cachea la ruta del ejecutable utilizando el sistema de archivos real."""
+        """
+        Normaliza una cadena de texto a una ruta real del sistema.
+        Aplica validaciones de seguridad de `safety.py` y cachea el resultado en `_EXISTS_CACHE`.
+        """
         if not path_string or self._is_path_suspicious(path_string) or self._is_reserved_device_name(path_string):
             return ""
         
@@ -177,7 +186,10 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Extrae el ejecutable desde una línea de comando, gestionando rutas con o sin comillas."""
+        """
+        Parseador principal de líneas de comando. Diferencia entre rutas entrecomilladas 
+        y comandos simples ejecutables.
+        """
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -194,7 +206,7 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Propiedad pública para obtener la ruta resuelta; dispara la lógica de resolución la primera vez."""
+        """Propiedad pública para obtener la ruta resuelta; dispara la resolución bajo demanda."""
         if self._checked_exists:
             return self._exec_cache or ""
             

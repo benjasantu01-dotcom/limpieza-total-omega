@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 90 | 5 | 14 | 11 | 92 |
-| 2026-09-11 | 135 | 11 | 23 | 8 | 115 |
+| 2026-09-10 | 87 | 5 | 14 | 11 | 91 |
+| 2026-09-11 | 138 | 11 | 23 | 8 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **61**
 - seguridad defensiva: **50**
-- robustez ante casos límite: **44**
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **45**
+- robustez ante casos límite: **41**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **21**
+- `browser.py`: **20**
 - `duplicates.py`: **20**
 - `quarantine.py`: **19**
-- `diskreport.py`: **18**
-- `healthscore.py`: **17**
-- `settings.py`: **17**
+- `settings.py`: **18**
 - `assistant.py`: **17**
+- `diskreport.py`: **17**
 - `main.py`: **17**
+- `healthscore.py`: **16**
 - `memory.py`: **16**
 - `scanner.py`: **15**
 - `branding.py`: **15**
 - `organizer.py`: **14**
-- `safety.py`: **13**
-- `startup.py`: **6**
+- `safety.py`: **14**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T12:30:38` **startup.py** (legibilidad y documentación): Documenté el propósito y las restricciones de seguridad de los métodos internos de `StartupEntry` y las funciones de escaneo mediante docstrings detallados, aclarando el uso de `safety.py` y la distinción entre resolución de rutas y validación de acceso para mejorar la mantenibilidad.
+- `2026-09-11T12:30:26` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `settings.py` reemplazando los diccionarios de validación por una estructura de datos `NamedTuple` dedicada, lo que permite aprovechar el chequeo estático de tipos y hace explícita la relación entre cada clave de configuración y su función validadora.
+- `2026-09-11T12:26:36` **safety.py** (legibilidad y documentación): Se han añadido type hints completos y docstrings detallados en las funciones de validación interna y el motor de chequeo (`_VALIDATORS`, `_check_file_integrity`), clarificando las responsabilidades de cada componente para mejorar la mantenibilidad del módulo de seguridad.
 - `2026-09-11T12:16:14` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args, Returns y Raises) en las funciones críticas de validación y persistencia, facilitando la comprensión del flujo de seguridad para futuros mantenimientos.
 - `2026-09-11T12:15:38` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` documentando los contratos de las funciones críticas de seguridad con docstrings estructurados, mejorando la semántica de las validaciones internas (renombrando constantes y consolidando lógica de chequeo) y agregando type hints consistentes en los retornos de las funciones de filtrado.
 - `2026-09-11T12:15:04` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `memory.py` mediante la adición de Type Hints detallados, la unificación de docstrings siguiendo el estándar de estilo y la mejora de la claridad en las funciones de diagnóstico, manteniendo estrictamente el comportamiento original.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T11:45:36` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando una validación estricta y explícita de `ConfigKey` en `validate` y `update`, eliminando la dependencia implícita de `ConfigKey.value` en las iteraciones y asegurando que solo claves definidas en el esquema sean procesadas, previniendo inyecciones de datos basura.
 - `2026-09-11T11:45:20` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_entry` y `scan_directory` validando explícitamente `None` o valores vacíos tras operaciones de sistema y antes de procesar rutas, evitando posibles fallos ante entradas inesperadas del sistema de archivos.
 - `2026-09-11T11:44:50` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` capturando excepciones de sistema adicionales durante el manejo de handles y refiné la lógica de validación en `_validate_boundary_conditions` para evitar fallos cuando las rutas no tienen "anchors" definidos.
-- `2026-09-11T11:39:02` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez en la manipulación de rutas y excepciones en el módulo `organizer.py`, sustituyendo chequeos condicionales frágiles por validaciones de tipo y estructura más seguras en `scan_for_junk` y `_process_directory`, asegurando que no se propaguen errores inesperados durante el recorrido del sistema de archivos.
-- `2026-09-11T11:37:47` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones de entrada en `trim_working_set` y `_is_valid_process_entry`, asegurando que el manejo de errores sea explícito y evitando comparaciones lógicas ambiguas con tipos de datos malformados.
-- `2026-09-11T11:37:17` **main.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en el método `_validate_environment` durante el inicio, asegurando que cualquier fallo en la validación de rutas o permisos sea capturado y logueado explícitamente antes de que la aplicación intente continuar, evitando estados inconsistentes si el sistema no permite las operaciones necesarias.

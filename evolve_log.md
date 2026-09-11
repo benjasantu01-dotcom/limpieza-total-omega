@@ -1132,3 +1132,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-11T12:16:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-11T12:16:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T12:16:18` Corrida terminada. Total usado hoy: 292.
+- `2026-09-11T12:24:56` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-09-11T12:25:58` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-11T12:26:36` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se han añadido type hints completos y docstrings detallados en las funciones de validación interna y el motor de chequeo (`_VALIDATORS`, `_check_file_integrity`), clarificando las responsabilidades de cada componente para mejorar la mantenibilidad del módulo de seguridad.
+- `2026-09-11T12:27:36` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-11T12:27:55` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-11T12:28:31` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-11T12:29:40` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-11T12:30:26` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `settings.py` reemplazando los diccionarios de validación por una estructura de datos `NamedTuple` dedicada, lo que permite aprovechar el chequeo estático de tipos y hace explícita la relación entre cada clave de configuración y su función validadora.
+- `2026-09-11T12:30:38` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Documenté el propósito y las restricciones de seguridad de los métodos internos de `StartupEntry` y las funciones de escaneo mediante docstrings detallados, aclarando el uso de `safety.py` y la distinción entre resolución de rutas y validación de acceso para mejorar la mantenibilidad.
+- `2026-09-11T12:30:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T12:30:38` Corrida terminada. Total usado hoy: 296.
