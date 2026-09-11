@@ -1100,3 +1100,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-11T11:39:23` ➖ Sin cambios en quarantine.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `save_manifest` y `quarantine_file` capturando excepciones específicas y verificando valores vacíos (`None` o rutas mal formadas) antes de operar en el sistema de archivos, previniendo errores de estado inconsistente.
 - `2026-09-11T11:39:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T11:39:23` Corrida terminada. Total usado hoy: 276.
+- `2026-09-11T11:43:54` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-09-11T11:44:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-11T11:44:50` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_in_use` capturando excepciones de sistema adicionales durante el manejo de handles y refiné la lógica de validación en `_validate_boundary_conditions` para evitar fallos cuando las rutas no tienen "anchors" definidos.
+- `2026-09-11T11:44:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-11T11:45:20` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_safe_entry` y `scan_directory` validando explícitamente `None` o valores vacíos tras operaciones de sistema y antes de procesar rutas, evitando posibles fallos ante entradas inesperadas del sistema de archivos.
+- `2026-09-11T11:45:36` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `settings.py` implementando una validación estricta y explícita de `ConfigKey` en `validate` y `update`, eliminando la dependencia implícita de `ConfigKey.value` en las iteraciones y asegurando que solo claves definidas en el esquema sean procesadas, previniendo inyecciones de datos basura.
+- `2026-09-11T11:45:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T11:45:36` Corrida terminada. Total usado hoy: 280.

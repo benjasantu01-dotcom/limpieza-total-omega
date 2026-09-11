@@ -283,7 +283,8 @@ def validate(raw_values: Any) -> AppSettings:
     if not _is_dict(raw_values): return config
     for key_str, val in raw_values.items():
         key_enum = _STR_TO_ENUM.get(key_str)
-        if key_enum and (validator := _VALIDATOR_MAP.get(key_enum)):
+        if key_enum and key_enum in _VALIDATOR_MAP:
+            validator = _VALIDATOR_MAP[key_enum]
             validated = validator(key_enum, val)
             if validated is not None:
                 config[key_enum.value] = validated
@@ -367,8 +368,8 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     modified = False
     for k, v in changes.items():
         key_enum = _STR_TO_ENUM.get(k)
-        if key_enum and (validator := _VALIDATOR_MAP.get(key_enum)):
-            val = validator(key_enum, v)
+        if key_enum and key_enum in _VALIDATOR_MAP:
+            val = _VALIDATOR_MAP[key_enum](key_enum, v)
             if val is not None and val != current.get(k):
                 current[k] = val
                 modified = True

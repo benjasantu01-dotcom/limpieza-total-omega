@@ -79,7 +79,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     Identifica ejecutables nuevos en carpetas de alta exposición (Descargas/Temp).
     El motivo es detectar descargas maliciosas recientes no autorizadas.
     """
-    if path.parent.name.lower() not in WATCHED_FOLDERS:
+    if not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     
     try:
@@ -132,17 +132,15 @@ class Scanner:
         """
         try:
             path_str: str = entry.path
-            if not path_str or not os.path.exists(path_str): return False
+            if not path_str: return False
             
             name = entry.name
-            # Bloqueo de rutas UNC, rutas demasiado largas o nombres maliciosos para el sistema de archivos
             if not name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
                 return False
             
             if INVALID_TRAILING_CHARS_RE.search(name):
                 return False
             
-            # Ignorar enlaces simbólicos explícitos para evitar escapes fuera de base_root
             if entry.is_symlink():
                 return False
             
@@ -165,7 +163,7 @@ class Scanner:
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Gestiona la inserción de nuevos directorios válidos en el stack de búsqueda."""
-        if entry.path not in self.seen:
+        if entry.path and entry.path not in self.seen:
             self.seen.add(entry.path)
             directory_stack.append(entry.path)
 
@@ -227,7 +225,6 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if directory is None: return []
         
     path_str: str = str(directory).strip()
-    # Bloqueo de rutas UNC y rutas malformadas antes de inicializar
     if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")): 
         return []
             
@@ -248,7 +245,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    scanner.process_entry(entry, directory_stack)
+                    if entry: scanner.process_entry(entry, directory_stack)
         except (PermissionError, OSError):
             continue
     return scanner.results
@@ -260,7 +257,7 @@ def run_windows_defender_quick_scan() -> str:
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],
             capture_output=True, text=True, timeout=10
         )
-        if status.stdout.strip() != "True":
+        if status.stdout and status.stdout.strip() != "True":
             return "Protección en tiempo real desactivada. Escaneo omitido."
         result = subprocess.run(
             ["powershell", "-Command", "Start-MpScan -ScanType QuickScan"],

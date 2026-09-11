@@ -239,17 +239,14 @@ def _is_file_in_use(path_str: str) -> bool:
     kernel32 = ctypes.windll.kernel32
     INVALID_HANDLE_VALUE = -1
     # 0x80000000 = GENERIC_READ, 0 = FILE_SHARE_NONE (exclusivo)
-    handle = kernel32.CreateFileW(path_str, 0x80000000, 0, None, 3, 0x00000080, None)
-    
     try:
+        handle = kernel32.CreateFileW(path_str, 0x80000000, 0, None, 3, 0x00000080, None)
         if handle == INVALID_HANDLE_VALUE: 
             return True
+        kernel32.CloseHandle(handle)
         return False
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         return True
-    finally:
-        if handle != INVALID_HANDLE_VALUE:
-            kernel32.CloseHandle(handle)
 
 
 def _is_sensitive_extension(path: Path) -> bool:
@@ -414,7 +411,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED)
     
     try:
-        if not target_path.parts or len(target_path.parts) == 1 and target_path.parts[0] == os.sep:
+        if not target_path.parts or (len(target_path.parts) == 1 and target_path.parts[0] == os.sep):
              raise UnsafePathError("Ruta raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS)
 
         for part in target_path.parts:
@@ -452,11 +449,12 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
     if os.name == 'nt':
         try:
             root = target_path.anchor
-            drive_type = ctypes.windll.kernel32.GetDriveTypeW(root)
-            if drive_type == 1:
-                 raise UnsafePathError("Unidad inaccesible o inexistente.", SafetyValidationErrorCode.IO_ERROR)
-            if drive_type == DRIVE_REMOTE:
-                 raise UnsafePathError("Unidad de red bloqueada.", SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED)
+            if root:
+                drive_type = ctypes.windll.kernel32.GetDriveTypeW(root)
+                if drive_type == 1:
+                     raise UnsafePathError("Unidad inaccesible o inexistente.", SafetyValidationErrorCode.IO_ERROR)
+                if drive_type == DRIVE_REMOTE:
+                     raise UnsafePathError("Unidad de red bloqueada.", SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED)
         except OSError:
              raise UnsafePathError("Error al consultar estado de unidad.", SafetyValidationErrorCode.IO_ERROR)
 

@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 37
+- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 98 | 7 | 17 | 12 | 94 |
-| 2026-09-11 | 123 | 11 | 20 | 7 | 115 |
+| 2026-09-10 | 96 | 6 | 17 | 12 | 93 |
+| 2026-09-11 | 126 | 11 | 21 | 7 | 115 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **57**
+- manejo de errores y validación de entradas: **60**
 - seguridad defensiva: **50**
 - robustez ante casos límite: **46**
-- rendimiento: **34**
 - legibilidad y documentación: **34**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **21**
+- `browser.py`: **20**
 - `quarantine.py`: **19**
 - `duplicates.py`: **19**
 - `healthscore.py`: **18**
 - `assistant.py`: **18**
 - `diskreport.py`: **17**
-- `branding.py`: **16**
+- `settings.py`: **17**
 - `memory.py`: **16**
-- `settings.py`: **16**
 - `main.py`: **16**
-- `scanner.py`: **14**
-- `safety.py`: **13**
+- `branding.py`: **15**
+- `scanner.py`: **15**
+- `safety.py`: **14**
 - `organizer.py`: **13**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T11:45:36` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando una validación estricta y explícita de `ConfigKey` en `validate` y `update`, eliminando la dependencia implícita de `ConfigKey.value` en las iteraciones y asegurando que solo claves definidas en el esquema sean procesadas, previniendo inyecciones de datos basura.
+- `2026-09-11T11:45:20` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_entry` y `scan_directory` validando explícitamente `None` o valores vacíos tras operaciones de sistema y antes de procesar rutas, evitando posibles fallos ante entradas inesperadas del sistema de archivos.
+- `2026-09-11T11:44:50` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` capturando excepciones de sistema adicionales durante el manejo de handles y refiné la lógica de validación en `_validate_boundary_conditions` para evitar fallos cuando las rutas no tienen "anchors" definidos.
 - `2026-09-11T11:39:02` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez en la manipulación de rutas y excepciones en el módulo `organizer.py`, sustituyendo chequeos condicionales frágiles por validaciones de tipo y estructura más seguras en `scan_for_junk` y `_process_directory`, asegurando que no se propaguen errores inesperados durante el recorrido del sistema de archivos.
 - `2026-09-11T11:37:47` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones de entrada en `trim_working_set` y `_is_valid_process_entry`, asegurando que el manejo de errores sea explícito y evitando comparaciones lógicas ambiguas con tipos de datos malformados.
 - `2026-09-11T11:37:17` **main.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en el método `_validate_environment` durante el inicio, asegurando que cualquier fallo en la validación de rutas o permisos sea capturado y logueado explícitamente antes de que la aplicación intente continuar, evitando estados inconsistentes si el sistema no permite las operaciones necesarias.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T09:52:46` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva del escáner implementando una validación estricta para las rutas UNC (`\\servidor\recurso`) y bloqueando la resolución de nombres de archivo que puedan ser interpretados erróneamente por el sistema (como las rutas que terminan con espacios o puntos), evitando posibles vulnerabilidades de path traversal o evasión de filtros.
 - `2026-09-11T09:44:55` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_atomic_isolate_file` y `_write_temp_to_final` mediante la validación estricta de que el archivo de destino no exista previamente mediante flags de sistema de archivos (`os.O_CREAT | os.O_EXCL`) al abrir el descriptor del archivo temporal, mitigando una condición de carrera (race condition) donde un atacante podría pre-crear un archivo o enlace simbólico antes de que `os.replace` ocurra.
 - `2026-09-11T09:42:36` **organizer.py** (seguridad defensiva): Se ha robustecido `organizer.py` añadiendo una validación crítica en `_process_directory` para verificar que la ruta actual no sea un punto de reparse (junction) antes de entrar recursivamente, mitigando riesgos de bucles infinitos o ataques de escalada de privilegios/fugas de disco fuera del árbol esperado.
-- `2026-09-11T09:42:08` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_safe_to_trim` implementando una validación estricta del path del proceso antes de cualquier operación, asegurando que la ruta sea absoluta, esté normalizada y cumpla con los filtros de `safety.py` incluso antes de intentar liberar memoria.
-- `2026-09-11T09:33:45` **main.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de las operaciones asíncronas en `main.py` mediante la centralización de la validación de rutas en el método `run_async`, evitando la duplicación de lógica y garantizando que ningún hilo de trabajo acceda a rutas que no hayan sido validadas primero por `safety.is_safe_to_modify`.
-- `2026-09-11T09:32:49` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de recomendaciones sanitizando el acceso a `SystemMetrics` mediante una validación de tipo y contenido en `_evaluate_rules`, evitando que una inyección de datos malformados provoque un comportamiento inesperado durante la generación de mensajes.
