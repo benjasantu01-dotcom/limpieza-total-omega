@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import json
 import os
-import shutil
 import time
 from enum import Enum
 from pathlib import Path
@@ -340,7 +339,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
             ensure_safe_to_modify(str(parent))
             
-            # Limpiar intento previo huérfano antes de escribir
             if temp_path.exists():
                 try: temp_path.unlink()
                 except OSError: pass
@@ -353,8 +351,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 f.flush()
                 os.fsync(f.fileno())
             
+            # Respaldo seguro mediante renombrado/sobrescritura atómica
             if ruta.exists():
-                try: shutil.copy2(ruta, ruta.with_suffix(".bak"))
+                try: os.replace(ruta, ruta.with_suffix(".bak"))
                 except OSError: pass
                 
             os.replace(temp_path, ruta)
