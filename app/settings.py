@@ -30,6 +30,7 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import time
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -176,7 +177,6 @@ class _Validators:
             is_safe = not _Validators._is_reparse_point(resolved) and \
                       not is_protected_path(str(resolved)) and \
                       is_safe_to_modify(str(resolved))
-            # Solo invocamos ensure_safe_to_modify si el check básico pasó, optimizando I/O
             if is_safe:
                 ensure_safe_to_modify(str(resolved))
         except (OSError, PermissionError, RuntimeError, UnsafePathError, IndexError):
@@ -189,7 +189,6 @@ class _Validators:
     def _is_safe_path(path_str: str) -> bool:
         """Verifica que el string de ruta sea absoluto, saneado contra null-bytes y seguro para I/O."""
         if not path_str or len(path_str) > 2048 or "\0" in path_str: return False
-        # El chequeo contra _SAFETY_CACHE está integrado en _run_safety_checks
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
@@ -278,11 +277,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return _PATH_CACHE["default"]
 
 def validate(raw_values: Any) -> AppSettings:
-    """
-    Valida un diccionario arbitrario contra el esquema AppSettings.
-    Itera cada clave, valida su tipo y valor mediante el _VALIDATOR_MAP, 
-    y asegura que el objeto resultante sea seguro y compatible con la app.
-    """
+    """Valida un diccionario arbitrario contra el esquema AppSettings."""
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_str, val in raw_values.items():
@@ -296,93 +291,80 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """
-    Carga y valida el JSON de configuración desde disco.
-    Intenta cargar el archivo original y, en caso de error o archivo corrupto,
-    recurre al respaldo (.bak). Retorna valores de fábrica si falla todo.
-    Usa un caché temporal basado en el timestamp (mtime) del archivo.
-    """
+    """Carga y valida el JSON de configuración con reintentos ante bloqueos de archivo."""
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     rutas_a_probar = [ruta, ruta.with_suffix(".json.bak")]
     
     for r in rutas_a_probar:
-        try:
-            if not r.exists() or not r.is_file(): continue
-            stats = r.stat()
-            mtime = float(stats.st_mtime)
-            if (cached := _CACHE.get(ruta_str)) and cached[0] == mtime:
-                return cached[1]
-            if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
-                with open(r, "r", encoding="utf-8") as f:
-                    content = json.load(f)
-                    data = validate(content)
-                _CACHE[ruta_str] = (mtime, data)
-                return data
-        except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
-            continue
+        for attempt in range(3):
+            try:
+                if not r.exists() or not r.is_file(): break
+                stats = r.stat()
+                mtime = float(stats.st_mtime)
+                if (cached := _CACHE.get(ruta_str)) and cached[0] == mtime:
+                    return cached[1]
+                if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
+                    with open(r, "r", encoding="utf-8") as f:
+                        data = validate(json.load(f))
+                    _CACHE[ruta_str] = (mtime, data)
+                    return data
+                break
+            except (OSError, PermissionError):
+                if attempt < 2:
+                    time.sleep(0.1 * (attempt + 1))
+                    continue
+                break
+            except (json.JSONDecodeError, UnicodeDecodeError, ValueError):
+                break
     return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """
-    Persiste la configuración de forma atómica.
-    1. Valida los datos entrantes.
-    2. Crea un archivo temporal (.tmp).
-    3. Asegura permisos de escritura y seguridad de la ruta mediante `ensure_safe_to_modify`.
-    4. Realiza un back-up del archivo existente.
-    5. Reemplaza el archivo original de forma segura (atomic swap).
-    """
+    """Persiste la configuración de forma atómica con reintentos para evitar bloqueos."""
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     cleaned_settings = validate(values)
     
-    temp_path: Optional[Path] = None
-    try:
-        if cleaned_settings.get("asistente_activado") and not (
-            cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
-        ):
-            cleaned_settings["asistente_activado"] = False
-            
-        parent = ruta.parent
-        if not parent.exists():
-            parent.mkdir(parents=True, exist_ok=True)
-        ensure_safe_to_modify(str(parent))
-        
-        if ruta.exists():
-            ensure_safe_to_modify(str(ruta))
-        
-        data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
-        if len(data) > MAX_SETTINGS_SIZE: return None
-        
+    for attempt in range(3):
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
-        ensure_safe_to_modify(str(temp_path))
-        
-        with open(temp_path, "wb") as f:
-            f.write(data)
-            f.flush()
-            os.fsync(f.fileno())
-        
-        if ruta.exists():
-            try:
-                shutil.copy2(ruta, ruta.with_suffix(".bak"))
-            except OSError:
-                pass
+        try:
+            if cleaned_settings.get("asistente_activado") and not (
+                cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
+            ):
+                cleaned_settings["asistente_activado"] = False
+                
+            parent = ruta.parent
+            if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
+            ensure_safe_to_modify(str(parent))
             
-        os.replace(temp_path, ruta)
-        _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
-        return ruta
-        
-    except (TypeError, ValueError, OSError, IOError, PermissionError, UnsafePathError):
-        if temp_path and temp_path.exists():
-            try: temp_path.unlink()
-            except OSError: pass
-        return None
+            data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
+            if len(data) > MAX_SETTINGS_SIZE: return None
+            
+            with open(temp_path, "wb") as f:
+                f.write(data)
+                f.flush()
+                os.fsync(f.fileno())
+            
+            if ruta.exists():
+                try: shutil.copy2(ruta, ruta.with_suffix(".bak"))
+                except OSError: pass
+                
+            os.replace(temp_path, ruta)
+            _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
+            return ruta
+            
+        except (OSError, IOError, PermissionError, UnsafePathError):
+            if attempt < 2:
+                time.sleep(0.2 * (attempt + 1))
+                continue
+            if temp_path.exists():
+                try: temp_path.unlink()
+                except OSError: pass
+            return None
+    return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """
-    Modificación incremental: carga la configuración actual, aplica parches
-    validados y persiste solo si hubo cambios efectivos.
-    """
+    """Modificación incremental: carga la configuración actual, aplica parches."""
     current = load(custom_base)
     modified = False
     for k, v in changes.items():
@@ -401,22 +383,22 @@ def reset(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
-    """Extrae un valor único de la configuración, usando el valor por defecto si no existe."""
+    """Extrae un valor único de la configuración."""
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
-    """Obtiene la clave API, priorizando la variable de entorno sobre el almacenamiento persistente."""
+    """Obtiene la clave API, priorizando la variable de entorno."""
     if env_key := os.environ.get(API_KEY_ENV_VAR, "").strip(): return env_key
     return load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
-    """Verifica la elegibilidad del asistente basado en configuración y presencia de clave válida."""
+    """Verifica la elegibilidad del asistente."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado")) and bool(settings.get("asistente_clave_api", "").strip())
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
-    """Genera una representación textual de las preferencias actuales para el usuario."""
+    """Genera una representación textual de las preferencias actuales."""
     current = load(custom_base)
     api_key_env = os.environ.get(API_KEY_ENV_VAR)
     api_key_file = current.get("asistente_clave_api", "").strip()

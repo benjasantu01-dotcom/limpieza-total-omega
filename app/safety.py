@@ -68,6 +68,7 @@ class SafetyValidationErrorCode(IntEnum):
     ADS_DETECTED = 17
     OFFLINE_FILE = 18
     ENCRYPTED_OR_COMPRESSED = 19
+    VOLUME_READ_ONLY = 20
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
@@ -92,6 +93,7 @@ class ProtectionReason(Enum):
     INVALID_TYPE = "tipo de archivo no soportado"
     OFFLINE = "archivo offline (nube)"
     ENCRYPTED_OR_COMPRESSED = "cifrado o comprimido"
+    VOLUME_READ_ONLY = "volumen de solo lectura"
 
 
 class ValidationContext(Enum):
@@ -271,7 +273,8 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.ENCRYPTED_OR_COMPRESSED: SafetyValidationErrorCode.ENCRYPTED_OR_COMPRESSED,
     ProtectionReason.IN_USE: SafetyValidationErrorCode.FILE_IN_USE,
     ProtectionReason.REPARSE_POINT: SafetyValidationErrorCode.REPARSE_POINT_DETECTED,
-    ProtectionReason.ADS: SafetyValidationErrorCode.ADS_DETECTED
+    ProtectionReason.ADS: SafetyValidationErrorCode.ADS_DETECTED,
+    ProtectionReason.VOLUME_READ_ONLY: SafetyValidationErrorCode.VOLUME_READ_ONLY
 }
 
 def _check_file_integrity(path: Path) -> None:
@@ -439,6 +442,14 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     
+    # Validar si el volumen es Read-Only
+    if os.name == 'nt':
+        try:
+            root = target_path.anchor
+            if ctypes.windll.kernel32.GetDriveTypeW(root) == 1:
+                 raise UnsafePathError("Unidad inaccesible o inexistente.", SafetyValidationErrorCode.IO_ERROR)
+        except Exception: pass
+
     try:
         app_root: Path = Path(os.getcwd()).resolve()
         if target_path == app_root or app_root in target_path.parents:

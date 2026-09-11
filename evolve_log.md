@@ -1589,3 +1589,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-11T04:37:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-09-11T04:37:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T04:37:33` Corrida terminada. Total usado hoy: 112.
+- `2026-09-11T04:46:04` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-09-11T04:46:41` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se añadió una validación en `_validate_boundary_conditions` para detectar si el sistema de archivos de una ruta dada es `ReadOnly` a nivel de volumen, previniendo errores de `PermissionError` inesperados al intentar realizar operaciones de escritura.
+- `2026-09-11T04:47:08` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). He mejorado la robustez del escáner implementando una validación estricta de rutas mediante `pathlib.Path.is_symlink()` para asegurar que no se procesen accesos directos o enlaces simbólicos fuera de las heurísticas, evitando errores de recursión infinita y accesos inesperados en casos límite de archivos con atributos corruptos.
+- `2026-09-11T04:47:39` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante errores de lectura de disco (como archivos bloqueados por el SO o permisos cambiantes) implementando una política de reintento con pequeño backoff exponencial y manejando explícitamente el caso de archivos vacíos o parcialmente escritos.
+- `2026-09-11T04:47:51` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-11T04:47:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T04:47:51` Corrida terminada. Total usado hoy: 116.

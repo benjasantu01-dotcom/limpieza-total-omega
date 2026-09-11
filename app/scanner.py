@@ -133,6 +133,10 @@ class Scanner:
         if not path_str or not name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
             return False
         
+        # Ignorar enlaces simbólicos explícitos para evitar escapes fuera de base_root
+        if entry.is_symlink():
+            return False
+        
         if name.lower().endswith(".lnk") or RTL_CHAR_RE.search(path_str) or RESERVED_NAMES_RE.match(name):
             return False
         
