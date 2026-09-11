@@ -1596,3 +1596,35 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-11T04:47:51` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
 - `2026-09-11T04:47:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T04:47:51` Corrida terminada. Total usado hoy: 116.
+- `2026-09-11T04:56:21` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-09-11T04:56:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-11T04:57:21` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad de `_is_safe_text_structure` integrando `is_protected_path` de forma explícita sobre el contenido antes de procesarlo, asegurando que cualquier entrada que intente inyectar rutas de sistema sea bloqueada antes de ser interpretada.
+- `2026-09-11T04:57:59` Tests FALLARON:
+```
+........................................................................ [ 24%]
+.........................F.............................................. [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+1 failed, 298 passed in 2.23s
+
+```
+- `2026-09-11T04:57:59` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `save_logo_svg` añadiendo una comprobación de tipo y validez sobre la ruta de destino antes de intentar operaciones de sistema, mitigando posibles errores de manipulación de rutas externas no controladas.
+- `2026-09-11T04:58:27` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-09-11T04:58:41` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_validate_root` y `drive_usage` asegurando que el chequeo de seguridad mediante `is_protected_path` ocurra tras la resolución de la ruta (`resolve(strict=True)`), evitando que rutas maliciosas que intenten escapar mediante symlinks o "traversal" sean procesadas.
+- `2026-09-11T04:58:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T04:58:41` Corrida terminada. Total usado hoy: 120.

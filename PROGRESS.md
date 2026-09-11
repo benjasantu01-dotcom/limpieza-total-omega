@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 7 | 0 | 1 | 1 | 29 |
+| 2026-09-09 | 7 | 0 | 1 | 1 | 25 |
 | 2026-09-10 | 160 | 11 | 27 | 16 | 136 |
-| 2026-09-11 | 55 | 5 | 9 | 4 | 43 |
+| 2026-09-11 | 57 | 6 | 9 | 4 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - legibilidad y documentación: **46**
 - robustez ante casos límite: **46**
-- seguridad defensiva: **42**
+- seguridad defensiva: **44**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
@@ -33,9 +33,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **21**
 - `browser.py`: **21**
 - `settings.py`: **20**
+- `assistant.py`: **20**
 - `duplicates.py`: **19**
-- `assistant.py`: **19**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
 - `healthscore.py`: **17**
 - `scanner.py`: **16**
 - `memory.py`: **15**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T04:58:41` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `drive_usage` asegurando que el chequeo de seguridad mediante `is_protected_path` ocurra tras la resolución de la ruta (`resolve(strict=True)`), evitando que rutas maliciosas que intenten escapar mediante symlinks o "traversal" sean procesadas.
+- `2026-09-11T04:57:21` **assistant.py** (seguridad defensiva): Reforcé la seguridad de `_is_safe_text_structure` integrando `is_protected_path` de forma explícita sobre el contenido antes de procesarlo, asegurando que cualquier entrada que intente inyectar rutas de sistema sea bloqueada antes de ser interpretada.
 - `2026-09-11T04:47:39` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante errores de lectura de disco (como archivos bloqueados por el SO o permisos cambiantes) implementando una política de reintento con pequeño backoff exponencial y manejando explícitamente el caso de archivos vacíos o parcialmente escritos.
 - `2026-09-11T04:47:08` **scanner.py** (robustez ante casos límite): He mejorado la robustez del escáner implementando una validación estricta de rutas mediante `pathlib.Path.is_symlink()` para asegurar que no se procesen accesos directos o enlaces simbólicos fuera de las heurísticas, evitando errores de recursión infinita y accesos inesperados en casos límite de archivos con atributos corruptos.
 - `2026-09-11T04:46:41` **safety.py** (robustez ante casos límite): Se añadió una validación en `_validate_boundary_conditions` para detectar si el sistema de archivos de una ruta dada es `ReadOnly` a nivel de volumen, previniendo errores de `PermissionError` inesperados al intentar realizar operaciones de escritura.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T04:06:54` **settings.py** (rendimiento): Se implementó un cacheo más eficiente en `_Validators._run_safety_checks` para evitar llamadas redundantes y costosas a `path.resolve()` y `ensure_safe_to_modify` en rutas que ya fueron validadas, optimizando el rendimiento durante las lecturas frecuentes de configuración.
 - `2026-09-11T04:06:37` **scanner.py** (rendimiento): Optimizé el rendimiento de `scan_directory` y `Scanner.process_entry` evitando llamadas redundantes a `Path.resolve()` y `str(p)` mediante el uso directo de las propiedades ya disponibles en `os.DirEntry`, reduciendo significativamente la cantidad de syscalls por archivo.
 - `2026-09-11T04:06:11` **safety.py** (rendimiento): Optimicé el rendimiento de `_is_system_path_cached` reemplazando la evaluación iterativa `any()` de `p.parts` (que generaba una nueva tupla de componentes en cada llamada) por una búsqueda directa en una versión normalizada y minúscula del string, eliminando la creación innecesaria de objetos `Path` dentro del hot path.
-- `2026-09-11T03:56:52` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` evitando el re-cálculo de cadenas y eliminando la redundancia en la consulta de PowerShell, reduciendo el trabajo de parseo al filtrar los datos directamente desde el origen.
-- `2026-09-11T03:46:28` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global eliminando la creación innecesaria de diccionarios intermedios y procesando los datos de forma iterativa, aprovechando la caché `_CACHE_SCORERS` ya existente para reducir el overhead de ejecución.

@@ -88,8 +88,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if directory is None:
         return None
     try:
-        path_str = os.fspath(directory)
-        path_obj = Path(path_str).resolve(strict=True)
+        path_obj = Path(directory).resolve(strict=True)
+        # Validación: solo permitimos el procesamiento si la ruta resuelta es segura
         if path_obj.is_dir() and not is_protected_path(path_obj) and os.access(path_obj, os.R_OK):
             return path_obj
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
@@ -225,7 +225,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None:
         return None
     try:
-        p = Path(os.fspath(mount)).resolve(strict=True)
+        p = Path(mount).resolve(strict=True)
         if p.is_dir() and not is_protected_path(p):
             usage = shutil.disk_usage(p)
             return DriveUsage(str(p), usage.total, usage.used, usage.free)

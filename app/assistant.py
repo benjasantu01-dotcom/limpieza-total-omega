@@ -369,6 +369,7 @@ def _is_safe_text_structure(text: str) -> bool:
     Realiza una validación profunda de integridad del texto.
     """
     if not text: return True
+    # La validación incluye check directo de paths protegidos, inyecciones y comandos PS.
     if (_PATH_INJECTION_REGEX.search(text) or 
         is_protected_path(text) or 
         _is_restricted_content(text) or 
