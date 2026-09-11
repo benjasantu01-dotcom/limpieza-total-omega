@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 207
 
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 124 | 8 | 21 | 14 | 129 |
-| 2026-09-11 | 96 | 10 | 18 | 6 | 78 |
+| 2026-09-10 | 122 | 8 | 20 | 14 | 128 |
+| 2026-09-11 | 99 | 10 | 18 | 6 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **59**
-- seguridad defensiva: **44**
 - legibilidad y documentación: **44**
-- robustez ante casos límite: **38**
+- seguridad defensiva: **42**
+- robustez ante casos límite: **41**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
 - `browser.py`: **21**
+- `quarantine.py`: **20**
 - `assistant.py`: **19**
+- `duplicates.py`: **19**
 - `settings.py`: **18**
-- `duplicates.py`: **18**
 - `branding.py`: **17**
-- `safety.py`: **16**
-- `diskreport.py`: **16**
-- `healthscore.py`: **16**
+- `diskreport.py`: **17**
+- `healthscore.py`: **17**
+- `safety.py`: **15**
 - `scanner.py`: **14**
 - `memory.py`: **14**
 - `main.py`: **13**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T08:52:19` **healthscore.py** (robustez ante casos límite): Se fortalece la resiliencia del pipeline ante casos límite, asegurando que `_evaluate_rules` sea totalmente inmune a errores en las funciones inyectadas (como `message_factory`) y garantizando que el `SystemMetrics` siempre sea válido mediante una validación profunda antes de procesar, previniendo estados inconsistentes o divisiones por cero.
+- `2026-09-11T08:52:05` **duplicates.py** (robustez ante casos límite): He mejorado la robustez de `suggest_keeper` y `format_group` añadiendo un manejo de excepciones más granular y defensivo ante archivos que pueden desaparecer durante la ejecución (condición de carrera), garantizando que la aplicación no falle si un archivo cambia de estado mientras se genera el reporte.
+- `2026-09-11T08:51:38` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos bloqueados por el sistema operativo mediante la captura explícita de `OSError` durante la lectura de metadatos (`stat`), evitando que una denegación de acceso o una condición de carrera (archivo eliminado mientras se escanea) interrumpa el recorrido completo de la unidad.
 - `2026-09-11T08:43:05` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta de rutas y manejo de errores críticos en `save_logo_svg` para asegurar que el archivo no solo sea seguro según los guardias, sino que sea resiliente ante condiciones de carrera, falta de permisos o rutas de solo lectura, mejorando la robustez ante casos límite.
 - `2026-09-11T08:42:19` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_get_source_value` para manejar de forma segura estructuras de datos inesperadas (como listas o valores nulos) que podrían causar excepciones al iterar sobre objetos externos, fortaleciendo la resiliencia del asistente ante datos de configuración corruptos o malformados.
 - `2026-09-11T08:41:04` **settings.py** (rendimiento): Se optimizó el acceso a las configuraciones implementando un caché de lectura `_CACHE` más eficiente y evitando la recreación innecesaria de objetos `Path` y diccionarios mediante el uso de referencias y limpieza de lógica condicional redundante en `load`.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T08:10:30` **branding.py** (rendimiento): Se implementó un sistema de `MappingProxyType` recursivo para los diccionarios de configuración (`_PALETTE_MAP` y `FONT_SIZES`) y se consolidó el cálculo de `_SEVERITY_MAP` como constante inmutable, evitando la creación de objetos innecesarios y permitiendo el acceso directo de solo lectura con rendimiento óptimo.
 - `2026-09-11T08:01:07` **startup.py** (legibilidad y documentación): Mejora la legibilidad del módulo `StartupEntry` documentando el ciclo de vida y la intención de seguridad de sus métodos internos, asegurando que la arquitectura de resolución perezosa quede clara para futuros colaboradores.
 - `2026-09-11T07:50:45` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reemplazaron los `tuple` implícitos en `__all__` y `required` por `tuple` literales para mayor legibilidad y consistencia con las prácticas de tipado moderno de Python, mejorando la documentación del contrato de interfaces.
-- `2026-09-11T07:50:06` **organizer.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_is_file_locked` para usar una excepción más específica y documentar los casos de error, junto con la adición de docstrings técnicos explicativos sobre las validaciones de seguridad de nivel de sistema que se realizan en dicho método.
-- `2026-09-11T07:41:41` **memory.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de acceso a memoria para clarificar el uso de las estructuras de datos y las APIs de bajo nivel, mejorando la mantenibilidad del código sin alterar su lógica.
-- `2026-09-11T07:41:27` **main.py** (legibilidad y documentación): Se introdujo un `TypeAlias` explícito y se documentaron con mayor precisión las estructuras de datos y los métodos de delegación asíncrona para mejorar la mantenibilidad y legibilidad del flujo de control.

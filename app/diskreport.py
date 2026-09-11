@@ -286,9 +286,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 stack.append(entry_path)
                         elif entry.is_file(follow_symlinks=False):
                             if skip_protected and is_protected_path(entry_path): continue
-                            st = entry.stat()
-                            size = int(getattr(st, 'st_size', 0))
-                            yield entry_path, max(0, size)
+                            # Se captura OSError por archivos bloqueados o inaccesibles
+                            try:
+                                st = entry.stat()
+                                size = int(getattr(st, 'st_size', 0))
+                                yield entry_path, max(0, size)
+                            except OSError:
+                                continue
                     except (PermissionError, OSError, AttributeError):
                         continue
         except (PermissionError, OSError):

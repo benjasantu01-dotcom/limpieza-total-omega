@@ -317,9 +317,10 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if not isinstance(p, Path):
             continue
         try:
+            # Captura de posibles fallos de E/S ante archivos que ya no existen
             stat_info = p.stat()
             candidates.append((float(stat_info.st_mtime), len(str(p)), p))
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, FileNotFoundError):
             continue
     
     return min(candidates, key=lambda x: (x[0], x[1]))[2] if candidates else None
@@ -341,12 +342,15 @@ def format_group(group: DuplicateGroup) -> List[str]:
     for path in group.paths:
         if not isinstance(path, Path): 
             continue
-        if not path.exists():
-            lines.append(f"   [desaparecido] {path}")
-        elif not _is_valid_candidate(path):
-            lines.append(f"   [inaccesible] {path}")
-        else:
-            label = 'conservar' if (keeper and path == keeper) else 'duplicado'
-            lines.append(f"   [{label}] {path}")
+        try:
+            if not path.exists():
+                lines.append(f"   [desaparecido] {path}")
+            elif not _is_valid_candidate(path):
+                lines.append(f"   [inaccesible] {path}")
+            else:
+                label = 'conservar' if (keeper and path == keeper) else 'duplicado'
+                lines.append(f"   [{label}] {path}")
+        except (OSError, PermissionError):
+            lines.append(f"   [error] {path}")
             
     return lines

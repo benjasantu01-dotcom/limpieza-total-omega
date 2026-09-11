@@ -59,7 +59,7 @@ _LIMIT_STARTUP_COUNT: Final[int] = 20
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-# Factores de escalado precalculados para evitar divisiones recurrentes
+# Factores de escalado precalculados
 _INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB
 _INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB
 _INV_STARTUP: Final[float] = 1.0 / float(_LIMIT_STARTUP_COUNT)
@@ -214,7 +214,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                 if isinstance(msg, str) and msg.strip():
                     clean_msg = " ".join(msg.split())[:200]
                     findings.append(clean_msg)
-        except (AttributeError, TypeError, ValueError, ZeroDivisionError):
+        except Exception:
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -226,8 +226,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     Returns:
         HealthResult: Objeto con score final, nota, desglose y recomendaciones.
     """
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+    if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos."])
+    
+    metrics.validate()
+    if not metrics.is_finite:
+        return HealthResult(0, "F", {}, ["Error: Métricas no numéricas detectadas."])
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -241,12 +245,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             val = int(round(ratio * weight))
             metric_breakdown[area] = val
             total_score += val
-        except (ValueError, TypeError, ZeroDivisionError, Exception):
+        except Exception:
             metric_breakdown[area] = 0
             
     final_score = int(_clamp(total_score, 0.0, 100.0))
     
-    if getattr(metrics, 'quarantined_count', 0) > 0:
+    if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")
     
     return HealthResult(
