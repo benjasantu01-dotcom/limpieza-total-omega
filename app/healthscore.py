@@ -227,19 +227,21 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos."])
     
     recommendations: List[str] = []
+    metric_breakdown: Dict[MetricKey, int] = {}
+    total_score: float = 0.0
     
-    def process_area(area: MetricKey, weight: int, scorer: Callable[[SystemMetrics], NormalizedRatio], rules: List[RecommendationRule] | None) -> Tuple[MetricKey, int]:
-        """Aplica la función de puntuación específica y evalúa reglas de recomendación para un área."""
+    for area, weight, scorer, rules in _CACHE_SCORERS:
         try:
             ratio = _clamp(scorer(metrics))
             if rules:
                 _evaluate_rules(metrics, rules, ratio, recommendations)
-            return area, int(round(ratio * weight))
+            val = int(round(ratio * weight))
+            metric_breakdown[area] = val
+            total_score += val
         except (ValueError, TypeError, ZeroDivisionError, Exception):
-            return area, 0
-
-    metric_breakdown = dict(process_area(a, w, s, r) for a, w, s, r in _CACHE_SCORERS)
-    final_score = int(_clamp(float(sum(metric_breakdown.values())), 0.0, 100.0))
+            metric_breakdown[area] = 0
+            
+    final_score = int(_clamp(total_score, 0.0, 100.0))
     
     if getattr(metrics, 'quarantined_count', 0) > 0:
         recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")
