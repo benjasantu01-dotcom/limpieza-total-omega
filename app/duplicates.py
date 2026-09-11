@@ -238,11 +238,14 @@ def _collect_candidates(
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Agrupa una lista de archivos aplicando una función hash."""
+    """Agrupa una lista de archivos aplicando una función hash, ignorando fallos individuales."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if path is not None and (digest := hash_func(path)):
-            groups_by_digest[digest].append(path)
+        try:
+            if path is not None and (digest := hash_func(path)):
+                groups_by_digest[digest].append(path)
+        except (OSError, PermissionError):
+            continue
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
 
@@ -259,13 +262,15 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona estrategia de hashing según tamaño para optimizar rendimiento."""
+    """Selecciona estrategia de hashing según tamaño, garantizando robustez ante errores de acceso."""
     if size <= 0 or not paths or len(paths) < 2: 
         return []
     
-    results = _group_paths_by_hash(paths, partial_hash) if size <= PARTIAL_READ_BYTES else _refine_by_deep_hash(paths)
-        
-    return [DuplicateGroup(digest, size, sorted(confirmed_paths)) for digest, confirmed_paths in results.items()]
+    try:
+        results = _group_paths_by_hash(paths, partial_hash) if size <= PARTIAL_READ_BYTES else _refine_by_deep_hash(paths)
+        return [DuplicateGroup(digest, size, sorted(confirmed_paths)) for digest, confirmed_paths in results.items()]
+    except Exception:
+        return []
 
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:

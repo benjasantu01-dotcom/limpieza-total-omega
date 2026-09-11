@@ -111,7 +111,7 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
             st = entry.stat(follow_symlinks=False)
             return bool(getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)
     except (OSError, PermissionError, AttributeError):
-        pass
+        return True # Asumimos exclusión si no podemos verificar estado
     return False
 
 
@@ -226,7 +226,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
     try:
         p = Path(os.fspath(mount)).resolve(strict=True)
-        if p.is_dir() and not is_protected_path(p) and os.access(p, os.R_OK):
+        if p.is_dir() and not is_protected_path(p):
             usage = shutil.disk_usage(p)
             return DriveUsage(str(p), usage.total, usage.used, usage.free)
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError):

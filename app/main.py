@@ -1202,6 +1202,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _apply_card_updates(self, junk_mb: float, sospechosos: int, ram_libre: float, disco_libre: float) -> None:
         """Aplica valores a etiquetas de tarjetas."""
         if self._closing or not self.winfo_exists(): return
+        
         valores = {
             "basura": f"{junk_mb:.0f} MB",
             "sospechosos": str(sospechosos),
@@ -1220,8 +1221,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             "disco": branding.score_color(disco_libre * 5),
         }
         for clave, label in self.cards.items():
-            if label.winfo_exists():
-                label.configure(text=valores[clave], text_color=colores[clave])
+            if label is not None and label.winfo_exists():
+                label.configure(text=valores.get(clave, "-"), text_color=colores.get(clave, branding.color("text")))
 
     @safe_ui_operation
     def _update_health_bars(self, resultado: healthscore.ScoreResult) -> None:
