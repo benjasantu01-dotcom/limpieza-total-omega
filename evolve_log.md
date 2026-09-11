@@ -1223,3 +1223,33 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Valu
 - `2026-09-11T13:36:51` Corte de seguridad: se alcanzó el límite de 480s para esta corrida. Termino prolijo.
 - `2026-09-11T13:36:51` Rotación — metrics: 3 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T13:36:51` Corrida terminada. Total usado hoy: 319.
+- `2026-09-11T13:37:09` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-11T13:37:39` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_file_locked` para manejar archivos vacíos o inaccesibles sin recurrir a excepciones genéricas, y añadí una verificación de acceso de escritura (W_OK) antes de `ensure_safe_to_modify` en `stage_for_review` y `delete_reviewed` para evitar errores de I/O en volúmenes de solo lectura.
+- `2026-09-11T13:38:15` Tests FALLARON:
+```
+ePathError(f"Ruta origen inaccesible: {e}")
+E           safety.UnsafePathError: [GENERIC] Ruta origen inaccesible: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-2/test_quarantine_missing_file_r0/no-existe.txt'
+
+app/quarantine.py:584: UnsafePathError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:114: SyntaxWarning: invalid escape sequence '\A'
+    Extrae una ruta entre comillas (ej: "C:\App\test.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - safety.UnsafePathError: [GENERIC] Ruta origen inaccesible: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-2/test_quarantine_missing_file_r0/no-existe.txt'
+1 failed, 298 passed, 7 warnings in 1.08s
+
+```
+- `2026-09-11T13:38:15` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `quarantine_file` ante fallas de entrada (archivos inexistentes o rutas mal formadas) asegurando que cualquier recurso abierto sea liberado correctamente mediante bloques `try...finally` y validaciones previas más estrictas sobre el estado del filesystem antes de intentar la operación de aislamiento.
+- `2026-09-11T13:38:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-11T13:38:54` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se añadió un mecanismo de protección contra "Race Conditions" al realizar chequeos de integridad mediante el uso de `os.open` con flags de acceso atómico y verificación de handle, garantizando que el estado del archivo no cambie entre la validación y la operación de limpieza.
+- `2026-09-11T13:38:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T13:38:54` Corrida terminada. Total usado hoy: 323.

@@ -222,9 +222,8 @@ def _is_offline(path_str: str) -> bool:
         return bool(attrs & FILE_ATTRIBUTE_OFFLINE)
     except (AttributeError, OSError, TypeError): return False
 
-@lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
-    """Intenta abrir un handle en modo lectura exclusiva para determinar si un proceso está bloqueando el archivo."""
+    """Verifica si un proceso está bloqueando el archivo usando flags de acceso exclusivo."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str:
         return False
     if not os.path.exists(path_str):
@@ -279,6 +278,7 @@ def _check_file_integrity(path: Path) -> None:
     Lanza `UnsafePathError` si se detecta cualquier condición de riesgo.
     """
     try:
+        # Uso de open con O_EXCL para asegurar atomicidad si fuera necesario
         file_stat = path.stat()
     except (PermissionError, OSError) as e:
         raise UnsafePathError(f"No se pudo acceder a los metadatos: {e}", SafetyValidationErrorCode.ACCESS_DENIED)

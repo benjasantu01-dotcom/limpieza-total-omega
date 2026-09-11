@@ -168,12 +168,14 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
     try:
+        # Verificar permisos básicos antes de intentar abrir
         if not os.access(path, os.R_OK):
             return True
+        # Prueba de apertura no destructiva
         with open(path, 'rb'):
             pass
         return False
-    except (OSError, PermissionError, IOError, BlockingIOError):
+    except (OSError, PermissionError, IOError):
         return True
 
 
@@ -191,13 +193,12 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 def _passes_system_checks(src: Path) -> bool:
     """Filtra archivos con atributos especiales de SO (Sistema, Oculto)."""
     if os.name != "nt" or src is None: return True
-    # Máscara 0x06: FILE_ATTRIBUTE_HIDDEN (0x02) | FILE_ATTRIBUTE_SYSTEM (0x04)
     SYSTEM_HIDDEN_MASK: Final[int] = 0x06
     return not (_get_win_attributes(src) & SYSTEM_HIDDEN_MASK)
 
 
 def _has_forbidden_chars(path: Path) -> bool:
-    """Valida nombres reservados de Windows y caracteres prohibidos en el sistema de archivos."""
+    """Valida nombres reservados de Windows y caracteres prohibidos."""
     if path is None: return True
     try:
         path_str: str = str(path).lower()
@@ -209,10 +210,7 @@ def _has_forbidden_chars(path: Path) -> bool:
 
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
-    """
-    Valida la integridad de la estructura de las rutas antes de cualquier I/O.
-    Retorna True solo si ambas rutas cumplen los requisitos de seguridad.
-    """
+    """Valida la integridad de la estructura de las rutas antes de cualquier I/O."""
     if src is None or dest is None: return False
     if _is_unc_path(src) or _is_unc_path(dest): return False
     if _has_forbidden_chars(src): return False
@@ -337,7 +335,6 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     try:
         dest_base_res: Path = dest_base.resolve()
         try:
-            # Requiere 50MB extra de margen sobre el tamaño del archivo
             if shutil.disk_usage(dest_base_res.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): 
                 return None
         except (OSError, ValueError):
@@ -360,8 +357,9 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
 
     try:
         dest_base: Path = Path(review_dir).expanduser().resolve()
-        if not is_safe_to_modify(dest_base): return None
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
+        # Verificación extra: destino debe permitir escritura
+        if not os.access(dest_base, os.W_OK) or not is_safe_to_modify(dest_base): return None
     except (OSError, RuntimeError, TypeError):
         return None
 
@@ -384,7 +382,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
 
     try:
         dest: Path = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or not is_safe_to_modify(dest): 
+        if not dest.exists() or not os.access(dest, os.W_OK) or not is_safe_to_modify(dest): 
             return 0
     except (OSError, RuntimeError, TypeError):
         return 0

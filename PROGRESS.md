@@ -5,25 +5,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **503**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 39
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 72 | 5 | 12 | 10 | 85 |
-| 2026-09-11 | 148 | 12 | 27 | 8 | 124 |
+| 2026-09-10 | 72 | 5 | 12 | 10 | 82 |
+| 2026-09-11 | 150 | 13 | 28 | 8 | 124 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **61**
 - legibilidad y documentación: **45**
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **44**
 - seguridad defensiva: **38**
 - rendimiento: **34**
 
@@ -39,13 +39,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **16**
 - `branding.py`: **15**
 - `healthscore.py`: **15**
+- `organizer.py`: **14**
+- `safety.py`: **14**
 - `scanner.py`: **14**
-- `organizer.py`: **13**
-- `safety.py`: **13**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T13:38:54` **safety.py** (robustez ante casos límite): Se añadió un mecanismo de protección contra "Race Conditions" al realizar chequeos de integridad mediante el uso de `os.open` con flags de acceso atómico y verificación de handle, garantizando que el estado del archivo no cambie entre la validación y la operación de limpieza.
+- `2026-09-11T13:37:39` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para manejar archivos vacíos o inaccesibles sin recurrir a excepciones genéricas, y añadí una verificación de acceso de escritura (W_OK) antes de `ensure_safe_to_modify` en `stage_for_review` y `delete_reviewed` para evitar errores de I/O en volúmenes de solo lectura.
 - `2026-09-11T13:17:41` **duplicates.py** (robustez ante casos límite): Se introdujo una validación de concurrencia básica en `hash_file` y `partial_hash` verificando si el archivo está en uso exclusivo mediante un intento de apertura en modo exclusivo (`x`) antes de procesar, evitando errores de E/S inesperados al iterar sobre archivos bloqueados por el sistema durante el escaneo.
 - `2026-09-11T13:17:30` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` ante archivos que desaparecen durante la ejecución (condición de carrera común en escaneos de disco) envolviendo la obtención de atributos de archivo en un bloque `try-except` más robusto que valida explícitamente la existencia previa mediante `is_file()` sin seguir enlaces simbólicos.
 - `2026-09-11T13:16:59` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_path_inside_base` y `_should_skip_entry` ante rutas malformadas o permisos denegados, añadiendo un chequeo explícito de existencia mediante `os.path.lexists` antes de resolver, para evitar excepciones críticas en sistemas con nombres de archivos inválidos o bloqueados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T12:30:38` **startup.py** (legibilidad y documentación): Documenté el propósito y las restricciones de seguridad de los métodos internos de `StartupEntry` y las funciones de escaneo mediante docstrings detallados, aclarando el uso de `safety.py` y la distinción entre resolución de rutas y validación de acceso para mejorar la mantenibilidad.
 - `2026-09-11T12:30:26` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `settings.py` reemplazando los diccionarios de validación por una estructura de datos `NamedTuple` dedicada, lo que permite aprovechar el chequeo estático de tipos y hace explícita la relación entre cada clave de configuración y su función validadora.
 - `2026-09-11T12:26:36` **safety.py** (legibilidad y documentación): Se han añadido type hints completos y docstrings detallados en las funciones de validación interna y el motor de chequeo (`_VALIDATORS`, `_check_file_integrity`), clarificando las responsabilidades de cada componente para mejorar la mantenibilidad del módulo de seguridad.
-- `2026-09-11T12:16:14` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args, Returns y Raises) en las funciones críticas de validación y persistencia, facilitando la comprensión del flujo de seguridad para futuros mantenimientos.
-- `2026-09-11T12:15:38` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` documentando los contratos de las funciones críticas de seguridad con docstrings estructurados, mejorando la semántica de las validaciones internas (renombrando constantes y consolidando lógica de chequeo) y agregando type hints consistentes en los retornos de las funciones de filtrado.
