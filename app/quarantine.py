@@ -385,21 +385,24 @@ def _load_manifest_raw(base_str: str, content_hash: str) -> List[QuarantineItem]
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
     """Carga y sincroniza la lista de ítems en cuarentena."""
-    base_path = quarantine_dir(base)
-    m_path = _manifest_path(base_path)
-    
-    current_hash = "none"
-    if m_path.exists():
-        try:
-            with open(m_path, "rb") as f:
-                current_hash = hashlib.sha256(f.read()).hexdigest()
-        except OSError:
-            pass
-    
-    if force_reload:
-        _load_manifest_raw.cache_clear()
-    
-    return list(_load_manifest_raw(str(base_path), current_hash))
+    try:
+        base_path = quarantine_dir(base)
+        m_path = _manifest_path(base_path)
+        
+        current_hash = "none"
+        if m_path.exists():
+            try:
+                with open(m_path, "rb") as f:
+                    current_hash = hashlib.sha256(f.read()).hexdigest()
+            except OSError:
+                pass
+        
+        if force_reload:
+            _load_manifest_raw.cache_clear()
+        
+        return list(_load_manifest_raw(str(base_path), current_hash))
+    except (OSError, UnsafePathError):
+        return []
 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
@@ -619,7 +622,7 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
             save_manifest(valid_items, base)
             
         return sorted(valid_items, key=lambda x: x.quarantined_at, reverse=True)
-    except OSError:
+    except (OSError, UnsafePathError):
         return []
 
 

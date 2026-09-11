@@ -228,17 +228,21 @@ def _is_file_in_use(path_str: str) -> bool:
         return False
     if not os.path.exists(path_str):
         return False
+    
+    kernel32 = ctypes.windll.kernel32
+    INVALID_HANDLE_VALUE = -1
+    # 0x80000000 = GENERIC_READ, 0 = FILE_SHARE_NONE (exclusivo)
+    handle = kernel32.CreateFileW(path_str, 0x80000000, 0, None, 3, 0x00000080, None)
+    
     try:
-        kernel32 = ctypes.windll.kernel32
-        INVALID_HANDLE_VALUE = -1
-        # 0x80000000 = GENERIC_READ, 0 = FILE_SHARE_NONE (exclusivo)
-        handle = kernel32.CreateFileW(path_str, 0x80000000, 0, None, 3, 0x00000080, None)
         if handle == INVALID_HANDLE_VALUE: 
             return True
-        kernel32.CloseHandle(handle)
         return False
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         return True
+    finally:
+        if handle != INVALID_HANDLE_VALUE:
+            kernel32.CloseHandle(handle)
 
 
 def _is_sensitive_extension(path: Path) -> bool:
