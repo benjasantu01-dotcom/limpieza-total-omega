@@ -648,7 +648,7 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """Restaura un archivo al destino original tras verificaciones."""
     if not isinstance(item_id, str) or not item_id.strip():
-        raise ValueError("ID inválido.")
+        raise ValueError("ID de ítem inválido o nulo.")
         
     base_path = quarantine_dir(base)
     items = load_manifest(base)

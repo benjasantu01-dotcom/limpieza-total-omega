@@ -426,7 +426,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, f"El sistema denegó la operación (Error {err})."
             
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except (Exception, ctypes.ArgumentError):
-        return False, "Error inesperado al intentar liberar el proceso."
+    except (ctypes.ArgumentError, OSError, ValueError) as e:
+        return False, f"Error de sistema al ejecutar el trim: {str(e)}"
     finally:
         kernel32.CloseHandle(proc_handle)

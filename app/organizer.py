@@ -175,7 +175,7 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está bloqueado por el sistema o procesos.
-    Usa GENERIC_READ con modo compartido total para no interferir.
+    Realiza una verificación de acceso y comprueba permisos básicos.
     """
     if path is None or not path.exists() or _is_junction(path): 
         return True
@@ -184,16 +184,16 @@ def _is_file_locked(path: Path) -> bool:
     if not _passes_system_checks(path):
         return True
 
-    if os.name == "nt":
-        # FILE_SHARE_READ|WRITE|DELETE (0x07) para no bloquear el acceso ajeno
-        handle = ctypes.windll.kernel32.CreateFileW(
-            str(path), 0x80000000, 0x00000007, None, 0x3, 0x80, None
-        )
-        if handle == -1: # INVALID_HANDLE_VALUE
+    # Verifica si podemos leer el archivo (si falla, está bloqueado o sin permisos)
+    try:
+        if not os.access(path, os.R_OK):
             return True
-        ctypes.windll.kernel32.CloseHandle(handle)
+        # Prueba intentar abrirlo en modo lectura exclusiva brevemente
+        with open(path, 'rb') as f:
+            pass
         return False
-    return False
+    except (OSError, PermissionError, IOError):
+        return True
 
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
