@@ -277,7 +277,11 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return _PATH_CACHE["default"]
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida un objeto arbitrario, aplicando reglas de negocio y retornado un esquema saneado."""
+    """
+    Valida un diccionario arbitrario contra el esquema AppSettings.
+    Itera cada clave, valida su tipo y valor mediante el _VALIDATOR_MAP, 
+    y asegura que el objeto resultante sea seguro y compatible con la app.
+    """
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_str, val in raw_values.items():
@@ -291,7 +295,12 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga y valida el JSON de configuración, intentando con un respaldo si el original falla."""
+    """
+    Carga y valida el JSON de configuración desde disco.
+    Intenta cargar el archivo original y, en caso de error o archivo corrupto,
+    recurre al respaldo (.bak). Retorna valores de fábrica si falla todo.
+    Usa un caché temporal basado en el timestamp (mtime) del archivo.
+    """
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     rutas_a_probar = [ruta, ruta.with_suffix(".json.bak")]
@@ -314,7 +323,14 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Persiste la configuración de forma atómica y segura mediante escritura a archivo temporal."""
+    """
+    Persiste la configuración de forma atómica.
+    1. Valida los datos entrantes.
+    2. Crea un archivo temporal (.tmp).
+    3. Asegura permisos de escritura y seguridad de la ruta mediante `ensure_safe_to_modify`.
+    4. Realiza un back-up del archivo existente.
+    5. Reemplaza el archivo original de forma segura (atomic swap).
+    """
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     cleaned_settings = validate(values)
@@ -362,7 +378,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Aplica cambios parciales sobre la configuración actual tras validar cada valor."""
+    """
+    Modificación incremental: carga la configuración actual, aplica parches
+    validados y persiste solo si hubo cambios efectivos.
+    """
     current = load(custom_base)
     modified = False
     for k, v in changes.items():

@@ -301,6 +301,16 @@ def _get_shield_coords(s: float) -> Tuple[float, ...]:
     return tuple(v * s for v in base)
 
 @lru_cache(maxsize=8)
+def _get_scaled_poly(scale: float, canvas_x: float, canvas_y: float) -> Tuple[float, ...]:
+    """Cachea los puntos del polígono para evitar reconstrucción en cada frame."""
+    coords = _get_shield_coords(scale)
+    poly = []
+    for i in range(0, len(coords), 2):
+        poly.append(canvas_x + coords[i])
+        poly.append(canvas_y + coords[i+1])
+    return tuple(poly)
+
+@lru_cache(maxsize=8)
 def logo_svg(size: int = 128) -> str:
     """Genera una cadena XML representando el logo de la marca en formato SVG."""
     s = max(1, min(4096, int(size)))
@@ -399,18 +409,12 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         if s <= 0: return
         scale = max(0.1, min(10.0, s / 128.0))
         
-        coords = _get_shield_coords(scale)
-        poly_points: List[float] = []
-        for i in range(0, len(coords), 2):
-            poly_points.append(canvas_x + coords[i])
-            poly_points.append(canvas_y + coords[i+1])
-            
         canvas.create_oval(
             canvas_x + 64 * scale - 75 * scale, canvas_y + 58 * scale - 75 * scale, 
             canvas_x + 64 * scale + 75 * scale, canvas_y + 58 * scale + 75 * scale, 
             fill=blend(C_SURFACE, C_GLOW, 0.15), outline=""
         )
-        canvas.create_polygon(poly_points, fill=GRADIENT_STOPS[1], outline="")
+        canvas.create_polygon(_get_scaled_poly(scale, canvas_x, canvas_y), fill=GRADIENT_STOPS[1], outline="")
         
         _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
         _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, scale)

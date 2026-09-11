@@ -633,9 +633,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
     
-    for token in _TOKEN_REGEX.findall(q_sanitized):
-        if token in _KEYWORD_MAP:
-            return _KEYWORD_MAP[token](context, question)
+    tokens = set(_TOKEN_REGEX.findall(q_sanitized))
+    matches = tokens.intersection(_KEYWORD_MAP.keys())
+    if matches:
+        return _KEYWORD_MAP[next(iter(matches))](context, question)
             
     cuerpo = _format_problem_message(
         _identify_active_problems(context), 
