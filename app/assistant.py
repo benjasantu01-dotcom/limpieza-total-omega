@@ -643,7 +643,7 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa el mensaje y el contexto en un JSON compatible con el formato de API de Google."""
     try:
-        # Validación extra de seguridad para evitar inyección en el JSON del payload
+        # Validación extra de seguridad: garantiza que el contexto y la pregunta sean seguros
         if not _ensure_safe_text(context_text) or not _is_safe_text_structure(context_text): return None
         q = _sanitize_query(question)
         if not q or not _ensure_safe_text(q): return None
@@ -703,6 +703,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             clean = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             final = _validate_response_length(clean)
             
+            # Segunda validación de integridad post-procesamiento antes de aceptar la respuesta
             if _ensure_safe_text(final) and _is_safe_text_structure(final):
                 return final
             return None

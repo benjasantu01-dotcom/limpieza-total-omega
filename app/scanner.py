@@ -151,14 +151,15 @@ class Scanner:
                 return False
 
             return not is_protected_path(Path(path_str))
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, FileNotFoundError):
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si un directorio es un punto de reanálisis para omitir su recursión."""
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
-        except (OSError, AttributeError, PermissionError):
+        except (OSError, AttributeError, PermissionError, FileNotFoundError):
+            # En caso de error de acceso, asumimos seguridad antes que recursión profunda
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:

@@ -1253,3 +1253,41 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-11T13:38:54` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se añadió un mecanismo de protección contra "Race Conditions" al realizar chequeos de integridad mediante el uso de `os.open` con flags de acceso atómico y verificación de handle, garantizando que el estado del archivo no cambie entre la validación y la operación de limpieza.
 - `2026-09-11T13:38:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T13:38:54` Corrida terminada. Total usado hoy: 323.
+- `2026-09-11T13:47:57` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-11T13:48:24` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_reparse_point` y `_is_safe_entry` para manejar explícitamente el caso de rutas inexistentes o archivos bloqueados/eliminados durante la iteración, evitando el uso de `True` como fallback ante excepciones de acceso al sistema de archivos (lo cual prevenía el escaneo en directorios legítimos pero con permisos restrictivos).
+- `2026-09-11T13:49:01` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save()` implementando una limpieza explícita de archivos temporales huérfanos antes de intentar una escritura, asegurando que bloqueos previos por permisos no impidan operaciones futuras.
+- `2026-09-11T13:49:31` Tests FALLARON:
+```
+executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:114
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:114: SyntaxWarning: invalid escape sequence '\A'
+    Extrae una ruta entre comillas (ej: "C:\App\test.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 8 warnings in 1.42s
+
+```
+- `2026-09-11T13:49:31` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré `_resolve_and_cache_path` para manejar situaciones donde el archivo existe pero no tenemos permisos para obtener sus metadatos (evitando caídas) y corregí un error lógico donde se cacheaba falsamente como inexistente una ruta que simplemente estaba bloqueada por permisos.
+- `2026-09-11T13:50:00` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_build_payload` y `_call_gemini` integrando el validador `_is_safe_text_structure` dentro de la secuencia crítica de serialización, asegurando que ningún dato pueda ser manipulado antes de salir del equipo hacia la red.
+- `2026-09-11T13:50:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T13:50:00` Corrida terminada. Total usado hoy: 327.

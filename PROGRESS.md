@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
-- Rechazadas por tests: 18
+- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 72 | 5 | 12 | 10 | 82 |
-| 2026-09-11 | 150 | 13 | 28 | 8 | 124 |
+| 2026-09-10 | 72 | 5 | 12 | 10 | 78 |
+| 2026-09-11 | 153 | 14 | 28 | 8 | 124 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **61**
+- robustez ante casos límite: **46**
 - legibilidad y documentación: **45**
-- robustez ante casos límite: **44**
-- seguridad defensiva: **38**
+- seguridad defensiva: **39**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **21**
 - `browser.py`: **20**
-- `assistant.py`: **18**
+- `assistant.py`: **19**
 - `quarantine.py`: **18**
-- `settings.py`: **17**
+- `settings.py`: **18**
 - `diskreport.py`: **17**
 - `main.py`: **16**
 - `memory.py`: **16**
 - `branding.py`: **15**
 - `healthscore.py`: **15**
+- `scanner.py`: **15**
 - `organizer.py`: **14**
 - `safety.py`: **14**
-- `scanner.py`: **14**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T13:50:00` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_build_payload` y `_call_gemini` integrando el validador `_is_safe_text_structure` dentro de la secuencia crítica de serialización, asegurando que ningún dato pueda ser manipulado antes de salir del equipo hacia la red.
+- `2026-09-11T13:49:01` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` implementando una limpieza explícita de archivos temporales huérfanos antes de intentar una escritura, asegurando que bloqueos previos por permisos no impidan operaciones futuras.
+- `2026-09-11T13:48:24` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_reparse_point` y `_is_safe_entry` para manejar explícitamente el caso de rutas inexistentes o archivos bloqueados/eliminados durante la iteración, evitando el uso de `True` como fallback ante excepciones de acceso al sistema de archivos (lo cual prevenía el escaneo en directorios legítimos pero con permisos restrictivos).
 - `2026-09-11T13:38:54` **safety.py** (robustez ante casos límite): Se añadió un mecanismo de protección contra "Race Conditions" al realizar chequeos de integridad mediante el uso de `os.open` con flags de acceso atómico y verificación de handle, garantizando que el estado del archivo no cambie entre la validación y la operación de limpieza.
 - `2026-09-11T13:37:39` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para manejar archivos vacíos o inaccesibles sin recurrir a excepciones genéricas, y añadí una verificación de acceso de escritura (W_OK) antes de `ensure_safe_to_modify` en `stage_for_review` y `delete_reviewed` para evitar errores de I/O en volúmenes de solo lectura.
 - `2026-09-11T13:17:41` **duplicates.py** (robustez ante casos límite): Se introdujo una validación de concurrencia básica en `hash_file` y `partial_hash` verificando si el archivo está en uso exclusivo mediante un intento de apertura en modo exclusivo (`x`) antes de procesar, evitando errores de E/S inesperados al iterar sobre archivos bloqueados por el sistema durante el escaneo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T12:48:03` **duplicates.py** (rendimiento): Optimizado el rendimiento del escaneo recursivo mediante el uso de un `set` para `visited_dirs` con rutas resueltas (`Path.resolve()`) y la consolidación del filtrado de archivos, evitando llamadas innecesarias a `stat()` mediante el uso de los atributos proporcionados por `os.scandir`.
 - `2026-09-11T12:36:34` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` reemplazando cálculos repetitivos y costosos en `draw_ring` y `gradient_colors` mediante el uso de `lru_cache` y la pre-computación de valores constantes fuera de los bucles de renderizado.
 - `2026-09-11T12:36:00` **assistant.py** (rendimiento): Optimizé la generación de texto del contexto para el asistente mediante la sustitución de concatenaciones de strings repetitivas por el uso de `str.join`, reduciendo la carga de memoria y mejorando la eficiencia en la serialización de datos de cara al prompt.
-- `2026-09-11T12:30:38` **startup.py** (legibilidad y documentación): Documenté el propósito y las restricciones de seguridad de los métodos internos de `StartupEntry` y las funciones de escaneo mediante docstrings detallados, aclarando el uso de `safety.py` y la distinción entre resolución de rutas y validación de acceso para mejorar la mantenibilidad.
-- `2026-09-11T12:30:26` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `settings.py` reemplazando los diccionarios de validación por una estructura de datos `NamedTuple` dedicada, lo que permite aprovechar el chequeo estático de tipos y hace explícita la relación entre cada clave de configuración y su función validadora.
-- `2026-09-11T12:26:36` **safety.py** (legibilidad y documentación): Se han añadido type hints completos y docstrings detallados en las funciones de validación interna y el motor de chequeo (`_VALIDATORS`, `_check_file_integrity`), clarificando las responsabilidades de cada componente para mejorar la mantenibilidad del módulo de seguridad.
