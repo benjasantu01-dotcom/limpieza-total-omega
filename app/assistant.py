@@ -335,6 +335,12 @@ class SystemContext:
             return False
         return False
 
+    def _clean_grade(self, val: Any) -> str:
+        """Limpia y valida el string del grado de salud."""
+        if not isinstance(val, str): return ""
+        clean = _CONTROL_CHARS_REGEX.sub(" ", val)[:10].strip()
+        return clean if _ensure_safe_text(clean) else ""
+
     def ingest(self, source: Any) -> bool:
         """
         Carga datos externos (dict u objeto) en la instancia del contexto.
@@ -348,14 +354,10 @@ class SystemContext:
             if self._apply_field(source, key, spec):
                 found_data = True
         
-        try:
-            grade_val = _get_source_value(source, "grade")
-            if isinstance(grade_val, str):
-                clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
-                if _ensure_safe_text(clean_grade):
-                    self.grade = clean_grade
-        except Exception:
-            pass
+        grade_val = _get_source_value(source, "grade")
+        clean_grade = self._clean_grade(grade_val)
+        if clean_grade:
+            self.grade = clean_grade
         
         return found_data
 

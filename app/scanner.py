@@ -81,7 +81,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
     
     try:
-        # Verificamos si existe antes de obtener stats para evitar race conditions
         if entry and entry.is_file(follow_symlinks=False):
             stats = entry.stat()
             if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
@@ -194,7 +193,6 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     
     if ext in SUSPICIOUS_EXECUTABLE_EXT:
         try:
-            # Validación robusta de existencia antes de verificar tamaño o heurísticas
             if entry and entry.is_file(follow_symlinks=False):
                 stats = entry.stat()
                 if stats.st_size == 0:
@@ -217,13 +215,17 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         
     try:
         path_input: str = str(directory).strip()
-        if not path_input or len(path_input) > MAX_PATH_LENGTH or path_input.startswith(("\\\\", "//")): return []
+        if not path_input or len(path_input) > MAX_PATH_LENGTH or path_input.startswith(("\\\\", "//")): 
+            return []
             
         base_path: Path = Path(path_input)
-        if not base_path.is_dir(): return []
+        if not base_path.is_dir(): 
+            return []
         
         root_input: Path = base_path.resolve()
-        if not root_input.is_absolute() or is_protected_path(root_input): return []
+        # Validar tras resolución para evitar paths que escapan o están protegidos
+        if not root_input.exists() or is_protected_path(root_input): 
+            return []
             
         scanner = Scanner(base_root=root_input)
         directory_stack: List[str] = [str(root_input)]
@@ -235,7 +237,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 with os.scandir(current_dir) as it:
                     for entry in it:
                         scanner.process_entry(entry, directory_stack)
-            except (PermissionError, OSError, FileNotFoundError):
+            except (PermissionError, OSError):
                 continue
         return scanner.results
     except (OSError, TypeError, ValueError, RuntimeError):

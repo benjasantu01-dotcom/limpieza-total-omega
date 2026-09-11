@@ -1434,3 +1434,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-11T02:45:28` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_in_use` agregando un manejo explícito de errores para el handle y cerrándolo siempre en un bloque `finally` para evitar fugas de memoria en caso de excepciones durante la validación de integridad.
 - `2026-09-11T02:45:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T02:45:28` Corrida terminada. Total usado hoy: 68.
+- `2026-09-11T02:53:52` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-09-11T02:54:20` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de `path_input` y la integridad del estado en `scan_directory` y `Scanner`, capturando excepciones de forma más granular para evitar interrupciones en el flujo de escaneo ante entradas inválidas o permisos restringidos.
+- `2026-09-11T02:54:53` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` capturando fallos específicos durante la escritura, asegurando que `os.replace` (operación atómica) sea el único punto de falla crítica, y reforzando la validación en `_Validators.int` para manejar explícitamente valores `None` o no numéricos sin depender solo del decorador `type_check`.
+- `2026-09-11T02:55:19` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-11T02:55:48` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación de `SystemContext.ingest` y `ProblemCriterion` para clarificar los contratos de datos, y extraje la lógica de validación de grados a un método privado `_clean_grade` para reducir el ruido en el flujo principal del bucle de ingesta.
+- `2026-09-11T02:55:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T02:55:48` Corrida terminada. Total usado hoy: 72.

@@ -210,6 +210,7 @@ class _Validators:
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
         """Convierte entrada a entero, aplicando los límites definidos en _NUMERIC_LIMITS."""
+        if not isinstance(val, (int, str)): return None
         parsed_value = int(val)
         limit = _NUMERIC_LIMITS.get(key)
         if limit: return max(limit.min, min(limit.max, parsed_value))
