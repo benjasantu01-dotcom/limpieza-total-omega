@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 7 | 0 | 1 | 1 | 21 |
+| 2026-09-09 | 7 | 0 | 1 | 1 | 17 |
 | 2026-09-10 | 160 | 11 | 27 | 16 | 136 |
-| 2026-09-11 | 60 | 6 | 9 | 5 | 44 |
+| 2026-09-11 | 63 | 6 | 10 | 5 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
-- seguridad defensiva: **47**
+- seguridad defensiva: **50**
 - legibilidad y documentación: **46**
 - robustez ante casos límite: **46**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
+- `quarantine.py`: **22**
 - `browser.py`: **21**
 - `duplicates.py`: **20**
 - `settings.py`: **20**
@@ -38,15 +38,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **18**
 - `healthscore.py`: **17**
 - `memory.py`: **16**
+- `safety.py`: **16**
 - `scanner.py`: **16**
-- `safety.py`: **15**
 - `branding.py`: **15**
+- `organizer.py`: **12**
 - `main.py`: **12**
-- `organizer.py`: **11**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T05:18:25` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `safety.py` añadiendo un chequeo explícito en `_validate_boundary_conditions` para evitar que la aplicación intente modificar archivos en unidades de red (`DRIVE_REMOTE`), previniendo errores de permisos, latencia o inestabilidad al operar sobre recursos compartidos no locales.
+- `2026-09-11T05:17:48` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine.py` mediante la implementación de `_is_item_unreachable`, una verificación robusta que asegura que un archivo no contenga flujos de datos alternos (ADS) o rutas de sistema ocultas mediante técnicas de ofuscación de nombres antes de cualquier operación de movimiento, reforzando la contención dentro del sandbox.
+- `2026-09-11T05:17:12` **organizer.py** (seguridad defensiva): Se reforzó la seguridad de `_is_file_locked` reemplazando la apertura por lectura/escritura (`0x80000000 | 0x40000000`) por una apertura de solo atributos (`0x80000000` implica `GENERIC_READ`, pero con modo compartido `0x00000003` para no interferir con procesos que tengan el archivo abierto) y validando explícitamente que no se intente operar sobre archivos que el sistema está usando para paginación o volcado de memoria (bloqueo por sistema).
 - `2026-09-11T05:09:00` **memory.py** (seguridad defensiva): Se reforzó la seguridad de `trim_working_set` implementando una validación estricta de la ruta del ejecutable mediante `is_safe_to_modify` y verificaciones adicionales de integridad, asegurando que solo se operen procesos cuyas rutas no estén protegidas ni sean sospechosas, cumpliendo así con las reglas de seguridad del proyecto.
 - `2026-09-11T05:08:43` **main.py** (seguridad defensiva): Se reforzó la seguridad en `main.py` mediante la implementación de `ensure_safety` como decorador para los métodos de análisis que recorren rutas de disco, asegurando que antes de iniciar cualquier operación potencialmente destructiva o de lectura profunda, se valide la integridad de la ruta raíz mediante `safety.ensure_safe_to_modify`.
 - `2026-09-11T05:07:03` **duplicates.py** (seguridad defensiva): Reforcé la integridad del escáner añadiendo validación de ruta en `_scan_directory_recursive` para garantizar que solo se procesen archivos dentro de las rutas permitidas (`is_safe_to_modify`), evitando el seguimiento accidental de punteros a sistemas de archivos fuera del alcance del usuario.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T04:36:51` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos inexistentes o bloqueados mediante el uso de `ctypes` con un modo de acceso de solo lectura (`FILE_SHARE_READ | FILE_SHARE_WRITE`), evitando falsos negativos en bloqueos exclusivos y mejorando la resiliencia ante errores de acceso en sistemas Windows.
 - `2026-09-11T04:27:59` **main.py** (robustez ante casos límite): Se introdujo una validación robusta de `None` y existencias de widgets en `_apply_card_updates` para evitar excepciones en hilos asíncronos cuando el usuario cambia de pestaña rápidamente durante una actualización de UI, cumpliendo con el enfoque de robustez ante condiciones de carrera en la interfaz.
 - `2026-09-11T04:26:34` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones explícito en `_decide_hash_strategy_and_process` y `_group_paths_by_hash`, garantizando que un fallo de E/S en un solo archivo no invalide el procesamiento de todo el grupo de duplicados.
-- `2026-09-11T04:26:06` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante condiciones de carrera (archivos eliminados durante el escaneo) y errores de acceso inesperados, asegurando que el recorrido no se interrumpa ante excepciones transitorias.
-- `2026-09-11T04:17:25` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` ante archivos inaccesibles o bloqueados, asegurando que `OSError` o `PermissionError` no interrumpan el escaneo de otras subcarpetas y manejando explícitamente rutas que resulten en bucles o accesos denegados.
-- `2026-09-11T04:16:39` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar de forma segura entradas parcialmente corruptas o tipos inesperados, evitando que una sola clave malformada invalide el resto del contexto y garantizando que siempre se mantenga la integridad del objeto antes de procesar diagnósticos.

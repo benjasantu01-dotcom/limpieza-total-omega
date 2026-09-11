@@ -174,19 +174,22 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado exclusivamente por otro proceso en Windows.
+    Verifica si un archivo está bloqueado por el sistema o procesos.
+    Usa GENERIC_READ con modo compartido total para no interferir.
     """
     if path is None or not path.exists() or _is_junction(path): 
         return True
     
+    # Previene archivos protegidos por el sistema (system/hidden)
+    if not _passes_system_checks(path):
+        return True
+
     if os.name == "nt":
-        INVALID_HANDLE_VALUE = -1
-        # FILE_SHARE_READ | FILE_SHARE_WRITE (0x01 | 0x02) permite que otros lean/escriban
-        # pero fallará si el archivo tiene un lock exclusivo (Delete o Read/Write sin compartir).
+        # FILE_SHARE_READ|WRITE|DELETE (0x07) para no bloquear el acceso ajeno
         handle = ctypes.windll.kernel32.CreateFileW(
-            str(path), 0x80000000, 0x00000003, None, 0x3, 0x80, None
+            str(path), 0x80000000, 0x00000007, None, 0x3, 0x80, None
         )
-        if handle == INVALID_HANDLE_VALUE:
+        if handle == -1: # INVALID_HANDLE_VALUE
             return True
         ctypes.windll.kernel32.CloseHandle(handle)
         return False
@@ -208,11 +211,11 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 
 def _passes_system_checks(src: Path) -> bool:
     """
-    Filtra archivos con atributos especiales (Sistema, Oculto, Solo lectura).
-    El bitmask 0x407 corresponde a atributos de sistema, oculto y directorio/reparse.
+    Filtra archivos con atributos especiales (Sistema, Oculto).
     """
     if os.name != "nt" or src is None: return True
-    mask: int = 0x407 
+    # 0x02: Hidden, 0x04: System
+    mask: int = 0x06
     return not (_get_win_attributes(src) & mask)
 
 
@@ -233,12 +236,6 @@ def _has_forbidden_chars(path: Path) -> bool:
 def _validate_path_security(src: Path, dest: Path) -> bool:
     """
     Valida la integridad de la estructura de las rutas.
-    
-    Checklist de seguridad:
-    1. Evita rutas de red (UNC) por inestabilidad.
-    2. Bloquea nombres reservados de Windows y caracteres de escape.
-    3. Asegura que ninguna ruta supere la longitud de 260 caracteres para evitar fallos de API.
-    4. Verifica contra la lista blanca/negra de `safety.py`.
     """
     if src is None or dest is None: return False
     if _is_unc_path(src) or _is_unc_path(dest): return False
@@ -266,12 +263,6 @@ def _validate_file_attributes(src: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Orquestador principal de seguridad antes de cualquier operación de I/O.
-    
-    Lógica de validación:
-    1. Valida que el origen exista y sea un archivo real.
-    2. Previene colisiones por enlaces simbólicos (junctions) en el destino.
-    3. Impide la recursividad (mover padre a hijo).
-    4. Asegura que el movimiento ocurra dentro de la misma unidad física (evita cambios de permisos).
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if not _validate_path_security(src, dest): return False
@@ -368,7 +359,6 @@ def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = Tru
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """
     Valida espacio y permisos antes de autorizar el movimiento.
-    Se reserva un buffer de 50MB para no agotar espacio en la unidad de destino.
     """
     if not _is_safe_to_move(junk_file, dest_base): return None
     try:

@@ -46,6 +46,9 @@ FILE_ATTRIBUTE_ENCRYPTED: Final[int] = 0x4000
 MAX_PATH_LENGTH: Final[int] = 260
 MAX_FILE_SIZE: Final[int] = 2 * 1024 * 1024 * 1024  # 2GB límite de seguridad
 
+# Constantes Win32 Drive Types
+DRIVE_REMOTE: Final[int] = 4
+
 class SafetyValidationErrorCode(IntEnum):
     """Códigos de error para diagnósticos específicos en fallos de seguridad."""
     GENERIC = 0
@@ -69,6 +72,7 @@ class SafetyValidationErrorCode(IntEnum):
     OFFLINE_FILE = 18
     ENCRYPTED_OR_COMPRESSED = 19
     VOLUME_READ_ONLY = 20
+    REMOTE_DRIVE_DETECTED = 21
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
@@ -94,6 +98,7 @@ class ProtectionReason(Enum):
     OFFLINE = "archivo offline (nube)"
     ENCRYPTED_OR_COMPRESSED = "cifrado o comprimido"
     VOLUME_READ_ONLY = "volumen de solo lectura"
+    REMOTE_DRIVE = "unidad de red detectada"
 
 
 class ValidationContext(Enum):
@@ -274,7 +279,8 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.IN_USE: SafetyValidationErrorCode.FILE_IN_USE,
     ProtectionReason.REPARSE_POINT: SafetyValidationErrorCode.REPARSE_POINT_DETECTED,
     ProtectionReason.ADS: SafetyValidationErrorCode.ADS_DETECTED,
-    ProtectionReason.VOLUME_READ_ONLY: SafetyValidationErrorCode.VOLUME_READ_ONLY
+    ProtectionReason.VOLUME_READ_ONLY: SafetyValidationErrorCode.VOLUME_READ_ONLY,
+    ProtectionReason.REMOTE_DRIVE: SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED
 }
 
 def _check_file_integrity(path: Path) -> None:
@@ -442,12 +448,15 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     
-    # Validar si el volumen es Read-Only
+    # Validar si el volumen es Read-Only o Remoto
     if os.name == 'nt':
         try:
             root = target_path.anchor
-            if ctypes.windll.kernel32.GetDriveTypeW(root) == 1:
+            drive_type = ctypes.windll.kernel32.GetDriveTypeW(root)
+            if drive_type == 1:
                  raise UnsafePathError("Unidad inaccesible o inexistente.", SafetyValidationErrorCode.IO_ERROR)
+            if drive_type == DRIVE_REMOTE:
+                 raise UnsafePathError("Unidad de red bloqueada.", SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED)
         except Exception: pass
 
     try:

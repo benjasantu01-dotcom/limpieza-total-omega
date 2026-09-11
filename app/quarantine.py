@@ -218,6 +218,12 @@ def _safe_unlink(path: Path) -> bool:
     except (OSError, PermissionError):
         return False
 
+def _is_item_unreachable(path: Path) -> bool:
+    """Valida que la ruta no contenga ADS o técnicas de ofuscación."""
+    if ":" in path.name.replace(path.drive, ""): return True
+    if any(c in str(path) for c in ("\0", "\x00")): return True
+    return False
+
 def _sanitize_filename(filename: str) -> str:
     """Filtra caracteres para evitar inyección de rutas."""
     return "".join(c for c in filename if c.isalnum() or c in "._-")
@@ -300,10 +306,8 @@ def _check_path_syntax_integrity(path: Path) -> None:
         raise UnsafePathError("Ruta con caracteres de control.")
     if len(path.parts) > 32:
         raise UnsafePathError("Profundidad de ruta excesiva.")
-    if ":" in path.name.replace(path.drive, "") or ":" in str(path.parent):
-        raise UnsafePathError("Ruta con flujos de datos alternos (ADS) prohibida.")
-    if ".." in path.parts or any(c in str(path.name) for c in "<>\"|?*"):
-        raise UnsafePathError("Ruta con caracteres prohibidos.")
+    if _is_item_unreachable(path):
+        raise UnsafePathError("Ruta con flujos de datos alternos (ADS) o caracteres prohibidos.")
     
     try:
         resolved = path.resolve(strict=True)
