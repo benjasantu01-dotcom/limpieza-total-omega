@@ -194,21 +194,15 @@ def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[Pr
     Valida y filtra entradas de procesos crudas. Excluye procesos críticos y 
     aquellos ubicados en rutas del sistema protegidas.
     """
-    if not isinstance(name, str) or not isinstance(pid_str, str) or not isinstance(ws_str, str):
-        return None
-    
     try:
         pid_val, ws_val = int(pid_str), int(ws_str)
+        if not name.strip() or pid_val <= 0 or ws_val < 0 or pid_val in SYSTEM_CRITICAL_PIDS:
+            return None
+        if is_protected_path(name):
+            return None
+        return ProcessMemory(name=name, pid=pid_val, working_set=BytesValue(ws_val))
     except (ValueError, TypeError):
         return None
-    
-    if not name.strip() or pid_val <= 0 or ws_val < 0 or pid_val in SYSTEM_CRITICAL_PIDS:
-        return None
-    
-    if is_protected_path(name):
-        return None
-        
-    return ProcessMemory(name=name, pid=pid_val, working_set=BytesValue(ws_val))
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
@@ -218,18 +212,13 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
     
-    processes: List[ProcessMemory] = []
-    for line in raw_csv_text.splitlines():
-        clean = line.strip()
-        if not clean: continue
-        try:
-            parts = [x.strip().strip("'\"") for x in clean.split(",")]
-            if len(parts) == 3:
-                proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
-                if proc:
-                    processes.append(proc)
-        except Exception:
-            continue
+    # Procesamiento eficiente usando comprensión de lista y mapeo directo
+    lines = (line.strip() for line in raw_csv_text.splitlines() if line.strip())
+    processes = [
+        proc for line in lines
+        if (parts := [x.strip().strip("'\"") for x in line.split(",")]) and len(parts) == 3
+        if (proc := _is_valid_process_entry(parts[0], parts[1], parts[2]))
+    ]
     
     processes.sort(key=lambda p: p.working_set, reverse=True)
     return processes[:limit]

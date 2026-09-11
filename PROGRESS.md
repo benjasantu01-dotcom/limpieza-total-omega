@@ -7,25 +7,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **221** (43.8% de aceptación)
-- Rechazadas por tests: 18
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 132 | 9 | 21 | 15 | 131 |
-| 2026-09-11 | 89 | 9 | 16 | 5 | 77 |
+| 2026-09-10 | 130 | 8 | 21 | 14 | 131 |
+| 2026-09-11 | 91 | 9 | 16 | 6 | 78 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **59**
 - seguridad defensiva: **50**
 - legibilidad y documentación: **44**
-- robustez ante casos límite: **38**
-- rendimiento: **30**
+- robustez ante casos límite: **36**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,19 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `assistant.py`: **19**
 - `duplicates.py`: **19**
-- `settings.py`: **18**
 - `diskreport.py`: **17**
-- `healthscore.py`: **16**
+- `healthscore.py`: **17**
+- `settings.py`: **17**
 - `branding.py`: **16**
-- `scanner.py`: **15**
+- `memory.py`: **15**
 - `safety.py`: **15**
-- `memory.py`: **14**
+- `scanner.py`: **14**
 - `main.py`: **13**
 - `organizer.py`: **12**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T08:22:41` **memory.py** (rendimiento): Optimizé la función `parse_windows_process_csv` reemplazando la lógica de filtrado y creación de objetos por una comprensión de lista más eficiente, evitando múltiples validaciones redundantes y aprovechando la estructura de datos para reducir el tiempo de ejecución en sistemas con muchos procesos.
+- `2026-09-11T08:20:59` **healthscore.py** (rendimiento): Se optimizó el pipeline de cómputo reemplazando el acceso a diccionarios y el procesamiento de reglas en tiempo de ejecución por una estructura de datos pre-mapeada (`_CACHE_SCORERS`), eliminando la búsqueda repetida en `_SCORERS` y `_RULES_BY_AREA` para cada categoría de métrica.
 - `2026-09-11T08:11:30` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `is_protected_path` al consolidar el filtrado en `_is_valid_candidate`, y reduje el costo de las llamadas a `os.scandir` integrando la comprobación de `is_file()` y `stat()` mediante `entry` para evitar operaciones de I/O adicionales por ruta.
 - `2026-09-11T08:10:55` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios en `detect_profiles` pasando un diccionario `memo` compartido a través de todas las búsquedas de navegadores, lo cual evita recálculos redundantes si múltiples navegadores o subcarpetas comparten rutas raíz o dependencias de archivos comunes.
 - `2026-09-11T08:10:30` **branding.py** (rendimiento): Se implementó un sistema de `MappingProxyType` recursivo para los diccionarios de configuración (`_PALETTE_MAP` y `FONT_SIZES`) y se consolidó el cálculo de `_SEVERITY_MAP` como constante inmutable, evitando la creación de objetos innecesarios y permitiendo el acceso directo de solo lectura con rendimiento óptimo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T07:31:01` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las colecciones complejas y docstrings detallados que explican el propósito funcional de las funciones de agregación.
 - `2026-09-11T07:30:49` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `_sum_directory_recursive` mediante la adición de Type Hints detallados, un docstring que explica el mecanismo de seguridad (memoización y límite de profundidad) y la clarificación de las excepciones capturadas para evitar la propagación de errores inesperados durante el escaneo del disco.
 - `2026-09-11T07:30:22` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `branding.py` añadiendo docstrings descriptivos a las constantes de la paleta y refinando las firmas de los métodos `draw_logo` y `draw_ring` para aclarar el propósito de sus parámetros geométricos.
-- `2026-09-11T07:20:42` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validaciones explícitas contra valores `None` o vacíos antes de procesar las filas del CSV, asegurando que el parser no falle ante entradas malformadas del registro.
-- `2026-09-11T07:20:31` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `validate()` añadiendo comprobaciones explícitas de tipos y estados antes de la serialización, evitando escribir archivos dañados si la configuración resultante es inconsistente.

@@ -131,9 +131,8 @@ _RULES_BY_AREA: Final[Dict[MetricKey, List[RecommendationRule]]] = {}
 for rule in _RECOMMENDATION_RULES:
     _RULES_BY_AREA.setdefault(rule.area, []).append(rule)
 
-# Pipeline cacheado para evitar reconstrucción en cada ejecución
-_CACHE_SCORERS: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], List[RecommendationRule] | None]]] = [
-    (a, w, _SCORERS[a], _RULES_BY_AREA.get(a)) for a, w in _WEIGHT_ITEMS_INT
+_CACHE_SCORERS: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], List[RecommendationRule]]]] = [
+    (a, w, _SCORERS[a], _RULES_BY_AREA.get(a, [])) for a, w in _WEIGHT_ITEMS_INT
 ]
 
 @dataclass
