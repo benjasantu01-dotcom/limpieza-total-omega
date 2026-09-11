@@ -149,13 +149,10 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 def _is_valid_candidate(path: Path, st: Optional[os.stat_result] = None) -> bool:
     """
     Validador estricto para filtrar candidatos a duplicados.
-    
-    Asegura que el archivo no sea un enlace simbólico, punto de reparse, 
-    archivo de sistema u oculto, y que esté en una ubicación permitida.
     """
     try:
         resolved = path.resolve(strict=True)
-        if resolved.is_symlink() or is_protected_path(resolved) or not is_safe_to_modify(resolved):
+        if resolved.is_symlink() or is_protected_path(resolved) or not is_safe_to_modify(resolved) or _is_file_locked(resolved):
             return False
             
         if is_system_or_hidden(resolved):
@@ -260,8 +257,6 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
     """
     Refina grupos candidatos usando una estrategia jerárquica de hashing.
-    1. Hash Parcial: Identificación rápida.
-    2. Hash SHA256 Completo: Confirmación de integridad para evitar falsos positivos.
     """
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}

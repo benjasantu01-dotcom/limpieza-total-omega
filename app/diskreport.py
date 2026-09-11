@@ -114,8 +114,13 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
         if entry.is_symlink():
             return True
         if os.name == 'nt':
-            st = entry.stat(follow_symlinks=False)
-            return bool(getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)
+            # Verificación explícita de atributos de archivo para evitar seguimiento
+            try:
+                st = entry.stat(follow_symlinks=False)
+                if hasattr(st, 'st_file_attributes'):
+                    return bool(st.st_file_attributes & REPARSE_POINT_ATTR)
+            except OSError:
+                return True
     except (OSError, PermissionError, AttributeError):
         return True # Asumimos exclusión si no podemos verificar estado
     return False
@@ -279,17 +284,18 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         
                         if entry.is_dir(follow_symlinks=False):
                             if skip_protected and is_protected_path(entry_path): continue
-                            st = entry.stat(follow_symlinks=False)
-                            inode: Inode = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
-                            if inode[0] != 0 and inode not in visited_inodes:
-                                visited_inodes.add(inode)
-                                stack.append(entry_path)
+                            try:
+                                st = entry.stat(follow_symlinks=False)
+                                inode: Inode = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
+                                if inode[0] != 0 and inode not in visited_inodes:
+                                    visited_inodes.add(inode)
+                                    stack.append(entry_path)
+                            except OSError: continue
                         elif entry.is_file(follow_symlinks=False):
                             if skip_protected and is_protected_path(entry_path): continue
-                            # Verificación defensiva contra archivos que desaparecen post-scandir
-                            if entry_path.is_file():
-                                st = entry_path.stat()
-                                yield entry_path, max(0, int(getattr(st, 'st_size', 0)))
+                            # Verificación defensiva antes de obtener tamaño
+                            st = entry.stat()
+                            yield entry_path, max(0, int(getattr(st, 'st_size', 0)))
                     except (PermissionError, OSError, AttributeError):
                         continue
         except (PermissionError, OSError):

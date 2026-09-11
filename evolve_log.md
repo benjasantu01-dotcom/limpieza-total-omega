@@ -1291,3 +1291,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-11T13:50:00` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_build_payload` y `_call_gemini` integrando el validador `_is_safe_text_structure` dentro de la secuencia crítica de serialización, asegurando que ningún dato pueda ser manipulado antes de salir del equipo hacia la red.
 - `2026-09-11T13:50:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T13:50:00` Corrida terminada. Total usado hoy: 327.
+- `2026-09-11T13:58:10` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-11T13:58:51` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-11T13:59:19` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+ImportError while importing test module '/home/runner/work/limpieza-total-omega/limpieza-total-omega/evolve/tests/test_modules.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+evolve/tests/test_modules.py:22: in <module>
+    import browser  # noqa: E402
+    ^^^^^^^^^^^^^^
+app/browser.py:26: in <module>
+    from safety import is_protected_path, is_safe_to_modify, SYSTEM_FOLDER_BLOCKLIST
+E   ImportError: cannot import name 'SYSTEM_FOLDER_BLOCKLIST' from 'safety' (/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py)
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.37s
+
+```
+- `2026-09-11T13:59:19` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_is_valid_cache_path` y `_should_skip_entry` agregando una validación explícita contra la lista `SYSTEM_FOLDER_BLOCKLIST` (importada de `safety`), asegurando que incluso si una ruta es estructuralmente válida y está bajo `LOCALAPPDATA`, no se procesen directorios críticos del sistema.
+- `2026-09-11T13:59:25` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-11T13:59:56` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_is_excluded_path` y `walk_files` mediante la validación explícita de atributos de archivo y manejo de errores de acceso durante la recolección de metadatos, garantizando que el escáner no intente procesar rutas inaccesibles o reparse points bloqueados.
+- `2026-09-11T14:00:16` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` y `_is_valid_candidate` integrando una verificación de "está en uso" y restricciones de sistema más estrictas, asegurando que la recursión no siga rutas que han cambiado su estado durante el escaneo.
+- `2026-09-11T14:00:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T14:00:16` Corrida terminada. Total usado hoy: 331.

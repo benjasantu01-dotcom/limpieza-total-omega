@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
-- Rechazadas por tests: 19
+- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 72 | 5 | 12 | 10 | 78 |
-| 2026-09-11 | 153 | 14 | 28 | 8 | 124 |
+| 2026-09-10 | 72 | 5 | 12 | 10 | 74 |
+| 2026-09-11 | 155 | 15 | 28 | 8 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **61**
 - robustez ante casos límite: **46**
 - legibilidad y documentación: **45**
-- seguridad defensiva: **39**
+- seguridad defensiva: **41**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
+- `duplicates.py`: **22**
 - `browser.py`: **20**
 - `assistant.py`: **19**
 - `quarantine.py`: **18**
 - `settings.py`: **18**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
 - `main.py`: **16**
 - `memory.py`: **16**
 - `branding.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T14:00:16` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `_is_valid_candidate` integrando una verificación de "está en uso" y restricciones de sistema más estrictas, asegurando que la recursión no siga rutas que han cambiado su estado durante el escaneo.
+- `2026-09-11T13:59:56` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_excluded_path` y `walk_files` mediante la validación explícita de atributos de archivo y manejo de errores de acceso durante la recolección de metadatos, garantizando que el escáner no intente procesar rutas inaccesibles o reparse points bloqueados.
 - `2026-09-11T13:50:00` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_build_payload` y `_call_gemini` integrando el validador `_is_safe_text_structure` dentro de la secuencia crítica de serialización, asegurando que ningún dato pueda ser manipulado antes de salir del equipo hacia la red.
 - `2026-09-11T13:49:01` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` implementando una limpieza explícita de archivos temporales huérfanos antes de intentar una escritura, asegurando que bloqueos previos por permisos no impidan operaciones futuras.
 - `2026-09-11T13:48:24` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_reparse_point` y `_is_safe_entry` para manejar explícitamente el caso de rutas inexistentes o archivos bloqueados/eliminados durante la iteración, evitando el uso de `True` como fallback ante excepciones de acceso al sistema de archivos (lo cual prevenía el escaneo en directorios legítimos pero con permisos restrictivos).
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T12:57:24` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la recarga redundante al final de `quarantine_file` y mejoré la eficiencia de `list_items` y `purge_all` transformando búsquedas lineales en búsquedas mediante conjuntos, reduciendo la complejidad algorítmica y el I/O innecesario.
 - `2026-09-11T12:50:32` **memory.py** (rendimiento): Se optimizó el proceso de recolección de datos de `top_memory_processes` eliminando el filtrado redundante de duplicados y minimizando las llamadas de I/O dentro del pipeline de PowerShell, mejorando el tiempo de respuesta y reduciendo la carga de CPU durante el análisis.
 - `2026-09-11T12:48:03` **duplicates.py** (rendimiento): Optimizado el rendimiento del escaneo recursivo mediante el uso de un `set` para `visited_dirs` con rutas resueltas (`Path.resolve()`) y la consolidación del filtrado de archivos, evitando llamadas innecesarias a `stat()` mediante el uso de los atributos proporcionados por `os.scandir`.
-- `2026-09-11T12:36:34` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` reemplazando cálculos repetitivos y costosos en `draw_ring` y `gradient_colors` mediante el uso de `lru_cache` y la pre-computación de valores constantes fuera de los bucles de renderizado.
-- `2026-09-11T12:36:00` **assistant.py** (rendimiento): Optimizé la generación de texto del contexto para el asistente mediante la sustitución de concatenaciones de strings repetitivas por el uso de `str.join`, reduciendo la carga de memoria y mejorando la eficiencia en la serialización de datos de cara al prompt.
