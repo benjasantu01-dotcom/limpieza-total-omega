@@ -1329,3 +1329,13 @@ ERROR evolve/tests/test_modules.py
 - `2026-09-11T14:11:05` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `organizer.py` añadiendo una comprobación explícita para evitar que `shutil.move` se ejecute si la ruta origen y la de destino comparten la misma unidad lógica, previniendo fallos en operaciones de archivos que cruzan sistemas de archivos o particiones, manteniendo el principio de no realizar efectos secundarios destructivos en caso de error.
 - `2026-09-11T14:11:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T14:11:05` Corrida terminada. Total usado hoy: 335.
+- `2026-09-11T14:18:43` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-11T14:19:26` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_atomic_isolate_file` reemplazando la apertura manual con `os.open` por un contexto más robusto que garantiza el cierre del descriptor de archivo, evitando fugas de recursos y bloqueos de acceso durante la operación de aislamiento.
+- `2026-09-11T14:19:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-11T14:20:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-11T14:20:07` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-11T14:20:58` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-11T14:21:50` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult
+- `2026-09-11T14:22:05` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-11T14:22:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T14:22:05` Corrida terminada. Total usado hoy: 339.

@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 192
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 72 | 5 | 12 | 10 | 70 |
-| 2026-09-11 | 159 | 15 | 28 | 8 | 125 |
+| 2026-09-10 | 72 | 5 | 12 | 10 | 66 |
+| 2026-09-11 | 160 | 15 | 30 | 8 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **61**
 - robustez ante casos límite: **46**
+- seguridad defensiva: **46**
 - legibilidad y documentación: **45**
-- seguridad defensiva: **45**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
@@ -32,7 +32,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **22**
 - `browser.py`: **20**
 - `assistant.py`: **19**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
 - `settings.py`: **18**
 - `diskreport.py`: **18**
 - `main.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T14:19:26` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_atomic_isolate_file` reemplazando la apertura manual con `os.open` por un contexto más robusto que garantiza el cierre del descriptor de archivo, evitando fugas de recursos y bloqueos de acceso durante la operación de aislamiento.
 - `2026-09-11T14:11:05` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `organizer.py` añadiendo una comprobación explícita para evitar que `shutil.move` se ejecute si la ruta origen y la de destino comparten la misma unidad lógica, previniendo fallos en operaciones de archivos que cruzan sistemas de archivos o particiones, manteniendo el principio de no realizar efectos secundarios destructivos en caso de error.
 - `2026-09-11T14:10:50` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `memory.py` al garantizar que los PIDs no críticos se validen contra rutas protegidas utilizando la resolución de rutas absoluta y normalizada antes de cualquier interacción, evitando riesgos de inyección de procesos o manipulación de rutas del sistema que podrían derivarse de entradas maliciosas o ambiguas.
 - `2026-09-11T14:10:15` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de `_is_safe_disk_operation` en las llamadas críticas de `run_async`, unificando el criterio de chequeo previo a la delegación de hilos y evitando que operaciones con rutas potencialmente peligrosas lleguen a ejecutarse en el pool de trabajadores.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T13:17:41` **duplicates.py** (robustez ante casos límite): Se introdujo una validación de concurrencia básica en `hash_file` y `partial_hash` verificando si el archivo está en uso exclusivo mediante un intento de apertura en modo exclusivo (`x`) antes de procesar, evitando errores de E/S inesperados al iterar sobre archivos bloqueados por el sistema durante el escaneo.
 - `2026-09-11T13:17:30` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` ante archivos que desaparecen durante la ejecución (condición de carrera común en escaneos de disco) envolviendo la obtención de atributos de archivo en un bloque `try-except` más robusto que valida explícitamente la existencia previa mediante `is_file()` sin seguir enlaces simbólicos.
 - `2026-09-11T13:16:59` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_path_inside_base` y `_should_skip_entry` ante rutas malformadas o permisos denegados, añadiendo un chequeo explícito de existencia mediante `os.path.lexists` antes de resolver, para evitar excepciones críticas en sistemas con nombres de archivos inválidos o bloqueados.
-- `2026-09-11T13:07:33` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar de forma segura entradas inesperadas o parcialmente corruptas mediante la adición de verificaciones de tipo y estructura antes de realizar cualquier operación de seteo, previniendo fallos en tiempo de ejecución por datos malformados.

@@ -482,10 +482,8 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     
     Utiliza descriptores de archivo con O_EXCL y comparaciones de inodos.
     """
-    # Usar O_CREAT | O_EXCL para asegurar que el archivo no existía previamente.
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
     fd = os.open(str(destination), flags, 0o600)
-    temp_path = destination
     
     try:
         src_stat = source.stat()
@@ -502,10 +500,10 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
         if final_src_stat.st_ino != src_ino or final_src_stat.st_dev != src_dev:
              raise OSError("Alerta de seguridad: origen reemplazado durante copia.")
         
-        if temp_path.stat().st_size != src_stat.st_size or temp_path.stat().st_size == 0:
+        if destination.stat().st_size != src_stat.st_size or destination.stat().st_size == 0:
             raise OSError("Error de integridad post-escritura.")
             
-        _check_windows_file_attributes(str(temp_path))
+        _check_windows_file_attributes(str(destination))
         ensure_safe_to_modify(destination, allow_sensitive=True)
         
         dir_fd = os.open(str(destination.parent), os.O_RDONLY)
@@ -517,7 +515,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
             raise OSError("Falla de integridad: hash no generado.")
         return file_hash
     except Exception as e:
-        if os.path.exists(destination):
+        if destination.exists():
             try: os.remove(destination)
             except OSError: pass
         raise e
