@@ -665,3 +665,32 @@ FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionE
 - `2026-09-11T07:20:42` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo validaciones explícitas contra valores `None` o vacíos antes de procesar las filas del CSV, asegurando que el parser no falle ante entradas malformadas del registro.
 - `2026-09-11T07:20:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T07:20:42` Corrida terminada. Total usado hoy: 176.
+- `2026-09-11T07:29:09` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-09-11T07:29:51` Tests FALLARON:
+```
+an_be_recovered _______________
+
+    def test_space_question_adds_up_what_can_be_recovered():
+        respuesta = assistant.local_answer("¿cuánto espacio puedo recuperar?", _contexto_lleno())
+        # 2400 basura + 900 duplicados + 430 caché
+>       assert "3730" in respuesta.text.replace(".", "")
+E       AssertionError: assert '3730' in 'Error al consultar estado de disco'
+E        +  where 'Error al consultar estado de disco' = <built-in method replace of str object at 0x7f819b373870>('.', '')
+E        +    where <built-in method replace of str object at 0x7f819b373870> = 'Error al consultar estado de disco.'.replace
+E        +      where 'Error al consultar estado de disco.' = Answer(text='Error al consultar estado de disco.', source='local', notice='', suggestions=[]).text
+
+evolve/tests/test_assistant.py:321: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_space_question_adds_up_what_can_be_recovered - AssertionError: assert '3730' in 'Error al consultar estado de disco'
+ +  where 'Error al consultar estado de disco' = <built-in method replace of str object at 0x7f819b373870>('.', '')
+ +    where <built-in method replace of str object at 0x7f819b373870> = 'Error al consultar estado de disco.'.replace
+ +      where 'Error al consultar estado de disco.' = Answer(text='Error al consultar estado de disco.', source='local', notice='', suggestions=[]).text
+1 failed, 298 passed in 1.31s
+
+```
+- `2026-09-11T07:29:51` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación de los métodos de la clase `SystemContext` mediante docstrings detallados que especifican los contratos de validación, límites de valores y el propósito funcional de cada operación, facilitando el mantenimiento y la comprensión del modelo de datos central del asistente.
+- `2026-09-11T07:30:22` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `branding.py` añadiendo docstrings descriptivos a las constantes de la paleta y refinando las firmas de los métodos `draw_logo` y `draw_ring` para aclarar el propósito de sus parámetros geométricos.
+- `2026-09-11T07:30:49` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `_sum_directory_recursive` mediante la adición de Type Hints detallados, un docstring que explica el mecanismo de seguridad (memoización y límite de profundidad) y la clarificación de las excepciones capturadas para evitar la propagación de errores inesperados durante el escaneo del disco.
+- `2026-09-11T07:31:01` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las colecciones complejas y docstrings detallados que explican el propósito funcional de las funciones de agregación.
+- `2026-09-11T07:31:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T07:31:01` Corrida terminada. Total usado hoy: 180.

@@ -109,6 +109,7 @@ _PALETTE_MAP: Final[dict[str, HexColor]] = {
 }
 PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType(_PALETTE_MAP)
 
+# Colores de referencia de interfaz reutilizados en componentes gráficos
 C_SURFACE: Final[HexColor] = _PALETTE_MAP["surface"]
 C_BACKGROUND: Final[HexColor] = _PALETTE_MAP["background"]
 C_GLOW: Final[HexColor] = _PALETTE_MAP["glow"]
@@ -361,9 +362,9 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
     
     Args:
         canvas: Elemento Canvas de CTk.
-        canvas_x: Posición X de origen.
-        canvas_y: Posición Y de origen.
-        scale: Factor de escala aplicado al dibujo.
+        canvas_x: Offset horizontal inicial del dibujo.
+        canvas_y: Offset vertical inicial del dibujo.
+        scale: Factor de escala aplicado (base 128px).
     """
     try:
         franjas_count = max(6, int(28 * scale))
@@ -384,9 +385,9 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     
     Args:
         canvas: Elemento Canvas de CTk.
-        canvas_x: Posición X de origen.
-        canvas_y: Posición Y de origen.
-        scale: Factor de escala aplicado al dibujo.
+        canvas_x: Offset horizontal inicial del dibujo.
+        canvas_y: Offset vertical inicial del dibujo.
+        scale: Factor de escala aplicado (base 128px).
     """
     try:
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, canvas_x + 75 * scale, canvas_y + 41 * scale, fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
@@ -401,8 +402,8 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     Args:
         canvas: Elemento Canvas de CTk.
         size: Tamaño base del logo en píxeles.
-        canvas_x: Desplazamiento horizontal sobre el lienzo.
-        canvas_y: Desplazamiento vertical sobre el lienzo.
+        canvas_x: Desplazamiento absoluto horizontal en el canvas.
+        canvas_y: Desplazamiento absoluto vertical en el canvas.
     """
     try:
         s = float(size)
@@ -428,8 +429,8 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
         canvas: Elemento Canvas de CTk.
         width: Ancho de la barra en píxeles.
         height: Grosor de la barra.
-        canvas_x: Posición X de origen.
-        canvas_y: Posición Y de origen.
+        canvas_x: Coordenada X de inicio.
+        canvas_y: Coordenada Y de inicio.
         stops: Tupla de colores Hex para interpolar.
     """
     try:
@@ -445,11 +446,12 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
     Args:
         canvas: Elemento Canvas de CTk.
         percent: Porcentaje actual (0.0 a 100.0).
-        size: Diámetro del anillo.
-        canvas_x, canvas_y: Posición de origen.
-        thickness: Grosor de la línea del anillo.
-        track: Color de fondo del anillo (track).
-        fill: Color de progreso del anillo.
+        size: Diámetro total del anillo en píxeles.
+        canvas_x: Coordenada X superior izquierda de la caja contenedora.
+        canvas_y: Coordenada Y superior izquierda de la caja contenedora.
+        thickness: Grosor del trazo en píxeles.
+        track: Color opcional para el segmento de fondo.
+        fill: Color opcional para el segmento de progreso.
     """
     if percent is None: return
     try:

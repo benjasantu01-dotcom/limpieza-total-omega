@@ -50,7 +50,12 @@ SizeReport: TypeAlias = Tuple[int, int]
 
 
 class SummaryData(NamedTuple):
-    """Contenedor de resultados agregados durante un recorrido completo de directorio."""
+    """
+    Estructura de datos intermedia para la agregación de resultados.
+    
+    Acumula métricas durante un recorrido completo, evitando múltiples pasadas
+    sobre el sistema de archivos para generar diferentes reportes.
+    """
     total_bytes: int
     total_files: int
     ext_sizes: Dict[str, int]
@@ -101,7 +106,8 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
     """
     Determina si una entrada de directorio debe ser excluida del escaneo.
     
-    Identifica symlinks y puntos de reparse (Junctions) en Windows.
+    Identifica symlinks y puntos de reparse (Junctions) en Windows para 
+    evitar el seguimiento recursivo infinito o fuera del alcance deseado.
     """
     REPARSE_POINT_ATTR = 0x400
     try:
@@ -250,6 +256,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     Generador que recorre recursivamente el sistema de archivos.
     
     Implementa prevención de ciclos mediante inodos y omisión de puntos de reparse.
+    
+    Yields:
+        Tuplas conteniendo el Path del archivo y su tamaño en bytes.
     """
     root_path = _validate_root(directory)
     if root_path is None:
@@ -271,7 +280,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if entry.is_dir(follow_symlinks=False):
                             if skip_protected and is_protected_path(entry_path): continue
                             st = entry.stat(follow_symlinks=False)
-                            inode = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
+                            inode: Inode = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
                             if inode[0] != 0 and inode not in visited_inodes:
                                 visited_inodes.add(inode)
                                 stack.append(entry_path)
@@ -287,7 +296,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Retorna los N archivos más pesados."""
+    """Retorna los N archivos más pesados encontrados en la ruta indicada."""
     root = _validate_root(directory)
     if not root: return []
     safe_limit = max(0, int(limit))
@@ -296,7 +305,7 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
-    """Agrupa el uso de espacio por extensión de archivo."""
+    """Agrupa el uso de espacio por extensión de archivo y devuelve las más pesadas."""
     root = _validate_root(directory)
     if not root: return []
     safe_limit = max(1, int(limit))
@@ -327,7 +336,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> SizeReport:
-    """Calcula el total de bytes y cantidad de archivos."""
+    """Calcula el total de bytes y cantidad total de archivos bajo un directorio."""
     root = _validate_root(directory)
     if not root: return (0, 0)
     data = _collect_summary_data(root, skip_protected, limit=0)
@@ -336,9 +345,12 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Motor central de agregación de estadísticas. 
+    Motor central de agregación de estadísticas de uso de disco.
     
-    Recorre el sistema una vez para procesar métricas globales y top de archivos.
+    Realiza un único recorrido del sistema de archivos y acumula simultáneamente:
+    - Espacio total y conteo de archivos.
+    - Distribución de uso por extensión.
+    - Heap de los N archivos más grandes.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -365,7 +377,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
-    """Genera un reporte textual estructurado de los hallazgos."""
+    """Genera un reporte textual estructurado de los hallazgos en la ruta indicada."""
     root = _validate_root(directory)
     if not root: return ["Error: Ruta no válida."]
     data = _collect_summary_data(root, skip_protected, limit=20)

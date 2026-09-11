@@ -214,7 +214,23 @@ def _sum_directory_recursive(
     memo: Dict[str, int],
     depth: int = 0
 ) -> int:
-    """Cálculo de tamaño mediante DFS con memoización para evitar redundancia."""
+    """
+    Calcula el tamaño total de una carpeta mediante DFS recursivo.
+    
+    Usa un diccionario 'memo' para evitar el re-procesamiento de subcarpetas en 
+    árboles complejos y aplica una restricción de profundidad (MAX_SCAN_DEPTH) 
+    para prevenir ataques de desbordamiento de pila en estructuras cíclicas.
+    
+    Args:
+        root_abs: Ruta absoluta del directorio a sumar.
+        is_junction_fn: Callback para detectar puntos de reparse.
+        kernel32: DLL opcional para inspección de atributos de sistema.
+        memo: Diccionario para persistir resultados de subrutas ya procesadas.
+        depth: Profundidad de recursión actual.
+    
+    Returns:
+        Suma en bytes de los archivos encontrados, retornando 0 en caso de error.
+    """
     if not root_abs or depth > MAX_SCAN_DEPTH or root_abs in memo:
         return memo.get(root_abs, 0)
     
@@ -231,6 +247,7 @@ def _sum_directory_recursive(
                     else:
                         total += entry.stat(follow_symlinks=False).st_size
                 except (OSError, PermissionError):
+                    # Ignoramos archivos bloqueados o inaccesibles para evitar abortar el reporte completo
                     continue
     except (PermissionError, OSError):
         return 0
