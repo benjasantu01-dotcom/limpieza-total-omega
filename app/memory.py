@@ -194,6 +194,8 @@ def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[Pr
     Valida y filtra entradas de procesos crudas. Excluye procesos críticos y 
     aquellos ubicados en rutas del sistema protegidas.
     """
+    if name is None or pid_str is None or ws_str is None:
+        return None
     try:
         pid_val, ws_val = int(pid_str), int(ws_str)
         if not name.strip() or pid_val <= 0 or ws_val < 0 or pid_val in SYSTEM_CRITICAL_PIDS:
@@ -393,20 +395,19 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     try:
         target_pid = int(pid)
     except (ValueError, TypeError):
-        return False, "PID no válido."
+        return False, "PID proporcionado no es un número válido."
 
     if _is_system_process(target_pid): 
-        return False, "Proceso protegido."
+        return False, "No se permite modificar procesos críticos del sistema."
 
     kernel32 = ctypes.windll.kernel32
     psapi = getattr(ctypes.windll, "psapi", None)
-    if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
+    if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs de memoria no disponibles."
     
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         err = kernel32.GetLastError()
-        reason = "Acceso denegado" if err == ERROR_ACCESS_DENIED else f"Error {err}"
-        return False, f"{reason} al abrir el proceso."
+        return False, f"Acceso denegado (Error {err}) al abrir el proceso."
     
     try:
         is_safe, error_reason = _is_safe_to_trim(proc_handle)

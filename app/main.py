@@ -248,9 +248,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if not os.access(home_resolved, os.R_OK):
                 raise PermissionError(f"Lectura denegada en: {home_resolved}")
                 
-        except (safety.UnsafePathError, PermissionError, RuntimeError):
+        except (safety.UnsafePathError, PermissionError, RuntimeError) as e:
+            logging.error("Validación de entorno fallida: %s", e)
             raise
         except Exception as e:
+            logging.error("Error inesperado en validación: %s", e)
             raise RuntimeError(f"Entorno no válido para operación segura: {e}")
 
     def _ensure_path_writable_and_clean(self, path: Union[str, Path]) -> None:
