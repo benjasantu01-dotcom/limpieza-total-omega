@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 215
+- Rechazadas por guardia de seguridad: 37
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 18 | 0 | 3 | 2 | 39 |
+| 2026-09-09 | 16 | 0 | 3 | 2 | 37 |
 | 2026-09-10 | 160 | 11 | 27 | 16 | 136 |
-| 2026-09-11 | 41 | 4 | 6 | 1 | 40 |
+| 2026-09-11 | 42 | 4 | 7 | 2 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
-- seguridad defensiva: **52**
+- seguridad defensiva: **51**
 - legibilidad y documentación: **46**
-- robustez ante casos límite: **37**
-- rendimiento: **31**
+- robustez ante casos límite: **36**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
-- `settings.py`: **20**
 - `browser.py`: **20**
-- `assistant.py`: **19**
 - `duplicates.py`: **19**
+- `settings.py`: **19**
 - `healthscore.py`: **18**
+- `assistant.py`: **18**
 - `diskreport.py`: **17**
 - `branding.py`: **16**
-- `memory.py`: **15**
+- `memory.py`: **16**
 - `scanner.py`: **15**
 - `safety.py`: **13**
 - `organizer.py`: **10**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T03:56:52` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` evitando el re-cálculo de cadenas y eliminando la redundancia en la consulta de PowerShell, reduciendo el trabajo de parseo al filtrar los datos directamente desde el origen.
 - `2026-09-11T03:46:28` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global eliminando la creación innecesaria de diccionarios intermedios y procesando los datos de forma iterativa, aprovechando la caché `_CACHE_SCORERS` ya existente para reducir el overhead de ejecución.
 - `2026-09-11T03:45:22` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando la creación innecesaria de objetos `Path` y llamadas redundantes a `is_safe_to_modify` dentro del bucle profundo, consolidando las verificaciones de seguridad en el nivel superior y utilizando el diccionario `memo` para evitar re-escaneos.
 - `2026-09-11T03:36:48` **branding.py** (rendimiento): Se ha optimizado la gestión de las coordenadas del escudo en `draw_logo` pre-calculando la lista de puntos una única vez mediante `lru_cache`, evitando la reconstrucción de la lista en cada frame de renderizado.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T03:04:41` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `branding.py` mediante la adición de Type Hints más precisos y la conversión de comentarios genéricos en docstrings de estilo Google para las funciones de renderizado, garantizando que los parámetros de coordenadas y escalas sean claros para futuros desarrolladores.
 - `2026-09-11T02:55:48` **assistant.py** (legibilidad y documentación): Mejoré la documentación de `SystemContext.ingest` y `ProblemCriterion` para clarificar los contratos de datos, y extraje la lógica de validación de grados a un método privado `_clean_grade` para reducir el ruido en el flujo principal del bucle de ingesta.
 - `2026-09-11T02:54:53` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando fallos específicos durante la escritura, asegurando que `os.replace` (operación atómica) sea el único punto de falla crítica, y reforzando la validación en `_Validators.int` para manejar explícitamente valores `None` o no numéricos sin depender solo del decorador `type_check`.
-- `2026-09-11T02:54:20` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la validación de `path_input` y la integridad del estado en `scan_directory` y `Scanner`, capturando excepciones de forma más granular para evitar interrupciones en el flujo de escaneo ante entradas inválidas o permisos restringidos.

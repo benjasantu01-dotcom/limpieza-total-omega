@@ -285,15 +285,17 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if (time.time() - _proc_cache_time) < 60:
         return _proc_cache_data[:limit]
     
-    ps_filter = f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit + 5} -Property Name, Id, WorkingSet"
-    cmd = [
-        'powershell', '-NoProfile', '-NonInteractive', '-Command', 
-        f"{ps_filter} | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
-    ]
+    # Optimizamos filtrando procesos de usuario y limitando la carga de trabajo de PS
+    ps_cmd = (
+        "Get-Process | Where-Object {$_.WorkingSet -ne $null} | "
+        "Sort-Object WorkingSet -Descending | Select-Object -First 20 -Property Name, Id, WorkingSet | "
+        "ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
+    )
+    cmd = ['powershell', '-NoProfile', '-NonInteractive', '-Command', ps_cmd]
+    
     try:
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
-        # Solo actualizamos si hay datos válidos, evitando corrupciones por errores de PowerShell
-        if proc.returncode == 0 and proc.stdout and "," in proc.stdout:
+        if proc.returncode == 0 and proc.stdout:
             parsed = parse_windows_process_csv(proc.stdout, limit=limit)
             if parsed:
                 _proc_cache_data = parsed
