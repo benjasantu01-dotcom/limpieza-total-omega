@@ -402,3 +402,44 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-11T05:18:25` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `safety.py` añadiendo un chequeo explícito en `_validate_boundary_conditions` para evitar que la aplicación intente modificar archivos en unidades de red (`DRIVE_REMOTE`), previniendo errores de permisos, latencia o inestabilidad al operar sobre recursos compartidos no locales.
 - `2026-09-11T05:18:25` Rotación — log: 1242 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T05:18:25` Corrida terminada. Total usado hoy: 128.
+- `2026-09-11T05:26:54` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-09-11T05:27:20` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-11T05:27:48` Tests FALLARON:
+```
+........................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________________ test_save_creates_the_folder _________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_creates_the_folder0')
+
+    def test_save_creates_the_folder(tmp_path):
+        destino = tmp_path / "sub" / "carpeta"
+        assert settings.save(settings.DEFAULTS, destino) is not None
+>       assert (destino / settings.SETTINGS_FILE).is_file()
+E       AssertionError: assert False
+E        +  where False = is_file()
+E        +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+E        +      where 'config.json' = settings.SETTINGS_FILE
+
+evolve/tests/test_assistant.py:61: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert False
+ +  where False = is_file()
+ +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+ +      where 'config.json' = settings.SETTINGS_FILE
+1 failed, 298 passed in 1.32s
+
+```
+- `2026-09-11T05:27:48` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para garantizar que la validación de rutas sea más estricta, verificando la existencia del componente padre antes de intentar cualquier operación de resolución, lo cual previene errores de acceso en entornos con permisos restringidos o rutas inexistentes.
+- `2026-09-11T05:28:14` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-09-11T05:28:14` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-11T05:28:14` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-11T05:28:34` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-11T05:28:34` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-11T05:29:04` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-11T05:29:04` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-11T05:29:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T05:29:04` Corrida terminada. Total usado hoy: 132.
