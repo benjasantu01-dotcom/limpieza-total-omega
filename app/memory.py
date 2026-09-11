@@ -319,6 +319,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
         f"Disponible: {format_bytes(snapshot.available)} ({snapshot.available_percent}%)",
     ]
     
+    # Mapeo de severidad a descripción técnica de estado
     diagnostics: Dict[str, str] = {
         "ok": "Estado: holgado. La memoria ocupada por caché mejora la velocidad.",
         "info": "Estado: normal. Windows gestiona la memoria de forma eficiente.",
