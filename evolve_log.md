@@ -1191,3 +1191,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-11T00:33:02` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_collect_candidates` agregando una validación explícita con `is_protected_path` sobre la ruta de cada archivo encontrado, asegurando que ningún archivo en zonas críticas sea procesado, incluso si el recorrido del sistema de archivos fuera forzado.
 - `2026-09-11T00:33:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T00:33:02` Corrida terminada. Total usado hoy: 16.
+- `2026-09-11T00:41:25` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-09-11T00:41:56` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_evaluate_rules` y `compute_score` mediante la aplicación de validación estricta de tipos y límites, asegurando que cualquier mensaje inyectado sea una cadena limpia y limitada, evitando posibles errores de ejecución o inyecciones de texto descontrolado.
+- `2026-09-11T00:41:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-11T00:43:14` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva implementando una validación explícita mediante `is_safe_to_modify` en `on_target_choice_changed` antes de aceptar cualquier ruta seleccionada por el usuario, evitando que rutas fuera del alcance permitido sean utilizadas como objetivo de escaneos.
+- `2026-09-11T00:43:44` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_get_process_path` y `trim_working_set` al reemplazar el uso de `ctypes.create_unicode_buffer` sin límites de acceso por una validación de ruta que asegura que el path del proceso sea absoluto y no represente un punto de reparse, integrando la lógica de `is_safe_to_modify` para prevenir ataques de secuestro o acceso a archivos fuera del scope esperado.
+- `2026-09-11T00:43:57` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-11T00:43:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T00:43:57` Corrida terminada. Total usado hoy: 20.

@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Mejoras aceptadas: **235** (46.6% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 37
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 200
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 61 | 2 | 9 | 3 | 63 |
+| 2026-09-09 | 61 | 2 | 9 | 3 | 59 |
 | 2026-09-10 | 160 | 11 | 27 | 16 | 136 |
-| 2026-09-11 | 12 | 2 | 1 | 0 | 1 |
+| 2026-09-11 | 14 | 2 | 1 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
 - legibilidad y documentación: **50**
-- seguridad defensiva: **47**
+- seguridad defensiva: **49**
 - robustez ante casos límite: **44**
 - rendimiento: **38**
 
@@ -33,10 +33,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **22**
 - `browser.py`: **21**
 - `duplicates.py`: **20**
+- `healthscore.py`: **20**
 - `assistant.py`: **19**
-- `healthscore.py`: **19**
+- `memory.py`: **19**
 - `settings.py`: **19**
-- `memory.py`: **18**
 - `diskreport.py`: **17**
 - `branding.py`: **16**
 - `scanner.py`: **16**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T00:43:44` **memory.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_get_process_path` y `trim_working_set` al reemplazar el uso de `ctypes.create_unicode_buffer` sin límites de acceso por una validación de ruta que asegura que el path del proceso sea absoluto y no represente un punto de reparse, integrando la lógica de `is_safe_to_modify` para prevenir ataques de secuestro o acceso a archivos fuera del scope esperado.
+- `2026-09-11T00:41:56` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_evaluate_rules` y `compute_score` mediante la aplicación de validación estricta de tipos y límites, asegurando que cualquier mensaje inyectado sea una cadena limpia y limitada, evitando posibles errores de ejecución o inyecciones de texto descontrolado.
 - `2026-09-11T00:33:02` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` agregando una validación explícita con `is_protected_path` sobre la ruta de cada archivo encontrado, asegurando que ningún archivo en zonas críticas sea procesado, incluso si el recorrido del sistema de archivos fuera forzado.
 - `2026-09-11T00:32:51` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_collect_summary_data` y `walk_files` asegurando que la validación de rutas protegidas se realice explícitamente mediante `is_protected_path` antes de procesar cada entrada de archivo, previniendo riesgos de acceso a rutas que podrían haber cambiado de estado o permisos durante la iteración.
 - `2026-09-11T00:32:23` **browser.py** (seguridad defensiva): Se ha mejorado la robustez de `_sum_directory_recursive` mediante la implementación de una validación explícita de `is_safe_to_modify` antes de entrar en cada subdirectorio, evitando que el escáner intente acceder a rutas que, aunque no sean junctions, hayan sido marcadas como protegidas por políticas de sistema.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T00:01:38` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics` ante valores inesperados en el constructor mediante la implementación de una validación exhaustiva de tipos y rangos, asegurando que cualquier entrada malformada sea corregida antes de entrar al pipeline de cálculo, previniendo así errores en cascada.
 - `2026-09-11T00:01:11` **duplicates.py** (robustez ante casos límite): Se mejora la robustez de `suggest_keeper` y `format_group` ante archivos que se eliminan o bloquean durante la ejecución del proceso de escaneo, añadiendo validaciones de existencia antes de realizar operaciones de metadatos o formateo.
 - `2026-09-10T14:50:37` **browser.py** (robustez ante casos límite): Se introdujo una protección contra el acceso a archivos bloqueados por el sistema (exclusivos) durante el escaneo recursivo, capturando específicamente el `WinError 32` que ocurre al intentar leer directorios de caché en uso sin permisos de lectura compartida, evitando así la interrupción innecesaria del análisis.
-- `2026-09-10T14:50:07` **branding.py** (robustez ante casos límite): Se ha añadido un chequeo de seguridad preventivo en `save_logo_svg` para evitar intentos de escritura en rutas prohibidas antes de invocar `ensure_safe_to_modify`, alineando el módulo con las guías de protección de archivos del proyecto.
-- `2026-09-10T14:39:47` **scanner.py** (rendimiento): Optimicé el método `process_entry` reemplazando la construcción repetitiva de objetos `Path` por el uso directo de `entry.path` y `entry.name`, y reduje llamadas redundantes a métodos del sistema operativo al utilizar la información ya disponible en el objeto `os.DirEntry`.

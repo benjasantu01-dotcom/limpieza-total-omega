@@ -349,10 +349,13 @@ def _get_process_path(proc_handle: int) -> Optional[str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
     
-    buf = ctypes.create_unicode_buffer(4096)
+    buf = ctypes.create_unicode_buffer(1024)
     try:
-        if psapi.GetModuleFileNameExW(proc_handle, None, buf, 4096) > 0:
-            return str(buf.value)
+        if psapi.GetModuleFileNameExW(proc_handle, None, buf, 1024) > 0:
+            path = Path(str(buf.value))
+            if not path.is_absolute() or path.is_symlink():
+                return None
+            return str(path.resolve())
     except (OSError, ctypes.ArgumentError, ValueError, MemoryError):
         pass
     return None
@@ -376,12 +379,9 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
             
         exec_path_str = _get_process_path(proc_handle)
         if not exec_path_str:
-            return False, "Acceso denegado o proceso del sistema."
+            return False, "Acceso denegado, proceso inexistente o no válido."
         
-        exec_path = Path(exec_path_str).resolve()
-        path_str = str(exec_path)
-        
-        if is_protected_path(path_str) or not is_safe_to_modify(path_str):
+        if is_protected_path(exec_path_str) or not is_safe_to_modify(exec_path_str):
             return False, "Operación denegada por política de seguridad."
             
         return True, None
@@ -400,7 +400,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "PID no válido."
 
-    if _is_system_process(target_pid) or is_protected_path(str(target_pid)): 
+    if _is_system_process(target_pid): 
         return False, "Proceso protegido."
 
     kernel32 = ctypes.windll.kernel32
