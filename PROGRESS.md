@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 141 | 9 | 22 | 15 | 133 |
-| 2026-09-11 | 83 | 8 | 11 | 5 | 77 |
+| 2026-09-10 | 138 | 9 | 22 | 15 | 132 |
+| 2026-09-11 | 85 | 8 | 13 | 5 | 77 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **59**
 - seguridad defensiva: **50**
-- robustez ante casos límite: **46**
-- legibilidad y documentación: **41**
-- rendimiento: **28**
+- robustez ante casos límite: **44**
+- legibilidad y documentación: **43**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **22**
-- `assistant.py`: **20**
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
+- `browser.py`: **21**
 - `duplicates.py`: **19**
+- `assistant.py`: **19**
 - `diskreport.py`: **18**
 - `settings.py`: **18**
 - `healthscore.py`: **17**
@@ -41,11 +41,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **15**
 - `branding.py`: **15**
 - `main.py`: **14**
-- `organizer.py`: **11**
-- `startup.py`: **5**
+- `organizer.py`: **12**
+- `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T07:50:45` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reemplazaron los `tuple` implícitos en `__all__` y `required` por `tuple` literales para mayor legibilidad y consistencia con las prácticas de tipado moderno de Python, mejorando la documentación del contrato de interfaces.
+- `2026-09-11T07:50:06` **organizer.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_is_file_locked` para usar una excepción más específica y documentar los casos de error, junto con la adición de docstrings técnicos explicativos sobre las validaciones de seguridad de nivel de sistema que se realizan en dicho método.
 - `2026-09-11T07:41:41` **memory.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de acceso a memoria para clarificar el uso de las estructuras de datos y las APIs de bajo nivel, mejorando la mantenibilidad del código sin alterar su lógica.
 - `2026-09-11T07:41:27` **main.py** (legibilidad y documentación): Se introdujo un `TypeAlias` explícito y se documentaron con mayor precisión las estructuras de datos y los métodos de delegación asíncrona para mejorar la mantenibilidad y legibilidad del flujo de control.
 - `2026-09-11T07:40:17` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo añadiendo type hints faltantes, tipado explícito en `_CACHE_SCORERS` y documentación detallada (docstrings) para aclarar las constantes de umbral, cumpliendo con el enfoque de legibilidad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T07:19:34` **safety.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `_check_file_integrity` y `_validate_boundary_conditions` para evitar el uso de excepciones genéricas (`Exception`), reemplazándolas por captura específica para asegurar que los fallos de lectura de disco sean reportados con el código de error `IO_ERROR` en lugar de fallos silenciosos o genéricos.
 - `2026-09-11T07:10:27` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación estricta de parámetros en `restore_item` y `purge_item` para prevenir excepciones no controladas al procesar IDs de ítems potencialmente nulos o malformados, mejorando la robustez del manejo de errores.
 - `2026-09-11T07:09:51` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` para evitar falsos positivos y errores de manejo de memoria, reemplazando la apertura manual con `ctypes` por una verificación de acceso más segura basada en `os.access` y capturando excepciones de estado de forma más específica.
-- `2026-09-11T07:09:23` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` reemplazando la captura genérica `except Exception` por un manejo de errores más específico y delegando la limpieza final del handle a un bloque `finally` más seguro para evitar fugas de recursos ante errores inesperados.
-- `2026-09-11T07:00:56` **main.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante la validación proactiva de la entrada del usuario (`pid` y `id`), evitando llamadas innecesarias al `executor` y mejorando la calidad del feedback en el log ante entradas malformadas o peligrosas.

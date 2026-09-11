@@ -28,7 +28,7 @@ from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
 from functools import lru_cache
-from typing import List, Union, Dict, Any, Optional, TypeAlias
+from typing import List, Union, Dict, Any, Optional, TypeAlias, Set, Tuple
 
 from safety import (
     UnsafePathError,
@@ -42,7 +42,7 @@ from safety import (
 PathLike: TypeAlias = Union[str, Path]
 ManifestData: TypeAlias = List[Dict[str, Any]]
 
-__all__ = [
+__all__: Tuple[str, ...] = (
     "QuarantineItem",
     "DEFAULT_QUARANTINE_DIR",
     "MANIFEST_NAME",
@@ -56,13 +56,13 @@ __all__ = [
     "purge_all",
     "total_quarantined_bytes",
     "summarize",
-]
+)
 
 DEFAULT_QUARANTINE_DIR: str = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME: str = "manifest.json"
 CHUNK_SIZE: int = 131072  # 128KB para procesamiento de I/O
 
-WINDOWS_RESERVED_NAMES: set[str] = {
+WINDOWS_RESERVED_NAMES: Set[str] = {
     "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", 
     "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", 
     "LPT6", "LPT7", "LPT8", "LPT9"
@@ -116,8 +116,8 @@ class QuarantineItem:
         """
         if not isinstance(data, dict):
             return None
-        required = {"item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at"}
-        if not required.issubset(data.keys()):
+        required: Tuple[str, ...] = ("item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at")
+        if not all(key in data for key in required):
             return None
         try:
             orig_p = str(data["original_path"])
@@ -745,7 +745,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         
     items = load_manifest(base)
     item_map = {item.stored_name: item for item in items}
-    purged_ids = set()
+    purged_ids: Set[str] = set()
     
     try:
         for stored_path in quarantine_root.iterdir():

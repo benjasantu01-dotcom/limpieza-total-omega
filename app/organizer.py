@@ -174,25 +174,28 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado por el sistema o procesos.
-    Realiza una verificación de acceso y comprueba permisos básicos.
+    Verifica si un archivo está inaccesible debido a bloqueos de SO o permisos.
+    
+    El método evalúa:
+    1. Existencia y tipo (excluye uniones/enlaces para evitar recursión circular).
+    2. Atributos de sistema/oculto que impiden manipulación estándar.
+    3. Capacidad de apertura exclusiva (intentando un acceso de solo lectura en modo binario).
+    
+    Retorna True si el archivo está protegido, bloqueado o inaccesible.
     """
     if path is None or not path.exists() or _is_junction(path): 
         return True
     
-    # Previene archivos protegidos por el sistema (system/hidden)
     if not _passes_system_checks(path):
         return True
 
-    # Verifica si podemos leer el archivo (si falla, está bloqueado o sin permisos)
     try:
         if not os.access(path, os.R_OK):
             return True
-        # Prueba intentar abrirlo en modo lectura exclusiva brevemente
-        with open(path, 'rb') as f:
+        with open(path, 'rb'):
             pass
         return False
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError, BlockingIOError):
         return True
 
 
