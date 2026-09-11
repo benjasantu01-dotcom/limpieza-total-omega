@@ -506,7 +506,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
             raise OSError("Falla de integridad: hash no generado.")
         return file_hash
     except Exception as e:
-        if temp_path and temp_path.exists():
+        if temp_path.exists():
             try: os.remove(temp_path)
             except OSError: pass
         raise e

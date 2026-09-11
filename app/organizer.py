@@ -176,25 +176,20 @@ def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está bloqueado exclusivamente por otro proceso en Windows.
     """
-    if path is None or _is_junction(path) or not path.exists(): 
+    if path is None or not path.exists() or _is_junction(path): 
         return True
     
     if os.name == "nt":
         INVALID_HANDLE_VALUE = -1
-        handle = None
-        try:
-            # 0x80000000 = GENERIC_READ, 0x1 = FILE_SHARE_READ
-            handle = ctypes.windll.kernel32.CreateFileW(
-                str(path), 0x80000000, 0x1, None, 0x3, 0x80, None
-            )
-            if handle == INVALID_HANDLE_VALUE:
-                return True
-            return False
-        except Exception:
+        # FILE_SHARE_READ | FILE_SHARE_WRITE (0x01 | 0x02) permite que otros lean/escriban
+        # pero fallará si el archivo tiene un lock exclusivo (Delete o Read/Write sin compartir).
+        handle = ctypes.windll.kernel32.CreateFileW(
+            str(path), 0x80000000, 0x00000003, None, 0x3, 0x80, None
+        )
+        if handle == INVALID_HANDLE_VALUE:
             return True
-        finally:
-            if handle is not None and handle != INVALID_HANDLE_VALUE:
-                ctypes.windll.kernel32.CloseHandle(handle)
+        ctypes.windll.kernel32.CloseHandle(handle)
+        return False
     return False
 
 

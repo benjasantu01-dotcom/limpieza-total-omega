@@ -8,32 +8,32 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 213
+- Rechazadas por guardia de seguridad: 37
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 9 | 0 | 1 | 1 | 35 |
+| 2026-09-09 | 7 | 0 | 1 | 1 | 33 |
 | 2026-09-10 | 160 | 11 | 27 | 16 | 136 |
-| 2026-09-11 | 50 | 5 | 8 | 3 | 42 |
+| 2026-09-11 | 52 | 5 | 9 | 4 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - legibilidad y documentación: **46**
-- seguridad defensiva: **44**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **43**
+- seguridad defensiva: **42**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **21**
 - `browser.py`: **21**
-- `settings.py`: **20**
-- `quarantine.py`: **20**
 - `duplicates.py`: **19**
+- `settings.py`: **19**
 - `assistant.py`: **19**
 - `diskreport.py`: **17**
 - `healthscore.py`: **17**
@@ -41,12 +41,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **15**
 - `branding.py`: **15**
 - `safety.py`: **14**
+- `organizer.py`: **11**
 - `main.py`: **11**
-- `organizer.py`: **10**
-- `startup.py`: **6**
+- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T04:37:29` **quarantine.py** (robustez ante casos límite): Se ha robustecido el proceso de cuarentena mediante la implementación de un manejo de errores más preciso en `quarantine_file` y `_write_temp_to_final`, asegurando que cualquier fallo durante la transferencia sea capturado y limpiado sin dejar residuos temporales en el sistema.
+- `2026-09-11T04:36:51` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos inexistentes o bloqueados mediante el uso de `ctypes` con un modo de acceso de solo lectura (`FILE_SHARE_READ | FILE_SHARE_WRITE`), evitando falsos negativos en bloqueos exclusivos y mejorando la resiliencia ante errores de acceso en sistemas Windows.
 - `2026-09-11T04:27:59` **main.py** (robustez ante casos límite): Se introdujo una validación robusta de `None` y existencias de widgets en `_apply_card_updates` para evitar excepciones en hilos asíncronos cuando el usuario cambia de pestaña rápidamente durante una actualización de UI, cumpliendo con el enfoque de robustez ante condiciones de carrera en la interfaz.
 - `2026-09-11T04:26:34` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones explícito en `_decide_hash_strategy_and_process` y `_group_paths_by_hash`, garantizando que un fallo de E/S en un solo archivo no invalide el procesamiento de todo el grupo de duplicados.
 - `2026-09-11T04:26:06` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante condiciones de carrera (archivos eliminados durante el escaneo) y errores de acceso inesperados, asegurando que el recorrido no se interrumpa ante excepciones transitorias.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T03:45:22` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando la creación innecesaria de objetos `Path` y llamadas redundantes a `is_safe_to_modify` dentro del bucle profundo, consolidando las verificaciones de seguridad en el nivel superior y utilizando el diccionario `memo` para evitar re-escaneos.
 - `2026-09-11T03:36:48` **branding.py** (rendimiento): Se ha optimizado la gestión de las coordenadas del escudo en `draw_logo` pre-calculando la lista de puntos una única vez mediante `lru_cache`, evitando la reconstrucción de la lista en cada frame de renderizado.
 - `2026-09-11T03:36:21` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la iteración secuencial sobre los tokens de la pregunta por un `set` de intersección, eliminando la necesidad de iterar sobre el diccionario de palabras clave en cada consulta y reduciendo la complejidad algorítmica de O(N) a O(1) para la selección del manejador.
-- `2026-09-11T03:35:13` **settings.py** (legibilidad y documentación): Documenté mediante docstrings la lógica de negocio y las restricciones de seguridad en las funciones críticas de `settings.py` para facilitar el mantenimiento y asegurar que futuros colaboradores entiendan el "porqué" detrás del flujo de validación y persistencia.
-- `2026-09-11T03:25:17` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en funciones críticas (`_atomic_isolate_file`, `_safe_unlink`, `quarantine_file`) y la estandarización de tipos en las firmas de funciones para mejorar la mantenibilidad y claridad del flujo de datos.
