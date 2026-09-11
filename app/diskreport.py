@@ -297,8 +297,9 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
     """
     root = _validate_root(directory)
     if not root: return []
-    data = _collect_summary_data(root, skip_protected, limit=limit)
-    return [FileEntry(p, s) for s, p in heapq.nlargest(limit, data.top_files, key=lambda x: x[0])]
+    safe_limit = max(0, int(limit))
+    data = _collect_summary_data(root, skip_protected, limit=safe_limit)
+    return [FileEntry(p, s) for s, p in heapq.nlargest(safe_limit, data.top_files, key=lambda x: x[0])]
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
@@ -307,9 +308,10 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
     """
     root = _validate_root(directory)
     if not root: return []
+    safe_limit = max(1, int(limit))
     data = _collect_summary_data(root, skip_protected, limit=0)
     usage_list = [ExtensionUsage(e, data.ext_sizes[e], data.ext_counts[e]) for e in data.ext_sizes]
-    return heapq.nlargest(max(1, limit), usage_list, key=lambda u: u.size_bytes)
+    return heapq.nlargest(safe_limit, usage_list, key=lambda u: u.size_bytes)
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
@@ -318,6 +320,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     """
     root = _validate_root(directory)
     if not root: return []
+    safe_limit = max(1, int(limit))
     folder_total_bytes: Dict[Path, int] = defaultdict(int)
     folder_file_counts: Dict[Path, int] = defaultdict(int)
     
@@ -331,7 +334,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
         except (ValueError, OSError): continue
 
     results = [FolderUsage(p, folder_total_bytes[p], folder_file_counts[p]) for p in folder_total_bytes]
-    return heapq.nlargest(max(1, limit), results, key=lambda f: f.size_bytes)
+    return heapq.nlargest(safe_limit, results, key=lambda f: f.size_bytes)
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> SizeReport:

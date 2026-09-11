@@ -325,11 +325,10 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo vectorial en una ruta física tras validación de seguridad de escritura."""
+    if destination is None: return None
     try:
-        if destination is None: return None
         path_input = Path(str(destination)).absolute()
-        
-        # Validaciones de seguridad antes de cualquier intento de creación o escritura
+        # Filtro booleano previo para evitar excepciones de seguridad innecesarias
         if not is_safe_to_modify(path_input) or is_protected_path(path_input):
             return None
             
@@ -340,7 +339,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
             
         path_input.write_text(logo_svg(), encoding="utf-8")
         return path_input
-    except (OSError, PermissionError, RuntimeError, ValueError, TypeError): 
+    except (OSError, PermissionError, TypeError, ValueError): 
         return None
 
 def logo_ascii() -> str:
@@ -411,7 +410,9 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
     """Renderiza un gráfico circular de progreso (anillo de salud) en el Canvas."""
     if percent is None: return
     try:
-        val = max(0.0, min(100.0, float(percent)))
+        val = float(percent)
+        if not math.isfinite(val): return
+        val = max(0.0, min(100.0, val))
         diam = max(20, int(size))
         thick = max(2, min(int(thickness), (diam // 2) - 1))
         borde = thick / 2.0
@@ -419,5 +420,5 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)
         if val > 0: 
             canvas.create_arc(*caja, start=90, extent=-(val / 100 * 359.9), style="arc", outline=fill or score_color(val), width=thick)
-    except (ValueError, TypeError, ZeroDivisionError, Exception): 
+    except (ValueError, TypeError, Exception): 
         return

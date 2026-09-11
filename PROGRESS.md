@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 212
 
@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-09 | 43 | 2 | 8 | 3 | 42 |
+| 2026-09-09 | 40 | 2 | 7 | 3 | 42 |
 | 2026-09-10 | 160 | 11 | 27 | 16 | 136 |
-| 2026-09-11 | 17 | 2 | 2 | 1 | 34 |
+| 2026-09-11 | 21 | 2 | 2 | 1 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
-- legibilidad y documentación: **44**
+- manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **44**
-- manejo de errores y validación de entradas: **42**
+- legibilidad y documentación: **41**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
+- `quarantine.py`: **21**
+- `browser.py`: **20**
 - `settings.py`: **19**
-- `browser.py`: **19**
-- `memory.py`: **18**
+- `assistant.py`: **18**
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
-- `assistant.py`: **17**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
+- `memory.py`: **17**
 - `safety.py`: **15**
 - `scanner.py`: **15**
-- `branding.py`: **14**
-- `organizer.py`: **11**
+- `branding.py`: **15**
 - `main.py`: **10**
+- `organizer.py`: **10**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T02:25:16` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros numéricos y de ruta en las funciones públicas, garantizando que valores inesperados (como un `limit` menor a 0) no provoquen comportamientos inconsistentes o errores en tiempo de ejecución.
+- `2026-09-11T02:25:03` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` y `directory_size` validando explícitamente que los resultados de `path.resolve()` sean directorios existentes antes de procesarlos, evitando errores por rutas huérfanas o cambios de estado durante la ejecución.
+- `2026-09-11T02:24:36` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_logo_svg` y `draw_ring` mediante validación explícita de entradas y el uso de `is_safe_to_modify` como filtro booleano en lugar de envolver todo en un bloque `try-except` genérico, previniendo errores de tipo o rutas inválidas antes de ejecutar lógica crítica.
+- `2026-09-11T02:24:01` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y `ingest` en `SystemContext` para evitar que el bucle de ingestión sea interrumpido por excepciones inesperadas al acceder a objetos externos, garantizando una validación más limpia mediante el uso de `getattr(..., None)` y capturas de error explícitas.
 - `2026-09-11T01:02:21` **settings.py** (seguridad defensiva): Mejoré `_Validators._run_safety_checks` para que realice una validación de seguridad más robusta mediante la resolución absoluta de rutas ANTES de realizar chequeos, evitando así vulnerabilidades de path traversal mediante enlaces simbólicos o relativos, y centralizando la protección contra reparse points al verificar `is_symlink()` o `is_junction()` sobre la ruta resuelta.
 - `2026-09-11T00:53:14` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para detectar si el sistema de archivos está marcando un archivo con el atributo `FILE_ATTRIBUTE_OFFLINE` (típico de placeholders de OneDrive/Cloud), lo cual es peligroso porque forzar una operación sobre ellos puede disparar descargas masivas no deseadas o corromper el estado del almacenamiento en la nube.
 - `2026-09-11T00:52:16` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_safe_unlink` al añadir una verificación explícita mediante `is_protected_path` antes de proceder, garantizando que incluso si un ítem fue mal etiquetado en el manifiesto, nunca se intentará borrar nada fuera de las áreas permitidas.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T00:31:56` **branding.py** (seguridad defensiva): Se ha refactorizado `save_logo_svg` para asegurar que las validaciones de seguridad ocurran antes de cualquier acceso al sistema de archivos, eliminando el riesgo de "Time-of-check to time-of-use" y garantizando que las excepciones externas no dejen el sistema en un estado inconsistente.
 - `2026-09-11T00:22:53` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al limitar estrictamente el acceso a la configuración del asistente en `ask()` y `available()`, reemplazando el paso de rutas directas `base` por un esquema de solo lectura que valida explícitamente el origen antes de cargar ajustes, previniendo inyecciones de ruta en `settings.load()`.
 - `2026-09-11T00:22:01` **settings.py** (robustez ante casos límite): Se reforzó la robustez del manejo de archivos en `save()` añadiendo una validación de directorio persistente antes de intentar operaciones de escritura y asegurando que las excepciones en `os.replace` o `os.fsync` no dejen el archivo de configuración en un estado inconsistente o bloqueado.
-- `2026-09-11T00:21:30` **scanner.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite mediante la validación de integridad de rutas mediante `is_file()` antes de realizar operaciones de estadísticas, asegurando que el escáner no intente procesar archivos eliminados o bloqueados durante la iteración del `scandir`.
-- `2026-09-11T00:12:02` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de entrada y concurrencia implementando una limpieza más agresiva de archivos huérfanos en el manifiesto durante `list_items` y endureciendo la validación de archivos mediante `stat().st_size` en la carga del manifiesto.
-- `2026-09-11T00:11:24` **organizer.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `_is_file_locked` para manejar correctamente archivos inexistentes o bloqueos por permisos mediante un bloque `try-except` más robusto, asegurando que el cierre del handle ocurra incluso bajo excepciones inesperadas durante la apertura del archivo.
-- `2026-09-11T00:02:51` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante el escenario de concurrencia y cierre inesperado, añadiendo una comprobación de existencia de widget en `_set_busy` y protegiendo el `executor` con un bloqueo más estricto durante la inicialización y el cierre para evitar `RuntimeError` al intentar registrar tareas en un pool ya apagado.

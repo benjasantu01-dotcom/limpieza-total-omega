@@ -415,13 +415,12 @@ def _get_source_value(source: Any, key: str) -> Any:
         if isinstance(source, dict):
             return source.get(key)
         
-        # Solo acceder a atributos que no sean callables y eviten dunders/privados
-        if hasattr(source, key):
-            val = getattr(source, key)
-            if not callable(val) and not key.startswith("_"):
-                return val
+        # Uso defensivo de getattr para evitar excepciones al consultar atributos inexistentes
+        val = getattr(source, key, None)
+        if val is not None and not callable(val) and not key.startswith("_"):
+            return val
         return None
-    except Exception:
+    except (AttributeError, TypeError):
         return None
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:

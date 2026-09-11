@@ -205,7 +205,7 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
     if path_obj is None:
         return False
     try:
-        if not path_obj.exists():
+        if not path_obj.exists() or not path_obj.is_dir():
             return False
         p_res = path_obj.resolve(strict=True)
         if not is_safe_to_modify(p_res) or is_protected_path(p_res):
@@ -271,7 +271,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
         return 0
     try:
         p = Path(path)
-        if not p.is_absolute():
+        if not p.is_absolute() or not p.is_dir():
             return 0
         if not _is_safe_to_traverse(p, None):
             return 0
@@ -290,7 +290,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
         
         real_candidate = candidate.resolve(strict=True)
         
-        if not _is_path_inside_base(real_candidate, base_path):
+        if not real_candidate.is_dir() or not _is_path_inside_base(real_candidate, base_path):
             return False
             
         if not is_safe_to_modify(real_candidate) or is_protected_path(real_candidate):
@@ -317,7 +317,7 @@ def detect_profiles(
     found: List[BrowserCache] = []
     
     for base in raw_bases:
-        if not isinstance(base, Path):
+        if not isinstance(base, Path) or not base.is_dir():
             continue
         try:
             real_base = base.resolve(strict=True)
