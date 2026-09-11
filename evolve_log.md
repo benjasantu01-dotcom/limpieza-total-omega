@@ -867,3 +867,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-11T09:44:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-11T09:44:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T09:44:58` Corrida terminada. Total usado hoy: 232.
+- `2026-09-11T09:51:48` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-09-11T09:52:21` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-09-11T09:52:46` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva del escáner implementando una validación estricta para las rutas UNC (`\\servidor\recurso`) y bloqueando la resolución de nombres de archivo que puedan ser interpretados erróneamente por el sistema (como las rutas que terminan con espacios o puntos), evitando posibles vulnerabilidades de path traversal o evasión de filtros.
+- `2026-09-11T09:53:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-11T09:53:40` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: seguridad defensiva).
+- `2026-09-11T09:53:49` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-09-11T09:53:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T09:53:49` Corrida terminada. Total usado hoy: 236.

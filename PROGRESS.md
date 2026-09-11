@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 192
+- Sin respuesta de la IA (error o límite): 191
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 120 | 8 | 20 | 14 | 110 |
-| 2026-09-11 | 113 | 11 | 20 | 6 | 82 |
+| 2026-09-10 | 120 | 8 | 20 | 14 | 106 |
+| 2026-09-11 | 114 | 11 | 20 | 6 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **59**
-- seguridad defensiva: **49**
+- seguridad defensiva: **50**
 - robustez ante casos límite: **46**
 - legibilidad y documentación: **44**
 - rendimiento: **35**
@@ -39,13 +39,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **17**
 - `memory.py`: **16**
 - `safety.py`: **15**
+- `scanner.py`: **15**
 - `main.py`: **15**
-- `scanner.py`: **14**
 - `organizer.py`: **13**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T09:52:46` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva del escáner implementando una validación estricta para las rutas UNC (`\\servidor\recurso`) y bloqueando la resolución de nombres de archivo que puedan ser interpretados erróneamente por el sistema (como las rutas que terminan con espacios o puntos), evitando posibles vulnerabilidades de path traversal o evasión de filtros.
 - `2026-09-11T09:44:55` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_atomic_isolate_file` y `_write_temp_to_final` mediante la validación estricta de que el archivo de destino no exista previamente mediante flags de sistema de archivos (`os.O_CREAT | os.O_EXCL`) al abrir el descriptor del archivo temporal, mitigando una condición de carrera (race condition) donde un atacante podría pre-crear un archivo o enlace simbólico antes de que `os.replace` ocurra.
 - `2026-09-11T09:42:36` **organizer.py** (seguridad defensiva): Se ha robustecido `organizer.py` añadiendo una validación crítica en `_process_directory` para verificar que la ruta actual no sea un punto de reparse (junction) antes de entrar recursivamente, mitigando riesgos de bucles infinitos o ataques de escalada de privilegios/fugas de disco fuera del árbol esperado.
 - `2026-09-11T09:42:08` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_safe_to_trim` implementando una validación estricta del path del proceso antes de cualquier operación, asegurando que la ruta sea absoluta, esté normalizada y cumpla con los filtros de `safety.py` incluso antes de intentar liberar memoria.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T09:12:23` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_entry` y `scan_directory` añadiendo una validación explícita de rutas no existentes (cuando `entry.path` se vuelve inválido por cambios concurrentes en el disco) y manejando adecuadamente la posible excepción de acceso denegado en `entry.stat()` dentro de `_is_reparse_point` para evitar abortar el recorrido.
 - `2026-09-11T09:03:43` **memory.py** (robustez ante casos límite): Se ha mejorado `parse_windows_process_csv` para añadir una validación robusta ante entradas malformadas de PowerShell, garantizando que si una línea no contiene exactamente 3 campos esperados (Nombre, PID, WorkingSet), se descarte silenciosamente en lugar de generar una excepción, mejorando la tolerancia ante datos inesperados del entorno.
 - `2026-09-11T09:03:13` **main.py** (robustez ante casos límite): Mejoré la robustez ante errores de ejecución asíncrona mediante la validación explícita del estado de existencia de los widgets de la interfaz antes de cada actualización, evitando `TclError` y `RuntimeError` en casos donde el hilo de trabajo intenta actualizar componentes que ya fueron destruidos o están siendo redibujados durante el cierre de la aplicación.
-- `2026-09-11T08:52:19` **healthscore.py** (robustez ante casos límite): Se fortalece la resiliencia del pipeline ante casos límite, asegurando que `_evaluate_rules` sea totalmente inmune a errores en las funciones inyectadas (como `message_factory`) y garantizando que el `SystemMetrics` siempre sea válido mediante una validación profunda antes de procesar, previniendo estados inconsistentes o divisiones por cero.

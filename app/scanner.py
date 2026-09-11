@@ -48,6 +48,8 @@ ScanResult: TypeAlias = List[Suspicion]
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
 RTL_CHAR_RE: Final[re.Pattern] = re.compile(r"[\u200f\u202e\u202d]")
 RESERVED_NAMES_RE: Final[re.Pattern] = re.compile(r"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$", re.IGNORECASE)
+# Validación de nombres de archivos terminados en espacios o puntos (vulnerabilidad de Windows)
+INVALID_TRAILING_CHARS_RE: Final[re.Pattern] = re.compile(r"[\. ]$")
 
 # Conjuntos de constantes para comparación rápida
 SUSPICIOUS_EXECUTABLE_EXT: Final[frozenset[str]] = frozenset({".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"})
@@ -133,7 +135,11 @@ class Scanner:
             if not path_str or not os.path.exists(path_str): return False
             
             name = entry.name
+            # Bloqueo de rutas UNC, rutas demasiado largas o nombres maliciosos para el sistema de archivos
             if not name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
+                return False
+            
+            if INVALID_TRAILING_CHARS_RE.search(name):
                 return False
             
             # Ignorar enlaces simbólicos explícitos para evitar escapes fuera de base_root
@@ -221,6 +227,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if directory is None: return []
         
     path_str: str = str(directory).strip()
+    # Bloqueo de rutas UNC y rutas malformadas antes de inicializar
     if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")): 
         return []
             
