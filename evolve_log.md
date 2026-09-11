@@ -1108,3 +1108,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-11T11:45:36` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `settings.py` implementando una validación estricta y explícita de `ConfigKey` en `validate` y `update`, eliminando la dependencia implícita de `ConfigKey.value` en las iteraciones y asegurando que solo claves definidas en el esquema sean procesadas, previniendo inyecciones de datos basura.
 - `2026-09-11T11:45:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T11:45:36` Corrida terminada. Total usado hoy: 280.
+- `2026-09-11T11:54:04` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-09-11T11:54:35` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `parse_registry_csv` añadiendo una validación robusta de los datos devueltos por el CSV, asegurando que `f_name` y `f_cmd` no sean `None` y capturando posibles fallos de parseo individual sin abortar la lectura de todo el registro.
+- `2026-09-11T11:55:35` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-11T11:56:16` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-11T11:57:22` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-11T11:58:14` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemContext.__hash__
+- `2026-09-11T11:58:48` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la inclusión de type hints precisos en los parámetros de los métodos de dibujo (Canvas) y se ha extraído la lógica de cálculo de polígonos del escudo a una constante tipada, facilitando el mantenimiento y mejorando la legibilidad del código.
+- `2026-09-11T11:58:59` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la inclusión de Type Hints explícitos, la corrección de una inconsistencia en el docstring de `_is_path_inside_base` (aclarando que usa `commonpath`) y la adición de docstrings detallados en funciones internas que carecían de explicaciones sobre su propósito y contrato de seguridad.
+- `2026-09-11T11:58:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T11:58:59` Corrida terminada. Total usado hoy: 284.

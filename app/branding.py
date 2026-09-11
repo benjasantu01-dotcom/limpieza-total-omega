@@ -32,12 +32,12 @@ class CanvasElement(Protocol):
     con `customtkinter.CTkCanvas`. Asegura compatibilidad con el sistema de 
     dibujo primitivo sin acoplamiento fuerte.
     """
-    def create_rectangle(self, *args: float, **kwargs: Any) -> int: ...
+    def create_rectangle(self, x0: float, y0: float, x1: float, y1: float, **kwargs: Any) -> int: ...
     def create_polygon(self, *args: float, **kwargs: Any) -> int: ...
-    def create_oval(self, *args: float, **kwargs: Any) -> int: ...
-    def create_line(self, *args: float, **kwargs: Any) -> int: ...
-    def create_text(self, *args: float, **kwargs: Any) -> int: ...
-    def create_arc(self, *args: float, **kwargs: Any) -> int: ...
+    def create_oval(self, x0: float, y0: float, x1: float, y1: float, **kwargs: Any) -> int: ...
+    def create_line(self, x0: float, y0: float, x1: float, y1: float, **kwargs: Any) -> int: ...
+    def create_text(self, x: float, y: float, **kwargs: Any) -> int: ...
+    def create_arc(self, x0: float, y0: float, x1: float, y1: float, **kwargs: Any) -> int: ...
 
 class ColorSegment(NamedTuple):
     """
@@ -110,7 +110,6 @@ _PALETTE_MAP: Final[dict[str, HexColor]] = {
 }
 PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType(_PALETTE_MAP)
 
-# Colores de referencia de interfaz reutilizados en componentes gráficos
 C_SURFACE: Final[HexColor] = _PALETTE_MAP["surface"]
 C_BACKGROUND: Final[HexColor] = _PALETTE_MAP["background"]
 C_GLOW: Final[HexColor] = _PALETTE_MAP["glow"]
@@ -296,20 +295,15 @@ def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, .
     segments.append(ColorSegment(current_color, start, len(colors)))
     return tuple(segments)
 
-@lru_cache(maxsize=8)
-def _get_shield_coords(s: float) -> Tuple[float, ...]:
-    """Calcula coordenadas escaladas para el trazado del icono del escudo."""
-    base: Final[Tuple[float, ...]] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
-    return tuple(v * s for v in base)
+SHIELD_BASE_COORDS: Final[Tuple[float, ...]] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
 
 @lru_cache(maxsize=8)
 def _get_scaled_poly(scale: float, canvas_x: float, canvas_y: float) -> Tuple[float, ...]:
     """Cachea los puntos del polígono para evitar reconstrucción en cada frame."""
-    coords = _get_shield_coords(scale)
     poly = []
-    for i in range(0, len(coords), 2):
-        poly.append(canvas_x + coords[i])
-        poly.append(canvas_y + coords[i+1])
+    for i in range(0, len(SHIELD_BASE_COORDS), 2):
+        poly.append(canvas_x + SHIELD_BASE_COORDS[i] * scale)
+        poly.append(canvas_y + SHIELD_BASE_COORDS[i+1] * scale)
     return tuple(poly)
 
 @lru_cache(maxsize=8)
@@ -340,18 +334,12 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if destination is None: return None
     try:
         path_input = Path(str(destination)).resolve()
-        
-        # Validaciones de seguridad centralizadas
         ensure_safe_to_modify(path_input)
-        
-        # Validar permisos de directorio padre
         parent = path_input.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
         elif not os.access(parent, os.W_OK):
             return None
-            
-        # Escritura atómica mediante volcado de buffer
         path_input.write_text(logo_svg(), encoding="utf-8")
         return path_input
     except (OSError, PermissionError, TypeError, ValueError): 
@@ -362,15 +350,7 @@ def logo_ascii() -> str:
     return "\n   ___  __  __ ___ ___   _\n  / _ \\|  \\/  | __/ __| /_\\\n | (_) | |\\/| | _|| (_ // _ \\\n  \\___/|_|  |_|___\\___/_/ \\_\\\n      Limpieza Total Omega\n"
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """
-    Dibuja franjas graduadas sobre el componente gráfico del escudo.
-    
-    Args:
-        canvas: Elemento Canvas de CTk.
-        canvas_x: Offset horizontal inicial del dibujo.
-        canvas_y: Offset vertical inicial del dibujo.
-        scale: Factor de escala aplicado (base 128px).
-    """
+    """Dibuja franjas graduadas sobre el componente gráfico del escudo."""
     try:
         franjas_count = max(6, int(28 * scale))
         colores = gradient_colors(franjas_count)
@@ -385,15 +365,7 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
     except Exception: pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """
-    Dibuja detalles iconográficos (flecha y omega) sobre el escudo.
-    
-    Args:
-        canvas: Elemento Canvas de CTk.
-        canvas_x: Offset horizontal inicial del dibujo.
-        canvas_y: Offset vertical inicial del dibujo.
-        scale: Factor de escala aplicado (base 128px).
-    """
+    """Dibuja detalles iconográficos (flecha y omega) sobre el escudo."""
     try:
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, canvas_x + 75 * scale, canvas_y + 41 * scale, fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
         canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, canvas_x + 89 * scale, canvas_y + 38 * scale, canvas_x + 92 * scale, canvas_y + 52 * scale, fill=C_BACKGROUND, outline="")
@@ -401,43 +373,23 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     except Exception: pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """
-    Renderiza la representación vectorial del escudo corporativo en el canvas.
-    
-    Args:
-        canvas: Elemento Canvas de CTk.
-        size: Tamaño base del logo en píxeles.
-        canvas_x: Desplazamiento absoluto horizontal en el canvas.
-        canvas_y: Desplazamiento absoluto vertical en el canvas.
-    """
+    """Renderiza la representación vectorial del escudo corporativo en el canvas."""
     try:
         s = float(size)
         if s <= 0: return
         scale = max(0.1, min(10.0, s / 128.0))
-        
         canvas.create_oval(
             canvas_x + 64 * scale - 75 * scale, canvas_y + 58 * scale - 75 * scale, 
             canvas_x + 64 * scale + 75 * scale, canvas_y + 58 * scale + 75 * scale, 
             fill=blend(C_SURFACE, C_GLOW, 0.15), outline=""
         )
-        canvas.create_polygon(_get_scaled_poly(scale, canvas_x, canvas_y), fill=GRADIENT_STOPS[1], outline="")
-        
+        canvas.create_polygon(*_get_scaled_poly(scale, canvas_x, canvas_y), fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
         _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, scale)
     except Exception: pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """
-    Dibuja una barra decorativa con gradiente horizontal de color.
-    
-    Args:
-        canvas: Elemento Canvas de CTk.
-        width: Ancho de la barra en píxeles.
-        height: Grosor de la barra.
-        canvas_x: Coordenada X de inicio.
-        canvas_y: Coordenada Y de inicio.
-        stops: Tupla de colores Hex para interpolar.
-    """
+    """Dibuja una barra decorativa con gradiente horizontal de color."""
     try:
         w_val = max(1, int(width))
         for seg in _get_grouped_segments(gradient_colors(w_val, stops)):
@@ -445,19 +397,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except Exception: pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[HexColor] = None, fill: Optional[HexColor] = None) -> None:
-    """
-    Renderiza un gráfico circular de progreso (anillo de salud) en el Canvas.
-    
-    Args:
-        canvas: Elemento Canvas de CTk.
-        percent: Porcentaje actual (0.0 a 100.0).
-        size: Diámetro total del anillo en píxeles.
-        canvas_x: Coordenada X superior izquierda de la caja contenedora.
-        canvas_y: Coordenada Y superior izquierda de la caja contenedora.
-        thickness: Grosor del trazo en píxeles.
-        track: Color opcional para el segmento de fondo.
-        fill: Color opcional para el segmento de progreso.
-    """
+    """Renderiza un gráfico circular de progreso (anillo de salud) en el Canvas."""
     if percent is None: return
     try:
         val = float(percent)

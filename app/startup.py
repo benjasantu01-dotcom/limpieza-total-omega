@@ -286,10 +286,9 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
                 p_cmd: Path = Path(cmd)
                 if not p_cmd.parts or is_protected_path(p_cmd):
                     continue
+                seen_commands.add(cmd)
+                parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
             except (ValueError, TypeError): continue
-                
-            seen_commands.add(cmd)
-            parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
             
     except (csv.Error, OSError, ValueError, TypeError):
         return []
