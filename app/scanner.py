@@ -128,24 +128,27 @@ class Scanner:
         """
         Valida que la entrada del sistema de archivos no viole las políticas de seguridad.
         """
-        path_str: str = entry.path
-        if not path_str: return False
-        
-        name = entry.name
-        if not name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
-            return False
-        
-        # Ignorar enlaces simbólicos explícitos para evitar escapes fuera de base_root
-        if entry.is_symlink():
-            return False
-        
-        if name.lower().endswith(".lnk") or RTL_CHAR_RE.search(path_str) or RESERVED_NAMES_RE.match(name):
-            return False
-        
-        if not self._is_inside_base_root(path_str):
-            return False
+        try:
+            path_str: str = entry.path
+            if not path_str or not os.path.exists(path_str): return False
+            
+            name = entry.name
+            if not name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
+                return False
+            
+            # Ignorar enlaces simbólicos explícitos para evitar escapes fuera de base_root
+            if entry.is_symlink():
+                return False
+            
+            if name.lower().endswith(".lnk") or RTL_CHAR_RE.search(path_str) or RESERVED_NAMES_RE.match(name):
+                return False
+            
+            if not self._is_inside_base_root(path_str):
+                return False
 
-        return not is_protected_path(Path(path_str))
+            return not is_protected_path(Path(path_str))
+        except (OSError, PermissionError):
+            return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si un directorio es un punto de reanálisis para omitir su recursión."""

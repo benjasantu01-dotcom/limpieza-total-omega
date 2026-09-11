@@ -174,11 +174,12 @@ class _Validators:
         
         try:
             resolved = path_obj.resolve(strict=False)
-            is_safe = not _Validators._is_reparse_point(resolved) and \
-                      not is_protected_path(str(resolved)) and \
-                      is_safe_to_modify(str(resolved))
-            if is_safe:
-                ensure_safe_to_modify(str(resolved))
+            if _Validators._is_reparse_point(resolved):
+                is_safe = False
+            else:
+                is_safe = not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
+                if is_safe:
+                    ensure_safe_to_modify(str(resolved))
         except (OSError, PermissionError, RuntimeError, UnsafePathError, IndexError):
             is_safe = False
             
@@ -297,15 +298,17 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         try:
             if not ruta.exists(): return DEFAULTS.copy()
             stats = ruta.stat()
+            if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
+                return DEFAULTS.copy()
+            
             mtime = float(stats.st_mtime)
             if (cached := _CACHE.get(ruta_str)) and cached[0] == mtime:
                 return cached[1].copy()
-            if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
-                with open(ruta, "r", encoding="utf-8") as f:
-                    data = validate(json.load(f))
-                _CACHE[ruta_str] = (mtime, data)
-                return data.copy()
-            break
+            
+            with open(ruta, "r", encoding="utf-8") as f:
+                data = validate(json.load(f))
+            _CACHE[ruta_str] = (mtime, data)
+            return data.copy()
         except (OSError, PermissionError):
             if attempt < 2:
                 time.sleep(0.1 * (attempt + 1))
