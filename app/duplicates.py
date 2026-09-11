@@ -97,7 +97,8 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         
     try:
         p = Path(path).resolve(strict=True)
-        if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p):
+        # Validación explícita de seguridad y accesibilidad antes de abrir el descriptor
+        if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p):
             return None
             
         digest = hashlib.sha256()
@@ -122,12 +123,14 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
     try:
         p = Path(path).resolve(strict=True)
-        if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p):
+        if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p):
             return None
 
         with open(p, "rb") as f:
             content = f.read(read_bytes)
-            return hashlib.sha256(content).hexdigest() if content else None
+            if not content:
+                return None
+            return hashlib.sha256(content).hexdigest()
     except (OSError, PermissionError, IOError, TypeError, ValueError):
         return None
 
@@ -148,6 +151,7 @@ def _is_valid_candidate(path: Path) -> bool:
         st = resolved.stat()
         return (
             not is_protected_path(resolved) and 
+            is_safe_to_modify(resolved) and
             os.access(resolved, os.R_OK) and
             st.st_nlink == 1 and
             st.st_size > 0

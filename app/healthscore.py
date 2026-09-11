@@ -146,7 +146,7 @@ class SystemMetrics:
 
     def __post_init__(self) -> None:
         """Inicializa valores faltantes y asegura la integridad de los datos."""
-        for field_name in self.__dataclass_fields__:
+        for field_name, field_def in self.__dataclass_fields__.items():
             val = getattr(self, field_name)
             if val is None:
                 default = 100.0 if "percent" in field_name else 0.0
@@ -211,7 +211,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                 if isinstance(msg, str) and msg.strip():
                     clean_msg = " ".join(msg.split())[:200]
                     findings.append(clean_msg)
-        except Exception:
+        except (AttributeError, TypeError, ValueError, ZeroDivisionError):
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

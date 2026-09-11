@@ -278,7 +278,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file(follow_symlinks=False):
                             if skip_protected and is_protected_path(entry_path): continue
                             st = entry.stat()
-                            yield entry_path, int(getattr(st, 'st_size', 0))
+                            size = int(getattr(st, 'st_size', 0))
+                            yield entry_path, max(0, size)
                     except (PermissionError, OSError, AttributeError):
                         continue
         except (PermissionError, OSError):
@@ -317,7 +318,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             rel = path.relative_to(root)
             if rel.parts:
                 top_level_folder = root / rel.parts[0]
-                folder_total_bytes[top_level_folder] += size
+                folder_total_bytes[top_level_folder] += max(0, size)
                 folder_file_counts[top_level_folder] += 1
         except (ValueError, OSError): continue
 
@@ -346,7 +347,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        safe_size: int = max(0, int(size))
+        safe_size = max(0, int(size))
         total_bytes += safe_size
         total_files += 1
         

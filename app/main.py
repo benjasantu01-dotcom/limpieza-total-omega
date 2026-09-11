@@ -1471,12 +1471,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not raw_id:
             messagebox.showinfo("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
             return
+        
+        if not quarantine.item_exists(raw_id):
+            self.log(f"Error: El ID '{raw_id}' no existe en cuarentena.", "Cuarentena")
+            return
 
         def task() -> None:
-            if not quarantine.item_exists(raw_id):
-                self._safe_run_ui_callback(lambda: self.log(f"Error: El ID '{raw_id}' no existe.", "Cuarentena"))
-                return
-            
             item = quarantine.get_item(raw_id)
             if not item or not hasattr(item, 'original_path'):
                 self._safe_run_ui_callback(lambda: self.log("Error: Manifiesto corrupto.", "Cuarentena"))
@@ -1580,15 +1580,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if pid < 100:
             self.log(f"Error: PID {pid} es un proceso protegido del sistema.", "Memoria")
             return
+        
+        if not memory_mod.process_exists(pid):
+            self.log(f"Error: El proceso {pid} no está activo.", "Memoria")
+            return
 
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
             return
 
         def task() -> None:
-            if not memory_mod.process_exists(pid):
-                self._safe_run_ui_callback(lambda: self.log(f"Error: El proceso {pid} ya no está activo.", "Memoria"))
-                return
-            
             try:
                 ok, mensaje = memory_mod.trim_working_set(pid)
                 self._safe_run_ui_callback(lambda: self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria"))
