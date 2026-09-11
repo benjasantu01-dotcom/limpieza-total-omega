@@ -206,7 +206,9 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float, findings: List[str]) -> None:
-    """Aplica las reglas de recomendación in-place si se cumplen sus predicados, sanitizando la salida."""
+    """Aplica las reglas de recomendación in-place, validando la integridad del contexto recibido."""
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+        return
     for rule in rules:
         try:
             if rule.check(metrics, ratio):

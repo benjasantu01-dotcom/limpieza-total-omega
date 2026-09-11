@@ -1068,7 +1068,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Envía una tarea al pool de hilos tras validar la seguridad del target."""
         if self._closing or not self.winfo_exists(): return
         
-        # Validación de seguridad defensiva en el hilo principal
+        # Validación de seguridad defensiva en el hilo principal antes de delegar
         if target and not self._is_safe_path(target):
             self.log("Acción denegada: la ruta destino no es segura.", self._current_tab())
             return

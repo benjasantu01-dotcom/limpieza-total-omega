@@ -187,7 +187,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
         if not item: 
             return None
         root = Path(item).resolve(strict=False)
-        if root.exists() and root.is_dir() and not is_protected_path(root):
+        if root.exists() and root.is_dir() and not is_protected_path(root) and is_safe_to_modify(root):
             return root
     except (OSError, ValueError, RuntimeError, TypeError):
         pass
@@ -217,8 +217,9 @@ def _collect_candidates(
                 for entry in iterator:
                     try:
                         if entry.is_dir(follow_symlinks=False):
-                            if not is_junction(Path(entry.path)):
-                                _scan_directory_recursive(Path(entry.path))
+                            entry_path = Path(entry.path)
+                            if not is_junction(entry_path) and is_safe_to_modify(entry_path):
+                                _scan_directory_recursive(entry_path)
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat()
                             if st.st_size >= min_size:
