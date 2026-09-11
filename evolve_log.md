@@ -708,3 +708,10 @@ FAILED evolve/tests/test_assistant.py::test_space_question_adds_up_what_can_be_r
 - `2026-09-11T07:51:17` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult
 - `2026-09-11T07:51:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T07:51:17` Corrida terminada. Total usado hoy: 188.
+- `2026-09-11T07:59:45` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-09-11T08:00:10` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
+- `2026-09-11T08:00:39` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._is_reparse_point, _Validators._is_safe_path, _Validators._run_safety_checks, _Validators._validate_enum_str
+- `2026-09-11T08:01:07` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejora la legibilidad del módulo `StartupEntry` documentando el ciclo de vida y la intención de seguridad de sus métodos internos, asegurando que la arquitectura de resolución perezosa quede clara para futuros colaboradores.
+- `2026-09-11T08:01:22` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): el archivo se encogió al 58% del original (posible pérdida de código)
+- `2026-09-11T08:01:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T08:01:22` Corrida terminada. Total usado hoy: 192.
