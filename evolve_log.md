@@ -1406,3 +1406,4 @@ ERROR evolve/tests/test_modules.py
 - `2026-09-11T14:52:32` Rotación — metrics: 3 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T14:52:32` Corrida terminada. Total usado hoy: 350.
 - `2026-09-11T14:59:31` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-11T15:09:40` Presupuesto diario agotado (350 usados). Corte hasta mañana.
