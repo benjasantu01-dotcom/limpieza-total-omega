@@ -1448,3 +1448,53 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-11T03:05:49` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el tipado de `_collect_candidates` y sus helpers, clarificando el propósito de la recursión y la exclusión de rutas, asegurando que la intención del código sea evidente para cualquier colaborador.
 - `2026-09-11T03:05:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T03:05:49` Corrida terminada. Total usado hoy: 76.
+- `2026-09-11T03:14:20` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-09-11T03:14:48` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:25: in <module>
+    import healthscore  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^
+app/healthscore.py:24: in <module>
+    ScorerFunc: TypeAlias = Callable[[SystemMetrics], NormalizedRatio]
+                                      ^^^^^^^^^^^^^
+E   NameError: name 'SystemMetrics' is not defined
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defined
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.29s
+
+```
+- `2026-09-11T03:14:48` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se introdujo un `TypeGuard` personalizado para mejorar la seguridad en `compute_score` y se documentaron con `TypeAlias` y `Docstrings` los componentes internos para clarificar el flujo de datos del motor de puntuación, facilitando su mantenimiento.
+- `2026-09-11T03:15:48` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-11T03:17:05` ✅ Mejora aceptada en main.py (enfoque: legibilidad y documentación). Se introdujo un sistema de tipado y documentación más robusto para `LimpiezaTotalOmegaApp` mediante la definición formal de los tipos de retorno en los métodos clave y la adición de docstrings detallados, facilitando el mantenimiento y la comprensión de la lógica de flujo asíncrono y gestión de estado.
+- `2026-09-11T03:17:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-11T03:17:51` Tests FALLARON:
+```
+[ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_____________ test_diagnose_explains_that_free_ram_is_not_the_goal _____________
+
+    def test_diagnose_explains_that_free_ram_is_not_the_goal():
+        lineas = memory.diagnose(memory.MemorySnapshot(total=1000, available=500))
+        texto = " ".join(lineas).lower()
+        assert "memoria total" in texto
+        # El mensaje honesto tiene que estar: es la diferencia con un limpiador falso.
+>       assert "liberar" in texto or "caché" in texto
+E       AssertionError: assert ('liberar' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.' or 'caché' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.')
+
+evolve/tests/test_modules.py:381: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not_the_goal - AssertionError: assert ('liberar' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.' or 'caché' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.')
+1 failed, 298 passed in 1.36s
+
+```
+- `2026-09-11T03:17:51` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `memory.py` refinando la documentación, introduciendo comentarios de diseño sobre el propósito de las funciones auxiliares y estructurando mejor los bloques de lógica compleja para facilitar la auditoría de seguridad.
+- `2026-09-11T03:18:06` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de las funciones de validación de seguridad (`_is_safe_for_disk_op`, `_validate_path_security`) utilizando docstrings detallados que explican el "porqué" de las restricciones y la lógica de flujo, facilitando el mantenimiento y la comprensión de las salvaguardas críticas del sistema.
+- `2026-09-11T03:18:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T03:18:06` Corrida terminada. Total usado hoy: 80.

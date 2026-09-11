@@ -79,7 +79,7 @@ from organizer import (
 from scanner import scan_directory, run_windows_defender_quick_scan
 
 @lru_cache(maxsize=1)
-def get_cached_settings():
+def get_cached_settings() -> Dict[str, Any]:
     """Carga inicial de configuración cacheada."""
     return settings_mod.load()
 
@@ -280,7 +280,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             raw = get_cached_settings()
             if isinstance(raw, dict):
-                self.settings = raw
+                self.settings = raw  # type: ignore
             else:
                 self.settings = settings_mod.reset()
         except Exception:

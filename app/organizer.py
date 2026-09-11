@@ -237,7 +237,13 @@ def _has_forbidden_chars(path: Path) -> bool:
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
     """
-    Orquestador de seguridad: verifica rutas prohibidas y limitaciones de longitud MAX_PATH (260).
+    Valida la integridad de la estructura de las rutas.
+    
+    Checklist de seguridad:
+    1. Evita rutas de red (UNC) por inestabilidad.
+    2. Bloquea nombres reservados de Windows y caracteres de escape.
+    3. Asegura que ninguna ruta supere la longitud de 260 caracteres para evitar fallos de API.
+    4. Verifica contra la lista blanca/negra de `safety.py`.
     """
     if src is None or dest is None: return False
     if _is_unc_path(src) or _is_unc_path(dest): return False
@@ -264,7 +270,13 @@ def _validate_file_attributes(src: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Validación de seguridad global: confirma integridad del origen, destino y entorno de ejecución.
+    Orquestador principal de seguridad antes de cualquier operación de I/O.
+    
+    Lógica de validación:
+    1. Valida que el origen exista y sea un archivo real.
+    2. Previene colisiones por enlaces simbólicos (junctions) en el destino.
+    3. Impide la recursividad (mover padre a hijo).
+    4. Asegura que el movimiento ocurra dentro de la misma unidad física (evita cambios de permisos).
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if not _validate_path_security(src, dest): return False
