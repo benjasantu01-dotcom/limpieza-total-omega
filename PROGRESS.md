@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 120 | 8 | 20 | 14 | 122 |
-| 2026-09-11 | 103 | 11 | 19 | 6 | 81 |
+| 2026-09-10 | 120 | 8 | 20 | 14 | 118 |
+| 2026-09-11 | 106 | 11 | 19 | 6 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **59**
-- robustez ante casos límite: **45**
+- robustez ante casos límite: **46**
 - legibilidad y documentación: **44**
-- seguridad defensiva: **40**
+- seguridad defensiva: **42**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **21**
+- `browser.py`: **22**
+- `assistant.py`: **20**
 - `quarantine.py`: **20**
-- `assistant.py`: **19**
 - `duplicates.py`: **19**
 - `settings.py`: **18**
 - `branding.py`: **17**
@@ -42,10 +42,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **14**
 - `main.py`: **14**
 - `organizer.py`: **12**
-- `startup.py`: **5**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T09:23:09` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_path_inside_base` añadiendo una comprobación explícita para evitar que rutas que contienen caracteres de escape o nulos (potencialmente maliciosas) pasen el filtro de resolución de rutas, asegurando que la validación de directorios sea robusta contra manipulaciones de nombres de archivos.
+- `2026-09-11T09:22:23` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva de `assistant.py` centralizando la validación de integridad en `_is_safe_text_structure` e incluyendo un nuevo chequeo de longitud y contenido malicioso explícito para el payload del motor remoto, asegurando que ninguna estructura de datos inyectable escape por la API.
+- `2026-09-11T09:21:43` **startup.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar que `_resolve_and_cache_path` intente resolver rutas relativas o inválidas que podrían derivar en excepciones al llamar a `Path.resolve()` con entradas malformadas, mejorando la robustez ante entornos donde el registro contiene rutas "sucias" o incompletas.
 - `2026-09-11T09:12:37` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` ante archivos corruptos o maliciosos integrando una verificación de integridad basada en `os.path.getsize` y `stat` dentro de `load` para evitar el procesamiento de archivos vacíos o sobredimensionados antes del parseo JSON, y añadiendo una validación explícita para asegurar que la ruta a persistir no sea un punto de reparse (junction) que pudiera causar un desbordamiento de permisos o recursión infinita.
 - `2026-09-11T09:12:23` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_entry` y `scan_directory` añadiendo una validación explícita de rutas no existentes (cuando `entry.path` se vuelve inválido por cambios concurrentes en el disco) y manejando adecuadamente la posible excepción de acceso denegado en `entry.stat()` dentro de `_is_reparse_point` para evitar abortar el recorrido.
 - `2026-09-11T09:03:43` **memory.py** (robustez ante casos límite): Se ha mejorado `parse_windows_process_csv` para añadir una validación robusta ante entradas malformadas de PowerShell, garantizando que si una línea no contiene exactamente 3 campos esperados (Nombre, PID, WorkingSet), se descarte silenciosamente en lugar de generar una excepción, mejorando la tolerancia ante datos inesperados del entorno.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T08:41:04` **settings.py** (rendimiento): Se optimizó el acceso a las configuraciones implementando un caché de lectura `_CACHE` más eficiente y evitando la recreación innecesaria de objetos `Path` y diccionarios mediante el uso de referencias y limpieza de lógica condicional redundante en `load`.
 - `2026-09-11T08:31:56` **safety.py** (rendimiento): Se optimizó `filter_safe_paths` sustituyendo el manejo de excepciones (que es costoso en Python) por una lógica de pre-validación que evita llamar a `ensure_safe_to_modify` (que es una función pesada con múltiples llamadas a disco) cuando la ruta falla criterios básicos, mejorando drásticamente el rendimiento al procesar listas largas.
 - `2026-09-11T08:31:02` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` convirtiendo las búsquedas sobre el manifiesto en operaciones `O(1)` mediante un diccionario (`mapping`), evitando así iteraciones anidadas repetitivas sobre la lista completa de archivos en cada paso del proceso.
-- `2026-09-11T08:22:41` **memory.py** (rendimiento): Optimizé la función `parse_windows_process_csv` reemplazando la lógica de filtrado y creación de objetos por una comprensión de lista más eficiente, evitando múltiples validaciones redundantes y aprovechando la estructura de datos para reducir el tiempo de ejecución en sistemas con muchos procesos.
-- `2026-09-11T08:20:59` **healthscore.py** (rendimiento): Se optimizó el pipeline de cómputo reemplazando el acceso a diccionarios y el procesamiento de reglas en tiempo de ejecución por una estructura de datos pre-mapeada (`_CACHE_SCORERS`), eliminando la búsqueda repetida en `_SCORERS` y `_RULES_BY_AREA` para cada categoría de métrica.
-- `2026-09-11T08:11:30` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `is_protected_path` al consolidar el filtrado en `_is_valid_candidate`, y reduje el costo de las llamadas a `os.scandir` integrando la comprobación de `is_file()` y `stat()` mediante `entry` para evitar operaciones de I/O adicionales por ruta.

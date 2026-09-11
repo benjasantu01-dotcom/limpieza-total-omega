@@ -134,15 +134,19 @@ def base_directories() -> List[Path]:
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
     Verifica mediante resolución absoluta que la ruta objetivo esté bajo la base.
+    Incluye sanitización estricta contra caracteres de control y longitud.
     """
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
     try:
         target_str: str = str(real_target.resolve(strict=True))
         base_str: str = str(real_base.resolve(strict=True))
-        if len(target_str) >= MAX_PATH_LEN or any(c in target_str for c in '\0\r\n'):
+        
+        # Filtros defensivos: rechazar rutas con caracteres ilegales o sospechosos
+        invalid_chars = {'\0', '\r', '\n', '\t', '<', '>', '|', '?', '*'}
+        if len(target_str) >= MAX_PATH_LEN or any(c in target_str for c in invalid_chars):
             return False
-        # Se asegura de que sea subdirectorio o igual, evitando ataques de prefijo
+            
         return target_str == base_str or target_str.startswith(base_str + os.sep)
     except (OSError, RuntimeError, ValueError):
         return False

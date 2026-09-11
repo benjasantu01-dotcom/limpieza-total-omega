@@ -158,9 +158,14 @@ class StartupEntry:
             return path_string if _EXISTS_CACHE[path_string] else path_string
         
         try:
-            p: Path = Path(norm).resolve(strict=False)
+            p: Path = Path(norm)
+            if not p.is_absolute():
+                _EXISTS_CACHE[path_string] = False
+                return ""
+                
+            p = p.resolve(strict=False)
             
-            if not self._validate_file_access(p) or not p.is_absolute() or is_protected_path(p):
+            if not self._validate_file_access(p) or is_protected_path(p):
                 _EXISTS_CACHE[path_string] = False
                 return path_string
             

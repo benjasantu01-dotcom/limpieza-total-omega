@@ -642,9 +642,12 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa el mensaje y el contexto en un JSON compatible con el formato de API de Google."""
     try:
+        # Validación extra de seguridad para evitar inyección en el JSON del payload
         if not _ensure_safe_text(context_text) or not _is_safe_text_structure(context_text): return None
         q = _sanitize_query(question)
         if not q or not _ensure_safe_text(q): return None
+        if _is_restricted_content(q) or _is_restricted_content(context_text): return None
+        
         data = {"contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]}]}
         encoded = json.dumps(data).encode("utf-8")
         if len(encoded) > _MAX_PROMPT_LIMIT * 2:
