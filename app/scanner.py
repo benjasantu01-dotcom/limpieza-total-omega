@@ -129,8 +129,10 @@ class Scanner:
         Valida que la entrada del sistema de archivos no viole las políticas de seguridad.
         """
         path_str: str = entry.path
+        if not path_str: return False
+        
         name = entry.name
-        if not path_str or not name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
+        if not name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
             return False
         
         # Ignorar enlaces simbólicos explícitos para evitar escapes fuera de base_root
@@ -215,16 +217,16 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
     if directory is None: return []
         
-    path_input: str = str(directory).strip()
-    if not path_input or len(path_input) > MAX_PATH_LENGTH or path_input.startswith(("\\\\", "//")): 
+    path_str: str = str(directory).strip()
+    if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")): 
         return []
             
-    base_path: Path = Path(path_input)
-    if not base_path.is_dir(): 
+    base_path: Path = Path(path_str)
+    if not base_path.exists() or not base_path.is_dir(): 
         return []
         
     root_input: Path = base_path.resolve()
-    if not root_input.exists() or is_protected_path(root_input): 
+    if is_protected_path(root_input): 
         return []
             
     scanner = Scanner(base_root=root_input)

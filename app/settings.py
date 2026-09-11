@@ -325,6 +325,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     ruta = settings_path(custom_base)
     cleaned_settings = validate(values)
     
+    # Verificación de integridad final antes de persistir
+    if not isinstance(cleaned_settings.get("duplicados_tamano_minimo_kb"), int): return None
+    
     for attempt in range(3):
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
         try:

@@ -271,6 +271,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             val_name = row.get(f_name)
             val_cmd = row.get(f_cmd)
             
+            if val_name is None or val_cmd is None: continue
             if not isinstance(val_name, str) or not isinstance(val_cmd, str): continue
                 
             name = "".join(c for c in val_name if ord(c) >= 32).strip()

@@ -298,8 +298,8 @@ def _check_file_integrity(path: Path) -> None:
             if rule.predicate(path, file_stat):
                 code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
                 raise UnsafePathError(f"Violación de integridad ({rule.reason.value})", code)
-        except (OSError, Exception):
-            continue
+        except (OSError, PermissionError):
+            raise UnsafePathError("Error al verificar integridad de archivo.", SafetyValidationErrorCode.IO_ERROR)
 
 
 @lru_cache(maxsize=2048)
@@ -457,7 +457,8 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
                  raise UnsafePathError("Unidad inaccesible o inexistente.", SafetyValidationErrorCode.IO_ERROR)
             if drive_type == DRIVE_REMOTE:
                  raise UnsafePathError("Unidad de red bloqueada.", SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED)
-        except Exception: pass
+        except OSError:
+             raise UnsafePathError("Error al consultar estado de unidad.", SafetyValidationErrorCode.IO_ERROR)
 
     try:
         app_root: Path = Path(os.getcwd()).resolve()
