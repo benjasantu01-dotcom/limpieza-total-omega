@@ -1177,3 +1177,12 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Valu
 - `2026-09-11T12:37:11` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_collect_summary_data` y las funciones que lo consumen evitando llamadas innecesarias al sistema de archivos y reduciendo la complejidad de las estructuras, al mover la lógica de categorización de extensiones a una sola pasada y reutilizar datos calculados.
 - `2026-09-11T12:37:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-11T12:37:11` Corrida terminada. Total usado hoy: 300.
+- `2026-09-11T12:45:23` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-11T12:46:25` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-11T12:47:28` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-11T12:48:03` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizado el rendimiento del escaneo recursivo mediante el uso de un `set` para `visited_dirs` con rutas resueltas (`Path.resolve()`) y la consolidación del filtrado de archivos, evitando llamadas innecesarias a `stat()` mediante el uso de los atributos proporcionados por `os.scandir`.
+- `2026-09-11T12:49:02` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-09-11T12:50:15` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards
+- `2026-09-11T12:50:32` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de datos de `top_memory_processes` eliminando el filtrado redundante de duplicados y minimizando las llamadas de I/O dentro del pipeline de PowerShell, mejorando el tiempo de respuesta y reduciendo la carga de CPU durante el análisis.
+- `2026-09-11T12:50:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-11T12:50:32` Corrida terminada. Total usado hoy: 304.

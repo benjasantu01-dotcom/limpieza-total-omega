@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 86 | 5 | 14 | 10 | 89 |
-| 2026-09-11 | 140 | 12 | 23 | 8 | 117 |
+| 2026-09-10 | 84 | 5 | 13 | 10 | 88 |
+| 2026-09-11 | 142 | 12 | 24 | 8 | 118 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **61**
 - seguridad defensiva: **50**
 - legibilidad y documentación: **45**
-- robustez ante casos límite: **40**
-- rendimiento: **30**
+- robustez ante casos límite: **38**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
+- `duplicates.py`: **21**
 - `browser.py`: **20**
-- `duplicates.py`: **20**
-- `settings.py`: **18**
 - `assistant.py`: **18**
 - `quarantine.py`: **18**
 - `diskreport.py`: **17**
 - `main.py`: **17**
+- `memory.py`: **17**
+- `settings.py`: **17**
 - `branding.py`: **16**
 - `healthscore.py`: **16**
-- `memory.py`: **16**
-- `scanner.py`: **15**
 - `organizer.py`: **14**
 - `safety.py`: **14**
+- `scanner.py`: **14**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-11T12:50:32` **memory.py** (rendimiento): Se optimizó el proceso de recolección de datos de `top_memory_processes` eliminando el filtrado redundante de duplicados y minimizando las llamadas de I/O dentro del pipeline de PowerShell, mejorando el tiempo de respuesta y reduciendo la carga de CPU durante el análisis.
+- `2026-09-11T12:48:03` **duplicates.py** (rendimiento): Optimizado el rendimiento del escaneo recursivo mediante el uso de un `set` para `visited_dirs` con rutas resueltas (`Path.resolve()`) y la consolidación del filtrado de archivos, evitando llamadas innecesarias a `stat()` mediante el uso de los atributos proporcionados por `os.scandir`.
 - `2026-09-11T12:36:34` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` reemplazando cálculos repetitivos y costosos en `draw_ring` y `gradient_colors` mediante el uso de `lru_cache` y la pre-computación de valores constantes fuera de los bucles de renderizado.
 - `2026-09-11T12:36:00` **assistant.py** (rendimiento): Optimizé la generación de texto del contexto para el asistente mediante la sustitución de concatenaciones de strings repetitivas por el uso de `str.join`, reduciendo la carga de memoria y mejorando la eficiencia en la serialización de datos de cara al prompt.
 - `2026-09-11T12:30:38` **startup.py** (legibilidad y documentación): Documenté el propósito y las restricciones de seguridad de los métodos internos de `StartupEntry` y las funciones de escaneo mediante docstrings detallados, aclarando el uso de `safety.py` y la distinción entre resolución de rutas y validación de acceso para mejorar la mantenibilidad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T12:04:52` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del motor de recolección de estadísticas (`_collect_summary_data`) y refiné el manejo de errores en el ciclo principal de escaneo, clarificando el propósito de cada variable y asegurando que las excepciones operativas no interrumpan el flujo de datos.
 - `2026-09-11T11:58:59` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de Type Hints explícitos, la corrección de una inconsistencia en el docstring de `_is_path_inside_base` (aclarando que usa `commonpath`) y la adición de docstrings detallados en funciones internas que carecían de explicaciones sobre su propósito y contrato de seguridad.
 - `2026-09-11T11:58:48` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints precisos en los parámetros de los métodos de dibujo (Canvas) y se ha extraído la lógica de cálculo de polígonos del escudo a una constante tipada, facilitando el mantenimiento y mejorando la legibilidad del código.
-- `2026-09-11T11:54:35` **startup.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `parse_registry_csv` añadiendo una validación robusta de los datos devueltos por el CSV, asegurando que `f_name` y `f_cmd` no sean `None` y capturando posibles fallos de parseo individual sin abortar la lectura de todo el registro.
-- `2026-09-11T11:45:36` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando una validación estricta y explícita de `ConfigKey` en `validate` y `update`, eliminando la dependencia implícita de `ConfigKey.value` en las iteraciones y asegurando que solo claves definidas en el esquema sean procesadas, previniendo inyecciones de datos basura.

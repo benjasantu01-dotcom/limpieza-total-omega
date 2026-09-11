@@ -281,7 +281,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     
     ps_cmd = (
         "Get-Process | Where-Object {$_.WorkingSet -ne $null} | "
-        "Sort-Object WorkingSet -Descending | Select-Object -First 20 -Property Name, Id, WorkingSet | "
+        "Sort-Object WorkingSet -Descending | Select-Object -First 15 -Property Name, Id, WorkingSet | "
         "ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
     )
     cmd = ['powershell', '-NoProfile', '-NonInteractive', '-Command', ps_cmd]

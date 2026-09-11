@@ -145,18 +145,15 @@ def _is_valid_candidate(path: Path, st: Optional[os.stat_result] = None) -> bool
     archivo de sistema u oculto, y que esté en una ubicación permitida.
     """
     try:
-        if not path.is_absolute():
-            path = path.absolute()
-        
         resolved = path.resolve(strict=True)
-        if resolved.is_symlink() or is_junction(resolved) or is_protected_path(resolved) or not is_safe_to_modify(resolved):
+        if resolved.is_symlink() or is_protected_path(resolved) or not is_safe_to_modify(resolved):
             return False
             
         if is_system_or_hidden(resolved):
             return False
             
         st = st or resolved.stat()
-        return st.st_size > 0 and st.st_nlink == 1 and os.access(resolved, os.R_OK)
+        return st.st_size > 0 and st.st_nlink == 1
     except (OSError, ValueError, TypeError, RuntimeError):
         return False
 
