@@ -49,11 +49,12 @@ _LIMIT_STARTUP_COUNT: Final[int] = 20
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-_INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB
-_INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB
-_INV_STARTUP: Final[float] = 1.0 / float(_LIMIT_STARTUP_COUNT)
-_INV_RAM: Final[float] = 1.0 / _LIMIT_RAM_PERCENT
-_INV_DISK: Final[float] = 1.0 / _LIMIT_DISK_PERCENT
+# Protección ante divisiones por cero o valores negativos en umbrales
+_INV_JUNK: Final[float] = 1.0 / max(_LIMIT_JUNK_MB, 1.0)
+_INV_DUP: Final[float] = 1.0 / max(_LIMIT_DUPLICATE_MB, 1.0)
+_INV_STARTUP: Final[float] = 1.0 / max(float(_LIMIT_STARTUP_COUNT), 1.0)
+_INV_RAM: Final[float] = 1.0 / max(_LIMIT_RAM_PERCENT, 0.1)
+_INV_DISK: Final[float] = 1.0 / max(_LIMIT_DISK_PERCENT, 0.1)
 
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8

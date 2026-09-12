@@ -1386,3 +1386,13 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-09-12T11:45:54` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `drive_usage` ante errores de acceso o rutas inexistentes mediante el uso de `pathlib.Path.exists()` y `try-except` más granulares, asegurando que el análisis no se detenga prematuramente si encuentra archivos con permisos denegados o rutas bloqueadas por el sistema operativo.
 - `2026-09-12T11:45:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T11:45:54` Corrida terminada. Total usado hoy: 280.
+- `2026-09-12T11:54:11` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-09-12T11:54:37` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-12T11:55:07` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor ante valores inesperados mediante la implementación de límites explícitos para las constantes de normalización, previniendo divisiones por cero en casos donde un usuario o configuración defina umbrales nulos o negativos, y asegurando que las métricas de sistema no degraden el resultado ante situaciones de borde.
+- `2026-09-12T11:56:08` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-12T11:57:11` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-12T11:58:17` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-12T11:59:29` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-12T12:00:01` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `parse_windows_process_csv` al implementar una sanitización de entrada más estricta frente a posibles errores de parsing en el pipeline de PowerShell, evitando que datos malformados o líneas inesperadas corrompan el listado de procesos.
+- `2026-09-12T12:00:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T12:00:01` Corrida terminada. Total usado hoy: 284.

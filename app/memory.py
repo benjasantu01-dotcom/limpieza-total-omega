@@ -220,9 +220,10 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     processes: List[ProcessMemory] = []
     for line in raw_csv_text.splitlines():
         line = line.strip()
-        if not line:
+        if not line or "," not in line:
             continue
-        parts = [x.strip().strip("'\"") for x in line.split(",")]
+        # Split y limpieza conservadora; solo aceptamos registros completos de 3 columnas
+        parts = [x.strip().strip("'\" ") for x in line.split(",")]
         if len(parts) == 3:
             proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
             if proc:
