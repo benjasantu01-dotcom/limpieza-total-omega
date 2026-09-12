@@ -131,7 +131,6 @@ def _is_file_locked(path: Path) -> bool:
     if path is None or not path.exists() or _is_junction(path): return True
     if not _passes_system_checks(path): return True
     try:
-        # Intentar verificar permisos básicos de lectura sin abrir el handle
         return not os.access(path, os.R_OK)
     except (OSError, PermissionError):
         return True
@@ -214,7 +213,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0,
     if protected_cache is None: protected_cache = set()
     if depth > 50 or current_dir is None or not current_dir.exists(): return
     
-    # Validar protección antes de procesar
     if is_protected_path(current_dir):
         protected_cache.add(str(current_dir))
         return
@@ -245,14 +243,15 @@ def scan_for_junk(directories: Optional[Sequence[str]] = None) -> List[JunkFile]
     return found
 
 def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
-    """Evalúa un archivo, valida si es basura y lo añade a la lista."""
+    """Evalúa un archivo, valida si es basura y lo añade a la lista usando datos de scandir."""
     try:
+        # Validación rápida sin llamadas extra a disco (scandir ya tiene info)
         if is_valid_junk_extension(entry.name) and len(entry.path) < 260:
-            info = entry.stat()
-            if info.st_size > 0:
-                p = Path(entry.path)
-                if not _is_file_locked(p):
-                    found.append(JunkFile(p, info.st_size, datetime.fromtimestamp(info.st_mtime)))
+            stat_info = entry.stat()
+            if stat_info.st_size > 0 and not (_get_win_attributes(entry) & 0x06):
+                # Verificar acceso antes de instanciar
+                if os.access(entry.path, os.R_OK):
+                    found.append(JunkFile(Path(entry.path), stat_info.st_size, datetime.fromtimestamp(stat_info.st_mtime)))
     except (OSError, PermissionError):
         pass
 

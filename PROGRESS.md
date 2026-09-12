@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **226** (44.8% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 204
 
@@ -16,27 +16,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 107 | 10 | 21 | 4 | 94 |
-| 2026-09-12 | 119 | 7 | 20 | 12 | 110 |
+| 2026-09-11 | 105 | 9 | 21 | 4 | 93 |
+| 2026-09-12 | 121 | 7 | 21 | 12 | 111 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **56**
 - legibilidad y documentación: **52**
-- seguridad defensiva: **48**
-- rendimiento: **37**
-- robustez ante casos límite: **33**
+- seguridad defensiva: **47**
+- rendimiento: **39**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **22**
 - `diskreport.py`: **19**
-- `settings.py`: **18**
-- `organizer.py`: **18**
+- `organizer.py`: **19**
+- `memory.py`: **18**
 - `quarantine.py`: **18**
-- `assistant.py`: **17**
-- `memory.py`: **17**
+- `settings.py`: **17**
 - `safety.py`: **16**
+- `assistant.py`: **16**
 - `browser.py`: **16**
 - `healthscore.py`: **16**
 - `main.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T11:23:55` **organizer.py** (rendimiento): Optimizé `_evaluate_entry` y el proceso de escaneo eliminando llamadas redundantes a `exists()` y `stat()` sobre rutas ya verificadas por `os.scandir`, reduciendo drásticamente las syscalls innecesarias durante la iteración sobre disco.
+- `2026-09-12T11:23:30` **memory.py** (rendimiento): Optimizé la eficiencia de `top_memory_processes` reemplazando la lógica de selección en PowerShell por un filtrado y ordenamiento en Python para reducir el tiempo de ejecución y la carga sobre el pipeline de PowerShell.
 - `2026-09-12T11:14:07` **healthscore.py** (rendimiento): Se optimizó el método `is_finite` en `SystemMetrics` reemplazando la iteración dinámica por `__dataclass_fields__` (que involucra reflexión costosa en cada llamada) por una tupla estática de campos clave, mejorando la eficiencia del bucle principal de `compute_score`.
 - `2026-09-12T11:13:41` **duplicates.py** (rendimiento): Optimizé la estrategia de hashing evitando re-lecturas innecesarias: ahora `_decide_hash_strategy_and_process` utiliza el hash completo solo si el grupo sigue siendo ambiguo tras el hash parcial, y `hash_file` se ejecuta directamente sobre archivos pequeños en lugar de obligarlos a pasar por una fase de hash parcial redundante.
 - `2026-09-12T11:13:16` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` eliminando la creación de objetos `Path` redundantes y resoluciones de ruta costosas dentro del bucle de recorrido, aprovechando la información ya disponible en `os.DirEntry`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T10:33:23` **duplicates.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados, normalización de docstrings siguiendo estándares PEP 257 y la refactorización de `_collect_candidates` para separar la lógica de recursión de la lógica de filtrado, reduciendo la complejidad ciclomática.
 - `2026-09-12T10:32:57` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings detallados en `_collect_summary_data` y `walk_files`, y se refinó la documentación interna para clarificar el flujo de datos y el propósito de las validaciones, mejorando la mantenibilidad técnica del módulo.
 - `2026-09-12T10:32:27` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y tipos explícitos para clarificar las responsabilidades de las funciones de escaneo, especialmente en el manejo de recursividad y validaciones de seguridad.
-- `2026-09-12T10:23:42` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `gradient_colors`, extrayendo la lógica de cálculo de colores a una función auxiliar (`_interpolate_rgb`) y añadiendo una docstring detallada que clarifica el algoritmo de interpolación lineal, facilitando su comprensión para futuras extensiones.
-- `2026-09-12T10:23:24` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `assistant.py` añadiendo docstrings descriptivos a las funciones de manejo de errores y validación, y clarifiqué la lógica de `ProblemCriterion` para facilitar la comprensión de las reglas heurísticas del asistente.
