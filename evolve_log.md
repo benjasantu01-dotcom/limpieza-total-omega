@@ -872,3 +872,32 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-12T06:18:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 116): unterminated string literal (detected at line 116)
 - `2026-09-12T06:18:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T06:18:44` Corrida terminada. Total usado hoy: 152.
+- `2026-09-12T06:27:17` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-09-12T06:27:51` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se documentó la jerarquía de validación mediante docstrings claros y se añadieron tipados explícitos en los predicados de `_VALIDATORS` para mejorar la mantenibilidad y legibilidad del motor de seguridad.
+- `2026-09-12T06:28:16` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos, docstrings detallados en los métodos de `Scanner` y un refactor menor de la lógica de `process_entry` para clarificar la separación entre la navegación de directorios y la inspección de archivos.
+- `2026-09-12T06:28:46` Tests FALLARON:
+```
+====================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:114: SyntaxWarning: invalid escape sequence '\A'
+    Extracts a quoted path (e.g., "C:\App\test.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_defaults_are_complete_and_typed - AssertionError: assert 'asistente_activado' in {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...}
+ +  where {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+FAILED evolve/tests/test_assistant.py::test_assistant_is_off_by_default - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyError: 'asistente_activado'
+3 failed, 296 passed, 7 warnings in 1.15s
+
+```
+- `2026-09-12T06:28:46` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación interna y el tipado de los validadores, incluyendo un `docstring` detallado para `_ValidatorEntry` y una aclaración sobre la jerarquía de validación de rutas para clarificar el flujo de control de seguridad.
+- `2026-09-12T06:28:57` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante docstrings estructurados y precisos, incorporando tipado detallado y aclarando las responsabilidades de los métodos críticos para facilitar el mantenimiento y la auditoría.
+- `2026-09-12T06:28:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T06:28:57` Corrida terminada. Total usado hoy: 156.
