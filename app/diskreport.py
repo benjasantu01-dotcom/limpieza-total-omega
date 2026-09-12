@@ -301,9 +301,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             if skip_protected and is_protected_path(entry_path): continue
                             try:
                                 st = entry.stat()
-                                size = int(getattr(st, 'st_size', 0))
-                                if size >= 0:
-                                    yield entry_path, size
+                                # Validamos que el tamaño sea un entero válido antes de emitir
+                                size = getattr(st, 'st_size', 0)
+                                if isinstance(size, (int, float)) and size >= 0:
+                                    yield entry_path, int(size)
                             except (OSError, PermissionError):
                                 continue
                     except (PermissionError, OSError, AttributeError):
@@ -391,11 +392,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         total_bytes += size
         total_files += 1
         
-        # Categorización por extensión para reporte de uso
-        try:
-            ext = path.suffix.lower() if path.suffix else "(sin extensión)"
-        except Exception:
-            ext = "(error lectura)"
+        # Categorización por extensión segura
+        ext = path.suffix.lower() if path.suffix else "(sin extensión)"
         
         s, c = ext_stats[ext]
         ext_stats[ext] = (s + size, c + 1)

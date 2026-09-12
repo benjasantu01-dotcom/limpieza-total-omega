@@ -139,13 +139,15 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
     try:
-        if not real_target.exists():
+        # Validación de existencia necesaria para evitar fallos en resolve
+        if not real_target.exists() or not real_base.exists():
             return False
+            
         target_abs = str(real_target.resolve(strict=True))
         base_abs = str(real_base.resolve(strict=True))
         
         # Validar longitud máxima de ruta para prevenir errores de la API de Windows
-        if len(target_abs) >= MAX_PATH_LEN:
+        if len(target_abs) >= MAX_PATH_LEN or len(base_abs) >= MAX_PATH_LEN:
             return False
             
         return os.path.commonpath([target_abs, base_abs]) == base_abs

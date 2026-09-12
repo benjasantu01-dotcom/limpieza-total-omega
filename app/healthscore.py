@@ -143,7 +143,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        return all(math.isfinite(float(getattr(self, f))) for f in self.__dataclass_fields__)
+        return all(math.isfinite(float(getattr(self, f))) for f in self.__dataclass_fields__ if hasattr(self, f))
 
 @dataclass
 class HealthResult:
@@ -187,7 +187,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos."])
     
-    metrics.validate()
+    try:
+        metrics.validate()
+    except (AttributeError, ValueError, TypeError):
+        return HealthResult(0, "F", {}, ["Error: Fallo al validar métricas."])
+
     if not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Métricas no numéricas detectadas."])
     
@@ -199,7 +203,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         try:
             ratio = _clamp(scorer(metrics))
             if not math.isfinite(ratio):
-                raise ValueError("Ratio no finito generado.")
+                raise ValueError("Ratio no finito.")
             if rules:
                 _evaluate_rules(metrics, rules, ratio, recommendations)
             val = int(round(ratio * float(weight)))
