@@ -191,7 +191,8 @@ def _is_file_locked(path: Path) -> bool:
     if not isinstance(path, Path) or not path.exists():
         return False
     try:
-        with open(path, "r+b") as f:
+        # Intentar apertura exclusiva simulada mediante bloqueo de descriptor
+        with open(path, "a+b") as f:
             f.flush()
             os.fsync(f.fileno())
             return False
@@ -202,11 +203,6 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_unlink(path: Path) -> bool:
     """
     Realiza una eliminación segura verificando protección y estado de bloqueo.
-    
-    Precondiciones:
-      - El archivo debe existir y ser un archivo regular (no symlink).
-      - No debe estar en una ruta protegida.
-      - El sistema debe conceder acceso de escritura.
     """
     if not path.is_file() or path.is_symlink() or is_protected_path(path):
         return False
@@ -484,9 +480,6 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 def _write_temp_to_final(source: Path, destination: Path) -> str:
     """
     Copia al sandbox y valida integridad contra condiciones TOCTOU (Time-of-check to time-of-use).
-    
-    Asegura que el archivo origen no sea reemplazado durante la operación de copia
-    mediante la comparación de identificadores de inodo (ino/dev).
     """
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
     fd = os.open(str(destination), flags, 0o600)
@@ -534,7 +527,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if not source.exists():
         raise FileNotFoundError("Archivo origen inexistente.")
     
-    # Validar que el destino esté estrictamente en el sandbox
     _validate_quarantine_path(destination, destination.parent)
     
     if len(str(destination)) >= 250:

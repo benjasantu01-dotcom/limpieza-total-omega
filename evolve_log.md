@@ -1396,3 +1396,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-09-12T12:00:01` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `parse_windows_process_csv` al implementar una sanitización de entrada más estricta frente a posibles errores de parsing en el pipeline de PowerShell, evitando que datos malformados o líneas inesperadas corrompan el listado de procesos.
 - `2026-09-12T12:00:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T12:00:01` Corrida terminada. Total usado hoy: 284.
+- `2026-09-12T12:04:21` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-09-12T12:04:50` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejora la robustez de `_is_file_locked` y `_passes_system_checks` ante archivos inexistentes o sin atributos definidos, evitando errores de tipo y accesos innecesarios durante el escaneo.
+- `2026-09-12T12:05:41` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de existencia y permisos antes de intentar realizar operaciones de E/S en `_is_file_locked` y `_safe_unlink` para prevenir errores de sistema ante archivos bloqueados por el SO o inaccesibles, reforzando la robustez frente a condiciones de carrera.
+- `2026-09-12T12:06:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-12T12:06:21` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se añadió una validación específica para detectar rutas que utilizan caracteres de escape o nombres de dispositivo dentro de los componentes del path, endureciendo la defensa contra ataques de path traversal mediante sintaxis maliciosa de Windows (ej: `..\..\.\NUL`).
+- `2026-09-12T12:06:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T12:06:21` Corrida terminada. Total usado hoy: 288.

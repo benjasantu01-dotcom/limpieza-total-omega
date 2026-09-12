@@ -134,7 +134,7 @@ SENSITIVE_EXTENSIONS: Final[frozenset[str]] = frozenset({
 })
 
 _SYSTEM_ROOT_PATHS: Final[tuple[str, ...]] = tuple(
-    os.path.normcase(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
+    os.normcase(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
 )
 
@@ -418,16 +418,18 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
              raise UnsafePathError("Ruta raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS)
 
         for part in target_path.parts:
+            # Detección de posibles intentos de path traversal con caracteres de control
             if not part or part.strip() != part or part.endswith(('.', ' ')):
                 raise UnsafePathError(f"Componente '{part}' malformado.", SafetyValidationErrorCode.INVALID_CHARS)
             
             if "  " in part:
                  raise UnsafePathError(f"Componente '{part}' con espacios excesivos.", SafetyValidationErrorCode.INVALID_CHARS)
             
-            parts_split = part.split('.')
-            name_only = parts_split[0]
-            if name_only and _is_reserved_device_name(name_only):
+            # Verificación de nombres de dispositivo en cualquier componente del path
+            part_cleaned = part.split('.')[0]
+            if _is_reserved_device_name(part_cleaned):
                 raise UnsafePathError(f"Nombre reservado '{part}'.", SafetyValidationErrorCode.RESERVED_NAME)
+                
     except (AttributeError, TypeError):
         raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC)
 

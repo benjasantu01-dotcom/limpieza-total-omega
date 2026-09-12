@@ -128,9 +128,10 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """Verifica si un archivo está inaccesible o en uso sin abrirlo exclusivamente."""
-    if path is None or not path.exists() or _is_junction(path): return True
-    if not _passes_system_checks(path): return True
+    if path is None: return True
     try:
+        if not path.exists() or _is_junction(path): return True
+        if not _passes_system_checks(path): return True
         return not os.access(path, os.R_OK)
     except (OSError, PermissionError):
         return True
@@ -146,7 +147,8 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 def _passes_system_checks(src: Path) -> bool:
     """Filtra archivos con atributos especiales (Sistema/Oculto)."""
     if os.name != "nt" or src is None: return True
-    return not (_get_win_attributes(src) & 0x06)
+    attrs = _get_win_attributes(src)
+    return not (attrs & 0x06) if attrs != 0 else True
 
 def _has_forbidden_chars(path: Path) -> bool:
     """Valida nombres reservados de Windows y caracteres prohibidos."""
