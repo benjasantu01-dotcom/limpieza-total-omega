@@ -309,7 +309,6 @@ class SystemContext:
             if val is not None and spec.is_valid_type(val):
                 f_val = float(val)
                 if math.isfinite(f_val) and spec.min_val <= f_val <= spec.max_val:
-                    # Validar existencia antes de asignar
                     if hasattr(self, key):
                         setattr(self, key, spec.cast_func(val))
                         return True
@@ -335,11 +334,15 @@ class SystemContext:
             if self._apply_field(source, key, spec):
                 found_data = True
         
-        grade_val = _get_source_value(source, "grade")
-        if isinstance(grade_val, str):
-            clean_grade = self._clean_grade(grade_val)
-            if clean_grade:
-                self.grade = clean_grade
+        try:
+            grade_val = _get_source_value(source, "grade")
+            if isinstance(grade_val, str):
+                clean_grade = self._clean_grade(grade_val)
+                if clean_grade:
+                    self.grade = clean_grade
+                    found_data = True
+        except (ValueError, TypeError, AttributeError):
+            pass
         
         return found_data
 
@@ -370,7 +373,6 @@ def _is_safe_text_structure(text: str) -> bool:
     Realiza una validación profunda de integridad del texto.
     """
     if not text: return True
-    # La validación incluye check directo de paths protegidos, inyecciones y comandos PS.
     if (_PATH_INJECTION_REGEX.search(text) or 
         is_protected_path(text) or 
         _is_restricted_content(text) or 
@@ -398,12 +400,12 @@ def _get_source_value(source: Any, key: str) -> Any:
         if isinstance(source, dict):
             return source.get(key)
         
-        # Validar si es objeto con __dict__ y que la clave no sea interna
+        # Solo acceder a atributos públicos de objetos permitidos
         if hasattr(source, "__dict__"):
             if not key.startswith("_"):
                 return getattr(source, key, None)
         return None
-    except (AttributeError, TypeError):
+    except (AttributeError, TypeError, ValueError):
         return None
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
@@ -643,7 +645,6 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa el mensaje y el contexto en un JSON compatible con el formato de API de Google."""
     try:
-        # Validación extra de seguridad: garantiza que el contexto y la pregunta sean seguros
         if not _ensure_safe_text(context_text) or not _is_safe_text_structure(context_text): return None
         q = _sanitize_query(question)
         if not q or not _ensure_safe_text(q): return None
@@ -703,7 +704,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             clean = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             final = _validate_response_length(clean)
             
-            # Segunda validación de integridad post-procesamiento antes de aceptar la respuesta
             if _ensure_safe_text(final) and _is_safe_text_structure(final):
                 return final
             return None

@@ -108,9 +108,9 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
         dll = ctypes.WinDLL('kernel32.dll', use_last_error=True)
         if hasattr(dll, 'GetFileAttributesW'):
             return dll
-        return None
-    except (OSError, RuntimeError, AttributeError):
-        return None
+    except (OSError, ValueError, RuntimeError):
+        pass
+    return None
 
 
 def base_directories() -> List[Path]:
@@ -126,9 +126,9 @@ def base_directories() -> List[Path]:
         path_local = Path(local_env).resolve(strict=True)
         if path_local.is_dir() and is_safe_to_modify(path_local) and not is_protected_path(path_local):
             return [path_local]
-        return []
-    except (OSError, RuntimeError, ValueError):
-        return []
+    except (OSError, RuntimeError):
+        pass
+    return []
 
 
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
