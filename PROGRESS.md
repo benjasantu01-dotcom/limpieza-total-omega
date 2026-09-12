@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 144 | 13 | 28 | 7 | 124 |
-| 2026-09-12 | 84 | 5 | 15 | 11 | 73 |
+| 2026-09-11 | 144 | 13 | 28 | 7 | 120 |
+| 2026-09-12 | 87 | 5 | 15 | 11 | 74 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **56**
 - legibilidad y documentación: **51**
 - robustez ante casos límite: **42**
+- seguridad defensiva: **42**
 - rendimiento: **40**
-- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
+- `duplicates.py`: **22**
+- `diskreport.py`: **19**
 - `settings.py`: **19**
 - `assistant.py`: **18**
-- `diskreport.py`: **18**
 - `quarantine.py`: **18**
+- `browser.py`: **17**
 - `main.py`: **17**
 - `organizer.py`: **17**
-- `browser.py`: **16**
 - `healthscore.py`: **16**
 - `safety.py`: **16**
 - `memory.py`: **16**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T08:00:21` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` integrando `is_protected_path` directamente en la recursión de directorios y garantizando que las rutas resueltas pasen por el filtro de seguridad antes de ser procesadas, evitando así el acceso a rutas prohibidas que podrían haber sido alcanzadas mediante cambios dinámicos del sistema de archivos.
+- `2026-09-12T07:59:56` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_summary_data` y `walk_files` al añadir validaciones explícitas de rutas antes de cualquier operación de I/O, asegurando que no se procesen archivos fuera del árbol raíz solicitado incluso ante errores de resolución del sistema de archivos.
+- `2026-09-12T07:59:29` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante una validación explícita de `is_safe_to_modify` para cada subdirectorio antes de ingresar en la recursión, garantizando que el escáner no pueda ser forzado a seguir rutas fuera de los límites permitidos, incluso si las heurísticas previas fallaran.
 - `2026-09-12T07:50:53` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir ataques de *path traversal* y asegurar la integridad de la escritura mediante el uso de `is_safe_to_modify` como pre-condición booleana, sustituyendo la lógica de excepción pasiva por una validación explícita que respeta las reglas de seguridad del proyecto.
 - `2026-09-12T07:50:35` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_build_payload` validando que la respuesta del motor remoto no contenga secuencias de escape de PowerShell ni comandos potencialmente peligrosos, extendiendo la lógica de filtrado existente.
 - `2026-09-12T07:49:25` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_path` y `_run_safety_checks` para manejar correctamente rutas que contienen caracteres no interpretables por el sistema de archivos (como secuencias de escape o caracteres de control) mediante una verificación explícita de `OSError` al intentar normalizar la ruta, evitando así que una configuración corrupta cause un crash en el módulo de ajustes.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T06:49:47` **main.py** (rendimiento): Se implementó una política de invalidación de caché basada en el tiempo (TTL) más eficiente y se optimizó `_compile_metrics` para reducir accesos redundantes al disco mediante el uso de los proveedores de caché ya implementados en el estado de la aplicación.
 - `2026-09-12T06:48:36` **healthscore.py** (rendimiento): Se optimizó el pipeline `compute_score` evitando conversiones redundantes y re-cálculos mediante el uso de variables locales pre-calculadas y la eliminación de llamadas innecesarias a `math.isfinite` dentro del loop crítico, aprovechando que el estado de las métricas ya es validado al inicio.
 - `2026-09-12T06:38:44` **branding.py** (rendimiento): Se optimizó el acceso a la paleta de colores reemplazando múltiples accesos mediante `_PALETTE_MAP.get()` en funciones frecuentes como `color()`, `severity_color()` y `grade_color()` por el uso directo del diccionario `_PALETTE_MAP` (o constantes ya evaluadas), reduciendo el overhead de llamadas a métodos en cada renderizado de interfaz.
-- `2026-09-12T06:38:13` **assistant.py** (rendimiento): Optimizé `local_answer` para evitar la creación innecesaria de `set` y `next(iter(...))` en cada consulta, utilizando en su lugar una búsqueda directa de palabras clave sobre `q_sanitized` y eliminando la redundancia de iterar tokens.
-- `2026-09-12T06:28:57` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings estructurados y precisos, incorporando tipado detallado y aclarando las responsabilidades de los métodos críticos para facilitar el mantenimiento y la auditoría.
-- `2026-09-12T06:28:16` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos, docstrings detallados en los métodos de `Scanner` y un refactor menor de la lógica de `process_entry` para clarificar la separación entre la navegación de directorios y la inspección de archivos.

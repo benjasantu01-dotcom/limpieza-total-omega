@@ -230,21 +230,17 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula el tamaño de un directorio mediante búsqueda en profundidad (DFS).
-    
-    Args:
-        root_abs: Ruta absoluta del directorio.
-        is_junction_fn: Función para detectar enlaces simbólicos NTFS.
-        kernel32: Instancia de Win32 API o None.
-        memo: Caché de resultados previos para evitar redundancia.
-        depth: Nivel actual de recursión para evitar desbordamiento.
-        
-    Returns:
-        Tamaño total en bytes.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
     if any(c in root_abs for c in '\0\r\n'):
         return 0
+    
+    # Validar seguridad antes de procesar el directorio
+    root_path = Path(root_abs)
+    if not is_safe_to_modify(root_path) or is_protected_path(root_path):
+        return 0
+        
     if root_abs in memo:
         return memo[root_abs]
     
@@ -300,13 +296,6 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Escanea en busca de perfiles y calcula la ocupación de cada caché.
-    
-    Args:
-        bases: Lista opcional de directorios base (para tests).
-        cache_paths: Mapa opcional de rutas (para tests).
-        
-    Returns:
-        Lista de objetos BrowserCache detectados.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS

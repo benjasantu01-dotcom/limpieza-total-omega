@@ -286,8 +286,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         if _is_excluded_path(entry): continue
                         
+                        entry_path = Path(entry.path)
+                        # Validar contención para evitar escape de ruta
+                        if not str(entry_path.resolve()).startswith(str(root_path)): continue
+                        
                         if entry.is_dir(follow_symlinks=False):
-                            entry_path = Path(entry.path)
                             if skip_protected and is_protected_path(entry_path): continue
                             try:
                                 st = entry.stat(follow_symlinks=False)
@@ -297,11 +300,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                     stack.append(entry_path)
                             except OSError: continue
                         elif entry.is_file(follow_symlinks=False):
-                            entry_path = Path(entry.path)
                             if skip_protected and is_protected_path(entry_path): continue
                             try:
                                 st = entry.stat()
-                                # Validamos que el tamaño sea un entero válido antes de emitir
                                 size = getattr(st, 'st_size', 0)
                                 if isinstance(size, (int, float)) and size >= 0:
                                     yield entry_path, int(size)
@@ -377,8 +378,11 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, Tuple[int, int]] = defaultdict(lambda: (0, 0))
-    # Heap stores (size, path), ordered by size ASC (min-heap)
     top_heap: List[Tuple[int, Path]] = []
+    
+    # Validar directorio antes de delegar a walk_files
+    if not directory.exists() or not directory.is_dir():
+        return SummaryData(0, 0, {}, [])
     
     for path, size in walk_files(directory, skip_protected):
         if not isinstance(size, int) or size < 0:
@@ -387,13 +391,11 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         total_bytes += size
         total_files += 1
         
-        # Categorización por extensión segura
         ext = path.suffix.lower() if path.suffix else "(sin extensión)"
         
         s, c = ext_stats[ext]
         ext_stats[ext] = (s + size, c + 1)
         
-        # Mantenimiento de min-heap para mantener solo los N más grandes
         if limit > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size, path))
@@ -412,7 +414,6 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if data.total_files == 0: return ["Aviso: No hay archivos accesibles."]
 
     lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} en {data.total_files} archivos", "", "Por tipo:"]
-    # Ordenar extensiones por bytes totales
     sorted_exts = heapq.nlargest(8, data.ext_stats.items(), key=lambda x: x[1][0])
     for ext, stats in sorted_exts:
         lines.append(f"  {ext:<18} {format_size(stats[0]):>10}  ({stats[1]} archivos)")

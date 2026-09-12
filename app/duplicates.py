@@ -218,7 +218,7 @@ def _collect_candidates(
     def _scan_directory_recursive(current_dir: Path) -> None:
         try:
             dir_str = str(current_dir.resolve())
-            if dir_str in visited_dirs:
+            if dir_str in visited_dirs or is_protected_path(current_dir):
                 return
             visited_dirs.add(dir_str)
             
@@ -231,7 +231,7 @@ def _collect_candidates(
                         
                         entry_path = Path(entry.path)
                         # Validación de existencia necesaria ante posibles borrados concurrentes
-                        if not entry_path.exists():
+                        if not entry_path.exists() or is_protected_path(entry_path):
                             continue
                         
                         if entry_path.is_symlink():
