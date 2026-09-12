@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 76 | 7 | 19 | 3 | 59 |
-| 2026-09-12 | 143 | 7 | 23 | 13 | 154 |
+| 2026-09-11 | 76 | 7 | 15 | 3 | 59 |
+| 2026-09-12 | 144 | 7 | 23 | 13 | 157 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
-- manejo de errores y validación de entradas: **46**
+- manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **43**
 - rendimiento: **42**
 - robustez ante casos límite: **40**
@@ -40,12 +40,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **16**
 - `memory.py`: **16**
 - `branding.py`: **13**
-- `main.py`: **12**
+- `main.py`: **13**
 - `startup.py`: **10**
 - `scanner.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T14:32:37` **main.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_collect_settings` y `_validate_numeric_setting` para evitar que entradas vacías o malformadas en la pestaña "Ajustes" provoquen cierres inesperados o estados corruptos, validando explícitamente el tipo de dato y sanitizando el texto.
 - `2026-09-12T14:18:51` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` capturando errores específicos al iterar con `os.scandir` y `stat`, asegurando que el estado interno no se corrompa ante entradas de sistema bloqueadas o rutas con caracteres no válidos, cumpliendo con el enfoque de validación de entradas.
 - `2026-09-12T14:18:38` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_kernel32` al capturar posibles fallos de `ctypes.WinDLL` y agregué una validación de seguridad en `_sum_directory_recursive` para asegurar que `root_abs` siempre sea una ruta absoluta antes de comparar con `root_base`, evitando saltos de directorio inesperados en entornos con rutas relativas.
 - `2026-09-12T14:17:40` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y `SystemContext.ingest` para prevenir excepciones silenciosas y manejar mejor datos de entrada inesperados, asegurando que el estado del sistema no quede en un estado inconsistente ante datos malformados.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T12:15:34` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` implementando una validación explícita mediante `is_safe_to_modify` antes de cualquier operación de escritura, asegurando que la creación del directorio de configuración no sea posible si la ruta raíz fuera bloqueada por la política de seguridad.
 - `2026-09-12T12:06:21` **safety.py** (robustez ante casos límite): Se añadió una validación específica para detectar rutas que utilizan caracteres de escape o nombres de dispositivo dentro de los componentes del path, endureciendo la defensa contra ataques de path traversal mediante sintaxis maliciosa de Windows (ej: `..\..\.\NUL`).
 - `2026-09-12T12:05:41` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de existencia y permisos antes de intentar realizar operaciones de E/S en `_is_file_locked` y `_safe_unlink` para prevenir errores de sistema ante archivos bloqueados por el SO o inaccesibles, reforzando la robustez frente a condiciones de carrera.
-- `2026-09-12T12:04:50` **organizer.py** (robustez ante casos límite): Mejora la robustez de `_is_file_locked` y `_passes_system_checks` ante archivos inexistentes o sin atributos definidos, evitando errores de tipo y accesos innecesarios durante el escaneo.

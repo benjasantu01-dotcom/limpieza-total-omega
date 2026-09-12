@@ -860,10 +860,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             raw = entry_widget.get().strip()
             if not raw:
                 return default
-            val = "".join(c for c in raw if c.isprintable())
+            # Filtro robusto: permite solo imprimibles. Si es numérico, valida conversión.
+            clean_raw = "".join(c for c in raw if c.isprintable())
             if numeric:
-                return int(val)
-            return val
+                try:
+                    return int(clean_raw)
+                except ValueError:
+                    return default
+            return clean_raw
         except (ValueError, TypeError, tk.TclError):
             return default
 

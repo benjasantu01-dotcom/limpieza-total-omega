@@ -544,3 +544,13 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-09-12T14:18:51` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` capturando errores específicos al iterar con `os.scandir` y `stat`, asegurando que el estado interno no se corrompa ante entradas de sistema bloqueadas o rutas con caracteres no válidos, cumpliendo con el enfoque de validación de entradas.
 - `2026-09-12T14:18:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T14:18:51` Corrida terminada. Total usado hoy: 340.
+- `2026-09-12T14:27:08` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-12T14:27:34` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-12T14:28:00` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-12T14:29:00` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-12T14:30:03` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-12T14:31:09` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-12T14:32:37` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se reforzó el manejo de errores en `_collect_settings` y `_validate_numeric_setting` para evitar que entradas vacías o malformadas en la pestaña "Ajustes" provoquen cierres inesperados o estados corruptos, validando explícitamente el tipo de dato y sanitizando el texto.
+- `2026-09-12T14:32:51` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-12T14:32:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T14:32:51` Corrida terminada. Total usado hoy: 344.
