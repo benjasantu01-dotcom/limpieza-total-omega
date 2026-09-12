@@ -189,7 +189,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         cached=BytesValue(max(0, cached))
     )
 
-def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[ProcessMemory]:
+def _is_valid_process_entry(name: Optional[str], pid_str: Optional[str], ws_str: Optional[str]) -> Optional[ProcessMemory]:
     """
     Valida y filtra entradas de procesos crudas. Excluye procesos críticos y 
     aquellos ubicados en rutas del sistema protegidas.
@@ -200,7 +200,6 @@ def _is_valid_process_entry(name: str, pid_str: str, ws_str: str) -> Optional[Pr
         pid_val, ws_val = int(pid_str), int(ws_str)
         if not name.strip() or pid_val <= 0 or ws_val < 0 or pid_val in SYSTEM_CRITICAL_PIDS:
             return None
-        # Validamos ruta base si es posible para prevenir filtrado incompleto
         if is_protected_path(name):
             return None
         return ProcessMemory(name=name, pid=pid_val, working_set=BytesValue(ws_val))
@@ -283,7 +282,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if (time.time() - _proc_cache_time) < 60:
         return _proc_cache_data[:limit]
     
-    # Optimizamos pipeline de PowerShell: filtramos antes de iterar
     ps_cmd = (
         "Get-Process | Where-Object {$_.WorkingSet -ne $null} | "
         "Sort-Object WorkingSet -Descending | Select-Object -First 20 -Property Name, Id, WorkingSet | "
@@ -324,7 +322,6 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
         f"Disponible: {format_bytes(snapshot.available)} ({snapshot.available_percent}%)",
     ]
     
-    # Mapeo de severidad a descripción técnica de estado
     diagnostics: Dict[str, str] = {
         "ok": "Estado: holgado. La memoria ocupada por caché mejora la velocidad.",
         "info": "Estado: normal. Windows gestiona la memoria de forma eficiente.",
@@ -352,7 +349,6 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     
     buf = ctypes.create_unicode_buffer(1024)
     try:
-        # psapi retorna el número de caracteres copiados
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 1024) > 0:
             return Path(buf.value).resolve(strict=False)
     except (OSError, ctypes.ArgumentError, ValueError, MemoryError):
@@ -360,17 +356,12 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
-    """
-    Realiza validaciones de seguridad antes de modificar un proceso.
-    Verifica que el proceso esté activo, posea ruta ejecutable localizable y
-    no contravenga las reglas de seguridad definidas en safety.py.
-    """
+    """Realiza validaciones de seguridad antes de modificar un proceso."""
     if not isinstance(proc_handle, int) or proc_handle <= 0: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
     
     try:
         exit_code = ctypes.c_ulong()
-        # Verificar estado del proceso antes de continuar
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
             return False, f"Imposible verificar estado (Error {kernel32.GetLastError()})."
             
@@ -381,7 +372,6 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
         if not exec_path:
             return False, "Acceso denegado o ejecutable no localizable."
         
-        # Validaciones de seguridad exigentes sobre la ruta resuelta
         exec_path_str = str(exec_path)
         if is_protected_path(exec_path_str) or not is_safe_to_modify(exec_path_str):
             return False, "Operación denegada: ruta protegida."
@@ -391,10 +381,7 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
         return False, "Error interno durante la verificación de integridad."
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Solicita al SO reducir el Working Set de un proceso.
-    Solo admite procesos verificados por _is_safe_to_trim.
-    """
+    """Solicita al SO reducir el Working Set de un proceso tras validación."""
     if not _is_windows: return False, "Operación solo soportada en Windows."
     
     try:
@@ -409,7 +396,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
-    # Abrir proceso con permisos mínimos estrictos
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         return False, f"Acceso denegado (Error {kernel32.GetLastError()})."
@@ -423,7 +409,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, f"Sistema denegó la operación (Error {kernel32.GetLastError()})."
             
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except (ctypes.ArgumentError, OSError, ValueError) as e:
+    except (ctypes.ArgumentError, OSError, ValueError, TypeError) as e:
         return False, f"Error de sistema: {str(e)}"
     finally:
         if proc_handle:

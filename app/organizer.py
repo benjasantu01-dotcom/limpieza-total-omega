@@ -107,10 +107,10 @@ def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
 
 def _is_unc_path(path: Path) -> bool:
     """Verifica si una ruta es UNC (Universal Naming Convention)."""
-    if path is None: return True
+    if not isinstance(path, Path): return True
     try:
         return str(path.absolute()).startswith(("\\\\", "//"))
-    except Exception:
+    except (OSError, RuntimeError):
         return True
 
 def _generate_unique_target(target: Path) -> Path:
@@ -124,7 +124,7 @@ def _generate_unique_target(target: Path) -> Path:
 
 def _is_allowed_directory(name: str) -> bool:
     """Verifica si el nombre de una carpeta no está bloqueado."""
-    return name is not None and name.lower() not in SYSTEM_FOLDER_BLOCKLIST
+    return bool(name) and name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
     """Verifica si un archivo está inaccesible o en uso sin abrirlo exclusivamente."""

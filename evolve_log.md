@@ -1261,3 +1261,13 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-12T09:52:50` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `format_group` implementando validaciones de tipo y estado más estrictas, asegurando que los cálculos de tamaño y las comparaciones de rutas no fallen ante archivos inexistentes o errores de sistema durante la ejecución del bucle.
 - `2026-09-12T09:52:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T09:52:50` Corrida terminada. Total usado hoy: 236.
+- `2026-09-12T10:01:26` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-09-12T10:01:53` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del motor de cómputo validando que `SystemMetrics` no sea `None` al inicio de `compute_score` y añadiendo un manejo de excepciones más granular en `_evaluate_rules` y `compute_score` para evitar que fallos en una métrica individual corrompan todo el reporte.
+- `2026-09-12T10:02:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-12T10:03:29` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-12T10:04:35` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-12T10:05:47` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-12T10:06:31` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_valid_process_entry` y `trim_working_set` implementando validaciones de entrada más estrictas y manejando excepciones de manera explícita para evitar errores en tiempo de ejecución ante datos inesperados.
+- `2026-09-12T10:06:43` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_is_unc_path` y `_is_allowed_directory` ante entradas inválidas o None mediante guards explícitos, garantizando que el flujo de procesamiento no se interrumpa ante datos inesperados.
+- `2026-09-12T10:06:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T10:06:43` Corrida terminada. Total usado hoy: 240.

@@ -195,21 +195,20 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                 msg = rule.message_factory(metrics)
                 if msg:
                     findings.append(" ".join(msg.split())[:200])
-        except (AttributeError, ValueError, TypeError, ZeroDivisionError, ArithmeticError):
+        except Exception:
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Pipeline principal: procesa métricas y retorna un objeto HealthResult consolidado."""
-    if not isinstance(metrics, SystemMetrics):
+    if metrics is None or not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos."])
     
     try:
         metrics.validate()
-    except (AttributeError, ValueError, TypeError):
-        return HealthResult(0, "F", {}, ["Error: Fallo al validar métricas."])
-
-    if not metrics.is_finite:
-        return HealthResult(0, "F", {}, ["Error: Métricas no numéricas detectadas."])
+        if not metrics.is_finite:
+            return HealthResult(0, "F", {}, ["Error: Métricas no numéricas detectadas."])
+    except Exception:
+        return HealthResult(0, "F", {}, ["Error: Fallo crítico al validar métricas."])
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -223,7 +222,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             val = int(round(ratio * weight))
             metric_breakdown[area] = val
             total_score += val
-        except (AttributeError, ValueError, TypeError, ZeroDivisionError, ArithmeticError):
+        except Exception:
             metric_breakdown[area] = 0
             
     final_score = int(_clamp(total_score, 0.0, 100.0))
