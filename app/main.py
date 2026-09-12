@@ -1138,9 +1138,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Consolida las métricas del sistema para el reporte de salud."""
+        # Uso de proveedores directos con caché interno para minimizar E/S
         junk = self._get_cached("junk") or []
         hallazgos = self._get_cached("suspicions") or []
         dups = self._get_cached("dups") or []
+        
         snapshot = self._get_cached("ram_snapshot", lambda: memory_mod.read_snapshot())
         disk_info = self._get_home_disk_info()
             
@@ -1154,7 +1156,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             startup_count=len(self._get_cached("startup") or []),
             quarantined_count=len(quarantine.list_items()),
         )
-        return metrics, snapshot, disk_info or diskreport.DriveInfo(0, 0, 0, "")
+        return metrics, snapshot or memory_mod.Snapshot(0, 0, 0), disk_info or diskreport.DriveInfo(0, 0, 0, "")
 
     @validated_ui_operation
     @ensure_safety

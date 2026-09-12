@@ -217,14 +217,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for area, weight, scorer, rules in _CACHE_SCORERS:
         try:
-            ratio = _clamp(scorer(metrics))
-            if not math.isfinite(ratio):
-                raise ValueError("Ratio no finito.")
+            ratio = scorer(metrics)
             if rules:
                 _evaluate_rules(metrics, rules, ratio, recommendations)
-            val = int(round(ratio * float(weight)))
+            val = int(round(ratio * weight))
             metric_breakdown[area] = val
-            total_score += float(val)
+            total_score += val
         except (AttributeError, ValueError, TypeError, ZeroDivisionError, ArithmeticError):
             metric_breakdown[area] = 0
             

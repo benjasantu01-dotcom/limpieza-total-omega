@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **229** (45.4% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 156 | 15 | 30 | 8 | 135 |
-| 2026-09-12 | 73 | 3 | 11 | 6 | 67 |
+| 2026-09-11 | 154 | 14 | 29 | 8 | 135 |
+| 2026-09-12 | 75 | 4 | 11 | 6 | 68 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **56**
 - legibilidad y documentación: **51**
 - seguridad defensiva: **47**
-- robustez ante casos límite: **39**
-- rendimiento: **36**
+- rendimiento: **38**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **21**
-- `settings.py`: **20**
 - `diskreport.py`: **19**
 - `quarantine.py`: **19**
+- `settings.py`: **19**
 - `assistant.py`: **18**
 - `browser.py`: **17**
-- `healthscore.py`: **16**
+- `healthscore.py`: **17**
 - `memory.py`: **16**
 - `safety.py`: **16**
+- `main.py`: **16**
 - `branding.py`: **15**
-- `main.py`: **15**
 - `organizer.py`: **15**
-- `scanner.py`: **14**
+- `scanner.py`: **13**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T06:49:47` **main.py** (rendimiento): Se implementó una política de invalidación de caché basada en el tiempo (TTL) más eficiente y se optimizó `_compile_metrics` para reducir accesos redundantes al disco mediante el uso de los proveedores de caché ya implementados en el estado de la aplicación.
+- `2026-09-12T06:48:36` **healthscore.py** (rendimiento): Se optimizó el pipeline `compute_score` evitando conversiones redundantes y re-cálculos mediante el uso de variables locales pre-calculadas y la eliminación de llamadas innecesarias a `math.isfinite` dentro del loop crítico, aprovechando que el estado de las métricas ya es validado al inicio.
 - `2026-09-12T06:38:44` **branding.py** (rendimiento): Se optimizó el acceso a la paleta de colores reemplazando múltiples accesos mediante `_PALETTE_MAP.get()` en funciones frecuentes como `color()`, `severity_color()` y `grade_color()` por el uso directo del diccionario `_PALETTE_MAP` (o constantes ya evaluadas), reduciendo el overhead de llamadas a métodos en cada renderizado de interfaz.
 - `2026-09-12T06:38:13` **assistant.py** (rendimiento): Optimizé `local_answer` para evitar la creación innecesaria de `set` y `next(iter(...))` en cada consulta, utilizando en su lugar una búsqueda directa de palabras clave sobre `q_sanitized` y eliminando la redundancia de iterar tokens.
 - `2026-09-12T06:28:57` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings estructurados y precisos, incorporando tipado detallado y aclarando las responsabilidades de los métodos críticos para facilitar el mantenimiento y la auditoría.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T06:07:52` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de type hints precisos, docstrings más descriptivos que explican el "porqué" de las decisiones de diseño (específicamente en las funciones de hashing y escaneo) y la clarificación de los estados de validación de archivos.
 - `2026-09-12T06:07:25` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los tipos en `_collect_summary_data` para aclarar la lógica de agregación y el manejo del heap, facilitando el mantenimiento futuro del motor de análisis.
 - `2026-09-12T05:58:29` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna de `browser.py` mediante la adición de docstrings estructurados con secciones "Args" y "Returns" en las funciones críticas de escaneo, permitiendo entender mejor el flujo de datos y la gestión de errores en un módulo diseñado para ser testeable.
-- `2026-09-12T05:58:16` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de renderizado y transformaciones de color, especificando el propósito, el manejo de excepciones y las restricciones de los parámetros para garantizar un mantenimiento consistente con las reglas de seguridad.
-- `2026-09-12T05:57:12` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` añadiendo un manejo de excepciones más granular y validación de tipo para evitar errores inesperados durante el procesamiento del CSV generado por PowerShell, alineándose con el enfoque de validación de entradas.

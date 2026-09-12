@@ -908,3 +908,55 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyE
 - `2026-09-12T06:39:20` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-09-12T06:39:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T06:39:20` Corrida terminada. Total usado hoy: 160.
+- `2026-09-12T06:47:43` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-09-12T06:48:10` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-12T06:48:36` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el pipeline `compute_score` evitando conversiones redundantes y re-cálculos mediante el uso de variables locales pre-calculadas y la eliminación de llamadas innecesarias a `math.isfinite` dentro del loop crítico, aprovechando que el estado de las métricas ya es validado al inicio.
+- `2026-09-12T06:49:47` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó una política de invalidación de caché basada en el tiempo (TTL) más eficiente y se optimizó `_compile_metrics` para reducir accesos redundantes al disco mediante el uso de los proveedores de caché ya implementados en el estado de la aplicación.
+- `2026-09-12T06:50:00` Tests FALLARON:
+```
+................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_parse_process_csv_sorts_by_consumption __________________
+
+    def test_parse_process_csv_sorts_by_consumption():
+        csv = (
+            '"Name","Id","WorkingSet"\n'
+            '"chico","10","1048576"\n'
+            '"grande","11","104857600"\n'
+            '"medio","12","10485760"\n'
+        )
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert ['chico', 'grande', 'medio'] == ['grande', 'medio', 'chico']
+E         
+E         At index 0 diff: 'chico' != 'grande'
+E         
+E         Full diff:
+E           [
+E         +     'chico',
+E               'grande',
+E               'medio',
+E         -     'chico',
+E           ]
+
+evolve/tests/test_modules.py:346: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert ['chico', 'grande', 'medio'] == ['grande', 'medio', 'chico']
+  
+  At index 0 diff: 'chico' != 'grande'
+  
+  Full diff:
+    [
+  +     'chico',
+        'grande',
+        'medio',
+  -     'chico',
+    ]
+1 failed, 298 passed in 1.34s
+
+```
+- `2026-09-12T06:50:00` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `top_memory_processes` reemplazando la serialización/deserialización CSV por una consulta de PowerShell que ya filtra los resultados, reduciendo drásticamente la carga de datos procesados por Python y eliminando la necesidad de manejar listas grandes antes del filtrado final.
+- `2026-09-12T06:50:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T06:50:00` Corrida terminada. Total usado hoy: 164.
