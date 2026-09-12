@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 38
-- Sin cambios (nada sustancial que mejorar): 16
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 76 | 7 | 15 | 3 | 59 |
-| 2026-09-12 | 144 | 7 | 23 | 13 | 157 |
+| 2026-09-11 | 73 | 7 | 14 | 3 | 59 |
+| 2026-09-12 | 145 | 8 | 24 | 14 | 157 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
-- manejo de errores y validación de entradas: **47**
-- legibilidad y documentación: **43**
-- rendimiento: **42**
+- manejo de errores y validación de entradas: **48**
+- legibilidad y documentación: **42**
+- rendimiento: **40**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **20**
 - `settings.py`: **19**
+- `safety.py`: **18**
 - `assistant.py`: **18**
 - `diskreport.py`: **18**
 - `quarantine.py`: **17**
-- `safety.py`: **17**
 - `organizer.py`: **17**
-- `browser.py`: **16**
 - `healthscore.py`: **16**
 - `memory.py`: **16**
-- `branding.py`: **13**
+- `browser.py`: **15**
 - `main.py`: **13**
-- `startup.py`: **10**
+- `branding.py`: **12**
 - `scanner.py`: **10**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T14:39:00` **safety.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `is_safe_to_modify` y `filter_safe_paths` capturando explícitamente excepciones de bajo nivel (`OSError`, `PermissionError`, etc.) que pueden ocurrir al manipular el sistema de archivos, asegurando que los fallos no propaguen errores inesperados que detengan el bucle.
 - `2026-09-12T14:32:37` **main.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_collect_settings` y `_validate_numeric_setting` para evitar que entradas vacías o malformadas en la pestaña "Ajustes" provoquen cierres inesperados o estados corruptos, validando explícitamente el tipo de dato y sanitizando el texto.
 - `2026-09-12T14:18:51` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` capturando errores específicos al iterar con `os.scandir` y `stat`, asegurando que el estado interno no se corrompa ante entradas de sistema bloqueadas o rutas con caracteres no válidos, cumpliendo con el enfoque de validación de entradas.
 - `2026-09-12T14:18:38` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_kernel32` al capturar posibles fallos de `ctypes.WinDLL` y agregué una validación de seguridad en `_sum_directory_recursive` para asegurar que `root_abs` siempre sea una ruta absoluta antes de comparar con `root_base`, evitando saltos de directorio inesperados en entornos con rutas relativas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T12:16:27` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al inyectar validaciones explícitas en `_build_payload` para asegurar que el `context_text` y la `question` no solo pasen `_ensure_safe_text` sino también chequeos específicos de integridad de contenido antes de procesar el JSON, previniendo inyecciones de datos maliciosos que intenten saltar los filtros de sanitización iniciales.
 - `2026-09-12T12:15:34` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` implementando una validación explícita mediante `is_safe_to_modify` antes de cualquier operación de escritura, asegurando que la creación del directorio de configuración no sea posible si la ruta raíz fuera bloqueada por la política de seguridad.
 - `2026-09-12T12:06:21` **safety.py** (robustez ante casos límite): Se añadió una validación específica para detectar rutas que utilizan caracteres de escape o nombres de dispositivo dentro de los componentes del path, endureciendo la defensa contra ataques de path traversal mediante sintaxis maliciosa de Windows (ej: `..\..\.\NUL`).
-- `2026-09-12T12:05:41` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de existencia y permisos antes de intentar realizar operaciones de E/S en `_is_file_locked` y `_safe_unlink` para prevenir errores de sistema ante archivos bloqueados por el SO o inaccesibles, reforzando la robustez frente a condiciones de carrera.

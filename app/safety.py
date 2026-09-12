@@ -242,7 +242,6 @@ def _is_file_in_use(path_str: str) -> bool:
     
     kernel32 = ctypes.windll.kernel32
     INVALID_HANDLE_VALUE = -1
-    # Intenta abrir el archivo con acceso de lectura compartido; si falla, es que está bloqueado.
     try:
         handle = kernel32.CreateFileW(path_str, 0, 1, None, 3, 0, None)
         if handle == INVALID_HANDLE_VALUE: 
@@ -324,7 +323,6 @@ def normalize(path: PathLike) -> Path:
     path_str = str(path).strip()
     if not path_str: raise ValueError("Entrada de ruta vacía.")
     
-    # Validación estricta de normalización Unicode para evitar inyección
     if unicodedata.normalize('NFKC', path_str) != path_str:
          raise ValueError("Ruta contiene secuencias Unicode sospechosas.")
         
@@ -356,10 +354,8 @@ def is_drive_root(path: PathLike) -> bool:
 def _is_system_path_cached(path_str: str) -> bool:
     """Compara la ruta normalizada contra listas de directorios protegidos."""
     path_lower = path_str.lower()
-    # Verifica si la ruta base coincide con una ruta crítica del sistema
     if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
         return True
-    # Uso de set para búsqueda O(1) evitando split innecesario en cada paso
     parts = set(path_lower.split(os.sep))
     return not parts.isdisjoint(PROTECTED_DIR_NAMES)
 
@@ -401,8 +397,7 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """
-    Realiza chequeos estructurales (caracteres prohibidos, nombres de dispositivos,
-    rutas UNC, longitud) antes de interactuar con el sistema de archivos.
+    Realiza chequeos estructurales antes de interactuar con el sistema de archivos.
     """
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
@@ -411,7 +406,6 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if _has_invalid_chars(path_string):
         raise UnsafePathError("Caracteres inválidos detectados.", SafetyValidationErrorCode.INVALID_CHARS)
     
-    # Detección adicional de normalización Unicode dudosa
     if unicodedata.normalize('NFKC', path_string) != path_string:
         raise UnsafePathError("Codificación de caracteres sospechosa.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING)
 
@@ -423,14 +417,12 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
              raise UnsafePathError("Ruta raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS)
 
         for part in target_path.parts:
-            # Detección de posibles intentos de path traversal con caracteres de control
             if not part or part.strip() != part or part.endswith(('.', ' ')):
                 raise UnsafePathError(f"Componente '{part}' malformado.", SafetyValidationErrorCode.INVALID_CHARS)
             
             if "  " in part:
                  raise UnsafePathError(f"Componente '{part}' con espacios excesivos.", SafetyValidationErrorCode.INVALID_CHARS)
             
-            # Verificación de nombres de dispositivo en cualquier componente del path
             part_cleaned = part.split('.')[0]
             if _is_reserved_device_name(part_cleaned):
                 raise UnsafePathError(f"Nombre reservado '{part}'.", SafetyValidationErrorCode.RESERVED_NAME)
@@ -445,8 +437,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
     """
-    Aplica restricciones de alcance. Verifica que la ruta esté dentro del alcance
-    permitido y bloquea modificaciones en el directorio de la aplicación.
+    Aplica restricciones de alcance.
     """
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
@@ -525,12 +516,13 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             
     return p
 
-def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> TypeGuard[PathLike]:
+def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
     """Predicado booleano que determina si una ruta es segura para manipulación."""
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
         return True
-    except (UnsafePathError, ValueError, TypeError, OSError): return False
+    except (UnsafePathError, ValueError, TypeError, OSError, PermissionError): 
+        return False
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
     """Filtra una lista de rutas, preservando solo aquellas que superan las pruebas de seguridad."""
@@ -539,7 +531,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
         if p is None: continue
         try:
             results.append(ensure_safe_to_modify(p, allow_sensitive=allow_sensitive))
-        except UnsafePathError:
+        except (UnsafePathError, ValueError, TypeError, OSError, PermissionError):
             continue
     return results
 
