@@ -157,7 +157,10 @@ def _has_forbidden_chars(path: Path) -> bool:
     return any(path_str.startswith(r) for r in reserved) or any(c in str(path) for c in ["<", ">", "|", "\0"])
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
-    """Valida integridad de rutas antes de I/O."""
+    """
+    Verifica que las rutas sean absolutas, no UNC, no contengan nombres 
+    reservados, respeten límites de longitud MAX_PATH y no sean protegidas.
+    """
     if src is None or dest is None: return False
     if _is_unc_path(src) or _is_unc_path(dest): return False
     if _has_forbidden_chars(src): return False
@@ -168,7 +171,10 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
         return False
 
 def _validate_file_attributes(src: Path) -> bool:
-    """Valida que un archivo sea apto para movimiento."""
+    """
+    Confirma que el archivo existe, es un archivo regular (no junction/link), 
+    no tiene atributos de sistema y es accesible para lectura.
+    """
     try:
         if src is None or not src.exists() or not src.is_file(): return False
         if _is_junction(src) or src.is_symlink() or not _passes_system_checks(src): return False
@@ -177,7 +183,10 @@ def _validate_file_attributes(src: Path) -> bool:
         return False
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """Realiza las verificaciones de seguridad previas a cualquier operación de disco."""
+    """
+    Realiza una auditoría completa de seguridad previa a la ejecución de I/O,
+    asegurando integridad de rutas, prevención de recursividad y validación de archivos.
+    """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if not _validate_path_security(src, dest): return False
     try:

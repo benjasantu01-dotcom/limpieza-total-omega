@@ -201,16 +201,17 @@ def _is_file_locked(path: Path) -> bool:
 
 def _safe_unlink(path: Path) -> bool:
     """
-    Elimina un archivo tras validar permisos, estado de bloqueo y protección.
+    Realiza una eliminación segura verificando protección y estado de bloqueo.
     
-    Asegura que no se operen rutas protegidas ni enlaces simbólicos.
+    Precondiciones:
+      - El archivo debe existir y ser un archivo regular (no symlink).
+      - No debe estar en una ruta protegida.
+      - El sistema debe conceder acceso de escritura.
     """
-    if not path.is_file() or path.is_symlink():
+    if not path.is_file() or path.is_symlink() or is_protected_path(path):
         return False
         
     try:
-        if is_protected_path(path):
-            return False
         if is_safe_to_modify(path) and not _is_file_locked(path):
             path.unlink()
             return True
@@ -482,7 +483,10 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 
 def _write_temp_to_final(source: Path, destination: Path) -> str:
     """
-    Copia al sandbox y valida integridad contra condiciones TOCTOU.
+    Copia al sandbox y valida integridad contra condiciones TOCTOU (Time-of-check to time-of-use).
+    
+    Asegura que el archivo origen no sea reemplazado durante la operación de copia
+    mediante la comparación de identificadores de inodo (ino/dev).
     """
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
     fd = os.open(str(destination), flags, 0o600)
@@ -722,7 +726,9 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
-    """Valida si un ítem puede ser purgado."""
+    """
+    Verifica si un ítem cumple los requisitos para ser purgado del sandbox.
+    """
     return (
         file_path.exists() and
         is_within_directory(file_path, base_path) and

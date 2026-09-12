@@ -149,6 +149,11 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return stat
 
+def _kb_to_bytes(kb_str: str) -> BytesValue:
+    """Convierte un string de contenido numérico en kB (de /proc/meminfo) a BytesValue."""
+    digits = "".join(c for c in kb_str if c.isdigit())
+    return BytesValue(int(digits) * 1024) if digits else BytesValue(0)
+
 _win_mem_buffer: MEMORYSTATUSEX = _create_mem_status_ex()
 _is_windows: bool = os.name == "nt"
 _linux_mem_path: Path = Path("/proc/meminfo")
@@ -163,28 +168,26 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     if not isinstance(meminfo_text, str) or not meminfo_text:
         return _EMPTY_SNAPSHOT
     
-    metrics: Dict[str, int] = {}
+    metrics: Dict[str, BytesValue] = {}
     
     for line in meminfo_text.splitlines():
         if ":" not in line: 
             continue
         try:
             key, value_part = line.split(":", 1)
-            digits = "".join(c for c in value_part if c.isdigit())
-            if digits:
-                metrics[key.strip()] = int(digits) * 1024
+            metrics[key.strip()] = _kb_to_bytes(value_part)
         except (ValueError, TypeError, KeyError):
             continue
             
-    total = metrics.get("MemTotal", 0)
-    if not isinstance(total, int) or total <= 0: 
+    total = metrics.get("MemTotal", BytesValue(0))
+    if total <= 0: 
         return _EMPTY_SNAPSHOT
     
-    available = metrics.get("MemAvailable", metrics.get("MemFree", 0))
-    cached = metrics.get("Cached", 0)
+    available = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))
+    cached = metrics.get("Cached", BytesValue(0))
     
     return MemorySnapshot(
-        total=BytesValue(total), 
+        total=total, 
         available=BytesValue(min(available, total)), 
         cached=BytesValue(max(0, cached))
     )
