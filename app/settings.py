@@ -326,15 +326,17 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     cleaned_settings = validate(values)
+    
+    # Pre-verificación de integridad lógica antes de realizar operaciones de disco
+    if cleaned_settings.get("asistente_activado") and not (
+        cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
+    ):
+        cleaned_settings["asistente_activado"] = False
+        
     temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
     
     for attempt in range(3):
         try:
-            if cleaned_settings.get("asistente_activado") and not (
-                cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
-            ):
-                cleaned_settings["asistente_activado"] = False
-                
             parent = ruta.parent
             if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
             ensure_safe_to_modify(str(parent))
@@ -351,7 +353,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 f.flush()
                 os.fsync(f.fileno())
             
-            # Respaldo seguro mediante renombrado/sobrescritura atómica
             if ruta.exists():
                 try: os.replace(ruta, ruta.with_suffix(".bak"))
                 except OSError: pass

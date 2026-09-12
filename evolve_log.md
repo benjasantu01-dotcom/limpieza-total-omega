@@ -455,3 +455,10 @@ ERROR evolve/tests/test_modules.py
 - `2026-09-12T01:13:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-09-12T01:13:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T01:13:04` Corrida terminada. Total usado hoy: 32.
+- `2026-09-12T01:21:44` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-09-12T01:22:18` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_check_file_integrity` encapsulando la lógica de evaluación dentro de una estructura `try-except` más granular, permitiendo distinguir errores de acceso a disco de errores lógicos de seguridad, evitando que un fallo inesperado al obtener metadatos sea interpretado erróneamente como una violación de integridad.
+- `2026-09-12T01:22:41` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-12T01:23:09` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` al mover la validación del estado del asistente (API Key) antes del inicio del bloque de I/O, asegurando que cualquier inconsistencia lógica sea corregida antes de intentar realizar escrituras en disco.
+- `2026-09-12T01:23:21` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita de `row` para manejar correctamente casos donde la salida del CSV pueda contener filas vacías o malformadas, evitando que el bucle falle silenciosamente ante datos inconsistentes de PowerShell.
+- `2026-09-12T01:23:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T01:23:21` Corrida terminada. Total usado hoy: 36.

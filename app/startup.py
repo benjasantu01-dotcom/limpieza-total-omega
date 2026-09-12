@@ -111,8 +111,8 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae una ruta entre comillas (ej: "C:\App\test.exe"). 
-        Valida que la ruta no esté protegida y sea absoluta antes de proceder.
+        Extracts a quoted path (e.g., "C:\App\test.exe").
+        Validates the path is not protected and is absolute before proceeding.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -280,10 +280,12 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f_name, f_cmd = reader.fieldnames[0], reader.fieldnames[1]
             
         for row in reader:
-            if not isinstance(row, dict): continue
+            # Validar integridad de cada fila antes de acceder a sus claves
+            if not isinstance(row, dict) or not all(k in row for k in (f_name, f_cmd)):
+                continue
             
-            val_name = row.get(f_name)
-            val_cmd = row.get(f_cmd)
+            val_name = row[f_name]
+            val_cmd = row[f_cmd]
             
             if val_name is None or val_cmd is None: continue
             if not isinstance(val_name, str) or not isinstance(val_cmd, str): continue
