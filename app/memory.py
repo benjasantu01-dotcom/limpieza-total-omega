@@ -341,8 +341,8 @@ def _is_system_process(pid: int) -> bool:
     """Determina si un PID refiere a procesos de sistema o al proceso actual de la app."""
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
-def _get_process_path(proc_handle: int) -> Optional[str]:
-    """Usa PSAPI GetModuleFileNameExW para resolver la ruta absoluta del ejecutable desde un handle."""
+def _get_process_path(proc_handle: int) -> Optional[Path]:
+    """Usa PSAPI GetModuleFileNameExW para resolver la ruta absoluta del ejecutable."""
     if not proc_handle: return None
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
@@ -350,9 +350,7 @@ def _get_process_path(proc_handle: int) -> Optional[str]:
     buf = ctypes.create_unicode_buffer(1024)
     try:
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 1024) > 0:
-            path = Path(str(buf.value))
-            # Resolvemos contra el sistema de archivos real antes de validar
-            return str(path.resolve(strict=False))
+            return Path(str(buf.value)).resolve(strict=False)
     except (OSError, ctypes.ArgumentError, ValueError, MemoryError):
         pass
     return None
@@ -373,11 +371,12 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
         if exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso no está activo."
             
-        exec_path_str = _get_process_path(proc_handle)
-        if not exec_path_str:
+        exec_path = _get_process_path(proc_handle)
+        if not exec_path:
             return False, "Acceso denegado o ejecutable no localizable."
         
         # Validaciones de seguridad exigentes sobre la ruta resuelta
+        exec_path_str = str(exec_path)
         if is_protected_path(exec_path_str) or not is_safe_to_modify(exec_path_str):
             return False, "Operación denegada: ruta protegida."
             

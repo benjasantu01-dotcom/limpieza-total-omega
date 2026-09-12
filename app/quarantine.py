@@ -192,7 +192,6 @@ def _is_file_locked(path: Path) -> bool:
         return False
     try:
         with open(path, "r+b") as f:
-            # Intentar un flush puede disparar errores en Windows si está bloqueado
             f.flush()
             os.fsync(f.fileno())
             return False
@@ -286,15 +285,12 @@ def _check_windows_file_attributes(path_str: str) -> None:
     path_obj = Path(path_str)
     if not path_obj.exists():
         return
-    if len(path_obj.parts) > 64:
-        raise UnsafePathError("Profundidad de ruta excesiva.")
     import ctypes
-    attrs = ctypes.windll.kernel32.GetFileAttributesW(path_str)
+    attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path_obj))
     if attrs != -1:
+        # Bloquear archivos de sistema (0x04) y ocultos (0x02) por seguridad
         if attrs & 0x02 or attrs & 0x04:
-            raise UnsafePathError("Archivo oculto/sistema no permitido.")
-        if attrs & 0x01:
-            raise UnsafePathError("Archivo protegido contra escritura.")
+            raise UnsafePathError("Archivo con atributos del sistema/oculto no permitido.")
 
 
 def _check_path_syntax_integrity(path: Path) -> None:
@@ -323,9 +319,6 @@ def _check_path_syntax_integrity(path: Path) -> None:
 def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     """
     Verifica condiciones de seguridad específicas sobre el origen y destino.
-    
-    Lanza UnsafePathError si detecta intentos de manipulación fuera del sandbox,
-    operaciones circulares o archivos no permitidos (vínculos, vacíos).
     """
     resolved_source = source_path.resolve(strict=True)
     resolved_dest_dir = dest_dir.resolve()
@@ -363,9 +356,6 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """
     Ejecuta el protocolo completo de pre-validación de seguridad.
-    
-    Orquesta las comprobaciones de sintaxis, atributos de sistema y 
-    seguridad lógica del sandbox antes de cualquier movimiento de datos.
     """
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
@@ -432,14 +422,6 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Persiste el manifiesto usando escritura atómica.
-
-    Args:
-        items: Lista de objetos QuarantineItem a persistir.
-        base: Directorio base de cuarentena.
-    Returns:
-        Ruta del manifiesto guardado.
-    Raises:
-        RuntimeError: Si ocurre un fallo crítico de integridad o escritura.
     """
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista.")
@@ -496,8 +478,6 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 def _write_temp_to_final(source: Path, destination: Path) -> str:
     """
     Copia al sandbox y valida integridad contra condiciones TOCTOU.
-    
-    Utiliza descriptores de archivo con O_EXCL y comparaciones de inodos.
     """
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
     fd = os.open(str(destination), flags, 0o600)
@@ -544,7 +524,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     """
     if not source.exists():
         raise FileNotFoundError("Archivo origen inexistente.")
-    # El archivo destino NO debe existir aquí (manejado por O_EXCL en _write_temp_to_final)
     if not _is_within_quarantine_sandbox(destination.resolve(), destination.parent.resolve()):
         raise UnsafePathError("Escritura fuera del sandbox.")
     if len(str(destination)) >= 250:
@@ -587,11 +566,6 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Ejecuta el ciclo de vida completo de aislamiento y registro de un archivo.
-    
-    1. Valida el origen.
-    2. Aisla el archivo atómicamente.
-    3. Registra en el manifiesto.
-    4. Elimina el archivo original solo tras confirmar integridad.
     """
     if not source:
         raise ValueError("Ruta de origen vacía.")

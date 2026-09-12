@@ -130,9 +130,7 @@ def _is_file_locked(path: Path) -> bool:
     if path is None or not path.exists() or _is_junction(path): return True
     if not _passes_system_checks(path): return True
     try:
-        # Intentar verificar permisos de lectura sin abrir el flujo si es posible
         if not os.access(path, os.R_OK): return True
-        # Prueba de apertura exclusiva para verificar bloqueo por otro proceso
         with open(path, 'rb'): pass
         return False
     except (OSError, PermissionError, IOError):
@@ -203,7 +201,7 @@ def _should_scan_directory(entry: os.DirEntry) -> bool:
 def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
     """Evalúa un archivo, valida si es basura y lo añade a la lista."""
     try:
-        if is_valid_junk_extension(entry.name):
+        if is_valid_junk_extension(entry.name) and len(entry.path) < 260:
             info = entry.stat()
             if info.st_size > 0:
                 p = Path(entry.path)
@@ -247,14 +245,14 @@ def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = Tru
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Verifica espacio y genera ruta destino única."""
+    """Verifica espacio y genera ruta destino única, asegurando que no escape al directorio base."""
     if not _is_safe_to_move(junk_file, dest_base): return None
     try:
         if shutil.disk_usage(dest_base.resolve().anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)):
             return None
         safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
         target = _generate_unique_target(dest_base.resolve() / safe_name)
-        return target if not (target.exists() and os.path.samefile(junk_file.path, target)) else None
+        return target if target.resolve().is_relative_to(dest_base.resolve()) else None
     except (OSError, ValueError, AttributeError): return None
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
