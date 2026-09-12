@@ -200,9 +200,7 @@ def severity_icon(severity: Optional[str]) -> str:
 
 def grade_color(grade: Optional[str]) -> HexColor:
     """Asigna un color a las calificaciones escolares (A-F)."""
-    if grade and grade.strip():
-        return GRADE_COLORS.get(grade.upper()[0], C_TEXT_MUTED)
-    return C_TEXT_MUTED
+    return GRADE_COLORS.get(grade.upper()[0], C_TEXT_MUTED) if grade and grade.strip() else C_TEXT_MUTED
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> HexColor:

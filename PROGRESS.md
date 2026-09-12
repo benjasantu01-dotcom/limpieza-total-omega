@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **229** (45.4% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 159 | 15 | 30 | 8 | 136 |
-| 2026-09-12 | 71 | 3 | 11 | 6 | 65 |
+| 2026-09-11 | 156 | 15 | 30 | 8 | 135 |
+| 2026-09-12 | 73 | 3 | 11 | 6 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **56**
 - legibilidad y documentación: **51**
 - seguridad defensiva: **47**
-- robustez ante casos límite: **42**
-- rendimiento: **34**
+- robustez ante casos límite: **39**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **21**
-- `quarantine.py`: **20**
 - `settings.py`: **20**
 - `diskreport.py`: **19**
-- `assistant.py`: **17**
+- `quarantine.py`: **19**
+- `assistant.py`: **18**
 - `browser.py`: **17**
-- `main.py`: **16**
-- `organizer.py`: **16**
 - `healthscore.py`: **16**
 - `memory.py`: **16**
 - `safety.py`: **16**
+- `branding.py`: **15**
+- `main.py`: **15**
+- `organizer.py`: **15**
 - `scanner.py`: **14**
-- `branding.py`: **14**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T06:38:44` **branding.py** (rendimiento): Se optimizó el acceso a la paleta de colores reemplazando múltiples accesos mediante `_PALETTE_MAP.get()` en funciones frecuentes como `color()`, `severity_color()` y `grade_color()` por el uso directo del diccionario `_PALETTE_MAP` (o constantes ya evaluadas), reduciendo el overhead de llamadas a métodos en cada renderizado de interfaz.
+- `2026-09-12T06:38:13` **assistant.py** (rendimiento): Optimizé `local_answer` para evitar la creación innecesaria de `set` y `next(iter(...))` en cada consulta, utilizando en su lugar una búsqueda directa de palabras clave sobre `q_sanitized` y eliminando la redundancia de iterar tokens.
 - `2026-09-12T06:28:57` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings estructurados y precisos, incorporando tipado detallado y aclarando las responsabilidades de los métodos críticos para facilitar el mantenimiento y la auditoría.
 - `2026-09-12T06:28:16` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos, docstrings detallados en los métodos de `Scanner` y un refactor menor de la lógica de `process_entry` para clarificar la separación entre la navegación de directorios y la inspección de archivos.
 - `2026-09-12T06:27:51` **safety.py** (legibilidad y documentación): Se documentó la jerarquía de validación mediante docstrings claros y se añadieron tipados explícitos en los predicados de `_VALIDATORS` para mejorar la mantenibilidad y legibilidad del motor de seguridad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T05:58:29` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna de `browser.py` mediante la adición de docstrings estructurados con secciones "Args" y "Returns" en las funciones críticas de escaneo, permitiendo entender mejor el flujo de datos y la gestión de errores en un módulo diseñado para ser testeable.
 - `2026-09-12T05:58:16` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de renderizado y transformaciones de color, especificando el propósito, el manejo de excepciones y las restricciones de los parámetros para garantizar un mantenimiento consistente con las reglas de seguridad.
 - `2026-09-12T05:57:12` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` añadiendo un manejo de excepciones más granular y validación de tipo para evitar errores inesperados durante el procesamiento del CSV generado por PowerShell, alineándose con el enfoque de validación de entradas.
-- `2026-09-12T05:48:12` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` al encapsular la lógica de validación de estado en una función de "pre-guardado" y al asegurar que el archivo se cierre correctamente ante excepciones inesperadas utilizando bloques `try-finally` para la escritura.
-- `2026-09-12T05:47:57` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del escáner en `scan_directory` y `Scanner._is_safe_entry` mediante la validación explícita de entradas `None`, la prevención de fallos al procesar rutas malformadas y la centralización de chequeos de seguridad para evitar excepciones no capturadas durante la recursión.
