@@ -171,6 +171,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     """
     Orquesta la interfaz gráfica, el estado de la sesión y la delegación de 
     tareas intensivas en E/S a un pool de hilos de ejecución.
+    
+    Gestión de estado:
+    - `_executor`: Pool de hilos para operaciones I/O (evita bloqueo de UI).
+    - `_cache`: Diccionario LRU para evitar re-análisis de archivos.
+    - `_task_lock`: Sincronización para acceso concurrente a recursos críticos.
+    - `_log_queue`: Buffer para volcado secuencial de logs hacia la interfaz.
     """
 
     def __init__(self) -> None:

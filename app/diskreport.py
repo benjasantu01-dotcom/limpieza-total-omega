@@ -366,25 +366,20 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     Agregador central que procesa archivos mediante `walk_files` y genera un
     resumen consolidado del estado del sistema de archivos.
     
-    Utiliza un heap de tamaño fijo (`limit`) para mantener únicamente los archivos
-    más pesados en memoria durante el recorrido, manteniendo O(N) de complejidad
-    temporal y controlada O(limit) de complejidad espacial.
+    Algoritmo:
+    1. Recorre el árbol de archivos.
+    2. Mantiene contadores globales de bytes y archivos.
+    3. Categoriza volúmenes por extensión (`ext_stats`).
+    4. Mantiene un heap de tamaño fijo (`limit`) para trackear archivos más pesados.
     
-    Args:
-        directory: Ruta base desde donde comenzar el análisis.
-        skip_protected: Si es True, ignora directorios restringidos por `safety.py`.
-        limit: Cantidad máxima de archivos más grandes a trackear en el heap.
-        
-    Returns:
-        Objeto SummaryData conteniendo estadísticas totales, conteos por extensión
-        y la lista de archivos más pesados.
+    Complejidad: Temporal O(N), Espacial O(limit + unique_extensions).
     """
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, Tuple[int, int]] = defaultdict(lambda: (0, 0))
+    # Heap stores (size, path), ordered by size ASC (min-heap)
     top_heap: List[Tuple[int, Path]] = []
     
-    # Procesamiento iterativo de archivos encontrados en el sistema
     for path, size in walk_files(directory, skip_protected):
         if not isinstance(size, int) or size < 0:
             continue
@@ -398,7 +393,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         s, c = ext_stats[ext]
         ext_stats[ext] = (s + size, c + 1)
         
-        # Mantenimiento de heap para los N archivos más pesados
+        # Mantenimiento de min-heap para mantener solo los N más grandes
         if limit > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size, path))
