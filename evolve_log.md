@@ -1254,3 +1254,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-12T09:44:47` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `handle_ram` y `handle_disk` implementando un manejo preventivo de errores para evitar que un valor inesperado o un problema de acceso a las métricas provoque una excepción durante el procesamiento de la consulta del usuario.
 - `2026-09-12T09:44:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T09:44:47` Corrida terminada. Total usado hoy: 232.
+- `2026-09-12T09:51:13` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-09-12T09:51:46` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-12T09:52:11` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_path_inside_base` y `_sum_directory_recursive` validando explícitamente que los resultados de `resolve(strict=True)` no sean `None` y capturando excepciones de acceso de forma más granular para evitar silenciamientos accidentales de errores de sistema.
+- `2026-09-12T09:52:39` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `_collect_summary_data` validando explícitamente que los resultados de `st_size` sean enteros positivos antes de sumarlos, evitando propagación de errores de tipos inesperados.
+- `2026-09-12T09:52:50` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `format_group` implementando validaciones de tipo y estado más estrictas, asegurando que los cálculos de tamaño y las comparaciones de rutas no fallen ante archivos inexistentes o errores de sistema durante la ejecución del bucle.
+- `2026-09-12T09:52:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T09:52:50` Corrida terminada. Total usado hoy: 236.

@@ -134,14 +134,10 @@ def base_directories() -> List[Path]:
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
     Verifica si real_target reside dentro de real_base usando os.path.commonpath.
-    Requiere que ambas rutas sean objetos Path resueltos y absolutos.
     """
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
     try:
-        if not real_target.exists() or not real_base.exists():
-            return False
-            
         target_abs = str(real_target.resolve(strict=True))
         base_abs = str(real_base.resolve(strict=True))
         
@@ -149,7 +145,7 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
             return False
             
         return os.path.commonpath([target_abs, base_abs]) == base_abs
-    except (OSError, ValueError):
+    except (OSError, ValueError, RuntimeError):
         return False
 
 
@@ -161,7 +157,6 @@ def _is_excluded_file(name: Optional[str]) -> bool:
 def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """
     Consulta atributos del sistema mediante Win32 API.
-    Identifica archivos ocultos o de sistema para evitar operaciones no deseadas.
     """
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
@@ -177,7 +172,6 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
     Determina si un objeto del sistema de archivos debe omitirse.
-    Aplica filtros de seguridad (symlinks, junctions, archivos protegidos).
     """
     if entry is None:
         return True
@@ -209,8 +203,6 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
     if not isinstance(path_obj, Path):
         return False
     try:
-        if not path_obj.exists():
-            return False
         p_res = path_obj.resolve(strict=True)
         if not p_res.is_dir() or not is_safe_to_modify(p_res) or is_protected_path(p_res):
             return False
@@ -272,7 +264,11 @@ def directory_size(path: Union[str, Path, None]) -> int:
     p = Path(path)
     if not p.is_absolute() or not _is_safe_to_traverse(p, None):
         return 0
-    return _sum_directory_recursive(str(p.resolve(strict=True)), _IS_JUNCTION_FN, _get_kernel32(), {})
+    try:
+        resolved = p.resolve(strict=True)
+        return _sum_directory_recursive(str(resolved), _IS_JUNCTION_FN, _get_kernel32(), {})
+    except (OSError, RuntimeError):
+        return 0
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
@@ -314,10 +310,11 @@ def detect_profiles(
                 if not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                     continue
                 
-                size = _sum_directory_recursive(str(candidate.resolve(strict=True)), _IS_JUNCTION_FN, k32, perf_cache)
+                real_candidate = candidate.resolve(strict=True)
+                size = _sum_directory_recursive(str(real_candidate), _IS_JUNCTION_FN, k32, perf_cache)
                 if size > 0:
-                    found.append(BrowserCache(str(browser_name), candidate.resolve(strict=True), size))
-        except (OSError, PermissionError, TypeError, ValueError):
+                    found.append(BrowserCache(str(browser_name), real_candidate, size))
+        except (OSError, PermissionError, TypeError, ValueError, RuntimeError):
             continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)

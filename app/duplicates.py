@@ -337,12 +337,12 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path):
+        if not isinstance(p, Path) or not p.is_file():
             continue
         try:
             stat_info = p.stat()
             candidates.append((float(stat_info.st_mtime), len(str(p)), p))
-        except (OSError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError):
             continue
     
     return min(candidates, key=lambda x: (x[0], x[1]))[2] if candidates else None

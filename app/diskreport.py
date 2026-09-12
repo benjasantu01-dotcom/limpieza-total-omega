@@ -304,8 +304,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             try:
                                 st = entry.stat()
                                 size = getattr(st, 'st_size', 0)
-                                if isinstance(size, (int, float)) and size >= 0:
-                                    yield entry_path, int(size)
+                                if isinstance(size, int) and size >= 0:
+                                    yield entry_path, size
                             except (OSError, PermissionError):
                                 continue
                     except (PermissionError, OSError, AttributeError):
@@ -385,6 +385,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         return SummaryData(0, 0, {}, [])
     
     for path, size in walk_files(directory, skip_protected):
+        # Validación de integridad de datos recibidos del generador
         if not isinstance(size, int) or size < 0:
             continue
             

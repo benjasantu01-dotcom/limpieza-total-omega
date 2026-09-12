@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 43
+- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 127 | 12 | 27 | 7 | 99 |
-| 2026-09-12 | 94 | 5 | 16 | 11 | 106 |
+| 2026-09-11 | 125 | 11 | 26 | 7 | 99 |
+| 2026-09-12 | 97 | 5 | 16 | 11 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **48**
-- manejo de errores y validación de entradas: **46**
-- legibilidad y documentación: **45**
+- legibilidad y documentación: **43**
 - robustez ante casos límite: **42**
 - rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **20**
+- `duplicates.py`: **21**
 - `settings.py`: **19**
-- `organizer.py`: **18**
-- `quarantine.py`: **18**
+- `diskreport.py`: **18**
 - `assistant.py`: **17**
-- `diskreport.py`: **17**
+- `organizer.py`: **17**
+- `quarantine.py`: **17**
+- `browser.py`: **16**
 - `memory.py`: **16**
 - `safety.py`: **16**
 - `main.py`: **16**
-- `browser.py`: **15**
 - `healthscore.py`: **15**
 - `branding.py`: **13**
 - `scanner.py`: **12**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T09:52:50` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` implementando validaciones de tipo y estado más estrictas, asegurando que los cálculos de tamaño y las comparaciones de rutas no fallen ante archivos inexistentes o errores de sistema durante la ejecución del bucle.
+- `2026-09-12T09:52:39` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` validando explícitamente que los resultados de `st_size` sean enteros positivos antes de sumarlos, evitando propagación de errores de tipos inesperados.
+- `2026-09-12T09:52:11` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_path_inside_base` y `_sum_directory_recursive` validando explícitamente que los resultados de `resolve(strict=True)` no sean `None` y capturando excepciones de acceso de forma más granular para evitar silenciamientos accidentales de errores de sistema.
 - `2026-09-12T09:44:47` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `handle_ram` y `handle_disk` implementando un manejo preventivo de errores para evitar que un valor inesperado o un problema de acceso a las métricas provoque una excepción durante el procesamiento de la consulta del usuario.
 - `2026-09-12T08:30:05` **startup.py** (seguridad defensiva): Se ha mejorado `_validate_file_access` añadiendo una comprobación explícita mediante `p.exists()` antes de realizar `lstat`, asegurando que no se intenten analizar rutas que ya no existen, y reforzando la validación de seguridad contra archivos de sistema utilizando `is_protected_path` directamente antes de cualquier operación de I/O sobre el sistema de archivos.
 - `2026-09-12T08:20:53` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para garantizar que la resolución de rutas no solo valide el destino final, sino que confirme que el directorio padre exista y sea accesible, mitigando riesgos ante manipulaciones de punteros simbólicos durante la carga de configuraciones.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T07:59:29` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante una validación explícita de `is_safe_to_modify` para cada subdirectorio antes de ingresar en la recursión, garantizando que el escáner no pueda ser forzado a seguir rutas fuera de los límites permitidos, incluso si las heurísticas previas fallaran.
 - `2026-09-12T07:50:53` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir ataques de *path traversal* y asegurar la integridad de la escritura mediante el uso de `is_safe_to_modify` como pre-condición booleana, sustituyendo la lógica de excepción pasiva por una validación explícita que respeta las reglas de seguridad del proyecto.
 - `2026-09-12T07:50:35` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_build_payload` validando que la respuesta del motor remoto no contenga secuencias de escape de PowerShell ni comandos potencialmente peligrosos, extendiendo la lógica de filtrado existente.
-- `2026-09-12T07:49:25` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_path` y `_run_safety_checks` para manejar correctamente rutas que contienen caracteres no interpretables por el sistema de archivos (como secuencias de escape o caracteres de control) mediante una verificación explícita de `OSError` al intentar normalizar la ruta, evitando así que una configuración corrupta cause un crash en el módulo de ajustes.
-- `2026-09-12T07:30:55` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante la concurrencia y permisos mediante la implementación de un mecanismo de validación de bloqueo exclusivo en `_is_file_locked` que utiliza `os.open` con `os.O_EXCL` (solo en Windows), garantizando que el archivo no esté siendo utilizado por otro proceso antes de intentar cualquier operación.
-- `2026-09-12T07:30:43` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_path` y `trim_working_set` ante errores de sistema y condiciones de carrera, asegurando que `OpenProcess` utilice un manejo de excepciones limpio y verificaciones de nulidad preventivas para evitar fallos catastróficos en el módulo.
