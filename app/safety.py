@@ -296,16 +296,15 @@ def _check_file_integrity(path: Path) -> None:
     """
     try:
         file_stat = path.stat()
-    except (PermissionError, OSError) as e:
-        raise UnsafePathError(f"No se pudo acceder a los metadatos: {e}", SafetyValidationErrorCode.ACCESS_DENIED)
+    except PermissionError:
+        raise UnsafePathError(f"Acceso denegado a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+    except OSError as e:
+        raise UnsafePathError(f"Error de E/S al leer metadatos: {e.strerror}", SafetyValidationErrorCode.IO_ERROR)
         
     for rule in _VALIDATORS:
-        try:
-            if rule.predicate(path, file_stat):
-                code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
-                raise UnsafePathError(f"Violación de integridad ({rule.reason.value})", code)
-        except (OSError, PermissionError) as e:
-            raise UnsafePathError(f"Fallo en chequeo de integridad: {rule.reason.value}", SafetyValidationErrorCode.IO_ERROR)
+        if rule.predicate(path, file_stat):
+            code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
+            raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
 
 @lru_cache(maxsize=2048)
 def _is_readonly(path_str: str) -> bool:

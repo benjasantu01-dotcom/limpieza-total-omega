@@ -1271,3 +1271,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-12T10:06:43` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_is_unc_path` y `_is_allowed_directory` ante entradas inválidas o None mediante guards explícitos, garantizando que el flujo de procesamiento no se interrumpa ante datos inesperados.
 - `2026-09-12T10:06:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T10:06:43` Corrida terminada. Total usado hoy: 240.
+- `2026-09-12T10:11:37` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-09-12T10:12:15` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `restore_item` agregando una validación explícita de `item_id` y capturando posibles errores de E/S al leer el manifiesto o procesar el archivo, garantizando que el sistema sea resiliente ante estados inconsistentes.
+- `2026-09-12T10:12:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-12T10:13:09` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se mejora `ensure_safe_to_modify` para que capture y registre la causa raíz de errores de acceso a disco mediante una validación más granular, permitiendo que el llamador reciba un mensaje técnico preciso en lugar de una excepción genérica.
+- `2026-09-12T10:13:17` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-12T10:13:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T10:13:17` Corrida terminada. Total usado hoy: 244.
