@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Mejoras aceptadas: **238** (47.2% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 193
+- Sin respuesta de la IA (error o límite): 192
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 98 | 8 | 20 | 3 | 71 |
-| 2026-09-12 | 139 | 7 | 23 | 13 | 122 |
+| 2026-09-11 | 98 | 8 | 20 | 3 | 67 |
+| 2026-09-12 | 140 | 7 | 23 | 13 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **56**
 - legibilidad y documentación: **52**
-- seguridad defensiva: **47**
+- seguridad defensiva: **48**
 - rendimiento: **42**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **22**
+- `settings.py`: **20**
 - `diskreport.py`: **19**
 - `organizer.py`: **19**
 - `quarantine.py`: **19**
-- `settings.py`: **19**
 - `assistant.py`: **18**
 - `healthscore.py`: **18**
 - `memory.py`: **18**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T12:55:55` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva al limitar la recursión y el uso de rutas en `_Validators._run_safety_checks` mediante un límite estricto de resolución de enlaces y verificando que la ruta no esté protegida antes de procesar cualquier cambio.
 - `2026-09-12T12:46:52` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para evitar que `ensure_safe_to_modify` permita rutas que contienen caracteres de sustitución o normalización Unicode ambigua (frecuentemente usados en ataques de ofuscación de rutas), reforzando la integridad antes de cualquier operación de disco.
 - `2026-09-12T12:45:55` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad del proceso `_atomic_isolate_file` añadiendo una validación explícita de `is_protected_path` sobre el archivo de destino antes de abrir cualquier descriptor, evitando así la posibilidad de que un nombre de archivo manipulado intente sobreescribir rutas críticas del sistema a pesar de estar dentro del directorio sandbox.
 - `2026-09-12T12:35:22` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de scoring ante fallos en los factory de mensajes (que podrían intentar acceder a atributos inexistentes o mal formateados en `SystemMetrics`) mediante el encapsulamiento del llamado a `message_factory` en un bloque `try-except` adicional dentro de `_evaluate_rules`, garantizando que un error al generar una recomendación no invalide la evaluación completa del sistema.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T12:00:01` **memory.py** (robustez ante casos límite): Se mejora la robustez de `parse_windows_process_csv` al implementar una sanitización de entrada más estricta frente a posibles errores de parsing en el pipeline de PowerShell, evitando que datos malformados o líneas inesperadas corrompan el listado de procesos.
 - `2026-09-12T11:55:07` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante valores inesperados mediante la implementación de límites explícitos para las constantes de normalización, previniendo divisiones por cero en casos donde un usuario o configuración defina umbrales nulos o negativos, y asegurando que las métricas de sistema no degraden el resultado ante situaciones de borde.
 - `2026-09-12T11:45:54` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante errores de acceso o rutas inexistentes mediante el uso de `pathlib.Path.exists()` y `try-except` más granulares, asegurando que el análisis no se detenga prematuramente si encuentra archivos con permisos denegados o rutas bloqueadas por el sistema operativo.
-- `2026-09-12T11:44:42` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` para manejar estructuras de datos arbitrarias o malformadas mediante una comprobación recursiva de tipos más estricta, evitando `AttributeError` o accesos inseguros a objetos que no son diccionarios simples.

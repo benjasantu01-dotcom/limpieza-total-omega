@@ -177,13 +177,16 @@ class _Validators:
         
         try:
             if len(_SAFETY_CACHE) > 100: _SAFETY_CACHE.clear()
-            resolved = path_obj.resolve(strict=False)
-            parent = resolved.parent if (resolved.exists() and not resolved.is_dir()) else resolved
+            # Resolvemos sin seguir puntos de montaje externos
+            resolved = path_obj.resolve()
             
-            if _Validators._is_reparse_point(resolved) or (resolved.exists() and _Validators._is_reparse_point(parent)):
+            # Verificación de seguridad en cascada
+            if is_protected_path(str(resolved)):
+                is_safe = False
+            elif _Validators._is_reparse_point(resolved):
                 is_safe = False
             else:
-                is_safe = not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
+                is_safe = is_safe_to_modify(str(resolved))
         except (OSError, PermissionError, RuntimeError, UnsafePathError, IndexError):
             is_safe = False
             
