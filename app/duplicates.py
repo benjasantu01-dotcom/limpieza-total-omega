@@ -230,7 +230,10 @@ def _collect_candidates(
                             break
                         
                         entry_path = Path(entry.path)
-                        # Defensa proactiva contra enlaces simbólicos
+                        # Validación de existencia necesaria ante posibles borrados concurrentes
+                        if not entry_path.exists():
+                            continue
+                        
                         if entry_path.is_symlink():
                             continue
                             

@@ -974,3 +974,34 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-09-12T07:09:49` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez del método `ingest` en `SystemContext` para manejar fallos silenciosos ante estructuras de datos malformadas o inesperadas que podrían provenir de una configuración corrompida, asegurando que `found_data` solo sea verdadero cuando efectivamente se procesan valores válidos y dentro de los rangos especificados.
 - `2026-09-12T07:09:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T07:09:49` Corrida terminada. Total usado hoy: 172.
+- `2026-09-12T07:18:16` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-09-12T07:18:50` Tests FALLARON:
+```
+........................................................................ [ 24%]
+.........................F.............................................. [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+1 failed, 298 passed in 1.33s
+
+```
+- `2026-09-12T07:18:50` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se introdujo una validación defensiva en `save_logo_svg` para prevenir el uso de rutas no existentes o permisos denegados antes de intentar escribir en disco, evitando errores silenciosos y mejorando la robustez ante estados inesperados del sistema de archivos.
+- `2026-09-12T07:19:14` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-12T07:19:40` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Se ha añadido un robusto manejo de errores en `walk_files` para capturar `OSError` durante la resolución de rutas mediante `path.relative_to` y el acceso a atributos de archivo, previniendo cierres inesperados al encontrar accesos denegados o archivos inconsistentes durante el escaneo recursivo.
+- `2026-09-12T07:19:51` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_collect_candidates` ante casos límite mediante la validación explícita de la existencia de archivos justo antes de procesarlos, previniendo errores de `FileNotFoundError` causados por condiciones de carrera en sistemas de archivos altamente volátiles o directorios compartidos.
+- `2026-09-12T07:19:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T07:19:51` Corrida terminada. Total usado hoy: 176.

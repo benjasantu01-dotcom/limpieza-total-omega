@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 16
+- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 41
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 148 | 13 | 29 | 7 | 135 |
-| 2026-09-12 | 77 | 4 | 13 | 9 | 69 |
+| 2026-09-11 | 146 | 13 | 28 | 7 | 134 |
+| 2026-09-12 | 78 | 5 | 13 | 10 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **56**
 - legibilidad y documentación: **51**
-- seguridad defensiva: **41**
 - rendimiento: **40**
-- robustez ante casos límite: **37**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **20**
-- `quarantine.py`: **19**
+- `duplicates.py`: **21**
 - `settings.py`: **19**
 - `diskreport.py`: **18**
+- `quarantine.py`: **18**
 - `safety.py`: **17**
 - `assistant.py`: **17**
-- `memory.py`: **16**
 - `browser.py`: **16**
 - `healthscore.py`: **16**
 - `main.py`: **16**
 - `organizer.py`: **16**
+- `memory.py`: **15**
 - `branding.py`: **14**
 - `scanner.py`: **13**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T07:19:51` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante casos límite mediante la validación explícita de la existencia de archivos justo antes de procesarlos, previniendo errores de `FileNotFoundError` causados por condiciones de carrera en sistemas de archivos altamente volátiles o directorios compartidos.
 - `2026-09-12T06:59:29` **safety.py** (rendimiento): Se optimizó el rendimiento del módulo mediante la implementación de un caché de resultados para `is_protected_path` y `is_sensitive_file`, evitando la recalculación costosa de normalizaciones y particionamiento de rutas en bucles intensivos.
 - `2026-09-12T06:58:18` **organizer.py** (rendimiento): Optimizé `_process_directory` reemplazando la lógica recursiva de construcción de rutas y validaciones redundantes por un caché local de directorios protegidos, evitando llamadas innecesarias al sistema de archivos y mejorando la eficiencia del escaneo profundo.
 - `2026-09-12T06:49:47` **main.py** (rendimiento): Se implementó una política de invalidación de caché basada en el tiempo (TTL) más eficiente y se optimizó `_compile_metrics` para reducir accesos redundantes al disco mediante el uso de los proveedores de caché ya implementados en el estado de la aplicación.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T06:17:36` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `memory.py` mediante la adición de docstrings técnicos detallados en las funciones de bajo nivel y la clarificación de los contratos de las constantes Win32, asegurando que cualquier colaborador entienda el propósito de los flags de acceso a procesos.
 - `2026-09-12T06:09:16` **main.py** (legibilidad y documentación): Documenté mediante docstrings la lógica de concurrencia y gestión de estados de la clase `LimpiezaTotalOmegaApp` para aclarar cómo se delegan las tareas al pool de hilos y cómo se garantiza la seguridad de la interfaz, mejorando la mantenibilidad para futuros colaboradores.
 - `2026-09-12T06:08:18` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el propósito y la lógica de las funciones principales, facilitando el mantenimiento y la comprensión del pipeline de cálculo.
-- `2026-09-12T06:07:52` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de type hints precisos, docstrings más descriptivos que explican el "porqué" de las decisiones de diseño (específicamente en las funciones de hashing y escaneo) y la clarificación de los estados de validación de archivos.
