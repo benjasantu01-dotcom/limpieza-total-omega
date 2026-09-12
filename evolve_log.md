@@ -1403,3 +1403,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-09-12T12:06:21` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se añadió una validación específica para detectar rutas que utilizan caracteres de escape o nombres de dispositivo dentro de los componentes del path, endureciendo la defensa contra ataques de path traversal mediante sintaxis maliciosa de Windows (ej: `..\..\.\NUL`).
 - `2026-09-12T12:06:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T12:06:21` Corrida terminada. Total usado hoy: 288.
+- `2026-09-12T12:14:34` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-09-12T12:15:00` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-12T12:15:34` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `settings.py` implementando una validación explícita mediante `is_safe_to_modify` antes de cualquier operación de escritura, asegurando que la creación del directorio de configuración no sea posible si la ruta raíz fuera bloqueada por la política de seguridad.
+- `2026-09-12T12:16:01` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-12T12:16:27` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva al inyectar validaciones explícitas en `_build_payload` para asegurar que el `context_text` y la `question` no solo pasen `_ensure_safe_text` sino también chequeos específicos de integridad de contenido antes de procesar el JSON, previniendo inyecciones de datos maliciosos que intenten saltar los filtros de sanitización iniciales.
+- `2026-09-12T12:16:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T12:16:27` Corrida terminada. Total usado hoy: 292.

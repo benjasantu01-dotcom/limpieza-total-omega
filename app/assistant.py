@@ -649,6 +649,9 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
         if not q or not _ensure_safe_text(q) or is_protected_path(q): return None
         if _is_restricted_content(q) or _is_restricted_content(context_text): return None
         
+        # Validación de integridad post-sanitización para vectores complejos
+        if _is_sensitive_structure(q) or _is_sensitive_structure(context_text): return None
+        
         data = {"contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]}]}
         encoded = json.dumps(data).encode("utf-8")
         if len(encoded) > _MAX_PROMPT_LIMIT * 2:

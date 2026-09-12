@@ -331,7 +331,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     for attempt in range(3):
         try:
-            ensure_safe_to_modify(ruta.parent)
+            # Validación estricta: si la ruta de configuración es insegura, abortamos la escritura.
+            if not is_safe_to_modify(str(ruta.parent)):
+                return None
+            
             if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
             
             with open(temp_path, "wb") as f:
