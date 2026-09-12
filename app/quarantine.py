@@ -380,12 +380,18 @@ def _load_manifest_raw(base_str: str, content_hash: str) -> List[QuarantineItem]
     try:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
-            if not isinstance(data, list): return []
+            if not isinstance(data, list): 
+                return []
             items = []
             for d in data:
-                if isinstance(d, dict):
+                if not isinstance(d, dict):
+                    continue
+                try:
                     item = QuarantineItem.from_dict(d)
-                    if item: items.append(item)
+                    if item:
+                        items.append(item)
+                except (ValueError, KeyError, TypeError):
+                    continue
             return items
     except (json.JSONDecodeError, OSError, PermissionError):
         return []

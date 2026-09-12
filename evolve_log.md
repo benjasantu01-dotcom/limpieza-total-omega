@@ -448,3 +448,10 @@ ERROR evolve/tests/test_modules.py
 - `2026-09-12T01:03:39` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `on_ask_assistant` y `on_save_settings` validando la presencia y el estado de los widgets antes de intentar leer su contenido, evitando excepciones `TclError` y `AttributeError` al interactuar con la interfaz en estados transitorios.
 - `2026-09-12T01:03:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T01:03:39` Corrida terminada. Total usado hoy: 28.
+- `2026-09-12T01:11:32` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-09-12T01:12:01` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-12T01:12:26` ➖ Sin cambios en organizer.py (enfoque: manejo de errores y validación de entradas). Motivo: Se reforzó la robustez de `organizer.py` añadiendo validaciones de tipo y de estado (`None` o ruta inexistente) en puntos críticos de acceso a disco, asegurando que los chequeos de seguridad reciban datos consistentes y no fallen silenciosamente ante estados inesperados.
+- `2026-09-12T01:13:01` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `load_manifest` añadiendo validaciones específicas para detectar archivos corruptos o malformados, capturando excepciones de manera granulo-detallada para evitar fallos silenciosos en la carga de metadatos.
+- `2026-09-12T01:13:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-12T01:13:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T01:13:04` Corrida terminada. Total usado hoy: 32.

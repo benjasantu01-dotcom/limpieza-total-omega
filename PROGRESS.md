@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 38
-- Sin cambios (nada sustancial que mejorar): 16
+- Rechazadas por guardia de seguridad: 39
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 58 | 4 | 8 | 8 | 48 |
+| 2026-09-10 | 55 | 4 | 8 | 8 | 47 |
 | 2026-09-11 | 161 | 15 | 30 | 8 | 136 |
-| 2026-09-12 | 5 | 0 | 0 | 0 | 23 |
+| 2026-09-12 | 6 | 0 | 1 | 1 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **55**
+- manejo de errores y validación de entradas: **56**
 - seguridad defensiva: **47**
 - robustez ante casos límite: **46**
-- legibilidad y documentación: **42**
-- rendimiento: **34**
+- legibilidad y documentación: **40**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **22**
 - `browser.py`: **20**
-- `assistant.py`: **19**
 - `diskreport.py`: **19**
-- `settings.py`: **18**
+- `assistant.py`: **18**
+- `quarantine.py`: **18**
 - `main.py`: **17**
-- `quarantine.py`: **17**
+- `settings.py`: **17**
 - `healthscore.py`: **15**
 - `memory.py`: **15**
 - `scanner.py`: **14**
 - `branding.py`: **14**
 - `organizer.py`: **14**
 - `safety.py`: **13**
-- `startup.py`: **7**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T01:13:01` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` añadiendo validaciones específicas para detectar archivos corruptos o malformados, capturando excepciones de manera granulo-detallada para evitar fallos silenciosos en la carga de metadatos.
 - `2026-09-12T01:03:39` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_ask_assistant` y `on_save_settings` validando la presencia y el estado de los widgets antes de intentar leer su contenido, evitando excepciones `TclError` y `AttributeError` al interactuar con la interfaz en estados transitorios.
 - `2026-09-12T01:02:16` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la validación de tipos y estados de entrada en funciones críticas (`_collect_candidates`, `_refine_by_deep_hash`, `_group_paths_by_hash`) para evitar excepciones no capturadas al procesar rutas mal formadas, asegurando que el flujo de escaneo sea robusto frente a datos inesperados.
 - `2026-09-12T01:01:50` **diskreport.py** (manejo de errores y validación de entradas): He mejorado la robustez de `walk_files` y `_collect_summary_data` ante errores inesperados durante el acceso a archivos, reemplazando accesos directos por capturas de excepciones más granulares y validando la integridad de los resultados antes de procesarlos, cumpliendo con el enfoque de manejo de errores y validación de entradas.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T14:00:16` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `_is_valid_candidate` integrando una verificación de "está en uso" y restricciones de sistema más estrictas, asegurando que la recursión no siga rutas que han cambiado su estado durante el escaneo.
 - `2026-09-11T13:59:56` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_excluded_path` y `walk_files` mediante la validación explícita de atributos de archivo y manejo de errores de acceso durante la recolección de metadatos, garantizando que el escáner no intente procesar rutas inaccesibles o reparse points bloqueados.
 - `2026-09-11T13:50:00` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_build_payload` y `_call_gemini` integrando el validador `_is_safe_text_structure` dentro de la secuencia crítica de serialización, asegurando que ningún dato pueda ser manipulado antes de salir del equipo hacia la red.
-- `2026-09-11T13:49:01` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` implementando una limpieza explícita de archivos temporales huérfanos antes de intentar una escritura, asegurando que bloqueos previos por permisos no impidan operaciones futuras.
