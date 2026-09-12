@@ -201,7 +201,7 @@ def _should_scan_directory(entry: os.DirEntry) -> bool:
 def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
     """Evalúa un archivo, valida si es basura y lo añade a la lista."""
     try:
-        if os.path.splitext(entry.name)[1].lower() in JUNK_EXTENSIONS:
+        if is_valid_junk_extension(entry.name):
             info = entry.stat()
             if info.st_size > 0:
                 p = Path(entry.path)

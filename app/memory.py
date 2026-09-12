@@ -280,9 +280,10 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if (time.time() - _proc_cache_time) < 60:
         return _proc_cache_data[:limit]
     
+    # Optimizamos pipeline de PowerShell: filtramos antes de iterar
     ps_cmd = (
         "Get-Process | Where-Object {$_.WorkingSet -ne $null} | "
-        "Sort-Object WorkingSet -Descending | Select-Object -First 15 -Property Name, Id, WorkingSet | "
+        "Sort-Object WorkingSet -Descending | Select-Object -First 20 -Property Name, Id, WorkingSet | "
         "ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
     )
     cmd = ['powershell', '-NoProfile', '-NonInteractive', '-Command', ps_cmd]

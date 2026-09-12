@@ -984,6 +984,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         for tab, msgs in logs_por_tab.items():
             box = self._box(tab)
             if box and box.winfo_exists():
+                # Inserción única de bloque para optimizar redibujo
                 box.insert("end", "\n".join(msgs) + "\n")
                 box.see("end")
 
