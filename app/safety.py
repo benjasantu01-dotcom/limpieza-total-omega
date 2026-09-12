@@ -355,9 +355,12 @@ def is_drive_root(path: PathLike) -> bool:
 def _is_system_path_cached(path_str: str) -> bool:
     """Compara la ruta normalizada contra listas de directorios protegidos."""
     path_lower = path_str.lower()
+    # Verifica si la ruta base coincide con una ruta crítica del sistema
     if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
         return True
-    return any(part in PROTECTED_DIR_NAMES for part in path_lower.split(os.sep))
+    # Uso de set para búsqueda O(1) evitando split innecesario en cada paso
+    parts = set(path_lower.split(os.sep))
+    return not parts.isdisjoint(PROTECTED_DIR_NAMES)
 
 @lru_cache(maxsize=2048)
 def is_protected_path(path: PathLike) -> bool:

@@ -65,6 +65,13 @@ MAX_PATH_LENGTH: Final[int] = 260
 # Constante de Windows para FILE_ATTRIBUTE_REPARSE_POINT (0x400)
 WIN_FILE_ATTR_REPARSE_POINT: Final[int] = 0x400
 
+# Registro formal de reglas heurísticas para ejecutables
+EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
+    lambda p, e, t: check_system_lookalike(p, e, t),
+    lambda p, e, t: check_recent_executable_in_downloads(p, e, t),
+    lambda p, e, t: check_empty_file(p, e, t)
+]
+
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta engaño por doble extensión (ej: documento.pdf.exe)."""
     if DOUBLE_EXTENSION_RE.search(path.name):
@@ -103,13 +110,6 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: fl
         pass
     return None
 
-# Registro formal de reglas heurísticas para ejecutables
-EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
-    check_system_lookalike,
-    check_recent_executable_in_downloads,
-    check_empty_file
-]
-
 class Scanner:
     """
     Motor principal que coordina el escaneo de directorios.
@@ -121,6 +121,7 @@ class Scanner:
         self.base_root: Path = base_root.resolve()
         self.base_root_str: str = str(self.base_root).lower() + os.sep
         self.now_ts: float = datetime.now().timestamp()
+        self._registry = EXECUTABLE_CHECK_REGISTRY
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica que la entrada no escape del directorio raíz configurado."""
@@ -184,7 +185,7 @@ class Scanner:
         if (double_ext := check_double_extension(path, entry, self.now_ts)):
             findings.append(double_ext)
         if ext in SUSPICIOUS_EXECUTABLE_EXT:
-            for check_fn in EXECUTABLE_CHECK_REGISTRY:
+            for check_fn in self._registry:
                 if (result := check_fn(path, entry, self.now_ts)):
                     findings.append(result)
         self.results.extend(findings)

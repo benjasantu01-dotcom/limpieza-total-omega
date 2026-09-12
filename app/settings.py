@@ -105,8 +105,8 @@ SETTINGS_FILE: Final = "config.json"
 MAX_SETTINGS_SIZE: Final = 1024 * 64
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
-_CACHE: dict[str, tuple[float, AppSettings]] = {}
-_PATH_CACHE: dict[str, Path] = { "default": SETTINGS_DIR / SETTINGS_FILE }
+_CACHE: dict[Path, tuple[float, AppSettings]] = {}
+_PATH_CACHE: dict[Path, Path] = {}
 _SAFETY_CACHE: dict[str, bool] = {}
 
 VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
@@ -178,10 +178,7 @@ class _Validators:
         try:
             if len(_SAFETY_CACHE) > 100: _SAFETY_CACHE.clear()
             resolved = path_obj.resolve(strict=False)
-            if resolved.exists() and not resolved.is_dir():
-                parent = resolved.parent
-            else:
-                parent = resolved
+            parent = resolved.parent if (resolved.exists() and not resolved.is_dir()) else resolved
             
             if _Validators._is_reparse_point(resolved) or (resolved.exists() and _Validators._is_reparse_point(parent)):
                 is_safe = False
@@ -270,18 +267,16 @@ _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingPro
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Retorna la ruta absoluta del archivo de configuración, priorizando el caché de rutas."""
-    if custom_base is None: return _PATH_CACHE["default"]
-    cache_key = str(custom_base)
-    if (cached := _PATH_CACHE.get(cache_key)) is not None:
-        return cached
+    if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
+    base_path = Path(custom_base)
+    if base_path in _PATH_CACHE: return _PATH_CACHE[base_path]
+    
     try:
-        base = Path(custom_base).expanduser()
-        resolved = base.resolve() / SETTINGS_FILE
-        _PATH_CACHE[cache_key] = resolved
+        resolved = base_path.expanduser().resolve() / SETTINGS_FILE
+        _PATH_CACHE[base_path] = resolved
         return resolved
     except (OSError, RuntimeError, PermissionError):
-        pass
-    return _PATH_CACHE["default"]
+        return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
     """Valida un diccionario arbitrario contra el esquema AppSettings, descartando valores inválidos."""
@@ -299,16 +294,14 @@ def validate(raw_values: Any) -> AppSettings:
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga y valida el JSON de configuración con reintentos ante bloqueos de archivo."""
     ruta = settings_path(custom_base)
-    ruta_str = str(ruta)
     
     try:
-        if not ruta.exists(): return DEFAULTS.copy()
         stats = ruta.stat()
         if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
             return DEFAULTS.copy()
         
-        mtime = float(stats.st_mtime)
-        if (cached := _CACHE.get(ruta_str)) and cached[0] == mtime:
+        mtime = stats.st_mtime
+        if (cached := _CACHE.get(ruta)) and cached[0] == mtime:
             return cached[1].copy()
             
         with open(ruta, "r", encoding="utf-8") as f:
@@ -316,7 +309,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             if not _is_dict(raw): return DEFAULTS.copy()
             data = validate(raw)
         
-        _CACHE[ruta_str] = (mtime, data)
+        _CACHE[ruta] = (mtime, data)
         return data.copy()
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
         return DEFAULTS.copy()
@@ -341,21 +334,17 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             ensure_safe_to_modify(ruta.parent)
             if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
             
-            data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
             with open(temp_path, "wb") as f:
-                try:
-                    f.write(data)
-                    f.flush()
-                    os.fsync(f.fileno())
-                finally:
-                    f.close()
+                f.write(json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8"))
+                f.flush()
+                os.fsync(f.fileno())
             
             if ruta.exists():
                 try: os.replace(ruta, ruta.with_suffix(".bak"))
                 except OSError: pass
                 
             os.replace(temp_path, ruta)
-            _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
+            _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
             return ruta
         except (OSError, IOError, PermissionError, UnsafePathError):
             if attempt < 2:

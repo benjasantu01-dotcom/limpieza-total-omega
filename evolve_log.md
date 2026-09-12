@@ -1372,3 +1372,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-09-12T11:24:39` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
 - `2026-09-12T11:24:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T11:24:39` Corrida terminada. Total usado hoy: 272.
+- `2026-09-12T11:33:46` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-09-12T11:34:24` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento de `is_protected_path` al reemplazar la lógica de división de cadenas (`split(os.sep)`) por una búsqueda basada en conjuntos (`set`), evitando la creación de listas temporales en cada iteración de un escaneo de disco.
+- `2026-09-12T11:34:49` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé el método `_run_file_heuristics` y la función `scan_file` para evitar realizar múltiples llamadas a `os.path.splitext` y evaluaciones redundantes, utilizando el resultado de la extensión ya extraída y almacenando el registro de heurísticas en una lista local para evitar accesos repetidos a constantes globales.
+- `2026-09-12T11:35:19` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la carga de configuraciones implementando una verificación de integridad de `mtime` más robusta y consolidando el caché en una estructura que minimiza el acceso redundante al disco al evitar conversiones de `Path` a `str` innecesarias y reduciendo las operaciones de `stat()` en el hot-path de `load`.
+- `2026-09-12T11:35:31` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-12T11:35:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T11:35:31` Corrida terminada. Total usado hoy: 276.
