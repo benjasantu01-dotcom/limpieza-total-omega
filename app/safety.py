@@ -80,6 +80,7 @@ class SafetyValidationErrorCode(IntEnum):
     VOLUME_READ_ONLY = 20
     REMOTE_DRIVE_DETECTED = 21
     REMOVABLE_DRIVE_DETECTED = 22
+    KERNEL_LOCKED_FILE = 23
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
@@ -107,6 +108,7 @@ class ProtectionReason(Enum):
     VOLUME_READ_ONLY = "volumen de solo lectura"
     REMOTE_DRIVE = "unidad de red detectada"
     REMOVABLE_DRIVE = "unidad extraíble detectada"
+    KERNEL_LOCKED = "archivo bloqueado por kernel"
 
 class ValidationContext(Enum):
     """Define si la validación es puramente estructural o requiere acceso a disco."""
@@ -223,7 +225,7 @@ def _is_encrypted_or_compressed(path_str: str) -> bool:
         return False
 
 @lru_cache(maxsize=2048)
-def _is_offline(path_str: str) -> bool:
+def _is_offline(path_str: str) -> str:
     """Verifica si el archivo está marcado como offline (ej: placeholder de nube)."""
     if os.name != 'nt': return False
     try:
@@ -241,7 +243,6 @@ def _is_file_in_use(path_str: str) -> bool:
     kernel32 = ctypes.windll.kernel32
     INVALID_HANDLE_VALUE = -1
     try:
-        # GENERIC_READ (0x80000000), FILE_SHARE_READ (0x1), Open Existing (3)
         handle = kernel32.CreateFileW(path_str, 0x80000000, 0x00000001, None, 3, 0x00000080, None)
         if handle == INVALID_HANDLE_VALUE: 
             return True
@@ -250,14 +251,18 @@ def _is_file_in_use(path_str: str) -> bool:
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         return True
 
+def _is_kernel_managed(path: Path) -> bool:
+    """Detecta archivos de paginación o hibernación bloqueados por el sistema operativo."""
+    return path.name.lower() in ("pagefile.sys", "hiberfil.sys", "swapfile.sys")
+
 def _is_sensitive_extension(path: Path) -> bool:
     """Verifica si la extensión del archivo está listada como crítica/ejecutable."""
     return path.suffix.lower() in SENSITIVE_EXTENSIONS
 
 # Lista de validadores de integridad aplicada secuencialmente
-# Cada predicado recibe (Path, os.stat_result) para evitar llamadas redundantes a disco
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _IntegrityCheck(ProtectionReason.REPARSE_POINT, lambda p, _: _is_reparse_point(str(p))),
+    _IntegrityCheck(ProtectionReason.KERNEL_LOCKED, lambda p, _: _is_kernel_managed(p)),
     _IntegrityCheck(ProtectionReason.READ_ONLY, lambda _, st: not bool(st.st_mode & stat.S_IWRITE)),
     _IntegrityCheck(ProtectionReason.IN_USE, lambda p, _: _is_file_in_use(str(p))),
     _IntegrityCheck(ProtectionReason.SYSTEM_HIDDEN, lambda p, _: _is_system_or_hidden(str(p))),
@@ -280,7 +285,8 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.ADS: SafetyValidationErrorCode.ADS_DETECTED,
     ProtectionReason.VOLUME_READ_ONLY: SafetyValidationErrorCode.VOLUME_READ_ONLY,
     ProtectionReason.REMOTE_DRIVE: SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED,
-    ProtectionReason.REMOVABLE_DRIVE: SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED
+    ProtectionReason.REMOVABLE_DRIVE: SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED,
+    ProtectionReason.KERNEL_LOCKED: SafetyValidationErrorCode.KERNEL_LOCKED_FILE
 }
 
 def _check_file_integrity(path: Path) -> None:

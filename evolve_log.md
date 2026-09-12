@@ -1041,3 +1041,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-12T08:12:45` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva de `quarantine.py` mediante la implementación de `_validate_quarantine_path`, una validación de ruta estricta que asegura que cualquier archivo destino dentro del sandbox esté canónicamente contenido en el directorio base, evitando ataques de *path traversal* antes de cualquier operación de I/O crítica.
 - `2026-09-12T08:12:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T08:12:45` Corrida terminada. Total usado hoy: 196.
+- `2026-09-12T08:19:21` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-09-12T08:19:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-12T08:20:15` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se añadió una verificación de archivos temporales de sistema (archivos de paginación e hibernación) en `_VALIDATORS` para prevenir intentos de manipulación de archivos bloqueados a nivel de kernel que podrían causar inestabilidad en el sistema operativo.
+- `2026-09-12T08:20:39` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-12T08:20:53` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para garantizar que la resolución de rutas no solo valide el destino final, sino que confirme que el directorio padre exista y sea accesible, mitigando riesgos ante manipulaciones de punteros simbólicos durante la carga de configuraciones.
+- `2026-09-12T08:20:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T08:20:53` Corrida terminada. Total usado hoy: 200.

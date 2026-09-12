@@ -178,7 +178,13 @@ class _Validators:
         try:
             if len(_SAFETY_CACHE) > 100: _SAFETY_CACHE.clear()
             resolved = path_obj.resolve(strict=False)
-            if _Validators._is_reparse_point(resolved):
+            # Validar que el directorio principal exista y sea transitable antes de proceder
+            if resolved.exists() and not resolved.is_dir():
+                parent = resolved.parent
+            else:
+                parent = resolved
+            
+            if _Validators._is_reparse_point(resolved) or (resolved.exists() and _Validators._is_reparse_point(parent)):
                 is_safe = False
             else:
                 is_safe = not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
@@ -194,7 +200,6 @@ class _Validators:
         if not path_str or len(path_str) > 2048 or "\0" in path_str: return False
         try:
             p = Path(path_str).expanduser()
-            # Forzar chequeo de integridad básica antes de operar con resolve()
             if not p.is_absolute(): return False
             return _Validators._run_safety_checks(p)
         except (OSError, RuntimeError, PermissionError, AttributeError, ValueError):
