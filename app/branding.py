@@ -339,16 +339,19 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo vectorial en una ruta física tras validación de seguridad de escritura."""
-    if destination is None: return None
+    if not destination: return None
     try:
         path_input = Path(destination).resolve()
-        # Ensure path satisfies safety protocols before any write operation
+        # Validación de seguridad obligatoria antes de intentar operar con el sistema de archivos
         ensure_safe_to_modify(path_input)
         parent = path_input.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
-        elif not os.access(parent, os.W_OK):
+        
+        # Validar permisos de escritura en la carpeta destino
+        if not os.access(parent, os.W_OK):
             return None
+            
         path_input.write_text(logo_svg(), encoding="utf-8")
         return path_input
     except (OSError, PermissionError, TypeError, ValueError): 
@@ -371,7 +374,8 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
             progreso = mid / max(1.0, float(franjas_count - 1))
             w = 36 * scale * (1.0 if progreso < 0.55 else 1.0 - (progreso - 0.55) * 1.9)
             canvas.create_rectangle(center_x - w, base_y + seg.start_index * factor_y, center_x + w, base_y + seg.end_index * factor_y + 1, fill=seg.hex_color, outline="")
-    except Exception: pass
+    except (TypeError, ValueError, ZeroDivisionError): 
+        pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Dibuja detalles iconográficos (flecha y omega) sobre el escudo."""

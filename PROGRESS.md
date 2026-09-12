@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 41
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 200
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 18 | 2 | 3 | 3 | 4 |
+| 2026-09-10 | 16 | 2 | 3 | 2 | 3 |
 | 2026-09-11 | 161 | 15 | 30 | 8 | 136 |
-| 2026-09-12 | 49 | 2 | 8 | 5 | 60 |
+| 2026-09-12 | 50 | 2 | 8 | 5 | 63 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **47**
-- legibilidad y documentación: **46**
+- manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **46**
-- manejo de errores y validación de entradas: **46**
+- legibilidad y documentación: **44**
 - rendimiento: **43**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **23**
+- `duplicates.py`: **22**
 - `quarantine.py`: **20**
 - `settings.py`: **19**
 - `diskreport.py`: **18**
 - `organizer.py`: **17**
 - `browser.py`: **17**
 - `assistant.py`: **17**
-- `healthscore.py`: **16**
 - `safety.py`: **16**
 - `main.py`: **16**
+- `branding.py`: **15**
+- `healthscore.py`: **15**
 - `scanner.py`: **14**
-- `branding.py`: **14**
 - `memory.py`: **14**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T05:19:06` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `_draw_shield_stripes` implementando una validación explícita de `Path` y capturando excepciones de manera específica para evitar fallos silenciosos en el renderizado o escrituras no controladas.
 - `2026-09-12T03:56:01` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` aplicando `ensure_safe_to_modify` sobre el directorio padre de la configuración antes de realizar cualquier operación de escritura, garantizando que el archivo nunca se cree en rutas protegidas incluso si `settings_path` fuera manipulado.
 - `2026-09-12T03:45:50` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` implementando un chequeo estricto de los atributos del sistema en Windows durante el registro del ítem, evitando la manipulación o la persistencia de archivos marcados como "Sistema" o "Ocultos" que podrían indicar ofuscación avanzada o malware, reforzando la integridad del sandbox.
 - `2026-09-12T03:45:16` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `organizer.py` implementando una validación estricta de "longitud de ruta" en el escáner recursivo y un chequeo de integridad para evitar colisiones de rutas fuera del alcance del directorio destino, previniendo errores de I/O maliciosos o accidentales.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T03:15:08` **scanner.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_file()` previo a la verificación de tamaño en `check_empty_file` y `check_recent_executable_in_downloads` para prevenir excepciones al encontrar entradas de dispositivo, pipes o sockets que no soportan `stat().st_size`.
 - `2026-09-12T03:14:43` **safety.py** (robustez ante casos límite): Se implementó un chequeo de integridad en `ensure_safe_to_modify` para detectar si una ruta, aunque no sea un reparse point directo, termina residiendo físicamente en una unidad extraíble, previniendo errores de I/O por desconexión repentina y mejorando la robustez ante hardware volátil.
 - `2026-09-12T03:07:08` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_locked` para manejar de forma segura archivos en uso mediante un manejo de excepciones más granular y evitando la creación de descriptores innecesarios si la ruta no existe, mejorando la fiabilidad del chequeo antes de operaciones críticas.
-- `2026-09-12T03:06:49` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos con permisos de lectura restringidos o bloqueados por el sistema operativo, evitando la propagación de excepciones que podrían detener el bucle de escaneo o limpieza.
