@@ -198,6 +198,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for area, weight, scorer, rules in _CACHE_SCORERS:
         try:
             ratio = _clamp(scorer(metrics))
+            if not math.isfinite(ratio):
+                raise ValueError("Ratio no finito generado.")
             if rules:
                 _evaluate_rules(metrics, rules, ratio, recommendations)
             val = int(round(ratio * float(weight)))

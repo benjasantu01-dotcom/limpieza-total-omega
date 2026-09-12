@@ -220,16 +220,19 @@ def _collect_candidates(
                         if entry is None:
                             break
                         
+                        entry_path = Path(entry.path)
+                        # Defensa proactiva contra enlaces simbólicos fuera de control
+                        if entry_path.is_symlink():
+                            continue
+                            
                         if entry.is_dir(follow_symlinks=False):
-                            entry_path = Path(entry.path)
                             if not is_junction(entry_path) and is_safe_to_modify(entry_path):
                                 _scan_directory_recursive(entry_path)
                         elif entry.is_file(follow_symlinks=False):
                             file_stat = entry.stat()
                             if file_stat.st_size >= min_size:
-                                path_obj = Path(entry.path)
-                                if _is_valid_candidate(path_obj, file_stat):
-                                    size_to_paths_map[file_stat.st_size].append(path_obj)
+                                if _is_valid_candidate(entry_path, file_stat):
+                                    size_to_paths_map[file_stat.st_size].append(entry_path)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError, RuntimeError):
