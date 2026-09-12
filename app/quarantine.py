@@ -420,9 +420,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """
-    Persiste el manifiesto usando escritura atómica.
-    """
+    """Persiste el manifiesto usando escritura atómica."""
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista.")
     

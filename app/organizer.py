@@ -177,12 +177,25 @@ def _validate_file_attributes(src: Path) -> bool:
         return False
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """Orquestador principal de seguridad de disco."""
+    """
+    Realiza las verificaciones de seguridad previas a cualquier operación de disco.
+    
+    Args:
+        src: Path del archivo origen.
+        dest: Path del destino.
+    Returns:
+        True si la operación es segura según las políticas del proyecto.
+    """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
+    
+    # 1. Validar integridad y permisos de ruta
     if not _validate_path_security(src, dest): return False
+    
     try:
         s_res = src.resolve()
         if not s_res.exists() or _is_recursive_violation(s_res, dest): return False
+        
+        # 2. Validar consistencia de unidad y atributos de archivo
         target_dir = dest.parent if dest.is_file() else dest
         if not target_dir.exists() or s_res.drive != target_dir.resolve().drive: return False
         return _validate_file_attributes(s_res)

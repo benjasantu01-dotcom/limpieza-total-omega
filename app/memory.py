@@ -48,9 +48,9 @@ MegabytesValue = NewType("MegabytesValue", float)
 BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 
-# Máscaras de acceso Win32 para operaciones seguras en procesos
-# 0x1000 (PROCESS_QUERY_LIMITED_INFORMATION): Info básica necesaria para lectura sin elevar privilegios
-# 0x100 (PROCESS_SET_QUOTA): Permiso requerido estrictamente por la API EmptyWorkingSet
+# Máscaras de acceso Win32 para operaciones seguras en procesos:
+# PROCESS_QUERY_LIMITED_INFORMATION (0x1000): Mínimo acceso necesario para consultar estadísticas.
+# PROCESS_SET_QUOTA (0x100): Permiso requerido por la API 'EmptyWorkingSet'.
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x100
 SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
@@ -84,7 +84,7 @@ TRIM_WARNING: Final[str] = (
 class MEMORYSTATUSEX(ctypes.Structure):
     """
     Estructura de datos win32 (MEMORYSTATUSEX) utilizada por GlobalMemoryStatusEx.
-    Almacena estadísticas de memoria física y virtual del sistema.
+    Define el layout de memoria física y virtual reportada por el kernel.
     """
     _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),
@@ -345,7 +345,7 @@ def _is_system_process(pid: int) -> bool:
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: int) -> Optional[Path]:
-    """Usa PSAPI GetModuleFileNameExW para resolver la ruta absoluta del ejecutable."""
+    """Resuelve la ruta absoluta del ejecutable usando PSAPI GetModuleFileNameExW."""
     if not proc_handle: return None
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
@@ -360,8 +360,9 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
     """
-    Verifica si un proceso es candidato seguro para liberación de memoria.
-    Valida: proceso activo, ruta del ejecutable permitida y políticas de seguridad locales.
+    Realiza validaciones de seguridad antes de modificar un proceso.
+    Verifica que el proceso esté activo, posea ruta ejecutable localizable y
+    no contravenga las reglas de seguridad definidas en safety.py.
     """
     if not isinstance(proc_handle, int) or proc_handle <= 0: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
@@ -389,8 +390,8 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Ejecuta el trim del Working Set para un PID específico tras validaciones de seguridad.
-    Acción no destructiva de datos, pero impactante en rendimiento.
+    Solicita al SO reducir el Working Set de un proceso.
+    Solo admite procesos verificados por _is_safe_to_trim.
     """
     if not _is_windows: return False, "Operación solo soportada en Windows."
     
