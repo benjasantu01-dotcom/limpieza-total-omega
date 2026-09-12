@@ -214,8 +214,12 @@ def _collect_candidates(
             visited_dirs.add(dir_str)
             
             with os.scandir(current_dir) as iterator:
-                for entry in iterator:
+                while True:
                     try:
+                        entry = next(iterator, None)
+                        if entry is None:
+                            break
+                        
                         if entry.is_dir(follow_symlinks=False):
                             entry_path = Path(entry.path)
                             if not is_junction(entry_path) and is_safe_to_modify(entry_path):

@@ -573,3 +573,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-12T02:45:11` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-09-12T02:45:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T02:45:11` Corrida terminada. Total usado hoy: 68.
+- `2026-09-12T02:53:25` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-09-12T02:53:51` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-12T02:54:16` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Se ha añadido un robusto manejo de errores en `walk_files` para capturar `OSError` inesperados al intentar leer atributos de archivos o acceder a directorios, asegurando que el recorrido no se interrumpa ante archivos bloqueados por el sistema o permisos dinámicamente denegados.
+- `2026-09-12T02:54:42` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_collect_candidates` ante rutas con permisos restringidos o bloqueos de acceso durante el escaneo recursivo, añadiendo un manejo de excepciones más granular para evitar que una sola subcarpeta con acceso denegado interrumpa el proceso completo de recolección de duplicados.
+- `2026-09-12T02:54:52` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `compute_score` ante posibles divisiones por cero o desbordamientos durante el cálculo de ratios, asegurando que `_evaluate_rules` y el bucle principal manejen correctamente estados de métricas extremos o inconsistentes mediante el uso estricto de `_clamp` y validación de tipos.
+- `2026-09-12T02:54:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T02:54:52` Corrida terminada. Total usado hoy: 72.

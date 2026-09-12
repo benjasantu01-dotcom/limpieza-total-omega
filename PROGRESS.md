@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 199
 
@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 37 | 3 | 6 | 5 | 35 |
+| 2026-09-10 | 36 | 3 | 5 | 4 | 34 |
 | 2026-09-11 | 161 | 15 | 30 | 8 | 136 |
-| 2026-09-12 | 31 | 2 | 4 | 3 | 28 |
+| 2026-09-12 | 33 | 2 | 4 | 4 | 29 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **59**
 - legibilidad y documentación: **49**
 - rendimiento: **43**
-- seguridad defensiva: **40**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
+- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **22**
-- `quarantine.py`: **20**
+- `duplicates.py`: **23**
 - `settings.py`: **19**
 - `diskreport.py`: **19**
+- `quarantine.py`: **19**
 - `assistant.py`: **18**
 - `browser.py`: **18**
+- `healthscore.py`: **16**
 - `main.py`: **16**
 - `organizer.py`: **16**
 - `safety.py`: **16**
 - `scanner.py`: **15**
-- `healthscore.py`: **15**
 - `branding.py`: **14**
 - `memory.py`: **14**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T02:54:52` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `compute_score` ante posibles divisiones por cero o desbordamientos durante el cálculo de ratios, asegurando que `_evaluate_rules` y el bucle principal manejen correctamente estados de métricas extremos o inconsistentes mediante el uso estricto de `_clamp` y validación de tipos.
+- `2026-09-12T02:54:42` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante rutas con permisos restringidos o bloqueos de acceso durante el escaneo recursivo, añadiendo un manejo de excepciones más granular para evitar que una sola subcarpeta con acceso denegado interrumpa el proceso completo de recolección de duplicados.
 - `2026-09-12T02:44:55` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext.ingest` y `_build_payload` ante tipos inesperados, incorporando una validación de seguridad más estricta sobre los tipos de datos recibidos y evitando posibles errores de desbordamiento en el procesamiento de métricas.
 - `2026-09-12T02:43:46` **settings.py** (rendimiento): Optimicé el rendimiento de `settings.py` implementando una caché de validación de rutas mediante `LRU-like behavior` (reemplazo simple de diccionario) y evitando `resolve()` redundante en el flujo crítico de carga, consolidando el manejo de rutas protegidas para reducir llamadas de sistema.
 - `2026-09-12T02:34:56` **scanner.py** (rendimiento): Optimicé el rendimiento de `scanner.py` pre-calculando las extensiones sospechosas en `_run_file_heuristics` y moviendo la lógica de validación de extensiones a `process_entry` para evitar llamadas redundantes a `os.path.splitext` y búsquedas innecesarias en `SUSPICIOUS_ALL_EXTS`.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T02:14:07` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` convirtiendo los diccionarios de agregación `ext_sizes` y `ext_counts` en una estructura única `ext_stats` (tupla de tamaño y contador) para reducir las búsquedas múltiples en el hash-map durante cada iteración del bucle, y reemplacé la llamada redundante a `Path(entry.path)` por el uso directo de `entry.path` donde es posible para evitar la sobrecarga de instanciación de objetos `Path` innecesarios.
 - `2026-09-12T02:13:14` **branding.py** (rendimiento): Optimicé el renderizado de franjas y la generación de gradientes en `branding.py` mediante la implementación de una memoria caché interna (`_GRADIENT_CACHE`) para evitar el recálculo pesado de interpolaciones RGB y segmentos de color en llamadas recurrentes, cumpliendo con el enfoque de rendimiento.
 - `2026-09-12T02:05:20` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` eliminando la re-evaluación innecesaria de criterios al usar `lru_cache`, y refiné `SystemContext.ingest` para evitar procesamientos redundantes mediante una validación de estructura previa más temprana.
-- `2026-09-12T02:04:27` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad semántica mediante la adición de docstrings detallados en funciones clave y la estandarización de nombres en validadores, facilitando el mantenimiento a largo plazo sin alterar el comportamiento.
-- `2026-09-12T02:02:53` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes y docstrings explicativos a las funciones, además de encapsular las heurísticas en un registro unificado para mejorar la mantenibilidad.
