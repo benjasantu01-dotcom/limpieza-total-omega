@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 98 | 8 | 20 | 3 | 83 |
-| 2026-09-12 | 133 | 7 | 22 | 13 | 117 |
+| 2026-09-11 | 98 | 8 | 20 | 3 | 79 |
+| 2026-09-12 | 136 | 7 | 22 | 13 | 118 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **56**
 - legibilidad y documentación: **52**
+- seguridad defensiva: **44**
 - rendimiento: **42**
-- seguridad defensiva: **41**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
+- `duplicates.py`: **22**
 - `diskreport.py`: **19**
 - `organizer.py`: **19**
 - `settings.py`: **19**
 - `assistant.py`: **18**
 - `memory.py`: **18**
 - `quarantine.py`: **18**
+- `browser.py`: **17**
 - `healthscore.py`: **17**
 - `safety.py`: **17**
-- `browser.py`: **16**
 - `main.py`: **14**
-- `branding.py`: **13**
+- `branding.py`: **14**
 - `scanner.py`: **11**
 - `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T12:26:24` **duplicates.py** (seguridad defensiva): He robustecido la seguridad defensiva de `duplicates.py` eliminando el uso de `os.scandir` sin validación previa, asegurando que cada entrada sea verificada mediante `is_safe_to_modify` antes de ser procesada para evitar la navegación en rutas no autorizadas o fuera del alcance permitido.
+- `2026-09-12T12:25:46` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de "sandbox" para cada iteración, garantizando que el escáner de tamaño nunca pueda salirse de la ruta raíz original mediante enlaces o rutas relativas no resueltas.
+- `2026-09-12T12:25:19` **branding.py** (seguridad defensiva): Mejoré `save_logo_svg` aplicando una validación de seguridad proactiva mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, asegurando que cualquier intento de escribir fuera de rutas permitidas sea bloqueado explícitamente en lugar de fallar silenciosamente.
 - `2026-09-12T12:16:27` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al inyectar validaciones explícitas en `_build_payload` para asegurar que el `context_text` y la `question` no solo pasen `_ensure_safe_text` sino también chequeos específicos de integridad de contenido antes de procesar el JSON, previniendo inyecciones de datos maliciosos que intenten saltar los filtros de sanitización iniciales.
 - `2026-09-12T12:15:34` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` implementando una validación explícita mediante `is_safe_to_modify` antes de cualquier operación de escritura, asegurando que la creación del directorio de configuración no sea posible si la ruta raíz fuera bloqueada por la política de seguridad.
 - `2026-09-12T12:06:21` **safety.py** (robustez ante casos límite): Se añadió una validación específica para detectar rutas que utilizan caracteres de escape o nombres de dispositivo dentro de los componentes del path, endureciendo la defensa contra ataques de path traversal mediante sintaxis maliciosa de Windows (ej: `..\..\.\NUL`).
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T11:35:19` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuraciones implementando una verificación de integridad de `mtime` más robusta y consolidando el caché en una estructura que minimiza el acceso redundante al disco al evitar conversiones de `Path` a `str` innecesarias y reduciendo las operaciones de `stat()` en el hot-path de `load`.
 - `2026-09-12T11:34:49` **scanner.py** (rendimiento): Optimizé el método `_run_file_heuristics` y la función `scan_file` para evitar realizar múltiples llamadas a `os.path.splitext` y evaluaciones redundantes, utilizando el resultado de la extensión ya extraída y almacenando el registro de heurísticas en una lista local para evitar accesos repetidos a constantes globales.
 - `2026-09-12T11:34:24` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` al reemplazar la lógica de división de cadenas (`split(os.sep)`) por una búsqueda basada en conjuntos (`set`), evitando la creación de listas temporales en cada iteración de un escaneo de disco.
-- `2026-09-12T11:23:55` **organizer.py** (rendimiento): Optimizé `_evaluate_entry` y el proceso de escaneo eliminando llamadas redundantes a `exists()` y `stat()` sobre rutas ya verificadas por `os.scandir`, reduciendo drásticamente las syscalls innecesarias durante la iteración sobre disco.
-- `2026-09-12T11:23:30` **memory.py** (rendimiento): Optimizé la eficiencia de `top_memory_processes` reemplazando la lógica de selección en PowerShell por un filtrado y ordenamiento en Python para reducir el tiempo de ejecución y la carga sobre el pipeline de PowerShell.
-- `2026-09-12T11:14:07` **healthscore.py** (rendimiento): Se optimizó el método `is_finite` en `SystemMetrics` reemplazando la iteración dinámica por `__dataclass_fields__` (que involucra reflexión costosa en cada llamada) por una tupla estática de campos clave, mejorando la eficiencia del bucle principal de `compute_score`.

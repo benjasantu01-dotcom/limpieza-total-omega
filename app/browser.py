@@ -219,19 +219,19 @@ def _sum_directory_recursive(
     is_junction_fn: JunctionChecker, 
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[str, int],
+    root_base: str,
     depth: int = 0
 ) -> int:
     """
-    Calcula el tamaño de un directorio mediante búsqueda en profundidad (DFS).
-    
-    Args:
-        root_abs: Ruta absoluta del directorio a sumar.
-        memo: Diccionario para evitar recálculos (caché local).
-        depth: Control de recursión para prevenir desbordamiento.
+    Calcula el tamaño de un directorio mediante búsqueda en profundidad (DFS) validando sandbox.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
     if any(c in root_abs for c in '\0\r\n'):
+        return 0
+    
+    # Seguridad adicional: verificar que la ruta actual no haya escapado de la raíz original
+    if not root_abs.startswith(root_base):
         return 0
     
     if root_abs in memo:
@@ -250,7 +250,7 @@ def _sum_directory_recursive(
                 
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        total += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, depth + 1)
+                        total += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
                     else:
                         total += entry.stat(follow_symlinks=False).st_size
                 except (OSError, PermissionError):
@@ -271,7 +271,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
         return 0
     try:
         resolved = p.resolve(strict=True)
-        return _sum_directory_recursive(str(resolved), _IS_JUNCTION_FN, _get_kernel32(), {})
+        return _sum_directory_recursive(str(resolved), _IS_JUNCTION_FN, _get_kernel32(), {}, str(resolved))
     except (OSError, RuntimeError):
         return 0
 
@@ -317,7 +317,7 @@ def detect_profiles(
                     continue
                 
                 real_candidate = candidate.resolve(strict=True)
-                size = _sum_directory_recursive(str(real_candidate), _IS_JUNCTION_FN, k32, perf_cache)
+                size = _sum_directory_recursive(str(real_candidate), _IS_JUNCTION_FN, k32, perf_cache, str(real_candidate))
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), real_candidate, size))
         except (OSError, PermissionError, TypeError, ValueError, RuntimeError):

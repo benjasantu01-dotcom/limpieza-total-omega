@@ -125,13 +125,10 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
         if not p.is_file() or st.st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p) or _is_file_locked(p):
             return None
 
-        # Si el archivo es menor al buffer, el hash parcial es el hash total
         with open(p, "rb") as f:
             content = f.read(read_bytes)
             if not content:
                 return None
-            if st.st_size <= read_bytes:
-                return hashlib.sha256(content).hexdigest()
             return hashlib.sha256(content).hexdigest()
     except (OSError, PermissionError, IOError, TypeError, ValueError):
         return None
@@ -186,11 +183,12 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
     def _process_entry(entry: os.DirEntry, current_dir: Path) -> None:
         entry_path = Path(entry.path)
-        if not entry_path.exists() or is_protected_path(entry_path) or entry_path.is_symlink():
+        # Validación de seguridad defensiva antes de interactuar
+        if not is_safe_to_modify(entry_path) or is_protected_path(entry_path):
             return
         
         if entry.is_dir(follow_symlinks=False):
-            if not is_junction(entry_path) and is_safe_to_modify(entry_path):
+            if not is_junction(entry_path):
                 _scan_dir(entry_path)
         elif entry.is_file(follow_symlinks=False):
             file_stat = entry.stat()
@@ -199,7 +197,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
     def _scan_dir(current_dir: Path) -> None:
         dir_str = str(current_dir.resolve())
-        if dir_str in visited_dirs or is_protected_path(current_dir):
+        if dir_str in visited_dirs or is_protected_path(current_dir) or not is_safe_to_modify(current_dir):
             return
         visited_dirs.add(dir_str)
         try:
@@ -231,7 +229,6 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
         results = _group_paths_by_hash(paths, hash_file)
     else:
         results = _group_paths_by_hash(paths, partial_hash)
-        # Solo refinamos con hash completo si hay colisiones en el hash parcial
         final_groups: Dict[str, List[Path]] = {}
         for subset in results.values():
             final_groups.update(_group_paths_by_hash(subset, hash_file))
