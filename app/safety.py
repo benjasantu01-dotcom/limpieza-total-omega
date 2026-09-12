@@ -225,7 +225,7 @@ def _is_encrypted_or_compressed(path_str: str) -> bool:
         return False
 
 @lru_cache(maxsize=2048)
-def _is_offline(path_str: str) -> str:
+def _is_offline(path_str: str) -> bool:
     """Verifica si el archivo está marcado como offline (ej: placeholder de nube)."""
     if os.name != 'nt': return False
     try:
@@ -242,8 +242,9 @@ def _is_file_in_use(path_str: str) -> bool:
     
     kernel32 = ctypes.windll.kernel32
     INVALID_HANDLE_VALUE = -1
+    # Intenta abrir el archivo con acceso de lectura compartido; si falla, es que está bloqueado.
     try:
-        handle = kernel32.CreateFileW(path_str, 0x80000000, 0x00000001, None, 3, 0x00000080, None)
+        handle = kernel32.CreateFileW(path_str, 0, 1, None, 3, 0, None)
         if handle == INVALID_HANDLE_VALUE: 
             return True
         kernel32.CloseHandle(handle)
