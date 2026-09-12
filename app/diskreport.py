@@ -258,12 +258,17 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador que recorre recursivamente el sistema de archivos.
+    Generador que recorre recursivamente el sistema de archivos (DFS).
     
-    Implementa prevención de ciclos mediante inodos y omisión de puntos de reparse.
+    Utiliza un set de inodos para detectar ciclos (evitar bucles infinitos en symlinks
+    o puntos de montaje) y saltea rutas protegidas mediante `is_protected_path`.
+    
+    Args:
+        directory: Ruta base de inicio del recorrido.
+        skip_protected: Si es True, filtra automáticamente carpetas críticas del sistema.
     
     Yields:
-        Tuplas conteniendo el Path del archivo y su tamaño en bytes.
+        Tuplas (Path, int) con la ruta del archivo y su tamaño en bytes.
     """
     root_path = _validate_root(directory)
     if root_path is None:
@@ -359,10 +364,14 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     Agregador central que procesa archivos mediante `walk_files` y genera un
     resumen consolidado del estado del sistema de archivos.
     
+    Utiliza un heap de tamaño fijo (`limit`) para mantener únicamente los archivos
+    más pesados en memoria durante el recorrido, manteniendo O(N) de complejidad
+    temporal y controlada O(limit) de complejidad espacial.
+    
     Args:
         directory: Ruta base desde donde comenzar el análisis.
         skip_protected: Si es True, ignora directorios restringidos por `safety.py`.
-        limit: Cantidad de archivos más grandes a mantener en memoria (heap).
+        limit: Cantidad máxima de archivos más grandes a trackear en el heap.
         
     Returns:
         Objeto SummaryData conteniendo estadísticas totales, conteos por extensión

@@ -462,3 +462,10 @@ ERROR evolve/tests/test_modules.py
 - `2026-09-12T01:23:21` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita de `row` para manejar correctamente casos donde la salida del CSV pueda contener filas vacías o malformadas, evitando que el bucle falle silenciosamente ante datos inconsistentes de PowerShell.
 - `2026-09-12T01:23:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T01:23:21` Corrida terminada. Total usado hoy: 36.
+- `2026-09-12T01:31:55` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-09-12T01:32:36` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemContext._clean_grade
+- `2026-09-12T01:33:11` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-09-12T01:34:02` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y la claridad del flujo en `_sum_directory_recursive` y sus auxiliares, añadiendo docstrings técnicos que detallan la estrategia de recursión (DFS) y el manejo de excepciones, para facilitar el mantenimiento del código crítico de escaneo.
+- `2026-09-12T01:34:13` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante docstrings más precisos en `walk_files` y `_collect_summary_data`, clarificando el flujo de datos y las garantías de seguridad sobre el uso de memoria (heap) durante el escaneo.
+- `2026-09-12T01:34:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T01:34:13` Corrida terminada. Total usado hoy: 40.
