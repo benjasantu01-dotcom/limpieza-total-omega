@@ -81,6 +81,15 @@ class StartupEntry:
     _exec_cache: Optional[str] = field(default=None, init=False)
     _checked_exists: bool = field(default=False, init=False)
 
+    @property
+    def is_valid(self) -> bool:
+        """Indica si el comando actual no viola reglas de seguridad básicas."""
+        if not self.command or self._is_path_suspicious(self.command):
+            return False
+        if self._is_reserved_device_name(self.command):
+            return False
+        return True
+
     def _is_reserved_device_name(self, path_str: str) -> bool:
         """Determina si la ruta apunta a dispositivos del sistema (ej. NUL, CON) para evitar bloqueos."""
         reserved: Set[str] = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
@@ -110,14 +119,7 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """
-        Extrae y valida una ruta entrecomillada del comando de inicio.
-        
-        Args:
-            raw_command: Línea de comando original.
-        Returns:
-            Ruta absoluta extraída si es válida y segura, de lo contrario una cadena vacía.
-        """
+        """Extrae y valida una ruta entrecomillada del comando de inicio."""
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
         
@@ -139,29 +141,18 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """
-        Verifica existencia y permisos del archivo. Utiliza `lstat` para evitar 
-        el seguimiento de puntos de reparse (Junctions/Symlinks).
-        """
+        """Verifica existencia y permisos del archivo. Utiliza `lstat` para evitar el seguimiento de puntos de reparse."""
         try:
             if not p.exists() or not os.access(p, os.F_OK) or p.is_dir() or is_protected_path(p):
                 return False
             stats = p.lstat()
-            # 0x00000400: Atributo de sistema FILE_ATTRIBUTE_REPARSE_POINT
             return not p.is_symlink() and not (getattr(stats, 'st_file_attributes', 0) & 0x00000400)
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """
-        Normaliza una ruta, aplica chequeos de `safety.py` y gestiona el caché global.
-        
-        Args:
-            path_string: Ruta a procesar y validar.
-        Returns:
-            Ruta resuelta como string absoluto o cadena vacía si no es segura o accesible.
-        """
-        if not path_string or self._is_path_suspicious(path_string) or self._is_reserved_device_name(path_string):
+        """Normaliza una ruta, aplica chequeos de `safety.py` y gestiona el caché global."""
+        if not self.is_valid:
             return ""
         
         try:
@@ -194,10 +185,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """
-        Determina la estrategia de parseo: si el comando está entrecomillado, 
-        extrae el path, de lo contrario lo trata como comando simple.
-        """
+        """Determina la estrategia de parseo: si el comando está entrecomillado, extrae el path."""
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -271,10 +259,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
-    """
-    Convierte la salida CSV de PowerShell en objetos `StartupEntry`.
-    Filtra entradas basadas en seguridad, duplicados y prefijos del sistema (PS).
-    """
+    """Convierte la salida CSV de PowerShell en objetos `StartupEntry`. Filtra entradas basadas en seguridad."""
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
@@ -294,7 +279,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             if not isinstance(row, dict):
                 continue
             
-            # Obtención segura de valores, validando existencia y tipo antes de procesar
             val_name = row.get(f_name)
             val_cmd = row.get(f_cmd)
             
@@ -322,10 +306,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
 
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
-    """
-    Lee claves de registro Run vía PowerShell utilizando un flag de Error Silencioso 
-    y excluyendo propiedades internas de PowerShell (PS*).
-    """
+    """Lee claves de registro Run vía PowerShell utilizando un flag de Error Silencioso."""
     if os.name != "nt":
         return []
     

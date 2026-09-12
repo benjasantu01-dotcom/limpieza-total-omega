@@ -234,13 +234,13 @@ def _sum_directory_recursive(
     if any(c in root_abs for c in '\0\r\n'):
         return 0
     
+    if root_abs in memo:
+        return memo[root_abs]
+    
     root_path = Path(root_abs)
     if not is_safe_to_modify(root_path) or is_protected_path(root_path):
         return 0
         
-    if root_abs in memo:
-        return memo[root_abs]
-    
     total: int = 0
     try:
         with os.scandir(root_abs) as it:

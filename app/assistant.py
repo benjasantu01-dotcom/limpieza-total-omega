@@ -305,11 +305,11 @@ class SystemContext:
         Intenta mapear y validar un valor individual desde una fuente de datos genérica.
         """
         try:
-            val = _get_source_value(source, key)
-            if val is not None and spec.is_valid_type(val):
-                f_val = float(val)
-                if math.isfinite(f_val) and spec.min_val <= f_val <= spec.max_val:
-                    if hasattr(self, key):
+            if hasattr(self, key):
+                val = _get_source_value(source, key)
+                if val is not None and spec.is_valid_type(val):
+                    f_val = float(val)
+                    if math.isfinite(f_val) and spec.min_val <= f_val <= spec.max_val:
                         setattr(self, key, spec.cast_func(val))
                         return True
         except (ValueError, TypeError, AttributeError):

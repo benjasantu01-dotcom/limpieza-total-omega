@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 18
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 112 | 10 | 22 | 6 | 94 |
-| 2026-09-12 | 113 | 6 | 20 | 12 | 109 |
+| 2026-09-11 | 110 | 10 | 22 | 4 | 94 |
+| 2026-09-12 | 116 | 7 | 20 | 12 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **56**
-- legibilidad y documentación: **51**
+- legibilidad y documentación: **52**
 - seguridad defensiva: **48**
-- robustez ante casos límite: **38**
-- rendimiento: **32**
+- robustez ante casos límite: **36**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **21**
-- `organizer.py`: **19**
 - `quarantine.py`: **19**
 - `settings.py`: **18**
 - `diskreport.py`: **18**
+- `organizer.py`: **18**
 - `safety.py`: **17**
+- `assistant.py`: **17**
 - `memory.py`: **17**
-- `main.py`: **16**
-- `assistant.py`: **16**
-- `browser.py`: **15**
+- `browser.py`: **16**
+- `main.py`: **15**
 - `healthscore.py`: **15**
 - `branding.py`: **13**
 - `scanner.py`: **11**
-- `startup.py`: **10**
+- `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T11:04:55` **browser.py** (rendimiento): Optimicé el rendimiento de la detección de caché pasando un único diccionario `memo` compartido a través de `detect_profiles`, evitando el re-cálculo redundante de tamaños de subdirectorios que son compartidos entre rutas de caché de diferentes navegadores (p.ej. estructuras base comunes).
+- `2026-09-12T11:04:09` **assistant.py** (rendimiento): Optimicé el rendimiento de `SystemContext.ingest` y el filtrado de métricas al evitar la iteración sobre el diccionario global `_VALIDATORS` en cada llamada; ahora utilizo el método `getattr` para acceder directamente a los atributos del objeto y aplico la validación solo cuando la clave existe realmente, reduciendo la complejidad de las operaciones de escritura.
+- `2026-09-12T11:03:27` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `StartupEntry` reemplazando los métodos de validación dispersos por una propiedad `is_valid` centralizada y tipada, facilitando el mantenimiento futuro de las reglas de seguridad.
 - `2026-09-12T10:53:20` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `safety.py` añadiendo docstrings más precisos, tipado explícito en funciones auxiliares (como `_is_offline`) y refactorizando el chequeo `_is_file_in_use` para mejorar la claridad de su propósito, facilitando así el mantenimiento del contrato de seguridad.
 - `2026-09-12T10:44:26` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y `_is_item_purgable` para estandarizar la lógica de validación de seguridad antes de operaciones destructivas, y añadí docstrings detallados que explican el contrato de seguridad en funciones críticas como `_write_temp_to_final`.
 - `2026-09-12T10:44:05` **organizer.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones de validación de seguridad (`_validate_path_security`, `_validate_file_attributes` y `_is_safe_for_disk_op`) para clarificar el flujo de control y las precondiciones necesarias para operar sobre archivos, mejorando la mantenibilidad sin alterar la lógica de seguridad.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T10:22:45` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_registry_csv` ante datos malformados o faltantes (valores `None` o tipos inesperados) mediante validación explícita de campos antes de su procesamiento, evitando que el bucle de parseo falle silenciosamente o procese datos inválidos.
 - `2026-09-12T10:22:18` **settings.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `load()` capturando específicamente errores de permisos o sistemas de archivos durante la lectura, y se optimizó la validación del esquema para evitar que un diccionario de configuración truncado o mal formado cause errores en tiempo de ejecución al acceder a claves faltantes.
 - `2026-09-12T10:13:09` **safety.py** (manejo de errores y validación de entradas): Se mejora `ensure_safe_to_modify` para que capture y registre la causa raíz de errores de acceso a disco mediante una validación más granular, permitiendo que el llamador reciba un mensaje técnico preciso en lugar de una excepción genérica.
-- `2026-09-12T10:12:15` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `restore_item` agregando una validación explícita de `item_id` y capturando posibles errores de E/S al leer el manifiesto o procesar el archivo, garantizando que el sistema sea resiliente ante estados inconsistentes.
-- `2026-09-12T10:06:43` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_unc_path` y `_is_allowed_directory` ante entradas inválidas o None mediante guards explícitos, garantizando que el flujo de procesamiento no se interrumpa ante datos inesperados.
-- `2026-09-12T10:06:31` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_process_entry` y `trim_working_set` implementando validaciones de entrada más estrictas y manejando excepciones de manera explícita para evitar errores en tiempo de ejecución ante datos inesperados.

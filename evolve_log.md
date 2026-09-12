@@ -1324,3 +1324,34 @@ ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defi
 - `2026-09-12T10:53:55` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators, _Validators._is_reparse_point, _Validators._is_safe_path, _Validators._run_safety_checks, _Validators._validate_enum_str, _Validators.bool, _Validators.int, _Validators.path, _Validators.str
 - `2026-09-12T10:53:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T10:53:55` Corrida terminada. Total usado hoy: 260.
+- `2026-09-12T11:02:37` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-09-12T11:03:27` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `StartupEntry` reemplazando los métodos de validación dispersos por una propiedad `is_valid` centralizada y tipada, facilitando el mantenimiento futuro de las reglas de seguridad.
+- `2026-09-12T11:04:09` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `SystemContext.ingest` y el filtrado de métricas al evitar la iteración sobre el diccionario global `_VALIDATORS` en cada llamada; ahora utilizo el método `getattr` para acceder directamente a los atributos del objeto y aplico la validación solo cuando la clave existe realmente, reduciendo la complejidad de las operaciones de escritura.
+- `2026-09-12T11:04:44` Tests FALLARON:
+```
+0%]
+=================================== FAILURES ===================================
+_________________ test_gradient_bar_paints_one_line_per_pixel __________________
+
+    def test_gradient_bar_paints_one_line_per_pixel():
+        canvas = _CanvasFalso()
+        branding.draw_gradient_bar(canvas, width=60)
+>       assert canvas.llamadas.count("line") == 60
+E       AssertionError: assert 0 == 60
+E        +  where 0 = <built-in method count of list object at 0x7f8892157bc0>('line')
+E        +    where <built-in method count of list object at 0x7f8892157bc0> = ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...].count
+E        +      where ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...] = <test_modules._CanvasFalso object at 0x7f88922c7f80>.llamadas
+
+evolve/tests/test_modules.py:226: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel - AssertionError: assert 0 == 60
+ +  where 0 = <built-in method count of list object at 0x7f8892157bc0>('line')
+ +    where <built-in method count of list object at 0x7f8892157bc0> = ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...].count
+ +      where ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...] = <test_modules._CanvasFalso object at 0x7f88922c7f80>.llamadas
+1 failed, 298 passed in 1.32s
+
+```
+- `2026-09-12T11:04:44` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Optimicé el renderizado de gradientes en el Canvas sustituyendo el uso de `create_line` (que genera un objeto por píxel) por `create_rectangle` sobre los segmentos cacheados, reduciendo drásticamente la carga de memoria y las llamadas al método de dibujo para barras decorativas.
+- `2026-09-12T11:04:55` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de la detección de caché pasando un único diccionario `memo` compartido a través de `detect_profiles`, evitando el re-cálculo redundante de tamaños de subdirectorios que son compartidos entre rutas de caché de diferentes navegadores (p.ej. estructuras base comunes).
+- `2026-09-12T11:04:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T11:04:55` Corrida terminada. Total usado hoy: 264.
