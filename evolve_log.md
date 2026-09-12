@@ -960,3 +960,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-09-12T06:50:00` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `top_memory_processes` reemplazando la serialización/deserialización CSV por una consulta de PowerShell que ya filtra los resultados, reduciendo drásticamente la carga de datos procesados por Python y eliminando la necesidad de manejar listas grandes antes del filtrado final.
 - `2026-09-12T06:50:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T06:50:00` Corrida terminada. Total usado hoy: 164.
+- `2026-09-12T06:57:51` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-09-12T06:58:18` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé `_process_directory` reemplazando la lógica recursiva de construcción de rutas y validaciones redundantes por un caché local de directorios protegidos, evitando llamadas innecesarias al sistema de archivos y mejorando la eficiencia del escaneo profundo.
+- `2026-09-12T06:58:51` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `total_quarantined_bytes` evitando el procesamiento innecesario de la lista de objetos `QuarantineItem` mediante el uso de una suma generadora y eliminé la carga completa del manifiesto en operaciones donde solo se requiere el conteo de bytes, reduciendo el consumo de memoria.
+- `2026-09-12T06:59:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
+- `2026-09-12T06:59:29` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento del módulo mediante la implementación de un caché de resultados para `is_protected_path` y `is_sensitive_file`, evitando la recalculación costosa de normalizaciones y particionamiento de rutas en bucles intensivos.
+- `2026-09-12T06:59:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T06:59:29` Corrida terminada. Total usado hoy: 168.

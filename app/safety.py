@@ -493,7 +493,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     except (ValueError, TypeError) as e:
         raise UnsafePathError(f"Ruta no normalizable: {e}", SafetyValidationErrorCode.GENERIC)
     
-    if not allow_sensitive and _is_sensitive_extension(p):
+    if not allow_sensitive and is_sensitive_file(p):
         raise UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
 
     _validate_structural_safety(p, str(p))
@@ -555,5 +555,5 @@ def describe_protection(path: PathLike) -> str:
             if p.is_file() and p.stat().st_nlink > 1: return f"'{p}' detectado como hard link."
     except (OSError, FileNotFoundError, AttributeError):
         pass
-    if _is_sensitive_extension(p): return f"'{p.name}' extensión sensible."
+    if is_sensitive_file(p): return f"'{p.name}' extensión sensible."
     return f"'{p}' es candidata a modificación."

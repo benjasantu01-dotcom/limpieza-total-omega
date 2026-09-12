@@ -177,25 +177,12 @@ def _validate_file_attributes(src: Path) -> bool:
         return False
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """
-    Realiza las verificaciones de seguridad previas a cualquier operación de disco.
-    
-    Args:
-        src: Path del archivo origen.
-        dest: Path del destino.
-    Returns:
-        True si la operación es segura según las políticas del proyecto.
-    """
+    """Realiza las verificaciones de seguridad previas a cualquier operación de disco."""
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
-    
-    # 1. Validar integridad y permisos de ruta
     if not _validate_path_security(src, dest): return False
-    
     try:
         s_res = src.resolve()
         if not s_res.exists() or _is_recursive_violation(s_res, dest): return False
-        
-        # 2. Validar consistencia de unidad y atributos de archivo
         target_dir = dest.parent if dest.is_file() else dest
         if not target_dir.exists() or s_res.drive != target_dir.resolve().drive: return False
         return _validate_file_attributes(s_res)
@@ -207,9 +194,46 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     if not isinstance(junk_file, JunkFile) or dest is None: return False
     return junk_file.path is not None and junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
 
-def _should_scan_directory(entry: os.DirEntry) -> bool:
-    """Filtro de directorios para evitar rutas bloqueadas."""
-    return entry is not None and _is_allowed_directory(entry.name) and not _is_junction(entry)
+def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
+    """Filtro de directorios con caché de rutas protegidas."""
+    if entry is None or not _is_allowed_directory(entry.name) or _is_junction(entry):
+        return False
+    return entry.path not in protected_cache
+
+def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0, protected_cache: Optional[set[str]] = None) -> None:
+    """Recorrido recursivo optimizado con caché de rutas bloqueadas."""
+    if protected_cache is None: protected_cache = set()
+    if depth > 50 or current_dir is None or not current_dir.exists(): return
+    
+    # Validar protección antes de procesar
+    if is_protected_path(current_dir):
+        protected_cache.add(str(current_dir))
+        return
+
+    try:
+        with os.scandir(current_dir) as it:
+            for entry in it:
+                try:
+                    if entry.is_dir(follow_symlinks=False):
+                        if _should_scan_directory(entry, protected_cache):
+                            _process_directory(Path(entry.path), found, depth + 1, protected_cache)
+                    elif entry.is_file(follow_symlinks=False):
+                        _evaluate_entry(entry, found)
+                except (OSError, PermissionError): continue
+    except (OSError, PermissionError, RuntimeError): pass
+
+def scan_for_junk(directories: Optional[Sequence[str]] = None) -> List[JunkFile]:
+    """Escanea directorios en busca de archivos temporales."""
+    valid_dirs = [Path(d) for d in (directories or DEFAULT_SCAN_DIRS) if isinstance(d, str)]
+    found: List[JunkFile] = []
+    protected_cache = set()
+    for d in valid_dirs:
+        try:
+            p = d.expanduser()
+            if p.exists() and p.is_dir() and not _is_unc_path(p):
+                _process_directory(p.resolve(), found, 0, protected_cache)
+        except (OSError, RuntimeError, TypeError): continue
+    return found
 
 def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
     """Evalúa un archivo, valida si es basura y lo añade a la lista."""
@@ -222,34 +246,6 @@ def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
                     found.append(JunkFile(p, info.st_size, datetime.fromtimestamp(info.st_mtime)))
     except (OSError, PermissionError):
         pass
-
-def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0) -> None:
-    """Recorrido recursivo del árbol de directorios."""
-    if depth > 50 or current_dir is None or not current_dir.exists() or is_protected_path(current_dir):
-        return
-    try:
-        with os.scandir(current_dir) as it:
-            for entry in it:
-                try:
-                    if entry.is_dir(follow_symlinks=False):
-                        if _should_scan_directory(entry):
-                            _process_directory(Path(entry.path), found, depth + 1)
-                    elif entry.is_file(follow_symlinks=False):
-                        _evaluate_entry(entry, found)
-                except (OSError, PermissionError): continue
-    except (OSError, PermissionError, RuntimeError): pass
-
-def scan_for_junk(directories: Optional[Sequence[str]] = None) -> List[JunkFile]:
-    """Escanea directorios en busca de archivos temporales."""
-    valid_dirs = [Path(d) for d in (directories or DEFAULT_SCAN_DIRS) if isinstance(d, str)]
-    found: List[JunkFile] = []
-    for d in valid_dirs:
-        try:
-            p = d.expanduser()
-            if p.exists() and p.is_dir() and not _is_unc_path(p):
-                _process_directory(p.resolve(), found)
-        except (OSError, RuntimeError, TypeError): continue
-    return found
 
 def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """Ordena la lista de archivos según criterio."""
