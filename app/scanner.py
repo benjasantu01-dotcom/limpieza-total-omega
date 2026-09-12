@@ -214,6 +214,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     """
     Ejecuta el conjunto de reglas heurísticas sobre un archivo específico.
     """
+    if path is None: return []
     findings: ScanResult = []
     
     if (double_ext := check_double_extension(path, entry, now_ts)):
@@ -233,31 +234,34 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
     if directory is None: return []
         
-    path_str: str = str(directory).strip()
-    if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")): 
-        return []
+    try:
+        path_str: str = str(directory).strip()
+        if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")): 
+            return []
+                
+        base_path: Path = Path(path_str)
+        if not base_path.exists() or not base_path.is_dir(): 
+            return []
             
-    base_path: Path = Path(path_str)
-    if not base_path.exists() or not base_path.is_dir(): 
-        return []
+        root_input: Path = base_path.resolve()
+        if is_protected_path(root_input): 
+            return []
+                
+        scanner = Scanner(base_root=root_input)
+        directory_stack: List[str] = [str(root_input)]
+        scanner.seen.add(str(root_input))
         
-    root_input: Path = base_path.resolve()
-    if is_protected_path(root_input): 
+        while directory_stack:
+            current_dir = directory_stack.pop()
+            try:
+                with os.scandir(current_dir) as it:
+                    for entry in it:
+                        if entry: scanner.process_entry(entry, directory_stack)
+            except (PermissionError, OSError):
+                continue
+        return scanner.results
+    except Exception:
         return []
-            
-    scanner = Scanner(base_root=root_input)
-    directory_stack: List[str] = [str(root_input)]
-    scanner.seen.add(str(root_input))
-    
-    while directory_stack:
-        current_dir = directory_stack.pop()
-        try:
-            with os.scandir(current_dir) as it:
-                for entry in it:
-                    if entry: scanner.process_entry(entry, directory_stack)
-        except (PermissionError, OSError):
-            continue
-    return scanner.results
 
 def run_windows_defender_quick_scan() -> str:
     """Invoca la API de PowerShell para verificar el estado de Defender y realizar un escaneo rápido."""

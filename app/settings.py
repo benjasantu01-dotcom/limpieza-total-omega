@@ -318,31 +318,34 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
         return DEFAULTS.copy()
 
+def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
+    """Lógica de validación cruzada antes de persistir los datos."""
+    if settings.get("asistente_activado") and not (
+        settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
+    ):
+        settings["asistente_activado"] = False
+    return settings
+
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """Persiste la configuración de forma atómica con reintentos para evitar bloqueos y corrupción."""
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
-    cleaned_settings = validate(values)
-    
-    if cleaned_settings.get("asistente_activado") and not (
-        cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
-    ):
-        cleaned_settings["asistente_activado"] = False
-        
+    cleaned_settings = _ensure_settings_integrity(validate(values))
     temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
     
     for attempt in range(3):
         try:
-            # Defensa: verificar integridad del destino antes de tocar el sistema de archivos
             ensure_safe_to_modify(ruta.parent)
-            
             if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
             
             data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
             with open(temp_path, "wb") as f:
-                f.write(data)
-                f.flush()
-                os.fsync(f.fileno())
+                try:
+                    f.write(data)
+                    f.flush()
+                    os.fsync(f.fileno())
+                finally:
+                    f.close()
             
             if ruta.exists():
                 try: os.replace(ruta, ruta.with_suffix(".bak"))

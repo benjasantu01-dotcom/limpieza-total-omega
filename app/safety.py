@@ -202,6 +202,7 @@ def _is_system_or_hidden(path_str: Optional[str]) -> bool:
 @lru_cache(maxsize=2048)
 def _is_reparse_point(path_str: str) -> bool:
     """Determina si un archivo es un punto de reparse (Junction o Symlink) vía WinAPI."""
+    if not isinstance(path_str, str) or not path_str: return False
     if os.name != 'nt':
         return os.path.islink(path_str)
     try:
@@ -240,7 +241,8 @@ def _is_file_in_use(path_str: str) -> bool:
     kernel32 = ctypes.windll.kernel32
     INVALID_HANDLE_VALUE = -1
     try:
-        handle = kernel32.CreateFileW(path_str, 0x80000000, 0, None, 3, 0x00000080, None)
+        # GENERIC_READ (0x80000000), FILE_SHARE_READ (0x1), Open Existing (3)
+        handle = kernel32.CreateFileW(path_str, 0x80000000, 0x00000001, None, 3, 0x00000080, None)
         if handle == INVALID_HANDLE_VALUE: 
             return True
         kernel32.CloseHandle(handle)
