@@ -481,6 +481,10 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     """
     Copia al sandbox y valida integridad contra condiciones TOCTOU (Time-of-check to time-of-use).
     """
+    # Seguridad adicional: validar que el destino final no sea una ruta protegida
+    if is_protected_path(destination):
+        raise UnsafePathError("Destino en ruta protegida.")
+
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
     fd = os.open(str(destination), flags, 0o600)
     

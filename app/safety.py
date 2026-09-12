@@ -324,6 +324,7 @@ def normalize(path: PathLike) -> Path:
     path_str = str(path).strip()
     if not path_str: raise ValueError("Entrada de ruta vacía.")
     
+    # Validación estricta de normalización Unicode para evitar inyección
     if unicodedata.normalize('NFKC', path_str) != path_str:
          raise ValueError("Ruta contiene secuencias Unicode sospechosas.")
         
@@ -410,6 +411,10 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if _has_invalid_chars(path_string):
         raise UnsafePathError("Caracteres inválidos detectados.", SafetyValidationErrorCode.INVALID_CHARS)
     
+    # Detección adicional de normalización Unicode dudosa
+    if unicodedata.normalize('NFKC', path_string) != path_string:
+        raise UnsafePathError("Codificación de caracteres sospechosa.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING)
+
     if _has_alternate_data_stream(path_string):
         raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED)
     
