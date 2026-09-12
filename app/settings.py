@@ -130,7 +130,7 @@ DEFAULTS: Final[AppSettings] = {
     "analisis_en_paralelo": True,
     "asistente_activado": False,
     "asistente_clave_api": "",
-    "asistente_enviar_metricas": True,
+    "asistente_enviar_METRICAS": True,
     "asistente_modelo": "gemini-3.1-flash-lite",
 }
 
@@ -177,10 +177,7 @@ class _Validators:
         
         try:
             if len(_SAFETY_CACHE) > 100: _SAFETY_CACHE.clear()
-            # Resolvemos sin seguir puntos de montaje externos
             resolved = path_obj.resolve()
-            
-            # Verificación de seguridad en cascada
             if is_protected_path(str(resolved)):
                 is_safe = False
             elif _Validators._is_reparse_point(resolved):
@@ -311,6 +308,10 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             raw = json.load(f)
             if not _is_dict(raw): return DEFAULTS.copy()
             data = validate(raw)
+            # Asegurar esquema completo post-validación
+            for key in DEFAULTS:
+                if key not in data:
+                    data[key] = DEFAULTS[key]
         
         _CACHE[ruta] = (mtime, data)
         return data.copy()
@@ -334,7 +335,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     for attempt in range(3):
         try:
-            # Validación estricta: si la ruta de configuración es insegura, abortamos la escritura.
             if not is_safe_to_modify(str(ruta.parent)):
                 return None
             

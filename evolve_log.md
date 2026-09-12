@@ -594,3 +594,9 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-12T14:39:00` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `is_safe_to_modify` y `filter_safe_paths` capturando explícitamente excepciones de bajo nivel (`OSError`, `PermissionError`, etc.) que pueden ocurrir al manipular el sistema de archivos, asegurando que los fallos no propaguen errores inesperados que detengan el bucle.
 - `2026-09-12T14:39:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T14:39:00` Corrida terminada. Total usado hoy: 348.
+- `2026-09-12T14:47:28` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-12T14:47:56` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-12T14:48:26` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la resiliencia del cargador de configuración añadiendo una validación de esquema exhaustiva tras el `json.load` para asegurar que el diccionario contenga todas las claves necesarias, evitando así errores de `KeyError` en el resto de la aplicación si el archivo JSON está incompleto pero es sintácticamente válido.
+- `2026-09-12T14:48:26` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-09-12T14:48:26` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T14:48:26` Corrida terminada. Total usado hoy: 350.
