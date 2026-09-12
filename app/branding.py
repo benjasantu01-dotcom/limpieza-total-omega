@@ -26,6 +26,9 @@ from functools import lru_cache
 from safety import is_safe_to_modify, ensure_safe_to_modify, is_protected_path
 import math
 
+# Caché local para evitar recálculo de gradientes en cada frame
+_GRADIENT_CACHE: dict[tuple[int, tuple[HexColor, ...]], Tuple[HexColor, ...]] = {}
+
 class CanvasElement(Protocol):
     """
     Protocolo Duck-typing que define los métodos necesarios para la integración 
@@ -258,27 +261,32 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
         int(b1 + (b2 - b1) * ratio)
     ))
 
-@lru_cache(maxsize=64)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
-    """Genera una secuencia suavizada de colores mediante interpolación entre paradas."""
+    """Genera una secuencia suavizada de colores mediante interpolación entre paradas, con caché."""
     n = max(1, int(steps))
-    if not stops or len(stops) < 2: return (stops[0] if stops else C_TEXT_MUTED,) * n
+    key = (n, stops)
+    if key in _GRADIENT_CACHE: return _GRADIENT_CACHE[key]
     
-    rgb_stops = tuple(_hex_to_rgb(s) for s in stops)
-    tramos = len(stops) - 1
-    res = [C_TEXT_MUTED] * n
+    if not stops or len(stops) < 2: 
+        res = (stops[0] if stops else C_TEXT_MUTED,) * n
+    else:
+        rgb_stops = tuple(_hex_to_rgb(s) for s in stops)
+        tramos = len(stops) - 1
+        res_list = [C_TEXT_MUTED] * n
+        for i in range(n):
+            pos = (i / (n - 1) * tramos) if n > 1 else 0
+            idx = min(int(pos), tramos - 1)
+            delta = pos - idx
+            s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
+            res_list[i] = _rgb_to_hex((
+                int(s1[0] + (s2[0] - s1[0]) * delta),
+                int(s1[1] + (s2[1] - s1[1]) * delta),
+                int(s1[2] + (s2[2] - s1[2]) * delta)
+            ))
+        res = tuple(res_list)
     
-    for i in range(n):
-        pos = (i / (n - 1) * tramos) if n > 1 else 0
-        idx = min(int(pos), tramos - 1)
-        delta = pos - idx
-        s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
-        res[i] = _rgb_to_hex((
-            int(s1[0] + (s2[0] - s1[0]) * delta),
-            int(s1[1] + (s2[1] - s1[1]) * delta),
-            int(s1[2] + (s2[2] - s1[2]) * delta)
-        ))
-    return tuple(res)
+    _GRADIENT_CACHE[key] = res
+    return res
 
 @lru_cache(maxsize=64)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, ...]:

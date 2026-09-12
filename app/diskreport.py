@@ -58,8 +58,7 @@ class SummaryData(NamedTuple):
     """
     total_bytes: int
     total_files: int
-    ext_sizes: Dict[str, int]
-    ext_counts: Dict[str, int]
+    ext_stats: Dict[str, Tuple[int, int]]  # (size_bytes, count)
     top_files: List[Tuple[int, Path]]
 
 
@@ -285,9 +284,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         if _is_excluded_path(entry): continue
                         
-                        entry_path = Path(entry.path)
-                        
                         if entry.is_dir(follow_symlinks=False):
+                            entry_path = Path(entry.path)
                             if skip_protected and is_protected_path(entry_path): continue
                             try:
                                 st = entry.stat(follow_symlinks=False)
@@ -297,6 +295,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                     stack.append(entry_path)
                             except OSError: continue
                         elif entry.is_file(follow_symlinks=False):
+                            entry_path = Path(entry.path)
                             if skip_protected and is_protected_path(entry_path): continue
                             try:
                                 st = entry.stat()
@@ -326,7 +325,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
     if not root: return []
     safe_limit = max(1, int(limit))
     data = _collect_summary_data(root, skip_protected, limit=0)
-    usage_list = [ExtensionUsage(e, data.ext_sizes[e], data.ext_counts[e]) for e in data.ext_sizes]
+    usage_list = [ExtensionUsage(ext, stats[0], stats[1]) for ext, stats in data.ext_stats.items()]
     return heapq.nlargest(safe_limit, usage_list, key=lambda u: u.size_bytes)
 
 
@@ -379,8 +378,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     total_bytes: int = 0
     total_files: int = 0
-    ext_sizes: Dict[str, int] = defaultdict(int)
-    ext_counts: Dict[str, int] = defaultdict(int)
+    ext_stats: Dict[str, Tuple[int, int]] = defaultdict(lambda: (0, 0))
     top_heap: List[Tuple[int, Path]] = []
     
     # Procesamiento iterativo de archivos encontrados en el sistema
@@ -397,8 +395,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         except Exception:
             ext = "(error lectura)"
         
-        ext_sizes[ext] += size
-        ext_counts[ext] += 1
+        s, c = ext_stats[ext]
+        ext_stats[ext] = (s + size, c + 1)
         
         # Mantenimiento de heap para los N archivos más pesados
         if limit > 0:
@@ -407,7 +405,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             elif size > top_heap[0][0]:
                 heapq.heapreplace(top_heap, (size, path))
                     
-    return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_heap)
+    return SummaryData(total_bytes, total_files, ext_stats, top_heap)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
@@ -419,8 +417,10 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if data.total_files == 0: return ["Aviso: No hay archivos accesibles."]
 
     lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} en {data.total_files} archivos", "", "Por tipo:"]
-    for ext, size in heapq.nlargest(8, data.ext_sizes.items(), key=lambda x: x[1]):
-        lines.append(f"  {ext:<18} {format_size(size):>10}  ({data.ext_counts[ext]} archivos)")
+    # Ordenar extensiones por bytes totales
+    sorted_exts = heapq.nlargest(8, data.ext_stats.items(), key=lambda x: x[1][0])
+    for ext, stats in sorted_exts:
+        lines.append(f"  {ext:<18} {format_size(stats[0]):>10}  ({stats[1]} archivos)")
     lines.extend(["", "Mayores archivos:"])
     lines.extend([f"  {format_size(s):>10}  {p}" for s, p in heapq.nlargest(20, data.top_files, key=lambda x: x[0])])
     return lines

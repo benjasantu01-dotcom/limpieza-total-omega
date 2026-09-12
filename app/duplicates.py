@@ -49,8 +49,7 @@ def is_junction(path: Path) -> bool:
     if not isinstance(path, Path):
         return False
     try:
-        resolved = path.resolve()
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(resolved))
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT))
     except (AttributeError, OSError, RuntimeError):
         return False
@@ -107,7 +106,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         return None
         
     try:
-        p = Path(path).resolve(strict=True)
+        p = Path(path)
         if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p) or _is_file_locked(p):
             return None
             
@@ -133,7 +132,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
         return None
 
     try:
-        p = Path(path).resolve(strict=True)
+        p = Path(path)
         if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p) or _is_file_locked(p):
             return None
 
@@ -151,14 +150,13 @@ def _is_valid_candidate(path: Path, st: Optional[os.stat_result] = None) -> bool
     Validador estricto para filtrar candidatos a duplicados.
     """
     try:
-        resolved = path.resolve(strict=True)
-        if resolved.is_symlink() or is_protected_path(resolved) or not is_safe_to_modify(resolved) or _is_file_locked(resolved):
+        if path.is_symlink() or is_protected_path(path) or not is_safe_to_modify(path) or _is_file_locked(path):
             return False
             
-        if is_system_or_hidden(resolved):
+        if is_system_or_hidden(path):
             return False
             
-        st = st or resolved.stat()
+        st = st or path.stat()
         return st.st_size > 0 and st.st_nlink == 1
     except (OSError, ValueError, TypeError, RuntimeError):
         return False
@@ -173,7 +171,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     for p in paths:
         if p is None: continue
         try:
-            path_obj = Path(p).absolute()
+            path_obj = Path(p)
             if _is_valid_candidate(path_obj):
                 size = path_obj.stat().st_size
                 if size > 0:
@@ -209,14 +207,9 @@ def _collect_candidates(
     visited_dirs: set[str] = set()
 
     def _scan_directory_recursive(current_dir: Path) -> None:
-        """
-        Recorre directorios evitando bucles infinitos, enlaces simbólicos 
-        y rutas protegidas según la política de seguridad.
-        """
         try:
-            resolved_dir = current_dir.resolve(strict=False)
-            dir_str = str(resolved_dir)
-            if dir_str in visited_dirs or is_protected_path(current_dir) or not is_safe_to_modify(current_dir):
+            dir_str = str(current_dir.resolve())
+            if dir_str in visited_dirs:
                 return
             visited_dirs.add(dir_str)
             
