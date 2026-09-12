@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 110 | 10 | 22 | 4 | 94 |
-| 2026-09-12 | 116 | 7 | 20 | 12 | 109 |
+| 2026-09-11 | 107 | 10 | 21 | 4 | 94 |
+| 2026-09-12 | 119 | 7 | 20 | 12 | 110 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **56**
 - legibilidad y documentación: **52**
 - seguridad defensiva: **48**
-- robustez ante casos límite: **36**
-- rendimiento: **34**
+- rendimiento: **37**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
-- `quarantine.py`: **19**
+- `duplicates.py`: **22**
+- `diskreport.py`: **19**
 - `settings.py`: **18**
-- `diskreport.py`: **18**
 - `organizer.py`: **18**
-- `safety.py`: **17**
+- `quarantine.py`: **18**
 - `assistant.py`: **17**
 - `memory.py`: **17**
+- `safety.py`: **16**
 - `browser.py`: **16**
+- `healthscore.py`: **16**
 - `main.py`: **15**
-- `healthscore.py`: **15**
 - `branding.py`: **13**
-- `scanner.py`: **11**
 - `startup.py`: **11**
+- `scanner.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T11:14:07` **healthscore.py** (rendimiento): Se optimizó el método `is_finite` en `SystemMetrics` reemplazando la iteración dinámica por `__dataclass_fields__` (que involucra reflexión costosa en cada llamada) por una tupla estática de campos clave, mejorando la eficiencia del bucle principal de `compute_score`.
+- `2026-09-12T11:13:41` **duplicates.py** (rendimiento): Optimizé la estrategia de hashing evitando re-lecturas innecesarias: ahora `_decide_hash_strategy_and_process` utiliza el hash completo solo si el grupo sigue siendo ambiguo tras el hash parcial, y `hash_file` se ejecuta directamente sobre archivos pequeños en lugar de obligarlos a pasar por una fase de hash parcial redundante.
+- `2026-09-12T11:13:16` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` eliminando la creación de objetos `Path` redundantes y resoluciones de ruta costosas dentro del bucle de recorrido, aprovechando la información ya disponible en `os.DirEntry`.
 - `2026-09-12T11:04:55` **browser.py** (rendimiento): Optimicé el rendimiento de la detección de caché pasando un único diccionario `memo` compartido a través de `detect_profiles`, evitando el re-cálculo redundante de tamaños de subdirectorios que son compartidos entre rutas de caché de diferentes navegadores (p.ej. estructuras base comunes).
 - `2026-09-12T11:04:09` **assistant.py** (rendimiento): Optimicé el rendimiento de `SystemContext.ingest` y el filtrado de métricas al evitar la iteración sobre el diccionario global `_VALIDATORS` en cada llamada; ahora utilizo el método `getattr` para acceder directamente a los atributos del objeto y aplico la validación solo cuando la clave existe realmente, reduciendo la complejidad de las operaciones de escritura.
 - `2026-09-12T11:03:27` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `StartupEntry` reemplazando los métodos de validación dispersos por una propiedad `is_valid` centralizada y tipada, facilitando el mantenimiento futuro de las reglas de seguridad.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T10:32:27` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y tipos explícitos para clarificar las responsabilidades de las funciones de escaneo, especialmente en el manejo de recursividad y validaciones de seguridad.
 - `2026-09-12T10:23:42` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `gradient_colors`, extrayendo la lógica de cálculo de colores a una función auxiliar (`_interpolate_rgb`) y añadiendo una docstring detallada que clarifica el algoritmo de interpolación lineal, facilitando su comprensión para futuras extensiones.
 - `2026-09-12T10:23:24` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `assistant.py` añadiendo docstrings descriptivos a las funciones de manejo de errores y validación, y clarifiqué la lógica de `ProblemCriterion` para facilitar la comprensión de las reglas heurísticas del asistente.
-- `2026-09-12T10:22:45` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_registry_csv` ante datos malformados o faltantes (valores `None` o tipos inesperados) mediante validación explícita de campos antes de su procesamiento, evitando que el bucle de parseo falle silenciosamente o procese datos inválidos.
-- `2026-09-12T10:22:18` **settings.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `load()` capturando específicamente errores de permisos o sistemas de archivos durante la lectura, y se optimizó la validación del esquema para evitar que un diccionario de configuración truncado o mal formado cause errores en tiempo de ejecución al acceder a claves faltantes.
-- `2026-09-12T10:13:09` **safety.py** (manejo de errores y validación de entradas): Se mejora `ensure_safe_to_modify` para que capture y registre la causa raíz de errores de acceso a disco mediante una validación más granular, permitiendo que el llamador reciba un mensaje técnico preciso en lugar de una excepción genérica.

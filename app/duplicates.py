@@ -121,12 +121,17 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
     try:
         p = Path(path)
-        if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p) or _is_file_locked(p):
+        st = p.stat()
+        if not p.is_file() or st.st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p) or _is_file_locked(p):
             return None
 
+        # Si el archivo es menor al buffer, el hash parcial es el hash total
         with open(p, "rb") as f:
-            if not (content := f.read(read_bytes)):
+            content = f.read(read_bytes)
+            if not content:
                 return None
+            if st.st_size <= read_bytes:
+                return hashlib.sha256(content).hexdigest()
             return hashlib.sha256(content).hexdigest()
     except (OSError, PermissionError, IOError, TypeError, ValueError):
         return None
@@ -220,18 +225,17 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
 
-def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
-    """Refina grupos mediante hashing parcial y confirmación SHA256 completa."""
-    partial_results = _group_paths_by_hash(candidates, partial_hash)
-    final_groups: Dict[str, List[Path]] = {}
-    for subset in partial_results.values():
-        final_groups.update(_group_paths_by_hash(subset, hash_file))
-    return final_groups
-
-
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Selecciona la estrategia de hashing según el tamaño para optimizar E/S."""
-    results = _group_paths_by_hash(paths, partial_hash) if size <= PARTIAL_READ_BYTES else _refine_by_deep_hash(paths)
+    if size <= PARTIAL_READ_BYTES:
+        results = _group_paths_by_hash(paths, hash_file)
+    else:
+        results = _group_paths_by_hash(paths, partial_hash)
+        # Solo refinamos con hash completo si hay colisiones en el hash parcial
+        final_groups: Dict[str, List[Path]] = {}
+        for subset in results.values():
+            final_groups.update(_group_paths_by_hash(subset, hash_file))
+        results = final_groups
     return [DuplicateGroup(digest, size, sorted(p)) for digest, p in results.items()]
 
 

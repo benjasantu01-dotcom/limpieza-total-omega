@@ -287,11 +287,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         if _is_excluded_path(entry): continue
                         
-                        entry_path = Path(entry.path)
-                        # Validar contención para evitar escape de ruta
-                        if not str(entry_path.resolve()).startswith(str(root_path)): continue
-                        
                         if entry.is_dir(follow_symlinks=False):
+                            entry_path = Path(entry.path)
                             if skip_protected and is_protected_path(entry_path): continue
                             try:
                                 st = entry.stat(follow_symlinks=False)
@@ -301,12 +298,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                     stack.append(entry_path)
                             except OSError: continue
                         elif entry.is_file(follow_symlinks=False):
-                            if skip_protected and is_protected_path(entry_path): continue
                             try:
                                 st = entry.stat()
                                 size = getattr(st, 'st_size', 0)
                                 if isinstance(size, int) and size >= 0:
-                                    yield entry_path, size
+                                    yield Path(entry.path), size
                             except (OSError, PermissionError):
                                 continue
                     except (PermissionError, OSError, AttributeError):
@@ -379,22 +375,14 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         limit: Cantidad de archivos pesados a trackear.
     
     Returns:
-        Objeto SummaryData con los resultados agregados.
+        Objetos SummaryData con los resultados agregados.
     """
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, Tuple[int, int]] = defaultdict(lambda: (0, 0))
     top_heap: List[Tuple[int, Path]] = []
     
-    # Validar directorio antes de delegar a walk_files
-    if not directory.exists() or not directory.is_dir():
-        return SummaryData(0, 0, {}, [])
-    
     for path, size in walk_files(directory, skip_protected):
-        # Validación de integridad de datos recibidos del generador
-        if not isinstance(size, int) or size < 0:
-            continue
-            
         total_bytes += size
         total_files += 1
         

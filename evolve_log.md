@@ -1355,3 +1355,13 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-09-12T11:04:55` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de la detección de caché pasando un único diccionario `memo` compartido a través de `detect_profiles`, evitando el re-cálculo redundante de tamaños de subdirectorios que son compartidos entre rutas de caché de diferentes navegadores (p.ej. estructuras base comunes).
 - `2026-09-12T11:04:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T11:04:55` Corrida terminada. Total usado hoy: 264.
+- `2026-09-12T11:12:47` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-09-12T11:13:16` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_summary_data` eliminando la creación de objetos `Path` redundantes y resoluciones de ruta costosas dentro del bucle de recorrido, aprovechando la información ya disponible en `os.DirEntry`.
+- `2026-09-12T11:13:41` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé la estrategia de hashing evitando re-lecturas innecesarias: ahora `_decide_hash_strategy_and_process` utiliza el hash completo solo si el grupo sigue siendo ambiguo tras el hash parcial, y `hash_file` se ejecuta directamente sobre archivos pequeños en lugar de obligarlos a pasar por una fase de hash parcial redundante.
+- `2026-09-12T11:14:07` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el método `is_finite` en `SystemMetrics` reemplazando la iteración dinámica por `__dataclass_fields__` (que involucra reflexión costosa en cada llamada) por una tupla estática de campos clave, mejorando la eficiencia del bucle principal de `compute_score`.
+- `2026-09-12T11:15:07` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-12T11:16:10` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-12T11:17:16` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-12T11:18:28` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-12T11:18:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T11:18:28` Corrida terminada. Total usado hoy: 268.
