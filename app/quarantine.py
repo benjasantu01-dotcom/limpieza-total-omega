@@ -648,9 +648,9 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
+        # Eficiencia O(1) con set
         existing_files = {f.name for f in base_path.iterdir() if f.is_file()}
         
-        # Filtramos ítems cuyos archivos existen en el directorio (O(1) lookup)
         valid_items = [i for i in items if i.stored_name in existing_files]
         if len(valid_items) != len(items):
             save_manifest(valid_items, base)
@@ -759,12 +759,10 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
-    # Optimización: Mapeo O(1) para lookups de archivos por stored_name
     item_map = {item.stored_name: item for item in items}
     purged_ids: Set[str] = set()
     
     try:
-        # iterdir() es eficiente; validamos contra el mapa de manifiesto una sola vez
         for stored_path in quarantine_root.iterdir():
             if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
                 continue

@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 197
 
@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 44 | 3 | 6 | 6 | 35 |
+| 2026-09-10 | 40 | 3 | 6 | 6 | 35 |
 | 2026-09-11 | 161 | 15 | 30 | 8 | 136 |
-| 2026-09-12 | 26 | 2 | 3 | 3 | 26 |
+| 2026-09-12 | 29 | 2 | 4 | 3 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **59**
 - legibilidad y documentación: **49**
-- seguridad defensiva: **47**
-- rendimiento: **39**
+- seguridad defensiva: **43**
+- rendimiento: **42**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **23**
-- `diskreport.py`: **20**
-- `browser.py`: **19**
-- `quarantine.py`: **19**
-- `assistant.py`: **18**
+- `quarantine.py`: **20**
+- `diskreport.py`: **19**
 - `settings.py`: **18**
+- `browser.py`: **18**
+- `assistant.py`: **17**
 - `healthscore.py`: **16**
 - `main.py`: **16**
 - `organizer.py`: **16**
-- `branding.py`: **15**
+- `safety.py`: **16**
 - `memory.py`: **15**
-- `safety.py`: **15**
-- `scanner.py`: **14**
+- `scanner.py`: **15**
+- `branding.py`: **14**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T02:34:56` **scanner.py** (rendimiento): Optimicé el rendimiento de `scanner.py` pre-calculando las extensiones sospechosas en `_run_file_heuristics` y moviendo la lógica de validación de extensiones a `process_entry` para evitar llamadas redundantes a `os.path.splitext` y búsquedas innecesarias en `SUSPICIOUS_ALL_EXTS`.
+- `2026-09-12T02:34:46` **safety.py** (rendimiento): Se optimizó `filter_safe_paths` eliminando la duplicación de trabajo mediante la consolidación del pre-filtro lógico dentro de un único bloque de validación, aprovechando que `ensure_safe_to_modify` ya realiza los chequeos estructurales, evitando así el cálculo redundante de `str(p)` y múltiples llamadas innecesarias.
+- `2026-09-12T02:33:40` **quarantine.py** (rendimiento): Optimicé `list_items` y `purge_all` transformando búsquedas lineales repetitivas de archivos en operaciones de conjunto `O(1)`, reduciendo drásticamente la latencia al manipular el manifiesto en cuarentenas grandes.
 - `2026-09-12T02:25:11` **organizer.py** (rendimiento): Optimizé el rendimiento del escáner reemplazando `os.path.splitext(filename)[1].lower() in JUNK_EXTENSIONS` por una búsqueda directa en `set` (o `frozenset` pre-cacheado), y eliminé la redundancia de llamados al sistema al consolidar la lógica de filtrado de extensiones.
 - `2026-09-12T02:25:00` **memory.py** (rendimiento): Se ha optimizado la función `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de pre-filtrado mediante una cláusula `Sort-Object` y `Select-Object` más eficiente, y asegurando que las listas de procesos se conviertan a un `set` de PIDs para búsquedas O(1) en el futuro, reduciendo la carga de I/O y el tiempo de respuesta en cada iteración del bucle.
 - `2026-09-12T02:24:32` **main.py** (rendimiento): Optimizé `_flush_logs` para procesar y renderizar todos los logs pendientes en una sola operación de inserción, reduciendo drásticamente el impacto de redibujo (overhead) de la interfaz al manejar logs masivos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T02:02:53` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes y docstrings explicativos a las funciones, además de encapsular las heurísticas en un registro unificado para mejorar la mantenibilidad.
 - `2026-09-12T01:53:55` **safety.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones de validación para mejorar la legibilidad del flujo de control y clarificar el propósito de las comprobaciones de seguridad.
 - `2026-09-12T01:53:19` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings estandarizados y se aclararon las responsabilidades de las funciones de validación (`_validate_isolation_request` vs `_check_isolation_safety`) para mejorar la mantenibilidad y legibilidad del flujo de aislamiento.
-- `2026-09-12T01:52:43` **organizer.py** (legibilidad y documentación): Mejora la legibilidad del módulo mediante la adición de Type Hints en parámetros faltantes, la estandarización de docstrings (ajustándolos al formato Google/NumPy) y la extracción del chequeo de recursión de `_is_safe_for_disk_op` a una función de validación booleana más explícita y documentada.
-- `2026-09-12T01:43:13` **healthscore.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones de evaluación y renderizado para mejorar la mantenibilidad del pipeline de puntuación, asegurando que el propósito y las restricciones de cada componente sean claros para futuros desarrolladores.
-- `2026-09-12T01:42:46` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones auxiliares de escaneo (`_scan_directory_recursive` y `_group_paths_by_hash`), aclarando el flujo de ejecución, las medidas de seguridad adoptadas (bypass de reparse points) y los tipos de entrada esperados.

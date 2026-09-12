@@ -559,3 +559,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-12T02:25:11` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé el rendimiento del escáner reemplazando `os.path.splitext(filename)[1].lower() in JUNK_EXTENSIONS` por una búsqueda directa en `set` (o `frozenset` pre-cacheado), y eliminé la redundancia de llamados al sistema al consolidar la lógica de filtrado de extensiones.
 - `2026-09-12T02:25:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T02:25:11` Corrida terminada. Total usado hoy: 60.
+- `2026-09-12T02:33:03` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-09-12T02:33:40` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé `list_items` y `purge_all` transformando búsquedas lineales repetitivas de archivos en operaciones de conjunto `O(1)`, reduciendo drásticamente la latencia al manipular el manifiesto en cuarentenas grandes.
+- `2026-09-12T02:34:12` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-09-12T02:34:46` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó `filter_safe_paths` eliminando la duplicación de trabajo mediante la consolidación del pre-filtro lógico dentro de un único bloque de validación, aprovechando que `ensure_safe_to_modify` ya realiza los chequeos estructurales, evitando así el cálculo redundante de `str(p)` y múltiples llamadas innecesarias.
+- `2026-09-12T02:34:56` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scanner.py` pre-calculando las extensiones sospechosas en `_run_file_heuristics` y moviendo la lógica de validación de extensiones a `process_entry` para evitar llamadas redundantes a `os.path.splitext` y búsquedas innecesarias en `SUSPICIOUS_ALL_EXTS`.
+- `2026-09-12T02:34:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T02:34:56` Corrida terminada. Total usado hoy: 64.

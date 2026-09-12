@@ -192,8 +192,7 @@ class Scanner:
                 return
 
             if entry.is_file(follow_symlinks=False):
-                _, ext = os.path.splitext(entry.name)
-                ext_low = ext.lower()
+                ext_low = os.path.splitext(entry.name)[1].lower()
                 if ext_low in SUSPICIOUS_ALL_EXTS:
                     self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, FileNotFoundError):
@@ -201,7 +200,14 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """Invoca el motor de heurísticas y agrega resultados a la cola global."""
-        self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
+        findings: ScanResult = []
+        if (double_ext := check_double_extension(path, entry, self.now_ts)):
+            findings.append(double_ext)
+        if ext in SUSPICIOUS_EXECUTABLE_EXT:
+            for check_fn in EXECUTABLE_CHECK_REGISTRY:
+                if (result := check_fn(path, entry, self.now_ts)):
+                    findings.append(result)
+        self.results.extend(findings)
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """
@@ -212,7 +218,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
     
-    if ext in SUSPICIOUS_EXECUTABLE_EXT:
+    if ext and ext.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         for check_fn in EXECUTABLE_CHECK_REGISTRY:
             if (result := check_fn(path, entry, now_ts)):
                 findings.append(result)

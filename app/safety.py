@@ -509,11 +509,6 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     results = []
     for p in paths:
         if p is None: continue
-        # Pre-filtro ligero antes de invocar la validación completa (evita costosos try/except)
-        path_str = str(p)
-        if path_str.startswith(("\\\\", "//")): continue
-        if len(path_str) >= MAX_PATH_LENGTH: continue
-        
         try:
             results.append(ensure_safe_to_modify(p, allow_sensitive=allow_sensitive))
         except UnsafePathError:
