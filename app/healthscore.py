@@ -198,9 +198,12 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
-                msg = rule.message_factory(metrics)
-                if msg:
-                    findings.append(" ".join(msg.split())[:200])
+                try:
+                    msg = rule.message_factory(metrics)
+                    if msg:
+                        findings.append(" ".join(msg.split())[:200])
+                except Exception:
+                    continue
         except Exception:
             continue
 

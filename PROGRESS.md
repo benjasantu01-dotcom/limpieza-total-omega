@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **234** (46.4% de aceptación)
+- Mejoras aceptadas: **235** (46.6% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 98 | 8 | 20 | 3 | 79 |
-| 2026-09-12 | 136 | 7 | 22 | 13 | 118 |
+| 2026-09-11 | 98 | 8 | 20 | 3 | 75 |
+| 2026-09-12 | 137 | 7 | 22 | 13 | 121 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **56**
 - legibilidad y documentación: **52**
-- seguridad defensiva: **44**
+- seguridad defensiva: **45**
 - rendimiento: **42**
 - robustez ante casos límite: **40**
 
@@ -34,10 +34,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **19**
 - `settings.py`: **19**
 - `assistant.py`: **18**
+- `healthscore.py`: **18**
 - `memory.py`: **18**
 - `quarantine.py`: **18**
 - `browser.py`: **17**
-- `healthscore.py`: **17**
 - `safety.py`: **17**
 - `main.py`: **14**
 - `branding.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T12:35:22` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de scoring ante fallos en los factory de mensajes (que podrían intentar acceder a atributos inexistentes o mal formateados en `SystemMetrics`) mediante el encapsulamiento del llamado a `message_factory` en un bloque `try-except` adicional dentro de `_evaluate_rules`, garantizando que un error al generar una recomendación no invalide la evaluación completa del sistema.
 - `2026-09-12T12:26:24` **duplicates.py** (seguridad defensiva): He robustecido la seguridad defensiva de `duplicates.py` eliminando el uso de `os.scandir` sin validación previa, asegurando que cada entrada sea verificada mediante `is_safe_to_modify` antes de ser procesada para evitar la navegación en rutas no autorizadas o fuera del alcance permitido.
 - `2026-09-12T12:25:46` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de "sandbox" para cada iteración, garantizando que el escáner de tamaño nunca pueda salirse de la ruta raíz original mediante enlaces o rutas relativas no resueltas.
 - `2026-09-12T12:25:19` **branding.py** (seguridad defensiva): Mejoré `save_logo_svg` aplicando una validación de seguridad proactiva mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, asegurando que cualquier intento de escribir fuera de rutas permitidas sea bloqueado explícitamente en lugar de fallar silenciosamente.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T11:44:42` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` para manejar estructuras de datos arbitrarias o malformadas mediante una comprobación recursiva de tipos más estricta, evitando `AttributeError` o accesos inseguros a objetos que no son diccionarios simples.
 - `2026-09-12T11:35:19` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuraciones implementando una verificación de integridad de `mtime` más robusta y consolidando el caché en una estructura que minimiza el acceso redundante al disco al evitar conversiones de `Path` a `str` innecesarias y reduciendo las operaciones de `stat()` en el hot-path de `load`.
 - `2026-09-12T11:34:49` **scanner.py** (rendimiento): Optimizé el método `_run_file_heuristics` y la función `scan_file` para evitar realizar múltiples llamadas a `os.path.splitext` y evaluaciones redundantes, utilizando el resultado de la extensión ya extraída y almacenando el registro de heurísticas en una lista local para evitar accesos repetidos a constantes globales.
-- `2026-09-12T11:34:24` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` al reemplazar la lógica de división de cadenas (`split(os.sep)`) por una búsqueda basada en conjuntos (`set`), evitando la creación de listas temporales en cada iteración de un escaneo de disco.
