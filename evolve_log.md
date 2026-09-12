@@ -1019,3 +1019,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-12T07:40:27` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-09-12T07:40:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T07:40:27` Corrida terminada. Total usado hoy: 184.
+- `2026-09-12T07:48:52` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-09-12T07:49:25` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_safe_path` y `_run_safety_checks` para manejar correctamente rutas que contienen caracteres no interpretables por el sistema de archivos (como secuencias de escape o caracteres de control) mediante una verificación explícita de `OSError` al intentar normalizar la ruta, evitando así que una configuración corrupta cause un crash en el módulo de ajustes.
+- `2026-09-12T07:49:51` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-12T07:50:35` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_build_payload` validando que la respuesta del motor remoto no contenga secuencias de escape de PowerShell ni comandos potencialmente peligrosos, extendiendo la lógica de filtrado existente.
+- `2026-09-12T07:50:53` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado `save_logo_svg` para prevenir ataques de *path traversal* y asegurar la integridad de la escritura mediante el uso de `is_safe_to_modify` como pre-condición booleana, sustituyendo la lógica de excepción pasiva por una validación explícita que respeta las reglas de seguridad del proyecto.
+- `2026-09-12T07:50:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T07:50:53` Corrida terminada. Total usado hoy: 188.

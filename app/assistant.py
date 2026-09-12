@@ -701,7 +701,11 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             raw_text = _extract_text_from_gemini_json(data)
             if not raw_text: return None
             
+            # Limpieza adicional post-respuesta para prevenir inyección remota
             clean = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
+            if _is_restricted_content(clean) or _PS_COMMAND_REGEX.search(clean):
+                return None
+                
             final = _validate_response_length(clean)
             
             if _ensure_safe_text(final) and _is_safe_text_structure(final):

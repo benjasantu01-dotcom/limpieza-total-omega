@@ -346,8 +346,11 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination: return None
     try:
         path_input = Path(destination).resolve()
-        # Validación de seguridad obligatoria antes de intentar operar con el sistema de archivos
-        ensure_safe_to_modify(path_input)
+        
+        # Validar seguridad: Solo continuar si la ruta es segura antes de cualquier IO
+        if not is_safe_to_modify(path_input):
+            return None
+            
         parent = path_input.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)

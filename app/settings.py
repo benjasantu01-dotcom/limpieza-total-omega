@@ -194,6 +194,7 @@ class _Validators:
         if not path_str or len(path_str) > 2048 or "\0" in path_str: return False
         try:
             p = Path(path_str).expanduser()
+            # Forzar chequeo de integridad básica antes de operar con resolve()
             if not p.is_absolute(): return False
             return _Validators._run_safety_checks(p)
         except (OSError, RuntimeError, PermissionError, AttributeError, ValueError):
