@@ -475,12 +475,12 @@ def explain_area(area: Any) -> str:
         return "No tengo una explicación para esa área."
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
-@lru_cache(maxsize=8)
-def _get_active_problems(ctx: SystemContext) -> list[str]:
+@lru_cache(maxsize=16)
+def _get_active_problems(ctx: SystemContext) -> tuple[str, ...]:
     """Identifica problemas activos comparando el contexto contra criterios de salud definidos."""
-    return [msg for crit in _CRITERIOS_SALUD if (msg := crit.format_if_triggered(ctx))]
+    return tuple(msg for crit in _CRITERIOS_SALUD if (msg := crit.format_if_triggered(ctx)))
 
-def _format_problem_message(problems: list[str], score: Union[int, str]) -> str:
+def _format_problem_message(problems: tuple[str, ...], score: Union[int, str]) -> str:
     """Construye una oración descriptiva con los problemas encontrados, priorizando por impacto."""
     try:
         clean_score = str(score)
@@ -490,9 +490,9 @@ def _format_problem_message(problems: list[str], score: Union[int, str]) -> str:
     except (TypeError, ValueError):
         return "Tu sistema tiene problemas detectados."
 
-def _identify_active_problems(ctx: SystemContext) -> list[str]:
+def _identify_active_problems(ctx: SystemContext) -> tuple[str, ...]:
     """Valida la integridad del escaneo y retorna los problemas identificados."""
-    return _get_active_problems(ctx) if ctx.analyzed else []
+    return _get_active_problems(ctx) if ctx.analyzed else ()
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Procesa consultas sobre memoria RAM basándose en las métricas actuales del contexto."""

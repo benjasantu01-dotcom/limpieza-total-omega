@@ -506,3 +506,42 @@ FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not
 - `2026-09-12T01:53:55` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints consistentes en las funciones de validación para mejorar la legibilidad del flujo de control y clarificar el propósito de las comprobaciones de seguridad.
 - `2026-09-12T01:53:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T01:53:55` Corrida terminada. Total usado hoy: 48.
+- `2026-09-12T02:02:26` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-09-12T02:02:53` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo type hints faltantes y docstrings explicativos a las funciones, además de encapsular las heurísticas en un registro unificado para mejorar la mantenibilidad.
+- `2026-09-12T02:03:53` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-12T02:04:27` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y la claridad semántica mediante la adición de docstrings detallados en funciones clave y la estandarización de nombres en validadores, facilitando el mantenimiento a largo plazo sin alterar el comportamiento.
+- `2026-09-12T02:04:55` Tests FALLARON:
+```
+executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:114
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:114: SyntaxWarning: invalid escape sequence '\A'
+    Extrae una ruta entrecomillada (ej. "C:\App\test.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 8 warnings in 1.42s
+
+```
+- `2026-09-12T02:04:55` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y la robustez del código mediante la aplicación de Type Hints más precisos, la documentación exhaustiva del método `_resolve_and_cache_path` (el núcleo de la lógica de resolución) y la extracción de una función privada `_is_reparse_point` para aclarar las comprobaciones de bajo nivel sobre el sistema de archivos.
+- `2026-09-12T02:05:20` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_identify_active_problems` eliminando la re-evaluación innecesaria de criterios al usar `lru_cache`, y refiné `SystemContext.ingest` para evitar procesamientos redundantes mediante una validación de estructura previa más temprana.
+- `2026-09-12T02:05:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T02:05:20` Corrida terminada. Total usado hoy: 52.

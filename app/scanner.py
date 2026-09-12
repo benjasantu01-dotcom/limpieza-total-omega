@@ -102,10 +102,20 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 
+def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
+    """Detecta archivos ejecutables con tamaño 0, a menudo usados como placeholders o fallos de inyección."""
+    try:
+        if entry and entry.is_file(follow_symlinks=False) and entry.stat().st_size == 0:
+            return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
+    except (OSError, PermissionError, AttributeError):
+        pass
+    return None
+
 # Registro formal de reglas heurísticas para ejecutables
 EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
     check_system_lookalike,
-    check_recent_executable_in_downloads
+    check_recent_executable_in_downloads,
+    check_empty_file
 ]
 
 class Scanner:
@@ -159,7 +169,6 @@ class Scanner:
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, PermissionError, FileNotFoundError):
-            # En caso de error de acceso, asumimos seguridad antes que recursión profunda
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
@@ -204,17 +213,9 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
         findings.append(double_ext)
     
     if ext in SUSPICIOUS_EXECUTABLE_EXT:
-        try:
-            if entry and entry.is_file(follow_symlinks=False):
-                stats = entry.stat()
-                if stats.st_size == 0:
-                    findings.append(Suspicion(path, "Archivo vacío sospechoso", "warning"))
-                
-                for check_fn in EXECUTABLE_CHECK_REGISTRY:
-                    if (result := check_fn(path, entry, now_ts)):
-                        findings.append(result)
-        except (OSError, PermissionError, AttributeError, FileNotFoundError):
-            pass
+        for check_fn in EXECUTABLE_CHECK_REGISTRY:
+            if (result := check_fn(path, entry, now_ts)):
+                findings.append(result)
         
     return findings
 

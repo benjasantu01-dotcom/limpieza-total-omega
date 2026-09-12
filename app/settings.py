@@ -230,7 +230,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
-        """Filtra strings contra una lista blanca (white-list) definida por el contexto del enum."""
+        """Filtra strings contra una lista blanca definida por el contexto del enum."""
         val = text.lower()
         allowed = _ENUM_VALS.get(key)
         if allowed: return val if val in allowed else None
@@ -239,7 +239,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        """Sanitiza strings de configuración previniendo inyecciones, caracteres no imprimibles y path traversal."""
+        """Sanitiza strings, previniendo inyecciones, caracteres no imprimibles y path traversal."""
         text = str(val).strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(key, text)
@@ -281,7 +281,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return _PATH_CACHE["default"]
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida un diccionario arbitrario contra el esquema AppSettings."""
+    """Valida un diccionario arbitrario contra el esquema AppSettings, descartando valores inválidos."""
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_str, val in raw_values.items():
@@ -322,7 +322,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Persiste la configuración de forma atómica con reintentos para evitar bloqueos."""
+    """Persiste la configuración de forma atómica con reintentos para evitar bloqueos y corrupción."""
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     cleaned_settings = validate(values)
@@ -372,7 +372,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Modificación incremental: carga la configuración actual, aplica parches."""
+    """Modificación incremental: carga la configuración actual, aplica parches y guarda si hay cambios."""
     current = load(custom_base)
     modified = False
     for k, v in changes.items():
@@ -395,18 +395,18 @@ def get(key: str, custom_base: PathLike | None = None) -> Any:
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
-    """Obtiene la clave API, priorizando la variable de entorno."""
+    """Obtiene la clave API, priorizando la variable de entorno sobre el archivo de configuración."""
     if env_key := os.environ.get(API_KEY_ENV_VAR, "").strip(): return env_key
     return load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
-    """Verifica la elegibilidad del asistente."""
+    """Verifica si el asistente IA está habilitado mediante configuración o variables de entorno."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado")) and bool(settings.get("asistente_clave_api", "").strip())
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
-    """Genera una representación textual de las preferencias actuales."""
+    """Genera una representación textual formateada de las preferencias actuales para reporte."""
     current = load(custom_base)
     api_key_env = os.environ.get(API_KEY_ENV_VAR)
     api_key_file = current.get("asistente_clave_api", "").strip()
