@@ -105,8 +105,9 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta archivos ejecutables con tamaño 0, a menudo usados como placeholders o fallos de inyección."""
     try:
-        if entry and entry.is_file(follow_symlinks=False) and entry.stat().st_size == 0:
-            return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
+        if entry and entry.is_file(follow_symlinks=False):
+            if entry.stat().st_size == 0:
+                return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
     except (OSError, PermissionError, AttributeError):
         pass
     return None

@@ -176,9 +176,7 @@ class _Validators:
             return _SAFETY_CACHE[path_str]
         
         try:
-            # Mantener caché pequeña para evitar fugas de memoria
             if len(_SAFETY_CACHE) > 100: _SAFETY_CACHE.clear()
-            
             resolved = path_obj.resolve(strict=False)
             if _Validators._is_reparse_point(resolved):
                 is_safe = False
@@ -273,7 +271,6 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
         return cached
     try:
         base = Path(custom_base).expanduser()
-        # Solo resolvemos si es necesario, minimizando syscalls
         resolved = base.resolve() / SETTINGS_FILE
         _PATH_CACHE[cache_key] = resolved
         return resolved
@@ -310,7 +307,12 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             return cached[1].copy()
             
         with open(ruta, "r", encoding="utf-8") as f:
-            data = validate(json.load(f))
+            raw = json.load(f)
+            data = validate(raw)
+            # Asegurar que todas las claves del esquema existan
+            for k in DEFAULTS:
+                if k not in data: data[k] = DEFAULTS[k]
+        
         _CACHE[ruta_str] = (mtime, data)
         return data.copy()
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):

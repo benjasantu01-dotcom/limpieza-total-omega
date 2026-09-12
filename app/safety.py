@@ -47,7 +47,13 @@ MAX_PATH_LENGTH: Final[int] = 260
 MAX_FILE_SIZE: Final[int] = 2 * 1024 * 1024 * 1024  # 2GB límite de seguridad
 
 # Constantes Win32 Drive Types
+DRIVE_UNKNOWN: Final[int] = 0
+DRIVE_NO_ROOT_DIR: Final[int] = 1
+DRIVE_REMOVABLE: Final[int] = 2
+DRIVE_FIXED: Final[int] = 3
 DRIVE_REMOTE: Final[int] = 4
+DRIVE_CDROM: Final[int] = 5
+DRIVE_RAMDISK: Final[int] = 6
 
 class SafetyValidationErrorCode(IntEnum):
     """Códigos de error para diagnósticos específicos en fallos de seguridad."""
@@ -73,6 +79,7 @@ class SafetyValidationErrorCode(IntEnum):
     ENCRYPTED_OR_COMPRESSED = 19
     VOLUME_READ_ONLY = 20
     REMOTE_DRIVE_DETECTED = 21
+    REMOVABLE_DRIVE_DETECTED = 22
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
@@ -99,6 +106,7 @@ class ProtectionReason(Enum):
     ENCRYPTED_OR_COMPRESSED = "cifrado o comprimido"
     VOLUME_READ_ONLY = "volumen de solo lectura"
     REMOTE_DRIVE = "unidad de red detectada"
+    REMOVABLE_DRIVE = "unidad extraíble detectada"
 
 class ValidationContext(Enum):
     """Define si la validación es puramente estructural o requiere acceso a disco."""
@@ -231,7 +239,6 @@ def _is_file_in_use(path_str: str) -> bool:
     
     kernel32 = ctypes.windll.kernel32
     INVALID_HANDLE_VALUE = -1
-    # 0x80000000 = GENERIC_READ, 0 = FILE_SHARE_NONE (exclusivo)
     try:
         handle = kernel32.CreateFileW(path_str, 0x80000000, 0, None, 3, 0x00000080, None)
         if handle == INVALID_HANDLE_VALUE: 
@@ -269,7 +276,8 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.REPARSE_POINT: SafetyValidationErrorCode.REPARSE_POINT_DETECTED,
     ProtectionReason.ADS: SafetyValidationErrorCode.ADS_DETECTED,
     ProtectionReason.VOLUME_READ_ONLY: SafetyValidationErrorCode.VOLUME_READ_ONLY,
-    ProtectionReason.REMOTE_DRIVE: SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED
+    ProtectionReason.REMOTE_DRIVE: SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED,
+    ProtectionReason.REMOVABLE_DRIVE: SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED
 }
 
 def _check_file_integrity(path: Path) -> None:
@@ -427,16 +435,17 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     
-    # Validar si el volumen es Read-Only o Remoto
     if os.name == 'nt':
         try:
             root = target_path.anchor
             if root:
                 drive_type = ctypes.windll.kernel32.GetDriveTypeW(root)
-                if drive_type == 1:
-                     raise UnsafePathError("Unidad inaccesible o inexistente.", SafetyValidationErrorCode.IO_ERROR)
+                if drive_type == DRIVE_NO_ROOT_DIR:
+                     raise UnsafePathError("Unidad inaccesible.", SafetyValidationErrorCode.IO_ERROR)
                 if drive_type == DRIVE_REMOTE:
                      raise UnsafePathError("Unidad de red bloqueada.", SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED)
+                if drive_type == DRIVE_REMOVABLE:
+                     raise UnsafePathError("Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED)
         except OSError:
              raise UnsafePathError("Error al consultar estado de unidad.", SafetyValidationErrorCode.IO_ERROR)
 
