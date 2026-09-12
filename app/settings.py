@@ -333,6 +333,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     for attempt in range(3):
         try:
+            # Defensa: verificar integridad del destino antes de tocar el sistema de archivos
+            ensure_safe_to_modify(ruta.parent)
+            
             if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
             
             data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
@@ -348,7 +351,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             os.replace(temp_path, ruta)
             _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
             return ruta
-        except (OSError, IOError, PermissionError):
+        except (OSError, IOError, PermissionError, UnsafePathError):
             if attempt < 2:
                 time.sleep(0.1)
                 continue

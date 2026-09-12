@@ -617,3 +617,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-12T03:45:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-12T03:45:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T03:45:53` Corrida terminada. Total usado hoy: 92.
+- `2026-09-12T03:54:30` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-09-12T03:55:04` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-09-12T03:55:28` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
+- `2026-09-12T03:56:01` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `save()` aplicando `ensure_safe_to_modify` sobre el directorio padre de la configuración antes de realizar cualquier operación de escritura, garantizando que el archivo nunca se cree en rutas protegidas incluso si `settings_path` fuera manipulado.
+- `2026-09-12T03:56:13` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 374): invalid character '，' (U+FF0C)
+- `2026-09-12T03:56:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T03:56:13` Corrida terminada. Total usado hoy: 96.

@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **243** (48.2% de aceptación)
+- Mejoras aceptadas: **244** (48.4% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 184
+- Sin respuesta de la IA (error o límite): 181
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 34 | 2 | 5 | 4 | 17 |
+| 2026-09-10 | 34 | 2 | 5 | 4 | 13 |
 | 2026-09-11 | 161 | 15 | 30 | 8 | 136 |
-| 2026-09-12 | 48 | 2 | 6 | 5 | 31 |
+| 2026-09-12 | 49 | 2 | 8 | 5 | 32 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **59**
 - legibilidad y documentación: **49**
+- seguridad defensiva: **47**
 - robustez ante casos límite: **46**
-- seguridad defensiva: **46**
 - rendimiento: **43**
 
 ## Mejoras aceptadas por archivo
@@ -33,9 +33,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **24**
 - `quarantine.py`: **21**
 - `diskreport.py`: **20**
+- `settings.py`: **20**
 - `assistant.py`: **19**
 - `browser.py`: **19**
-- `settings.py`: **19**
 - `organizer.py`: **18**
 - `healthscore.py`: **17**
 - `main.py`: **17**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T03:56:01` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` aplicando `ensure_safe_to_modify` sobre el directorio padre de la configuración antes de realizar cualquier operación de escritura, garantizando que el archivo nunca se cree en rutas protegidas incluso si `settings_path` fuera manipulado.
 - `2026-09-12T03:45:50` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` implementando un chequeo estricto de los atributos del sistema en Windows durante el registro del ítem, evitando la manipulación o la persistencia de archivos marcados como "Sistema" o "Ocultos" que podrían indicar ofuscación avanzada o malware, reforzando la integridad del sandbox.
 - `2026-09-12T03:45:16` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `organizer.py` implementando una validación estricta de "longitud de ruta" en el escáner recursivo y un chequeo de integridad para evitar colisiones de rutas fuera del alcance del directorio destino, previniendo errores de I/O maliciosos o accidentales.
 - `2026-09-12T03:44:50` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_path` y `_is_safe_to_trim` incorporando la validación del sistema de archivos mediante `is_protected_path` sobre una ruta normalizada y absoluta antes de realizar cualquier operación de bajo nivel con handles de procesos, asegurando que no se interactúe con ejecutables fuera del alcance permitido.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T03:14:43` **safety.py** (robustez ante casos límite): Se implementó un chequeo de integridad en `ensure_safe_to_modify` para detectar si una ruta, aunque no sea un reparse point directo, termina residiendo físicamente en una unidad extraíble, previniendo errores de I/O por desconexión repentina y mejorando la robustez ante hardware volátil.
 - `2026-09-12T03:07:08` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_locked` para manejar de forma segura archivos en uso mediante un manejo de excepciones más granular y evitando la creación de descriptores innecesarios si la ruta no existe, mejorando la fiabilidad del chequeo antes de operaciones críticas.
 - `2026-09-12T03:06:49` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos con permisos de lectura restringidos o bloqueados por el sistema operativo, evitando la propagación de excepciones que podrían detener el bucle de escaneo o limpieza.
-- `2026-09-12T03:05:56` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_target_choice_changed` para manejar correctamente rutas inexistentes o inaccesibles, evitando que la aplicación se comporte de forma errática ante selecciones de disco inválidas al capturar las excepciones específicas de `Path.resolve(strict=True)` y validarlas mediante el motor de seguridad.
