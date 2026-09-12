@@ -509,10 +509,11 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
             parts.append("Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM.")
         
         parts.append("No busques un 'liberador de RAM': la PC queda más lenta.")
-        if int(ctx.get_metric("startup_count", 0)) > 12:
-            parts.append(f"Sí te conviene mirar los {int(ctx.get_metric('startup_count', 0))} programas de inicio.")
+        startup_count = int(ctx.get_metric("startup_count", 0))
+        if startup_count > 12:
+            parts.append(f"Sí te conviene mirar los {startup_count} programas de inicio.")
         return Answer(_validate_response_length(" ".join(parts)), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
-    except Exception:
+    except (ValueError, TypeError, AttributeError):
         return Answer("Error al consultar estado de memoria.")
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
@@ -531,7 +532,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
             msg += " ¡Alerta! Estás por debajo del 10%, afecta la estabilidad."
         msg += " Empezá por Limpieza: mueve los candidatos a revisión."
         return Answer(_validate_response_length(msg), notice=OFFLINE_NOTICE)
-    except Exception:
+    except (ValueError, TypeError, AttributeError):
         return Answer("Error al consultar estado de disco.")
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:

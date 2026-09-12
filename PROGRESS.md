@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
-- Rechazadas por tests: 18
+- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 130 | 13 | 27 | 7 | 99 |
-| 2026-09-12 | 93 | 5 | 16 | 11 | 103 |
+| 2026-09-11 | 127 | 12 | 27 | 7 | 99 |
+| 2026-09-12 | 94 | 5 | 16 | 11 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **48**
 - seguridad defensiva: **48**
-- manejo de errores y validación de entradas: **45**
+- manejo de errores y validación de entradas: **46**
+- legibilidad y documentación: **45**
 - robustez ante casos límite: **42**
 - rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
+- `duplicates.py`: **20**
 - `settings.py`: **19**
-- `diskreport.py`: **18**
 - `organizer.py`: **18**
 - `quarantine.py`: **18**
-- `main.py`: **17**
-- `assistant.py`: **16**
+- `assistant.py`: **17**
+- `diskreport.py`: **17**
 - `memory.py`: **16**
 - `safety.py`: **16**
+- `main.py`: **16**
 - `browser.py`: **15**
 - `healthscore.py`: **15**
 - `branding.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T09:44:47` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `handle_ram` y `handle_disk` implementando un manejo preventivo de errores para evitar que un valor inesperado o un problema de acceso a las métricas provoque una excepción durante el procesamiento de la consulta del usuario.
 - `2026-09-12T08:30:05` **startup.py** (seguridad defensiva): Se ha mejorado `_validate_file_access` añadiendo una comprobación explícita mediante `p.exists()` antes de realizar `lstat`, asegurando que no se intenten analizar rutas que ya no existen, y reforzando la validación de seguridad contra archivos de sistema utilizando `is_protected_path` directamente antes de cualquier operación de I/O sobre el sistema de archivos.
 - `2026-09-12T08:20:53` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para garantizar que la resolución de rutas no solo valide el destino final, sino que confirme que el directorio padre exista y sea accesible, mitigando riesgos ante manipulaciones de punteros simbólicos durante la carga de configuraciones.
 - `2026-09-12T08:20:15` **safety.py** (seguridad defensiva): Se añadió una verificación de archivos temporales de sistema (archivos de paginación e hibernación) en `_VALIDATORS` para prevenir intentos de manipulación de archivos bloqueados a nivel de kernel que podrían causar inestabilidad en el sistema operativo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T07:49:25` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_path` y `_run_safety_checks` para manejar correctamente rutas que contienen caracteres no interpretables por el sistema de archivos (como secuencias de escape o caracteres de control) mediante una verificación explícita de `OSError` al intentar normalizar la ruta, evitando así que una configuración corrupta cause un crash en el módulo de ajustes.
 - `2026-09-12T07:30:55` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante la concurrencia y permisos mediante la implementación de un mecanismo de validación de bloqueo exclusivo en `_is_file_locked` que utiliza `os.open` con `os.O_EXCL` (solo en Windows), garantizando que el archivo no esté siendo utilizado por otro proceso antes de intentar cualquier operación.
 - `2026-09-12T07:30:43` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_path` y `trim_working_set` ante errores de sistema y condiciones de carrera, asegurando que `OpenProcess` utilice un manejo de excepciones limpio y verificaciones de nulidad preventivas para evitar fallos catastróficos en el módulo.
-- `2026-09-12T07:30:14` **main.py** (robustez ante casos límite): Se introdujo una validación robusta de existencia y accesibilidad en el método `_build_tab_salud` antes de renderizar los componentes, asegurando que la aplicación no intente interactuar con widgets que podrían haber fallado en su inicialización debido a estados de carrera o problemas de permisos en entornos restringidos.
