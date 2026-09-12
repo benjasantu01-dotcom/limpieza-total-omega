@@ -320,7 +320,12 @@ def _check_path_syntax_integrity(path: Path) -> None:
 
 
 def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
-    """Verifica seguridad del origen y destino antes del aislamiento."""
+    """
+    Verifica condiciones de seguridad específicas sobre el origen y destino.
+    
+    Lanza UnsafePathError si detecta intentos de manipulación fuera del sandbox,
+    operaciones circulares o archivos no permitidos (vínculos, vacíos).
+    """
     resolved_source = source_path.resolve(strict=True)
     resolved_dest_dir = dest_dir.resolve()
     
@@ -355,7 +360,12 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
 
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
-    """Ejecuta el protocolo de pre-validación de seguridad."""
+    """
+    Ejecuta el protocolo completo de pre-validación de seguridad.
+    
+    Orquesta las comprobaciones de sintaxis, atributos de sistema y 
+    seguridad lógica del sandbox antes de cualquier movimiento de datos.
+    """
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
     

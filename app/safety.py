@@ -223,7 +223,7 @@ def _is_offline(path_str: str) -> bool:
     except (AttributeError, OSError, TypeError): return False
 
 def _is_file_in_use(path_str: str) -> bool:
-    """Verifica si un proceso está bloqueando el archivo usando flags de acceso exclusivo."""
+    """Verifica si un proceso está bloqueando el archivo mediante acceso exclusivo de WinAPI."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str:
         return False
     if not os.path.exists(path_str):

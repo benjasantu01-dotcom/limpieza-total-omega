@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 53 | 3 | 7 | 8 | 39 |
+| 2026-09-10 | 51 | 3 | 7 | 8 | 37 |
 | 2026-09-11 | 161 | 15 | 30 | 8 | 136 |
-| 2026-09-12 | 13 | 1 | 2 | 2 | 26 |
+| 2026-09-12 | 16 | 1 | 3 | 2 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **59**
 - seguridad defensiva: **47**
-- robustez ante casos límite: **46**
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **47**
+- robustez ante casos límite: **44**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **23**
-- `browser.py`: **20**
 - `diskreport.py`: **20**
-- `assistant.py`: **18**
+- `browser.py`: **19**
+- `quarantine.py`: **19**
 - `settings.py`: **18**
-- `quarantine.py`: **18**
+- `assistant.py`: **17**
 - `healthscore.py`: **16**
 - `main.py`: **16**
 - `memory.py`: **15**
+- `organizer.py`: **15**
+- `safety.py`: **15**
 - `scanner.py`: **14**
 - `branding.py`: **14**
-- `organizer.py`: **14**
-- `safety.py`: **14**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T01:53:55` **safety.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones de validación para mejorar la legibilidad del flujo de control y clarificar el propósito de las comprobaciones de seguridad.
+- `2026-09-12T01:53:19` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings estandarizados y se aclararon las responsabilidades de las funciones de validación (`_validate_isolation_request` vs `_check_isolation_safety`) para mejorar la mantenibilidad y legibilidad del flujo de aislamiento.
+- `2026-09-12T01:52:43` **organizer.py** (legibilidad y documentación): Mejora la legibilidad del módulo mediante la adición de Type Hints en parámetros faltantes, la estandarización de docstrings (ajustándolos al formato Google/NumPy) y la extracción del chequeo de recursión de `_is_safe_for_disk_op` a una función de validación booleana más explícita y documentada.
 - `2026-09-12T01:43:13` **healthscore.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones de evaluación y renderizado para mejorar la mantenibilidad del pipeline de puntuación, asegurando que el propósito y las restricciones de cada componente sean claros para futuros desarrolladores.
 - `2026-09-12T01:42:46` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones auxiliares de escaneo (`_scan_directory_recursive` y `_group_paths_by_hash`), aclarando el flujo de ejecución, las medidas de seguridad adoptadas (bypass de reparse points) y los tipos de entrada esperados.
 - `2026-09-12T01:34:13` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings más precisos en `walk_files` y `_collect_summary_data`, clarificando el flujo de datos y las garantías de seguridad sobre el uso de memoria (heap) durante el escaneo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T01:02:16` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la validación de tipos y estados de entrada en funciones críticas (`_collect_candidates`, `_refine_by_deep_hash`, `_group_paths_by_hash`) para evitar excepciones no capturadas al procesar rutas mal formadas, asegurando que el flujo de escaneo sea robusto frente a datos inesperados.
 - `2026-09-12T01:01:50` **diskreport.py** (manejo de errores y validación de entradas): He mejorado la robustez de `walk_files` y `_collect_summary_data` ante errores inesperados durante el acceso a archivos, reemplazando accesos directos por capturas de excepciones más granulares y validando la integridad de los resultados antes de procesarlos, cumpliendo con el enfoque de manejo de errores y validación de entradas.
 - `2026-09-12T00:53:35` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_kernel32` y `base_directories` ante entornos con permisos restringidos o variables de entorno malformadas mediante el uso de bloques `try-except` más específicos y validación de tipos, evitando que errores de acceso a disco silencien fallos críticos de configuración.
-- `2026-09-12T00:52:56` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y la ingesta de datos en `SystemContext.ingest` mediante el uso de excepciones específicas para evitar que errores inesperados en fuentes externas (como diccionarios con claves malformadas o tipos incompatibles) interrumpan el flujo de trabajo, además de asegurar que la validación de `grade` sea consistente con las políticas de seguridad.
-- `2026-09-11T14:29:35` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` eliminando el uso de `shutil.copy2` para crear respaldos, ya que al ser una operación de copia no controlada por `ensure_safe_to_modify` sobre archivos arbitrarios, presentaba un riesgo innecesario; ahora el respaldo se gestiona mediante escritura atómica directa con validación de destino, manteniendo la integridad sin dependencias de alto nivel.
-- `2026-09-11T14:19:26` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_atomic_isolate_file` reemplazando la apertura manual con `os.open` por un contexto más robusto que garantiza el cierre del descriptor de archivo, evitando fugas de recursos y bloqueos de acceso durante la operación de aislamiento.
