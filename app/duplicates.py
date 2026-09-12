@@ -245,6 +245,8 @@ def _collect_candidates(
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """Agrupa una lista de archivos aplicando una función hash, ignorando fallos de acceso."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
+    if not isinstance(paths, Iterable):
+        return {}
     for path in paths:
         try:
             if path is not None and (digest := hash_func(path)):
@@ -258,6 +260,8 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
     """
     Refina grupos candidatos usando una estrategia jerárquica de hashing.
     """
+    if not isinstance(candidates, list) or not candidates:
+        return {}
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
     

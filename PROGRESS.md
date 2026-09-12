@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 60 | 4 | 10 | 8 | 48 |
+| 2026-09-10 | 58 | 4 | 8 | 8 | 48 |
 | 2026-09-11 | 161 | 15 | 30 | 8 | 136 |
-| 2026-09-12 | 2 | 0 | 0 | 0 | 22 |
+| 2026-09-12 | 5 | 0 | 0 | 0 | 23 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **52**
+- manejo de errores y validación de entradas: **55**
 - seguridad defensiva: **47**
 - robustez ante casos límite: **46**
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **42**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
+- `duplicates.py`: **22**
 - `browser.py`: **20**
 - `assistant.py`: **19**
-- `quarantine.py`: **18**
+- `diskreport.py`: **19**
 - `settings.py`: **18**
-- `diskreport.py`: **18**
-- `main.py`: **16**
-- `scanner.py`: **15**
+- `main.py`: **17**
+- `quarantine.py`: **17**
 - `healthscore.py`: **15**
 - `memory.py`: **15**
+- `scanner.py`: **14**
 - `branding.py`: **14**
 - `organizer.py`: **14**
 - `safety.py`: **13**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T01:03:39` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_ask_assistant` y `on_save_settings` validando la presencia y el estado de los widgets antes de intentar leer su contenido, evitando excepciones `TclError` y `AttributeError` al interactuar con la interfaz en estados transitorios.
+- `2026-09-12T01:02:16` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la validación de tipos y estados de entrada en funciones críticas (`_collect_candidates`, `_refine_by_deep_hash`, `_group_paths_by_hash`) para evitar excepciones no capturadas al procesar rutas mal formadas, asegurando que el flujo de escaneo sea robusto frente a datos inesperados.
+- `2026-09-12T01:01:50` **diskreport.py** (manejo de errores y validación de entradas): He mejorado la robustez de `walk_files` y `_collect_summary_data` ante errores inesperados durante el acceso a archivos, reemplazando accesos directos por capturas de excepciones más granulares y validando la integridad de los resultados antes de procesarlos, cumpliendo con el enfoque de manejo de errores y validación de entradas.
 - `2026-09-12T00:53:35` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_kernel32` y `base_directories` ante entornos con permisos restringidos o variables de entorno malformadas mediante el uso de bloques `try-except` más específicos y validación de tipos, evitando que errores de acceso a disco silencien fallos críticos de configuración.
 - `2026-09-12T00:52:56` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y la ingesta de datos en `SystemContext.ingest` mediante el uso de excepciones específicas para evitar que errores inesperados en fuentes externas (como diccionarios con claves malformadas o tipos incompatibles) interrumpan el flujo de trabajo, además de asegurar que la validación de `grade` sea consistente con las políticas de seguridad.
 - `2026-09-11T14:29:35` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` eliminando el uso de `shutil.copy2` para crear respaldos, ya que al ser una operación de copia no controlada por `ensure_safe_to_modify` sobre archivos arbitrarios, presentaba un riesgo innecesario; ahora el respaldo se gestiona mediante escritura atómica directa con validación de destino, manteniendo la integridad sin dependencias de alto nivel.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-11T13:59:56` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_excluded_path` y `walk_files` mediante la validación explícita de atributos de archivo y manejo de errores de acceso durante la recolección de metadatos, garantizando que el escáner no intente procesar rutas inaccesibles o reparse points bloqueados.
 - `2026-09-11T13:50:00` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_build_payload` y `_call_gemini` integrando el validador `_is_safe_text_structure` dentro de la secuencia crítica de serialización, asegurando que ningún dato pueda ser manipulado antes de salir del equipo hacia la red.
 - `2026-09-11T13:49:01` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` implementando una limpieza explícita de archivos temporales huérfanos antes de intentar una escritura, asegurando que bloqueos previos por permisos no impidan operaciones futuras.
-- `2026-09-11T13:48:24` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_reparse_point` y `_is_safe_entry` para manejar explícitamente el caso de rutas inexistentes o archivos bloqueados/eliminados durante la iteración, evitando el uso de `True` como fallback ante excepciones de acceso al sistema de archivos (lo cual prevenía el escaneo en directorios legítimos pero con permisos restrictivos).
-- `2026-09-11T13:38:54` **safety.py** (robustez ante casos límite): Se añadió un mecanismo de protección contra "Race Conditions" al realizar chequeos de integridad mediante el uso de `os.open` con flags de acceso atómico y verificación de handle, garantizando que el estado del archivo no cambie entre la validación y la operación de limpieza.
-- `2026-09-11T13:37:39` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para manejar archivos vacíos o inaccesibles sin recurrir a excepciones genéricas, y añadí una verificación de acceso de escritura (W_OK) antes de `ensure_safe_to_modify` en `stage_for_review` y `delete_reviewed` para evitar errores de I/O en volúmenes de solo lectura.

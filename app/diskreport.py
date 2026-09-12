@@ -293,9 +293,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             except OSError: continue
                         elif entry.is_file(follow_symlinks=False):
                             if skip_protected and is_protected_path(entry_path): continue
-                            # Verificación defensiva antes de obtener tamaño
-                            st = entry.stat()
-                            yield entry_path, max(0, int(getattr(st, 'st_size', 0)))
+                            try:
+                                st = entry.stat()
+                                size = int(getattr(st, 'st_size', 0))
+                                if size >= 0:
+                                    yield entry_path, size
+                            except (OSError, PermissionError):
+                                continue
                     except (PermissionError, OSError, AttributeError):
                         continue
         except (PermissionError, OSError):
@@ -372,8 +376,10 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     # Procesamiento iterativo de archivos encontrados en el sistema
     for path, size in walk_files(directory, skip_protected):
-        safe_size = max(0, int(size))
-        total_bytes += safe_size
+        if not isinstance(size, int) or size < 0:
+            continue
+            
+        total_bytes += size
         total_files += 1
         
         # Categorización por extensión para reporte de uso
@@ -382,15 +388,15 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         except Exception:
             ext = "(error lectura)"
         
-        ext_sizes[ext] += safe_size
+        ext_sizes[ext] += size
         ext_counts[ext] += 1
         
         # Mantenimiento de heap para los N archivos más pesados
         if limit > 0:
             if len(top_heap) < limit:
-                heapq.heappush(top_heap, (safe_size, path))
-            elif safe_size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (safe_size, path))
+                heapq.heappush(top_heap, (size, path))
+            elif size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
                     
     return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_heap)
 

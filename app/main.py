@@ -1779,6 +1779,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @validated_ui_operation
     def on_ask_assistant(self, question: Optional[str] = None) -> None:
         """Envía una consulta al asistente basado en el contexto de métricas."""
+        # Validación de widget de entrada
         if not hasattr(self, 'question_entry') or not self.question_entry.winfo_exists():
             return
             
@@ -1826,6 +1827,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except (tk.TclError, Exception):
                 continue
         
+        # Validación de widgets antes de lectura
         try:
             if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
                 valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
@@ -1852,6 +1854,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             propuestos = self._collect_settings()
             
+            # Validación de activación de asistente con confirmación
             if propuestos.get("asistente_activado") and not self.settings.get("asistente_activado"):
                 if not self._confirm(
                     "Activar asistente en línea",
