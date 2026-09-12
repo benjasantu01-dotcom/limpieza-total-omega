@@ -92,10 +92,10 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if directory is None:
         return None
     try:
-        path_obj = Path(directory).resolve(strict=True)
-        # Validación: solo permitimos el procesamiento si la ruta resuelta es absoluta,
-        # un directorio existente, no protegido y con permisos de lectura.
-        if path_obj.is_absolute() and path_obj.is_dir() and not is_protected_path(path_obj) and os.access(path_obj, os.R_OK):
+        path_obj = Path(directory).resolve()
+        # Validación: solo permitimos el procesamiento si la ruta existe,
+        # es un directorio, no es protegida y tenemos acceso de lectura.
+        if path_obj.exists() and path_obj.is_dir() and not is_protected_path(path_obj) and os.access(path_obj, os.R_OK):
             return path_obj
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
         pass
@@ -236,9 +236,8 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None:
         return None
     try:
-        p = Path(mount).resolve(strict=True)
-        # Verificación explícita de seguridad y tipo antes de consultar uso
-        if p.is_absolute() and p.is_dir() and not is_protected_path(p):
+        p = Path(mount)
+        if p.exists() and not is_protected_path(p):
             usage = shutil.disk_usage(p)
             return DriveUsage(str(p), usage.total, usage.used, usage.free)
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError):
@@ -290,6 +289,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if entry.is_dir(follow_symlinks=False):
                             entry_path = Path(entry.path)
                             if skip_protected and is_protected_path(entry_path): continue
+                            
                             try:
                                 st = entry.stat(follow_symlinks=False)
                                 inode: Inode = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
@@ -297,6 +297,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                     visited_inodes.add(inode)
                                     stack.append(entry_path)
                             except OSError: continue
+                            
                         elif entry.is_file(follow_symlinks=False):
                             try:
                                 st = entry.stat()

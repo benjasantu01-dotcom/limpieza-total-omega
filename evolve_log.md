@@ -1379,3 +1379,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-09-12T11:35:31` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
 - `2026-09-12T11:35:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T11:35:31` Corrida terminada. Total usado hoy: 276.
+- `2026-09-12T11:43:56` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-09-12T11:44:42` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_get_source_value` para manejar estructuras de datos arbitrarias o malformadas mediante una comprobación recursiva de tipos más estricta, evitando `AttributeError` o accesos inseguros a objetos que no son diccionarios simples.
+- `2026-09-12T11:45:16` ➖ Sin cambios en branding.py (enfoque: robustez ante casos límite). Motivo: Se ha añadido un robusto manejo de errores en `save_logo_svg` y `draw_ring` para prevenir fallos silenciosos y asegurar que valores inesperados o rutas mal formadas no interrumpan el flujo de la aplicación.
+- `2026-09-12T11:45:40` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-12T11:45:54` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `drive_usage` ante errores de acceso o rutas inexistentes mediante el uso de `pathlib.Path.exists()` y `try-except` más granulares, asegurando que el análisis no se detenga prematuramente si encuentra archivos con permisos denegados o rutas bloqueadas por el sistema operativo.
+- `2026-09-12T11:45:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T11:45:54` Corrida terminada. Total usado hoy: 280.

@@ -399,11 +399,10 @@ def _get_source_value(source: Any, key: str) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        
+        # Solo permitir acceso si el objeto no es una estructura de datos nativa compleja
         if not isinstance(source, (list, tuple, str, int, float, bool, type)):
-            if hasattr(source, "__dict__"):
-                if not key.startswith("_"):
-                    return getattr(source, key, None)
+            if hasattr(source, "__dict__") and not key.startswith("_"):
+                return getattr(source, key, None)
         return None
     except (AttributeError, TypeError, ValueError):
         return None
