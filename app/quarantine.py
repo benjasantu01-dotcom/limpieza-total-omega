@@ -638,12 +638,13 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """Restaura un archivo al destino original tras verificaciones."""
     if not isinstance(item_id, str) or not item_id.strip():
-        raise ValueError("ID de ítem inválido o nulo.")
+        raise ValueError("ID de ítem inválido.")
         
     base_path = quarantine_dir(base)
     items = load_manifest(base)
     quarantine_item = next((i for i in items if i.item_id == item_id), None)
-    if not quarantine_item:
+    
+    if quarantine_item is None:
         raise KeyError(f"Ítem no encontrado: {item_id}")
         
     stored_file = (base_path / quarantine_item.stored_name).resolve()
@@ -699,7 +700,8 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     base_path = quarantine_dir(base)
     items = load_manifest(base)
     quarantine_item = next((i for i in items if i.item_id == item_id), None)
-    if not quarantine_item:
+    
+    if quarantine_item is None:
         return False
         
     stored_file = (base_path / quarantine_item.stored_name).resolve()

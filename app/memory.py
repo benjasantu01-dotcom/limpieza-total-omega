@@ -241,7 +241,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
             avail = _win_mem_buffer.ullAvailPhys
             if total > 0 and avail <= total:
                 return MemorySnapshot(total=BytesValue(total), available=BytesValue(avail))
-    except (AttributeError, ValueError, TypeError, OverflowError, OSError):
+    except (AttributeError, OSError, ctypes.ArgumentError):
         pass
     return _EMPTY_SNAPSHOT
 
@@ -256,17 +256,20 @@ def read_snapshot() -> MemorySnapshot:
     if (now - _snap_cache_time) < 5 and _snap_cache_data is not None:
         return _snap_cache_data
 
+    snapshot = _EMPTY_SNAPSHOT
     if _is_windows: 
-        _snap_cache_data = _read_windows_snapshot()
+        snapshot = _read_windows_snapshot()
     elif _linux_available:
         try:
             content = _linux_mem_path.read_text(encoding="utf-8")
-            _snap_cache_data = parse_linux_meminfo(content)
+            snapshot = parse_linux_meminfo(content)
         except (OSError, UnicodeDecodeError, RuntimeError):
             _linux_available = False
-            _snap_cache_data = _EMPTY_SNAPSHOT
+            snapshot = _EMPTY_SNAPSHOT
     
-    _snap_cache_time = now
+    if snapshot != _EMPTY_SNAPSHOT:
+        _snap_cache_data = snapshot
+        _snap_cache_time = now
     return _snap_cache_data if _snap_cache_data else _EMPTY_SNAPSHOT
 
 _proc_cache_time: float = 0.0
