@@ -9,16 +9,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 41
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 203
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 61 | 5 | 11 | 10 | 51 |
+| 2026-09-10 | 61 | 5 | 11 | 9 | 48 |
 | 2026-09-11 | 161 | 15 | 30 | 8 | 136 |
-| 2026-09-12 | 0 | 0 | 0 | 0 | 16 |
+| 2026-09-12 | 0 | 0 | 0 | 0 | 20 |
 
 ## Mejoras aceptadas por enfoque
 
