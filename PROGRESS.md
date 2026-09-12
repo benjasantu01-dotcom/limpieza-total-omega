@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 146 | 13 | 28 | 7 | 134 |
-| 2026-09-12 | 78 | 5 | 13 | 10 | 70 |
+| 2026-09-11 | 144 | 13 | 28 | 7 | 132 |
+| 2026-09-12 | 81 | 5 | 13 | 10 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **56**
 - legibilidad y documentación: **51**
+- robustez ante casos límite: **41**
 - rendimiento: **40**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **38**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **21**
-- `settings.py`: **19**
 - `diskreport.py`: **18**
 - `quarantine.py`: **18**
-- `safety.py`: **17**
+- `settings.py`: **18**
 - `assistant.py`: **17**
+- `main.py`: **17**
+- `organizer.py`: **17**
 - `browser.py`: **16**
 - `healthscore.py`: **16**
-- `main.py`: **16**
-- `organizer.py`: **16**
-- `memory.py`: **15**
+- `safety.py`: **16**
+- `memory.py`: **16**
 - `branding.py`: **14**
 - `scanner.py`: **13**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T07:30:55` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante la concurrencia y permisos mediante la implementación de un mecanismo de validación de bloqueo exclusivo en `_is_file_locked` que utiliza `os.open` con `os.O_EXCL` (solo en Windows), garantizando que el archivo no esté siendo utilizado por otro proceso antes de intentar cualquier operación.
+- `2026-09-12T07:30:43` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_path` y `trim_working_set` ante errores de sistema y condiciones de carrera, asegurando que `OpenProcess` utilice un manejo de excepciones limpio y verificaciones de nulidad preventivas para evitar fallos catastróficos en el módulo.
+- `2026-09-12T07:30:14` **main.py** (robustez ante casos límite): Se introdujo una validación robusta de existencia y accesibilidad en el método `_build_tab_salud` antes de renderizar los componentes, asegurando que la aplicación no intente interactuar con widgets que podrían haber fallado en su inicialización debido a estados de carrera o problemas de permisos en entornos restringidos.
 - `2026-09-12T07:19:51` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante casos límite mediante la validación explícita de la existencia de archivos justo antes de procesarlos, previniendo errores de `FileNotFoundError` causados por condiciones de carrera en sistemas de archivos altamente volátiles o directorios compartidos.
 - `2026-09-12T06:59:29` **safety.py** (rendimiento): Se optimizó el rendimiento del módulo mediante la implementación de un caché de resultados para `is_protected_path` y `is_sensitive_file`, evitando la recalculación costosa de normalizaciones y particionamiento de rutas en bucles intensivos.
 - `2026-09-12T06:58:18` **organizer.py** (rendimiento): Optimizé `_process_directory` reemplazando la lógica recursiva de construcción de rutas y validaciones redundantes por un caché local de directorios protegidos, evitando llamadas innecesarias al sistema de archivos y mejorando la eficiencia del escaneo profundo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T06:27:51` **safety.py** (legibilidad y documentación): Se documentó la jerarquía de validación mediante docstrings claros y se añadieron tipados explícitos en los predicados de `_VALIDATORS` para mejorar la mantenibilidad y legibilidad del motor de seguridad.
 - `2026-09-12T06:18:38` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en las funciones internas y docstrings con explicaciones de los parámetros y el propósito de cada método, facilitando la comprensión de las operaciones críticas de integridad y seguridad.
 - `2026-09-12T06:18:02` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` añadiendo docstrings descriptivos con parámetros y retornos (`Args`/`Returns`) en las funciones críticas de I/O, además de refactorizar la lógica de `_is_safe_for_disk_op` para separar explícitamente las validaciones de seguridad de las de sistema, facilitando el mantenimiento y comprensión del flujo de datos.
-- `2026-09-12T06:17:36` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `memory.py` mediante la adición de docstrings técnicos detallados en las funciones de bajo nivel y la clarificación de los contratos de las constantes Win32, asegurando que cualquier colaborador entienda el propósito de los flags de acceso a procesos.
-- `2026-09-12T06:09:16` **main.py** (legibilidad y documentación): Documenté mediante docstrings la lógica de concurrencia y gestión de estados de la clase `LimpiezaTotalOmegaApp` para aclarar cómo se delegan las tareas al pool de hilos y cómo se garantiza la seguridad de la interfaz, mejorando la mantenibilidad para futuros colaboradores.
-- `2026-09-12T06:08:18` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el propósito y la lógica de las funciones principales, facilitando el mantenimiento y la comprensión del pipeline de cálculo.

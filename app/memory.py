@@ -352,8 +352,9 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     
     buf = ctypes.create_unicode_buffer(1024)
     try:
+        # psapi retorna el número de caracteres copiados
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 1024) > 0:
-            return Path(str(buf.value)).resolve(strict=False)
+            return Path(buf.value).resolve(strict=False)
     except (OSError, ctypes.ArgumentError, ValueError, MemoryError):
         pass
     return None
@@ -369,6 +370,7 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
     
     try:
         exit_code = ctypes.c_ulong()
+        # Verificar estado del proceso antes de continuar
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
             return False, f"Imposible verificar estado (Error {kernel32.GetLastError()})."
             
@@ -407,6 +409,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
+    # Abrir proceso con permisos mínimos estrictos
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         return False, f"Acceso denegado (Error {kernel32.GetLastError()})."
@@ -423,4 +426,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, OSError, ValueError) as e:
         return False, f"Error de sistema: {str(e)}"
     finally:
-        kernel32.CloseHandle(proc_handle)
+        if proc_handle:
+            kernel32.CloseHandle(proc_handle)

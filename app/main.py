@@ -511,6 +511,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _build_tab_salud(self) -> None:
         """Construye la interfaz de la pestaña Salud con indicadores y métricas globales."""
         tab = self.tabs["Salud"]
+        if not tab or not tab.winfo_exists():
+            return
+
         row = self._button_row(tab)
         self._action(row, "Analizar el sistema", self.on_full_analysis, column=0)
         self._action(row, "Limpiar panel", lambda: self.clear("Salud"),

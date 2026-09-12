@@ -13,6 +13,7 @@ import os
 import shutil
 import string
 import logging
+import ctypes
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -126,12 +127,16 @@ def _is_allowed_directory(name: str) -> bool:
     return name is not None and name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
-    """Verifica si un archivo está inaccesible por el SO."""
+    """Verifica si un archivo está inaccesible o bloqueado por otro proceso."""
     if path is None or not path.exists() or _is_junction(path): return True
     if not _passes_system_checks(path): return True
     try:
-        if not os.access(path, os.R_OK): return True
-        with open(path, 'rb'): pass
+        if os.name == "nt":
+            # Uso de acceso exclusivo para detectar bloqueos de lectura/escritura externos
+            fd = os.open(str(path), os.O_RDONLY | os.O_EXCL)
+            os.close(fd)
+        else:
+            with open(path, 'rb'): pass
         return False
     except (OSError, PermissionError, IOError):
         return True
