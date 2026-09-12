@@ -144,7 +144,7 @@ class StartupEntry:
         el seguimiento de puntos de reparse (Junctions/Symlinks).
         """
         try:
-            if not os.access(p, os.F_OK) or p.is_dir():
+            if not p.exists() or not os.access(p, os.F_OK) or p.is_dir() or is_protected_path(p):
                 return False
             stats = p.lstat()
             # 0x00000400: Atributo de sistema FILE_ATTRIBUTE_REPARSE_POINT
@@ -182,7 +182,7 @@ class StartupEntry:
                 
             p = p.resolve(strict=False)
             
-            if not self._validate_file_access(p) or is_protected_path(p):
+            if not self._validate_file_access(p):
                 _EXISTS_CACHE[path_string] = False
                 return path_string
             

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Mejoras aceptadas: **237** (47.0% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 188
+- Sin respuesta de la IA (error o límite): 187
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 144 | 13 | 28 | 7 | 112 |
-| 2026-09-12 | 92 | 5 | 16 | 11 | 76 |
+| 2026-09-11 | 144 | 13 | 28 | 7 | 108 |
+| 2026-09-12 | 93 | 5 | 16 | 11 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **56**
 - legibilidad y documentación: **51**
-- seguridad defensiva: **47**
+- seguridad defensiva: **48**
 - robustez ante casos límite: **42**
 - rendimiento: **40**
 
@@ -42,10 +42,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **16**
 - `branding.py`: **15**
 - `scanner.py`: **13**
-- `startup.py`: **8**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T08:30:05` **startup.py** (seguridad defensiva): Se ha mejorado `_validate_file_access` añadiendo una comprobación explícita mediante `p.exists()` antes de realizar `lstat`, asegurando que no se intenten analizar rutas que ya no existen, y reforzando la validación de seguridad contra archivos de sistema utilizando `is_protected_path` directamente antes de cualquier operación de I/O sobre el sistema de archivos.
 - `2026-09-12T08:20:53` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para garantizar que la resolución de rutas no solo valide el destino final, sino que confirme que el directorio padre exista y sea accesible, mitigando riesgos ante manipulaciones de punteros simbólicos durante la carga de configuraciones.
 - `2026-09-12T08:20:15` **safety.py** (seguridad defensiva): Se añadió una verificación de archivos temporales de sistema (archivos de paginación e hibernación) en `_VALIDATORS` para prevenir intentos de manipulación de archivos bloqueados a nivel de kernel que podrían causar inestabilidad en el sistema operativo.
 - `2026-09-12T08:12:45` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `quarantine.py` mediante la implementación de `_validate_quarantine_path`, una validación de ruta estricta que asegura que cualquier archivo destino dentro del sandbox esté canónicamente contenido en el directorio base, evitando ataques de *path traversal* antes de cualquier operación de I/O crítica.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T07:30:55` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante la concurrencia y permisos mediante la implementación de un mecanismo de validación de bloqueo exclusivo en `_is_file_locked` que utiliza `os.open` con `os.O_EXCL` (solo en Windows), garantizando que el archivo no esté siendo utilizado por otro proceso antes de intentar cualquier operación.
 - `2026-09-12T07:30:43` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_path` y `trim_working_set` ante errores de sistema y condiciones de carrera, asegurando que `OpenProcess` utilice un manejo de excepciones limpio y verificaciones de nulidad preventivas para evitar fallos catastróficos en el módulo.
 - `2026-09-12T07:30:14` **main.py** (robustez ante casos límite): Se introdujo una validación robusta de existencia y accesibilidad en el método `_build_tab_salud` antes de renderizar los componentes, asegurando que la aplicación no intente interactuar con widgets que podrían haber fallado en su inicialización debido a estados de carrera o problemas de permisos en entornos restringidos.
-- `2026-09-12T07:19:51` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante casos límite mediante la validación explícita de la existencia de archivos justo antes de procesarlos, previniendo errores de `FileNotFoundError` causados por condiciones de carrera en sistemas de archivos altamente volátiles o directorios compartidos.
