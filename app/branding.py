@@ -341,7 +341,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo vectorial en una ruta física tras validación de seguridad de escritura."""
     if destination is None: return None
     try:
-        path_input = Path(str(destination)).resolve()
+        path_input = Path(destination).resolve()
+        # Ensure path satisfies safety protocols before any write operation
         ensure_safe_to_modify(path_input)
         parent = path_input.parent
         if not parent.exists():

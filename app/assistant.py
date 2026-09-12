@@ -648,7 +648,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     try:
         if not isinstance(context_text, str) or not _ensure_safe_text(context_text): return None
         q = _sanitize_query(question)
-        if not q or not _ensure_safe_text(q): return None
+        if not q or not _ensure_safe_text(q) or is_protected_path(q): return None
         if _is_restricted_content(q) or _is_restricted_content(context_text): return None
         
         data = {"contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]}]}
