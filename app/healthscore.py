@@ -206,7 +206,15 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float, findings: List[str]) -> None:
-    """Aplica las reglas de recomendación in-place, validando la integridad del contexto recibido."""
+    """
+    Evalúa reglas de recomendación y acumula los mensajes obtenidos en 'findings'.
+    
+    Args:
+        metrics: Instancia de SystemMetrics actual.
+        rules: Lista de reglas a aplicar para esta categoría.
+        ratio: Ratio normalizado (0-1) calculado por el scorer.
+        findings: Lista mutable donde se acumulan las recomendaciones textuales.
+    """
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return
     for rule in rules:
@@ -263,7 +271,15 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(pts: int, maximo: int) -> str:
-    """Genera una cadena visual de progreso para una categoría."""
+    """
+    Genera una barra visual de progreso mediante caracteres '#'.
+    
+    Args:
+        pts: Puntos obtenidos en la categoría.
+        maximo: Valor máximo de la escala para la categoría.
+    Returns:
+        Cadena visual representando el nivel de salud (ej: '###.......').
+    """
     if maximo <= 0: return ""
     puntos = int(_clamp(float(pts), 0.0, float(maximo)))
     return ('#' * puntos) + ('.' * (maximo - puntos))

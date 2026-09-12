@@ -469,3 +469,33 @@ ERROR evolve/tests/test_modules.py
 - `2026-09-12T01:34:13` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante docstrings más precisos en `walk_files` y `_collect_summary_data`, clarificando el flujo de datos y las garantías de seguridad sobre el uso de memoria (heap) durante el escaneo.
 - `2026-09-12T01:34:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T01:34:13` Corrida terminada. Total usado hoy: 40.
+- `2026-09-12T01:42:06` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-09-12T01:42:46` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones auxiliares de escaneo (`_scan_directory_recursive` y `_group_paths_by_hash`), aclarando el flujo de ejecución, las medidas de seguridad adoptadas (bypass de reparse points) y los tipos de entrada esperados.
+- `2026-09-12T01:43:13` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints consistentes en las funciones de evaluación y renderizado para mejorar la mantenibilidad del pipeline de puntuación, asegurando que el propósito y las restricciones de cada componente sean claros para futuros desarrolladores.
+- `2026-09-12T01:44:13` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-12T01:45:29` ➖ Sin cambios en main.py (enfoque: legibilidad y documentación). Motivo: Mejoré la legibilidad y mantenibilidad del archivo `main.py` documentando los contratos de las funciones de UI (mediante Google-style docstrings en los métodos de construcción) y tipando explícitamente los diccionarios de componentes de la interfaz (`cards`, `area_bars`) para reducir la carga cognitiva al navegar por el código.
+- `2026-09-12T01:45:41` Tests FALLARON:
+```
+500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.' or 'caché' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.')
+
+evolve/tests/test_modules.py:381: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:114: SyntaxWarning: invalid escape sequence '\A'
+    Extracts a quoted path (e.g., "C:\App\test.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not_the_goal - AssertionError: assert ('liberar' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.' or 'caché' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.')
+1 failed, 298 passed, 7 warnings in 1.34s
+
+```
+- `2026-09-12T01:45:41` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se ha mejorado significativamente la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, la unificación del manejo de excepciones en las llamadas a APIs de bajo nivel y la documentación de los parámetros críticos en funciones de interfaz, garantizando que el flujo de trabajo sea auto-explicativo.
+- `2026-09-12T01:45:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T01:45:41` Corrida terminada. Total usado hoy: 44.

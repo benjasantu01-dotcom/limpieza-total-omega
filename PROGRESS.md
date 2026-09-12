@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 204
+- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 39
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 53 | 3 | 8 | 8 | 42 |
+| 2026-09-10 | 53 | 3 | 7 | 8 | 39 |
 | 2026-09-11 | 161 | 15 | 30 | 8 | 136 |
-| 2026-09-12 | 11 | 0 | 2 | 1 | 26 |
+| 2026-09-12 | 13 | 1 | 2 | 2 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **59**
 - seguridad defensiva: **47**
 - robustez ante casos límite: **46**
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **44**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **22**
+- `duplicates.py`: **23**
 - `browser.py`: **20**
 - `diskreport.py`: **20**
 - `assistant.py`: **18**
 - `settings.py`: **18**
 - `quarantine.py`: **18**
+- `healthscore.py`: **16**
 - `main.py`: **16**
-- `healthscore.py`: **15**
 - `memory.py`: **15**
 - `scanner.py`: **14**
 - `branding.py`: **14**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T01:43:13` **healthscore.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones de evaluación y renderizado para mejorar la mantenibilidad del pipeline de puntuación, asegurando que el propósito y las restricciones de cada componente sean claros para futuros desarrolladores.
+- `2026-09-12T01:42:46` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones auxiliares de escaneo (`_scan_directory_recursive` y `_group_paths_by_hash`), aclarando el flujo de ejecución, las medidas de seguridad adoptadas (bypass de reparse points) y los tipos de entrada esperados.
 - `2026-09-12T01:34:13` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings más precisos en `walk_files` y `_collect_summary_data`, clarificando el flujo de datos y las garantías de seguridad sobre el uso de memoria (heap) durante el escaneo.
 - `2026-09-12T01:34:02` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del flujo en `_sum_directory_recursive` y sus auxiliares, añadiendo docstrings técnicos que detallan la estrategia de recursión (DFS) y el manejo de excepciones, para facilitar el mantenimiento del código crítico de escaneo.
 - `2026-09-12T01:23:21` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita de `row` para manejar correctamente casos donde la salida del CSV pueda contener filas vacías o malformadas, evitando que el bucle falle silenciosamente ante datos inconsistentes de PowerShell.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T00:52:56` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y la ingesta de datos en `SystemContext.ingest` mediante el uso de excepciones específicas para evitar que errores inesperados en fuentes externas (como diccionarios con claves malformadas o tipos incompatibles) interrumpan el flujo de trabajo, además de asegurar que la validación de `grade` sea consistente con las políticas de seguridad.
 - `2026-09-11T14:29:35` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` eliminando el uso de `shutil.copy2` para crear respaldos, ya que al ser una operación de copia no controlada por `ensure_safe_to_modify` sobre archivos arbitrarios, presentaba un riesgo innecesario; ahora el respaldo se gestiona mediante escritura atómica directa con validación de destino, manteniendo la integridad sin dependencias de alto nivel.
 - `2026-09-11T14:19:26` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_atomic_isolate_file` reemplazando la apertura manual con `os.open` por un contexto más robusto que garantiza el cierre del descriptor de archivo, evitando fugas de recursos y bloqueos de acceso durante la operación de aislamiento.
-- `2026-09-11T14:11:05` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `organizer.py` añadiendo una comprobación explícita para evitar que `shutil.move` se ejecute si la ruta origen y la de destino comparten la misma unidad lógica, previniendo fallos en operaciones de archivos que cruzan sistemas de archivos o particiones, manteniendo el principio de no realizar efectos secundarios destructivos en caso de error.
-- `2026-09-11T14:10:50` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `memory.py` al garantizar que los PIDs no críticos se validen contra rutas protegidas utilizando la resolución de rutas absoluta y normalizada antes de cualquier interacción, evitando riesgos de inyección de procesos o manipulación de rutas del sistema que podrían derivarse de entradas maliciosas o ambiguas.

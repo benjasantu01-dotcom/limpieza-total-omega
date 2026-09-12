@@ -209,6 +209,10 @@ def _collect_candidates(
     visited_dirs: set[str] = set()
 
     def _scan_directory_recursive(current_dir: Path) -> None:
+        """
+        Recorre directorios evitando bucles infinitos, enlaces simbólicos 
+        y rutas protegidas según la política de seguridad.
+        """
         try:
             resolved_dir = current_dir.resolve(strict=False)
             dir_str = str(resolved_dir)
@@ -243,7 +247,12 @@ def _collect_candidates(
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Agrupa una lista de archivos aplicando una función hash, ignorando fallos de acceso."""
+    """
+    Agrupa una lista de rutas aplicando una función de hash.
+    
+    Ignora archivos que no retornan hash (bloqueados o restringidos) y 
+    descarta grupos que resultan ser únicos tras el hashing.
+    """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if not isinstance(paths, Iterable):
         return {}
