@@ -171,7 +171,8 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Determina si un objeto del sistema de archivos debe omitirse.
+    Determina si un objeto del sistema de archivos debe omitirse basándose en
+    reglas de seguridad, archivos excluidos o tipos especiales (symlinks/junctions).
     """
     if entry is None:
         return True
@@ -222,13 +223,17 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula el tamaño de un directorio mediante búsqueda en profundidad (DFS).
+    
+    Args:
+        root_abs: Ruta absoluta del directorio a sumar.
+        memo: Diccionario para evitar recálculos (caché local).
+        depth: Control de recursión para prevenir desbordamiento.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
     if any(c in root_abs for c in '\0\r\n'):
         return 0
     
-    # Validar seguridad antes de procesar el directorio
     root_path = Path(root_abs)
     if not is_safe_to_modify(root_path) or is_protected_path(root_path):
         return 0
@@ -291,7 +296,8 @@ def detect_profiles(
     cache_paths: Optional[BrowserMap] = None
 ) -> List[BrowserCache]:
     """
-    Escanea en busca de perfiles y calcula la ocupación de cada caché.
+    Escanea los directorios base en busca de perfiles y calcula la ocupación
+    de cada caché detectada mediante suma recursiva.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -327,7 +333,7 @@ def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
 
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """Formatea la información de caché para la UI."""
+    """Formatea la información de caché detectada para la visualización en UI."""
     current_caches = caches if caches is not None else detect_profiles()
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]

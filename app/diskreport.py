@@ -259,14 +259,15 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador que recorre recursivamente el sistema de archivos (DFS).
+    Generador que recorre recursivamente el sistema de archivos utilizando DFS.
     
-    Utiliza un set de inodos para detectar ciclos (evitar bucles infinitos en symlinks
-    o puntos de montaje) y saltea rutas protegidas mediante `is_protected_path`.
+    Mantiene un set de inodos visitados para prevenir ciclos causados por symlinks 
+    o puntos de montaje (junctions). Aplica filtros de seguridad sobre cada 
+    subdirectorio y archivo individual para evitar acceso a áreas sensibles.
     
     Args:
         directory: Ruta base de inicio del recorrido.
-        skip_protected: Si es True, filtra automáticamente carpetas críticas del sistema.
+        skip_protected: Si es True, filtra automáticamente carpetas críticas.
     
     Yields:
         Tuplas (Path, int) con la ruta del archivo y su tamaño en bytes.
@@ -364,16 +365,21 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Agregador central que procesa archivos mediante `walk_files` y genera un
-    resumen consolidado del estado del sistema de archivos.
+    Agregador central de métricas de almacenamiento.
     
-    Algoritmo:
-    1. Recorre el árbol de archivos.
-    2. Mantiene contadores globales de bytes y archivos.
-    3. Categoriza volúmenes por extensión (`ext_stats`).
-    4. Mantiene un heap de tamaño fijo (`limit`) para trackear archivos más pesados.
+    Itera sobre el sistema de archivos utilizando `walk_files` para consolidar:
+    1. Estadísticas globales (bytes totales y conteo de archivos).
+    2. Agregación por extensión (`ext_stats`) usando un diccionario para la suma.
+    3. Identificación de los archivos más pesados mediante un min-heap de tamaño 
+       limitado para mantener una complejidad de memoria O(limit).
     
-    Complejidad: Temporal O(N), Espacial O(limit + unique_extensions).
+    Args:
+        directory: Directorio raíz a analizar.
+        skip_protected: Flag para omitir rutas de sistema.
+        limit: Cantidad de archivos pesados a trackear.
+    
+    Returns:
+        Objeto SummaryData con los resultados agregados.
     """
     total_bytes: int = 0
     total_files: int = 0
