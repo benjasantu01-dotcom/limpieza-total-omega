@@ -1012,3 +1012,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-12T07:30:55` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante la concurrencia y permisos mediante la implementación de un mecanismo de validación de bloqueo exclusivo en `_is_file_locked` que utiliza `os.open` con `os.O_EXCL` (solo en Windows), garantizando que el archivo no esté siendo utilizado por otro proceso antes de intentar cualquier operación.
 - `2026-09-12T07:30:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T07:30:55` Corrida terminada. Total usado hoy: 180.
+- `2026-09-12T07:38:42` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-09-12T07:39:21` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la resiliencia ante errores de sistema de archivos al añadir un manejo explícito de `OSError` en `_is_file_locked`, previniendo bloqueos de la aplicación ante archivos temporalmente inaccesibles o procesos del sistema que deniegan acceso durante la validación inicial.
+- `2026-09-12T07:39:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-09-12T07:40:19` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult
+- `2026-09-12T07:40:27` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-12T07:40:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T07:40:27` Corrida terminada. Total usado hoy: 184.
