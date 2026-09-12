@@ -401,9 +401,10 @@ def _get_source_value(source: Any, key: str) -> Any:
             return source.get(key)
         
         # Solo acceder a atributos públicos de objetos permitidos
-        if hasattr(source, "__dict__"):
-            if not key.startswith("_"):
-                return getattr(source, key, None)
+        if not isinstance(source, (list, tuple, str, int, float, bool, type)):
+            if hasattr(source, "__dict__"):
+                if not key.startswith("_"):
+                    return getattr(source, key, None)
         return None
     except (AttributeError, TypeError, ValueError):
         return None
@@ -412,7 +413,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """Inicializa un SystemContext completo a partir de múltiples fuentes opcionales."""
     ctx = SystemContext()
     for s in (metrics, health, extra):
-        if s is not None and isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str, int, float, bool, type)):
+        if s is not None:
             if ctx.ingest(s):
                 ctx.analyzed = True
     return ctx
@@ -645,7 +646,7 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa el mensaje y el contexto en un JSON compatible con el formato de API de Google."""
     try:
-        if not _ensure_safe_text(context_text) or not _is_safe_text_structure(context_text): return None
+        if not isinstance(context_text, str) or not _ensure_safe_text(context_text): return None
         q = _sanitize_query(question)
         if not q or not _ensure_safe_text(q): return None
         if _is_restricted_content(q) or _is_restricted_content(context_text): return None

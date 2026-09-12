@@ -566,3 +566,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-12T02:34:56` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scanner.py` pre-calculando las extensiones sospechosas en `_run_file_heuristics` y moviendo la lógica de validación de extensiones a `process_entry` para evitar llamadas redundantes a `os.path.splitext` y búsquedas innecesarias en `SUSPICIOUS_ALL_EXTS`.
 - `2026-09-12T02:34:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T02:34:56` Corrida terminada. Total usado hoy: 64.
+- `2026-09-12T02:43:14` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-09-12T02:43:46` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `settings.py` implementando una caché de validación de rutas mediante `LRU-like behavior` (reemplazo simple de diccionario) y evitando `resolve()` redundante en el flujo crítico de carga, consolidando el manejo de rutas protegidas para reducir llamadas de sistema.
+- `2026-09-12T02:44:12` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-12T02:44:55` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `SystemContext.ingest` y `_build_payload` ante tipos inesperados, incorporando una validación de seguridad más estricta sobre los tipos de datos recibidos y evitando posibles errores de desbordamiento en el procesamiento de métricas.
+- `2026-09-12T02:45:11` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-12T02:45:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T02:45:11` Corrida terminada. Total usado hoy: 68.

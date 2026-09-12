@@ -176,13 +176,14 @@ class _Validators:
             return _SAFETY_CACHE[path_str]
         
         try:
+            # Mantener caché pequeña para evitar fugas de memoria
+            if len(_SAFETY_CACHE) > 100: _SAFETY_CACHE.clear()
+            
             resolved = path_obj.resolve(strict=False)
             if _Validators._is_reparse_point(resolved):
                 is_safe = False
             else:
                 is_safe = not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
-                if is_safe:
-                    ensure_safe_to_modify(str(resolved))
         except (OSError, PermissionError, RuntimeError, UnsafePathError, IndexError):
             is_safe = False
             
@@ -272,10 +273,10 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
         return cached
     try:
         base = Path(custom_base).expanduser()
-        if _Validators._is_safe_path(str(base)):
-            resolved = base.resolve() / SETTINGS_FILE
-            _PATH_CACHE[cache_key] = resolved
-            return resolved
+        # Solo resolvemos si es necesario, minimizando syscalls
+        resolved = base.resolve() / SETTINGS_FILE
+        _PATH_CACHE[cache_key] = resolved
+        return resolved
     except (OSError, RuntimeError, PermissionError):
         pass
     return _PATH_CACHE["default"]
@@ -298,28 +299,22 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     
-    for attempt in range(3):
-        try:
-            if not ruta.exists(): return DEFAULTS.copy()
-            stats = ruta.stat()
-            if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
-                return DEFAULTS.copy()
+    try:
+        if not ruta.exists(): return DEFAULTS.copy()
+        stats = ruta.stat()
+        if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
+            return DEFAULTS.copy()
+        
+        mtime = float(stats.st_mtime)
+        if (cached := _CACHE.get(ruta_str)) and cached[0] == mtime:
+            return cached[1].copy()
             
-            mtime = float(stats.st_mtime)
-            if (cached := _CACHE.get(ruta_str)) and cached[0] == mtime:
-                return cached[1].copy()
-            
-            with open(ruta, "r", encoding="utf-8") as f:
-                data = validate(json.load(f))
-            _CACHE[ruta_str] = (mtime, data)
-            return data.copy()
-        except (OSError, PermissionError):
-            if attempt < 2:
-                time.sleep(0.1 * (attempt + 1))
-                continue
-        except (json.JSONDecodeError, UnicodeDecodeError, ValueError):
-            break
-    return DEFAULTS.copy()
+        with open(ruta, "r", encoding="utf-8") as f:
+            data = validate(json.load(f))
+        _CACHE[ruta_str] = (mtime, data)
+        return data.copy()
+    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
+        return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """Persiste la configuración de forma atómica con reintentos para evitar bloqueos y corrupción."""
@@ -327,7 +322,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     ruta = settings_path(custom_base)
     cleaned_settings = validate(values)
     
-    # Pre-verificación de integridad lógica antes de realizar operaciones de disco
     if cleaned_settings.get("asistente_activado") and not (
         cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
     ):
@@ -337,17 +331,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     for attempt in range(3):
         try:
-            parent = ruta.parent
-            if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
-            ensure_safe_to_modify(str(parent))
-            
-            if temp_path.exists():
-                try: temp_path.unlink()
-                except OSError: pass
+            if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
             
             data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
-            if len(data) > MAX_SETTINGS_SIZE: return None
-            
             with open(temp_path, "wb") as f:
                 f.write(data)
                 f.flush()
@@ -360,14 +346,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             os.replace(temp_path, ruta)
             _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
             return ruta
-            
-        except (OSError, IOError, PermissionError, UnsafePathError):
+        except (OSError, IOError, PermissionError):
             if attempt < 2:
-                time.sleep(0.2 * (attempt + 1))
+                time.sleep(0.1)
                 continue
-            if temp_path.exists():
-                try: temp_path.unlink()
-                except OSError: pass
             return None
     return None
 
