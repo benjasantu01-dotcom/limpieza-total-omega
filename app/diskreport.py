@@ -296,7 +296,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 if inode[0] != 0 and inode not in visited_inodes:
                                     visited_inodes.add(inode)
                                     stack.append(entry_path)
-                            except OSError: continue
+                            except (OSError, PermissionError): continue
                             
                         elif entry.is_file(follow_symlinks=False):
                             try:

@@ -105,11 +105,12 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
     if os.name != 'nt':
         return None
     try:
+        # Cargamos explícitamente y validamos atributos mínimos
         dll = ctypes.WinDLL('kernel32.dll', use_last_error=True)
         if hasattr(dll, 'GetFileAttributesW'):
             return dll
-    except (OSError, ValueError, RuntimeError):
-        pass
+    except (OSError, ValueError, TypeError):
+        return None
     return None
 
 
@@ -225,25 +226,31 @@ def _sum_directory_recursive(
     """
     Calcula el tamaño de un directorio mediante búsqueda en profundidad (DFS) validando sandbox.
     """
-    if not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
+    # Normalizar ruta a absoluta para evitar discrepancias al comparar con root_base
+    try:
+        current_abs = str(Path(root_abs).resolve(strict=True))
+    except (OSError, RuntimeError):
         return 0
-    if any(c in root_abs for c in '\0\r\n'):
+
+    if not current_abs or depth > MAX_SCAN_DEPTH or len(current_abs) >= MAX_PATH_LEN:
+        return 0
+    if any(c in current_abs for c in '\0\r\n'):
         return 0
     
-    # Seguridad adicional: verificar que la ruta actual no haya escapado de la raíz original
-    if not root_abs.startswith(root_base):
+    # Seguridad: verificar que la ruta actual mantenga la raíz original
+    if not current_abs.startswith(root_base):
         return 0
     
-    if root_abs in memo:
-        return memo[root_abs]
+    if current_abs in memo:
+        return memo[current_abs]
     
-    root_path = Path(root_abs)
+    root_path = Path(current_abs)
     if not is_safe_to_modify(root_path) or is_protected_path(root_path):
         return 0
         
     total: int = 0
     try:
-        with os.scandir(root_abs) as it:
+        with os.scandir(current_abs) as it:
             for entry in it:
                 if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue
@@ -258,7 +265,7 @@ def _sum_directory_recursive(
     except (PermissionError, OSError):
         return 0
     
-    memo[root_abs] = total
+    memo[current_abs] = total
     return total
 
 

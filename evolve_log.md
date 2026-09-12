@@ -537,3 +537,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-09-12T14:10:57` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-12T14:10:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T14:10:57` Corrida terminada. Total usado hoy: 336.
+- `2026-09-12T14:16:58` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-12T14:17:40` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_source_value` y `SystemContext.ingest` para prevenir excepciones silenciosas y manejar mejor datos de entrada inesperados, asegurando que el estado del sistema no quede en un estado inconsistente ante datos malformados.
+- `2026-09-12T14:18:12` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-12T14:18:38` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_kernel32` al capturar posibles fallos de `ctypes.WinDLL` y agregué una validación de seguridad en `_sum_directory_recursive` para asegurar que `root_abs` siempre sea una ruta absoluta antes de comparar con `root_base`, evitando saltos de directorio inesperados en entornos con rutas relativas.
+- `2026-09-12T14:18:51` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` capturando errores específicos al iterar con `os.scandir` y `stat`, asegurando que el estado interno no se corrompa ante entradas de sistema bloqueadas o rutas con caracteres no válidos, cumpliendo con el enfoque de validación de entradas.
+- `2026-09-12T14:18:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T14:18:51` Corrida terminada. Total usado hoy: 340.

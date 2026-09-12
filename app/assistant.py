@@ -313,7 +313,7 @@ class SystemContext:
                         setattr(self, key, spec.cast_func(val))
                         return True
         except (ValueError, TypeError, AttributeError):
-            pass
+            return False
         return False
 
     def _clean_grade(self, val: Any) -> str:
@@ -334,15 +334,12 @@ class SystemContext:
             if self._apply_field(source, key, spec):
                 found_data = True
         
-        try:
-            grade_val = _get_source_value(source, "grade")
-            if isinstance(grade_val, str):
-                clean_grade = self._clean_grade(grade_val)
-                if clean_grade:
-                    self.grade = clean_grade
-                    found_data = True
-        except (ValueError, TypeError, AttributeError):
-            pass
+        grade_val = _get_source_value(source, "grade")
+        if isinstance(grade_val, str):
+            clean_grade = self._clean_grade(grade_val)
+            if clean_grade:
+                self.grade = clean_grade
+                found_data = True
         
         return found_data
 
@@ -399,9 +396,9 @@ def _get_source_value(source: Any, key: str) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        # Solo permitir acceso si el objeto no es una estructura de datos nativa compleja
-        if not isinstance(source, (list, tuple, str, int, float, bool, type)):
-            if hasattr(source, "__dict__") and not key.startswith("_"):
+        # Solo permitir acceso a objetos que no sean tipos nativos complejos ni módulos
+        if hasattr(source, "__dict__") and not isinstance(source, (type, type(None))):
+            if not key.startswith("_"):
                 return getattr(source, key, None)
         return None
     except (AttributeError, TypeError, ValueError):
