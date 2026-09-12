@@ -192,6 +192,7 @@ def _is_file_locked(path: Path) -> bool:
         return False
     try:
         with open(path, "r+b") as f:
+            # Intentar un flush puede disparar errores en Windows si está bloqueado
             f.flush()
             os.fsync(f.fileno())
             return False

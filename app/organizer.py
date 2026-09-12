@@ -130,7 +130,9 @@ def _is_file_locked(path: Path) -> bool:
     if path is None or not path.exists() or _is_junction(path): return True
     if not _passes_system_checks(path): return True
     try:
+        # Intentar verificar permisos de lectura sin abrir el flujo si es posible
         if not os.access(path, os.R_OK): return True
+        # Prueba de apertura exclusiva para verificar bloqueo por otro proceso
         with open(path, 'rb'): pass
         return False
     except (OSError, PermissionError, IOError):

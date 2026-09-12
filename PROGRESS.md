@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
-- Rechazadas por tests: 20
+- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 199
@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-10 | 36 | 3 | 5 | 4 | 34 |
+| 2026-09-10 | 34 | 2 | 5 | 4 | 33 |
 | 2026-09-11 | 161 | 15 | 30 | 8 | 136 |
-| 2026-09-12 | 33 | 2 | 4 | 4 | 29 |
+| 2026-09-12 | 36 | 2 | 4 | 4 | 30 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **59**
 - legibilidad y documentación: **49**
 - rendimiento: **43**
-- robustez ante casos límite: **40**
-- seguridad defensiva: **39**
+- robustez ante casos límite: **43**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **23**
-- `settings.py`: **19**
+- `quarantine.py`: **20**
 - `diskreport.py`: **19**
-- `quarantine.py`: **19**
 - `assistant.py`: **18**
 - `browser.py`: **18**
+- `settings.py`: **18**
+- `main.py`: **17**
+- `organizer.py`: **17**
 - `healthscore.py`: **16**
-- `main.py`: **16**
-- `organizer.py`: **16**
 - `safety.py`: **16**
-- `scanner.py`: **15**
 - `branding.py`: **14**
 - `memory.py`: **14**
+- `scanner.py`: **14**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-12T03:07:08` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_locked` para manejar de forma segura archivos en uso mediante un manejo de excepciones más granular y evitando la creación de descriptores innecesarios si la ruta no existe, mejorando la fiabilidad del chequeo antes de operaciones críticas.
+- `2026-09-12T03:06:49` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos con permisos de lectura restringidos o bloqueados por el sistema operativo, evitando la propagación de excepciones que podrían detener el bucle de escaneo o limpieza.
+- `2026-09-12T03:05:56` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_target_choice_changed` para manejar correctamente rutas inexistentes o inaccesibles, evitando que la aplicación se comporte de forma errática ante selecciones de disco inválidas al capturar las excepciones específicas de `Path.resolve(strict=True)` y validarlas mediante el motor de seguridad.
 - `2026-09-12T02:54:52` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `compute_score` ante posibles divisiones por cero o desbordamientos durante el cálculo de ratios, asegurando que `_evaluate_rules` y el bucle principal manejen correctamente estados de métricas extremos o inconsistentes mediante el uso estricto de `_clamp` y validación de tipos.
 - `2026-09-12T02:54:42` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante rutas con permisos restringidos o bloqueos de acceso durante el escaneo recursivo, añadiendo un manejo de excepciones más granular para evitar que una sola subcarpeta con acceso denegado interrumpa el proceso completo de recolección de duplicados.
 - `2026-09-12T02:44:55` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext.ingest` y `_build_payload` ante tipos inesperados, incorporando una validación de seguridad más estricta sobre los tipos de datos recibidos y evitando posibles errores de desbordamiento en el procesamiento de métricas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-12T02:24:32` **main.py** (rendimiento): Optimizé `_flush_logs` para procesar y renderizar todos los logs pendientes en una sola operación de inserción, reduciendo drásticamente el impacto de redibujo (overhead) de la interfaz al manejar logs masivos.
 - `2026-09-12T02:23:21` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la creación repetitiva de objetos y accediendo directamente a las reglas pre-agrupadas, además de reemplazar la validación iterativa de `__dataclass_fields__` por una técnica más directa y eficiente para asegurar la integridad de los datos.
 - `2026-09-12T02:14:18` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `Path.resolve()` y `is_safe_to_modify` dentro del bucle de escaneo, almacenando el estado de seguridad calculado en el momento de la entrada, reduciendo drásticamente las syscalls innecesarias durante la recursión.
-- `2026-09-12T02:14:07` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` convirtiendo los diccionarios de agregación `ext_sizes` y `ext_counts` en una estructura única `ext_stats` (tupla de tamaño y contador) para reducir las búsquedas múltiples en el hash-map durante cada iteración del bucle, y reemplacé la llamada redundante a `Path(entry.path)` por el uso directo de `entry.path` donde es posible para evitar la sobrecarga de instanciación de objetos `Path` innecesarios.
-- `2026-09-12T02:13:14` **branding.py** (rendimiento): Optimicé el renderizado de franjas y la generación de gradientes en `branding.py` mediante la implementación de una memoria caché interna (`_GRADIENT_CACHE`) para evitar el recálculo pesado de interpolaciones RGB y segmentos de color en llamadas recurrentes, cumpliendo con el enfoque de rendimiento.
-- `2026-09-12T02:05:20` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` eliminando la re-evaluación innecesaria de criterios al usar `lru_cache`, y refiné `SystemContext.ingest` para evitar procesamientos redundantes mediante una validación de estructura previa más temprana.

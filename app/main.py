@@ -1258,11 +1258,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         else:
             try:
                 target_path = Path(choice).resolve(strict=True)
-                if target_path.exists() and self._is_safe_target_dir(target_path):
+                if self._is_safe_target_dir(target_path):
                     self.scan_target = str(target_path)
                     update_label(f"Unidad completa: {choice}")
                 else:
-                    raise safety.UnsafePathError("Ruta no segura o inexistente")
+                    raise safety.UnsafePathError("Ruta no segura o inaccesible")
             except (OSError, ValueError, safety.UnsafePathError):
                 self.log(f"Error: La ruta {choice} no es válida o es insegura.", "Limpieza")
                 self.target_choice.set("Por defecto (Temp + Descargas)")

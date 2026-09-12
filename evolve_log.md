@@ -580,3 +580,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-12T02:54:52` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `compute_score` ante posibles divisiones por cero o desbordamientos durante el cálculo de ratios, asegurando que `_evaluate_rules` y el bucle principal manejen correctamente estados de métricas extremos o inconsistentes mediante el uso estricto de `_clamp` y validación de tipos.
 - `2026-09-12T02:54:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T02:54:52` Corrida terminada. Total usado hoy: 72.
+- `2026-09-12T03:03:36` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-09-12T03:04:38` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-12T03:05:56` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `on_target_choice_changed` para manejar correctamente rutas inexistentes o inaccesibles, evitando que la aplicación se comporte de forma errática ante selecciones de disco inválidas al capturar las excepciones específicas de `Path.resolve(strict=True)` y validarlas mediante el motor de seguridad.
+- `2026-09-12T03:06:23` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-12T03:06:49` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos con permisos de lectura restringidos o bloqueados por el sistema operativo, evitando la propagación de excepciones que podrían detener el bucle de escaneo o limpieza.
+- `2026-09-12T03:07:08` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_file_locked` para manejar de forma segura archivos en uso mediante un manejo de excepciones más granular y evitando la creación de descriptores innecesarios si la ruta no existe, mejorando la fiabilidad del chequeo antes de operaciones críticas.
+- `2026-09-12T03:07:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T03:07:08` Corrida terminada. Total usado hoy: 76.
