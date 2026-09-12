@@ -272,7 +272,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
     
     try:
         f = io.StringIO(csv_text.strip())
-        reader: csv.DictReader = csv.DictReader(f)
+        reader = csv.DictReader(f)
         
         if not reader.fieldnames or len(reader.fieldnames) < 2:
             return []
@@ -280,15 +280,16 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f_name, f_cmd = reader.fieldnames[0], reader.fieldnames[1]
             
         for row in reader:
-            # Validar integridad de cada fila antes de acceder a sus claves
-            if not isinstance(row, dict) or not all(k in row for k in (f_name, f_cmd)):
+            if not isinstance(row, dict):
                 continue
             
-            val_name = row[f_name]
-            val_cmd = row[f_cmd]
+            val_name = row.get(f_name)
+            val_cmd = row.get(f_cmd)
             
-            if val_name is None or val_cmd is None: continue
-            if not isinstance(val_name, str) or not isinstance(val_cmd, str): continue
+            if val_name is None or val_cmd is None: 
+                continue
+            if not isinstance(val_name, str) or not isinstance(val_cmd, str): 
+                continue
                 
             name = "".join(c for c in val_name if ord(c) >= 32).strip()
             cmd = "".join(c for c in val_cmd if ord(c) >= 32).strip()
@@ -302,7 +303,8 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
                     continue
                 seen_commands.add(cmd)
                 parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
-            except (ValueError, TypeError): continue
+            except (ValueError, TypeError, RuntimeError):
+                continue
             
     except (csv.Error, OSError, ValueError, TypeError):
         return []

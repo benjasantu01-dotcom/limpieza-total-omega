@@ -139,14 +139,12 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
     try:
-        # Validación de existencia necesaria para evitar fallos en resolve
         if not real_target.exists() or not real_base.exists():
             return False
             
         target_abs = str(real_target.resolve(strict=True))
         base_abs = str(real_base.resolve(strict=True))
         
-        # Validar longitud máxima de ruta para prevenir errores de la API de Windows
         if len(target_abs) >= MAX_PATH_LEN or len(base_abs) >= MAX_PATH_LEN:
             return False
             
@@ -188,7 +186,6 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         if _is_excluded_file(entry.name):
             return True
         
-        # Validar existencia física previa a cualquier resolución para evitar errores en hilos
         if not os.path.lexists(entry.path):
             return True
 
@@ -233,6 +230,16 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula el tamaño de un directorio mediante búsqueda en profundidad (DFS).
+    
+    Args:
+        root_abs: Ruta absoluta del directorio.
+        is_junction_fn: Función para detectar enlaces simbólicos NTFS.
+        kernel32: Instancia de Win32 API o None.
+        memo: Caché de resultados previos para evitar redundancia.
+        depth: Nivel actual de recursión para evitar desbordamiento.
+        
+    Returns:
+        Tamaño total en bytes.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
@@ -291,7 +298,16 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[BrowserMap] = None
 ) -> List[BrowserCache]:
-    """Escanea en busca de perfiles y calcula la ocupación de cada caché."""
+    """
+    Escanea en busca de perfiles y calcula la ocupación de cada caché.
+    
+    Args:
+        bases: Lista opcional de directorios base (para tests).
+        cache_paths: Mapa opcional de rutas (para tests).
+        
+    Returns:
+        Lista de objetos BrowserCache detectados.
+    """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     

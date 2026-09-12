@@ -237,7 +237,10 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=256)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
-    """Convierte color #RRGGBB a una tupla de enteros (0-255)."""
+    """
+    Convierte color #RRGGBB a una tupla de enteros (0-255).
+    Valida el formato de entrada; retorna negro en caso de error.
+    """
     if len(value) != 7 or value[0] != "#": return (0, 0, 0)
     try:
         return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
@@ -245,12 +248,15 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 
 @lru_cache(maxsize=256)
 def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
-    """Convierte tupla (r, g, b) de vuelta a formato hexadecimal."""
+    """Convierte tupla (r, g, b) a formato hexadecimal #RRGGBB, normalizando valores a [0, 255]."""
     return "#{:02x}{:02x}{:02x}".format(*[max(0, min(255, c)) for c in rgb])
 
 @lru_cache(maxsize=128)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """Realiza una interpolación lineal entre dos colores para crear tonos intermedios."""
+    """
+    Realiza una interpolación lineal (lerp) entre dos colores.
+    El ratio se recorta al intervalo [0.0, 1.0].
+    """
     if start == end: return start
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -307,7 +313,7 @@ SHIELD_BASE_COORDS: Final[Tuple[float, ...]] = (64, 18, 100, 31, 100, 67, 90, 90
 
 @lru_cache(maxsize=8)
 def _get_scaled_poly(scale: float, canvas_x: float, canvas_y: float) -> Tuple[float, ...]:
-    """Cachea los puntos del polígono para evitar reconstrucción en cada frame."""
+    """Cachea los puntos del polígono base del escudo aplicándole transformación de escala y offset."""
     poly = []
     for i in range(0, len(SHIELD_BASE_COORDS), 2):
         poly.append(canvas_x + SHIELD_BASE_COORDS[i] * scale)
