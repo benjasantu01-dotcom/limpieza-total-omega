@@ -178,7 +178,6 @@ class _Validators:
         try:
             if len(_SAFETY_CACHE) > 100: _SAFETY_CACHE.clear()
             resolved = path_obj.resolve(strict=False)
-            # Validar que el directorio principal exista y sea transitable antes de proceder
             if resolved.exists() and not resolved.is_dir():
                 parent = resolved.parent
             else:
@@ -314,10 +313,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             
         with open(ruta, "r", encoding="utf-8") as f:
             raw = json.load(f)
+            if not _is_dict(raw): return DEFAULTS.copy()
             data = validate(raw)
-            # Asegurar que todas las claves del esquema existan
-            for k in DEFAULTS:
-                if k not in data: data[k] = DEFAULTS[k]
         
         _CACHE[ruta_str] = (mtime, data)
         return data.copy()
