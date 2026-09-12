@@ -871,7 +871,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Comprueba seguridad de ruta para operaciones de escritura en disco."""
         try:
             p = Path(path).resolve(strict=True)
-            return not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
+            return not p.is_symlink() and not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
         except (OSError, RuntimeError, PermissionError, ValueError):
             return False
 
@@ -879,7 +879,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Verifica accesibilidad y seguridad para acceso a nivel de archivo."""
         try:
             p = Path(path).resolve(strict=True)
-            return p.exists() and not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
+            return p.exists() and not p.is_symlink() and not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
         except (OSError, RuntimeError, PermissionError, ValueError):
             return False
 
@@ -898,7 +898,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Valida que la ruta de disco sea apta para el análisis recurrente."""
         try:
             p = Path(path).resolve(strict=True)
-            if safety.is_protected_path(p): return False
+            if p.is_symlink() or safety.is_protected_path(p): return False
             safety.ensure_safe_to_modify(p)
             return True
         except (safety.UnsafePathError, OSError, PermissionError, ValueError):
@@ -908,7 +908,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Valida seguridad de directorio para procesamiento de archivos recursivo."""
         try:
             p = Path(path).resolve(strict=True)
-            return p.is_dir() and not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
+            return p.is_dir() and not p.is_symlink() and not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
         except (OSError, PermissionError, ValueError):
             return False
 

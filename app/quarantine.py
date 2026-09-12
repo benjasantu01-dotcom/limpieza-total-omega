@@ -277,6 +277,13 @@ def _is_within_quarantine_sandbox(path: Path, root: Path) -> bool:
     """Valida la contención física del archivo dentro de la carpeta sandbox."""
     return is_within_directory(path, root)
 
+def _validate_quarantine_path(path: Path, base: Path) -> Path:
+    """Valida que la ruta esté canónicamente contenida en el sandbox."""
+    resolved_path = path.resolve()
+    resolved_base = base.resolve()
+    if not is_within_directory(resolved_path, resolved_base):
+        raise UnsafePathError("Acceso fuera del sandbox detectado.")
+    return resolved_path
 
 def _check_windows_file_attributes(path_str: str) -> None:
     """Valida atributos de sistema en Windows para detectar ofuscación."""
@@ -522,8 +529,10 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     """
     if not source.exists():
         raise FileNotFoundError("Archivo origen inexistente.")
-    if not _is_within_quarantine_sandbox(destination.resolve(), destination.parent.resolve()):
-        raise UnsafePathError("Escritura fuera del sandbox.")
+    
+    # Validar que el destino esté estrictamente en el sandbox
+    _validate_quarantine_path(destination, destination.parent)
+    
     if len(str(destination)) >= 250:
         raise OSError("Ruta destino demasiado larga.")
 
@@ -645,14 +654,11 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     if quarantine_item is None:
         raise KeyError(f"Ítem no encontrado: {item_id}")
         
-    stored_file = (base_path / quarantine_item.stored_name).resolve()
+    stored_file = _validate_quarantine_path(base_path / quarantine_item.stored_name, base_path)
     
     if not stored_file.exists() or not stored_file.is_file():
         raise RuntimeError("Archivo en cuarentena inexistente.")
         
-    if not _is_within_quarantine_sandbox(stored_file, base_path.resolve()):
-        raise UnsafePathError("Archivo fuera del sandbox.")
-    
     if not quarantine_item.verify_integrity(stored_file):
         raise RuntimeError("Integridad comprometida.")
     
@@ -702,7 +708,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     if quarantine_item is None:
         return False
         
-    stored_file = (base_path / quarantine_item.stored_name).resolve()
+    stored_file = _validate_quarantine_path(base_path / quarantine_item.stored_name, base_path)
     if not stored_file.exists():
         save_manifest([i for i in items if i.item_id != item_id], base)
         return False
@@ -720,7 +726,7 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
     """Valida si un ítem puede ser purgado."""
     return (
         file_path.exists() and
-        _is_within_quarantine_sandbox(file_path, base_path) and
+        is_within_directory(file_path, base_path) and
         item.verify_integrity(file_path) and
         _safe_unlink(file_path)
     )

@@ -1033,3 +1033,11 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-12T08:00:30` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
 - `2026-09-12T08:00:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-12T08:00:30` Corrida terminada. Total usado hoy: 192.
+- `2026-09-12T08:09:12` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-09-12T08:10:14` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-12T08:11:32` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva implementando una sanitización estricta de las entradas de usuario (`Path`) en los diálogos de selección de archivos y en las operaciones de análisis de disco, asegurando que se verifique la inexistencia de enlaces simbólicos (`is_symlink`) y el cumplimiento de las políticas de `safety.py` ANTES de que el hilo de trabajo comience su ejecución, evitando así condiciones de carrera o validaciones tardías.
+- `2026-09-12T08:11:58` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-09-12T08:12:25` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré `_is_file_locked` para evitar la apertura de archivos con `os.O_EXCL` en modo exclusivo, lo cual es una operación intrusiva y no recomendada para un escáner, reemplazándola por una consulta de atributos de sistema y manejo robusto de excepciones que respeta la integridad del archivo sin intentar bloquearlo.
+- `2026-09-12T08:12:45` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva de `quarantine.py` mediante la implementación de `_validate_quarantine_path`, una validación de ruta estricta que asegura que cualquier archivo destino dentro del sandbox esté canónicamente contenido en el directorio base, evitando ataques de *path traversal* antes de cualquier operación de I/O crítica.
+- `2026-09-12T08:12:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-12T08:12:45` Corrida terminada. Total usado hoy: 196.
