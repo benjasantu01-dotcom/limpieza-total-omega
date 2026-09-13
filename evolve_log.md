@@ -742,3 +742,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-13T22:41:49` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-09-13T22:41:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-13T22:41:49` Corrida terminada. Total usado hoy: 40.
+- `2026-09-13T22:48:36` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-09-13T22:49:15` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de redundancia de nombres en `_generate_safe_stored_name` para evitar colisiones críticas en caso de múltiples archivos con nombres idénticos pero IDs distintos, y se ajustó el manejo de excepciones en `_is_file_locked` para mayor robustez ante estados transitorios del sistema de archivos.
+- `2026-09-13T22:49:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-13T22:50:12` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez ante casos límite en `is_file_in_use` y `_is_reparse_point` al asegurar que el manejo de errores de WinAPI sea más granular, evitando falsos negativos (bloqueos) ante errores de acceso denegado o sistemas sin privilegios.
+- `2026-09-13T22:50:26` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `process_entry` ante el acceso a archivos bloqueados por el sistema operativo añadiendo un manejo de excepciones específico para `OSError` que captura los fallos típicos al intentar consultar atributos de archivos en uso (como el error 32, "process cannot access the file").
+- `2026-09-13T22:50:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-13T22:50:26` Corrida terminada. Total usado hoy: 44.

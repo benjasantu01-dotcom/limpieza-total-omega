@@ -227,7 +227,8 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
         name_base = f"q_{name_base}"
     
     extension = f".{parts[-1]}" if len(parts) > 1 else ""
-    return f"{item_id}__{name_base[:64]}{extension}"[:128]
+    candidate = f"{item_id}__{name_base[:64]}{extension}"[:128]
+    return candidate
 
 def _ensure_path_ownership(path: Path) -> None:
     """Valida la propiedad del directorio en sistemas POSIX."""
@@ -554,7 +555,9 @@ def quarantine_file(
     if not source_hash:
         raise RuntimeError("No se pudo calcular firma digital.")
     
-    destination = dest_dir / _generate_safe_stored_name(source_path, uuid.uuid4().hex[:12])
+    # Asegurar nombre único ante colisiones de nombre con IDs distintos
+    unique_id = uuid.uuid4().hex[:12]
+    destination = dest_dir / _generate_safe_stored_name(source_path, unique_id)
     
     try:
         file_hash = _atomic_isolate_file(source_path, destination, original_size)

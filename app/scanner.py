@@ -172,6 +172,7 @@ class Scanner:
             if not self._is_safe_entry(entry):
                 return
             
+            # Usamos una variable local para el check de is_dir/is_file para evitar doble llamada
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
                     self._handle_directory(entry, directory_stack)
@@ -180,6 +181,7 @@ class Scanner:
                 if ext_low in SUSPICIOUS_ALL_EXTS:
                     self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, FileNotFoundError):
+            # OSError captura bloqueos de archivo u otros problemas de acceso transitorios
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:

@@ -237,19 +237,19 @@ def _is_file_in_use(path_str: str) -> bool:
     """Verifica si un proceso está bloqueando el archivo mediante acceso exclusivo de WinAPI."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str:
         return False
-    if not os.path.exists(path_str):
-        return False
     
     kernel32 = ctypes.windll.kernel32
     INVALID_HANDLE_VALUE = -1
     try:
-        handle = kernel32.CreateFileW(path_str, 0, 1, None, 3, 0, None)
+        # Intenta abrir con acceso compartido de lectura, denegando escritura/borrado
+        handle = kernel32.CreateFileW(path_str, 0, 1, None, 3, 0x00000080, None)
         if handle == INVALID_HANDLE_VALUE: 
-            return True
+            err = ctypes.GetLastError()
+            return err != 5  # Si el error no es ACCESS_DENIED, asumimos que está en uso
         kernel32.CloseHandle(handle)
         return False
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
-        return True
+        return False
 
 def _is_kernel_managed(path: Path) -> bool:
     """Detecta archivos de paginación o hibernación bloqueados por el sistema operativo."""
