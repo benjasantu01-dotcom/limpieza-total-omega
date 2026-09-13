@@ -436,8 +436,10 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 
 def _write_temp_to_final(source: Path, destination: Path) -> str:
     """Copia al sandbox validando contra ataques de tipo TOCTOU."""
+    _check_path_syntax_integrity(destination)
     if is_protected_path(destination):
         raise UnsafePathError("Destino en ruta protegida.")
+    _check_windows_file_attributes(str(destination))
 
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
     fd = os.open(str(destination), flags, 0o600)

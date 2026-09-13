@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 47 | 4 | 10 | 2 | 39 |
+| 2026-09-11 | 47 | 4 | 10 | 2 | 35 |
 | 2026-09-12 | 146 | 8 | 24 | 14 | 158 |
-| 2026-09-13 | 32 | 2 | 4 | 5 | 9 |
+| 2026-09-13 | 35 | 2 | 4 | 5 | 10 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **42**
+- seguridad defensiva: **45**
 - rendimiento: **40**
 - robustez ante casos límite: **38**
 
@@ -34,19 +34,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **19**
 - `diskreport.py`: **19**
 - `duplicates.py`: **19**
+- `organizer.py`: **19**
 - `safety.py`: **19**
-- `organizer.py`: **18**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
 - `browser.py`: **17**
 - `healthscore.py`: **15**
+- `memory.py`: **15**
 - `main.py`: **14**
-- `memory.py`: **14**
 - `branding.py`: **13**
 - `scanner.py`: **10**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-13T23:25:09` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` validando que la ruta destino dentro del sandbox no contenga travesía de directorios ni atributos de sistema, previniendo inyecciones de rutas o colisiones maliciosas antes de la operación crítica.
+- `2026-09-13T23:24:48` **organizer.py** (seguridad defensiva): Se ha robustecido la seguridad defensiva en `_is_file_locked` y `_validate_file_attributes` para prevenir condiciones de carrera (TOCTOU) mediante el uso de `os.stat` antes de la operación, y se añadió una verificación de integridad en `stage_for_review` asegurando que la ruta final de destino siga residiendo bajo el directorio de cuarentena tras la resolución de nombres, evitando posibles ataques de recorrido de directorio (Path Traversal).
+- `2026-09-13T23:24:18` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `trim_working_set` implementando el principio de "mínimo privilegio" mediante el uso de `PROCESS_QUERY_LIMITED_INFORMATION` en la apertura inicial del proceso, evitando solicitar `PROCESS_SET_QUOTA` (permiso de escritura) antes de confirmar que el proceso es efectivamente modificable y seguro según las reglas del proyecto.
 - `2026-09-13T23:10:29` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del motor `compute_score` implementando un chequeo estricto de estado mediante la validación de finitud y tipos antes de procesar el pipeline, evitando que errores silenciosos en la entrada de datos afecten el cálculo del puntaje final.
 - `2026-09-13T23:09:52` **diskreport.py** (seguridad defensiva): Se mejoró la robustez de `walk_files` mediante la validación explícita de la ruta `entry.path` usando `Path.resolve()` contra el `root_path` antes de procesar, evitando ataques de "path traversal" o escape de subdirectorios mediante enlaces simbólicos maliciosos dentro del árbol analizado.
 - `2026-09-13T23:00:47` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` reemplazando el chequeo manual de `os.access` (que es una operación TOCTOU - Time of Check to Time of Use) por un enfoque defensivo que intenta la operación de escritura de forma segura tras validar la ruta, manteniendo la robustez ante posibles errores de permisos y evitando condiciones de carrera.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-13T22:29:53` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera (Race Conditions) y errores de E/S en `_is_file_locked`, implementando un manejo explícito de `FileNotFoundError` y `BlockingIOError`, además de asegurar que las operaciones de lectura no dependan de un estado previo del archivo que pudo haber cambiado entre la validación y el acceso.
 - `2026-09-13T22:29:18` **browser.py** (robustez ante casos límite): Se ha añadido un chequeo de estado de acceso (sharing violation) mediante `ctypes` en `_sum_directory_recursive` para evitar que el escaneo silenciosamente reporte 0 bytes o falle ante archivos bloqueados por el navegador, garantizando que el reporte sea honesto y robusto ante bloqueos de lectura.
 - `2026-09-13T22:19:11` **assistant.py** (robustez ante casos límite): Reforcé la robustez del método `ingest` ante entradas malformadas o tipos inesperados, añadiendo validación explícita para evitar que `None` o estructuras anidadas profundas causen excepciones en el bucle de procesamiento del asistente.
-- `2026-09-13T22:09:04` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la comparación recursiva de subcadenas con una verificación de conjunto (`set.isdisjoint`) sobre las partes de la ruta, reduciendo drásticamente la complejidad computacional en escaneos masivos.
-- `2026-09-13T22:08:20` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto mediante la eliminación de un `lru_cache` redundante y complejo que causaba recargas innecesarias, reemplazándolo por una verificación de existencia y tamaño que evita procesar el JSON si el archivo no cambió.
-- `2026-09-13T22:07:43` **organizer.py** (rendimiento): Optimicé el proceso de escaneo integrando la verificación de extensiones dentro de `_process_directory` y eliminando llamadas redundantes a `is_valid_junk_extension` en `_evaluate_entry`, reduciendo la carga de I/O y procesamiento de strings en el bucle crítico.

@@ -49,8 +49,6 @@ BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 
 # Máscaras de acceso Win32 para operaciones seguras en procesos:
-# PROCESS_QUERY_LIMITED_INFORMATION (0x1000): Mínimo acceso necesario para consultar estadísticas.
-# PROCESS_SET_QUOTA (0x100): Permiso requerido por la API 'EmptyWorkingSet'.
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x100
 SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
@@ -399,7 +397,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
-    proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
+    # Abrir inicialmente con mínimos privilegios para verificación de integridad
+    proc_handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, target_pid)
     if not proc_handle: 
         return False, f"Acceso denegado (Error {kernel32.GetLastError()})."
     
@@ -407,6 +406,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         is_safe, error_reason = _is_safe_to_trim(proc_handle)
         if not is_safe: 
             return False, error_reason or "Verificación de seguridad fallida."
+        
+        # Re-abrir con permisos de escritura (Set Quota) solo tras validar la ruta
+        kernel32.CloseHandle(proc_handle)
+        proc_handle = kernel32.OpenProcess(PROCESS_SET_QUOTA, False, target_pid)
+        if not proc_handle:
+            return False, "Error al escalar privilegios para la operación."
         
         if not psapi.EmptyWorkingSet(proc_handle): 
             return False, f"Sistema denegó la operación (Error {kernel32.GetLastError()})."

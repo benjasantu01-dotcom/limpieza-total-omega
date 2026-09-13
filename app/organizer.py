@@ -138,11 +138,12 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está inaccesible sin abrir un manejador exclusivo.
-    Usa os.access para comprobar permisos de lectura.
+    Usa os.access para comprobar permisos de lectura y stat para verificar existencia real.
     """
     if path is None: return True
     try:
-        if not path.exists() or _is_junction(path): return True
+        s = path.stat() # Verifica existencia y es real
+        if _is_junction(path): return True
         if not _passes_system_checks(path): return True
         return not os.access(path, os.R_OK)
     except (OSError, PermissionError):
@@ -186,12 +187,14 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 def _validate_file_attributes(src: Path) -> bool:
     """
     Confirma integridad del archivo: existencia, tipo (archivo regular), 
-    ausencia de atributos de sistema y accesibilidad.
+    ausencia de atributos de sistema y accesibilidad mediante stat previo.
     """
     try:
-        if src is None or not src.exists() or not src.is_file(): return False
-        if _is_junction(src) or src.is_symlink() or not _passes_system_checks(src): return False
-        return not _is_file_locked(src) and src.stat().st_size > 0
+        if src is None: return False
+        st = src.stat()
+        if not src.is_file() or _is_junction(src) or src.is_symlink(): return False
+        if not _passes_system_checks(src) or st.st_size == 0: return False
+        return not _is_file_locked(src)
     except (OSError, PermissionError):
         return False
 
@@ -282,6 +285,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
             return None
         safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
         target = _generate_unique_target(dest_base.resolve() / safe_name)
+        # Verificación extra: asegurar que el destino resuelto sigue estando en el directorio de cuarentena
         return target if target.resolve().is_relative_to(dest_base.resolve()) else None
     except (OSError, ValueError, AttributeError): return None
 

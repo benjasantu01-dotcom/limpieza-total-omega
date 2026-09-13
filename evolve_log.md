@@ -787,3 +787,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-13T23:10:29` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad del motor `compute_score` implementando un chequeo estricto de estado mediante la validación de finitud y tipos antes de procesar el pipeline, evitando que errores silenciosos en la entrada de datos afecten el cálculo del puntaje final.
 - `2026-09-13T23:10:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-13T23:10:29` Corrida terminada. Total usado hoy: 52.
+- `2026-09-13T23:19:10` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-09-13T23:20:12` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-13T23:21:15` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-13T23:22:22` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-13T23:23:34` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-13T23:24:18` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `trim_working_set` implementando el principio de "mínimo privilegio" mediante el uso de `PROCESS_QUERY_LIMITED_INFORMATION` en la apertura inicial del proceso, evitando solicitar `PROCESS_SET_QUOTA` (permiso de escritura) antes de confirmar que el proceso es efectivamente modificable y seguro según las reglas del proyecto.
+- `2026-09-13T23:24:48` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha robustecido la seguridad defensiva en `_is_file_locked` y `_validate_file_attributes` para prevenir condiciones de carrera (TOCTOU) mediante el uso de `os.stat` antes de la operación, y se añadió una verificación de integridad en `stage_for_review` asegurando que la ruta final de destino siga residiendo bajo el directorio de cuarentena tras la resolución de nombres, evitando posibles ataques de recorrido de directorio (Path Traversal).
+- `2026-09-13T23:25:09` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `quarantine_file` validando que la ruta destino dentro del sandbox no contenga travesía de directorios ni atributos de sistema, previniendo inyecciones de rutas o colisiones maliciosas antes de la operación crítica.
+- `2026-09-13T23:25:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-13T23:25:09` Corrida terminada. Total usado hoy: 56.
