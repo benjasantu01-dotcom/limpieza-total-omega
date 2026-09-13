@@ -672,3 +672,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-13T21:48:37` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_summary_data` y las funciones de análisis evitando la re-ejecución innecesaria de `walk_files`, consolidando el procesamiento en una sola pasada para reducir la latencia en escaneos profundos.
 - `2026-09-13T21:48:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-13T21:48:37` Corrida terminada. Total usado hoy: 20.
+- `2026-09-13T21:57:04` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-09-13T21:57:31` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-13T21:57:56` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-09-13T21:59:08` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un cacheo más eficiente y granular para `_compile_metrics` evitando recalcular elementos que no han cambiado, y se sustituyó el acceso repetido a los widgets de la interfaz dentro de los bucles por una referencia directa a los objetos de estado, reduciendo la carga sobre el hilo principal.
+- `2026-09-13T21:59:20` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-09-13T21:59:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-13T21:59:20` Corrida terminada. Total usado hoy: 24.

@@ -1153,9 +1153,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Consolida las métricas del sistema necesarias para el score de salud."""
+        # Caché de datos para evitar re-análisis costoso
         junk = self._get_cached("junk") or []
         hallazgos = self._get_cached("suspicions") or []
         dups = self._get_cached("dups") or []
+        startup = self._get_cached("startup") or []
+        quarantine_items = quarantine.list_items()
         
         snapshot = self._get_cached("ram_snapshot", lambda: memory_mod.read_snapshot())
         disk_info = self._get_home_disk_info()
@@ -1167,8 +1170,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             memory_available_percent=snapshot.available_percent if snapshot else 100.0,
             disk_free_percent=(disk_info.free / disk_info.total * 100) if (disk_info and disk_info.total > 0) else 100.0,
             duplicate_mb=(duplicates_mod.reclaimable_bytes(dups) / 1048576) if dups else 0.0,
-            startup_count=len(self._get_cached("startup") or []),
-            quarantined_count=len(quarantine.list_items()),
+            startup_count=len(startup),
+            quarantined_count=len(quarantine_items),
         )
         return metrics, snapshot or memory_mod.Snapshot(0, 0, 0), disk_info or diskreport.DriveInfo(0, 0, 0, "")
 
@@ -1235,6 +1238,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             "disco": f"{disco_libre:.0f}%",
         }
         
+        # Evita redibujado innecesario si los valores no cambiaron
         if all(self._last_card_values.get(k) == v for k, v in valores.items()):
             return
         self._last_card_values = valores
