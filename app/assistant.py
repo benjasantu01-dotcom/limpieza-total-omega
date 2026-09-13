@@ -238,7 +238,16 @@ _VALIDATORS: Final[dict[str, MetricSpec]] = {
 }
 
 def _safe_float(val: Any, default: float = 0.0) -> float:
-    """Convierte cualquier valor a float, normalizando errores de tipo o valores infinitos."""
+    """
+    Convierte cualquier valor a float.
+    
+    Args:
+        val: Valor bruto a convertir.
+        default: Valor a retornar en caso de error o tipo no finito.
+        
+    Returns:
+        float: Valor numérico normalizado.
+    """
     try:
         if val is None or isinstance(val, bool) or not isinstance(val, (int, float, str)):
             return default
@@ -263,9 +272,7 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
 
 @dataclass
 class SystemContext:
-    """
-    Agregador de estado del sistema utilizado para diagnósticos.
-    """
+    """Agregador de estado del sistema utilizado para diagnósticos."""
     score: Optional[int] = None
     grade: str = ""
     junk_mb: float = 0.0
@@ -301,9 +308,7 @@ class SystemContext:
         return _ensure_safe_text(self.grade) if self.grade else True
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> bool:
-        """
-        Intenta mapear y validar un valor individual desde una fuente de datos genérica.
-        """
+        """Intenta mapear y validar un valor individual desde una fuente de datos genérica."""
         try:
             if hasattr(self, key):
                 val = _get_source_value(source, key)
@@ -323,9 +328,7 @@ class SystemContext:
         return clean if _ensure_safe_text(clean) else ""
 
     def ingest(self, source: Any) -> bool:
-        """
-        Ingesta datos externos al contexto mediante validación estricta de cada campo.
-        """
+        """Ingesta datos externos al contexto mediante validación estricta de cada campo."""
         if not isinstance(source, (dict, object)) or _is_input_too_deep_or_complex(source):
             return False
             
@@ -368,6 +371,12 @@ def _is_sensitive_structure(text: str) -> bool:
 def _is_safe_text_structure(text: str) -> bool:
     """
     Ejecuta un chequeo multidimensional de seguridad sobre el texto.
+    
+    Args:
+        text: Cadena de texto a auditar.
+        
+    Returns:
+        bool: True si el texto es libre de patrones de inyección, False en caso contrario.
     """
     if not text: return True
     if (_PATH_INJECTION_REGEX.search(text) or 
@@ -390,13 +399,10 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _get_source_value(source: Any, key: str) -> Any:
-    """
-    Acceso genérico a datos de configuración, evitando atributos privados.
-    """
+    """Acceso genérico a datos de configuración, evitando atributos privados."""
     try:
         if isinstance(source, dict):
             return source.get(key)
-        # Solo permitir acceso a objetos que no sean tipos nativos complejos ni módulos
         if hasattr(source, "__dict__") and not isinstance(source, (type, type(None))):
             if not key.startswith("_"):
                 return getattr(source, key, None)
@@ -433,9 +439,7 @@ def _generate_context_lines_cached(score_s: str, grade: str, junk_s: str, susp_s
     return "\n".join(lines)
 
 def context_as_text(context: SystemContext) -> str:
-    """
-    Serializa las métricas de SystemContext en texto optimizado para la inferencia.
-    """
+    """Serializa las métricas de SystemContext en texto optimizado para la inferencia."""
     if context.is_empty:
         return "No hay métricas disponibles todavía."
     
@@ -595,9 +599,7 @@ def _sanitize_query(question: str) -> str:
     return clean
 
 def local_answer(question: str, context: SystemContext) -> Answer:
-    """
-    Motor de inferencia local: procesa preguntas basadas en las métricas actuales del sistema.
-    """
+    """Motor de inferencia local: procesa preguntas basadas en las métricas actuales del sistema."""
     q_sanitized = _sanitize_query(question)
     if not q_sanitized or not _ensure_safe_text(q_sanitized):
         return Answer("Entrada no válida.")
@@ -716,9 +718,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
 
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Union[str, Path, None] = None) -> Answer:
-    """
-    Punto de entrada unificado para consultas de usuario, con validación de settings.
-    """
+    """Punto de entrada unificado para consultas de usuario, con validación de settings."""
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")
         

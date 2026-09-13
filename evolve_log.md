@@ -636,3 +636,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-12T20:35:09` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-12T20:45:22` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-12T20:55:33` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-13T21:06:00` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-09-13T21:06:28` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para los nombres de las columnas del CSV (esperando exactamente 2 columnas) y capturando posibles excepciones durante la iteración de filas para asegurar que un registro mal formado no interrumpa la extracción del resto del inventario.
+- `2026-09-13T21:07:08` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args y Returns) en las funciones críticas de validación y procesamiento, facilitando la comprensión del flujo de datos seguro.
+- `2026-09-13T21:07:41` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Documenté mediante type hints más precisos y docstrings explicativos los cálculos geométricos de las funciones de dibujo del escudo, mejorando la legibilidad técnica para futuros colaboradores sin alterar el comportamiento.
+- `2026-09-13T21:07:53` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings detallados en funciones internas clave para explicar el "porqué" de las validaciones de seguridad y las restricciones impuestas por la arquitectura, facilitando el mantenimiento y la auditoría.
+- `2026-09-13T21:07:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-13T21:07:53` Corrida terminada. Total usado hoy: 4.

@@ -310,12 +310,13 @@ def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, .
     segments.append(ColorSegment(current_color, start, len(colors)))
     return tuple(segments)
 
+# Coordenadas relativas del escudo (base 128x128). Define la silueta geométrica.
 SHIELD_BASE_COORDS: Final[Tuple[float, ...]] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
 
 @lru_cache(maxsize=8)
 def _get_scaled_poly(scale: float, canvas_x: float, canvas_y: float) -> Tuple[float, ...]:
-    """Cachea los puntos del polígono base del escudo aplicándole transformación de escala y offset."""
-    poly = []
+    """Transforma las coordenadas base del escudo aplicando un factor de escala y offset (x, y)."""
+    poly: List[float] = []
     for i in range(0, len(SHIELD_BASE_COORDS), 2):
         poly.append(canvas_x + SHIELD_BASE_COORDS[i] * scale)
         poly.append(canvas_y + SHIELD_BASE_COORDS[i+1] * scale)
@@ -371,7 +372,10 @@ def logo_ascii() -> str:
     return "\n   ___  __  __ ___ ___   _\n  / _ \\|  \\/  | __/ __| /_\\\n | (_) | |\\/| | _|| (_ // _ \\\n  \\___/|_|  |_|___\\___/_/ \\_\\\n      Limpieza Total Omega\n"
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Dibuja franjas graduadas sobre el componente gráfico del escudo."""
+    """
+    Renderiza franjas horizontales con degradado sobre el cuerpo del escudo.
+    Calcula el ancho dinámico de cada franja basado en una curva de decaimiento visual.
+    """
     try:
         franjas_count = max(6, int(28 * scale))
         colores = gradient_colors(franjas_count)
@@ -381,30 +385,41 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
         for seg in _get_grouped_segments(colores):
             mid = (seg.start_index + seg.end_index) / 2
             progreso = mid / max(1.0, float(franjas_count - 1))
+            # Ajuste de ancho cónico para dar profundidad 3D al escudo
             w = 36 * scale * (1.0 if progreso < 0.55 else 1.0 - (progreso - 0.55) * 1.9)
-            canvas.create_rectangle(center_x - w, base_y + seg.start_index * factor_y, center_x + w, base_y + seg.end_index * factor_y + 1, fill=seg.hex_color, outline="")
+            canvas.create_rectangle(center_x - w, base_y + seg.start_index * factor_y, 
+                                    center_x + w, base_y + seg.end_index * factor_y + 1, 
+                                    fill=seg.hex_color, outline="")
     except (TypeError, ValueError, ZeroDivisionError): 
         pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Dibuja detalles iconográficos (flecha y omega) sobre el escudo."""
+    """Dibuja detalles iconográficos (flecha y omega) con escalado proporcional sobre el escudo."""
     try:
-        canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, canvas_x + 75 * scale, canvas_y + 41 * scale, fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
-        canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, canvas_x + 89 * scale, canvas_y + 38 * scale, canvas_x + 92 * scale, canvas_y + 52 * scale, fill=C_BACKGROUND, outline="")
-        canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(UI_FONT_HEADER_SIZE * scale)), UI_FONT_BOLD))
+        canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, 
+                           canvas_x + 75 * scale, canvas_y + 41 * scale, 
+                           fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
+        canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, 
+                              canvas_x + 89 * scale, canvas_y + 38 * scale, 
+                              canvas_x + 92 * scale, canvas_y + 52 * scale, 
+                              fill=C_BACKGROUND, outline="")
+        canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", 
+                           fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(UI_FONT_HEADER_SIZE * scale)), UI_FONT_BOLD))
     except Exception: pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza la representación vectorial del escudo corporativo en el canvas."""
+    """Renderiza la representación vectorial del escudo corporativo en el canvas principal."""
     try:
         s = float(size)
         if s <= 0: return
         scale = max(0.1, min(10.0, s / 128.0))
+        # Fondo radial de resplandor (Glow)
         canvas.create_oval(
             canvas_x + 64 * scale - 75 * scale, canvas_y + 58 * scale - 75 * scale, 
             canvas_x + 64 * scale + 75 * scale, canvas_y + 58 * scale + 75 * scale, 
             fill=blend(C_SURFACE, C_GLOW, 0.15), outline=""
         )
+        # Cuerpo principal del escudo
         canvas.create_polygon(*_get_scaled_poly(scale, canvas_x, canvas_y), fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
         _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, scale)

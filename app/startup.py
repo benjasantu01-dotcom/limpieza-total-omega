@@ -270,34 +270,36 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f = io.StringIO(csv_text.strip())
         reader = csv.DictReader(f)
         
+        # Validar que los campos existan y sean suficientes para operar
         if not reader.fieldnames or len(reader.fieldnames) < 2:
             return []
             
         f_name, f_cmd = reader.fieldnames[0], reader.fieldnames[1]
             
         for row in reader:
-            if not isinstance(row, dict):
-                continue
-            
-            val_name = row.get(f_name)
-            val_cmd = row.get(f_cmd)
-            
-            if not isinstance(val_name, str) or not isinstance(val_cmd, str):
-                continue
-                
-            name = "".join(c for c in val_name if ord(c) >= 32).strip()
-            cmd = "".join(c for c in val_cmd if ord(c) >= 32).strip()
-            
-            if not name or not cmd or cmd.startswith(r"\\") or cmd in seen_commands or name.upper().startswith("PS"):
-                continue
-            
             try:
+                if not isinstance(row, dict):
+                    continue
+                
+                val_name = row.get(f_name)
+                val_cmd = row.get(f_cmd)
+                
+                if not isinstance(val_name, str) or not isinstance(val_cmd, str):
+                    continue
+                    
+                name = "".join(c for c in val_name if ord(c) >= 32).strip()
+                cmd = "".join(c for c in val_cmd if ord(c) >= 32).strip()
+                
+                if not name or not cmd or cmd.startswith(r"\\") or cmd in seen_commands or name.upper().startswith("PS"):
+                    continue
+                
                 p_cmd: Path = Path(cmd)
                 if not p_cmd.parts or is_protected_path(p_cmd):
                     continue
+                
                 seen_commands.add(cmd)
                 parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
-            except (ValueError, TypeError, RuntimeError):
+            except (ValueError, TypeError, RuntimeError, OSError):
                 continue
             
     except (csv.Error, OSError, ValueError, TypeError):

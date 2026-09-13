@@ -135,6 +135,7 @@ def base_directories() -> List[Path]:
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
     Verifica si real_target reside dentro de real_base usando os.path.commonpath.
+    Previene el escape de sandboxing mediante rutas relativas o symlinks.
     """
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
@@ -158,6 +159,7 @@ def _is_excluded_file(name: Optional[str]) -> bool:
 def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """
     Consulta atributos del sistema mediante Win32 API.
+    Detecta archivos ocultos o de sistema para filtrar ruido de directorios.
     """
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
@@ -172,8 +174,9 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Determina si un objeto del sistema de archivos debe omitirse basándose en
-    reglas de seguridad, archivos excluidos o tipos especiales (symlinks/junctions).
+    Determina si un objeto del sistema de archivos debe omitirse.
+    Aplica filtros de seguridad: evita recursión infinita (junctions), 
+    omite archivos protegidos y rutas excesivamente largas.
     """
     if entry is None:
         return True
@@ -224,9 +227,13 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula el tamaño de un directorio mediante búsqueda en profundidad (DFS) validando sandbox.
+    Calcula el tamaño de un directorio mediante búsqueda en profundidad (DFS).
+    
+    Implementa:
+    1. Límite de profundidad (MAX_SCAN_DEPTH) para evitar ciclos o estructuras infinitas.
+    2. Memoización para evitar re-escaneo de subdirectorios ya visitados.
+    3. Validación de sandbox para asegurar que la recursión no salga del directorio base.
     """
-    # Normalizar ruta a absoluta para evitar discrepancias al comparar con root_base
     try:
         current_abs = str(Path(root_abs).resolve(strict=True))
     except (OSError, RuntimeError):
@@ -284,7 +291,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
-    """Valida la integridad de una ruta candidata a ser caché de navegador."""
+    """Valida la integridad de una ruta candidata antes de iniciar el escaneo recursivo."""
     try:
         if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir():
             return False
