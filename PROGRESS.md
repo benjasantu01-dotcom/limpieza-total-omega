@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 47 | 4 | 10 | 2 | 31 |
+| 2026-09-11 | 47 | 4 | 10 | 2 | 27 |
 | 2026-09-12 | 146 | 8 | 24 | 14 | 158 |
-| 2026-09-13 | 38 | 2 | 5 | 5 | 10 |
+| 2026-09-13 | 39 | 2 | 5 | 5 | 13 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **48**
+- seguridad defensiva: **49**
 - rendimiento: **40**
 - robustez ante casos límite: **38**
 
@@ -43,10 +43,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `main.py`: **14**
 - `branding.py`: **13**
 - `scanner.py`: **11**
-- `startup.py`: **10**
+- `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-13T23:41:26` **startup.py** (seguridad defensiva): Se ha mejorado la defensa contra rutas maliciosas en `StartupEntry._is_path_suspicious` añadiendo una comprobación explícita para evitar que comandos con parámetros complejos o scripts de PowerShell (con el carácter `|` o `&` ya bloqueados, se añade `^` y `$` para inyecciones de shell/batch) sean procesados como rutas locales.
 - `2026-09-13T23:31:04` **settings.py** (seguridad defensiva): Se reforzó la seguridad de la persistencia de datos agregando una verificación de integridad de la ruta de destino (evitando que el directorio de configuración sea un punto de montaje inseguro) y asegurando que `settings_path` no permita el escape fuera del directorio base mediante `resolve()` y `is_safe_to_modify`.
 - `2026-09-13T23:30:48` **scanner.py** (seguridad defensiva): Mejoré la seguridad en `_is_safe_entry` y `scan_directory` para validar explícitamente que la ruta analizada esté dentro de la raíz de escaneo utilizando `Path.resolve()` en tiempo real, evitando ataques de tipo "path traversal" (ej. rutas conteniendo `..`) que podrían engañar a la comparación de strings simple.
 - `2026-09-13T23:30:19` **safety.py** (seguridad defensiva): Se ha mejorado `_validate_structural_safety` para prevenir el "Time-of-Check to Time-of-Use" (TOCTOU) y la evasión de seguridad mediante caracteres prohibidos, añadiendo una validación explícita de `path` como un objeto `Path` existente para evitar el procesamiento de rutas cuya resolución en el sistema de archivos local pueda diferir de la cadena analizada.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-13T22:50:26` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `process_entry` ante el acceso a archivos bloqueados por el sistema operativo añadiendo un manejo de excepciones específico para `OSError` que captura los fallos típicos al intentar consultar atributos de archivos en uso (como el error 32, "process cannot access the file").
 - `2026-09-13T22:50:12` **safety.py** (robustez ante casos límite): Mejoré la robustez ante casos límite en `is_file_in_use` y `_is_reparse_point` al asegurar que el manejo de errores de WinAPI sea más granular, evitando falsos negativos (bloqueos) ante errores de acceso denegado o sistemas sin privilegios.
 - `2026-09-13T22:49:15` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de redundancia de nombres en `_generate_safe_stored_name` para evitar colisiones críticas en caso de múltiples archivos con nombres idénticos pero IDs distintos, y se ajustó el manejo de excepciones en `_is_file_locked` para mayor robustez ante estados transitorios del sistema de archivos.
-- `2026-09-13T22:41:09` **main.py** (robustez ante casos límite): He mejorado la robustez de `on_heuristic_scan` y `on_heuristic_scan_folder` añadiendo una validación explícita de existencia mediante `is_dir()` antes de iniciar el hilo de análisis, evitando que el bucle de trabajo intente procesar rutas inválidas o inexistentes que podrían disparar excepciones innecesarias en el pool de hilos.

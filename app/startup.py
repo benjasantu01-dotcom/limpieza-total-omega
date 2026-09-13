@@ -101,7 +101,7 @@ class StartupEntry:
 
     def _is_path_suspicious(self, path_string: str) -> bool:
         """Identifica caracteres peligrosos o prefijos UNC (red) no soportados en el escaneo local."""
-        suspicious_chars: str = '<>|?*\0&;%'
+        suspicious_chars: str = '<>|?*\0&;%^$'
         return any(c in path_string for c in suspicious_chars) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
