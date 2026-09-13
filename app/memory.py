@@ -209,6 +209,10 @@ def _is_valid_process_entry(name: Optional[str], pid_str: Optional[str], ws_str:
     except (ValueError, TypeError):
         return None
 
+def _clean_csv_field(field: str) -> str:
+    """Limpia los campos del CSV eliminando comillas y espacios en blanco."""
+    return field.strip().strip("'\" ")
+
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
     Procesa la salida CSV proveniente de un pipeline de PowerShell.
@@ -222,8 +226,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         line = line.strip()
         if not line or "," not in line:
             continue
-        # Split y limpieza conservadora; solo aceptamos registros completos de 3 columnas
-        parts = [x.strip().strip("'\" ") for x in line.split(",")]
+        parts = [_clean_csv_field(x) for x in line.split(",")]
         if len(parts) == 3:
             proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
             if proc:
@@ -286,7 +289,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if (time.time() - _proc_cache_time) < 60:
         return _proc_cache_data[:limit]
     
-    # Optimizamos reduciendo la carga del pipeline a solo extraer datos crudos
     ps_cmd = "Get-Process | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
     cmd = ['powershell', '-NoProfile', '-NonInteractive', '-Command', ps_cmd]
     
