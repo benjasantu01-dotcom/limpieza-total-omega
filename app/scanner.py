@@ -124,11 +124,14 @@ class Scanner:
         self._registry = EXECUTABLE_CHECK_REGISTRY
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica que la entrada no escape del directorio raíz configurado."""
+        """Verifica que la entrada no escape del directorio raíz configurado (prevención de escape)."""
         return entry_path.lower().startswith(self.base_root_str)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida que la entrada cumpla con las políticas de seguridad y saneamiento."""
+        """
+        Aplica filtros de seguridad: omite rutas protegidas, longitudes excedidas, 
+        caracteres especiales y enlaces simbólicos.
+        """
         try:
             path_str: str = entry.path
             if not path_str: return False
@@ -148,22 +151,22 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si un directorio debe omitirse por ser un punto de reanálisis."""
+        """Verifica si la entrada es un punto de reanálisis (Junction/Mount Point) para evitar bucles o recursión infinita."""
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, PermissionError, FileNotFoundError):
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """Agrega un directorio válido al stack de búsqueda si no ha sido visitado."""
+        """Registra y encola un directorio para ser procesado posteriormente."""
         if entry.path and entry.path not in self.seen:
             self.seen.add(entry.path)
             directory_stack.append(entry.path)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """
-        Analiza una entrada. Si es directorio válido, encola; si es archivo
-        potencialmente ejecutable, dispara heurísticas de análisis.
+        Punto de decisión central para cada entrada: clasifica como directorio (cola) 
+        o archivo (análisis heurístico).
         """
         try:
             if not self._is_safe_entry(entry):
@@ -180,7 +183,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
-        """Ejecuta el conjunto configurado de heurísticas sobre el archivo dado."""
+        """Ejecuta secuencialmente las heurísticas registradas sobre un archivo sospechoso."""
         findings: ScanResult = []
         if (double_ext := check_double_extension(path, entry, self.now_ts)):
             findings.append(double_ext)
@@ -191,7 +194,7 @@ class Scanner:
         self.results.extend(findings)
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
-    """Ejecuta reglas heurísticas sobre un archivo aislado."""
+    """Ejecuta reglas heurísticas sobre un archivo aislado (punto de entrada unitario)."""
     if path is None: return []
     findings: ScanResult = []
     
@@ -206,7 +209,10 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Punto de entrada: coordina el escaneo recursivo seguro de un directorio."""
+    """
+    Punto de entrada superior: coordina el escaneo recursivo seguro de un directorio.
+    Inicializa el escáner y gestiona el ciclo iterativo.
+    """
     if directory is None: return []
         
     try:

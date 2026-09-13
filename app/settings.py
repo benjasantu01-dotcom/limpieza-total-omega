@@ -100,8 +100,10 @@ __all__ = [
     "assistant_enabled", "describe",
 ]
 
+# Ubicación base donde se almacena el estado persistente del usuario
 SETTINGS_DIR: Final = Path("~/LimpiezaTotalOmega").expanduser()
 SETTINGS_FILE: Final = "config.json"
+# Límite de seguridad: archivos demasiado grandes podrían indicar corrupción o ataques
 MAX_SETTINGS_SIZE: Final = 1024 * 64
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
@@ -130,7 +132,7 @@ DEFAULTS: Final[AppSettings] = {
     "analisis_en_paralelo": True,
     "asistente_activado": False,
     "asistente_clave_api": "",
-    "asistente_enviar_METRICAS": True,
+    "asistente_enviar_metricas": True,
     "asistente_modelo": "gemini-3.1-flash-lite",
 }
 

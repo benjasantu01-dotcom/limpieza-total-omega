@@ -658,3 +658,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-13T21:28:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-13T21:28:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-13T21:28:04` Corrida terminada. Total usado hoy: 12.
+- `2026-09-13T21:36:35` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-09-13T21:37:10` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult
+- `2026-09-13T21:37:37` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `scanner.py` mediante la adición de docstrings técnicos detallados en los métodos de `Scanner` y la estandarización de las firmas de los métodos, clarificando el propósito y las restricciones operativas de cada componente de escaneo.
+- `2026-09-13T21:38:07` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a las constantes críticas y normalizando la nomenclatura de la clave `asistente_enviar_metricas` en el diccionario `DEFAULTS` para corregir una inconsistencia tipográfica que impedía su correcto mapeo.
+- `2026-09-13T21:38:24` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de la clase `StartupEntry` y sus métodos clave para aclarar el flujo de resolución de rutas y la gestión del caché, transformando comentarios genéricos en una especificación técnica precisa que facilita el mantenimiento.
+- `2026-09-13T21:38:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-13T21:38:24` Corrida terminada. Total usado hoy: 16.
