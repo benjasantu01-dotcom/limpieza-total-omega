@@ -298,6 +298,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
     
     try:
+        if not ruta.exists(): return DEFAULTS.copy()
         stats = ruta.stat()
         if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
             return DEFAULTS.copy()
@@ -337,10 +338,12 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     for attempt in range(3):
         try:
-            if not is_safe_to_modify(str(ruta.parent)):
-                return None
+            parent = ruta.parent
+            if not parent.exists():
+                parent.mkdir(parents=True, exist_ok=True)
             
-            if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
+            if not is_safe_to_modify(str(parent)):
+                return None
             
             with open(temp_path, "wb") as f:
                 f.write(json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8"))

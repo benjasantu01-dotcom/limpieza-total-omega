@@ -358,10 +358,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
         
-        # Validar permisos de escritura en la carpeta destino
-        if not os.access(parent, os.W_OK):
-            return None
-            
+        # Escribir directamente capturando excepciones de acceso
         path_input.write_text(logo_svg(), encoding="utf-8")
         return path_input
     except (OSError, PermissionError, TypeError, ValueError): 

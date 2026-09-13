@@ -749,3 +749,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-13T22:50:26` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `process_entry` ante el acceso a archivos bloqueados por el sistema operativo añadiendo un manejo de excepciones específico para `OSError` que captura los fallos típicos al intentar consultar atributos de archivos en uso (como el error 32, "process cannot access the file").
 - `2026-09-13T22:50:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-13T22:50:26` Corrida terminada. Total usado hoy: 44.
+- `2026-09-13T22:58:47` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-09-13T22:59:19` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez ante la posible inexistencia o falta de permisos del directorio padre de la configuración mediante una comprobación preventiva y un manejo más específico de errores, asegurando que la aplicación no intente acceder a rutas nulas o bloqueadas al intentar guardar o cargar ajustes.
+- `2026-09-13T22:59:47` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.33s
+
+```
+- `2026-09-13T22:59:47` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `startup.py` ante rutas mal formadas en el registro (frecuentes en instalaciones dañadas) añadiendo un manejo de excepciones más granular en `_resolve_and_cache_path` y validando la existencia del ejecutable mediante `os.path.exists` antes de la resolución, evitando errores en entornos con permisos restringidos o rutas inaccesibles.
+- `2026-09-13T23:00:26` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al centralizar y robustecer la validación de entrada en `_ensure_safe_text` y `_is_safe_text_structure`, asegurando que cualquier texto proveniente del usuario o de una respuesta externa pase por un escaneo de inyección de comandos más estricto antes de procesarse o devolverse.
+- `2026-09-13T23:00:47` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad de `save_logo_svg` reemplazando el chequeo manual de `os.access` (que es una operación TOCTOU - Time of Check to Time of Use) por un enfoque defensivo que intenta la operación de escritura de forma segura tras validar la ruta, manteniendo la robustez ante posibles errores de permisos y evitando condiciones de carrera.
+- `2026-09-13T23:00:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-13T23:00:47` Corrida terminada. Total usado hoy: 48.

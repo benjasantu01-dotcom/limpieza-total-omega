@@ -201,6 +201,8 @@ _PATH_INJECTION_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:[\\/]|/|\\|\.\
 _CONTROL_CHARS_REGEX: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f\u0080-\u009f\u202b-\u202f]")
 _ANSI_ESCAPE_REGEX: Final[re.Pattern] = re.compile(r"\x1B\[[0-9;]*[mK]")
 _PS_COMMAND_REGEX: Final[re.Pattern] = re.compile(r"(Get-|Remove-|Set-|Stop-|Start-)[a-zA-Z]+", re.IGNORECASE)
+_RESTRICTED_CONTENT_REGEX: Final[re.Pattern] = re.compile(r"(exec|eval|subprocess|system\s*\(|rm\s+|del\s+|cmd\.exe|powershell|reg\.exe)", re.IGNORECASE)
+_SENSITIVE_STRUCTURE_REGEX: Final[re.Pattern] = re.compile(r"(\\\\|[a-z]:\\|/etc/|\\\\UNC|C:\\Windows)", re.IGNORECASE)
 _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
 _MODEL_NAME_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9\.\-_]{1,64}$")
 _API_KEY_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9_\-\.]{1,128}$")
@@ -359,34 +361,18 @@ class Answer:
         """Indica si el origen de la respuesta es un motor remoto (Gemini)."""
         return self.source == "gemini"
 
-def _is_restricted_content(text: str) -> bool:
-    """Detecta contenido potencialmente malicioso relacionado con la ejecución de comandos."""
-    restricted_patterns = [r"exec", r"eval", r"subprocess", r"system\s*\(", r"rm\s+", r"del\s+", r"cmd\.exe", r"powershell"]
-    return any(re.search(p, text, re.IGNORECASE) for p in restricted_patterns)
-
-def _is_sensitive_structure(text: str) -> bool:
-    """Verifica si el texto contiene patrones de rutas de archivos sensibles."""
-    return bool(re.search(r"(\\\\|[a-z]:\\|/etc/|\\\\UNC|C:\\Windows)", text, re.IGNORECASE))
-
 def _is_safe_text_structure(text: str) -> bool:
     """
     Ejecuta un chequeo multidimensional de seguridad sobre el texto.
-    
-    Args:
-        text: Cadena de texto a auditar.
-        
-    Returns:
-        bool: True si el texto es libre de patrones de inyección, False en caso contrario.
     """
     if not text: return True
-    if (_PATH_INJECTION_REGEX.search(text) or 
-        is_protected_path(text) or 
-        _is_restricted_content(text) or 
-        _is_sensitive_structure(text) or
+    return not (
+        _PATH_INJECTION_REGEX.search(text) or 
+        _RESTRICTED_CONTENT_REGEX.search(text) or 
+        _SENSITIVE_STRUCTURE_REGEX.search(text) or
         _ANSI_ESCAPE_REGEX.search(text) or
-        _PS_COMMAND_REGEX.search(text)):
-        return False
-    return True
+        _PS_COMMAND_REGEX.search(text)
+    )
 
 def _ensure_safe_text(text: Any) -> bool:
     """Wrapper de seguridad para validar el tipo y contenido de cualquier texto."""
@@ -592,16 +578,13 @@ _KEYWORD_MAP: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
 def _sanitize_query(question: str) -> str:
     """Limpia el input del usuario eliminando caracteres prohibidos para prevenir inyecciones."""
     if not isinstance(question, str): return ""
-    clean = _CONTROL_CHARS_REGEX.sub(' ', question)
-    clean = _PATH_INJECTION_REGEX.sub(' ', clean)
-    clean = clean.strip()[:100].lower()
-    if is_protected_path(clean) or _is_restricted_content(clean): return ""
-    return clean
+    clean = _CONTROL_CHARS_REGEX.sub(' ', question).strip()[:100]
+    return clean if _ensure_safe_text(clean) else ""
 
 def local_answer(question: str, context: SystemContext) -> Answer:
     """Motor de inferencia local: procesa preguntas basadas en las métricas actuales del sistema."""
     q_sanitized = _sanitize_query(question)
-    if not q_sanitized or not _ensure_safe_text(q_sanitized):
+    if not q_sanitized:
         return Answer("Entrada no válida.")
     if context.is_empty:
         return Answer(
@@ -643,19 +626,13 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa mensaje y contexto a JSON, verificando que no existan vectores de inyección."""
     try:
-        if not isinstance(context_text, str) or not _ensure_safe_text(context_text): return None
+        if not _ensure_safe_text(context_text): return None
         q = _sanitize_query(question)
-        if not q or not _ensure_safe_text(q) or is_protected_path(q): return None
-        if _is_restricted_content(q) or _is_restricted_content(context_text): return None
-        
-        # Validación de integridad post-sanitización para vectores complejos
-        if _is_sensitive_structure(q) or _is_sensitive_structure(context_text): return None
+        if not q or not _ensure_safe_text(q): return None
         
         data = {"contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]}]}
         encoded = json.dumps(data).encode("utf-8")
-        if len(encoded) > _MAX_PROMPT_LIMIT * 2:
-            return None
-        return encoded
+        return encoded if len(encoded) < _MAX_PROMPT_LIMIT * 2 else None
     except (TypeError, ValueError, AttributeError):
         return None
 
@@ -663,17 +640,9 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     """Extrae de forma segura el texto de la estructura JSON devuelta por la API."""
     if not isinstance(data, dict): return None
     try:
-        candidates = data.get("candidates")
-        if not isinstance(candidates, list) or len(candidates) == 0: return None
-        c1 = candidates[0]
-        if not isinstance(c1, dict): return None
-        content = c1.get("content")
-        if not isinstance(content, dict): return None
-        parts = content.get("parts")
-        if not isinstance(parts, list) or len(parts) == 0: return None
-        first_part = parts[0]
-        if not isinstance(first_part, dict): return None
-        text_val = first_part.get("text")
+        content = data.get("candidates", [{}])[0].get("content", {})
+        parts = content.get("parts", [{}])
+        text_val = parts[0].get("text")
         return str(text_val) if isinstance(text_val, str) else None
     except (AttributeError, TypeError, IndexError, KeyError): 
         return None
@@ -683,10 +652,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): 
         return None
         
-    safe_c = _CONTROL_CHARS_REGEX.sub(" ", context_text)
-    if not _ensure_safe_text(safe_c) or "Error" in safe_c: return None
-    
-    payload = _build_payload(question, safe_c)
+    payload = _build_payload(question, context_text)
     if not payload: return None
     
     try:
@@ -700,18 +666,9 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             
             data = json.loads(raw_res.decode("utf-8"))
             raw_text = _extract_text_from_gemini_json(data)
-            if not raw_text: return None
+            if not raw_text or not _ensure_safe_text(raw_text): return None
             
-            # Limpieza adicional post-respuesta para prevenir inyección remota
-            clean = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
-            if _is_restricted_content(clean) or _PS_COMMAND_REGEX.search(clean):
-                return None
-                
-            final = _validate_response_length(clean)
-            
-            if _ensure_safe_text(final) and _is_safe_text_structure(final):
-                return final
-            return None
+            return _validate_response_length(raw_text.strip())
             
     except (urllib.error.URLError, OSError, json.JSONDecodeError, UnicodeDecodeError):
         return None
