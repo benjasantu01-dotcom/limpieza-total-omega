@@ -87,11 +87,13 @@ class DuplicateGroup:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Verifica si el archivo está en uso exclusivo intentando un acceso 'ab' (append-binary)."""
+    """Verifica si el archivo está en uso exclusivo, manejando errores de sistema durante la apertura."""
     try:
-        with open(path, 'ab'):
+        with open(path, 'rb') as f:
+            # Intenta una lectura mínima para asegurar accesibilidad real
+            f.read(1)
             return False
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, FileNotFoundError, BlockingIOError):
         return True
 
 
@@ -102,7 +104,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         
     try:
         p = Path(path)
-        if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p) or _is_file_locked(p):
+        if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p):
             return None
             
         digest = hashlib.sha256()
@@ -121,8 +123,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
     try:
         p = Path(path)
-        st = p.stat()
-        if not p.is_file() or st.st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p) or _is_file_locked(p):
+        if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p):
             return None
 
         with open(p, "rb") as f:

@@ -105,7 +105,6 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
     if os.name != 'nt':
         return None
     try:
-        # Cargamos explícitamente y validamos atributos mínimos
         dll = ctypes.WinDLL('kernel32.dll', use_last_error=True)
         if hasattr(dll, 'GetFileAttributesW'):
             return dll
@@ -228,11 +227,6 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula el tamaño de un directorio mediante búsqueda en profundidad (DFS).
-    
-    Implementa:
-    1. Límite de profundidad (MAX_SCAN_DEPTH) para evitar ciclos o estructuras infinitas.
-    2. Memoización global (persiste en memo) para evitar re-escaneo.
-    3. Validación de sandbox para asegurar que la recursión no salga del directorio base.
     """
     if root_abs in memo:
         return memo[root_abs]
@@ -244,11 +238,7 @@ def _sum_directory_recursive(
 
     if not current_abs or depth > MAX_SCAN_DEPTH or len(current_abs) >= MAX_PATH_LEN:
         return 0
-    if any(c in current_abs for c in '\0\r\n'):
-        return 0
-    
-    # Seguridad: verificar que la ruta actual mantenga la raíz original
-    if not current_abs.startswith(root_base):
+    if any(c in current_abs for c in '\0\r\n') or not current_abs.startswith(root_base):
         return 0
     
     root_path = Path(current_abs)
@@ -267,7 +257,10 @@ def _sum_directory_recursive(
                         total += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
                     else:
                         total += entry.stat(follow_symlinks=False).st_size
-                except (OSError, PermissionError):
+                except OSError as e:
+                    # Detectar si es un bloqueo por uso (sharing violation)
+                    if kernel32 and e.winerror == ERROR_SHARING_VIOLATION:
+                        continue
                     continue
     except (PermissionError, OSError):
         return 0
@@ -317,7 +310,6 @@ def detect_profiles(
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
     k32 = _get_kernel32()
-    # Diccionario persistente para memoización entre escaneos de carpetas de caché
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
