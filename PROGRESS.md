@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 38
-- Sin cambios (nada sustancial que mejorar): 18
+- Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 55 | 4 | 11 | 2 | 54 |
+| 2026-09-11 | 51 | 4 | 11 | 2 | 54 |
 | 2026-09-12 | 146 | 8 | 24 | 14 | 158 |
-| 2026-09-13 | 20 | 0 | 3 | 2 | 3 |
+| 2026-09-13 | 21 | 1 | 3 | 4 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **46**
+- seguridad defensiva: **42**
 - rendimiento: **40**
-- robustez ante casos límite: **30**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
-- `duplicates.py`: **19**
 - `organizer.py`: **19**
 - `settings.py`: **19**
 - `quarantine.py`: **18**
+- `assistant.py`: **18**
+- `diskreport.py`: **18**
+- `duplicates.py`: **18**
 - `safety.py`: **18**
-- `assistant.py`: **17**
 - `browser.py`: **16**
-- `healthscore.py`: **15**
 - `memory.py`: **15**
-- `main.py`: **14**
+- `healthscore.py`: **14**
+- `main.py`: **13**
 - `branding.py`: **12**
 - `scanner.py`: **10**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-13T22:19:11` **assistant.py** (robustez ante casos límite): Reforcé la robustez del método `ingest` ante entradas malformadas o tipos inesperados, añadiendo validación explícita para evitar que `None` o estructuras anidadas profundas causen excepciones en el bucle de procesamiento del asistente.
 - `2026-09-13T22:09:04` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la comparación recursiva de subcadenas con una verificación de conjunto (`set.isdisjoint`) sobre las partes de la ruta, reduciendo drásticamente la complejidad computacional en escaneos masivos.
 - `2026-09-13T22:08:20` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto mediante la eliminación de un `lru_cache` redundante y complejo que causaba recargas innecesarias, reemplazándolo por una verificación de existencia y tamaño que evita procesar el JSON si el archivo no cambió.
 - `2026-09-13T22:07:43` **organizer.py** (rendimiento): Optimicé el proceso de escaneo integrando la verificación de extensiones dentro de `_process_directory` y eliminando llamadas redundantes a `is_valid_junk_extension` en `_evaluate_entry`, reduciendo la carga de I/O y procesamiento de strings en el bucle crítico.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-13T21:26:55` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las funciones de bajo nivel y la extracción de la lógica de limpieza de strings en `parse_windows_process_csv` a una función auxiliar privada, facilitando su validación y testeo.
 - `2026-09-13T21:19:53` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `main.py` mediante la documentación con docstrings detallados en las funciones de control de estado y la clarificación de las responsabilidades de los métodos de inicialización de la interfaz.
 - `2026-09-13T21:17:54` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings descriptivos, añadí type hints explícitos en funciones internas y clarifiqué la lógica del pipeline de scoring mediante el uso de nombres de variables auto-explicativos, facilitando el mantenimiento futuro sin alterar la funcionalidad.
-- `2026-09-13T21:17:26` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `duplicates.py` mediante type hints explícitos, docstrings detallados que explican el "porqué" de las estrategias de hashing, y la extracción de lógica compleja de filtrado dentro de `_collect_candidates` hacia una función más específica y documentada, facilitando el mantenimiento futuro.

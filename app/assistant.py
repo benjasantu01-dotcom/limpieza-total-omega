@@ -329,7 +329,7 @@ class SystemContext:
 
     def ingest(self, source: Any) -> bool:
         """Ingesta datos externos al contexto mediante validación estricta de cada campo."""
-        if not isinstance(source, (dict, object)) or _is_input_too_deep_or_complex(source):
+        if source is None or not isinstance(source, (dict, object)) or _is_input_too_deep_or_complex(source):
             return False
             
         found_data = False
