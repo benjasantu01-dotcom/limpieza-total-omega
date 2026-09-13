@@ -8,8 +8,8 @@ Estrategia en tres pasos:
 | Paso | Técnica | Propósito |
 | :--- | :--- | :--- |
 | 1 | Tamaño (stat) | Descarta archivos únicos rápidamente (comparación O(1)). |
-| 2 | Hash Parcial | Filtra falsos positivos (igual tamaño, distinto contenido) leyendo solo el inicio. |
-| 3 | Hash Completo | Confirmación final de identidad (SHA256) del contenido total. |
+| 2 | Hash Parcial | Filtra falsos positivos leyendo solo el inicio (64KB). |
+| 3 | Hash Completo | Confirmación final mediante SHA256 del contenido total. |
 """
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ FILE_ATTRIBUTE_SYSTEM: int = 0x4
 
 
 def is_junction(path: Path) -> bool:
-    """Verifica si una ruta es un punto de reparse (junction) en Windows."""
+    """Verifica si una ruta es un punto de reparse (junction) en Windows usando Win32 API."""
     if not isinstance(path, Path):
         return False
     try:
@@ -56,7 +56,7 @@ def is_junction(path: Path) -> bool:
 
 
 def is_system_or_hidden(path: Path) -> bool:
-    """Verifica si un archivo tiene atributos de sistema u oculto en Windows."""
+    """Verifica atributos de sistema/oculto; evita el procesamiento de archivos críticos del OS."""
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         if attrs == -1:
@@ -80,14 +80,14 @@ class DuplicateGroup:
 
     @property
     def wasted_bytes(self) -> int:
-        """Calcula el espacio total recuperable excluyendo una instancia del total."""
+        """Calcula el espacio total recuperable excluyendo una instancia (la original)."""
         if not self.paths or self.count <= 1 or self.size_bytes < 0:
             return 0
         return (self.count - 1) * self.size_bytes
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Intenta abrir el archivo en modo exclusivo para detectar bloqueos de E/S."""
+    """Verifica si el archivo está en uso exclusivo intentando un acceso 'ab' (append-binary)."""
     try:
         with open(path, 'ab'):
             return False
@@ -96,7 +96,7 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo del archivo tras validar permisos."""
+    """Calcula el hash SHA256 completo tras validar permisos y estado de bloqueo."""
     if path is None or chunk_size <= 0:
         return None
         
@@ -115,7 +115,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula el hash SHA256 sobre una porción inicial (64KB por defecto)."""
+    """Crea una huella dactilar rápida leyendo solo el inicio para descartar archivos claramente distintos."""
     if path is None or read_bytes <= 0:
         return None
 
@@ -135,7 +135,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 
 def _is_valid_candidate(path: Path, st: Optional[os.stat_result] = None) -> bool:
-    """Filtra archivos inválidos, protegidos o bloqueados para el escaneo."""
+    """Valida que el archivo sea procesable (no oculto, no sistema, no bloqueado, no link)."""
     try:
         if path.is_symlink() or is_protected_path(path) or not is_safe_to_modify(path) or _is_file_locked(path):
             return False
@@ -148,8 +148,21 @@ def _is_valid_candidate(path: Path, st: Optional[os.stat_result] = None) -> bool
         return False
 
 
+def _should_include_entry(entry: os.DirEntry, min_size: int) -> bool:
+    """Lógica central de filtrado: determina si un objeto del sistema de archivos debe ser indexado."""
+    try:
+        path = Path(entry.path)
+        if not is_safe_to_modify(path) or is_protected_path(path):
+            return False
+        if entry.is_file(follow_symlinks=False):
+            return entry.stat().st_size >= min_size and _is_valid_candidate(path)
+        return False
+    except OSError:
+        return False
+
+
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
-    """Clasifica rutas por tamaño en bytes, filtrando candidatos no procesables."""
+    """Agrupa archivos por su tamaño en disco, optimizando la pre-selección."""
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
         if p is None: continue
@@ -165,7 +178,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 
 def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
-    """Resuelve la ruta absoluta y verifica si es un directorio escaneable."""
+    """Normaliza y valida que la ruta raíz sea un directorio seguro y existente."""
     try:
         if not item: return None
         root = Path(item).resolve(strict=False)
@@ -177,23 +190,9 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Recolección recursiva de archivos candidatos indexados por tamaño."""
+    """Escaneo recursivo de directorios buscando archivos candidatos indexados por tamaño."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     visited_dirs: set[str] = set()
-
-    def _process_entry(entry: os.DirEntry, current_dir: Path) -> None:
-        entry_path = Path(entry.path)
-        # Validación de seguridad defensiva antes de interactuar
-        if not is_safe_to_modify(entry_path) or is_protected_path(entry_path):
-            return
-        
-        if entry.is_dir(follow_symlinks=False):
-            if not is_junction(entry_path):
-                _scan_dir(entry_path)
-        elif entry.is_file(follow_symlinks=False):
-            file_stat = entry.stat()
-            if file_stat.st_size >= min_size and _is_valid_candidate(entry_path, file_stat):
-                size_to_paths_map[file_stat.st_size].append(entry_path)
 
     def _scan_dir(current_dir: Path) -> None:
         dir_str = str(current_dir.resolve())
@@ -203,7 +202,11 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    _process_entry(entry, current_dir)
+                    if entry.is_dir(follow_symlinks=False):
+                        if not is_junction(Path(entry.path)):
+                            _scan_dir(Path(entry.path))
+                    elif _should_include_entry(entry, min_size):
+                        size_to_paths_map[entry.stat().st_size].append(Path(entry.path))
         except (OSError, PermissionError):
             pass
 
@@ -215,7 +218,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Agrupa rutas aplicando una función de hash y filtrando resultados únicos."""
+    """Divide un conjunto de archivos en grupos basados en el resultado de una función de hashing."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if path is not None and (digest := hash_func(path)):
@@ -224,7 +227,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona la estrategia de hashing según el tamaño para optimizar E/S."""
+    """Optimización de E/S: usa hash parcial para archivos grandes, completo para pequeños."""
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, hash_file)
     else:
@@ -237,7 +240,7 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
 
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
-    """Orquestador principal para la detección de duplicados."""
+    """Orquestador: coordina la recolección, filtrado por hash y creación de grupos."""
     size_map = _collect_candidates(directories, min_size, skip_protected)
     groups: List[DuplicateGroup] = []
     for size, paths in size_map.items():
@@ -247,12 +250,12 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
 
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
-    """Calcula el total de bytes liberables acumulado."""
+    """Suma total de bytes desperdiciados en una lista de grupos."""
     return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
-    """Heurística: conserva el archivo más antiguo (mtime) o el de ruta más corta."""
+    """Heurística para sugerir el archivo a conservar (preferencia: más antiguo, luego ruta corta)."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
     candidates: List[Tuple[float, int, Path]] = []
@@ -266,7 +269,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Genera representación textual para la interfaz con etiquetas de estado."""
+    """Formatea la información de un grupo para la visualización en la UI."""
     if not isinstance(group, DuplicateGroup):
         return ["Error: Grupo inválido"]
         

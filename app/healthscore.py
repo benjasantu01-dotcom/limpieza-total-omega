@@ -23,6 +23,7 @@ NormalizedRatio: TypeAlias = Annotated[float, "Un valor entre 0.0 y 1.0 represen
 MetricKey: TypeAlias = str
 
 class RecommendationRule(NamedTuple):
+    """Define una lógica de evaluación para generar sugerencias al usuario."""
     area: MetricKey
     threshold: float
     message_factory: Callable[[SystemMetrics], str]
@@ -145,7 +146,7 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        """Asegura que todos los campos tengan valores numéricos válidos y coherentes."""
+        """Normaliza y valida campos para evitar datos corruptos o fuera de rango."""
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
         self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
@@ -157,7 +158,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Verifica que ninguna métrica sea NaN o Infinity."""
+        """Verifica que ninguna métrica sea NaN o Infinity, previniendo errores de cálculo."""
         return all(math.isfinite(float(getattr(self, f))) for f in self._FINITE_FIELDS)
 
 @dataclass
@@ -170,22 +171,22 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
-        """Determina si el sistema califica como saludable."""
+        """Determina si el sistema califica como saludable (>= 80 pts)."""
         return 80 <= self.score <= 100
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    """Limita un valor numérico a un rango definido [low, high]."""
+    """Asegura que un valor numérico permanezca dentro de un rango cerrado."""
     return float(max(low, min(high, value)))
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    """Intenta convertir un valor a float, retornando un valor por defecto ante errores."""
+    """Conversor seguro de tipos a float con manejo de excepciones y validación de finitud."""
     try:
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError, OverflowError): return default
 
 def grade_for_score(score: float | int) -> str:
-    """Mapea una puntuación numérica a una calificación alfabética."""
+    """Asigna una calificación por letra basada en una escala de 0 a 100."""
     s = float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -194,7 +195,7 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float, findings: List[str]) -> None:
-    """Aplica el conjunto de reglas de recomendación según el ratio obtenido."""
+    """Aplica el conjunto de reglas de recomendación según el ratio obtenido y agrega hallazgos."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -221,20 +222,22 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
-    total_score: float = 0.0
+    accumulated_score: float = 0.0
     
     for area, weight, scorer, rules in _CACHE_SCORERS:
         try:
-            ratio = scorer(metrics)
+            area_ratio = scorer(metrics)
             if rules:
-                _evaluate_rules(metrics, rules, ratio, recommendations)
-            val = int(round(ratio * weight))
-            metric_breakdown[area] = val
-            total_score += val
+                _evaluate_rules(metrics, rules, area_ratio, recommendations)
+            
+            # Normalización del peso aplicado
+            weighted_points = int(round(area_ratio * weight))
+            metric_breakdown[area] = weighted_points
+            accumulated_score += weighted_points
         except Exception:
             metric_breakdown[area] = 0
             
-    final_score = int(_clamp(total_score, 0.0, 100.0))
+    final_score = int(_clamp(accumulated_score, 0.0, 100.0))
     
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")
@@ -247,13 +250,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(pts: int, maximo: int) -> str:
-    """Genera una representación visual simple de barra de progreso."""
+    """Genera una visualización de texto estilo barra de progreso."""
     if maximo <= 0: return ""
-    puntos = int(_clamp(float(pts), 0.0, float(maximo)))
-    return ('#' * puntos) + ('.' * (maximo - puntos))
+    puntos_normalizados = int(_clamp(float(pts), 0.0, float(maximo)))
+    return ('#' * puntos_normalizados) + ('.' * (maximo - puntos_normalizados))
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera un reporte legible por humanos a partir de un HealthResult."""
+    """Crea una representación textual del reporte de salud para el usuario."""
     if result is None or not hasattr(result, 'score'):
         return ["Error: Informe no disponible."]
     

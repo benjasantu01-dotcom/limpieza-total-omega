@@ -260,9 +260,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Generador que recorre recursivamente el sistema de archivos utilizando DFS.
     
-    Mantiene un set de inodos visitados para prevenir ciclos causados por symlinks 
-    o puntos de montaje (junctions). Aplica filtros de seguridad sobre cada 
-    subdirectorio y archivo individual para evitar acceso a áreas sensibles.
+    Implementa una lógica de evasión de ciclos basada en inodos (dev, ino) para 
+    detectar y saltar puntos de montaje o enlaces simbólicos recursivos.
     
     Args:
         directory: Ruta base de inicio del recorrido.
@@ -364,16 +363,14 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Agregador central de métricas de almacenamiento.
     
-    Itera sobre el sistema de archivos utilizando `walk_files` para consolidar:
-    1. Estadísticas globales (bytes totales y conteo de archivos).
-    2. Agregación por extensión (`ext_stats`) usando un diccionario para la suma.
-    3. Identificación de los archivos más pesados mediante un min-heap de tamaño 
-       limitado para mantener una complejidad de memoria O(limit).
+    Utiliza un min-heap para mantener los archivos más grandes encontrados,
+    asegurando una complejidad espacial controlada (O(limit)) incluso en 
+    directorios con millones de archivos.
     
     Args:
         directory: Directorio raíz a analizar.
         skip_protected: Flag para omitir rutas de sistema.
-        limit: Cantidad de archivos pesados a trackear.
+        limit: Tamaño máximo del heap para los archivos más pesados.
     
     Returns:
         Objetos SummaryData con los resultados agregados.
@@ -393,6 +390,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         ext_stats[ext] = (s + size, c + 1)
         
         if limit > 0:
+            # Si el archivo es mayor que el menor en el heap, lo reemplazamos
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size, path))
             elif size > top_heap[0][0]:
