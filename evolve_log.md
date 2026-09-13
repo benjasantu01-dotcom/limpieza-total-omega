@@ -780,3 +780,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-13T23:00:47` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad de `save_logo_svg` reemplazando el chequeo manual de `os.access` (que es una operación TOCTOU - Time of Check to Time of Use) por un enfoque defensivo que intenta la operación de escritura de forma segura tras validar la ruta, manteniendo la robustez ante posibles errores de permisos y evitando condiciones de carrera.
 - `2026-09-13T23:00:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-13T23:00:47` Corrida terminada. Total usado hoy: 48.
+- `2026-09-13T23:08:58` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-09-13T23:09:27` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-09-13T23:09:52` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se mejoró la robustez de `walk_files` mediante la validación explícita de la ruta `entry.path` usando `Path.resolve()` contra el `root_path` antes de procesar, evitando ataques de "path traversal" o escape de subdirectorios mediante enlaces simbólicos maliciosos dentro del árbol analizado.
+- `2026-09-13T23:10:17` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-09-13T23:10:29` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad del motor `compute_score` implementando un chequeo estricto de estado mediante la validación de finitud y tipos antes de procesar el pipeline, evitando que errores silenciosos en la entrada de datos afecten el cálculo del puntaje final.
+- `2026-09-13T23:10:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-13T23:10:29` Corrida terminada. Total usado hoy: 52.

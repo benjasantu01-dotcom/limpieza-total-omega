@@ -213,12 +213,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if metrics is None or not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos."])
     
-    try:
-        metrics.validate()
-        if not metrics.is_finite:
-            return HealthResult(0, "F", {}, ["Error: Métricas no numéricas detectadas."])
-    except Exception:
-        return HealthResult(0, "F", {}, ["Error: Fallo crítico al validar métricas."])
+    metrics.validate()
+    if not metrics.is_finite:
+        return HealthResult(0, "F", {}, ["Error: Métricas no numéricas detectadas."])
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}

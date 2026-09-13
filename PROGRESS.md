@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 47 | 4 | 10 | 2 | 43 |
+| 2026-09-11 | 47 | 4 | 10 | 2 | 39 |
 | 2026-09-12 | 146 | 8 | 24 | 14 | 158 |
-| 2026-09-13 | 30 | 2 | 4 | 5 | 7 |
+| 2026-09-13 | 32 | 2 | 4 | 5 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **50**
+- seguridad defensiva: **42**
 - rendimiento: **40**
-- seguridad defensiva: **40**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **20**
 - `assistant.py`: **19**
+- `diskreport.py`: **19**
 - `duplicates.py`: **19**
 - `safety.py`: **19**
-- `diskreport.py`: **18**
 - `organizer.py`: **18**
 - `quarantine.py`: **18**
 - `browser.py`: **17**
-- `healthscore.py`: **14**
+- `healthscore.py`: **15**
 - `main.py`: **14**
 - `memory.py`: **14**
 - `branding.py`: **13**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-13T23:10:29` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del motor `compute_score` implementando un chequeo estricto de estado mediante la validación de finitud y tipos antes de procesar el pipeline, evitando que errores silenciosos en la entrada de datos afecten el cálculo del puntaje final.
+- `2026-09-13T23:09:52` **diskreport.py** (seguridad defensiva): Se mejoró la robustez de `walk_files` mediante la validación explícita de la ruta `entry.path` usando `Path.resolve()` contra el `root_path` antes de procesar, evitando ataques de "path traversal" o escape de subdirectorios mediante enlaces simbólicos maliciosos dentro del árbol analizado.
 - `2026-09-13T23:00:47` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` reemplazando el chequeo manual de `os.access` (que es una operación TOCTOU - Time of Check to Time of Use) por un enfoque defensivo que intenta la operación de escritura de forma segura tras validar la ruta, manteniendo la robustez ante posibles errores de permisos y evitando condiciones de carrera.
 - `2026-09-13T23:00:26` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al centralizar y robustecer la validación de entrada en `_ensure_safe_text` y `_is_safe_text_structure`, asegurando que cualquier texto proveniente del usuario o de una respuesta externa pase por un escaneo de inyección de comandos más estricto antes de procesarse o devolverse.
 - `2026-09-13T22:59:19` **settings.py** (robustez ante casos límite): Mejoré la robustez ante la posible inexistencia o falta de permisos del directorio padre de la configuración mediante una comprobación preventiva y un manejo más específico de errores, asegurando que la aplicación no intente acceder a rutas nulas o bloqueadas al intentar guardar o cargar ajustes.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-13T22:09:04` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la comparación recursiva de subcadenas con una verificación de conjunto (`set.isdisjoint`) sobre las partes de la ruta, reduciendo drásticamente la complejidad computacional en escaneos masivos.
 - `2026-09-13T22:08:20` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto mediante la eliminación de un `lru_cache` redundante y complejo que causaba recargas innecesarias, reemplazándolo por una verificación de existencia y tamaño que evita procesar el JSON si el archivo no cambió.
 - `2026-09-13T22:07:43` **organizer.py** (rendimiento): Optimicé el proceso de escaneo integrando la verificación de extensiones dentro de `_process_directory` y eliminando llamadas redundantes a `is_valid_junk_extension` en `_evaluate_entry`, reduciendo la carga de I/O y procesamiento de strings en el bucle crítico.
-- `2026-09-13T21:59:08` **main.py** (rendimiento): Se implementó un cacheo más eficiente y granular para `_compile_metrics` evitando recalcular elementos que no han cambiado, y se sustituyó el acceso repetido a los widgets de la interfaz dentro de los bucles por una referencia directa a los objetos de estado, reduciendo la carga sobre el hilo principal.
-- `2026-09-13T21:48:37` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` y las funciones de análisis evitando la re-ejecución innecesaria de `walk_files`, consolidando el procesamiento en una sola pasada para reducir la latencia en escaneos profundos.
