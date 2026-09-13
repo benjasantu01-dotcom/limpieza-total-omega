@@ -125,7 +125,11 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica que la entrada no escape del directorio raíz configurado (prevención de escape)."""
-        return entry_path.lower().startswith(self.base_root_str)
+        try:
+            full_path = Path(entry_path).resolve()
+            return str(full_path).lower().startswith(self.base_root_str)
+        except OSError:
+            return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """

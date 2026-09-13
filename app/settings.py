@@ -270,15 +270,17 @@ _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingPro
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Retorna la ruta absoluta del archivo de configuración, priorizando el caché de rutas."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
-    base_path = Path(custom_base)
+    base_path = Path(custom_base).expanduser()
     if base_path in _PATH_CACHE: return _PATH_CACHE[base_path]
     
     try:
-        resolved = base_path.expanduser().resolve() / SETTINGS_FILE
-        _PATH_CACHE[base_path] = resolved
-        return resolved
+        resolved = base_path.resolve() / SETTINGS_FILE
+        if _Validators._is_safe_path(str(resolved.parent)):
+            _PATH_CACHE[base_path] = resolved
+            return resolved
     except (OSError, RuntimeError, PermissionError):
-        return SETTINGS_DIR / SETTINGS_FILE
+        pass
+    return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
     """Valida un diccionario arbitrario contra el esquema AppSettings, descartando valores inválidos."""
@@ -342,7 +344,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             if not parent.exists():
                 parent.mkdir(parents=True, exist_ok=True)
             
-            if not is_safe_to_modify(str(parent)):
+            # Verificación explícita de seguridad antes de persistir
+            if not _Validators._is_safe_path(str(parent)):
                 return None
             
             with open(temp_path, "wb") as f:

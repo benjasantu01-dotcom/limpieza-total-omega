@@ -412,6 +412,10 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED)
     
     try:
+        # Validación TOCTOU: Verificar que el objeto Path sea consistente con el path_string
+        if target_path.exists() and not target_path.is_absolute():
+            raise UnsafePathError("Ruta inconsistente con el sistema.", SafetyValidationErrorCode.GENERIC)
+
         if not target_path.parts or (len(target_path.parts) == 1 and target_path.parts[0] == os.sep):
              raise UnsafePathError("Ruta raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS)
 
