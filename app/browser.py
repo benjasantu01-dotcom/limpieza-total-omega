@@ -231,9 +231,12 @@ def _sum_directory_recursive(
     
     Implementa:
     1. Límite de profundidad (MAX_SCAN_DEPTH) para evitar ciclos o estructuras infinitas.
-    2. Memoización para evitar re-escaneo de subdirectorios ya visitados.
+    2. Memoización global (persiste en memo) para evitar re-escaneo.
     3. Validación de sandbox para asegurar que la recursión no salga del directorio base.
     """
+    if root_abs in memo:
+        return memo[root_abs]
+
     try:
         current_abs = str(Path(root_abs).resolve(strict=True))
     except (OSError, RuntimeError):
@@ -247,9 +250,6 @@ def _sum_directory_recursive(
     # Seguridad: verificar que la ruta actual mantenga la raíz original
     if not current_abs.startswith(root_base):
         return 0
-    
-    if current_abs in memo:
-        return memo[current_abs]
     
     root_path = Path(current_abs)
     if not is_safe_to_modify(root_path) or is_protected_path(root_path):
@@ -317,6 +317,7 @@ def detect_profiles(
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
     k32 = _get_kernel32()
+    # Diccionario persistente para memoización entre escaneos de carpetas de caché
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
