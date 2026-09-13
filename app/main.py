@@ -1388,6 +1388,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _run_heuristic_scan(self, folder: str) -> None:
         """Lógica interna de escaneo heurístico."""
+        p = Path(folder)
+        if not p.is_dir():
+            self.log(f"Error: La ruta {folder} no es una carpeta válida.", "Seguridad")
+            return
+
         def task() -> None:
             self.set_status(f"Escaneando {folder}...")
             self.clear("Seguridad")

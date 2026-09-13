@@ -734,3 +734,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-13T22:29:53` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante condiciones de carrera (Race Conditions) y errores de E/S en `_is_file_locked`, implementando un manejo explícito de `FileNotFoundError` y `BlockingIOError`, además de asegurar que las operaciones de lectura no dependan de un estado previo del archivo que pudo haber cambiado entre la validación y el acceso.
 - `2026-09-13T22:29:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-13T22:29:53` Corrida terminada. Total usado hoy: 36.
+- `2026-09-13T22:38:24` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-09-13T22:38:51` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-09-13T22:39:51` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-13T22:41:09` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). He mejorado la robustez de `on_heuristic_scan` y `on_heuristic_scan_folder` añadiendo una validación explícita de existencia mediante `is_dir()` antes de iniciar el hilo de análisis, evitando que el bucle de trabajo intente procesar rutas inválidas o inexistentes que podrían disparar excepciones innecesarias en el pool de hilos.
+- `2026-09-13T22:41:37` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-13T22:41:49` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-13T22:41:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-13T22:41:49` Corrida terminada. Total usado hoy: 40.
