@@ -239,7 +239,8 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0,
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache)
                     elif entry.is_file(follow_symlinks=False):
-                        _evaluate_entry(entry, found)
+                        if is_valid_junk_extension(entry.name):
+                            _evaluate_entry(entry, found)
                 except (OSError, PermissionError): continue
     except (OSError, PermissionError, RuntimeError): pass
 
@@ -257,9 +258,9 @@ def scan_for_junk(directories: Optional[Sequence[str]] = None) -> List[JunkFile]
     return found
 
 def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
-    """Evalúa un archivo, valida extensión, atributos y accesibilidad usando metadatos de scandir."""
+    """Evalúa un archivo, valida atributos y accesibilidad usando metadatos de scandir."""
     try:
-        if is_valid_junk_extension(entry.name) and len(entry.path) < 260:
+        if len(entry.path) < 260:
             stat_info = entry.stat()
             if stat_info.st_size > 0 and not (_get_win_attributes(entry) & 0x06):
                 if os.access(entry.path, os.R_OK):

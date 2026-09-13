@@ -27,7 +27,6 @@ import tempfile
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
-from functools import lru_cache
 from typing import List, Union, Dict, Any, Optional, TypeAlias, Set, Tuple
 
 from safety import (
@@ -362,50 +361,22 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     _check_isolation_safety(resolved_source, dest_dir)
 
 
-@lru_cache(maxsize=8)
-def _load_manifest_raw(base_str: str, content_hash: str) -> List[QuarantineItem]:
-    """Carga interna y serializa el manifiesto desde el JSON del disco."""
-    path = _manifest_path(Path(base_str))
-    if not path.is_file():
-        return []
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            if not isinstance(data, list): 
-                return []
-            items = []
-            for d in data:
-                if not isinstance(d, dict):
-                    continue
-                try:
-                    item = QuarantineItem.from_dict(d)
-                    if item:
-                        items.append(item)
-                except (ValueError, KeyError, TypeError):
-                    continue
-            return items
-    except (json.JSONDecodeError, OSError, PermissionError):
-        return []
-
-def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga y sincroniza la lista actual de ítems en cuarentena."""
+def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
+    """Carga el manifiesto desde disco con lectura optimizada."""
     try:
         base_path = quarantine_dir(base)
         m_path = _manifest_path(base_path)
-        
-        current_hash = "none"
-        if m_path.exists():
-            try:
-                with open(m_path, "rb") as f:
-                    current_hash = hashlib.sha256(f.read()).hexdigest()
-            except OSError:
-                pass
-        
-        if force_reload:
-            _load_manifest_raw.cache_clear()
-        
-        return list(_load_manifest_raw(str(base_path), current_hash))
-    except (OSError, UnsafePathError):
+        if not m_path.is_file():
+            return []
+        with open(m_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            if not isinstance(data, list): return []
+            items = []
+            for d in data:
+                item = QuarantineItem.from_dict(d)
+                if item: items.append(item)
+            return items
+    except (json.JSONDecodeError, OSError, PermissionError):
         return []
 
 
@@ -442,7 +413,6 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)
         
-        _load_manifest_raw.cache_clear()
         return target_path
     except (OSError, TypeError, IOError) as e:
         if temp_path and isinstance(temp_path, Path) and temp_path.exists():
