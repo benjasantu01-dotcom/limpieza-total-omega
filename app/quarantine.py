@@ -398,13 +398,16 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
 
     base_path = quarantine_dir(base)
     target_path = _manifest_path(base_path)
-    temp_path: Optional[Path] = None
     
+    # Serialización previa para validar datos antes de tocar el disco
     try:
         serializable_items = [item.to_dict() for item in items]
-        content = json.dumps(serializable_items, indent=2, ensure_ascii=False)
-        encoded_content = content.encode('utf-8')
-        
+        encoded_content = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
+    except (TypeError, ValueError) as e:
+        raise RuntimeError(f"Error serializando manifiesto: {e}")
+
+    temp_path: Optional[Path] = None
+    try:
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
             temp_path = Path(tf.name)
             tf.write(encoded_content)
@@ -416,12 +419,13 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
 
         os.replace(temp_path, target_path)
         
+        # Sincronización forzada del directorio padre
         dir_fd = os.open(str(base_path), os.O_RDONLY)
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)
         
         return target_path
-    except (OSError, TypeError, IOError, json.JSONDecodeError) as e:
+    except (OSError, IOError) as e:
         if temp_path and temp_path.exists():
             try: os.remove(temp_path)
             except OSError: pass

@@ -137,7 +137,7 @@ def _is_file_locked(path: Path) -> bool:
     """Verifica si un archivo está bloqueado por otro proceso mediante acceso de lectura."""
     if path is None: return True
     try:
-        if not path.stat() or _is_junction(path): return True
+        if not path.exists() or _is_junction(path): return True
         if not _passes_system_checks(path): return True
         return not os.access(path, os.R_OK)
     except (OSError, PermissionError):
@@ -236,7 +236,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0,
 
 def scan_for_junk(directories: Optional[Sequence[str]] = None) -> List[JunkFile]:
     """Escanea directorios y retorna una lista de archivos temporales encontrados."""
-    valid_dirs: List[Path] = [Path(d) for d in (directories or DEFAULT_SCAN_DIRS) if isinstance(d, str)]
+    valid_dirs: List[Path] = [Path(d) for d in (directories or DEFAULT_SCAN_DIRS) if isinstance(d, (str, Path))]
     found: List[JunkFile] = []
     protected_cache: set[str] = set()
     for d in valid_dirs:
@@ -300,12 +300,12 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     if not isinstance(review_dir, str): return 0
     try:
         dest = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or not os.access(dest, os.W_OK) or not is_safe_to_modify(dest): return 0
+        if not dest.exists() or not dest.is_dir() or not os.access(dest, os.W_OK) or not is_safe_to_modify(dest): return 0
     except (OSError, RuntimeError, TypeError): return 0
     count = 0
     for item in dest.iterdir():
         try:
-            if isinstance(item, Path) and item.is_file() and is_safe_to_modify(item.resolve()):
+            if item.is_file() and is_safe_to_modify(item.resolve()):
                 ensure_safe_to_modify(item.resolve())
                 item.unlink()
                 count += 1

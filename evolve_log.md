@@ -812,3 +812,14 @@ assert not True
 - `2026-09-14T10:03:11` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_evaluate_rules` y `compute_score` ante fallos en los factories de mensajes, asegurando que si una regla falla al generar su mensaje, el proceso de reporte continúe para las demás reglas en lugar de ser silenciado por excepciones.
 - `2026-09-14T10:03:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T10:03:11` Corrida terminada. Total usado hoy: 235.
+- `2026-09-14T10:11:55` Arrancando corrida. Quedan hoy ~65 peticiones objetivo.
+- `2026-09-14T10:13:01` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-14T10:14:04` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-14T10:15:10` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-14T10:16:22` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-14T10:17:05` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `trim_working_set` y sus ayudantes al implementar una validación de parámetros más estricta, capturar errores de sistema específicos en las llamadas a `kernel32` y asegurar el cierre correcto de recursos, evitando filtraciones de handles incluso ante excepciones inesperadas.
+- `2026-09-14T10:17:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-14T10:18:09` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` al asegurar que los parámetros de entrada se validen explícitamente y que los errores de sistema no propaguen fallos, además de consolidar la lógica de resolución de rutas para evitar excepciones innecesarias en entornos con permisos restringidos.
+- `2026-09-14T10:18:29` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_manifest` mediante la implementación de un manejo de errores más específico y un chequeo de precondiciones antes de la escritura, evitando la posibilidad de dejar un manifiesto corrupto o vacío si ocurre un fallo durante la serialización.
+- `2026-09-14T10:18:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T10:18:29` Corrida terminada. Total usado hoy: 239.

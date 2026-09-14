@@ -413,7 +413,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, error_reason or "Verificación de seguridad fallida."
         
         if not psapi.EmptyWorkingSet(proc_handle): 
-            return False, f"Sistema denegó la operación (Error {kernel32.GetLastError()})."
+            error_code = kernel32.GetLastError()
+            return False, f"Sistema denegó la operación (Error {error_code})."
             
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, OSError, ValueError, TypeError) as e:
