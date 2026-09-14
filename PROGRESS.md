@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-12 | 123 | 6 | 21 | 11 | 132 |
+| 2026-09-12 | 119 | 6 | 21 | 11 | 132 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
-| 2026-09-14 | 58 | 1 | 6 | 6 | 72 |
+| 2026-09-14 | 62 | 1 | 6 | 6 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **52**
 - seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **48**
-- legibilidad y documentación: **48**
-- rendimiento: **38**
 - robustez ante casos límite: **38**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
 - `safety.py`: **20**
-- `organizer.py`: **18**
+- `assistant.py`: **19**
+- `quarantine.py`: **19**
+- `browser.py`: **19**
 - `settings.py`: **18**
-- `assistant.py`: **18**
-- `browser.py`: **18**
-- `memory.py`: **16**
+- `organizer.py`: **17**
+- `diskreport.py`: **17**
 - `healthscore.py`: **16**
-- `diskreport.py`: **16**
-- `main.py`: **14**
+- `memory.py`: **15**
 - `duplicates.py`: **13**
+- `main.py`: **13**
+- `branding.py`: **12**
 - `scanner.py`: **11**
-- `branding.py`: **11**
 - `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-14T06:08:52` **diskreport.py** (legibilidad y documentación): Se introdujo documentación explicativa en `walk_files` y `_collect_summary_data` sobre la lógica de recolección y seguridad, además de estandarizar la nomenclatura de retornos en los type hints para mejorar la legibilidad y mantenimiento futuro.
+- `2026-09-14T06:08:41` **browser.py** (legibilidad y documentación): Documenté el propósito de los filtros de seguridad y estructuras de datos críticas mediante type hints enriquecidos y docstrings detallados, eliminando ambigüedades en la lógica de resolución de rutas para asegurar la mantenibilidad del escáner.
+- `2026-09-14T06:08:12` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las estructuras de datos complejas mediante la definición explícita de `ColorSegment` y la adición de docstrings técnicos que clarifican la lógica de renderizado y el uso de la caché.
+- `2026-09-14T06:07:36` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_call_gemini` y `_build_payload`, eliminando lógica de construcción de strings compleja e insegura en favor de una estructura de mensajes más clara, y añadiendo docstrings que clarifican las responsabilidades de cada etapa del flujo de comunicación con la API.
 - `2026-09-14T05:58:21` **settings.py** (manejo de errores y validación de entradas): Refactoricé el decorador `type_check` para que sea capaz de manejar funciones con múltiples argumentos de forma robusta y ajusté `_Validators.int` para que capture explícitamente excepciones de conversión de tipos, garantizando que una entrada corrupta en el JSON no interrumpa el proceso de carga o validación.
 - `2026-09-14T05:57:21` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante errores imprevistos de la API de Windows añadiendo bloques `try-except` granulares en `_validate_ntfs_reparse_redirection` y `_validate_boundary_conditions` para evitar que la aplicación aborte ante fallos de permisos o lectura de metadatos, garantizando una validación segura y silenciosa ante casos límite del sistema de archivos.
 - `2026-09-14T05:48:42` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado `purge_item` para garantizar que, si el archivo físico ya no existe o es ilegible por motivos legítimos, el manifiesto se limpie de forma consistente, evitando que el usuario intente gestionar registros "fantasma" que ya no tienen respaldo en disco.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-14T05:28:35` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `base_directories` y `detect_profiles` implementando validaciones de entrada más estrictas y manejando explícitamente posibles valores `None` o rutas mal formadas para evitar excepciones en tiempo de ejecución, alineado con el enfoque de manejo de errores y validación.
 - `2026-09-14T05:27:50` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` validando el retorno de `ingest` para evitar procesar contextos parcialmente corruptos y refiné la lógica de `_call_gemini` para capturar errores de red específicos sin comprometer la seguridad del flujo, siguiendo el enfoque de manejo estricto de excepciones y validación de estados.
 - `2026-09-14T04:05:36` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_Validators._run_safety_checks` para prevenir ataques de "Time-of-check to time-of-use" (TOCTOU) y errores de resolución, asegurando que el chequeo de seguridad sea siempre sobre la ruta absoluta resuelta, y fortalecí el método `save` limitando el alcance del acceso a disco únicamente al directorio padre validado.
-- `2026-09-14T03:55:37` **quarantine.py** (seguridad defensiva): Se añadió una validación estricta de nombres de archivo y caracteres de control en `_generate_safe_stored_name` y se reforzó la integridad del manifiesto verificando que el archivo temporal creado para la serialización coincida exactamente con el contenido en disco antes de realizar la operación atómica de reemplazo, evitando estados de carrera (race conditions).
-- `2026-09-14T03:54:59` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva al añadir un chequeo de integridad en `stage_for_review` y `delete_reviewed`, verificando explícitamente mediante `is_safe_to_modify` que las rutas no han sido alteradas o re-enlazadas (TOCTOU) justo antes de realizar las operaciones de movimiento o borrado.
-- `2026-09-14T03:46:44` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de `_get_process_path` y `_is_safe_to_trim` para asegurar que las rutas se normalicen y validen correctamente contra las reglas de `safety.py` antes de cualquier operación, evitando riesgos por rutas ambiguas o ataques de tipo symlink/reparse point.
-- `2026-09-14T03:46:25` **main.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva del método `_ask_folder` añadiendo una resolución absoluta con `strict=True` y una validación explícita mediante `safety.is_protected_path` y `safety.is_safe_to_modify` antes de aceptar la ruta, garantizando que el usuario no pueda seleccionar directorios críticos del sistema a través del diálogo nativo.

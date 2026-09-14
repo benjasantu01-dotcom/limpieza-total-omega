@@ -236,23 +236,12 @@ _VALIDATORS: Final[dict[str, MetricSpec]] = {
 }
 
 def _safe_float(val: Any, default: float = 0.0) -> float:
-    """
-    Convierte cualquier valor a float.
-    
-    Args:
-        val: Valor bruto a convertir.
-        default: Valor a retornar en caso de error o tipo no finito.
-        
-    Returns:
-        float: Valor numérico normalizado.
-    """
+    """Convierte cualquier valor a float asegurando que el resultado sea finito."""
     try:
         if val is None or isinstance(val, bool) or not isinstance(val, (int, float, str)):
             return default
         f = float(val)
-        if not math.isfinite(f):
-            return default
-        return f
+        return f if math.isfinite(f) else default
     except (TypeError, ValueError):
         return default
 
@@ -287,8 +276,7 @@ class SystemContext:
 
     def get_metric(self, key: str, default: float) -> float:
         """Accede de forma segura a una métrica numérica por su clave de atributo."""
-        val = getattr(self, key, default)
-        return _safe_float(val, default)
+        return _safe_float(getattr(self, key, default), default)
 
     @property
     def is_empty(self) -> bool:
@@ -358,9 +346,7 @@ class Answer:
         return self.source == "gemini"
 
 def _is_safe_text_structure(text: str) -> bool:
-    """
-    Ejecuta un chequeo multidimensional de seguridad sobre el texto.
-    """
+    """Ejecuta un chequeo multidimensional de seguridad sobre el texto."""
     if not text: return True
     return not (
         _PATH_INJECTION_REGEX.search(text) or 
@@ -372,9 +358,7 @@ def _is_safe_text_structure(text: str) -> bool:
 
 def _ensure_safe_text(text: Any) -> bool:
     """Wrapper de seguridad para validar el tipo y contenido de cualquier texto."""
-    if not isinstance(text, str) or not text:
-        return False
-    if len(text) > _MAX_TEXT_LENGTH:
+    if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
         return False
     if _CONTROL_CHARS_REGEX.search(text):
         return False
@@ -439,16 +423,9 @@ def context_as_text(context: SystemContext) -> str:
         return ""
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
-    """
-    Convierte valores a cadena con precisión definida, manejando casos de error.
-    """
+    """Convierte valores a cadena con precisión definida, manejando casos de error."""
     f = _safe_float(val, -1.0)
-    if f < 0:
-        return "N/A"
-    try:
-        return f"{f:.{decimal}f}{unit}"
-    except (ValueError, OverflowError):
-        return "N/A"
+    return f"{f:.{decimal}f}{unit}" if f >= 0 else "N/A"
 
 def explain_area(area: Any) -> str:
     """Devuelve la definición pedagógica de un área específica mediante el mapa configurado."""
@@ -602,8 +579,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 def available(base: Union[str, Path, None] = None) -> bool:
     """Verifica si el asistente remoto (Gemini) está habilitado en las configuraciones."""
     try:
-        if base is not None and not isinstance(base, (str, Path)):
-            return False
         return settings.assistant_enabled(base)
     except Exception:
         return False
@@ -619,32 +594,29 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
     )
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
-    """Serializa mensaje y contexto a JSON, verificando que no existan vectores de inyección."""
+    """Serializa la pregunta y el contexto en un JSON para la API de Gemini."""
+    if not context_text or not _ensure_safe_text(context_text): return None
+    q = _sanitize_query(question)
+    if not q or not _ensure_safe_text(q): return None
+    
+    data = {"contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]}]}
     try:
-        # Validación defensiva: Si no hay contexto, abortar operación.
-        if not context_text or not _ensure_safe_text(context_text): return None
-        q = _sanitize_query(question)
-        if not q or not _ensure_safe_text(q): return None
-        
-        data = {"contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]}]}
-        encoded = json.dumps(data).encode("utf-8")
-        return encoded if len(encoded) < _MAX_PROMPT_LIMIT * 2 else None
-    except (TypeError, ValueError, AttributeError):
+        payload = json.dumps(data).encode("utf-8")
+        return payload if len(payload) < _MAX_PROMPT_LIMIT * 2 else None
+    except (TypeError, ValueError):
         return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     """Extrae de forma segura el texto de la estructura JSON devuelta por la API."""
     if not isinstance(data, dict): return None
     try:
-        content = data.get("candidates", [{}])[0].get("content", {})
-        parts = content.get("parts", [{}])
-        text_val = parts[0].get("text")
+        text_val = data["candidates"][0]["content"]["parts"][0]["text"]
         return str(text_val) if isinstance(text_val, str) else None
     except (AttributeError, TypeError, IndexError, KeyError): 
         return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
-    """Realiza la comunicación HTTP POST con Gemini mediante protocolos de seguridad."""
+    """Realiza la comunicación HTTP con Gemini tras validar el payload."""
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): 
         return None
         
@@ -653,7 +625,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     
     try:
         url = _ENDPOINT.format(model=model) + f"?key={api_key}"
-        req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json; charset=utf-8"}, method="POST")
+        req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"}, method="POST")
         
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
@@ -662,12 +634,9 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             
             data = json.loads(raw_res.decode("utf-8"))
             raw_text = _extract_text_from_gemini_json(data)
-            if not raw_text or not _ensure_safe_text(raw_text): return None
-            
-            return _validate_response_length(raw_text.strip())
+            return _validate_response_length(raw_text.strip()) if raw_text and _ensure_safe_text(raw_text) else None
             
     except (urllib.error.URLError, OSError, json.JSONDecodeError, UnicodeDecodeError):
-        # Captura errores de red sin romper el flujo de la aplicación.
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None,
@@ -679,21 +648,13 @@ def ask(question: str, context: Optional[SystemContext] = None,
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
     
-    if base is not None and not isinstance(base, (str, Path)):
-        return respaldo
-        
     if not available(base):
         return respaldo
         
     try:
         settings_data = settings.load(base)
-        if not isinstance(settings_data, dict):
-            return respaldo
-            
         cfg = _parse_config(settings_data)
-        if not _MODEL_NAME_REGEX.match(cfg.model):
-            return respaldo
-            
+        
         texto_contexto = context_as_text(ctx) if cfg.allow_metrics else "El usuario no autorizó enviar métricas."
         remoto = _call_gemini(question, texto_contexto, cfg.api_key, cfg.model)
         

@@ -60,6 +60,8 @@ BROWSER_CACHE_PATHS: BrowserMap = {
     "Chrome (GPU)": r"Microsoft\Edge\User Data\Default\GPUCache",
 }
 
+# Carpetas y archivos excluidos explícitamente para garantizar la integridad
+# de los datos del usuario (sesiones, contraseñas, configuraciones).
 NEVER_TOUCH: frozenset[str] = frozenset({
     "login data", "cookies", "web data", "bookmarks", "history",
     "preferences", "local state", "extensions", "profile",
@@ -227,6 +229,11 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula el tamaño de un directorio mediante búsqueda en profundidad (DFS).
+    
+    Args:
+        root_abs: Ruta absoluta que se está escaneando.
+        memo: Caché de resultados para evitar re-cálculo de subcarpetas.
+        root_base: Raíz permitida para evitar saltos fuera del sandbox.
     """
     if root_abs in memo:
         return memo[root_abs]
@@ -252,7 +259,7 @@ def _sum_directory_recursive(
                 if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue
                 
-                # Validación extra de seguridad: verificar que la resolución absoluta no escape de root_base
+                # Validación de seguridad: impedir que la resolución absoluta escape de root_base
                 try:
                     entry_real_path = str(Path(entry.path).resolve(strict=True))
                     if not entry_real_path.startswith(root_base):
@@ -266,6 +273,7 @@ def _sum_directory_recursive(
                     else:
                         total += entry.stat(follow_symlinks=False).st_size
                 except OSError as e:
+                    # Ignorar errores de acceso a archivos bloqueados por otros procesos (sharing violation)
                     if kernel32 and getattr(e, 'winerror', None) == ERROR_SHARING_VIOLATION:
                         continue
                     continue

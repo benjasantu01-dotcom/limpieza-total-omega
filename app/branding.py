@@ -48,8 +48,9 @@ class CanvasElement(Protocol):
 
 class ColorSegment(NamedTuple):
     """
-    Representa un rango de píxeles/pasos continuo para un mismo color.
-    Utilizado por los renderizadores para reducir llamadas individuales al canvas.
+    Representa una porción contigua de una secuencia de colores.
+    Facilita el dibujo eficiente en Canvas al agrupar rectángulos adyacentes 
+    con el mismo color, reduciendo el número de objetos en memoria.
     """
     hex_color: HexColor
     start_index: int
@@ -301,7 +302,10 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=64)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, ...]:
-    """Agrupa colores consecutivos iguales para optimizar el dibujo de rectángulos en Canvas."""
+    """
+    Agrupa colores consecutivos iguales para optimizar el dibujo de rectángulos en Canvas.
+    Retorna una tupla de objetos ColorSegment para minimizar llamadas de renderizado.
+    """
     if not colors: return ()
     segments = []
     current_color = colors[0]
