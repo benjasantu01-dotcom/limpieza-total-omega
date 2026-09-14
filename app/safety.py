@@ -396,7 +396,8 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """
-    Realiza chequeos estructurales antes de interactuar con el sistema de archivos.
+    Realiza chequeos estructurales (caracteres nulos, nombres reservados, 
+    inconsistencias de path) antes de interactuar con el sistema de archivos.
     """
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
@@ -440,7 +441,8 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
     """
-    Aplica restricciones de alcance.
+    Aplica restricciones de alcance geográfico (dentro de base_dir, sin salir a raíces, 
+    no en carpetas de sistema o app) y valida tipo de unidad en Windows.
     """
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)

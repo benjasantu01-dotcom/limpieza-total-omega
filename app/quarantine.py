@@ -109,7 +109,7 @@ class QuarantineItem:
         Instancia un QuarantineItem desde un diccionario, validando esquemas.
 
         Args:
-            data: Diccionario con los datos del ítem.
+            data: Diccionario con los datos persistidos del ítem.
             
         Returns:
             Una instancia válida o None si el esquema no es correcto.
@@ -150,7 +150,15 @@ class QuarantineItem:
             return False
 
     def verify_integrity(self, stored_path: Path) -> bool:
-        """Verificación profunda mediante comparación de hash SHA-256."""
+        """
+        Verificación profunda mediante comparación de hash SHA-256.
+
+        Args:
+            stored_path: Ruta física del archivo en el sandbox.
+
+        Returns:
+            True si el hash coincide con el registrado originalmente.
+        """
         if not stored_path or not self._validate_integrity(stored_path):
             return False
         try:
@@ -179,7 +187,7 @@ def _is_file_locked(path: Path) -> bool:
     Verifica si un archivo está bloqueado para acceso mediante intento de apertura.
     
     Returns:
-        True si el archivo está siendo usado por otro proceso.
+        True si el archivo está siendo usado por otro proceso o inaccesible.
     """
     if not isinstance(path, Path) or not path.exists():
         return False
@@ -524,7 +532,17 @@ def quarantine_file(
     reason: str = "Marcado como sospechoso",
     base: PathLike = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
-    """Ejecuta el ciclo de vida completo: validación, copia y registro de cuarentena."""
+    """
+    Ejecuta el ciclo de vida completo: validación, copia y registro de cuarentena.
+
+    Args:
+        source: Ruta del archivo a aislar.
+        reason: Descripción del motivo de seguridad.
+        base: Directorio raíz de cuarentena.
+
+    Returns:
+        Instancia de QuarantineItem creada.
+    """
     if not source:
         raise ValueError("Ruta de origen vacía.")
     
