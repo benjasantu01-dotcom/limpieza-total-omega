@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-12 | 116 | 6 | 20 | 11 | 132 |
+| 2026-09-12 | 115 | 6 | 20 | 11 | 129 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
-| 2026-09-14 | 66 | 1 | 6 | 6 | 72 |
+| 2026-09-14 | 68 | 1 | 8 | 6 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **56**
+- legibilidad y documentación: **58**
 - seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **48**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **37**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **19**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `safety.py`: **19**
 - `browser.py`: **19**
+- `organizer.py`: **18**
+- `assistant.py`: **18**
 - `healthscore.py`: **17**
-- `organizer.py`: **17**
 - `settings.py`: **17**
 - `diskreport.py`: **17**
 - `memory.py`: **16**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-14T06:28:25` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la implementación de `TypeAlias` para configuraciones complejas, la estandarización de docstrings siguiendo estándares PEP 257, y la extracción de lógica de validación de integridad para reducir la redundancia en los métodos de purga y restauración.
+- `2026-09-14T06:27:48` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo el estilo Google/NumPy) y la adición de Type Hints explícitos para clarificar la lógica de las funciones de validación, facilitando su mantenimiento y auditoría por parte del equipo.
 - `2026-09-14T06:19:29` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad técnica del módulo mediante la adición de docstrings detallados en las funciones de bajo nivel y la estandarización de las anotaciones de tipo para mejorar la mantenibilidad y la auto-explicación del código.
 - `2026-09-14T06:19:16` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo `main.py` documentando los métodos de la clase `LimpiezaTotalOmegaApp` con docstrings siguiendo el estándar PEP 257, clarificando las responsabilidades de los decoradores de seguridad y estandarizando la estructura de los métodos constructores de pestañas (`_build_tab_*`) para facilitar la navegación y auditoría del código.
 - `2026-09-14T06:18:00` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de las funciones de puntuación para clarificar que el `area_ratio` (0.0 a 1.0) es la base de la lógica de negocio, añadiendo docstrings que explican el propósito de cada heurística y formalizando los tipos de retorno para mayor claridad.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-14T05:48:42` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado `purge_item` para garantizar que, si el archivo físico ya no existe o es ilegible por motivos legítimos, el manifiesto se limpie de forma consistente, evitando que el usuario intente gestionar registros "fantasma" que ya no tienen respaldo en disco.
 - `2026-09-14T05:47:29` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estructura antes de operar, asegurando que `ensure_safe_to_modify` se utilice exclusivamente para proteger el sistema y no como flujo de control innecesario, además de añadir un control crítico en `_is_safe_for_disk_op` para validar la existencia del destino antes de intentar operaciones de I/O.
 - `2026-09-14T05:47:00` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes al implementar una validación estricta de tipos y estados, evitando el manejo de `None` inesperados y asegurando que los recursos (handles) siempre se liberen incluso ante errores de sistema inesperados.
-- `2026-09-14T05:39:34` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `on_trim_process` y `on_restore_quarantine` mediante la implementación de validaciones estrictas y manejo de excepciones específicas, evitando que errores de entrada mal formados o condiciones de carrera en la UI interrumpan el hilo principal o dejen la aplicación en un estado inconsistente.
-- `2026-09-14T05:37:30` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_evaluate_rules` mediante la captura explícita de errores durante la ejecución de los evaluadores (`scorers` y `rules`), evitando fallos en cascada si un valor atípico causa una división por cero o un error de lógica inesperado.

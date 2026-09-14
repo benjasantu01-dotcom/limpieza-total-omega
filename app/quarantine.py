@@ -27,7 +27,7 @@ import tempfile
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Union, Dict, Any, Optional, TypeAlias, Set, Tuple
+from typing import List, Union, Dict, Any, TypeAlias, Set, Tuple, Optional
 
 from safety import (
     UnsafePathError,
