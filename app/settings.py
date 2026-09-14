@@ -149,10 +149,8 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 })
 
 def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
-    """Decorador: Filtra llamadas y captura excepciones de conversión/parsing."""
+    """Decorador: Filtra llamadas y captura excepciones críticas de conversión."""
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> T | None:
-        val = args[1] if len(args) > 1 else kwargs.get("val")
-        if val is None: return None
         try:
             return func(*args, **kwargs)
         except (ValueError, TypeError, AttributeError, OverflowError, KeyError):
@@ -174,7 +172,6 @@ class _Validators:
     def _run_safety_checks(path_obj: Path) -> bool:
         """Valida una ruta contra `safety.py` resolviendo el destino real para prevenir traversal."""
         try:
-            # Resolvemos primero para obtener la ruta canónica y evitar ataques de ruta relativa
             resolved = path_obj.resolve(strict=False)
             path_str = str(resolved)
             
@@ -220,7 +217,7 @@ class _Validators:
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
         """Convierte entrada a entero, aplicando los límites definidos en _NUMERIC_LIMITS."""
-        if not isinstance(val, (int, str)): return None
+        if val is None: return None
         parsed_value = int(val)
         limit = _NUMERIC_LIMITS.get(key)
         if limit: return max(limit.min, min(limit.max, parsed_value))
@@ -246,6 +243,7 @@ class _Validators:
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
         """Sanitiza strings, previniendo inyecciones, caracteres no imprimibles y path traversal."""
+        if val is None: return None
         text = str(val).strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(key, text)
@@ -317,7 +315,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             raw = json.loads(content.decode("utf-8"))
             if not _is_dict(raw): return DEFAULTS.copy()
             data = validate(raw)
-            # Asegurar esquema completo post-validación
             for key in DEFAULTS:
                 if key not in data or data[key] is None:
                     data[key] = DEFAULTS[key]
@@ -344,7 +341,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     
-    # Validar el directorio antes de cualquier operación
     parent = ruta.parent
     if not _Validators._is_safe_path(str(parent)):
         return None

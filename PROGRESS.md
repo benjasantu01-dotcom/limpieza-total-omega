@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 219
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-12 | 126 | 6 | 21 | 12 | 132 |
+| 2026-09-12 | 123 | 6 | 21 | 11 | 132 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
-| 2026-09-14 | 56 | 1 | 6 | 6 | 70 |
+| 2026-09-14 | 58 | 1 | 6 | 6 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
+- manejo de errores y validación de entradas: **48**
 - legibilidad y documentación: **48**
-- manejo de errores y validación de entradas: **46**
-- rendimiento: **41**
+- rendimiento: **38**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `safety.py`: **19**
+- `safety.py`: **20**
 - `organizer.py`: **18**
+- `settings.py`: **18**
 - `assistant.py`: **18**
 - `browser.py`: **18**
-- `diskreport.py`: **17**
-- `healthscore.py`: **17**
-- `settings.py`: **17**
 - `memory.py`: **16**
-- `duplicates.py`: **14**
+- `healthscore.py`: **16**
+- `diskreport.py`: **16**
 - `main.py`: **14**
+- `duplicates.py`: **13**
 - `scanner.py`: **11**
 - `branding.py`: **11**
 - `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-14T05:58:21` **settings.py** (manejo de errores y validación de entradas): Refactoricé el decorador `type_check` para que sea capaz de manejar funciones con múltiples argumentos de forma robusta y ajusté `_Validators.int` para que capture explícitamente excepciones de conversión de tipos, garantizando que una entrada corrupta en el JSON no interrumpa el proceso de carga o validación.
+- `2026-09-14T05:57:21` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante errores imprevistos de la API de Windows añadiendo bloques `try-except` granulares en `_validate_ntfs_reparse_redirection` y `_validate_boundary_conditions` para evitar que la aplicación aborte ante fallos de permisos o lectura de metadatos, garantizando una validación segura y silenciosa ante casos límite del sistema de archivos.
 - `2026-09-14T05:48:42` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado `purge_item` para garantizar que, si el archivo físico ya no existe o es ilegible por motivos legítimos, el manifiesto se limpie de forma consistente, evitando que el usuario intente gestionar registros "fantasma" que ya no tienen respaldo en disco.
 - `2026-09-14T05:47:29` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estructura antes de operar, asegurando que `ensure_safe_to_modify` se utilice exclusivamente para proteger el sistema y no como flujo de control innecesario, además de añadir un control crítico en `_is_safe_for_disk_op` para validar la existencia del destino antes de intentar operaciones de I/O.
 - `2026-09-14T05:47:00` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes al implementar una validación estricta de tipos y estados, evitando el manejo de `None` inesperados y asegurando que los recursos (handles) siempre se liberen incluso ante errores de sistema inesperados.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-14T03:54:59` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva al añadir un chequeo de integridad en `stage_for_review` y `delete_reviewed`, verificando explícitamente mediante `is_safe_to_modify` que las rutas no han sido alteradas o re-enlazadas (TOCTOU) justo antes de realizar las operaciones de movimiento o borrado.
 - `2026-09-14T03:46:44` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de `_get_process_path` y `_is_safe_to_trim` para asegurar que las rutas se normalicen y validen correctamente contra las reglas de `safety.py` antes de cualquier operación, evitando riesgos por rutas ambiguas o ataques de tipo symlink/reparse point.
 - `2026-09-14T03:46:25` **main.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva del método `_ask_folder` añadiendo una resolución absoluta con `strict=True` y una validación explícita mediante `safety.is_protected_path` y `safety.is_safe_to_modify` antes de aceptar la ruta, garantizando que el usuario no pueda seleccionar directorios críticos del sistema a través del diálogo nativo.
-- `2026-09-14T03:35:53` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` para prevenir ataques de traversal o desbordamiento de rutas mediante el uso de `Path.resolve()` en conjunto con un chequeo estricto de que la ruta resuelta aún se encuentre bajo la jerarquía original, además de consolidar la validación de acceso.
-- `2026-09-14T03:35:43` **browser.py** (seguridad defensiva): Se ha endurecido el proceso de escaneo recursivo en `_sum_directory_recursive` mediante la implementación de una validación estricta de rutas absolutas antes de procesar cada entrada (`entry`), asegurando que no se sigan enlaces simbólicos o junctions de forma accidental al iterar, reforzando la protección contra el escape del sandbox definido por `root_base`.

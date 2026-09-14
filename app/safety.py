@@ -469,7 +469,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
                      raise UnsafePathError("Unidad de red bloqueada.", SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED)
                 if drive_type == DRIVE_REMOVABLE:
                      raise UnsafePathError("Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED)
-        except OSError:
+        except (OSError, AttributeError, ctypes.ArgumentError):
              raise UnsafePathError("Error al consultar estado de unidad.", SafetyValidationErrorCode.IO_ERROR)
 
     try:
@@ -493,10 +493,10 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
         handle = kernel32.CreateFileW(str(path), 0, 0, None, 3, 0x02000000, None)
         if handle != -1:
             buf = ctypes.create_unicode_buffer(1024)
-            kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0)
+            if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0):
+                if not Path(buf.value).resolve().as_posix().startswith(path.resolve().as_posix()[:len(str(path.parent))+1]):
+                        raise UnsafePathError("Redirección detectada vía reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
             kernel32.CloseHandle(handle)
-            if not Path(buf.value).resolve().as_posix().startswith(path.resolve().as_posix()[:len(str(path.parent))+1]):
-                    raise UnsafePathError("Redirección detectada vía reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
     except (AttributeError, OSError, ctypes.ArgumentError): 
         pass
 
