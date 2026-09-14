@@ -316,7 +316,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.settings = settings_mod.reset()
             
         with self._task_lock:
-            self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
+            self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
         self._debounces: Dict[str, str] = {}
             
     @safe_ui_operation
