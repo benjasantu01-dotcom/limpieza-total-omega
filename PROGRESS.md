@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 22
+- Rechazadas por guardia de seguridad: 32
+- Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 2 | 0 | 2 | 0 | 11 |
+| 2026-09-11 | 1 | 0 | 0 | 0 | 10 |
 | 2026-09-12 | 146 | 8 | 24 | 14 | 158 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
-| 2026-09-14 | 33 | 1 | 3 | 3 | 31 |
+| 2026-09-14 | 35 | 1 | 3 | 4 | 32 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **47**
 - rendimiento: **43**
-- seguridad defensiva: **42**
-- robustez ante casos límite: **31**
+- seguridad defensiva: **41**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
 - `safety.py`: **20**
+- `quarantine.py`: **19**
 - `settings.py`: **18**
 - `assistant.py`: **18**
 - `browser.py`: **18**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
+- `healthscore.py`: **17**
 - `organizer.py`: **17**
-- `healthscore.py`: **16**
 - `duplicates.py`: **15**
 - `main.py`: **13**
 - `memory.py`: **13**
@@ -48,6 +48,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-14T03:04:49` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante fallos en los evaluadores de reglas y la extracción de nombres de áreas, evitando silenciamientos erróneos de excepciones y utilizando la clave del bucle en lugar de rebuscar en `_CACHE_SCORERS`.
+- `2026-09-14T03:03:56` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante archivos bloqueados o con metadatos inaccesibles, asegurando que la recolección de estadísticas no se detenga prematuramente si `os.scandir` o `stat` fallan en un archivo individual.
 - `2026-09-14T02:55:20` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_path_inside_base` y `_sum_directory_recursive` frente a rutas con caracteres no válidos o errores de resolución, utilizando un manejo más estricto de excepciones y validaciones antes de procesar el sistema de archivos para prevenir comportamientos inesperados ante rutas malformadas.
 - `2026-09-14T02:44:33` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo restringiendo el filtrado de extensiones mediante la pre-validación de `SUSPICIOUS_ALL_EXTS` y la aplicación de un filtro de exclusión temprana de carpetas (caching de lower-case paths) para evitar recorridos redundantes en directorios ya procesados.
 - `2026-09-14T02:44:04` **safety.py** (rendimiento): Se implementó un decorador `@lru_cache` para la función `_is_file_in_use` y se eliminó la lógica de lectura repetida de atributos mediante el uso de una caché de atributos en `_check_file_integrity`, reduciendo drásticamente las llamadas al sistema en operaciones de escaneo masivo.
@@ -61,5 +63,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-14T02:13:31` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `StartupEntry` mediante la adición de docstrings técnicos específicos y type hints que clarifican las intenciones de los métodos de validación y resolución de rutas.
 - `2026-09-14T02:05:30` **scanner.py** (legibilidad y documentación): Mejoré la documentación de `Scanner` y sus métodos principales mediante docstrings más precisos que aclaran las responsabilidades de seguridad y el manejo de excepciones, además de añadir type hints explícitos para mejorar la legibilidad y mantenibilidad del flujo de escaneo.
 - `2026-09-14T02:05:20` **safety.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en los bloques de validación de `safety.py` para documentar la lógica de negocio y las restricciones de seguridad, mejorando la legibilidad técnica necesaria para un proyecto de este calibre.
-- `2026-09-14T02:03:37` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la implementación de `TypeAlias` explícitos para las rutas, la adición de docstrings estructurados (Args/Returns) en funciones clave y la estandarización de los mensajes de error para reflejar claramente las violaciones de seguridad.
-- `2026-09-14T01:54:32` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos (especialmente en funciones críticas de seguridad) y se ha refactorizado la lógica de validación de `_is_safe_for_disk_op` para que su propósito sea claro, eliminando redundancias en las comprobaciones de seguridad.

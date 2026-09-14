@@ -204,9 +204,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         if _is_excluded_path(entry): continue
                         
-                        entry_path = Path(entry.path).resolve()
-                        
                         if entry.is_dir(follow_symlinks=False):
+                            entry_path = Path(entry.path)
                             if skip_protected and is_protected_path(entry_path): continue
                             try:
                                 st = entry.stat(follow_symlinks=False)
@@ -220,7 +219,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 st = entry.stat()
                                 size = getattr(st, 'st_size', 0)
                                 if isinstance(size, int) and size >= 0:
-                                    yield entry_path, size
+                                    yield Path(entry.path), size
                             except (OSError, PermissionError):
                                 continue
                     except (PermissionError, OSError, AttributeError):

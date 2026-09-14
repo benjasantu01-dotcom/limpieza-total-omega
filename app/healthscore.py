@@ -185,8 +185,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if msg:
-                    findings.append(msg[:200])
-        except (TypeError, ValueError, AttributeError, ZeroDivisionError):
+                    findings.append(str(msg)[:200])
+        except Exception:
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -201,17 +201,17 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: float = 0.0
     
-    for _, weight, scorer, rules in _CACHE_SCORERS:
+    for area, weight, scorer, rules in _CACHE_SCORERS:
         try:
             area_ratio = scorer(metrics)
             if rules:
                 _evaluate_rules(metrics, rules, area_ratio, recommendations)
             
             weighted_points = int(round(area_ratio * weight))
-            metric_breakdown[_CACHE_SCORERS[_CACHE_SCORERS.index((_, weight, scorer, rules))][0]] = weighted_points
+            metric_breakdown[area] = weighted_points
             accumulated_score += weighted_points
         except Exception:
-            pass
+            continue
             
     final_score = int(_clamp(accumulated_score, 0.0, 100.0))
     
