@@ -284,6 +284,8 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         try:
+            if not is_safe_to_modify(p):
+                continue
             stat = p.stat()
             candidates.append((float(stat.st_mtime), len(str(p)), p))
         except (OSError, PermissionError):

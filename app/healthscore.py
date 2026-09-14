@@ -121,7 +121,7 @@ for rule in _RECOMMENDATION_RULES:
     _RULES_BY_AREA.setdefault(rule.area, []).append(rule)
 
 _CACHE_SCORERS: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], List[RecommendationRule]]]] = [
-    (a, w, _SCORERS[a], _RULES_BY_AREA.get(a, [])) for a, w in _WEIGHT_ITEMS_INT
+    (a, w, _SCORERS.get(a, lambda _: 0.0), _RULES_BY_AREA.get(a, [])) for a, w in _WEIGHT_ITEMS_INT
 ]
 
 @dataclass
@@ -145,19 +145,23 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura que los valores de las métricas estén en rangos lógicos y sean finitos."""
-        self.junk_mb = max(0.0, _to_float(self.junk_mb))
-        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
-        self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
-        self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings)))
-        self.startup_count = int(max(0, _to_float(self.startup_count)))
-        self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
-        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
-        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
+        try:
+            self.junk_mb = max(0.0, _to_float(self.junk_mb))
+            self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
+            self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
+            self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings)))
+            self.startup_count = int(max(0, _to_float(self.startup_count)))
+            self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
+            self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
+            self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
+        except (ValueError, TypeError):
+            self.junk_mb = self.duplicate_mb = 0.0
+            self.memory_available_percent = self.disk_free_percent = 100.0
 
     @property
     def is_finite(self) -> bool:
         """Verifica que ninguna métrica contenga valores NaN o infinito."""
-        return all(math.isfinite(float(getattr(self, f))) for f in self._FINITE_FIELDS)
+        return all(math.isfinite(float(getattr(self, f, 0.0))) for f in self._FINITE_FIELDS)
 
 @dataclass
 class HealthResult:
@@ -214,7 +218,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: float = 0.0
     
-    # Optimizamos el acceso iterando sobre el pre-caché ya validado
     for area, weight, scorer, rules in _CACHE_SCORERS:
         try:
             area_ratio = scorer(metrics)

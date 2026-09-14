@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 33
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 220
+- Rechazadas por guardia de seguridad: 32
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-12 | 100 | 6 | 19 | 9 | 127 |
+| 2026-09-12 | 98 | 6 | 18 | 9 | 126 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
-| 2026-09-14 | 81 | 2 | 9 | 7 | 76 |
+| 2026-09-14 | 84 | 2 | 9 | 8 | 76 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **41**
 - rendimiento: **41**
-- robustez ante casos límite: **30**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
-- `browser.py`: **19**
+- `browser.py`: **20**
+- `quarantine.py`: **19**
 - `safety.py`: **19**
 - `assistant.py`: **19**
 - `settings.py`: **18**
-- `organizer.py`: **17**
+- `healthscore.py`: **17**
 - `diskreport.py`: **16**
-- `healthscore.py`: **16**
 - `memory.py`: **16**
-- `duplicates.py`: **13**
+- `organizer.py`: **16**
+- `duplicates.py`: **14**
 - `main.py`: **13**
 - `branding.py`: **12**
 - `scanner.py`: **11**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-14T07:29:59` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a configuraciones externas de `WEIGHTS` que podrían estar incompletas o mal definidas, evitando fallos en tiempo de ejecución si un área falta en el desglose, y fortalecí la validación de `SystemMetrics` para asegurar que el cálculo nunca dependa de estados inconsistentes.
+- `2026-09-14T07:29:48` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a archivos dentro de `suggest_keeper`, añadiendo una validación explícita mediante `is_safe_to_modify` para evitar que la función lance excepciones o considere candidatos inválidos (inaccesibles) en la heurística de selección.
+- `2026-09-14T07:28:59` **browser.py** (robustez ante casos límite): Se mejora la robustez de `_sum_directory_recursive` ante archivos cuyo acceso está bloqueado por el sistema operativo, capturando específicamente errores de permisos (`PermissionError`) además de violaciones de acceso, y evitando la propagación de excepciones que detengan el escaneo completo.
 - `2026-09-14T07:19:54` **assistant.py** (robustez ante casos límite): Mejoré la robustez ante casos límite en la carga de datos del contexto, añadiendo validaciones específicas para detectar valores negativos, nulos o corrupciones en las métricas antes de que lleguen a `SystemContext`.
 - `2026-09-14T07:18:51` **settings.py** (rendimiento): Optimizé `load` para evitar deserializaciones redundantes de JSON comparando el timestamp del archivo con la caché, y refactoricé `_ensure_settings_integrity` para evitar iteraciones innecesarias sobre `DEFAULTS` durante el uso cotidiano.
 - `2026-09-14T07:09:50` **scanner.py** (rendimiento): Optimicé el rendimiento de `_run_file_heuristics` y `scan_file` pre-filtrando la ejecución de heurísticas solo cuando es estrictamente necesario, evitando llamadas innecesarias al registro de funciones para archivos que solo requieren chequeos básicos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-14T06:48:22` **branding.py** (rendimiento): Optimicé el renderizado de franjas y la generación de gradientes reemplazando listas mutables por generadores/tuplas y mejorando la gestión de la caché para reducir la presión en el recolector de basura durante el refresco de UI.
 - `2026-09-14T06:39:25` **assistant.py** (rendimiento): Optimizé la generación de texto de contexto convirtiendo `_generate_context_lines_cached` en una función que recibe un `SystemContext` directamente y utiliza un `lru_cache` sobre el hash del objeto, eliminando la sobrecarga de serializar múltiples argumentos en `context_as_text`.
 - `2026-09-14T06:38:33` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo al centralizar la lógica de conversión de claves de configuración, documentando explícitamente el contrato de los validadores y renombrando campos para evitar errores de capitalización inconsistentes (como en `asistente_enviar_METRICAS`).
-- `2026-09-14T06:38:02` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings detallados en las funciones de heurística y métodos del escáner, aclarando el propósito y las precondiciones de cada chequeo para facilitar el mantenimiento y la auditoría del código.
-- `2026-09-14T06:28:25` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la implementación de `TypeAlias` para configuraciones complejas, la estandarización de docstrings siguiendo estándares PEP 257, y la extracción de lógica de validación de integridad para reducir la redundancia en los métodos de purga y restauración.
-- `2026-09-14T06:27:48` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo el estilo Google/NumPy) y la adición de Type Hints explícitos para clarificar la lógica de las funciones de validación, facilitando su mantenimiento y auditoría por parte del equipo.

@@ -243,9 +243,11 @@ def _sum_directory_recursive(
                             total += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
                     elif entry.is_file(follow_symlinks=False):
                         total += entry.stat(follow_symlinks=False).st_size
-                except OSError as e:
+                except (OSError, PermissionError) as e:
+                    # Capturamos violaciones de acceso (en uso) o denegación de permisos para no abortar el escaneo completo
                     if kernel32 and getattr(e, 'winerror', None) == ERROR_SHARING_VIOLATION:
                         continue
+                    continue
     except (PermissionError, OSError):
         return 0
     
