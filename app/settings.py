@@ -180,12 +180,11 @@ class _Validators:
             
             if len(_SAFETY_CACHE) > 100: _SAFETY_CACHE.clear()
             
-            if is_protected_path(path_str):
-                is_safe = False
-            elif _Validators._is_reparse_point(resolved):
-                is_safe = False
-            else:
-                is_safe = is_safe_to_modify(path_str)
+            # Fail-safe: si alguna validación falla por error de sistema, consideramos la ruta insegura
+            is_safe = False
+            if not is_protected_path(path_str):
+                if not _Validators._is_reparse_point(resolved):
+                    is_safe = is_safe_to_modify(path_str)
             
             _SAFETY_CACHE[path_str] = is_safe
             return is_safe

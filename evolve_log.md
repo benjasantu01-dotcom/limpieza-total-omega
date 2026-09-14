@@ -965,3 +965,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops 
 - `2026-09-14T12:47:22` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `_write_temp_to_final` ante ataques TOCTOU y condiciones de carrera reemplazando la apertura con `os.open` por el uso de un descriptor de archivo con flags atómicos más granulares y validación estricta post-escritura.
 - `2026-09-14T12:47:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T12:47:22` Corrida terminada. Total usado hoy: 299.
+- `2026-09-14T12:55:13` Arrancando corrida. Quedan hoy ~1 peticiones objetivo.
+- `2026-09-14T12:55:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-14T12:56:06` ➖ Sin cambios en safety.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva en `_validate_boundary_conditions` añadiendo una validación explícita para evitar que la aplicación modifique su propia carpeta de ejecución, protegiendo así la integridad de los archivos del binario y sus módulos.
+- `2026-09-14T12:56:29` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-14T12:56:46` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para garantizar que, ante errores inesperados durante la resolución de rutas, la configuración no acepte rutas potencialmente peligrosas, fallando de forma segura (Fail-Safe).
+- `2026-09-14T12:56:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T12:56:46` Corrida terminada. Total usado hoy: 303.
