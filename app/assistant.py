@@ -390,35 +390,24 @@ def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
     return _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))
 
 @lru_cache(maxsize=16)
-def _generate_context_lines_cached(score_s: str, grade: str, junk_s: str, susp_s: str, ram_s: str, disk_s: str, dup_s: str, start_s: str) -> str:
-    """Genera un bloque de resumen del sistema para prompts del asistente."""
-    lines = [
-        f"Puntaje de salud: {score_s}{f' nota {grade}' if grade else ''}",
-        f"Basura: {junk_s}",
-        f"Sospechosos: {susp_s}",
-        f"RAM disponible: {ram_s}",
-        f"Disco libre: {disk_s}",
-        f"Duplicados: {dup_s}",
-        f"Inicio: {start_s} items"
-    ]
-    return "\n".join(lines)
+def _generate_context_cached(ctx: SystemContext) -> str:
+    """Genera bloque de resumen del sistema para prompts del asistente, cacheado por contexto."""
+    return "\n".join([
+        f"Puntaje de salud: {_fmt_metric_sanitized(ctx.score) if ctx.score is not None else 'N/A'}{f' nota {str(ctx.grade)[:5]}' if ctx.grade else ''}",
+        f"Basura: {_fmt_metric_sanitized(ctx.junk_mb, ' MB')}",
+        f"Sospechosos: {_fmt_metric_sanitized(ctx.suspicious_count)}",
+        f"RAM disponible: {_fmt_metric_sanitized(ctx.memory_available_percent, ' percent')}",
+        f"Disco libre: {_fmt_metric_sanitized(ctx.disk_free_percent, ' percent')}",
+        f"Duplicados: {_fmt_metric_sanitized(ctx.duplicate_mb, ' MB')}",
+        f"Inicio: {_fmt_metric_sanitized(ctx.startup_count)} items"
+    ])
 
 def context_as_text(context: SystemContext) -> str:
     """Serializa las métricas de SystemContext en texto optimizado para la inferencia."""
     if context.is_empty:
         return ""
-    
-    s_score = _fmt_metric_sanitized(context.score) if context.score is not None else "N/A"
-    s_grade = str(context.grade)[:5]
-    s_junk = _fmt_metric_sanitized(context.junk_mb, " MB")
-    s_susp = _fmt_metric_sanitized(context.suspicious_count)
-    s_ram = _fmt_metric_sanitized(context.memory_available_percent, " percent")
-    s_disk = _fmt_metric_sanitized(context.disk_free_percent, " percent")
-    s_dup = _fmt_metric_sanitized(context.duplicate_mb, " MB")
-    s_start = _fmt_metric_sanitized(context.startup_count)
-    
     try:
-        return _generate_context_lines_cached(s_score, s_grade, s_junk, s_susp, s_ram, s_disk, s_dup, s_start)
+        return _generate_context_cached(context)
     except Exception:
         return ""
 

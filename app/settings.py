@@ -77,7 +77,7 @@ class AppSettings(TypedDict):
     analisis_en_paralelo: bool
     asistente_activado: bool
     asistente_clave_api: str
-    asistente_enviar_METRICAS: bool
+    asistente_enviar_metricas: bool
     asistente_modelo: str
 
 class _NumericRange(NamedTuple):

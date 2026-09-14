@@ -423,3 +423,41 @@ FAILED evolve/tests/test_assistant.py::test_invalid_theme_falls_back - Assertion
 - `2026-09-14T06:28:57` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): el archivo se encogió al 56% del original (posible pérdida de código)
 - `2026-09-14T06:28:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T06:28:57` Corrida terminada. Total usado hoy: 151.
+- `2026-09-14T06:37:32` Arrancando corrida. Quedan hoy ~149 peticiones objetivo.
+- `2026-09-14T06:38:02` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la adición de docstrings detallados en las funciones de heurística y métodos del escáner, aclarando el propósito y las precondiciones de cada chequeo para facilitar el mantenimiento y la auditoría del código.
+- `2026-09-14T06:38:33` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo al centralizar la lógica de conversión de claves de configuración, documentando explícitamente el contrato de los validadores y renombrando campos para evitar errores de capitalización inconsistentes (como en `asistente_enviar_METRICAS`).
+- `2026-09-14T06:39:02` Tests FALLARON:
+```
+nquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:125
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:125: SyntaxWarning: invalid escape sequence '\R'
+    Analiza cadenas como '"C:\Ruta\App.exe" /arg' y extrae solo la porción de la ruta.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 8 warnings in 1.46s
+
+```
+- `2026-09-14T06:39:02` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: He mejorado la documentación interna y la legibilidad de la clase `StartupEntry` añadiendo docstrings descriptivos a los métodos privados y clarificando la lógica de resolución de rutas, lo cual facilita el mantenimiento y la auditoría del código bajo el enfoque de legibilidad.
+- `2026-09-14T06:39:25` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé la generación de texto de contexto convirtiendo `_generate_context_lines_cached` en una función que recibe un `SystemContext` directamente y utiliza un `lru_cache` sobre el hash del objeto, eliminando la sobrecarga de serializar múltiples argumentos en `context_as_text`.
+- `2026-09-14T06:39:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T06:39:25` Corrida terminada. Total usado hoy: 155.

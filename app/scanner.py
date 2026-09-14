@@ -73,13 +73,19 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 ]
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta engaño por doble extensión (ej: documento.pdf.exe)."""
+    """
+    Analiza si el nombre del archivo contiene una extensión legítima seguida de una ejecutable.
+    Esta técnica es común en ataques de suplantación para ocultar la verdadera naturaleza del archivo.
+    """
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Identifica ejecutables nuevos en carpetas de alta exposición."""
+    """
+    Verifica si un ejecutable fue creado recientemente en carpetas temporales o de descargas.
+    Utiliza el timestamp de la corrida para calcular la antigüedad relativa al momento del escaneo.
+    """
     if not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     
@@ -93,7 +99,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta archivos con nombres de procesos del sistema fuera de System32."""
+    """
+    Busca archivos cuyos nombres coinciden con binarios críticos del sistema pero que residen
+    fuera de la carpeta %SystemRoot%\\System32, lo cual es un indicador común de persistencia maliciosa.
+    """
     if path.name.lower() in SYSTEM_LOOKALIKES:
         path_str = str(path).lower()
         if SYSTEM32_LOWER not in path_str:
@@ -101,7 +110,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta ejecutables con tamaño 0, potenciales placeholders."""
+    """
+    Detecta ejecutables con tamaño 0. Aunque raros, pueden ser utilizados como placeholders o 
+    errores de escritura durante una descarga interrumpida, siendo candidatos a revisión.
+    """
     try:
         if entry and entry.is_file(follow_symlinks=False):
             if entry.stat().st_size == 0:
@@ -157,7 +169,7 @@ class Scanner:
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """Agrega un directorio al stack si no ha sido visitado."""
+        """Agrega un directorio al stack para recursión si no ha sido visitado previamente."""
         if entry.path and entry.path.lower() not in self.seen:
             self.seen.add(entry.path.lower())
             directory_stack.append(entry.path)
@@ -179,7 +191,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
-        """Aplica la serie de funciones heurísticas registradas sobre el archivo dado."""
+        """Ejecuta todas las reglas registradas en el motor contra un archivo sospechoso."""
         findings: ScanResult = []
         if (double_ext := check_double_extension(path, entry, self.now_ts)):
             findings.append(double_ext)
@@ -190,7 +202,7 @@ class Scanner:
         self.results.extend(findings)
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
-    """Ejecuta reglas heurísticas sobre un archivo aislado."""
+    """Ejecuta reglas heurísticas sobre un archivo aislado fuera de un proceso de escaneo recursivo."""
     if path is None: return []
     findings: ScanResult = []
     
@@ -205,7 +217,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Punto de entrada superior: inicializa escaneo recursivo y gestiona pila."""
+    """Punto de entrada superior: inicializa escaneo recursivo y gestiona la pila de directorios."""
     if directory is None: return []
         
     try:
