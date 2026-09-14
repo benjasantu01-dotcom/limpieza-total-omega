@@ -6,20 +6,20 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 0 | 0 | 0 | 0 | 7 |
+| 2026-09-11 | 0 | 0 | 0 | 0 | 3 |
 | 2026-09-12 | 146 | 8 | 24 | 14 | 158 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
-| 2026-09-14 | 37 | 1 | 4 | 4 | 33 |
+| 2026-09-14 | 40 | 1 | 4 | 4 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -27,27 +27,30 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **47**
 - rendimiento: **43**
 - seguridad defensiva: **40**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
+- `safety.py`: **21**
 - `quarantine.py`: **20**
-- `safety.py`: **20**
 - `assistant.py`: **18**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
-- `settings.py`: **17**
+- `settings.py`: **18**
 - `healthscore.py`: **17**
 - `organizer.py`: **17**
 - `duplicates.py`: **15**
 - `memory.py`: **14**
 - `main.py`: **13**
+- `startup.py`: **12**
 - `scanner.py`: **12**
 - `branding.py`: **12**
-- `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-14T03:25:49` **startup.py** (robustez ante casos límite): Mejoré la robustez de `StartupEntry._validate_file_access` añadiendo un chequeo explícito de existencia física (`os.path.exists`) que, a diferencia de `path.exists()`, maneja con mayor resiliencia rutas inválidas o mal formadas de Windows, y envolví la llamada a `lstat()` en un bloque de control de errores más estricto para evitar fallos catastróficos ante archivos bloqueados o inaccesibles a nivel de sistema de archivos.
+- `2026-09-14T03:25:37` **settings.py** (robustez ante casos límite): Se reforzó la robustez del cargador de configuración añadiendo una verificación explícita para evitar que `json.load` procese archivos con codificaciones maliciosas o binarias, y se mejoró la resiliencia del proceso de guardado atómico ante condiciones de carrera o denegación de acceso en el sistema de archivos, asegurando que la integridad del archivo `config.json` no se vea comprometida por bloqueos temporales del sistema operativo.
+- `2026-09-14T03:24:29` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_check_file_integrity` para detectar archivos con atributos `FILE_ATTRIBUTE_DIRECTORY` que contengan el bit `FILE_ATTRIBUTE_REPARSE_POINT` (Junctions) en niveles profundos, previniendo que la aplicación siga punteros inesperados en el sistema de archivos ante errores de permisos.
 - `2026-09-14T03:15:15` **quarantine.py** (robustez ante casos límite): Se añadió una validación explícita para evitar que `quarantine.py` procese archivos que ya están en el directorio destino de cuarentena (evitando bucles de lectura/escritura) y se reforzó la robustez ante la ausencia de directorios durante el proceso de aislamiento.
 - `2026-09-14T03:14:11` **memory.py** (robustez ante casos límite): Mejoré la robustez de `top_memory_processes` añadiendo validación de tipo y longitud para los datos recibidos de PowerShell, evitando fallos ante entradas inesperadas o malformadas que podrían causar errores de ejecución o indexación.
 - `2026-09-14T03:04:49` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante fallos en los evaluadores de reglas y la extracción de nombres de áreas, evitando silenciamientos erróneos de excepciones y utilizando la clave del bucle en lugar de rebuscar en `_CACHE_SCORERS`.
@@ -60,6 +63,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-14T02:36:40` **main.py** (rendimiento): Optimizé la gestión de los hilos de ejecución reemplazando el `ThreadPoolExecutor` único por uno compartido o mejor controlado para evitar la saturación, pero principalmente implementé una limpieza profunda de la cola de tareas `_tasks_running` y utilicé `concurrent.futures.ThreadPoolExecutor` de forma que los trabajadores no se acumulen innecesariamente si la UI ya está ocupada o cerrándose.
 - `2026-09-14T02:24:23` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` eliminando la recreación innecesaria de listas y cadenas mediante el uso de una lista de pre-procesamiento (`_CACHE_SCORERS`) y la pre-compilación de los mensajes de recomendación, evitando además llamadas redundantes a `split()` y `join()` en cada ejecución.
 - `2026-09-14T02:23:17` **browser.py** (rendimiento): Se implementó un mecanismo de *memoization* efectivo para evitar la re-evaluación del tamaño de directorios hijos compartidos entre navegadores (ej. estructuras `User Data` comunes), optimizando el uso de CPU y reduciendo llamadas redundantes al sistema de archivos al pasar el diccionario `perf_cache` a través de todas las llamadas recursivas.
-- `2026-09-14T02:14:31` **branding.py** (rendimiento): Se ha optimizado `logo_svg` utilizando una cadena de formato pre-compilada y extrayendo la generación de `stops` fuera de la función, eliminando la reconstrucción de la cadena en cada llamado para reducir la presión sobre el recolector de basura.
-- `2026-09-14T02:14:11` **assistant.py** (rendimiento): Optimicé el rendimiento de `_get_active_problems` eliminando la recreación innecesaria de tuplas y mejorando la eficiencia del bucle mediante una compresión de generador más limpia que evita validaciones redundantes, además de asegurar que la evaluación de criterios sea más directa.
-- `2026-09-14T02:13:31` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `StartupEntry` mediante la adición de docstrings técnicos específicos y type hints que clarifican las intenciones de los métodos de validación y resolución de rutas.

@@ -41,6 +41,7 @@ FILE_ATTRIBUTE_HIDDEN: Final[int] = 0x02
 FILE_ATTRIBUTE_SYSTEM: Final[int] = 0x04
 FILE_ATTRIBUTE_OFFLINE: Final[int] = 0x1000
 FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x400
+FILE_ATTRIBUTE_DIRECTORY: Final[int] = 0x10
 FILE_ATTRIBUTE_COMPRESSED: Final[int] = 0x800
 FILE_ATTRIBUTE_ENCRYPTED: Final[int] = 0x4000
 MAX_PATH_LENGTH: Final[int] = 260
@@ -251,6 +252,14 @@ def _is_file_in_use(path_str: str) -> bool:
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         return False
 
+def _is_directory_junction(path: Path) -> bool:
+    """Verifica si el path es un directorio con el flag de reparse point activo."""
+    if os.name != 'nt': return False
+    try:
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        return bool(attrs & FILE_ATTRIBUTE_DIRECTORY and attrs & FILE_ATTRIBUTE_REPARSE_POINT)
+    except (AttributeError, OSError, TypeError): return False
+
 def _is_kernel_managed(path: Path) -> bool:
     """Detecta archivos de paginación o hibernación bloqueados por el sistema operativo."""
     return path.name.lower() in ("pagefile.sys", "hiberfil.sys", "swapfile.sys")
@@ -297,6 +306,9 @@ def _check_file_integrity(path: Path) -> None:
         raise UnsafePathError(f"Acceso denegado a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     except OSError as e:
         raise UnsafePathError(f"Error de E/S al leer metadatos: {e.strerror}", SafetyValidationErrorCode.IO_ERROR)
+    
+    if _is_directory_junction(path):
+        raise UnsafePathError(f"Junction detectada: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
     for rule in _VALIDATORS:
         if rule.predicate(path, file_stat):

@@ -77,7 +77,7 @@ class AppSettings(TypedDict):
     analisis_en_paralelo: bool
     asistente_activado: bool
     asistente_clave_api: str
-    asistente_enviar_metricas: bool
+    asistente_enviar_METRICAS: bool
     asistente_modelo: str
 
 class _NumericRange(NamedTuple):
@@ -309,8 +309,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         if (cached := _CACHE.get(ruta)) and cached[0] == mtime:
             return cached[1].copy()
             
-        with open(ruta, "r", encoding="utf-8") as f:
-            raw = json.load(f)
+        with open(ruta, "rb") as f:
+            content = f.read(MAX_SETTINGS_SIZE + 1)
+            raw = json.loads(content.decode("utf-8"))
             if not _is_dict(raw): return DEFAULTS.copy()
             data = validate(raw)
             # Asegurar esquema completo post-validación
@@ -342,7 +343,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     cleaned_settings = _ensure_settings_integrity(validate(values))
     temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
     
-    for attempt in range(3):
+    for attempt in range(5):
         try:
             parent = ruta.parent
             if not parent.exists():
@@ -365,8 +366,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
             return ruta
         except (OSError, IOError, PermissionError, UnsafePathError):
-            if attempt < 2:
-                time.sleep(0.1)
+            if attempt < 4:
+                time.sleep(0.2)
                 continue
             return None
     return None

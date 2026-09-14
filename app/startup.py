@@ -145,7 +145,7 @@ class StartupEntry:
     def _validate_file_access(self, p: Path) -> bool:
         """Verifica la existencia y accesibilidad física del archivo mediante comprobaciones de sistema."""
         try:
-            if not p.exists() or not os.access(p, os.F_OK) or p.is_dir() or is_protected_path(p):
+            if not os.path.exists(str(p)) or p.is_dir() or is_protected_path(p):
                 return False
             stats = p.lstat()
             return not p.is_symlink() and not (getattr(stats, 'st_file_attributes', 0) & 0x00000400)
