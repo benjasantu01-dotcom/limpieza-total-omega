@@ -631,6 +631,8 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         stored_file = _validate_quarantine_path(base_path / quarantine_item.stored_name, base_path)
         
         if not stored_file.exists() or not stored_file.is_file():
+            # Limpiar manifiesto de registros huérfanos si el archivo falta
+            save_manifest([i for i in items if i.item_id != item_id], base)
             raise RuntimeError("Archivo en cuarentena inexistente.")
             
         if not quarantine_item.verify_integrity(stored_file):
@@ -680,11 +682,14 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     if quarantine_item is None:
         return False
         
-    stored_file = _validate_quarantine_path(base_path / quarantine_item.stored_name, base_path)
+    stored_file = base_path / quarantine_item.stored_name
+    
+    # Si el archivo no existe, simplemente removemos la entrada huérfana
     if not stored_file.exists():
         save_manifest([i for i in items if i.item_id != item_id], base)
-        return False
+        return True
         
+    # Si existe, validamos integridad y borramos
     if not quarantine_item.verify_integrity(stored_file):
         raise UnsafePathError(f"Integridad fallida para {item_id}.")
         

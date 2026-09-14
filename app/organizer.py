@@ -201,9 +201,10 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         s_res = src.resolve()
         if not s_res.exists() or _is_recursive_violation(s_res, dest): return False
         
-        target_parent = dest.parent if dest.is_file() else dest
-        if not target_parent.exists(): return False
-        if s_res.drive != target_parent.resolve().drive: return False
+        # Validar existencia del padre del destino antes de continuar
+        parent = dest.parent if dest.is_file() else dest
+        if not parent.exists(): return False
+        if s_res.drive != parent.resolve().drive: return False
         
         return _validate_file_attributes(s_res)
     except (OSError, RuntimeError, AttributeError):
@@ -290,11 +291,12 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
         if not os.access(dest_base, os.W_OK) or not is_safe_to_modify(dest_base): return None
     except (OSError, RuntimeError, TypeError): return None
+    
     for junk_file in files:
+        if not isinstance(junk_file, JunkFile): continue
         try:
             target = _can_move_file(junk_file, dest_base)
-            # Verificación de doble chequeo antes del I/O (Prevenir TOCTOU)
-            if target and is_safe_to_modify(junk_file.path) and is_safe_to_modify(dest_base):
+            if target and is_safe_to_modify(junk_file.path):
                 ensure_safe_to_modify(junk_file.path)
                 ensure_safe_to_modify(target.parent)
                 shutil.move(str(junk_file.path), str(target))
@@ -312,7 +314,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count = 0
     for item in dest.iterdir():
         try:
-            # Re-verificación de integridad de la ruta antes de unlink
             if isinstance(item, Path) and item.is_file() and is_safe_to_modify(item.resolve()):
                 ensure_safe_to_modify(item.resolve())
                 item.unlink()
