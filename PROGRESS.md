@@ -6,48 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 215
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 6 | 0 | 2 | 0 | 11 |
+| 2026-09-11 | 2 | 0 | 2 | 0 | 11 |
 | 2026-09-12 | 146 | 8 | 24 | 14 | 158 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
-| 2026-09-14 | 32 | 1 | 3 | 2 | 29 |
+| 2026-09-14 | 33 | 1 | 3 | 3 | 31 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **46**
 - rendimiento: **43**
-- robustez ante casos límite: **30**
+- seguridad defensiva: **42**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
 - `safety.py`: **20**
-- `organizer.py`: **18**
 - `settings.py`: **18**
 - `assistant.py`: **18**
-- `healthscore.py`: **17**
-- `browser.py`: **17**
+- `browser.py`: **18**
 - `diskreport.py`: **17**
+- `organizer.py`: **17**
+- `healthscore.py`: **16**
 - `duplicates.py`: **15**
-- `main.py`: **14**
-- `memory.py`: **14**
+- `main.py`: **13**
+- `memory.py`: **13**
 - `scanner.py`: **12**
 - `branding.py`: **12**
 - `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-14T02:55:20` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_path_inside_base` y `_sum_directory_recursive` frente a rutas con caracteres no válidos o errores de resolución, utilizando un manejo más estricto de excepciones y validaciones antes de procesar el sistema de archivos para prevenir comportamientos inesperados ante rutas malformadas.
 - `2026-09-14T02:44:33` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo restringiendo el filtrado de extensiones mediante la pre-validación de `SUSPICIOUS_ALL_EXTS` y la aplicación de un filtro de exclusión temprana de carpetas (caching de lower-case paths) para evitar recorridos redundantes en directorios ya procesados.
 - `2026-09-14T02:44:04` **safety.py** (rendimiento): Se implementó un decorador `@lru_cache` para la función `_is_file_in_use` y se eliminó la lógica de lectura repetida de atributos mediante el uso de una caché de atributos en `_check_file_integrity`, reduciendo drásticamente las llamadas al sistema en operaciones de escaneo masivo.
 - `2026-09-14T02:40:18` **quarantine.py** (rendimiento): Se optimizó `load_manifest` mediante el uso de `json.load` sobre el descriptor de archivo directo y se reemplazó la recreación iterativa de `QuarantineItem` por una validación de esquema más eficiente, reduciendo el overhead de memoria y I/O.
@@ -62,4 +63,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-14T02:05:20` **safety.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en los bloques de validación de `safety.py` para documentar la lógica de negocio y las restricciones de seguridad, mejorando la legibilidad técnica necesaria para un proyecto de este calibre.
 - `2026-09-14T02:03:37` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la implementación de `TypeAlias` explícitos para las rutas, la adición de docstrings estructurados (Args/Returns) en funciones clave y la estandarización de los mensajes de error para reflejar claramente las violaciones de seguridad.
 - `2026-09-14T01:54:32` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos (especialmente en funciones críticas de seguridad) y se ha refactorizado la lógica de validación de `_is_safe_for_disk_op` para que su propósito sea claro, eliminando redundancias en las comprobaciones de seguridad.
-- `2026-09-14T01:54:18` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `memory.py` mediante la adición de Type Hints detallados en las funciones de bajo nivel y la clarificación de las restricciones de seguridad en `trim_working_set`, asegurando que el propósito de cada etapa (validación vs. ejecución) sea transparente para futuros mantenedores.

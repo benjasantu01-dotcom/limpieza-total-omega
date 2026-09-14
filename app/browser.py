@@ -247,7 +247,7 @@ def _sum_directory_recursive(
         return 0
     
     root_path = Path(current_abs)
-    if not is_safe_to_modify(root_path) or is_protected_path(root_path):
+    if not root_path.exists() or not is_safe_to_modify(root_path) or is_protected_path(root_path):
         return 0
         
     total: int = 0

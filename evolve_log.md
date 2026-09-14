@@ -1133,3 +1133,10 @@ FAILED evolve/tests/test_assistant.py::test_invalid_theme_falls_back - Assertion
 - `2026-09-14T02:44:47` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de caché para los resultados de la validación de rutas y estructuras de configuración en `_CACHE` y `_SAFETY_CACHE` para evitar operaciones redundantes de I/O y resolución de caminos (stat/resolve) en cada acceso, mejorando la latencia del sistema.
 - `2026-09-14T02:44:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T02:44:47` Corrida terminada. Total usado hoy: 63.
+- `2026-09-14T02:53:26` Arrancando corrida. Quedan hoy ~237 peticiones objetivo.
+- `2026-09-14T02:53:55` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-14T02:54:32` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez ante casos límite en el motor local (`handle_ram`, `handle_disk`, etc.) agregando validaciones de tipo y estructura al acceder a las métricas del `SystemContext`, asegurando que valores `None`, faltantes o mal formados no provoquen errores en la cadena de respuesta.
+- `2026-09-14T02:55:08` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-14T02:55:20` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_path_inside_base` y `_sum_directory_recursive` frente a rutas con caracteres no válidos o errores de resolución, utilizando un manejo más estricto de excepciones y validaciones antes de procesar el sistema de archivos para prevenir comportamientos inesperados ante rutas malformadas.
+- `2026-09-14T02:55:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T02:55:20` Corrida terminada. Total usado hoy: 67.
