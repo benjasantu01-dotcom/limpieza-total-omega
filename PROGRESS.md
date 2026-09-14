@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 220
+- Rechazadas por guardia de seguridad: 29
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-12 | 70 | 4 | 13 | 8 | 90 |
+| 2026-09-12 | 69 | 4 | 12 | 7 | 89 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
-| 2026-09-14 | 113 | 4 | 12 | 9 | 113 |
+| 2026-09-14 | 117 | 4 | 12 | 9 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **51**
+- legibilidad y documentación: **55**
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **50**
-- rendimiento: **36**
 - robustez ante casos límite: **35**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
 - `browser.py`: **21**
-- `safety.py`: **19**
 - `settings.py`: **19**
 - `quarantine.py`: **19**
+- `safety.py`: **18**
+- `diskreport.py`: **17**
+- `healthscore.py`: **17**
 - `memory.py`: **16**
-- `diskreport.py`: **16**
-- `healthscore.py`: **16**
+- `duplicates.py`: **15**
 - `organizer.py`: **15**
-- `duplicates.py`: **14**
-- `main.py`: **13**
+- `main.py`: **14**
 - `branding.py`: **11**
 - `startup.py`: **11**
 - `scanner.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-14T10:45:07` **main.py** (legibilidad y documentación): Mejoré la legibilidad del código mediante la implementación de `TypeAlias` explícitos para las estructuras de datos complejas (`Callback`, `LogEntry`, `HealthMetric`), facilitando la comprensión de las firmas de métodos y la estructura interna de la aplicación, manteniendo intacta la lógica de ejecución.
+- `2026-09-14T10:44:12` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos en funciones críticas y la reestructuración de los parámetros en el pipeline de evaluación para explicitar qué datos son transformados.
+- `2026-09-14T10:43:47` **duplicates.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con formato Google Style y type hints explícitos en funciones críticas para mejorar la mantenibilidad del módulo de detección de duplicados, facilitando la comprensión del flujo de datos sin alterar la lógica de negocio.
+- `2026-09-14T10:43:01` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad del motor de recolección de datos mediante la adición de Type Hints precisos, el reemplazo de índices mágicos en las listas de estadísticas por `NamedTuple` internos y la clarificación del propósito de las estructuras de datos temporales.
 - `2026-09-14T10:34:14` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `browser.py` mediante la refactorización de `_sum_directory_recursive` para separar la lógica de acumulación de tamaño de la lógica de recursión y manejo de errores, facilitando el mantenimiento futuro y la claridad del flujo de control.
 - `2026-09-14T10:34:03` **branding.py** (legibilidad y documentación): Documenté con docstrings claros los parámetros y el comportamiento de las funciones de dibujo y utilidades de color para mejorar la mantenibilidad, eliminando la ambigüedad en los tipos de entrada y asegurando que las intenciones de cada transformación sean explícitas.
 - `2026-09-14T10:33:28` **assistant.py** (legibilidad y documentación): Documenté el propósito de `SystemContext.ingest` y mejoré la legibilidad de la lógica de validación de métricas al separar explícitamente el manejo de tipos de la validación de rango, cumpliendo con el enfoque de documentación y claridad exigido.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-14T10:18:09` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al asegurar que los parámetros de entrada se validen explícitamente y que los errores de sistema no propaguen fallos, además de consolidar la lógica de resolución de rutas para evitar excepciones innecesarias en entornos con permisos restringidos.
 - `2026-09-14T10:17:05` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` y sus ayudantes al implementar una validación de parámetros más estricta, capturar errores de sistema específicos en las llamadas a `kernel32` y asegurar el cierre correcto de recursos, evitando filtraciones de handles incluso ante excepciones inesperadas.
 - `2026-09-14T10:03:11` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_evaluate_rules` y `compute_score` ante fallos en los factories de mensajes, asegurando que si una regla falla al generar su mensaje, el proceso de reporte continúe para las demás reglas en lugar de ser silenciado por excepciones.
-- `2026-09-14T10:03:00` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` añadiendo validaciones explícitas de estado de archivo antes de procesar atributos, evitando errores de ejecución en archivos que fueron eliminados o bloqueados durante el análisis.
-- `2026-09-14T10:02:33` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` validando explícitamente que el tamaño de los archivos sea un número no negativo antes de procesarlo, evitando errores de cálculo ante datos corruptos del sistema de archivos y asegurando que `_collect_summary_data` maneje correctamente entradas `None` o inconsistentes.
-- `2026-09-14T10:02:08` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` validando tipos y estados intermedios, previniendo excepciones por rutas `None` o mal formadas que podrían interrumpir el escaneo.
-- `2026-09-14T09:54:19` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de los `handle_` (como `handle_ram` y `handle_disk`) centralizando la gestión de errores mediante una validación de contexto `is_empty` más explícita y capturando excepciones de forma específica, evitando que errores en el cálculo de métricas bloqueen la respuesta del asistente.

@@ -75,7 +75,7 @@ if sum(WEIGHTS.values()) != 100:
 _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula la salud respecto a basura: menor es mejor."""
+    """Calcula la salud respecto a basura: menor es mejor (escala inversa)."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
@@ -83,15 +83,15 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
     return _clamp(1.0 - ((_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula la salud de memoria: mayor porcentaje disponible es mejor."""
+    """Calcula la salud de memoria: mayor porcentaje disponible implica mayor puntaje."""
     return _clamp(_to_float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula la salud de disco: mayor porcentaje libre es mejor."""
+    """Calcula la salud de disco: mayor porcentaje libre implica mayor puntaje."""
     return _clamp(_to_float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula la salud por duplicados: menor volumen de duplicados es mejor."""
+    """Calcula la salud por duplicados: menor volumen implica mayor puntaje."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
@@ -194,8 +194,16 @@ def grade_for_score(score: float | int) -> str:
     if s >= 50: return "D"
     return "F"
 
-def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float, findings: List[str]) -> None:
-    """Procesa una lista de reglas para generar mensajes de recomendación si se activan."""
+def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
+    """
+    Ejecuta las reglas de recomendación.
+    
+    Args:
+        metrics: Estado actual del sistema.
+        rules: Lista de reglas a evaluar para el área dada.
+        ratio: Salud normalizada [0.0, 1.0] del área evaluada.
+        findings: Acumulador de mensajes de texto donde se agregan recomendaciones.
+    """
     for rule in rules:
         try:
             if rule.check(metrics, ratio):

@@ -49,7 +49,13 @@ FILE_ATTRIBUTE_SYSTEM: int = 0x4
 
 def is_junction(path: Path) -> bool:
     """Verifica si una ruta es un punto de reparse (junction) en Windows usando Win32 API.
-    Necesario para evitar bucles infinitos en el escaneo de directorios."""
+    
+    Args:
+        path: Objeto Path de la ruta a verificar.
+        
+    Returns:
+        True si es un punto de reparse, False en caso contrario o si falla la API.
+    """
     if not isinstance(path, Path):
         return False
     try:
@@ -60,8 +66,14 @@ def is_junction(path: Path) -> bool:
 
 
 def is_system_or_hidden(path: Path) -> bool:
-    """Verifica atributos de sistema/oculto usando Win32 API; 
-    evita el procesamiento de archivos críticos del OS o archivos de configuración ocultos."""
+    """Verifica si un archivo tiene atributos de sistema o está oculto.
+    
+    Args:
+        path: Objeto Path del archivo a inspeccionar.
+        
+    Returns:
+        True si es un archivo de sistema o está marcado como oculto.
+    """
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         if attrs == -1:
@@ -99,7 +111,10 @@ class DuplicateGroup:
 
 def _is_file_locked(path: Path) -> bool:
     """Verifica si el archivo está en uso exclusivo intentando abrirlo en modo lectura.
-    Retorna True si el archivo está bloqueado por otro proceso."""
+    
+    Returns:
+        True si no es posible obtener un handle de lectura, indicando bloqueo.
+    """
     try:
         with open(path, 'rb') as f:
             f.read(1)
@@ -109,8 +124,15 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo tras validar permisos y estado de bloqueo.
-    Usa un buffer de memoria para procesar archivos grandes sin agotar la RAM."""
+    """Calcula el hash SHA256 completo de un archivo.
+    
+    Args:
+        path: Ruta al archivo.
+        chunk_size: Tamaño de buffer en bytes para lectura incremental.
+        
+    Returns:
+        String hexadecimal del hash o None si el archivo es inaccesible.
+    """
     if path is None or chunk_size <= 0:
         return None
         
@@ -132,8 +154,10 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Crea una huella dactilar rápida leyendo solo el inicio (64KB) para descartar 
-    archivos claramente distintos antes de aplicar el hash completo (más costoso)."""
+    """Calcula un hash parcial basado en los primeros N bytes del archivo.
+    
+    Útil para descartar rápidamente archivos con el mismo tamaño pero distinto contenido.
+    """
     if path is None or read_bytes <= 0:
         return None
 
@@ -152,8 +176,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 
 def _is_valid_candidate(path: Path, stat_result: Optional[os.stat_result] = None) -> bool:
-    """Valida que el archivo sea procesable.
-    Criterios de exclusión: enlaces simbólicos, rutas protegidas, archivos bloqueados o atributos de sistema."""
+    """Valida si un archivo es apto para ser analizado como posible duplicado."""
     try:
         if path.is_symlink() or is_protected_path(path) or not is_safe_to_modify(path) or _is_file_locked(path):
             return False
@@ -167,7 +190,7 @@ def _is_valid_candidate(path: Path, stat_result: Optional[os.stat_result] = None
 
 
 def _should_include_entry(entry: os.DirEntry, min_size: int) -> tuple[bool, Optional[os.stat_result]]:
-    """Filtro de alto nivel para os.scandir: devuelve si es válido y su stat cacheado."""
+    """Determina si una entrada de directorio debe ser procesada según tamaño y seguridad."""
     try:
         st = entry.stat()
         if st.st_size < min_size:
@@ -181,7 +204,7 @@ def _should_include_entry(entry: os.DirEntry, min_size: int) -> tuple[bool, Opti
 
 
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
-    """Agrupa una lista plana de archivos según su tamaño en disco (paso 1 de la estrategia)."""
+    """Agrupa una lista plana de archivos según su tamaño en disco."""
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
         if p is None: continue
@@ -197,7 +220,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 
 def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
-    """Normaliza y valida que la ruta raíz sea un directorio seguro y existente."""
+    """Normaliza una ruta raíz verificando su existencia y permisos de seguridad."""
     try:
         if not item: return None
         root = Path(item).resolve(strict=False)
@@ -209,7 +232,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Escaneo recursivo que utiliza un set de visited_dirs para evitar ciclos."""
+    """Escaneo recursivo de directorios recolectando archivos candidatos a duplicados."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     visited_dirs: set[str] = set()
 
@@ -248,8 +271,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Orquesta la estrategia de hashing: archivos <= 64KB se procesan con hash completo,
-    archivos mayores usan hash parcial previo para descartar candidatos disímiles."""
+    """Aplica estrategia de hashing en cascada (parcial -> completo) según el tamaño."""
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, hash_file)
     else:

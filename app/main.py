@@ -78,16 +78,18 @@ from organizer import (
 )
 from scanner import scan_directory, run_windows_defender_quick_scan
 
-# Alias para mejorar la legibilidad de las firmas de funciones asíncronas
+# Type Aliases para mejorar la claridad de las firmas y estructuras
 AsyncCallback: TypeAlias = Callable[[], Any]
+LogEntry: TypeAlias = Tuple[str, str]
+HealthMetricConfig: TypeAlias = Tuple[str, str]
 
 # Definición centralizada de áreas para el dashboard de salud
-HEALTH_METRICS_CONFIG = (
+HEALTH_METRICS_CONFIG: List[HealthMetricConfig] = [
     ("basura", "Basura"),
     ("sospechosos", "Sospechosos"),
     ("ram", "RAM libre"),
     ("disco", "Disco libre"),
-)
+]
 
 @lru_cache(maxsize=1)
 def get_cached_settings() -> Dict[str, Any]:
@@ -168,12 +170,12 @@ except Exception as e:
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
 
-TABS = (
+TABS: Tuple[str, ...] = (
     "Salud", "Limpieza", "Seguridad", "Cuarentena", "Memoria", "Disco",
     "Duplicados", "Navegadores", "Inicio", "Informe", "Asistente", "Ajustes",
 )
 
-HEALTH_AREAS = (
+HEALTH_AREAS: Tuple[HealthMetricConfig, ...] = (
     ("basura", "Archivos basura"),
     ("seguridad", "Seguridad"),
     ("memoria", "Memoria RAM"),
@@ -203,7 +205,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._initialized_tabs: Dict[str, bool] = {name: False for name in TABS}
         self._health_bars_initialized = False
         self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
-        self._log_queue: List[Tuple[str, str]] = []
+        self._log_queue: List[LogEntry] = []
         self._log_lock = threading.Lock()
         self._task_lock = threading.Lock()
         self._closing = False

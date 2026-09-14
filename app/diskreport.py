@@ -47,10 +47,15 @@ Inode: TypeAlias = Tuple[int, int]
 SizeReport: TypeAlias = Tuple[int, int]
 
 
+class ExtStats(NamedTuple):
+    total_bytes: int
+    count: int
+
+
 class SummaryData(NamedTuple):
     total_bytes: int
     total_files: int
-    ext_stats: Dict[str, Tuple[int, int]]
+    ext_stats: Dict[str, ExtStats]
     top_files: List[Tuple[int, Path]]
 
 
@@ -66,13 +71,11 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         raw_path = Path(directory)
-        # resolve(strict=True) asegura que la ruta existe realmente en el sistema
         resolved_path = raw_path.resolve(strict=True)
         
         if not resolved_path.is_dir():
             return None
             
-        # Prevenir traversal y asegurar que la ruta resuelta es segura
         if is_protected_path(resolved_path) or not os.access(resolved_path, os.R_OK):
             return None
             
@@ -196,9 +199,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """
-    Generador recursivo que recorre el árbol de archivos.
-    """
+    """Generador recursivo que recorre el árbol de archivos."""
     root_path = _validate_root(directory)
     if root_path is None:
         return
@@ -251,7 +252,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
     if not root: return []
     limit = max(1, int(limit)) if isinstance(limit, (int, float)) else 15
     data = _collect_summary_data(root, skip_protected, limit=0)
-    usage_list = [ExtensionUsage(ext, stats[0], stats[1]) for ext, stats in data.ext_stats.items()]
+    usage_list = [ExtensionUsage(ext, stats.total_bytes, stats.count) for ext, stats in data.ext_stats.items()]
     return heapq.nlargest(limit, usage_list, key=lambda u: u.size_bytes)
 
 
@@ -283,12 +284,10 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """
-    Realiza un recorrido único (single-pass) para consolidar estadísticas de disco.
-    """
+    """Realiza un recorrido único (single-pass) para consolidar estadísticas de disco."""
     total_bytes: int = 0
     total_files: int = 0
-    ext_stats: Dict[str, List[int]] = defaultdict(lambda: [0, 0])
+    ext_stats: Dict[str, ExtStats] = defaultdict(lambda: ExtStats(0, 0))
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
@@ -299,9 +298,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         total_files += 1
         
         ext = path.suffix.lower() if path.suffix else "(sin extensión)"
-        stats = ext_stats[ext]
-        stats[0] += size
-        stats[1] += 1
+        curr = ext_stats[ext]
+        ext_stats[ext] = ExtStats(curr.total_bytes + size, curr.count + 1)
         
         if limit > 0:
             if len(top_heap) < limit:
@@ -309,7 +307,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             elif size > top_heap[0][0]:
                 heapq.heapreplace(top_heap, (size, path))
                     
-    return SummaryData(total_bytes, total_files, {k: tuple(v) for k, v in ext_stats.items()}, top_heap)
+    return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
@@ -321,9 +319,9 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if data.total_files == 0: return ["Aviso: No hay archivos accesibles."]
 
     lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} en {data.total_files} archivos", "", "Por tipo:"]
-    sorted_exts = heapq.nlargest(8, data.ext_stats.items(), key=lambda x: x[1][0])
+    sorted_exts = heapq.nlargest(8, data.ext_stats.items(), key=lambda x: x[1].total_bytes)
     for ext, stats in sorted_exts:
-        lines.append(f"  {ext:<18} {format_size(stats[0]):>10}  ({stats[1]} archivos)")
+        lines.append(f"  {ext:<18} {format_size(stats.total_bytes):>10}  ({stats.count} archivos)")
     lines.extend(["", "Mayores archivos:"])
     lines.extend([f"  {format_size(s):>10}  {p}" for s, p in heapq.nlargest(20, data.top_files, key=lambda x: x[0])])
     return lines
