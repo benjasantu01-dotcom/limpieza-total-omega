@@ -479,3 +479,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-14T07:03:09` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-09-14T07:03:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T07:03:09` Corrida terminada. Total usado hoy: 163.
+- `2026-09-14T07:08:09` Arrancando corrida. Quedan hoy ~137 peticiones objetivo.
+- `2026-09-14T07:08:47` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó la carga y filtrado del manifiesto en `list_items` y `purge_all` transformando la lista de ítems en un diccionario indexado por `stored_name`, lo cual reduce la complejidad algorítmica de búsqueda de $O(N \times M)$ a $O(N+M)$ durante el escaneo del directorio.
+- `2026-09-14T07:09:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-09-14T07:09:40` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` integrando el chequeo de `_SYSTEM_ROOT_PATHS_STR` directamente en la lógica de `_is_system_path_cached`, evitando llamadas redundantes y mejorando la eficiencia de búsqueda al usar `any` con una tupla generadora.
+- `2026-09-14T07:09:50` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `_run_file_heuristics` y `scan_file` pre-filtrando la ejecución de heurísticas solo cuando es estrictamente necesario, evitando llamadas innecesarias al registro de funciones para archivos que solo requieren chequeos básicos.
+- `2026-09-14T07:09:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T07:09:50` Corrida terminada. Total usado hoy: 167.

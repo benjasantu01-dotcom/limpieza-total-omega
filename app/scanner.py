@@ -192,14 +192,13 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """Ejecuta todas las reglas registradas en el motor contra un archivo sospechoso."""
-        findings: ScanResult = []
         if (double_ext := check_double_extension(path, entry, self.now_ts)):
-            findings.append(double_ext)
+            self.results.append(double_ext)
+            
         if ext in SUSPICIOUS_EXECUTABLE_EXT:
             for check_fn in self._registry:
                 if (result := check_fn(path, entry, self.now_ts)):
-                    findings.append(result)
-        self.results.extend(findings)
+                    self.results.append(result)
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """Ejecuta reglas heurísticas sobre un archivo aislado fuera de un proceso de escaneo recursivo."""

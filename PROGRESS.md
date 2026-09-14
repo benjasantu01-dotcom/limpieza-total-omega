@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 218
 
@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-12 | 107 | 6 | 19 | 10 | 127 |
+| 2026-09-12 | 103 | 6 | 19 | 10 | 127 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
-| 2026-09-14 | 76 | 2 | 8 | 7 | 74 |
+| 2026-09-14 | 79 | 2 | 9 | 7 | 74 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
-- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **48**
-- rendimiento: **37**
+- seguridad defensiva: **44**
+- rendimiento: **40**
 - robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **20**
-- `assistant.py`: **19**
-- `quarantine.py`: **19**
-- `safety.py`: **18**
-- `diskreport.py`: **17**
+- `quarantine.py`: **20**
+- `browser.py`: **19**
+- `safety.py`: **19**
+- `assistant.py`: **18**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
 - `organizer.py`: **17**
 - `settings.py`: **17**
+- `diskreport.py`: **16**
 - `duplicates.py`: **14**
-- `branding.py`: **13**
 - `main.py`: **13**
+- `branding.py`: **12**
+- `scanner.py`: **11**
 - `startup.py`: **11**
-- `scanner.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-14T07:09:50` **scanner.py** (rendimiento): Optimicé el rendimiento de `_run_file_heuristics` y `scan_file` pre-filtrando la ejecución de heurísticas solo cuando es estrictamente necesario, evitando llamadas innecesarias al registro de funciones para archivos que solo requieren chequeos básicos.
+- `2026-09-14T07:09:40` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` integrando el chequeo de `_SYSTEM_ROOT_PATHS_STR` directamente en la lógica de `_is_system_path_cached`, evitando llamadas redundantes y mejorando la eficiencia de búsqueda al usar `any` con una tupla generadora.
+- `2026-09-14T07:08:47` **quarantine.py** (rendimiento): Se optimizó la carga y filtrado del manifiesto en `list_items` y `purge_all` transformando la lista de ítems en un diccionario indexado por `stored_name`, lo cual reduce la complejidad algorítmica de búsqueda de $O(N \times M)$ a $O(N+M)$ durante el escaneo del directorio.
 - `2026-09-14T07:02:13` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación de una lista intermedia y el mapeo posterior por un generador eficiente, lo cual reduce la presión sobre el recolector de basura al procesar listados de procesos.
 - `2026-09-14T06:58:22` **healthscore.py** (rendimiento): Optimicé el bucle principal de `compute_score` eliminando accesos repetitivos a estructuras y mejorando la eficiencia mediante el uso de referencias locales de `_CACHE_SCORERS`, evitando búsquedas innecesarias en cada iteración de los componentes de la tupla.
 - `2026-09-14T06:49:24` **duplicates.py** (rendimiento): Optimizé la performance del escaneo inicial en `_collect_candidates` evitando llamadas redundantes a `entry.stat()` mediante el uso del objeto `os.DirEntry` ya cacheado, y mejoré la eficiencia del filtrado de duplicados evitando re-ejecutar `is_safe_to_modify` dentro de los métodos de hashing, ya que la validación inicial del escaneo ya garantiza la integridad del conjunto.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-14T06:27:48` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo el estilo Google/NumPy) y la adición de Type Hints explícitos para clarificar la lógica de las funciones de validación, facilitando su mantenimiento y auditoría por parte del equipo.
 - `2026-09-14T06:19:29` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad técnica del módulo mediante la adición de docstrings detallados en las funciones de bajo nivel y la estandarización de las anotaciones de tipo para mejorar la mantenibilidad y la auto-explicación del código.
 - `2026-09-14T06:19:16` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo `main.py` documentando los métodos de la clase `LimpiezaTotalOmegaApp` con docstrings siguiendo el estándar PEP 257, clarificando las responsabilidades de los decoradores de seguridad y estandarizando la estructura de los métodos constructores de pestañas (`_build_tab_*`) para facilitar la navegación y auditoría del código.
-- `2026-09-14T06:18:00` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de las funciones de puntuación para clarificar que el `area_ratio` (0.0 a 1.0) es la base de la lógica de negocio, añadiendo docstrings que explican el propósito de cada heurística y formalizando los tipos de retorno para mayor claridad.
-- `2026-09-14T06:17:35` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados que explican la lógica de exclusión, las restricciones de seguridad y el flujo de los tres pasos de detección, asegurando que el código sea mantenible y fácil de auditar por el dueño del proyecto.
-- `2026-09-14T06:08:52` **diskreport.py** (legibilidad y documentación): Se introdujo documentación explicativa en `walk_files` y `_collect_summary_data` sobre la lógica de recolección y seguridad, además de estandarizar la nomenclatura de retornos en los type hints para mejorar la legibilidad y mantenimiento futuro.

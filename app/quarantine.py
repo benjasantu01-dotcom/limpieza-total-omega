@@ -604,9 +604,9 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
-        existing_files = {f.name for f in base_path.iterdir() if f.is_file()}
+        existing_names = {f.name for f in base_path.iterdir() if f.is_file()}
         
-        valid_items = [i for i in items if i.stored_name in existing_files]
+        valid_items = [i for i in items if i.stored_name in existing_names]
         if len(valid_items) != len(items):
             save_manifest(valid_items, base)
             
