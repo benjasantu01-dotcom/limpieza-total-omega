@@ -1105,3 +1105,11 @@ FAILED evolve/tests/test_assistant.py::test_invalid_theme_falls_back - Assertion
 - `2026-09-14T02:14:31` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado `logo_svg` utilizando una cadena de formato pre-compilada y extrayendo la generación de `stops` fuera de la función, eliminando la reconstrucción de la cadena en cada llamado para reducir la presión sobre el recolector de basura.
 - `2026-09-14T02:14:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T02:14:31` Corrida terminada. Total usado hoy: 51.
+- `2026-09-14T02:22:42` Arrancando corrida. Quedan hoy ~249 peticiones objetivo.
+- `2026-09-14T02:22:44` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-14T02:23:17` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se implementó un mecanismo de *memoization* efectivo para evitar la re-evaluación del tamaño de directorios hijos compartidos entre navegadores (ej. estructuras `User Data` comunes), optimizando el uso de CPU y reduciendo llamadas redundantes al sistema de archivos al pasar el diccionario `perf_cache` a través de todas las llamadas recursivas.
+- `2026-09-14T02:23:42` ➖ Sin cambios en diskreport.py (enfoque: rendimiento). Motivo: Optimizé la función `_collect_summary_data` para evitar la conversión redundante de `ext_stats` de `List` a `tuple` dentro del bucle principal y eliminé la necesidad de crear un nuevo diccionario completo al finalizar, mejorando la eficiencia en memoria y tiempo de ejecución durante escaneos grandes.
+- `2026-09-14T02:24:06` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-14T02:24:23` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `compute_score` eliminando la recreación innecesaria de listas y cadenas mediante el uso de una lista de pre-procesamiento (`_CACHE_SCORERS`) y la pre-compilación de los mensajes de recomendación, evitando además llamadas redundantes a `split()` y `join()` en cada ejecución.
+- `2026-09-14T02:24:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T02:24:23` Corrida terminada. Total usado hoy: 55.

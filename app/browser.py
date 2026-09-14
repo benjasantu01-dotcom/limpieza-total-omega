@@ -328,7 +328,8 @@ def detect_profiles(
                     continue
                 
                 real_candidate = candidate.resolve(strict=True)
-                size = _sum_directory_recursive(str(real_candidate), _IS_JUNCTION_FN, k32, perf_cache, str(real_candidate))
+                # Se utiliza el diccionario perf_cache para reutilizar resultados de subcarpetas entre navegadores
+                size = _sum_directory_recursive(str(real_candidate), _IS_JUNCTION_FN, k32, perf_cache, str(real_base))
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), real_candidate, size))
         except (OSError, PermissionError, TypeError, ValueError, RuntimeError):

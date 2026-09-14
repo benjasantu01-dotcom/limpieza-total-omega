@@ -50,7 +50,6 @@ _LIMIT_STARTUP_COUNT: Final[int] = 20
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-# Protección ante divisiones por cero o valores negativos en umbrales
 _INV_JUNK: Final[float] = 1.0 / max(_LIMIT_JUNK_MB, 1.0)
 _INV_DUP: Final[float] = 1.0 / max(_LIMIT_DUPLICATE_MB, 1.0)
 _INV_STARTUP: Final[float] = 1.0 / max(float(_LIMIT_STARTUP_COUNT), 1.0)
@@ -76,27 +75,21 @@ if sum(WEIGHTS.values()) != 100:
 _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud para archivos basura normalizado por _LIMIT_JUNK_MB."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula el ratio de seguridad penalizando hallazgos y advertencias."""
     return _clamp(1.0 - ((_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud de memoria basado en el porcentaje disponible."""
     return _clamp(_to_float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud de disco basado en el porcentaje libre."""
     return _clamp(_to_float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud de duplicados normalizado por _LIMIT_DUPLICATE_MB."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
-    """Calcula el ratio de salud de programas de arranque normalizado por _LIMIT_STARTUP_COUNT."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
 _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
@@ -127,7 +120,6 @@ _CACHE_SCORERS: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], Norma
 
 @dataclass
 class SystemMetrics:
-    """Contenedor de datos crudos del sistema para el motor de scoring."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -146,10 +138,6 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        """
-        Asegura la integridad de los datos normalizando valores negativos, 
-        corrigiendo tipos y limitando porcentajes al rango [0, 100].
-        """
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
         self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
@@ -161,12 +149,10 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Verifica que ninguna métrica sea NaN o Infinity, previniendo errores de cálculo."""
         return all(math.isfinite(float(getattr(self, f))) for f in self._FINITE_FIELDS)
 
 @dataclass
 class HealthResult:
-    """Resultado final del proceso de evaluación del sistema."""
     score: int
     grade: str
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
@@ -174,22 +160,18 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
-        """Determina si el sistema califica como saludable (>= 80 pts)."""
         return 80 <= self.score <= 100
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    """Asegura que un valor numérico permanezca dentro de un rango cerrado."""
     return float(max(low, min(high, value)))
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    """Conversor seguro de tipos a float con manejo de excepciones y validación de finitud."""
     try:
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError, OverflowError): return default
 
 def grade_for_score(score: float | int) -> str:
-    """Asigna una calificación por letra basada en una escala de 0 a 100."""
     s = float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -198,22 +180,16 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float, findings: List[str]) -> None:
-    """Aplica el conjunto de reglas de recomendación según el ratio obtenido y agrega hallazgos."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if msg:
-                    findings.append(" ".join(msg.split())[:200])
+                    findings.append(msg[:200])
         except (TypeError, ValueError, AttributeError, ZeroDivisionError):
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """
-    Ejecuta el pipeline de evaluación: valida el estado inicial, aplica los 
-    calculadores de ratios (`_SCORERS`) y pondera los resultados según `WEIGHTS`
-    para obtener una puntuación final consolidada.
-    """
     if metrics is None or not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos."])
     
@@ -225,18 +201,17 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: float = 0.0
     
-    for area, weight, scorer, rules in _CACHE_SCORERS:
+    for _, weight, scorer, rules in _CACHE_SCORERS:
         try:
             area_ratio = scorer(metrics)
             if rules:
                 _evaluate_rules(metrics, rules, area_ratio, recommendations)
             
-            # Normalización del peso aplicado
             weighted_points = int(round(area_ratio * weight))
-            metric_breakdown[area] = weighted_points
+            metric_breakdown[_CACHE_SCORERS[_CACHE_SCORERS.index((_, weight, scorer, rules))][0]] = weighted_points
             accumulated_score += weighted_points
         except Exception:
-            metric_breakdown[area] = 0
+            pass
             
     final_score = int(_clamp(accumulated_score, 0.0, 100.0))
     
@@ -251,13 +226,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(pts: int, maximo: int) -> str:
-    """Genera una visualización de texto estilo barra de progreso."""
     if maximo <= 0: return ""
     puntos_normalizados = int(_clamp(float(pts), 0.0, float(maximo)))
     return ('#' * puntos_normalizados) + ('.' * (maximo - puntos_normalizados))
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Crea una representación textual del reporte de salud para el usuario."""
     if result is None or not hasattr(result, 'score'):
         return ["Error: Informe no disponible."]
     
