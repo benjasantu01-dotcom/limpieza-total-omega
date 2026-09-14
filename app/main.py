@@ -1517,20 +1517,20 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            item = quarantine.get_item(raw_id)
-            if not item or not hasattr(item, 'original_path'):
-                self._safe_run_ui_callback(lambda: self.log("Error: Manifiesto corrupto.", "Cuarentena"))
-                return
-            
-            if not self._is_safe_path(item.original_path):
-                self._safe_run_ui_callback(lambda: self.log("Error: La ruta original del archivo no es segura para restauración.", "Cuarentena"))
-                return
-            
             try:
+                item = quarantine.get_item(raw_id)
+                if not item or not hasattr(item, 'original_path'):
+                    self._safe_run_ui_callback(lambda: self.log("Error: Manifiesto de cuarentena corrupto o inaccesible.", "Cuarentena"))
+                    return
+                
+                if not self._is_safe_path(item.original_path):
+                    self._safe_run_ui_callback(lambda: self.log("Error: La ruta original del archivo no es segura para restauración.", "Cuarentena"))
+                    return
+                
                 destino = quarantine.restore_item(raw_id)
                 self._safe_run_ui_callback(lambda: self.log(f"Restaurado en: {destino}", "Cuarentena"))
             except Exception as e:
-                self._safe_run_ui_callback(lambda: self.log(f"Error al restaurar: {e}", "Cuarentena"))
+                self._safe_run_ui_callback(lambda: self.log(f"Error inesperado al restaurar: {e}", "Cuarentena"))
 
         self.run_async(task, target=str(Path.home()))
 

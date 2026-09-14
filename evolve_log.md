@@ -1395,3 +1395,11 @@ FAILED evolve/tests/test_assistant.py::test_invalid_theme_falls_back - Assertion
 - `2026-09-14T05:28:35` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `base_directories` y `detect_profiles` implementando validaciones de entrada más estrictas y manejando explícitamente posibles valores `None` o rutas mal formadas para evitar excepciones en tiempo de ejecución, alineado con el enfoque de manejo de errores y validación.
 - `2026-09-14T05:28:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T05:28:35` Corrida terminada. Total usado hoy: 127.
+- `2026-09-14T05:36:14` Arrancando corrida. Quedan hoy ~173 peticiones objetivo.
+- `2026-09-14T05:36:40` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-14T05:37:04` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos, encapsulando la lógica de apertura en un bloque `try-except` más preciso y validando que el archivo sea un archivo regular antes de intentar cualquier operación.
+- `2026-09-14T05:37:30` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y `_evaluate_rules` mediante la captura explícita de errores durante la ejecución de los evaluadores (`scorers` y `rules`), evitando fallos en cascada si un valor atípico causa una división por cero o un error de lógica inesperado.
+- `2026-09-14T05:38:30` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-14T05:39:34` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `on_trim_process` y `on_restore_quarantine` mediante la implementación de validaciones estrictas y manejo de excepciones específicas, evitando que errores de entrada mal formados o condiciones de carrera en la UI interrumpan el hilo principal o dejen la aplicación en un estado inconsistente.
+- `2026-09-14T05:39:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T05:39:34` Corrida terminada. Total usado hoy: 131.

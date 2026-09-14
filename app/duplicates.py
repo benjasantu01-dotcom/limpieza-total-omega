@@ -90,7 +90,6 @@ def _is_file_locked(path: Path) -> bool:
     """Verifica si el archivo está en uso exclusivo, manejando errores de sistema durante la apertura."""
     try:
         with open(path, 'rb') as f:
-            # Intenta una lectura mínima para asegurar accesibilidad real
             f.read(1)
             return False
     except (OSError, PermissionError, FileNotFoundError, BlockingIOError):
@@ -109,7 +108,10 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
             
         digest = hashlib.sha256()
         with open(p, "rb") as f:
-            while (buffer := f.read(chunk_size)):
+            while True:
+                buffer = f.read(chunk_size)
+                if not buffer:
+                    break
                 digest.update(buffer)
         return digest.hexdigest()
     except (OSError, PermissionError, IOError, TypeError, ValueError):
@@ -232,10 +234,8 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, hash_file)
     else:
-        # Primero reducimos el espacio de búsqueda usando el hash parcial de 64KB
         partial_groups = _group_paths_by_hash(paths, partial_hash)
         results: Dict[str, List[Path]] = {}
-        # Luego refinamos cada subgrupo con un hash completo (SHA256)
         for subset in partial_groups.values():
             results.update(_group_paths_by_hash(subset, hash_file))
             
