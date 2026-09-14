@@ -352,6 +352,7 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     buf = ctypes.create_unicode_buffer(1024)
     try:
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 1024) > 0:
+            # Resolvemos la ruta para evitar que puntos de reparse o atajos engañen al validador
             return Path(buf.value).resolve(strict=False)
     except (OSError, ctypes.ArgumentError, ValueError, MemoryError):
         pass
@@ -378,6 +379,7 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
         if not exec_path:
             return False, "Acceso denegado o ejecutable no localizable."
         
+        # Validar la ruta normalizada contra la política de seguridad
         exec_path_str = str(exec_path)
         if is_protected_path(exec_path_str) or not is_safe_to_modify(exec_path_str):
             return False, "Operación denegada: ruta protegida."

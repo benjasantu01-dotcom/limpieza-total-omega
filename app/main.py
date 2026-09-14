@@ -1134,6 +1134,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 return None
             
             p = Path(folder).resolve(strict=True)
+            # Validación de seguridad defensiva en el diálogo
             if p.is_symlink():
                  raise safety.UnsafePathError("Ruta no permitida: enlace simbólico.")
             if safety.is_protected_path(p) or not safety.is_safe_to_modify(p):
