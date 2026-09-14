@@ -189,9 +189,9 @@ def _has_alternate_data_stream(path_name: str) -> bool:
     return ":" in path_name and len(path_name.split(":")) > 2
 
 @lru_cache(maxsize=2048)
-def _is_system_or_hidden(path_str: Optional[str]) -> bool:
+def _is_system_or_hidden(path_str: str) -> bool:
     """Verifica mediante la estructura de atributos de archivo si es oculto o de sistema."""
-    if not path_str: return False
+    if not os.path.isabs(path_str): return False
     try:
         path = Path(path_str)
         if not path.exists(): return False
@@ -235,7 +235,7 @@ def _is_offline(path_str: str) -> bool:
 
 def _is_file_in_use(path_str: str) -> bool:
     """Verifica si un proceso está bloqueando el archivo mediante acceso exclusivo de WinAPI."""
-    if os.name != 'nt' or not isinstance(path_str, str) or not path_str:
+    if os.name != 'nt' or not os.path.isabs(path_str):
         return False
     
     kernel32 = ctypes.windll.kernel32
