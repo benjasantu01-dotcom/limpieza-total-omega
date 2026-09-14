@@ -48,14 +48,7 @@ FILE_ATTRIBUTE_SYSTEM: int = 0x4
 
 
 def is_junction(path: Path) -> bool:
-    """Verifica si una ruta es un punto de reparse (junction) en Windows usando Win32 API.
-    
-    Args:
-        path: Objeto Path de la ruta a verificar.
-        
-    Returns:
-        True si es un punto de reparse, False en caso contrario o si falla la API.
-    """
+    """Verifica si una ruta es un punto de reparse (junction) en Windows usando Win32 API."""
     if not isinstance(path, Path):
         return False
     try:
@@ -66,14 +59,7 @@ def is_junction(path: Path) -> bool:
 
 
 def is_system_or_hidden(path: Path) -> bool:
-    """Verifica si un archivo tiene atributos de sistema o está oculto.
-    
-    Args:
-        path: Objeto Path del archivo a inspeccionar.
-        
-    Returns:
-        True si es un archivo de sistema o está marcado como oculto.
-    """
+    """Verifica si un archivo tiene atributos de sistema o está oculto."""
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         if attrs == -1:
@@ -85,36 +71,24 @@ def is_system_or_hidden(path: Path) -> bool:
 
 @dataclass
 class DuplicateGroup:
-    """Representa una colección de archivos que comparten contenido idéntico.
-    
-    Attributes:
-        digest: Hash SHA256 que identifica al grupo.
-        size_bytes: Tamaño en bytes de un único archivo del grupo.
-        paths: Lista de rutas que contienen el mismo contenido.
-    """
+    """Representa una colección de archivos que comparten contenido idéntico."""
     digest: str
     size_bytes: int
     paths: List[Path]
 
     @property
     def count(self) -> int:
-        """Devuelve el número total de archivos en este grupo."""
         return len(self.paths) if self.paths else 0
 
     @property
     def wasted_bytes(self) -> int:
-        """Calcula el espacio total recuperable excluyendo una instancia (la que se sugiere conservar)."""
         if not self.paths or self.count <= 1 or self.size_bytes < 0:
             return 0
         return (self.count - 1) * self.size_bytes
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Verifica si el archivo está en uso exclusivo intentando abrirlo en modo lectura.
-    
-    Returns:
-        True si no es posible obtener un handle de lectura, indicando bloqueo.
-    """
+    """Verifica si el archivo está en uso exclusivo intentando abrirlo en modo lectura."""
     try:
         with open(path, 'rb') as f:
             f.read(1)
@@ -124,15 +98,7 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo de un archivo.
-    
-    Args:
-        path: Ruta al archivo.
-        chunk_size: Tamaño de buffer en bytes para lectura incremental.
-        
-    Returns:
-        String hexadecimal del hash o None si el archivo es inaccesible.
-    """
+    """Calcula el hash SHA256 completo de un archivo."""
     if path is None or chunk_size <= 0:
         return None
         
@@ -154,10 +120,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula un hash parcial basado en los primeros N bytes del archivo.
-    
-    Útil para descartar rápidamente archivos con el mismo tamaño pero distinto contenido.
-    """
+    """Calcula un hash parcial basado en los primeros N bytes del archivo."""
     if path is None or read_bytes <= 0:
         return None
 
@@ -325,7 +288,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
     
     for path in group.paths:
-        if not path.is_file():
+        if not path.exists():
             lines.append(f"   [desaparecido] {path}")
         elif not is_safe_to_modify(path):
             lines.append(f"   [inaccesible] {path}")

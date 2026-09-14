@@ -921,3 +921,11 @@ FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops 
 - `2026-09-14T11:49:36` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: robustez ante casos límite).
 - `2026-09-14T11:49:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T11:49:36` Corrida terminada. Total usado hoy: 275.
+- `2026-09-14T11:53:54` Arrancando corrida. Quedan hoy ~25 peticiones objetivo.
+- `2026-09-14T11:54:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-14T11:55:13` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha añadido validación de existencia de directorio y manejo de errores de escritura en `save_logo_svg` para prevenir fallos al intentar guardar en rutas inexistentes o sin permisos, garantizando que la operación sea robusta ante errores de E/S.
+- `2026-09-14T11:55:40` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-14T11:56:10` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o con metadatos inconsistentes, añadiendo un chequeo explícito en `os.stat` para manejar casos donde el sistema operativo devuelve un valor de tamaño nulo o error tras una lectura fallida, evitando la propagación de datos corruptos al resumen final.
+- `2026-09-14T11:56:24` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `suggest_keeper` y `format_group` ante archivos que desaparecen entre la detección y la visualización, asegurando que el uso de `p.exists()` y `is_safe_to_modify(p)` sea consistente y no provoque fallos inesperados en la UI.
+- `2026-09-14T11:56:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T11:56:24` Corrida terminada. Total usado hoy: 279.
