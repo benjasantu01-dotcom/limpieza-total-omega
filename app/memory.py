@@ -149,6 +149,7 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
 
 def _kb_to_bytes(kb_str: str) -> BytesValue:
     """Convierte un string de contenido numérico en kB (de /proc/meminfo) a BytesValue."""
+    if not isinstance(kb_str, str): return BytesValue(0)
     digits = "".join(c for c in kb_str if c.isdigit())
     return BytesValue(int(digits) * 1024) if digits else BytesValue(0)
 
@@ -178,7 +179,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
             continue
             
     total = metrics.get("MemTotal", BytesValue(0))
-    if total <= 0: 
+    if not isinstance(total, int) or total <= 0: 
         return _EMPTY_SNAPSHOT
     
     available = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))

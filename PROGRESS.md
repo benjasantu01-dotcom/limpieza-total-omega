@@ -5,8 +5,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Iteraciones totales: **503**
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 19
@@ -16,38 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 26 | 4 | 7 | 0 | 21 |
+| 2026-09-11 | 23 | 4 | 7 | 0 | 20 |
 | 2026-09-12 | 146 | 8 | 24 | 14 | 158 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
-| 2026-09-14 | 3 | 0 | 0 | 0 | 25 |
+| 2026-09-14 | 5 | 0 | 0 | 0 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- legibilidad y documentación: **47**
+- legibilidad y documentación: **44**
+- manejo de errores y validación de entradas: **42**
 - rendimiento: **40**
-- manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
-- `safety.py`: **19**
 - `assistant.py`: **19**
+- `settings.py`: **19**
 - `quarantine.py`: **18**
 - `diskreport.py`: **18**
+- `safety.py`: **18**
 - `duplicates.py`: **17**
 - `organizer.py`: **17**
 - `browser.py`: **16**
-- `healthscore.py`: **14**
-- `memory.py`: **13**
+- `healthscore.py`: **15**
+- `memory.py`: **14**
 - `main.py`: **12**
 - `branding.py`: **11**
-- `startup.py`: **10**
 - `scanner.py`: **10**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-14T01:19:34` **memory.py** (manejo de errores y validación de entradas): Se mejora la robustez de `parse_linux_meminfo` mediante la validación explícita de tipos y la captura de errores en la conversión de valores, evitando posibles excepciones de `ValueError` al procesar archivos de sistema malformados.
+- `2026-09-14T01:15:04` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_evaluate_rules` mediante la captura explícita de excepciones en la ejecución de `rule.check` y `message_factory`, evitando que un error en una regla aislada invalide el reporte completo.
 - `2026-09-14T01:03:16` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y las funciones de recolección de datos ante entradas malformadas o rutas que cambian de estado durante la iteración, añadiendo validaciones explícitas de tipos y saneamiento de datos para evitar desbordamientos o errores de ejecución inesperados al procesar tamaños o conteos.
 - `2026-09-14T01:02:48` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado el manejo de errores en `_sum_directory_recursive` asegurando que las excepciones `OSError` que no sean violaciones de acceso (como errores de lectura de disco o permisos denegados) se gestionen explícitamente sin detener la recursión ni propagar errores fatales, manteniendo la robustez del escaneo.
 - `2026-09-14T00:54:35` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de los `handle_*` handlers mediante el uso de una lógica de captura de excepciones más granular y defensiva, asegurando que ante errores inesperados en los datos de entrada o cálculos, el sistema responda de forma elegante con un mensaje informativo en lugar de fallar silenciosamente o devolver un estado inconsistente.
@@ -61,5 +63,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-13T23:10:29` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del motor `compute_score` implementando un chequeo estricto de estado mediante la validación de finitud y tipos antes de procesar el pipeline, evitando que errores silenciosos en la entrada de datos afecten el cálculo del puntaje final.
 - `2026-09-13T23:09:52` **diskreport.py** (seguridad defensiva): Se mejoró la robustez de `walk_files` mediante la validación explícita de la ruta `entry.path` usando `Path.resolve()` contra el `root_path` antes de procesar, evitando ataques de "path traversal" o escape de subdirectorios mediante enlaces simbólicos maliciosos dentro del árbol analizado.
 - `2026-09-13T23:00:47` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` reemplazando el chequeo manual de `os.access` (que es una operación TOCTOU - Time of Check to Time of Use) por un enfoque defensivo que intenta la operación de escritura de forma segura tras validar la ruta, manteniendo la robustez ante posibles errores de permisos y evitando condiciones de carrera.
-- `2026-09-13T23:00:26` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al centralizar y robustecer la validación de entrada en `_ensure_safe_text` y `_is_safe_text_structure`, asegurando que cualquier texto proveniente del usuario o de una respuesta externa pase por un escaneo de inyección de comandos más estricto antes de procesarse o devolverse.
-- `2026-09-13T22:59:19` **settings.py** (robustez ante casos límite): Mejoré la robustez ante la posible inexistencia o falta de permisos del directorio padre de la configuración mediante una comprobación preventiva y un manejo más específico de errores, asegurando que la aplicación no intente acceder a rutas nulas o bloqueadas al intentar guardar o cargar ajustes.

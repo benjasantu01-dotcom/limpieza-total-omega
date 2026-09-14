@@ -199,13 +199,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
-                try:
-                    msg = rule.message_factory(metrics)
-                    if msg:
-                        findings.append(" ".join(msg.split())[:200])
-                except Exception:
-                    continue
-        except Exception:
+                msg = rule.message_factory(metrics)
+                if msg:
+                    findings.append(" ".join(msg.split())[:200])
+        except (TypeError, ValueError, AttributeError, ZeroDivisionError):
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
