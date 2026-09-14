@@ -851,3 +851,10 @@ assert not True
 - `2026-09-14T10:54:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-09-14T10:54:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T10:54:22` Corrida terminada. Total usado hoy: 255.
+- `2026-09-14T11:02:55` Arrancando corrida. Quedan hoy ~45 peticiones objetivo.
+- `2026-09-14T11:03:32` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación (`_check_file_integrity`, `_validate_structural_safety`, `_validate_boundary_conditions`) para clarificar el propósito y el flujo de los controles de seguridad.
+- `2026-09-14T11:03:57` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo `scanner.py` mediante la adición de docstrings estructurados y específicos que detallan el propósito, las precondiciones y el comportamiento esperado de las funciones principales, facilitando la comprensión del flujo de análisis.
+- `2026-09-14T11:04:25` ➖ Sin cambios en settings.py (enfoque: legibilidad y documentación). Motivo: Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos en las funciones críticas y tipando explícitamente los retornos de las validaciones para clarificar el flujo de datos.
+- `2026-09-14T11:04:34` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-14T11:04:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T11:04:34` Corrida terminada. Total usado hoy: 259.

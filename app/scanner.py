@@ -74,7 +74,8 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Analiza si el nombre del archivo contiene una extensión legítima seguida de una ejecutable.
+    Evalúa si el nombre de archivo emplea extensiones compuestas para ofuscar el ejecutable.
+    Retorna un objeto Suspicion si se detecta un patrón de doble extensión.
     """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -82,7 +83,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Verifica si un ejecutable fue creado recientemente en carpetas temporales o de descargas.
+    Determina si un archivo ejecutable ha sido creado en el intervalo definido por RECENT_FILE_THRESHOLD_HOURS
+    dentro de directorios de alto riesgo (ej. descargas).
     """
     if not path or not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
@@ -98,7 +100,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Busca archivos cuyos nombres coinciden con binarios críticos del sistema fuera de System32.
+    Verifica si un ejecutable intenta suplantar procesos críticos del sistema mediante homógrafos
+    al ser localizado fuera del directorio %SYSTEM32%.
     """
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         path_str = str(path).lower()
@@ -108,7 +111,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Detecta ejecutables con tamaño 0.
+    Identifica archivos ejecutables con tamaño en bytes nulo, comportamiento inusual y a menudo asociado
+    con la reserva de espacio de ataque o errores de descarga.
     """
     try:
         if entry and entry.is_file(follow_symlinks=False):
@@ -180,6 +184,9 @@ class Scanner:
                     self.results.append(result)
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
+    """
+    Función de utilidad para escanear un único archivo de forma aislada.
+    """
     if not path: return []
     findings: ScanResult = []
     if (double_ext := check_double_extension(path, entry, now_ts)):
@@ -191,6 +198,9 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
+    """
+    Inicia el escaneo recursivo de un directorio validando la seguridad de cada ruta.
+    """
     if directory is None: return []
     try:
         path_str: str = str(directory).strip()

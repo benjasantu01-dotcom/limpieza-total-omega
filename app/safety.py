@@ -13,7 +13,7 @@ import re
 import ctypes
 from enum import Enum, auto, IntEnum
 from pathlib import Path
-from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, TypeGuard, Optional
+from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, Optional
 from functools import lru_cache
 import unicodedata
 
@@ -299,7 +299,11 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 }
 
 def _check_file_integrity(path: Path) -> None:
-    """Ejecuta la batería de reglas de integridad sobre el archivo."""
+    """
+    Ejecuta una batería de reglas de integridad sobre el archivo.
+    Lanza UnsafePathError si el archivo está bloqueado, es de solo lectura,
+    contiene streams alternativos o presenta atributos de sistema.
+    """
     try:
         file_stat = path.stat()
     except PermissionError:
@@ -405,7 +409,7 @@ def is_sensitive_file(path: PathLike) -> bool:
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """
     Realiza chequeos estructurales (caracteres nulos, nombres reservados, 
-    inconsistencias de path) antes de interactuar con el sistema de archivos.
+    inconsistencias de path) antes de cualquier interacción con el disco.
     """
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
@@ -448,8 +452,8 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
     """
-    Aplica restricciones de alcance geográfico (dentro de base_dir, sin salir a raíces, 
-    no en carpetas de sistema o app) y valida tipo de unidad en Windows.
+    Aplica restricciones de alcance geográfico y tipo de unidad. Verifica que la ruta
+    no escape fuera de un directorio base o colisione con el entorno de la aplicación.
     """
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
