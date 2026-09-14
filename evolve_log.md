@@ -550,3 +550,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-09-14T08:01:02` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación estricta de límites de profundidad y el uso de `path.is_mount()` para prevenir la traversal fuera del volumen de datos del usuario, incluso si los permisos del SO fueran permisivos.
 - `2026-09-14T08:01:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T08:01:02` Corrida terminada. Total usado hoy: 187.
+- `2026-09-14T08:09:24` Arrancando corrida. Quedan hoy ~113 peticiones objetivo.
+- `2026-09-14T08:09:54` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_validate_root` para utilizar `Path.resolve(strict=True)`, garantizando que cualquier ruta procesada exista realmente en el sistema antes de intentar cualquier operación, evitando posibles manipulaciones de rutas inexistentes.
+- `2026-09-14T08:10:18` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-09-14T08:10:44` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez del motor de cómputo introduciendo un chequeo de límites en `compute_score` que previene propagación de errores si `metrics` contiene valores atípicos o si las métricas críticas están malformadas, garantizando que el `HealthResult` siempre devuelva un estado coherente incluso ante datos de entrada sospechosos.
+- `2026-09-14T08:11:44` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-14T08:12:47` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva centralizando la validación de rutas en las acciones de los botones del panel de limpieza, asegurando que `scan_target` sea verificado mediante `_is_safe_target_dir` antes de cualquier operación de I/O, evitando condiciones de carrera o validaciones parciales.
+- `2026-09-14T08:12:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T08:12:47` Corrida terminada. Total usado hoy: 191.

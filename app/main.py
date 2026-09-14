@@ -1094,6 +1094,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Envía tarea al pool, validando seguridad de ruta."""
         if self._closing or not self.winfo_exists(): return
         
+        # Validación de seguridad defensiva antes de delegar al pool
         if target and not self._is_safe_disk_operation(target):
             self.log("Acción denegada: la ruta destino no es segura.", self._current_tab())
             return
@@ -1362,6 +1363,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception as e:
                 self.log(f"Error al mover archivos: {e}", "Limpieza")
 
+        # Se usa la carpeta del usuario como seguridad base al mover
         self.run_async(task, target=str(Path.home()))
 
     @validated_ui_operation

@@ -66,10 +66,10 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         raw_path = Path(directory)
-        resolved_path = raw_path.resolve()
+        # resolve(strict=True) asegura que la ruta existe realmente en el sistema
+        resolved_path = raw_path.resolve(strict=True)
         
-        # Validar existencia, tipo y permisos básicos
-        if not resolved_path.exists() or not resolved_path.is_dir():
+        if not resolved_path.is_dir():
             return None
             
         # Prevenir traversal y asegurar que la ruta resuelta es segura

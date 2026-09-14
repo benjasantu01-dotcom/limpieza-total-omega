@@ -220,7 +220,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for area, weight, scorer, rules in _CACHE_SCORERS:
         try:
-            area_ratio = scorer(metrics)
+            area_ratio = _clamp(scorer(metrics))
             if rules:
                 _evaluate_rules(metrics, rules, area_ratio, recommendations)
             
