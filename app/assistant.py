@@ -294,13 +294,19 @@ class SystemContext:
         return _ensure_safe_text(self.grade) if self.grade else True
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> bool:
-        """Intenta mapear un valor individual desde una fuente y validarlo contra su especificación."""
+        """
+        Intenta actualizar un campo del contexto:
+        1. Obtiene el valor, valida su tipo y verifica que esté en el rango físico permitido.
+        2. Si pasa, aplica la conversión (cast) y guarda el resultado.
+        """
         val = _get_source_value(source, key)
-        if val is not None and spec.is_valid_type(val):
-            f_val = float(val)
-            if math.isfinite(f_val) and spec.min_val <= f_val <= spec.max_val:
-                setattr(self, key, spec.cast_func(val))
-                return True
+        if val is None or not spec.is_valid_type(val):
+            return False
+            
+        numeric_val = float(val)
+        if math.isfinite(numeric_val) and spec.min_val <= numeric_val <= spec.max_val:
+            setattr(self, key, spec.cast_func(val))
+            return True
         return False
 
     def _clean_grade(self, val: Any) -> str:
@@ -310,17 +316,20 @@ class SystemContext:
         return clean if _ensure_safe_text(clean) else ""
 
     def ingest(self, source: Any) -> bool:
-        """Ingesta datos externos al contexto mediante validación estricta de cada campo."""
+        """
+        Ingesta datos externos al contexto mediante validación estricta de cada campo.
+        Retorna True solo si se procesó exitosamente al menos una métrica válida.
+        """
         if source is None or not isinstance(source, (dict, object)) or _is_input_too_deep_or_complex(source):
             return False
             
         found_data = False
-        # Solo permitir campos definidos en _VALIDATORS
+        # Ingesta de métricas numéricas según especificación
         for key, spec in _VALIDATORS.items():
             if self._apply_field(source, key, spec):
                 found_data = True
         
-        # Validar el campo grado explícitamente
+        # Ingesta especial del grado de salud (string)
         grade_val = _get_source_value(source, "grade")
         if isinstance(grade_val, str):
             clean_grade = self._clean_grade(grade_val)

@@ -216,6 +216,19 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
         return False
 
 
+def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionChecker, kernel32: Optional[ctypes.WinDLL], memo: Dict[str, int], depth: int) -> int:
+    """Extrae el tamaño de un único entry de sistema de archivos, recursando si es directorio."""
+    try:
+        if entry.is_dir(follow_symlinks=False):
+            return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
+        if entry.is_file(follow_symlinks=False):
+            return entry.stat(follow_symlinks=False).st_size
+    except (OSError, PermissionError) as e:
+        if kernel32 and getattr(e, 'winerror', None) == ERROR_SHARING_VIOLATION:
+            pass
+    return 0
+
+
 def _sum_directory_recursive(
     root_abs: str, 
     is_junction_fn: JunctionChecker, 
@@ -240,16 +253,7 @@ def _sum_directory_recursive(
             for entry in it:
                 if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue
-                
-                try:
-                    if entry.is_dir(follow_symlinks=False):
-                        total += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
-                    elif entry.is_file(follow_symlinks=False):
-                        total += entry.stat(follow_symlinks=False).st_size
-                except (OSError, PermissionError) as e:
-                    if kernel32 and getattr(e, 'winerror', None) == ERROR_SHARING_VIOLATION:
-                        continue
-                    continue
+                total += _process_entry(entry, root_base, is_junction_fn, kernel32, memo, depth)
     except (PermissionError, OSError):
         return 0
     
