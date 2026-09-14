@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-12 | 56 | 3 | 8 | 3 | 83 |
+| 2026-09-12 | 53 | 3 | 8 | 3 | 82 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
-| 2026-09-14 | 134 | 5 | 16 | 10 | 118 |
+| 2026-09-14 | 137 | 5 | 16 | 10 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **44**
-- seguridad defensiva: **42**
-- robustez ante casos límite: **33**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
 - `browser.py`: **21**
-- `safety.py`: **20**
 - `quarantine.py`: **20**
-- `settings.py`: **18**
+- `healthscore.py`: **19**
+- `safety.py`: **19**
 - `diskreport.py`: **18**
-- `healthscore.py`: **18**
-- `memory.py`: **17**
+- `memory.py`: **18**
+- `settings.py`: **17**
 - `organizer.py`: **15**
 - `duplicates.py`: **14**
-- `main.py`: **13**
+- `main.py`: **14**
 - `scanner.py`: **12**
-- `startup.py`: **11**
 - `branding.py`: **11**
+- `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-14T12:07:22` **memory.py** (robustez ante casos límite): Se mejora la robustez de `top_memory_processes` añadiendo un manejo de excepciones más granular y defensivo ante la ejecución de subprocesos y la gestión de memoria inesperada, asegurando que un fallo en la salida de PowerShell o un error de conversión no detenga el análisis completo ni deje estados de caché inconsistentes.
+- `2026-09-14T12:06:52` **main.py** (robustez ante casos límite): Mejoré la robustez de la inicialización de la interfaz en `_build_ia_settings` y `_build_tab_ajustes` añadiendo validaciones de existencia de widgets antes de intentar manipularlos, evitando así cierres inesperados si la construcción de la UI es interrumpida o se reintenta.
+- `2026-09-14T12:04:34` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics.validate` para prevenir errores de cálculo con valores extremos, asegurando que `_to_float` maneje correctamente entradas `None` o mal formadas sin interrumpir el flujo.
 - `2026-09-14T11:56:24` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `suggest_keeper` y `format_group` ante archivos que desaparecen entre la detección y la visualización, asegurando que el uso de `p.exists()` y `is_safe_to_modify(p)` sea consistente y no provoque fallos inesperados en la UI.
 - `2026-09-14T11:56:10` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o con metadatos inconsistentes, añadiendo un chequeo explícito en `os.stat` para manejar casos donde el sistema operativo devuelve un valor de tamaño nulo o error tras una lectura fallida, evitando la propagación de datos corruptos al resumen final.
 - `2026-09-14T11:55:13` **branding.py** (robustez ante casos límite): Se ha añadido validación de existencia de directorio y manejo de errores de escritura en `save_logo_svg` para prevenir fallos al intentar guardar en rutas inexistentes o sin permisos, garantizando que la operación sea robusta ante errores de E/S.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-14T11:15:02` **diskreport.py** (rendimiento): Optimizé `_collect_summary_data` para evitar llamadas redundantes a `heapq.nlargest` en funciones que ya procesan la data consolidada y eliminé la creación innecesaria de diccionarios intermedios, reduciendo la presión de memoria durante el recorrido del árbol.
 - `2026-09-14T11:14:51` **browser.py** (rendimiento): Implementé la memorización de estados en la búsqueda de perfiles (`perf_cache`) para evitar recalculaciones redundantes en estructuras de caché compartidas entre navegadores (ej. múltiples perfiles o derivados de Chromium que apuntan a subárboles similares), optimizando el tiempo de ejecución en sistemas con muchos navegadores.
 - `2026-09-14T11:13:50` **assistant.py** (rendimiento): Optimicé el renderizado de texto del contexto para prompts mediante la eliminación de múltiples llamadas a funciones (`_fmt_metric_sanitized`) dentro de un `f-string`, sustituyéndolas por una única pre-formateada en el cuerpo del método, reduciendo la carga de procesamiento innecesario y el número de operaciones de manipulación de cadenas en cada consulta.
-- `2026-09-14T11:03:57` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `scanner.py` mediante la adición de docstrings estructurados y específicos que detallan el propósito, las precondiciones y el comportamiento esperado de las funciones principales, facilitando la comprensión del flujo de análisis.
-- `2026-09-14T11:03:32` **safety.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación (`_check_file_integrity`, `_validate_structural_safety`, `_validate_boundary_conditions`) para clarificar el propósito y el flujo de los controles de seguridad.
-- `2026-09-14T10:54:19` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (especificando `Args`, `Returns` y `Raises` de forma clara) y se han extraído validaciones complejas de `quarantine_file` hacia métodos privados mejor nombrados para mejorar la legibilidad y el mantenimiento.

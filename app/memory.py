@@ -232,7 +232,10 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
                 if proc:
                     yield proc
 
-    return heapq.nlargest(limit, process_generator(), key=lambda p: p.working_set)
+    try:
+        return heapq.nlargest(limit, process_generator(), key=lambda p: p.working_set)
+    except (ValueError, TypeError):
+        return []
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Invoca la API win32 GlobalMemoryStatusEx para obtener el estado físico actual de la RAM."""
@@ -298,8 +301,11 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             if parsed:
                 _proc_cache_data = parsed
                 _proc_cache_time = time.time()
+            else:
+                # Si falló el parseo, invalidamos caché para reintentar en próxima llamada
+                _proc_cache_data = []
     except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): 
-        pass
+        _proc_cache_data = []
             
     return _proc_cache_data[:limit]
 

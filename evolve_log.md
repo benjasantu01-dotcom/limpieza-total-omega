@@ -929,3 +929,11 @@ FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops 
 - `2026-09-14T11:56:24` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `suggest_keeper` y `format_group` ante archivos que desaparecen entre la detección y la visualización, asegurando que el uso de `p.exists()` y `is_safe_to_modify(p)` sea consistente y no provoque fallos inesperados en la UI.
 - `2026-09-14T11:56:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T11:56:24` Corrida terminada. Total usado hoy: 279.
+- `2026-09-14T12:04:04` Arrancando corrida. Quedan hoy ~21 peticiones objetivo.
+- `2026-09-14T12:04:34` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `SystemMetrics.validate` para prevenir errores de cálculo con valores extremos, asegurando que `_to_float` maneje correctamente entradas `None` o mal formadas sin interrumpir el flujo.
+- `2026-09-14T12:05:34` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-14T12:06:52` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de la inicialización de la interfaz en `_build_ia_settings` y `_build_tab_ajustes` añadiendo validaciones de existencia de widgets antes de intentar manipularlos, evitando así cierres inesperados si la construcción de la UI es interrumpida o se reintenta.
+- `2026-09-14T12:07:22` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `top_memory_processes` añadiendo un manejo de excepciones más granular y defensivo ante la ejecución de subprocesos y la gestión de memoria inesperada, asegurando que un fallo en la salida de PowerShell o un error de conversión no detenga el análisis completo ni deje estados de caché inconsistentes.
+- `2026-09-14T12:07:33` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-14T12:07:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T12:07:33` Corrida terminada. Total usado hoy: 283.

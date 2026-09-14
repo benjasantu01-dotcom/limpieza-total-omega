@@ -818,10 +818,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_ia_settings(self, tab: ctk.CTk) -> None:
         """Construye la sección de configuración para el asistente IA."""
-        self._create_styled_label(
+        label = self._create_styled_label(
             tab, f"{branding.icon('Asistente')}  Asistente en línea (opcional)", "title",
             anchor="w", text_color=branding.color("accent2")
-        ).pack(fill="x", padx=14, pady=(18, 0))
+        )
+        label.pack(fill="x", padx=14, pady=(18, 0))
 
         ia_container = ctk.CTkFrame(tab, fg_color="transparent")
         ia_container.pack(fill="x", padx=12, pady=(6, 0))

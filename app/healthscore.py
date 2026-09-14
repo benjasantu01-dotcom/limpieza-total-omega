@@ -149,8 +149,9 @@ class SystemMetrics:
             self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
             self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
             self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
-        except (ValueError, TypeError):
-            self.junk_mb = self.duplicate_mb = 0.0
+        except (ValueError, TypeError, OverflowError):
+            self.junk_mb = self.duplicate_mb = self.suspicious_count = 0.0
+            self.suspicious_warnings = self.startup_count = self.quarantined_count = 0
             self.memory_available_percent = self.disk_free_percent = 100.0
 
     @property
@@ -178,6 +179,7 @@ def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
 
 def _to_float(value: Any, default: float = 0.0) -> float:
     """Convierte de forma segura a float, descartando casos no numéricos."""
+    if value is None: return default
     try:
         val = float(value)
         return val if math.isfinite(val) else default
