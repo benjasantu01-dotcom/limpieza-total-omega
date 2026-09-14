@@ -61,16 +61,24 @@ def _bytes_to_mb(size_bytes: int | float) -> float:
 
 
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
-    """Valida que el directorio sea una ruta absoluta, existente y segura para leer."""
+    """Valida que el directorio sea una ruta absoluta, existente, segura y accesible."""
     if directory is None:
         return None
     try:
-        path_obj = Path(directory).resolve()
-        if path_obj.exists() and path_obj.is_dir() and not is_protected_path(path_obj) and os.access(path_obj, os.R_OK):
-            return path_obj
+        raw_path = Path(directory)
+        resolved_path = raw_path.resolve()
+        
+        # Validar existencia, tipo y permisos básicos
+        if not resolved_path.exists() or not resolved_path.is_dir():
+            return None
+            
+        # Prevenir traversal y asegurar que la ruta resuelta es segura
+        if is_protected_path(resolved_path) or not os.access(resolved_path, os.R_OK):
+            return None
+            
+        return resolved_path
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
-        pass
-    return None
+        return None
 
 
 def _is_excluded_path(entry: os.DirEntry) -> bool:

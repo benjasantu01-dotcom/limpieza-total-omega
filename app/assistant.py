@@ -423,7 +423,7 @@ def _generate_context_lines_cached(score_s: str, grade: str, junk_s: str, susp_s
 def context_as_text(context: SystemContext) -> str:
     """Serializa las métricas de SystemContext en texto optimizado para la inferencia."""
     if context.is_empty:
-        return "No hay métricas disponibles todavía."
+        return ""
     
     s_score = _fmt_metric_sanitized(context.score) if context.score is not None else "N/A"
     s_grade = str(context.grade)[:5]
@@ -437,7 +437,7 @@ def context_as_text(context: SystemContext) -> str:
     try:
         return _generate_context_lines_cached(s_score, s_grade, s_junk, s_susp, s_ram, s_disk, s_dup, s_start)
     except Exception:
-        return "Error crítico al procesar métricas de seguridad."
+        return ""
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """
@@ -622,7 +622,8 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa mensaje y contexto a JSON, verificando que no existan vectores de inyección."""
     try:
-        if not _ensure_safe_text(context_text): return None
+        # Validación defensiva: Si no hay contexto, abortar operación.
+        if not context_text or not _ensure_safe_text(context_text): return None
         q = _sanitize_query(question)
         if not q or not _ensure_safe_text(q): return None
         
