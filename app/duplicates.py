@@ -228,15 +228,17 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Optimización de E/S: usa hash parcial para archivos grandes, completo para pequeños."""
+    """Ejecuta la jerarquía de hashing: parcial para archivos grandes, completo para resolución final."""
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, hash_file)
     else:
-        results = _group_paths_by_hash(paths, partial_hash)
-        final_groups: Dict[str, List[Path]] = {}
-        for subset in results.values():
-            final_groups.update(_group_paths_by_hash(subset, hash_file))
-        results = final_groups
+        # Primero reducimos el espacio de búsqueda usando el hash parcial de 64KB
+        partial_groups = _group_paths_by_hash(paths, partial_hash)
+        results: Dict[str, List[Path]] = {}
+        # Luego refinamos cada subgrupo con un hash completo (SHA256)
+        for subset in partial_groups.values():
+            results.update(_group_paths_by_hash(subset, hash_file))
+            
     return [DuplicateGroup(digest, size, sorted(p)) for digest, p in results.items()]
 
 

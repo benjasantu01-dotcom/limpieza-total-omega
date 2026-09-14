@@ -227,6 +227,11 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula el tamaño de un directorio mediante búsqueda en profundidad (DFS).
+    
+    La función implementa salvaguardas contra ciclos (vía memoization), 
+    desbordamiento de profundidad (MAX_SCAN_DEPTH), y rutas fuera de la base
+    permitida (root_base). Los archivos bloqueados por el SO se omiten
+    silenciosamente (ERROR_SHARING_VIOLATION).
     """
     if root_abs in memo:
         return memo[root_abs]
@@ -258,7 +263,6 @@ def _sum_directory_recursive(
                     else:
                         total += entry.stat(follow_symlinks=False).st_size
                 except OSError as e:
-                    # Si el archivo está bloqueado o inaccesible, lo omitimos silenciosamente
                     if kernel32 and getattr(e, 'winerror', None) == ERROR_SHARING_VIOLATION:
                         continue
                     continue

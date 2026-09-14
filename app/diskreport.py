@@ -61,6 +61,7 @@ def _bytes_to_mb(size_bytes: int | float) -> float:
 
 
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
+    """Valida que el directorio sea una ruta absoluta, existente y segura para leer."""
     if directory is None:
         return None
     try:
@@ -73,6 +74,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(entry: os.DirEntry) -> bool:
+    """Verifica si una entrada debe ser ignorada (enlaces simbólicos o reparse points)."""
     REPARSE_POINT_ATTR = 0x400
     try:
         if entry.is_symlink():
@@ -153,6 +155,7 @@ class DriveUsage:
 
 
 def format_size(num: Union[int, float, None]) -> str:
+    """Convierte bytes a una cadena legible con unidades escaladas."""
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     value = float(num)
@@ -165,6 +168,7 @@ def format_size(num: Union[int, float, None]) -> str:
 
 
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
+    """Obtiene el estado de uso de una unidad de almacenamiento específica."""
     if mount is None:
         return None
     try:
@@ -178,11 +182,13 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 
 
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
+    """Reporta el uso de todas las unidades montadas disponibles."""
     targets = mounts if mounts is not None else (_get_local_windows_drives() if os.name == "nt" else ["/"])
     return [d for m in targets if (d := drive_usage(m)) is not None]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
+    """Generador que recorre recursivamente el sistema de archivos evitando ciclos y rutas protegidas."""
     root_path = _validate_root(directory)
     if root_path is None:
         return
@@ -268,6 +274,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
+    """Realiza un recorrido único para consolidar estadísticas de tamaño, extensiones y top de archivos."""
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, List[int]] = defaultdict(lambda: [0, 0])
@@ -292,6 +299,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
+    """Genera un reporte textual resumido del uso de disco para mostrar al usuario."""
     root = _validate_root(directory)
     if not root: return ["Error: Ruta no válida."]
     data = _collect_summary_data(root, skip_protected, limit=20)

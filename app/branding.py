@@ -371,7 +371,7 @@ def logo_ascii() -> str:
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """
     Renderiza franjas horizontales con degradado sobre el cuerpo del escudo.
-    Calcula el ancho dinámico de cada franja basado en una curva de decaimiento visual.
+    Calcula el ancho dinámico basado en un factor de escala (0.1 a 10.0).
     """
     try:
         franjas_count = max(6, int(28 * scale))
@@ -405,7 +405,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     except Exception: pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza la representación vectorial del escudo corporativo en el canvas principal."""
+    """Renderiza el escudo corporativo. 'size' controla el factor de escala dinámico."""
     try:
         s = float(size)
         if s <= 0: return
@@ -423,7 +423,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except Exception: pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una barra decorativa con gradiente horizontal de color."""
+    """Dibuja una barra horizontal decorativa con gradiente."""
     try:
         w_val = max(1, int(width))
         for seg in _get_grouped_segments(gradient_colors(w_val, stops)):
@@ -431,7 +431,10 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except Exception: pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[HexColor] = None, fill: Optional[HexColor] = None) -> None:
-    """Renderiza un gráfico circular de progreso (anillo de salud) en el Canvas."""
+    """
+    Renderiza un anillo de progreso de salud (0.0-100.0). 
+    Si 'percent' excede los límites, se recorta automáticamente.
+    """
     if percent is None: return
     try:
         val = float(percent)
