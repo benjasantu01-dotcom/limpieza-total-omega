@@ -303,20 +303,21 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     try:
         if not ruta.exists(): return DEFAULTS.copy()
         stats = ruta.stat()
-        if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
-            return DEFAULTS.copy()
-        
         mtime = stats.st_mtime
+        
         if (cached := _CACHE.get(ruta)) and cached[0] == mtime:
             return cached[1].copy()
             
+        if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
+            return DEFAULTS.copy()
+            
         with open(ruta, "rb") as f:
-            content = f.read(MAX_SETTINGS_SIZE + 1)
-            raw = json.loads(content.decode("utf-8"))
+            raw = json.loads(f.read(MAX_SETTINGS_SIZE + 1).decode("utf-8"))
             if not _is_dict(raw): return DEFAULTS.copy()
             data = validate(raw)
+            # Asegurar consistencia con defaults si faltan keys en archivo antiguo
             for key in DEFAULTS:
-                if key not in data or data[key] is None:
+                if data.get(key) is None:
                     data[key] = DEFAULTS[key]
         
         _CACHE[ruta] = (mtime, data)
@@ -330,10 +331,6 @@ def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
         settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
     ):
         settings["asistente_activado"] = False
-    
-    for key in DEFAULTS:
-        if settings.get(key) is None:
-            settings[key] = DEFAULTS[key] # type: ignore
     return settings
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:

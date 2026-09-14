@@ -486,3 +486,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-14T07:09:50` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `_run_file_heuristics` y `scan_file` pre-filtrando la ejecución de heurísticas solo cuando es estrictamente necesario, evitando llamadas innecesarias al registro de funciones para archivos que solo requieren chequeos básicos.
 - `2026-09-14T07:09:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T07:09:50` Corrida terminada. Total usado hoy: 167.
+- `2026-09-14T07:18:20` Arrancando corrida. Quedan hoy ~133 peticiones objetivo.
+- `2026-09-14T07:18:51` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `load` para evitar deserializaciones redundantes de JSON comparando el timestamp del archivo con la caché, y refactoricé `_ensure_settings_integrity` para evitar iteraciones innecesarias sobre `DEFAULTS` durante el uso cotidiano.
+- `2026-09-14T07:19:17` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-14T07:19:54` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez ante casos límite en la carga de datos del contexto, añadiendo validaciones específicas para detectar valores negativos, nulos o corrupciones en las métricas antes de que lleguen a `SystemContext`.
+- `2026-09-14T07:20:11` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-14T07:20:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T07:20:11` Corrida terminada. Total usado hoy: 171.

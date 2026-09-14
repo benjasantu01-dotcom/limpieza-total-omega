@@ -236,12 +236,12 @@ _VALIDATORS: Final[dict[str, MetricSpec]] = {
 }
 
 def _safe_float(val: Any, default: float = 0.0) -> float:
-    """Convierte cualquier valor a float asegurando que el resultado sea finito."""
+    """Convierte cualquier valor a float asegurando que el resultado sea finito y no negativo si se espera métrica."""
     try:
         if val is None or isinstance(val, bool) or not isinstance(val, (int, float, str)):
             return default
         f = float(val)
-        return f if math.isfinite(f) else default
+        return f if (math.isfinite(f) and f >= 0) else default
     except (TypeError, ValueError):
         return default
 
