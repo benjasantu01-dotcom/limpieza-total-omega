@@ -244,7 +244,7 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
     if not root: return []
     limit = max(0, int(limit)) if isinstance(limit, (int, float)) else 20
     data = _collect_summary_data(root, skip_protected, limit=limit)
-    return [FileEntry(p, s) for s, p in heapq.nlargest(len(data.top_files), data.top_files, key=lambda x: x[0])]
+    return [FileEntry(p, s) for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True)]
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
@@ -323,5 +323,5 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     for ext, stats in sorted_exts:
         lines.append(f"  {ext:<18} {format_size(stats.total_bytes):>10}  ({stats.count} archivos)")
     lines.extend(["", "Mayores archivos:"])
-    lines.extend([f"  {format_size(s):>10}  {p}" for s, p in heapq.nlargest(20, data.top_files, key=lambda x: x[0])])
+    lines.extend([f"  {format_size(s):>10}  {p}" for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True)])
     return lines

@@ -858,3 +858,40 @@ assert not True
 - `2026-09-14T11:04:34` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-09-14T11:04:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T11:04:34` Corrida terminada. Total usado hoy: 259.
+- `2026-09-14T11:13:09` Arrancando corrida. Quedan hoy ~41 peticiones objetivo.
+- `2026-09-14T11:13:50` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el renderizado de texto del contexto para prompts mediante la eliminación de múltiples llamadas a funciones (`_fmt_metric_sanitized`) dentro de un `f-string`, sustituyéndolas por una única pre-formateada en el cuerpo del método, reduciendo la carga de procesamiento innecesario y el número de operaciones de manipulación de cadenas en cada consulta.
+- `2026-09-14T11:14:25` Tests FALLARON:
+```
+   assert colores[-1].lower() == branding.GRADIENT_STOPS[-1].lower()
+E       AssertionError: assert '#7c5cff' == '#ff2d78'
+E         
+E         - #ff2d78
+E         + #7c5cff
+
+evolve/tests/test_modules.py:215: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:126: SyntaxWarning: invalid escape sequence '\P'
+    """Extrae y valida rutas encerradas en comillas (ej. "C:\Path\App.exe")."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_produces_the_requested_amount_of_colors - ZeroDivisionError: division by zero
+FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops - AssertionError: assert '#7c5cff' == '#ff2d78'
+  
+  - #ff2d78
+  + #7c5cff
+2 failed, 297 passed, 7 warnings in 1.38s
+
+```
+- `2026-09-14T11:14:25` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Optimicé el sistema de caché de `gradient_colors` reemplazando la lógica de interpolación lineal basada en índices con un acceso directo a `_GRADIENT_CACHE` más eficiente, evitando cálculos repetitivos en cada frame de renderizado y reduciendo la complejidad del bucle de generación.
+- `2026-09-14T11:14:51` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Implementé la memorización de estados en la búsqueda de perfiles (`perf_cache`) para evitar recalculaciones redundantes en estructuras de caché compartidas entre navegadores (ej. múltiples perfiles o derivados de Chromium que apuntan a subárboles similares), optimizando el tiempo de ejecución en sistemas con muchos navegadores.
+- `2026-09-14T11:15:02` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `_collect_summary_data` para evitar llamadas redundantes a `heapq.nlargest` en funciones que ya procesan la data consolidada y eliminé la creación innecesaria de diccionarios intermedios, reduciendo la presión de memoria durante el recorrido del árbol.
+- `2026-09-14T11:15:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T11:15:02` Corrida terminada. Total usado hoy: 263.

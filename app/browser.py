@@ -241,7 +241,7 @@ def _sum_directory_recursive(
     Calcula el tamaño de un directorio mediante búsqueda en profundidad (DFS) con memorización.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH or root_abs in memo:
-        return memo.get(root_abs, 0) if root_abs in memo else 0
+        return memo.get(root_abs, 0)
 
     path_obj = Path(root_abs)
     if not path_obj.is_dir() or (depth > 0 and path_obj.is_mount()):
