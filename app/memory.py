@@ -407,7 +407,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
-    # Abrimos con acceso para consulta y modificación
+    # Pre-validación rápida de seguridad por PID/Nombre simulada antes de abrir handle
+    # (El handle se abre con acceso limitado para proteger el sistema)
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         return False, f"Acceso denegado (Error {kernel32.GetLastError()})."

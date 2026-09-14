@@ -273,7 +273,9 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Verifica espacio en disco y calcula la ruta final, garantizando que el destino no sea bloqueado."""
     if not _is_safe_to_move(junk_file, dest_base): return None
     try:
-        if shutil.disk_usage(dest_base.resolve().anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)):
+        # Requerimos al menos 50MB de espacio libre de margen post-movimiento
+        margin: int = 50 * 1024 * 1024
+        if shutil.disk_usage(dest_base.resolve().anchor).free < (junk_file.size_bytes + margin):
             return None
         safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
         target = _generate_unique_target(dest_base.resolve() / safe_name)

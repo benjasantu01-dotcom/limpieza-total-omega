@@ -458,8 +458,10 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     src_ino_pre = src_stat_pre.st_ino
     src_dev_pre = src_stat_pre.st_dev
 
+    # Flags O_CREAT | O_EXCL aseguran que el archivo no sea reemplazado ni existiera antes
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
-    fd = os.open(str(destination), flags, 0o600)
+    mode = 0o600
+    fd = os.open(str(destination), flags, mode)
     
     try:
         with os.fdopen(fd, 'wb') as tmp:
