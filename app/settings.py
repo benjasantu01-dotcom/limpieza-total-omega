@@ -173,24 +173,27 @@ class _Validators:
     @staticmethod
     def _run_safety_checks(path_obj: Path) -> bool:
         """Valida una ruta contra `safety.py` resolviendo el destino real para prevenir traversal."""
-        path_str = str(path_obj)
-        if path_str in _SAFETY_CACHE:
-            return _SAFETY_CACHE[path_str]
-        
         try:
+            # Resolvemos primero para obtener la ruta canónica y evitar ataques de ruta relativa
+            resolved = path_obj.resolve(strict=False)
+            path_str = str(resolved)
+            
+            if path_str in _SAFETY_CACHE:
+                return _SAFETY_CACHE[path_str]
+            
             if len(_SAFETY_CACHE) > 100: _SAFETY_CACHE.clear()
-            resolved = path_obj.resolve()
-            if is_protected_path(str(resolved)):
+            
+            if is_protected_path(path_str):
                 is_safe = False
             elif _Validators._is_reparse_point(resolved):
                 is_safe = False
             else:
-                is_safe = is_safe_to_modify(str(resolved))
-        except (OSError, PermissionError, RuntimeError, UnsafePathError, IndexError):
-            is_safe = False
+                is_safe = is_safe_to_modify(path_str)
             
-        _SAFETY_CACHE[path_str] = is_safe
-        return is_safe
+            _SAFETY_CACHE[path_str] = is_safe
+            return is_safe
+        except (OSError, PermissionError, RuntimeError, UnsafePathError, IndexError):
+            return False
 
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
@@ -340,18 +343,19 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """Persiste la configuración de forma atómica con reintentos para evitar bloqueos y corrupción."""
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
+    
+    # Validar el directorio antes de cualquier operación
+    parent = ruta.parent
+    if not _Validators._is_safe_path(str(parent)):
+        return None
+        
     cleaned_settings = _ensure_settings_integrity(validate(values))
     temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
     
     for attempt in range(5):
         try:
-            parent = ruta.parent
             if not parent.exists():
                 parent.mkdir(parents=True, exist_ok=True)
-            
-            # Verificación explícita de seguridad antes de persistir
-            if not _Validators._is_safe_path(str(parent)):
-                return None
             
             with open(temp_path, "wb") as f:
                 f.write(json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8"))

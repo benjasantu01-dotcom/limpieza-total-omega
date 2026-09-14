@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Mejoras aceptadas: **233** (46.2% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 203
+- Sin cambios (nada sustancial que mejorar): 25
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-12 | 146 | 8 | 24 | 14 | 149 |
+| 2026-09-12 | 146 | 8 | 24 | 14 | 145 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
-| 2026-09-14 | 47 | 1 | 5 | 5 | 37 |
+| 2026-09-14 | 48 | 1 | 5 | 6 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
+- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **47**
 - rendimiento: **43**
 - robustez ante casos límite: **38**
 
@@ -35,7 +35,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **19**
 - `browser.py`: **19**
 - `diskreport.py`: **19**
-- `settings.py`: **18**
+- `settings.py`: **19**
 - `organizer.py`: **18**
 - `healthscore.py`: **17**
 - `duplicates.py`: **15**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-14T04:05:36` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_Validators._run_safety_checks` para prevenir ataques de "Time-of-check to time-of-use" (TOCTOU) y errores de resolución, asegurando que el chequeo de seguridad sea siempre sobre la ruta absoluta resuelta, y fortalecí el método `save` limitando el alcance del acceso a disco únicamente al directorio padre validado.
 - `2026-09-14T03:55:37` **quarantine.py** (seguridad defensiva): Se añadió una validación estricta de nombres de archivo y caracteres de control en `_generate_safe_stored_name` y se reforzó la integridad del manifiesto verificando que el archivo temporal creado para la serialización coincida exactamente con el contenido en disco antes de realizar la operación atómica de reemplazo, evitando estados de carrera (race conditions).
 - `2026-09-14T03:54:59` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva al añadir un chequeo de integridad en `stage_for_review` y `delete_reviewed`, verificando explícitamente mediante `is_safe_to_modify` que las rutas no han sido alteradas o re-enlazadas (TOCTOU) justo antes de realizar las operaciones de movimiento o borrado.
 - `2026-09-14T03:46:44` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de `_get_process_path` y `_is_safe_to_trim` para asegurar que las rutas se normalicen y validen correctamente contra las reglas de `safety.py` antes de cualquier operación, evitando riesgos por rutas ambiguas o ataques de tipo symlink/reparse point.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-14T03:14:11` **memory.py** (robustez ante casos límite): Mejoré la robustez de `top_memory_processes` añadiendo validación de tipo y longitud para los datos recibidos de PowerShell, evitando fallos ante entradas inesperadas o malformadas que podrían causar errores de ejecución o indexación.
 - `2026-09-14T03:04:49` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante fallos en los evaluadores de reglas y la extracción de nombres de áreas, evitando silenciamientos erróneos de excepciones y utilizando la clave del bucle en lugar de rebuscar en `_CACHE_SCORERS`.
 - `2026-09-14T03:03:56` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante archivos bloqueados o con metadatos inaccesibles, asegurando que la recolección de estadísticas no se detenga prematuramente si `os.scandir` o `stat` fallan en un archivo individual.
-- `2026-09-14T02:55:20` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_path_inside_base` y `_sum_directory_recursive` frente a rutas con caracteres no válidos o errores de resolución, utilizando un manejo más estricto de excepciones y validaciones antes de procesar el sistema de archivos para prevenir comportamientos inesperados ante rutas malformadas.
