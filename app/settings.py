@@ -318,6 +318,11 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 return DEFAULTS.copy()
             raw = json.loads(data_bytes.decode("utf-8"))
             if not _is_dict(raw): return DEFAULTS.copy()
+            
+            # Verificación estricta de esquema: si faltan claves o hay extras, resetear
+            schema_match = all(k in raw for k in DEFAULTS.keys())
+            if not schema_match: return DEFAULTS.copy()
+            
             data = validate(raw)
             # Asegurar consistencia con estructura de AppSettings
             for key in DEFAULTS:

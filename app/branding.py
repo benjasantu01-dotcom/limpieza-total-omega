@@ -360,7 +360,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         path_input = Path(destination).resolve()
         # Verificar seguridad antes de cualquier operación
         if not is_safe_to_modify(path_input): return None
-        ensure_safe_to_modify(path_input)
             
         parent = path_input.parent
         if not parent.exists():
