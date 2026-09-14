@@ -1040,7 +1040,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         with self._task_lock:
             if busy:
                 self._tasks_running += 1
-                if self._tasks_running == 1:
+                if self._tasks_running == 1 and not self._closing:
                     self._toggle_ui_availability(False)
                     self._safe_run_ui_callback(lambda: (
                         self.activity.pack(side="right") if (hasattr(self, 'activity') and self.activity.winfo_exists()) else None,
@@ -1048,7 +1048,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     ))
             else:
                 self._tasks_running = max(0, self._tasks_running - 1)
-                if self._tasks_running == 0:
+                if self._tasks_running == 0 and not self._closing:
                     self._toggle_ui_availability(True)
                     self._safe_run_ui_callback(lambda: (
                         self.activity.stop() if (hasattr(self, 'activity') and self.activity.winfo_exists()) else None,
@@ -1082,8 +1082,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Lógica de ejecución en hilos de fondo."""
         if self._closing: return
         try:
-            if not self._closing:
-                self._safe_run(fn, tab)
+            self._safe_run(fn, tab)
         except Exception as e:
             if not self._closing:
                 self._validate_and_log_error(e, tab)

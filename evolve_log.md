@@ -500,3 +500,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-14T07:29:59` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` frente a configuraciones externas de `WEIGHTS` que podrían estar incompletas o mal definidas, evitando fallos en tiempo de ejecución si un área falta en el desglose, y fortalecí la validación de `SystemMetrics` para asegurar que el cálculo nunca dependa de estados inconsistentes.
 - `2026-09-14T07:29:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T07:29:59` Corrida terminada. Total usado hoy: 175.
+- `2026-09-14T07:38:44` Arrancando corrida. Quedan hoy ~125 peticiones objetivo.
+- `2026-09-14T07:39:57` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra errores de concurrencia y limpieza de recursos en `_worker_thread_logic` y `_set_busy`, asegurando que si la ventana es destruida durante una operación de disco, el estado del hilo principal no intente manipular widgets inexistentes, evitando cierres inesperados por `TclError`.
+- `2026-09-14T07:40:25` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-14T07:40:49` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-14T07:41:07` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-09-14T07:41:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T07:41:07` Corrida terminada. Total usado hoy: 179.
