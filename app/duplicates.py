@@ -103,7 +103,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         return None
         
     try:
-        p = Path(path)
+        p = Path(path).resolve()
         if not p.is_file() or _is_file_locked(p):
             return None
             
@@ -125,7 +125,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
         return None
 
     try:
-        p = Path(path)
+        p = Path(path).resolve()
         if not p.is_file():
             return None
 
@@ -141,12 +141,13 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 def _is_valid_candidate(path: Path, stat_result: Optional[os.stat_result] = None) -> bool:
     """Valida si un archivo es apto para ser analizado como posible duplicado."""
     try:
-        if path.is_symlink() or is_protected_path(path) or not is_safe_to_modify(path) or _is_file_locked(path):
+        p = path.resolve()
+        if p.is_symlink() or is_protected_path(p) or not is_safe_to_modify(p) or _is_file_locked(p):
             return False
-        if is_system_or_hidden(path):
+        if is_system_or_hidden(p):
             return False
             
-        st = stat_result or path.stat()
+        st = stat_result or p.stat()
         return st.st_size > 0 and st.st_nlink == 1
     except (OSError, ValueError, TypeError, RuntimeError):
         return False
@@ -159,7 +160,7 @@ def _should_include_entry(entry: os.DirEntry, min_size: int) -> tuple[bool, Opti
         if st.st_size < min_size:
             return False, None
         path = Path(entry.path)
-        if not is_safe_to_modify(path) or is_protected_path(path) or not _is_valid_candidate(path, st):
+        if not _is_valid_candidate(path, st):
             return False, None
         return True, st
     except OSError:
@@ -172,7 +173,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     for p in paths:
         if p is None: continue
         try:
-            path_obj = Path(p)
+            path_obj = Path(p).resolve()
             if _is_valid_candidate(path_obj):
                 size = path_obj.stat().st_size
                 if size > 0:
@@ -207,13 +208,14 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
+                    entry_path = Path(entry.path)
                     if entry.is_dir(follow_symlinks=False):
-                        if not is_junction(Path(entry.path)):
-                            _scan_dir(Path(entry.path))
+                        if not is_junction(entry_path):
+                            _scan_dir(entry_path)
                     else:
                         valid, st = _should_include_entry(entry, min_size)
                         if valid and st:
-                            size_to_paths_map[st.st_size].append(Path(entry.path))
+                            size_to_paths_map[st.st_size].append(entry_path.resolve())
         except (OSError, PermissionError):
             pass
 

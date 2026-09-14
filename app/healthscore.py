@@ -196,31 +196,28 @@ def grade_for_score(score: float | int) -> str:
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
     """
-    Ejecuta las reglas de recomendación.
-    
-    Args:
-        metrics: Estado actual del sistema.
-        rules: Lista de reglas a evaluar para el área dada.
-        ratio: Salud normalizada [0.0, 1.0] del área evaluada.
-        findings: Acumulador de mensajes de texto donde se agregan recomendaciones.
+    Ejecuta las reglas de recomendación con saneamiento de strings de salida.
     """
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
-                if msg:
-                    findings.append(str(msg)[:200])
+                if msg and isinstance(msg, str):
+                    # Sanitización: Limitar longitud y asegurar que no contenga caracteres de control peligrosos
+                    clean_msg = "".join(char for char in msg if char.isprintable())[:200]
+                    findings.append(clean_msg)
         except Exception:
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Calcula el puntaje global de salud del sistema mediante la agregación ponderada de áreas."""
-    if metrics is None or not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos."])
+    if not isinstance(metrics, SystemMetrics):
+        return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     
+    # Validar integridad antes de procesar
     metrics.validate()
     if not metrics.is_finite:
-        return HealthResult(0, "F", {}, ["Error: Métricas no numéricas detectadas."])
+        return HealthResult(0, "F", {}, ["Error: Inconsistencia numérica detectada en métricas."])
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}

@@ -219,7 +219,8 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
 def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionChecker, kernel32: Optional[ctypes.WinDLL], memo: Dict[str, int], depth: int) -> int:
     """Extrae el tamaño de un único entry de sistema de archivos, recursando si es directorio."""
     try:
-        if entry.is_dir(follow_symlinks=False):
+        # Refuerzo: verificar reparse/symlink antes de entrar
+        if entry.is_dir(follow_symlinks=False) and not entry.is_symlink() and not is_junction_fn(entry.path):
             return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
         if entry.is_file(follow_symlinks=False):
             return entry.stat(follow_symlinks=False).st_size
