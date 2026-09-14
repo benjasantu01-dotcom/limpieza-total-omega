@@ -313,6 +313,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             
         with open(ruta, "rb") as f:
             data_bytes = f.read(MAX_SETTINGS_SIZE + 1)
+            # Validación simple de integridad de formato antes de procesar
+            if not (data_bytes.startswith(b"{") and data_bytes.strip().endswith(b"}")):
+                return DEFAULTS.copy()
             raw = json.loads(data_bytes.decode("utf-8"))
             if not _is_dict(raw): return DEFAULTS.copy()
             data = validate(raw)

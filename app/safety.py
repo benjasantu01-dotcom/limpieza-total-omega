@@ -438,7 +438,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
             if _is_reserved_device_name(part_cleaned):
                 raise UnsafePathError(f"Nombre reservado '{part}'.", SafetyValidationErrorCode.RESERVED_NAME)
                 
-    except (AttributeError, TypeError):
+    except (AttributeError, TypeError, ValueError):
         raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC)
 
     if path_string.startswith(("\\\\", "//")):
@@ -475,7 +475,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
         app_root = Path(os.getcwd()).resolve()
         if target_path == app_root or app_root in target_path.parents:
             raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, ValueError):
         pass
         
     if is_drive_root(target_path):

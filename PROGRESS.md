@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-12 | 74 | 5 | 13 | 8 | 93 |
+| 2026-09-12 | 73 | 5 | 13 | 8 | 90 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
-| 2026-09-14 | 106 | 4 | 11 | 9 | 113 |
+| 2026-09-14 | 109 | 4 | 12 | 9 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
+- manejo de errores y validación de entradas: **49**
 - legibilidad y documentación: **48**
-- manejo de errores y validación de entradas: **46**
-- rendimiento: **40**
+- rendimiento: **39**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **20**
 - `browser.py`: **20**
+- `safety.py`: **19**
+- `settings.py`: **19**
 - `quarantine.py`: **19**
-- `safety.py`: **18**
-- `settings.py`: **18**
 - `healthscore.py`: **17**
 - `organizer.py`: **16**
 - `memory.py`: **16**
 - `diskreport.py`: **16**
 - `main.py`: **14**
 - `duplicates.py`: **14**
-- `branding.py`: **11**
+- `scanner.py`: **11**
+- `branding.py`: **10**
 - `startup.py`: **10**
-- `scanner.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-14T10:23:43` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load` añadiendo una validación explícita de `data_bytes` antes de decodificar y procesar, asegurando que el contenido sea un JSON válido y no un archivo binario corrupto o truncado que podría causar excepciones imprevistas.
+- `2026-09-14T10:23:28` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas de archivos envolviendo las operaciones de metadatos en bloques `try...except` específicos para capturar errores de acceso (como `OSError` o `PermissionError`) y garantizando que las funciones devuelvan valores válidos incluso ante archivos bloqueados o inaccesibles, alineándose con el enfoque de manejo de errores y validación.
+- `2026-09-14T10:23:03` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_boundary_conditions` y `_validate_structural_safety` mediante la captura explícita de `ValueError` al interactuar con atributos de `Path` (como `parents` o `anchor`), evitando que excepciones inesperadas del sistema de archivos bloqueen la validación.
 - `2026-09-14T10:18:29` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` mediante la implementación de un manejo de errores más específico y un chequeo de precondiciones antes de la escritura, evitando la posibilidad de dejar un manifiesto corrupto o vacío si ocurre un fallo durante la serialización.
 - `2026-09-14T10:18:09` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al asegurar que los parámetros de entrada se validen explícitamente y que los errores de sistema no propaguen fallos, además de consolidar la lógica de resolución de rutas para evitar excepciones innecesarias en entornos con permisos restringidos.
 - `2026-09-14T10:17:05` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` y sus ayudantes al implementar una validación de parámetros más estricta, capturar errores de sistema específicos en las llamadas a `kernel32` y asegurar el cierre correcto de recursos, evitando filtraciones de handles incluso ante excepciones inesperadas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-14T08:31:28` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de `settings.py` implementando un control de integridad adicional en la carga de archivos, verificando explícitamente que la estructura del JSON decodificado coincida con el esquema `AppSettings` esperado, previniendo así errores de tiempo de ejecución ante archivos manipulados maliciosamente.
 - `2026-09-14T08:30:56` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_safe_entry` y `scan_directory` validando explícitamente que las rutas no contengan caracteres de control RTL (Right-To-Left) o secuencias de escape que puedan ser usadas para ofuscar extensiones maliciosas, reforzando la integridad del recorrido ante entradas inesperadas.
 - `2026-09-14T08:30:27` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_boundary_conditions` añadiendo una comprobación explícita para evitar que `os.getcwd()` (app root) sea un directorio padre de la ruta a manipular, previniendo así posibles ataques de "desbordamiento de raíz" mediante rutas relativas o cambios de directorio, asegurando que la validación sea absoluta.
-- `2026-09-14T08:21:11` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `quarantine_file` añadiendo una validación explícita para evitar posibles ataques de enlace simbólico (TOCTOU) mediante la verificación de `st_ino` y `st_dev` antes y después de la copia, asegurando que el archivo fuente no haya sido reemplazado por un vínculo mientras se procesaba.
-- `2026-09-14T08:20:07` **memory.py** (seguridad defensiva): Mejoré la seguridad de `trim_working_set` al asegurar que el proceso objetivo sea verificado mediante `is_safe_to_modify` *antes* de realizar cualquier operación sobre él, y corregí la apertura redundante de handles que podía dejar recursos abiertos en caso de error.
-- `2026-09-14T08:12:47` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de rutas en las acciones de los botones del panel de limpieza, asegurando que `scan_target` sea verificado mediante `_is_safe_target_dir` antes de cualquier operación de I/O, evitando condiciones de carrera o validaciones parciales.
