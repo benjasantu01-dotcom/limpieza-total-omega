@@ -231,8 +231,12 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
         
     parts = sanitized.split('.')
     name_base = parts[0] if parts[0] else "q_file"
+    # Evitar nombres reservados que causan errores en Windows
     if name_base.upper() in WINDOWS_RESERVED_NAMES:
         name_base = f"q_{name_base}"
+    
+    # Validar caracteres de control mediante normalización básica
+    name_base = "".join(c for c in name_base if ord(c) >= 32)
     
     extension = f".{parts[-1]}" if len(parts) > 1 else ""
     candidate = f"{item_id}__{name_base[:64]}{extension}"[:128]
@@ -397,17 +401,17 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     temp_path: Optional[Path] = None
     
     try:
-        # Validación de integridad antes de serializar
         serializable_items = [item.to_dict() for item in items]
         content = json.dumps(serializable_items, indent=2, ensure_ascii=False)
+        encoded_content = content.encode('utf-8')
         
-        with tempfile.NamedTemporaryFile("w", dir=base_path, encoding="utf-8", delete=False) as tf:
+        with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
             temp_path = Path(tf.name)
-            tf.write(content)
+            tf.write(encoded_content)
             tf.flush()
             os.fsync(tf.fileno())
             
-        if temp_path.stat().st_size != len(content.encode('utf-8')):
+        if temp_path.stat().st_size != len(encoded_content):
              raise OSError("Integridad del archivo temporal fallida.")
 
         os.replace(temp_path, target_path)
@@ -418,7 +422,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         
         return target_path
     except (OSError, TypeError, IOError, json.JSONDecodeError) as e:
-        if temp_path and isinstance(temp_path, Path) and temp_path.exists():
+        if temp_path and temp_path.exists():
             try: os.remove(temp_path)
             except OSError: pass
         raise RuntimeError(f"Error crítico al persistir manifiesto: {e}")
@@ -563,7 +567,6 @@ def quarantine_file(
     original_size = source_path.stat().st_size
     dest_dir = quarantine_dir(base)
     
-    # Pre-check de contención
     if _is_within_quarantine_sandbox(source_path, dest_dir.resolve()):
         raise UnsafePathError("Archivo ya en el sandbox.")
 

@@ -258,7 +258,6 @@ def scan_for_junk(directories: Optional[Sequence[str]] = None) -> List[JunkFile]
 def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
     """Evalúa metadatos del sistema de archivos para determinar si es un JunkFile."""
     try:
-        # Usamos entry.stat() cacheado por el sistema operativo en scandir
         stat_info = entry.stat()
         if stat_info.st_size > 0 and not (_get_win_attributes(entry) & 0x06):
             if os.access(entry.path, os.R_OK):
@@ -294,9 +293,10 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     for junk_file in files:
         try:
             target = _can_move_file(junk_file, dest_base)
-            if target and is_safe_to_modify(junk_file.path) and is_safe_to_modify(target):
+            # Verificación de doble chequeo antes del I/O (Prevenir TOCTOU)
+            if target and is_safe_to_modify(junk_file.path) and is_safe_to_modify(dest_base):
                 ensure_safe_to_modify(junk_file.path)
-                ensure_safe_to_modify(target)
+                ensure_safe_to_modify(target.parent)
                 shutil.move(str(junk_file.path), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError, TypeError) as e:
             logger.error(f"Error moviendo {junk_file.path}: {e}")
@@ -312,6 +312,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count = 0
     for item in dest.iterdir():
         try:
+            # Re-verificación de integridad de la ruta antes de unlink
             if isinstance(item, Path) and item.is_file() and is_safe_to_modify(item.resolve()):
                 ensure_safe_to_modify(item.resolve())
                 item.unlink()

@@ -1175,3 +1175,10 @@ FAILED evolve/tests/test_assistant.py::test_invalid_theme_falls_back - Assertion
 - `2026-09-14T03:46:44` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_get_process_path` y `_is_safe_to_trim` para asegurar que las rutas se normalicen y validen correctamente contra las reglas de `safety.py` antes de cualquier operación, evitando riesgos por rutas ambiguas o ataques de tipo symlink/reparse point.
 - `2026-09-14T03:46:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T03:46:44` Corrida terminada. Total usado hoy: 87.
+- `2026-09-14T03:54:25` Arrancando corrida. Quedan hoy ~213 peticiones objetivo.
+- `2026-09-14T03:54:59` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al añadir un chequeo de integridad en `stage_for_review` y `delete_reviewed`, verificando explícitamente mediante `is_safe_to_modify` que las rutas no han sido alteradas o re-enlazadas (TOCTOU) justo antes de realizar las operaciones de movimiento o borrado.
+- `2026-09-14T03:55:37` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se añadió una validación estricta de nombres de archivo y caracteres de control en `_generate_safe_stored_name` y se reforzó la integridad del manifiesto verificando que el archivo temporal creado para la serialización coincida exactamente con el contenido en disco antes de realizar la operación atómica de reemplazo, evitando estados de carrera (race conditions).
+- `2026-09-14T03:55:59` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-14T03:56:24` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-09-14T03:56:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T03:56:24` Corrida terminada. Total usado hoy: 91.
