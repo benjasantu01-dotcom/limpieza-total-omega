@@ -226,7 +226,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         if not line or "," not in line:
             continue
         parts = [_clean_csv_field(x) for x in line.split(",")]
-        if len(parts) == 3:
+        if len(parts) >= 3:
             proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
             if proc:
                 processes.append(proc)

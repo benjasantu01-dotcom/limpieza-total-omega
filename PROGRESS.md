@@ -6,48 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-11 | 1 | 0 | 0 | 0 | 10 |
+| 2026-09-11 | 0 | 0 | 0 | 0 | 7 |
 | 2026-09-12 | 146 | 8 | 24 | 14 | 158 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
-| 2026-09-14 | 35 | 1 | 3 | 4 | 32 |
+| 2026-09-14 | 37 | 1 | 4 | 4 | 33 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **47**
 - rendimiento: **43**
-- seguridad defensiva: **41**
-- robustez ante casos límite: **33**
+- seguridad defensiva: **40**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **20**
 - `safety.py`: **20**
-- `quarantine.py`: **19**
-- `settings.py`: **18**
 - `assistant.py`: **18**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
+- `settings.py`: **17**
 - `healthscore.py`: **17**
 - `organizer.py`: **17**
 - `duplicates.py`: **15**
+- `memory.py`: **14**
 - `main.py`: **13**
-- `memory.py`: **13**
 - `scanner.py`: **12**
 - `branding.py`: **12**
 - `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-14T03:15:15` **quarantine.py** (robustez ante casos límite): Se añadió una validación explícita para evitar que `quarantine.py` procese archivos que ya están en el directorio destino de cuarentena (evitando bucles de lectura/escritura) y se reforzó la robustez ante la ausencia de directorios durante el proceso de aislamiento.
+- `2026-09-14T03:14:11` **memory.py** (robustez ante casos límite): Mejoré la robustez de `top_memory_processes` añadiendo validación de tipo y longitud para los datos recibidos de PowerShell, evitando fallos ante entradas inesperadas o malformadas que podrían causar errores de ejecución o indexación.
 - `2026-09-14T03:04:49` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante fallos en los evaluadores de reglas y la extracción de nombres de áreas, evitando silenciamientos erróneos de excepciones y utilizando la clave del bucle en lugar de rebuscar en `_CACHE_SCORERS`.
 - `2026-09-14T03:03:56` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante archivos bloqueados o con metadatos inaccesibles, asegurando que la recolección de estadísticas no se detenga prematuramente si `os.scandir` o `stat` fallan en un archivo individual.
 - `2026-09-14T02:55:20` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_path_inside_base` y `_sum_directory_recursive` frente a rutas con caracteres no válidos o errores de resolución, utilizando un manejo más estricto de excepciones y validaciones antes de procesar el sistema de archivos para prevenir comportamientos inesperados ante rutas malformadas.
@@ -61,5 +63,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-14T02:14:31` **branding.py** (rendimiento): Se ha optimizado `logo_svg` utilizando una cadena de formato pre-compilada y extrayendo la generación de `stops` fuera de la función, eliminando la reconstrucción de la cadena en cada llamado para reducir la presión sobre el recolector de basura.
 - `2026-09-14T02:14:11` **assistant.py** (rendimiento): Optimicé el rendimiento de `_get_active_problems` eliminando la recreación innecesaria de tuplas y mejorando la eficiencia del bucle mediante una compresión de generador más limpia que evita validaciones redundantes, además de asegurar que la evaluación de criterios sea más directa.
 - `2026-09-14T02:13:31` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `StartupEntry` mediante la adición de docstrings técnicos específicos y type hints que clarifican las intenciones de los métodos de validación y resolución de rutas.
-- `2026-09-14T02:05:30` **scanner.py** (legibilidad y documentación): Mejoré la documentación de `Scanner` y sus métodos principales mediante docstrings más precisos que aclaran las responsabilidades de seguridad y el manejo de excepciones, además de añadir type hints explícitos para mejorar la legibilidad y mantenibilidad del flujo de escaneo.
-- `2026-09-14T02:05:20` **safety.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en los bloques de validación de `safety.py` para documentar la lógica de negocio y las restricciones de seguridad, mejorando la legibilidad técnica necesaria para un proyecto de este calibre.

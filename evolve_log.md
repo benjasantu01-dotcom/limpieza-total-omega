@@ -1147,3 +1147,10 @@ FAILED evolve/tests/test_assistant.py::test_invalid_theme_falls_back - Assertion
 - `2026-09-14T03:05:49` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `on_target_choice_changed` para que, en caso de que ocurra una excepción al resolver la ruta seleccionada (como un error de permiso o una ruta malformada durante la navegación de archivos), la interfaz retorne de forma segura al estado por defecto y notifique al usuario, evitando que la aplicación quede en un estado de inconsistencia entre la variable interna `scan_target` y la selección en el menú.
 - `2026-09-14T03:05:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T03:05:49` Corrida terminada. Total usado hoy: 71.
+- `2026-09-14T03:13:38` Arrancando corrida. Quedan hoy ~229 peticiones objetivo.
+- `2026-09-14T03:14:11` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `top_memory_processes` añadiendo validación de tipo y longitud para los datos recibidos de PowerShell, evitando fallos ante entradas inesperadas o malformadas que podrían causar errores de ejecución o indexación.
+- `2026-09-14T03:14:36` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-14T03:15:15` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se añadió una validación explícita para evitar que `quarantine.py` procese archivos que ya están en el directorio destino de cuarentena (evitando bucles de lectura/escritura) y se reforzó la robustez ante la ausencia de directorios durante el proceso de aislamiento.
+- `2026-09-14T03:15:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-14T03:15:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T03:15:19` Corrida terminada. Total usado hoy: 75.

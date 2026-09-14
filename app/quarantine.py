@@ -487,6 +487,9 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if not source.exists():
         raise FileNotFoundError("Archivo origen inexistente.")
     
+    if source.resolve() == destination.resolve():
+        raise UnsafePathError("El origen ya reside en el directorio destino.")
+        
     _validate_quarantine_path(destination, destination.parent)
     
     if len(str(destination)) >= 250:
@@ -560,6 +563,7 @@ def quarantine_file(
     original_size = source_path.stat().st_size
     dest_dir = quarantine_dir(base)
     
+    # Pre-check de contención
     if _is_within_quarantine_sandbox(source_path, dest_dir.resolve()):
         raise UnsafePathError("Archivo ya en el sandbox.")
 
@@ -569,7 +573,6 @@ def quarantine_file(
     if not source_hash:
         raise RuntimeError("No se pudo calcular firma digital.")
     
-    # Asegurar nombre único ante colisiones de nombre con IDs distintos
     unique_id = uuid.uuid4().hex[:12]
     destination = dest_dir / _generate_safe_stored_name(source_path, unique_id)
     
