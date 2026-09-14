@@ -295,16 +295,12 @@ class SystemContext:
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> bool:
         """Intenta mapear un valor individual desde una fuente y validarlo contra su especificación."""
-        try:
-            if hasattr(self, key):
-                val = _get_source_value(source, key)
-                if val is not None and spec.is_valid_type(val):
-                    f_val = float(val)
-                    if math.isfinite(f_val) and spec.min_val <= f_val <= spec.max_val:
-                        setattr(self, key, spec.cast_func(val))
-                        return True
-        except (ValueError, TypeError, AttributeError):
-            return False
+        val = _get_source_value(source, key)
+        if val is not None and spec.is_valid_type(val):
+            f_val = float(val)
+            if math.isfinite(f_val) and spec.min_val <= f_val <= spec.max_val:
+                setattr(self, key, spec.cast_func(val))
+                return True
         return False
 
     def _clean_grade(self, val: Any) -> str:
@@ -319,10 +315,12 @@ class SystemContext:
             return False
             
         found_data = False
+        # Solo permitir campos definidos en _VALIDATORS
         for key, spec in _VALIDATORS.items():
             if self._apply_field(source, key, spec):
                 found_data = True
         
+        # Validar el campo grado explícitamente
         grade_val = _get_source_value(source, "grade")
         if isinstance(grade_val, str):
             clean_grade = self._clean_grade(grade_val)
@@ -365,13 +363,14 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _get_source_value(source: Any, key: str) -> Any:
-    """Acceso genérico a datos de configuración, evitando atributos privados."""
+    """Acceso genérico a datos de configuración, evitando atributos privados o protegidos."""
+    if key.startswith("_"): return None
     try:
         if isinstance(source, dict):
             return source.get(key)
-        if hasattr(source, "__dict__") and not isinstance(source, (type, type(None))):
-            if not key.startswith("_"):
-                return getattr(source, key, None)
+        # Acceso restringido para evitar ataques de inyección de atributos
+        if hasattr(source, "__dict__"):
+            return getattr(source, key, None)
         return None
     except (AttributeError, TypeError, ValueError):
         return None

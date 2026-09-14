@@ -514,3 +514,39 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-14T07:50:41` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de la carga de archivos al manejar explícitamente posibles errores de codificación (UTF-8 inválido) durante la lectura, asegurando que la app no aborte y retorne a los valores de fábrica ante archivos binarios o corrompidos, además de fortalecer `_ensure_settings_integrity` para evitar estados inconsistentes si el usuario modifica manualmente el archivo.
 - `2026-09-14T07:50:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T07:50:41` Corrida terminada. Total usado hoy: 183.
+- `2026-09-14T07:59:14` Arrancando corrida. Quedan hoy ~117 peticiones objetivo.
+- `2026-09-14T07:59:42` Tests FALLARON:
+```
+StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:125
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:125: SyntaxWarning: invalid escape sequence '\P'
+    """Extrae y valida rutas encerradas en comillas (ej. "C:\Path\App.exe")."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+1 failed, 298 passed, 8 warnings in 1.34s
+
+```
+- `2026-09-14T07:59:42` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la resiliencia ante rutas mal formadas en `_resolve_path_from_command` mediante el uso de `shlex.split`, lo que permite manejar correctamente comandos que contienen espacios protegidos por comillas, evitando que el parser se pierda en argumentos complejos o rutas segmentadas erróneamente.
+- `2026-09-14T08:00:19` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al limitar estrictamente el acceso a atributos internos en `SystemContext.ingest`, evitando la posible inyección de atributos no deseados mediante `getattr` en objetos maliciosos, y se centralizó la validación para asegurar que solo los campos definidos en `_VALIDATORS` puedan ser alterados.
+- `2026-09-14T08:00:52` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado `save_logo_svg` para prevenir la escritura accidental en ubicaciones no deseadas o protegidas, utilizando `is_safe_to_modify` para realizar una validación preventiva antes de proceder con el chequeo estricto de `ensure_safe_to_modify`, garantizando que la operación sea segura sin degradar la robustez del manejo de excepciones.
+- `2026-09-14T08:01:02` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación estricta de límites de profundidad y el uso de `path.is_mount()` para prevenir la traversal fuera del volumen de datos del usuario, incluso si los permisos del SO fueran permisivos.
+- `2026-09-14T08:01:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T08:01:02` Corrida terminada. Total usado hoy: 187.

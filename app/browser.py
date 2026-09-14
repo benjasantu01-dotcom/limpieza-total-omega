@@ -227,8 +227,13 @@ def _sum_directory_recursive(
     """
     Calcula el tamaño de un directorio mediante búsqueda en profundidad (DFS) con memorización.
     """
-    if root_abs in memo:
-        return memo[root_abs]
+    if depth > MAX_SCAN_DEPTH or root_abs in memo:
+        return memo.get(root_abs, 0)
+
+    # Evitar saltar a otros volúmenes (mount points) accidentalmente
+    path_obj = Path(root_abs)
+    if depth > 0 and path_obj.is_mount():
+        return 0
 
     total: int = 0
     try:
@@ -239,12 +244,10 @@ def _sum_directory_recursive(
                 
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        if depth < MAX_SCAN_DEPTH:
-                            total += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
+                        total += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
                     elif entry.is_file(follow_symlinks=False):
                         total += entry.stat(follow_symlinks=False).st_size
                 except (OSError, PermissionError) as e:
-                    # Capturamos violaciones de acceso (en uso) o denegación de permisos para no abortar el escaneo completo
                     if kernel32 and getattr(e, 'winerror', None) == ERROR_SHARING_VIOLATION:
                         continue
                     continue
