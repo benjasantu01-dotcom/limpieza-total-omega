@@ -732,9 +732,15 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         for stored_path in quarantine_root.iterdir():
             if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
                 continue
+            
+            # Solo purgar si existe un registro válido que coincida con el nombre
             item = item_map.get(stored_path.name)
-            if item and _is_item_purgable(stored_path, item, quarantine_root):
-                purged_ids.add(item.item_id)
+            if item:
+                try:
+                    if _is_item_purgable(stored_path, item, quarantine_root):
+                        purged_ids.add(item.item_id)
+                except FileNotFoundError:
+                    continue
                 
         if purged_ids:
             remaining_items = [i for i in items if i.item_id not in purged_ids]

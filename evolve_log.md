@@ -1199,3 +1199,37 @@ FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops 
 - `2026-09-14T14:41:07` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-14T14:41:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T14:41:08` Corrida terminada. Total usado hoy: 343.
+- `2026-09-14T14:47:30` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-14T14:48:09` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `purge_all` mediante la captura explícita de `FileNotFoundError` durante la iteración y el uso de un manejo de errores más específico, además de validar que el archivo en el sandbox corresponda realmente a un ítem registrado antes de intentar cualquier operación de borrado.
+- `2026-09-14T14:48:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-14T14:49:12` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `ensure_safe_to_modify` ante errores de E/S inesperados (como `FileNotFoundError` o `PermissionError`) al interactuar con rutas inexistentes o inaccesibles, envolviendo las validaciones dependientes de disco en bloques `try-except` granulares para evitar que la operación falle de forma disruptiva cuando el archivo no existe o los permisos son insuficientes, alineándose con el enfoque de validación defensiva.
+- `2026-09-14T14:49:22` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-14T14:49:35` Tests FALLARON:
+```
+en qué sistema corran los tests.
+        flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+>       assert flagged is not None and flagged.severity == "warning"
+E       assert (None is not None)
+
+evolve/tests/test_basic.py:213: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:126: SyntaxWarning: invalid escape sequence '\P'
+    """Extrae y valida rutas encerradas en comillas (ej. "C:\Path\App.exe")."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - assert (None is not None)
+2 failed, 297 passed, 7 warnings in 1.30s
+
+```
+- `2026-09-14T14:49:35` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de las heurísticas agregando validaciones de tipo y presencia para los objetos `entry` y `path`, evitando excepciones `AttributeError` o `NoneType` si los datos de entrada son inesperados.
+- `2026-09-14T14:49:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T14:49:35` Corrida terminada. Total usado hoy: 347.

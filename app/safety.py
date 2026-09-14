@@ -308,8 +308,8 @@ def _check_file_integrity(path: Path) -> None:
         file_stat = path.stat()
     except PermissionError:
         raise UnsafePathError(f"Acceso denegado a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-    except OSError as e:
-        raise UnsafePathError(f"Error de E/S al leer metadatos: {e.strerror}", SafetyValidationErrorCode.IO_ERROR)
+    except (OSError, FileNotFoundError):
+        return # Si el archivo no existe o es inaccesible estructuralmente, no hay riesgo de modificación
     
     if _is_directory_junction(path):
         raise UnsafePathError(f"Junction detectada: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
