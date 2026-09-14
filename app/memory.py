@@ -54,7 +54,7 @@ PROCESS_SET_QUOTA: Final[int] = 0x100
 SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
 
 STILL_ACTIVE_EXIT_CODE: Final[int] = 259
-SYSTEM_CRITICAL_PIDS: Set[int] = {0, 4}
+SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
 ERROR_ACCESS_DENIED: Final[int] = 5
 
 __all__ = [
@@ -360,8 +360,8 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
     """
-    Valida que un proceso sea seguro para reducir su Working Set.
-    Verifica que el proceso esté activo y que su ruta ejecutable no esté protegida.
+    Valida la integridad de un proceso antes de cualquier operación.
+    Verifica estado activo y que la ruta del ejecutable no esté protegida por `safety.py`.
     """
     if not isinstance(proc_handle, int) or proc_handle <= 0: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32

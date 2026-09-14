@@ -231,11 +231,9 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
         
     parts = sanitized.split('.')
     name_base = parts[0] if parts[0] else "q_file"
-    # Evitar nombres reservados que causan errores en Windows
     if name_base.upper() in WINDOWS_RESERVED_NAMES:
         name_base = f"q_{name_base}"
     
-    # Validar caracteres de control mediante normalización básica
     name_base = "".join(c for c in name_base if ord(c) >= 32)
     
     extension = f".{parts[-1]}" if len(parts) > 1 else ""
@@ -399,7 +397,6 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     base_path = quarantine_dir(base)
     target_path = _manifest_path(base_path)
     
-    # Serialización previa para validar datos antes de tocar el disco
     try:
         serializable_items = [item.to_dict() for item in items]
         encoded_content = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
@@ -419,7 +416,6 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
 
         os.replace(temp_path, target_path)
         
-        # Sincronización forzada del directorio padre
         dir_fd = os.open(str(base_path), os.O_RDONLY)
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)
@@ -451,7 +447,6 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
         raise UnsafePathError("Destino en ruta protegida.")
     _check_windows_file_attributes(str(destination))
 
-    # Captura estado original para comparación TOCTOU
     src_stat_pre = source.stat()
     src_ino_pre = src_stat_pre.st_ino
     src_dev_pre = src_stat_pre.st_dev
@@ -466,7 +461,6 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
             tmp.flush()
             os.fsync(tmp.fileno())
         
-        # Verificación post-escritura
         final_src_stat = source.stat()
         if final_src_stat.st_ino != src_ino_pre or final_src_stat.st_dev != src_dev_pre:
              raise OSError("Alerta de seguridad: origen reemplazado durante copia.")
@@ -535,6 +529,16 @@ def _register_quarantine_item(
     return quarantine_item
 
 
+def _validate_source_for_quarantine(source: Path) -> Path:
+    """Verifica que el origen sea un archivo válido y no esté protegido."""
+    if source.is_dir():
+        raise UnsafePathError("Aislamiento de directorios no permitido.")
+    if source.is_symlink():
+        raise UnsafePathError("No se permite aislar enlaces simbólicos.")
+    if not source.is_file():
+        raise FileNotFoundError("Archivo origen inexistente.")
+    return source
+
 def quarantine_file(
     source: PathLike,
     reason: str = "Marcado como sospechoso",
@@ -561,15 +565,7 @@ def quarantine_file(
         except (OSError, RuntimeError) as e:
             raise UnsafePathError(f"Ruta origen no válida: {e}")
     
-    source_path = p_source
-    if source_path.is_dir():
-        raise UnsafePathError("Aislamiento de directorios no permitido.")
-    if source_path.is_symlink():
-        raise UnsafePathError("No se permite aislar enlaces simbólicos.")
-    
-    if not source_path.is_file():
-        raise FileNotFoundError("Archivo origen inexistente.")
-        
+    source_path = _validate_source_for_quarantine(p_source)
     original_size = source_path.stat().st_size
     dest_dir = quarantine_dir(base)
     
@@ -637,7 +633,6 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         stored_file = _validate_quarantine_path(base_path / quarantine_item.stored_name, base_path)
         
         if not stored_file.exists() or not stored_file.is_file():
-            # Limpiar manifiesto de registros huérfanos si el archivo falta
             save_manifest([i for i in items if i.item_id != item_id], base)
             raise RuntimeError("Archivo en cuarentena inexistente.")
             
@@ -690,12 +685,10 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         
     stored_file = base_path / quarantine_item.stored_name
     
-    # Si el archivo no existe, simplemente removemos la entrada huérfana
     if not stored_file.exists():
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True
         
-    # Si existe, validamos integridad y borramos
     if not quarantine_item.verify_integrity(stored_file):
         raise UnsafePathError(f"Integridad fallida para {item_id}.")
         
