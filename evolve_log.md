@@ -895,3 +895,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops 
 - `2026-09-14T11:15:02` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `_collect_summary_data` para evitar llamadas redundantes a `heapq.nlargest` en funciones que ya procesan la data consolidada y eliminé la creación innecesaria de diccionarios intermedios, reduciendo la presión de memoria durante el recorrido del árbol.
 - `2026-09-14T11:15:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T11:15:02` Corrida terminada. Total usado hoy: 263.
+- `2026-09-14T11:23:18` Arrancando corrida. Quedan hoy ~37 peticiones objetivo.
+- `2026-09-14T11:23:41` 🛑 Propuesta bloqueada por la guardia en duplicates.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: group_by_size
+- `2026-09-14T11:24:07` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el método `is_finite` de `SystemMetrics` reemplazando la creación dinámica de generadores por una tupla precalculada, evitando llamadas redundantes a `getattr` y `float()` en cada iteración de `compute_score`.
+- `2026-09-14T11:25:16` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el registro de componentes y el acceso a pestañas eliminando el diccionario `self.tabs` innecesario y consolidando el uso de `self.tabview.tab()` para reducir el consumo de memoria y simplificar el acceso a los widgets de cada pestaña.
+- `2026-09-14T11:25:31` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la función `top_memory_processes` reemplazando la creación de listas intermedias y el uso de `list()` sobre un generador por un procesamiento mediante `heapq.nlargest`, lo cual evita ordenar toda la lista de procesos cada vez que se actualiza el caché, reduciendo la complejidad de O(N log N) a O(N log k).
+- `2026-09-14T11:25:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T11:25:31` Corrida terminada. Total usado hoy: 267.

@@ -28,6 +28,7 @@ import subprocess
 import math
 import ctypes
 import time
+import heapq
 from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
@@ -220,7 +221,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
     
-    def process_lines():
+    def process_generator():
         for line in raw_csv_text.splitlines():
             line = line.strip()
             if not line or "," not in line:
@@ -231,9 +232,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
                 if proc:
                     yield proc
 
-    processes = list(process_lines())
-    processes.sort(key=lambda p: p.working_set, reverse=True)
-    return processes[:limit]
+    return heapq.nlargest(limit, process_generator(), key=lambda p: p.working_set)
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Invoca la API win32 GlobalMemoryStatusEx para obtener el estado físico actual de la RAM."""

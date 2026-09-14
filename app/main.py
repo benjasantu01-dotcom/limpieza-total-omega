@@ -201,7 +201,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _init_component_registry(self) -> None:
         """Reserva las estructuras de datos y estados iniciales de la app."""
-        self.tabs: Dict[str, ctk.CTkFrame] = {}
         self._initialized_tabs: Dict[str, bool] = {name: False for name in TABS}
         self._health_bars_initialized = False
         self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
@@ -431,16 +430,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _tab_factory(self, name: str) -> None:
         """
         Inicialización perezosa (lazy loading) para construir pestañas bajo demanda.
-        Delega la construcción al método `_build_tab_<name>` correspondiente.
         """
         if self._initialized_tabs.get(name):
             return
             
         method_name = f"_build_tab_{name.lower()}"
         constructor = getattr(self, method_name, None)
-        tab_frame = self.tabs.get(name)
         
-        if constructor and tab_frame and tab_frame.winfo_exists():
+        if constructor:
             try:
                 constructor()
                 self._initialized_tabs[name] = True
@@ -466,16 +463,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.tabview.pack(fill="both", expand=True, padx=18, pady=(4, 8))
 
         for name in TABS:
-            self.tabs[name] = self.tabview.add(branding.tab_label(name))
+            self.tabview.add(branding.tab_label(name))
             
         self._tab_factory(TABS[0])
 
     @validated_ui_operation
     def _on_tab_change(self, tab_label: str) -> None:
         """Listener que dispara la carga de la pestaña seleccionada."""
-        for original_name in TABS:
-            if branding.tab_label(original_name) == tab_label:
-                self._tab_factory(original_name)
+        for name in TABS:
+            if branding.tab_label(name) == tab_label:
+                self._tab_factory(name)
                 break
 
     def _build_header(self) -> None:
@@ -527,9 +524,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_salud(self) -> None:
         """Construye los elementos UI de la pestaña Salud."""
-        tab = self.tabs["Salud"]
-        if not tab or not tab.winfo_exists():
-            return
+        tab = self.tabview.tab(branding.tab_label("Salud"))
 
         row = self._button_row(tab)
         self._action(row, "Analizar el sistema", self.on_full_analysis, column=0)
@@ -630,7 +625,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_limpieza(self) -> None:
         """Construye la interfaz de la pestaña Limpieza."""
-        tab = self.tabs["Limpieza"]
+        tab = self.tabview.tab(branding.tab_label("Limpieza"))
         row = self._button_row(tab)
         self._action(row, "Buscar basura", self.on_scan_junk, column=0)
         self._action(row, "Mover a revisión", self.on_stage, secondary=True, column=1)
@@ -660,7 +655,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_seguridad(self) -> None:
         """Construye la interfaz de la pestaña Seguridad."""
-        tab = self.tabs["Seguridad"]
+        tab = self.tabview.tab(branding.tab_label("Seguridad"))
         row = self._button_row(tab)
         self._action(row, "Escaneo heurístico", self.on_heuristic_scan, column=0)
         self._action(row, "Elegir carpeta y escanear", self.on_heuristic_scan_folder,
@@ -673,7 +668,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_cuarentena(self) -> None:
         """Construye la interfaz de la pestaña Cuarentena."""
-        tab = self.tabs["Cuarentena"]
+        tab = self.tabview.tab(branding.tab_label("Cuarentena"))
         row = self._button_row(tab)
         self._action(row, "Ver cuarentena", self.on_list_quarantine, column=0)
         self._action(row, "Restaurar por ID", self.on_restore_quarantine,
@@ -690,7 +685,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_memoria(self) -> None:
         """Construye la interfaz de la pestaña Memoria."""
-        tab = self.tabs["Memoria"]
+        tab = self.tabview.tab(branding.tab_label("Memoria"))
         row = self._button_row(tab)
         self._action(row, "Diagnóstico de RAM", self.on_memory_report, column=0)
         self._action(row, "Procesos que más consumen", self.on_memory_processes,
@@ -707,7 +702,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_disco(self) -> None:
         """Construye la interfaz de la pestaña Disco."""
-        tab = self.tabs["Disco"]
+        tab = self.tabview.tab(branding.tab_label("Disco"))
         row = self._button_row(tab)
         self._action(row, "Espacio por unidad", self.on_drives_report, column=0)
         self._action(row, "Analizar una carpeta", self.on_disk_analysis,
@@ -716,7 +711,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_duplicados(self) -> None:
         """Construye la interfaz de la pestaña Duplicados."""
-        tab = self.tabs["Duplicados"]
+        tab = self.tabview.tab(branding.tab_label("Duplicados"))
         row = self._button_row(tab)
         self._action(row, "Buscar duplicados", self.on_find_duplicates, column=0)
         self._action(row, "Aislar copias extra", self.on_quarantine_duplicates,
@@ -725,21 +720,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_navegadores(self) -> None:
         """Construye la interfaz de la pestaña Navegadores."""
-        tab = self.tabs["Navegadores"]
+        tab = self.tabview.tab(branding.tab_label("Navegadores"))
         row = self._button_row(tab)
         self._action(row, "Detectar caché", self.on_browser_report, column=0)
         self._make_output("Navegadores", tab)
 
     def _build_tab_inicio(self) -> None:
         """Construye la interfaz de la pestaña Inicio."""
-        tab = self.tabs["Inicio"]
+        tab = self.tabview.tab(branding.tab_label("Inicio"))
         row = self._button_row(tab)
         self._action(row, "Ver programas de inicio", self.on_startup_report, column=0)
         self._make_output("Inicio", tab)
 
     def _build_tab_informe(self) -> None:
         """Construye la interfaz de la pestaña Informe."""
-        tab = self.tabs["Informe"]
+        tab = self.tabview.tab(branding.tab_label("Informe"))
         row = self._button_row(tab)
         self._action(row, "Armar informe", self.on_build_report, column=0)
         self._action(row, "Guardar como .txt", lambda: self.on_save_report(False),
@@ -750,7 +745,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_asistente(self) -> None:
         """Construye la interfaz de la pestaña Asistente."""
-        tab = self.tabs["Asistente"]
+        tab = self.tabview.tab(branding.tab_label("Asistente"))
         row = self._button_row(tab)
         self._action(row, "Preguntar", self.on_ask_assistant, column=0)
         self._action(row, "¿Qué arreglo primero?",
@@ -781,7 +776,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_ajustes(self) -> None:
         """Construye la interfaz de la pestaña Ajustes."""
-        tab = self.tabs["Ajustes"]
+        tab = self.tabview.tab(branding.tab_label("Ajustes"))
         row = self._button_row(tab)
         self._action(row, "Guardar ajustes", self.on_save_settings, column=0)
         self._action(row, "Ver configuración", self.on_show_settings, secondary=True, column=1)
@@ -1120,7 +1115,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         except (Exception, tk.TclError, RuntimeError):
             return "Limpieza"
         for nombre in TABS:
-            if nombre in etiqueta:
+            if branding.tab_label(nombre) in etiqueta:
                 return nombre
         return "Limpieza"
 
