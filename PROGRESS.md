@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-12 | 84 | 6 | 14 | 8 | 93 |
+| 2026-09-12 | 80 | 6 | 14 | 8 | 93 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
-| 2026-09-14 | 98 | 4 | 11 | 9 | 109 |
+| 2026-09-14 | 99 | 4 | 11 | 9 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **57**
+- legibilidad y documentación: **53**
 - seguridad defensiva: **50**
 - rendimiento: **41**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **20**
+- `assistant.py`: **21**
 - `quarantine.py`: **19**
 - `safety.py`: **19**
 - `browser.py`: **19**
 - `settings.py`: **18**
-- `healthscore.py`: **17**
-- `memory.py`: **16**
 - `organizer.py`: **16**
-- `main.py`: **15**
+- `healthscore.py`: **16**
+- `memory.py`: **15**
 - `diskreport.py`: **15**
-- `duplicates.py`: **14**
+- `main.py`: **14**
+- `duplicates.py`: **13**
 - `scanner.py`: **11**
 - `startup.py`: **11**
 - `branding.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-14T09:54:19` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de los `handle_` (como `handle_ram` y `handle_disk`) centralizando la gestión de errores mediante una validación de contexto `is_empty` más explícita y capturando excepciones de forma específica, evitando que errores en el cálculo de métricas bloqueen la respuesta del asistente.
 - `2026-09-14T08:32:42` **startup.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_reserved_device_name` reemplazando la verificación simplista de `stem` por una comprobación de ruta absoluta normalizada, evitando así que rutas maliciosas que intenten acceder a dispositivos mediante sufijos de extensión (ej. `CON.exe`) eludan el filtro de seguridad original.
 - `2026-09-14T08:31:28` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de `settings.py` implementando un control de integridad adicional en la carga de archivos, verificando explícitamente que la estructura del JSON decodificado coincida con el esquema `AppSettings` esperado, previniendo así errores de tiempo de ejecución ante archivos manipulados maliciosamente.
 - `2026-09-14T08:30:56` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_safe_entry` y `scan_directory` validando explícitamente que las rutas no contengan caracteres de control RTL (Right-To-Left) o secuencias de escape que puedan ser usadas para ofuscar extensiones maliciosas, reforzando la integridad del recorrido ante entradas inesperadas.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-14T08:00:19` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva al limitar estrictamente el acceso a atributos internos en `SystemContext.ingest`, evitando la posible inyección de atributos no deseados mediante `getattr` en objetos maliciosos, y se centralizó la validación para asegurar que solo los campos definidos en `_VALIDATORS` puedan ser alterados.
 - `2026-09-14T07:50:41` **settings.py** (robustez ante casos límite): Mejoré la robustez de la carga de archivos al manejar explícitamente posibles errores de codificación (UTF-8 inválido) durante la lectura, asegurando que la app no aborte y retorne a los valores de fábrica ante archivos binarios o corrompidos, además de fortalecer `_ensure_settings_integrity` para evitar estados inconsistentes si el usuario modifica manualmente el archivo.
 - `2026-09-14T07:39:57` **main.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de concurrencia y limpieza de recursos en `_worker_thread_logic` y `_set_busy`, asegurando que si la ventana es destruida durante una operación de disco, el estado del hilo principal no intente manipular widgets inexistentes, evitando cierres inesperados por `TclError`.
-- `2026-09-14T07:29:59` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a configuraciones externas de `WEIGHTS` que podrían estar incompletas o mal definidas, evitando fallos en tiempo de ejecución si un área falta en el desglose, y fortalecí la validación de `SystemMetrics` para asegurar que el cálculo nunca dependa de estados inconsistentes.

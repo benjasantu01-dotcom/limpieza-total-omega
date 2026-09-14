@@ -442,8 +442,8 @@ def _identify_active_problems(ctx: SystemContext) -> tuple[str, ...]:
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Procesa consultas sobre el uso y estado de memoria RAM."""
+    if ctx.is_empty: return Answer("Primero analizá el sistema.")
     try:
-        if ctx.is_empty: return Answer("Primero analizá el sistema.")
         mem_pct = ctx.get_metric("memory_available_percent", 50.0)
         total_gb = ctx.get_metric("memory_total_gb", 0.0)
         
@@ -463,8 +463,8 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Procesa consultas sobre el espacio en disco y elementos recuperables."""
+    if ctx.is_empty: return Answer("Primero analizá el sistema.")
     try:
-        if ctx.is_empty: return Answer("Primero analizá el sistema.")
         junk = ctx.get_metric("junk_mb", 0.0)
         dup = ctx.get_metric("duplicate_mb", 0.0)
         cache = ctx.get_metric("browser_cache_mb", 0.0)
@@ -482,8 +482,8 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     """Procesa consultas sobre riesgos de seguridad hallados en el sistema."""
+    if ctx.is_empty: return Answer("Primero analizá el sistema.")
     try:
-        if ctx.is_empty: return Answer("Primero analizá el sistema.")
         count = int(ctx.get_metric("suspicious_count", 0.0))
         warn = int(ctx.get_metric("suspicious_warnings", 0.0))
         if count == 0:
@@ -498,9 +498,8 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Responde explicando cómo se compone el puntaje de salud del sistema."""
+    if ctx.is_empty: return Answer("Primero analizá el sistema.")
     try:
-        if ctx.is_empty: return Answer("Primero analizá el sistema.")
-        
         score_val = ctx.score if ctx.score is not None else "N/A"
         grade_str = ctx.grade if ctx.grade else ""
         score_display = f"Tu puntaje es {score_val}/100{f' (nota {grade_str})' if grade_str else ''}."
@@ -514,8 +513,8 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     """Procesa consultas sobre los programas de arranque configurados en Windows."""
+    if ctx.is_empty: return Answer("Primero analizá el sistema.")
     try:
-        if ctx.is_empty: return Answer("Primero analizá el sistema.")
         count = int(ctx.get_metric("startup_count", 0.0))
         estado = f"Tenés {count} programas que arrancan con Windows."
         valoracion = "Son bastantes, y cada uno suma tiempo de encendido." if count > 15 else ("Es normal." if count > 8 else "Está bien.")
