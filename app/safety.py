@@ -529,8 +529,14 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             _validate_ntfs_reparse_redirection(p)
             
         _check_file_integrity(p)
-    elif p.parent and is_protected_path(p.parent):
-        raise UnsafePathError("Directorio contenedor restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+    else:
+        # Validación preventiva para rutas que no existen pero cuyo padre sí podría ser crítico
+        try:
+            parent = p.parent
+            if parent.exists() and is_protected_path(parent):
+                raise UnsafePathError("Directorio contenedor restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+        except (OSError, PermissionError):
+            pass
             
     return p
 

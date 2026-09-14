@@ -139,15 +139,15 @@ class Scanner:
             return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        if not entry or not entry.name or not entry.path or len(entry.path) > MAX_PATH_LENGTH:
-            return False
-        if entry.path.startswith(("\\\\", "//")):
-            return False
-        if INVALID_TRAILING_CHARS_RE.search(entry.name) or RTL_CHAR_RE.search(entry.path) or RESERVED_NAMES_RE.match(entry.name):
-            return False
         try:
+            if not entry or not entry.name or not entry.path or len(entry.path) > MAX_PATH_LENGTH:
+                return False
+            if entry.path.startswith(("\\\\", "//")):
+                return False
+            if INVALID_TRAILING_CHARS_RE.search(entry.name) or RTL_CHAR_RE.search(entry.path) or RESERVED_NAMES_RE.match(entry.name):
+                return False
             return not (entry.is_symlink() or not self._is_inside_base_root(entry.path) or is_protected_path(Path(entry.path)))
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, UnicodeDecodeError):
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:

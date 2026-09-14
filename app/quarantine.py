@@ -24,6 +24,7 @@ import shutil
 import uuid
 import hashlib
 import tempfile
+import ctypes
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
@@ -184,19 +185,26 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado para acceso mediante intento de apertura.
-    
-    Returns:
-        True si el archivo está siendo usado por otro proceso o inaccesible.
+    Verifica si un archivo está bloqueado para acceso exclusivo.
+    Utiliza bloqueo a nivel de sistema operativo sin alterar el contenido.
     """
     if not isinstance(path, Path) or not path.exists():
         return False
     try:
-        with open(path, "a+b") as f:
-            f.flush()
-            os.fsync(f.fileno())
-            return False
-    except (PermissionError, IOError, OSError):
+        if os.name == 'nt':
+            # Bloqueo compartido con msvcrt en Windows
+            import msvcrt
+            with open(path, "rb") as f:
+                msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+                msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            # Bloqueo con fcntl en POSIX
+            import fcntl
+            with open(path, "rb") as f:
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+        return False
+    except (OSError, PermissionError, IOError, ImportError):
         return True
 
 
@@ -290,7 +298,6 @@ def _check_windows_file_attributes(path_str: str) -> None:
     path_obj = Path(path_str)
     if not path_obj.exists():
         return
-    import ctypes
     attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path_obj))
     if attrs != -1:
         if attrs & 0x02 or attrs & 0x04:

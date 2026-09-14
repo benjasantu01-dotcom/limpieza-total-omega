@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-12 | 53 | 3 | 8 | 3 | 82 |
+| 2026-09-12 | 53 | 3 | 8 | 3 | 78 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
-| 2026-09-14 | 137 | 5 | 16 | 10 | 119 |
+| 2026-09-14 | 140 | 5 | 17 | 10 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **44**
+- robustez ante casos límite: **39**
 - seguridad defensiva: **39**
-- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
 - `browser.py`: **21**
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
+- `safety.py`: **20**
 - `healthscore.py`: **19**
-- `safety.py`: **19**
 - `diskreport.py`: **18**
 - `memory.py`: **18**
 - `settings.py`: **17**
 - `organizer.py`: **15**
 - `duplicates.py`: **14**
 - `main.py`: **14**
-- `scanner.py`: **12**
+- `scanner.py`: **13**
 - `branding.py`: **11**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-14T12:16:04` **scanner.py** (robustez ante casos límite): Se introdujo una validación de existencia para `entry.path` antes de ser procesado y se refinó `_is_safe_entry` para capturar errores de acceso en nombres de archivo con caracteres inválidos, evitando que el escáner se interrumpa ante entradas de disco malformadas o rutas inaccesibles durante la iteración.
+- `2026-09-14T12:15:53` **safety.py** (robustez ante casos límite): Se ha añadido una validación explícita para archivos que no existen pero cuyo directorio padre no es accesible o está protegido, evitando errores inesperados en el flujo de trabajo y mejorando la robustez ante rutas inexistentes.
+- `2026-09-14T12:14:56` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` al reemplazar el modo de apertura `a+b` (que requiere permisos de escritura y puede modificar el archivo si el puntero se desplaza) por `rb+` con un intento de `fcntl.flock` (en Unix) o `msvcrt.locking` (en Windows), asegurando que la verificación sea puramente de acceso sin riesgo de escritura ni corrupción accidental.
 - `2026-09-14T12:07:22` **memory.py** (robustez ante casos límite): Se mejora la robustez de `top_memory_processes` añadiendo un manejo de excepciones más granular y defensivo ante la ejecución de subprocesos y la gestión de memoria inesperada, asegurando que un fallo en la salida de PowerShell o un error de conversión no detenga el análisis completo ni deje estados de caché inconsistentes.
 - `2026-09-14T12:06:52` **main.py** (robustez ante casos límite): Mejoré la robustez de la inicialización de la interfaz en `_build_ia_settings` y `_build_tab_ajustes` añadiendo validaciones de existencia de widgets antes de intentar manipularlos, evitando así cierres inesperados si la construcción de la UI es interrumpida o se reintenta.
 - `2026-09-14T12:04:34` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics.validate` para prevenir errores de cálculo con valores extremos, asegurando que `_to_float` maneje correctamente entradas `None` o mal formadas sin interrumpir el flujo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-14T11:25:31` **memory.py** (rendimiento): Optimizé la función `top_memory_processes` reemplazando la creación de listas intermedias y el uso de `list()` sobre un generador por un procesamiento mediante `heapq.nlargest`, lo cual evita ordenar toda la lista de procesos cada vez que se actualiza el caché, reduciendo la complejidad de O(N log N) a O(N log k).
 - `2026-09-14T11:25:16` **main.py** (rendimiento): Optimicé el registro de componentes y el acceso a pestañas eliminando el diccionario `self.tabs` innecesario y consolidando el uso de `self.tabview.tab()` para reducir el consumo de memoria y simplificar el acceso a los widgets de cada pestaña.
 - `2026-09-14T11:24:07` **healthscore.py** (rendimiento): Se optimizó el método `is_finite` de `SystemMetrics` reemplazando la creación dinámica de generadores por una tupla precalculada, evitando llamadas redundantes a `getattr` y `float()` en cada iteración de `compute_score`.
-- `2026-09-14T11:15:02` **diskreport.py** (rendimiento): Optimizé `_collect_summary_data` para evitar llamadas redundantes a `heapq.nlargest` en funciones que ya procesan la data consolidada y eliminé la creación innecesaria de diccionarios intermedios, reduciendo la presión de memoria durante el recorrido del árbol.
-- `2026-09-14T11:14:51` **browser.py** (rendimiento): Implementé la memorización de estados en la búsqueda de perfiles (`perf_cache`) para evitar recalculaciones redundantes en estructuras de caché compartidas entre navegadores (ej. múltiples perfiles o derivados de Chromium que apuntan a subárboles similares), optimizando el tiempo de ejecución en sistemas con muchos navegadores.
-- `2026-09-14T11:13:50` **assistant.py** (rendimiento): Optimicé el renderizado de texto del contexto para prompts mediante la eliminación de múltiples llamadas a funciones (`_fmt_metric_sanitized`) dentro de un `f-string`, sustituyéndolas por una única pre-formateada en el cuerpo del método, reduciendo la carga de procesamiento innecesario y el número de operaciones de manipulación de cadenas en cada consulta.
