@@ -315,12 +315,15 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             # Validación simple de integridad de formato antes de procesar
             if not (data_bytes.startswith(b"{") and data_bytes.strip().endswith(b"}")):
                 return DEFAULTS.copy()
-            raw = json.loads(data_bytes.decode("utf-8"))
+            try:
+                raw = json.loads(data_bytes.decode("utf-8"))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                return DEFAULTS.copy()
+                
             if not _is_dict(raw): return DEFAULTS.copy()
             
-            # Verificación estricta de esquema: si faltan claves o hay extras, resetear
-            schema_match = all(k in raw for k in DEFAULTS.keys())
-            if not schema_match: return DEFAULTS.copy()
+            # Verificación estricta de esquema: si faltan claves obligatorias, resetear
+            if not all(k in raw for k in DEFAULTS.keys()): return DEFAULTS.copy()
             
             data = validate(raw)
             # Asegurar consistencia con estructura de AppSettings
@@ -330,7 +333,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         
         _CACHE[ruta] = (mtime, data)
         return data.copy()
-    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
+    except (OSError, PermissionError, ValueError):
         return DEFAULTS.copy()
 
 def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:

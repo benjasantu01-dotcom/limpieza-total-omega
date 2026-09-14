@@ -1233,3 +1233,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-09-14T14:49:35` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de las heurísticas agregando validaciones de tipo y presencia para los objetos `entry` y `path`, evitando excepciones `AttributeError` o `NoneType` si los datos de entrada son inesperados.
 - `2026-09-14T14:49:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T14:49:35` Corrida terminada. Total usado hoy: 347.
+- `2026-09-14T14:57:38` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-14T14:58:14` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load` y `validate` mediante un manejo de errores más granular y preventivo, asegurando que si `json.loads` falla o los datos están corruptos, el sistema siempre revierta a `DEFAULTS` de forma segura sin propagar excepciones.
+- `2026-09-14T14:58:41` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo validación explícita de `val_name` y `val_cmd` como cadenas, asegurando que `csv.DictReader` no procese valores inesperados que podrían causar errores durante el saneamiento posterior.
+- `2026-09-14T14:59:20` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ProblemCriterion._evaluate_metric, SystemContext.__hash__
+- `2026-09-14T14:59:20` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-09-14T14:59:20` Rotación — metrics: 3 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T14:59:20` Corrida terminada. Total usado hoy: 350.
