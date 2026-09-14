@@ -1180,3 +1180,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops 
 - `2026-09-14T14:21:05` ➖ Sin cambios en assistant.py (enfoque: manejo de errores y validación de entradas). Motivo: Se introdujo una validación defensiva en `_extract_text_from_gemini_json` para capturar explícitamente excepciones de tipo cuando la respuesta de la API no contiene la estructura esperada, evitando que errores de parseo propaguen estados inválidos en la cadena de consulta del asistente.
 - `2026-09-14T14:21:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T14:21:05` Corrida terminada. Total usado hoy: 335.
+- `2026-09-14T14:27:03` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-14T14:27:40` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-14T14:28:06` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-14T14:28:32` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-14T14:28:44` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-14T14:28:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T14:28:44` Corrida terminada. Total usado hoy: 339.
