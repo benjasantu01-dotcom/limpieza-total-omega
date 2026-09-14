@@ -75,21 +75,27 @@ if sum(WEIGHTS.values()) != 100:
 _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
+    """Calcula la salud respecto a basura: menor es mejor."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
+    """Calcula la salud de seguridad: cada hallazgo penaliza un 5%, cada advertencia un 25%."""
     return _clamp(1.0 - ((_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
+    """Calcula la salud de memoria: mayor porcentaje disponible es mejor."""
     return _clamp(_to_float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
+    """Calcula la salud de disco: mayor porcentaje libre es mejor."""
     return _clamp(_to_float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
+    """Calcula la salud por duplicados: menor volumen de duplicados es mejor."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
+    """Calcula la salud por ítems de arranque: menos es mejor."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
 _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
@@ -138,6 +144,7 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
+        """Asegura que los valores de las métricas estén en rangos lógicos y sean finitos."""
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
         self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
@@ -149,6 +156,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
+        """Verifica que ninguna métrica contenga valores NaN o infinito."""
         return all(math.isfinite(float(getattr(self, f))) for f in self._FINITE_FIELDS)
 
 @dataclass
@@ -163,15 +171,18 @@ class HealthResult:
         return 80 <= self.score <= 100
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
+    """Restringe un valor numérico a un rango definido [low, high]."""
     return float(max(low, min(high, value)))
 
 def _to_float(value: Any, default: float = 0.0) -> float:
+    """Convierte de forma segura a float, descartando casos no numéricos."""
     try:
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError, OverflowError): return default
 
 def grade_for_score(score: float | int) -> str:
+    """Asigna una letra de calificación basada en el puntaje numérico."""
     s = float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -180,6 +191,7 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: float, findings: List[str]) -> None:
+    """Procesa una lista de reglas para generar mensajes de recomendación si se activan."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -190,6 +202,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
+    """Calcula el puntaje global de salud del sistema mediante la agregación ponderada de áreas."""
     if metrics is None or not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos."])
     
@@ -227,11 +240,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(pts: int, maximo: int) -> str:
+    """Genera una representación visual simple (barra) del puntaje obtenido."""
     if maximo <= 0: return ""
     puntos_normalizados = int(_clamp(float(pts), 0.0, float(maximo)))
     return ('#' * puntos_normalizados) + ('.' * (maximo - puntos_normalizados))
 
 def summarize(result: HealthResult | None) -> List[str]:
+    """Genera un reporte legible en texto del resultado de salud."""
     if result is None or not hasattr(result, 'score'):
         return ["Error: Informe no disponible."]
     

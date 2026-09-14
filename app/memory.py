@@ -352,7 +352,6 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     buf = ctypes.create_unicode_buffer(1024)
     try:
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 1024) > 0:
-            # Resolvemos la ruta para evitar que puntos de reparse o atajos engañen al validador
             return Path(buf.value).resolve(strict=False)
     except (OSError, ctypes.ArgumentError, ValueError, MemoryError):
         pass
@@ -360,7 +359,8 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
     """
-    Realiza validaciones de seguridad exhaustivas antes de modificar un proceso.
+    Valida que un proceso sea seguro para reducir su Working Set.
+    Verifica que el proceso esté activo y que su ruta ejecutable no esté protegida.
     """
     if not isinstance(proc_handle, int) or proc_handle <= 0: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
@@ -386,7 +386,7 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
         return False, "Error interno durante la verificación de integridad."
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Solicita al SO reducir el Working Set de un proceso tras validación."""
+    """Solicita al SO reducir el Working Set de un proceso tras validación exhaustiva de seguridad."""
     if not _is_windows: return False, "Operación solo soportada en Windows."
     
     try:
@@ -401,7 +401,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
-    # Abrir inicialmente con mínimos privilegios para verificación de integridad
     proc_handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, target_pid)
     if not proc_handle: 
         return False, f"Acceso denegado (Error {kernel32.GetLastError()})."
