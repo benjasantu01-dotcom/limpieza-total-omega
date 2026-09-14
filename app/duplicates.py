@@ -284,7 +284,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         try:
-            if not is_safe_to_modify(p):
+            if not p.exists() or not is_safe_to_modify(p):
                 continue
             stat = p.stat()
             candidates.append((float(stat.st_mtime), len(str(p)), p))
@@ -303,9 +303,9 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
     
     for path in group.paths:
-        if not path.exists():
+        if not path.is_file():
             lines.append(f"   [desaparecido] {path}")
-        elif not _is_valid_candidate(path):
+        elif not is_safe_to_modify(path):
             lines.append(f"   [inaccesible] {path}")
         else:
             label = 'conservar' if (keeper and path == keeper) else 'duplicado'

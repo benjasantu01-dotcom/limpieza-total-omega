@@ -202,7 +202,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                 msg = rule.message_factory(metrics)
                 if msg:
                     findings.append(str(msg)[:200])
-        except (AttributeError, TypeError, ValueError, ZeroDivisionError):
+        except Exception:
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -227,7 +227,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             weighted_points = int(round(area_ratio * weight))
             metric_breakdown[area] = weighted_points
             accumulated_score += weighted_points
-        except (AttributeError, TypeError, ValueError, ZeroDivisionError):
+        except Exception:
             metric_breakdown[area] = 0
             continue
             

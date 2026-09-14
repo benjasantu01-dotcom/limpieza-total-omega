@@ -227,12 +227,11 @@ def _sum_directory_recursive(
     """
     Calcula el tamaño de un directorio mediante búsqueda en profundidad (DFS) con memorización.
     """
-    if depth > MAX_SCAN_DEPTH or root_abs in memo:
-        return memo.get(root_abs, 0)
+    if not root_abs or depth > MAX_SCAN_DEPTH or root_abs in memo:
+        return memo.get(root_abs, 0) if root_abs in memo else 0
 
-    # Evitar saltar a otros volúmenes (mount points) accidentalmente
     path_obj = Path(root_abs)
-    if depth > 0 and path_obj.is_mount():
+    if not path_obj.is_dir() or (depth > 0 and path_obj.is_mount()):
         return 0
 
     total: int = 0
@@ -260,7 +259,7 @@ def _sum_directory_recursive(
 
 def directory_size(path: Union[str, Path, None]) -> int:
     """Interfaz pública para obtener el tamaño de una ruta tras validarla."""
-    if not path:
+    if path is None:
         return 0
     p = Path(path)
     if not p.is_absolute() or not _is_safe_to_traverse(p, None):

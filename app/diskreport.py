@@ -198,9 +198,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo que recorre el árbol de archivos.
-    
-    Usa un stack interno para evitar la recursión profunda y mantiene un registro de
-    inodes visitados (st_dev, st_ino) para prevenir el seguimiento de ciclos en el FS.
     """
     root_path = _validate_root(directory)
     if root_path is None:
@@ -288,9 +285,6 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Realiza un recorrido único (single-pass) para consolidar estadísticas de disco.
-    
-    Utiliza un heap de tamaño fijo (`limit`) para mantener los archivos más pesados en memoria
-    de forma eficiente, minimizando el impacto en el sistema durante el análisis.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -298,6 +292,9 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
+        if not isinstance(size, int) or size < 0:
+            continue
+            
         total_bytes += size
         total_files += 1
         

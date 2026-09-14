@@ -805,3 +805,10 @@ assert not True
 - `2026-09-14T09:54:38` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-14T09:54:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T09:54:38` Corrida terminada. Total usado hoy: 231.
+- `2026-09-14T10:01:39` Arrancando corrida. Quedan hoy ~69 peticiones objetivo.
+- `2026-09-14T10:02:08` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` validando tipos y estados intermedios, previniendo excepciones por rutas `None` o mal formadas que podrían interrumpir el escaneo.
+- `2026-09-14T10:02:33` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `_collect_summary_data` validando explícitamente que el tamaño de los archivos sea un número no negativo antes de procesarlo, evitando errores de cálculo ante datos corruptos del sistema de archivos y asegurando que `_collect_summary_data` maneje correctamente entradas `None` o inconsistentes.
+- `2026-09-14T10:03:00` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `format_group` añadiendo validaciones explícitas de estado de archivo antes de procesar atributos, evitando errores de ejecución en archivos que fueron eliminados o bloqueados durante el análisis.
+- `2026-09-14T10:03:11` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_evaluate_rules` y `compute_score` ante fallos en los factories de mensajes, asegurando que si una regla falla al generar su mensaje, el proceso de reporte continúe para las demás reglas en lugar de ser silenciado por excepciones.
+- `2026-09-14T10:03:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T10:03:11` Corrida terminada. Total usado hoy: 235.
