@@ -312,12 +312,13 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             return DEFAULTS.copy()
             
         with open(ruta, "rb") as f:
-            raw = json.loads(f.read(MAX_SETTINGS_SIZE + 1).decode("utf-8"))
+            data_bytes = f.read(MAX_SETTINGS_SIZE + 1)
+            raw = json.loads(data_bytes.decode("utf-8"))
             if not _is_dict(raw): return DEFAULTS.copy()
             data = validate(raw)
             # Asegurar consistencia con defaults si faltan keys en archivo antiguo
             for key in DEFAULTS:
-                if data.get(key) is None:
+                if key not in data or data[key] is None:
                     data[key] = DEFAULTS[key]
         
         _CACHE[ruta] = (mtime, data)
@@ -327,10 +328,16 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 
 def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
     """Lógica de validación cruzada antes de persistir los datos."""
-    if settings.get("asistente_activado") and not (
-        settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
-    ):
-        settings["asistente_activado"] = False
+    # Desactivar asistente si faltan credenciales (local o entorno)
+    if settings.get("asistente_activado"):
+        if not (settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
+            settings["asistente_activado"] = False
+    
+    # Asegurar que los contadores no sean valores negativos si se manipularon manualmente
+    for key in [ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS]:
+        if settings.get(key.value, 0) <= 0:
+            settings[key.value] = DEFAULTS[key.value]
+            
     return settings
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:

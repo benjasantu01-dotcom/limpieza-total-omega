@@ -507,3 +507,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-14T07:41:07` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
 - `2026-09-14T07:41:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T07:41:07` Corrida terminada. Total usado hoy: 179.
+- `2026-09-14T07:49:06` Arrancando corrida. Quedan hoy ~121 peticiones objetivo.
+- `2026-09-14T07:49:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-14T07:50:00` ➖ Sin cambios en safety.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una verificación de integridad ante archivos que no existen durante el escaneo para evitar falsos positivos o errores de E/S, asegurando que `_check_file_integrity` solo se ejecute sobre rutas confirmadas y accesibles mediante un chequeo previo de `exists()`.
+- `2026-09-14T07:50:25` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-14T07:50:41` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de la carga de archivos al manejar explícitamente posibles errores de codificación (UTF-8 inválido) durante la lectura, asegurando que la app no aborte y retorne a los valores de fábrica ante archivos binarios o corrompidos, además de fortalecer `_ensure_settings_integrity` para evitar estados inconsistentes si el usuario modifica manualmente el archivo.
+- `2026-09-14T07:50:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T07:50:41` Corrida terminada. Total usado hoy: 183.

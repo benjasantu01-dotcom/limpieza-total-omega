@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 221
+- Rechazadas por guardia de seguridad: 31
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-12 | 97 | 6 | 16 | 9 | 125 |
+| 2026-09-12 | 97 | 6 | 16 | 9 | 121 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
-| 2026-09-14 | 85 | 2 | 9 | 8 | 79 |
+| 2026-09-14 | 86 | 2 | 10 | 9 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **48**
 - rendimiento: **41**
 - seguridad defensiva: **38**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,8 +34,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **19**
 - `safety.py`: **19**
 - `assistant.py`: **19**
+- `settings.py`: **18**
 - `healthscore.py`: **17**
-- `settings.py`: **17**
 - `diskreport.py`: **16**
 - `memory.py`: **16**
 - `organizer.py`: **16**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-14T07:50:41` **settings.py** (robustez ante casos límite): Mejoré la robustez de la carga de archivos al manejar explícitamente posibles errores de codificación (UTF-8 inválido) durante la lectura, asegurando que la app no aborte y retorne a los valores de fábrica ante archivos binarios o corrompidos, además de fortalecer `_ensure_settings_integrity` para evitar estados inconsistentes si el usuario modifica manualmente el archivo.
 - `2026-09-14T07:39:57` **main.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de concurrencia y limpieza de recursos en `_worker_thread_logic` y `_set_busy`, asegurando que si la ventana es destruida durante una operación de disco, el estado del hilo principal no intente manipular widgets inexistentes, evitando cierres inesperados por `TclError`.
 - `2026-09-14T07:29:59` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a configuraciones externas de `WEIGHTS` que podrían estar incompletas o mal definidas, evitando fallos en tiempo de ejecución si un área falta en el desglose, y fortalecí la validación de `SystemMetrics` para asegurar que el cálculo nunca dependa de estados inconsistentes.
 - `2026-09-14T07:29:48` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a archivos dentro de `suggest_keeper`, añadiendo una validación explícita mediante `is_safe_to_modify` para evitar que la función lance excepciones o considere candidatos inválidos (inaccesibles) en la heurística de selección.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-14T06:49:24` **duplicates.py** (rendimiento): Optimizé la performance del escaneo inicial en `_collect_candidates` evitando llamadas redundantes a `entry.stat()` mediante el uso del objeto `os.DirEntry` ya cacheado, y mejoré la eficiencia del filtrado de duplicados evitando re-ejecutar `is_safe_to_modify` dentro de los métodos de hashing, ya que la validación inicial del escaneo ya garantiza la integridad del conjunto.
 - `2026-09-14T06:48:47` **browser.py** (rendimiento): Se optimizó `_sum_directory_recursive` implementando un chequeo previo de `entry.is_file()` para evitar llamadas innecesarias a `os.scandir` o `path.exists` en archivos, y se aseguró que el diccionario `memo` persista durante todo el proceso de escaneo para evitar el recálculo de directorios compartidos o anidados (ej. estructuras `User Data` comunes entre navegadores).
 - `2026-09-14T06:48:22` **branding.py** (rendimiento): Optimicé el renderizado de franjas y la generación de gradientes reemplazando listas mutables por generadores/tuplas y mejorando la gestión de la caché para reducir la presión en el recolector de basura durante el refresco de UI.
-- `2026-09-14T06:39:25` **assistant.py** (rendimiento): Optimizé la generación de texto de contexto convirtiendo `_generate_context_lines_cached` en una función que recibe un `SystemContext` directamente y utiliza un `lru_cache` sobre el hash del objeto, eliminando la sobrecarga de serializar múltiples argumentos en `context_as_text`.
