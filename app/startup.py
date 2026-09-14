@@ -98,7 +98,9 @@ class StartupEntry:
         try:
             if "\0" in path_str:
                 return True
-            return Path(path_str).stem.upper() in reserved
+            path_obj = Path(path_str)
+            # Verifica el nombre base del archivo sin extensión para detectar dispositivos
+            return path_obj.stem.upper() in reserved
         except (ValueError, TypeError):
             return True
 

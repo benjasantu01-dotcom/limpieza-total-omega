@@ -153,6 +153,7 @@ class Scanner:
             return False
         if path_str.startswith(("\\\\", "//")):
             return False
+        # Validación defensiva estricta contra inyección de nombres y ofuscación RTL
         if INVALID_TRAILING_CHARS_RE.search(name) or RTL_CHAR_RE.search(path_str) or RESERVED_NAMES_RE.match(name):
             return False
 
@@ -221,7 +222,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         
     try:
         path_str: str = str(directory).strip()
-        if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")): 
+        # Validación defensiva contra inyección de nombres y caracteres de ofuscación antes de procesar la raíz
+        if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")) or RTL_CHAR_RE.search(path_str): 
             return []
                 
         base_path: Path = Path(path_str)

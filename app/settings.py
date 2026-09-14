@@ -316,7 +316,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             raw = json.loads(data_bytes.decode("utf-8"))
             if not _is_dict(raw): return DEFAULTS.copy()
             data = validate(raw)
-            # Asegurar consistencia con defaults si faltan keys en archivo antiguo
+            # Asegurar consistencia con estructura de AppSettings
             for key in DEFAULTS:
                 if key not in data or data[key] is None:
                     data[key] = DEFAULTS[key]

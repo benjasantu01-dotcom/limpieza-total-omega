@@ -472,7 +472,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
              raise UnsafePathError("Error al consultar estado de unidad.", SafetyValidationErrorCode.IO_ERROR)
 
     try:
-        app_root: Path = Path(os.getcwd()).resolve()
+        app_root = Path(os.getcwd()).resolve()
         if target_path == app_root or app_root in target_path.parents:
             raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     except (OSError, RuntimeError):
