@@ -214,6 +214,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: float = 0.0
     
+    # Optimizamos el acceso iterando sobre el pre-caché ya validado
     for area, weight, scorer, rules in _CACHE_SCORERS:
         try:
             area_ratio = scorer(metrics)

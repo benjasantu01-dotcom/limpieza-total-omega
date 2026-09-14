@@ -468,3 +468,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-14T06:49:24` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé la performance del escaneo inicial en `_collect_candidates` evitando llamadas redundantes a `entry.stat()` mediante el uso del objeto `os.DirEntry` ya cacheado, y mejoré la eficiencia del filtrado de duplicados evitando re-ejecutar `is_safe_to_modify` dentro de los métodos de hashing, ya que la validación inicial del escaneo ya garantiza la integridad del conjunto.
 - `2026-09-14T06:49:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T06:49:24` Corrida terminada. Total usado hoy: 159.
+- `2026-09-14T06:57:54` Arrancando corrida. Quedan hoy ~141 peticiones objetivo.
+- `2026-09-14T06:58:22` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle principal de `compute_score` eliminando accesos repetitivos a estructuras y mejorando la eficiencia mediante el uso de referencias locales de `_CACHE_SCORERS`, evitando búsquedas innecesarias en cada iteración de los componentes de la tupla.
+- `2026-09-14T06:59:22` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-14T06:59:48` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-14T07:00:14` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-14T07:01:26` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-14T07:02:13` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación de una lista intermedia y el mapeo posterior por un generador eficiente, lo cual reduce la presión sobre el recolector de basura al procesar listados de procesos.
+- `2026-09-14T07:02:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-14T07:03:09` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-14T07:03:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T07:03:09` Corrida terminada. Total usado hoy: 163.

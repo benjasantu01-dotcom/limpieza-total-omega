@@ -220,17 +220,18 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
     
-    processes: List[ProcessMemory] = []
-    for line in raw_csv_text.splitlines():
-        line = line.strip()
-        if not line or "," not in line:
-            continue
-        parts = [_clean_csv_field(x) for x in line.split(",")]
-        if len(parts) >= 3:
-            proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
-            if proc:
-                processes.append(proc)
-    
+    def process_lines():
+        for line in raw_csv_text.splitlines():
+            line = line.strip()
+            if not line or "," not in line:
+                continue
+            parts = [_clean_csv_field(x) for x in line.split(",")]
+            if len(parts) >= 3:
+                proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
+                if proc:
+                    yield proc
+
+    processes = list(process_lines())
     processes.sort(key=lambda p: p.working_set, reverse=True)
     return processes[:limit]
 
