@@ -199,9 +199,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry): continue
                         
                         entry_path = Path(entry.path).resolve()
-                        if root_path not in entry_path.parents and entry_path != root_path:
-                            continue
-
+                        
                         if entry.is_dir(follow_symlinks=False):
                             if skip_protected and is_protected_path(entry_path): continue
                             try:
@@ -228,21 +226,24 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     root = _validate_root(directory)
     if not root: return []
-    data = _collect_summary_data(root, skip_protected, limit=max(0, int(limit)))
+    limit = max(0, int(limit)) if isinstance(limit, (int, float)) else 20
+    data = _collect_summary_data(root, skip_protected, limit=limit)
     return [FileEntry(p, s) for s, p in heapq.nlargest(len(data.top_files), data.top_files, key=lambda x: x[0])]
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     root = _validate_root(directory)
     if not root: return []
+    limit = max(1, int(limit)) if isinstance(limit, (int, float)) else 15
     data = _collect_summary_data(root, skip_protected, limit=0)
     usage_list = [ExtensionUsage(ext, stats[0], stats[1]) for ext, stats in data.ext_stats.items()]
-    return heapq.nlargest(max(1, int(limit)), usage_list, key=lambda u: u.size_bytes)
+    return heapq.nlargest(limit, usage_list, key=lambda u: u.size_bytes)
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     root = _validate_root(directory)
     if not root: return []
+    limit = max(1, int(limit)) if isinstance(limit, (int, float)) else 10
     folder_total_bytes: Dict[Path, int] = defaultdict(int)
     folder_file_counts: Dict[Path, int] = defaultdict(int)
     
@@ -256,7 +257,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
         except (ValueError, OSError, RuntimeError): continue
 
     results = [FolderUsage(p, folder_total_bytes[p], folder_file_counts[p]) for p in folder_total_bytes]
-    return heapq.nlargest(max(1, int(limit)), results, key=lambda f: f.size_bytes)
+    return heapq.nlargest(limit, results, key=lambda f: f.size_bytes)
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> SizeReport:
@@ -269,7 +270,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     total_bytes: int = 0
     total_files: int = 0
-    ext_stats: Dict[str, Tuple[int, int]] = defaultdict(lambda: [0, 0])
+    ext_stats: Dict[str, List[int]] = defaultdict(lambda: [0, 0])
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):

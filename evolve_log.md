@@ -1012,3 +1012,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-14T00:54:35` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de los `handle_*` handlers mediante el uso de una lógica de captura de excepciones más granular y defensiva, asegurando que ante errores inesperados en los datos de entrada o cálculos, el sistema responda de forma elegante con un mensaje informativo en lugar de fallar silenciosamente o devolver un estado inconsistente.
 - `2026-09-14T00:54:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T00:54:35` Corrida terminada. Total usado hoy: 20.
+- `2026-09-14T01:01:00` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-09-14T01:01:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-14T01:02:21` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-14T01:02:48` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado el manejo de errores en `_sum_directory_recursive` asegurando que las excepciones `OSError` que no sean violaciones de acceso (como errores de lectura de disco o permisos denegados) se gestionen explícitamente sin detener la recursión ni propagar errores fatales, manteniendo la robustez del escaneo.
+- `2026-09-14T01:03:16` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y las funciones de recolección de datos ante entradas malformadas o rutas que cambian de estado durante la iteración, añadiendo validaciones explícitas de tipos y saneamiento de datos para evitar desbordamientos o errores de ejecución inesperados al procesar tamaños o conteos.
+- `2026-09-14T01:03:25` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-14T01:03:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T01:03:25` Corrida terminada. Total usado hoy: 24.

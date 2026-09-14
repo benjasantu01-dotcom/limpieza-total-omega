@@ -258,8 +258,8 @@ def _sum_directory_recursive(
                     else:
                         total += entry.stat(follow_symlinks=False).st_size
                 except OSError as e:
-                    # Detectar si es un bloqueo por uso (sharing violation)
-                    if kernel32 and e.winerror == ERROR_SHARING_VIOLATION:
+                    # Si el archivo está bloqueado o inaccesible, lo omitimos silenciosamente
+                    if kernel32 and getattr(e, 'winerror', None) == ERROR_SHARING_VIOLATION:
                         continue
                     continue
     except (PermissionError, OSError):
