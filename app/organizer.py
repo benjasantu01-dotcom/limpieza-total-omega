@@ -220,7 +220,7 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     return entry.path not in protected_cache
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0, protected_cache: Optional[set[str]] = None) -> None:
-    """Recorrido recursivo del árbol de directorios con límite de profundidad de seguridad."""
+    """Recorrido recursivo optimizado del árbol de directorios."""
     if protected_cache is None: protected_cache = set()
     if depth > 50: return
     
@@ -255,12 +255,11 @@ def scan_for_junk(directories: Optional[Sequence[str]] = None) -> List[JunkFile]
     return found
 
 def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
-    """Evalúa si un archivo en disco cumple con los requisitos para ser marcado como JunkFile."""
+    """Evalúa eficientemente usando stat directo de os.DirEntry."""
     try:
-        stat_info = entry.stat()
+        stat_info = entry.stat(follow_symlinks=False)
         if stat_info.st_size > 0 and not (_get_win_attributes(entry) & 0x06):
-            if os.access(entry.path, os.R_OK):
-                found.append(JunkFile(Path(entry.path), stat_info.st_size, datetime.fromtimestamp(stat_info.st_mtime)))
+            found.append(JunkFile(Path(entry.path), stat_info.st_size, datetime.fromtimestamp(stat_info.st_mtime)))
     except (OSError, PermissionError):
         pass
 

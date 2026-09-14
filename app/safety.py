@@ -365,10 +365,12 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_system_path_cached(path_str: str) -> bool:
-    """Compara la ruta normalizada contra listas de directorios protegidos."""
+    """Compara la ruta normalizada contra listas de directorios protegidos de forma eficiente."""
     path_lower = path_str.lower()
-    return any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR) or \
-           not set(path_lower.split(os.sep)).isdisjoint(PROTECTED_DIR_NAMES)
+    if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
+        return True
+    return any(f"{os.sep}{p}{os.sep}" in path_lower or path_lower.endswith(f"{os.sep}{p}") 
+               for p in PROTECTED_DIR_NAMES)
 
 @lru_cache(maxsize=2048)
 def is_protected_path(path: PathLike) -> bool:

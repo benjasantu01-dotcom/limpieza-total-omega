@@ -749,7 +749,7 @@ def summarize(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[str]:
         return ["La cuarentena está vacía."]
     
     total_mb = sum(i.size_mb for i in items)
-    lines = [f"{len(items)} archivo(s) en cuarentena — {round(total_mb, 2)} MB", ""]
+    lines = [f"{len(items)} archivo(s) en cuarentena — {total_mb:.2f} MB", ""]
     for item in items:
         lines.extend([
             f"  [{item.item_id}] {Path(item.original_path).name} — {item.size_mb} MB",
