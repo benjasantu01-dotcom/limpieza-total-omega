@@ -146,7 +146,10 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        """Normaliza y valida campos para evitar datos corruptos o fuera de rango."""
+        """
+        Asegura la integridad de los datos normalizando valores negativos, 
+        corrigiendo tipos y limitando porcentajes al rango [0, 100].
+        """
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
         self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
@@ -206,7 +209,11 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Pipeline principal: procesa métricas y retorna un objeto HealthResult consolidado."""
+    """
+    Ejecuta el pipeline de evaluación: valida el estado inicial, aplica los 
+    calculadores de ratios (`_SCORERS`) y pondera los resultados según `WEIGHTS`
+    para obtener una puntuación final consolidada.
+    """
     if metrics is None or not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos."])
     

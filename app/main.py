@@ -81,6 +81,14 @@ from scanner import scan_directory, run_windows_defender_quick_scan
 # Alias para mejorar la legibilidad de las firmas de funciones asíncronas
 AsyncCallback: TypeAlias = Callable[[], Any]
 
+# Definición centralizada de áreas para el dashboard de salud
+HEALTH_METRICS_CONFIG = (
+    ("basura", "Basura"),
+    ("sospechosos", "Sospechosos"),
+    ("ram", "RAM libre"),
+    ("disco", "Disco libre"),
+)
+
 @lru_cache(maxsize=1)
 def get_cached_settings() -> Dict[str, Any]:
     """Carga inicial de configuración desde el archivo persistente."""
@@ -552,10 +560,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Salud", tab)
 
     def _build_health_metrics_row(self, container: ctk.CTkFrame) -> None:
-        """Inicializa las tarjetas resumen del sistema."""
-        metrics_meta = (("basura", "Basura"), ("sospechosos", "Sospechosos"),
-                        ("ram", "RAM libre"), ("disco", "Disco libre"))
-        for i, (clave, titulo) in enumerate(metrics_meta):
+        """Inicializa las tarjetas resumen del sistema a partir de la configuración."""
+        for i, (clave, titulo) in enumerate(HEALTH_METRICS_CONFIG):
             container.grid_columnconfigure(i, weight=1)
             self.cards[clave] = self._metric_card(container, titulo, i)
 
