@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 33
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 218
+- Rechazadas por guardia de seguridad: 32
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-12 | 112 | 6 | 20 | 10 | 129 |
+| 2026-09-12 | 110 | 6 | 19 | 10 | 128 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
-| 2026-09-14 | 71 | 2 | 8 | 6 | 72 |
+| 2026-09-14 | 74 | 2 | 8 | 7 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **48**
-- robustez ante casos límite: **34**
-- rendimiento: **32**
+- rendimiento: **35**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
+- `browser.py`: **20**
 - `safety.py`: **19**
 - `assistant.py`: **19**
-- `browser.py`: **19**
-- `organizer.py`: **18**
+- `quarantine.py`: **19**
 - `settings.py`: **18**
 - `diskreport.py`: **17**
+- `organizer.py`: **17**
 - `healthscore.py`: **16**
 - `memory.py`: **16**
-- `duplicates.py`: **13**
+- `duplicates.py`: **14**
+- `branding.py`: **13**
 - `main.py`: **13**
-- `branding.py`: **12**
 - `scanner.py`: **11**
 - `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-14T06:49:24` **duplicates.py** (rendimiento): Optimizé la performance del escaneo inicial en `_collect_candidates` evitando llamadas redundantes a `entry.stat()` mediante el uso del objeto `os.DirEntry` ya cacheado, y mejoré la eficiencia del filtrado de duplicados evitando re-ejecutar `is_safe_to_modify` dentro de los métodos de hashing, ya que la validación inicial del escaneo ya garantiza la integridad del conjunto.
+- `2026-09-14T06:48:47` **browser.py** (rendimiento): Se optimizó `_sum_directory_recursive` implementando un chequeo previo de `entry.is_file()` para evitar llamadas innecesarias a `os.scandir` o `path.exists` en archivos, y se aseguró que el diccionario `memo` persista durante todo el proceso de escaneo para evitar el recálculo de directorios compartidos o anidados (ej. estructuras `User Data` comunes entre navegadores).
+- `2026-09-14T06:48:22` **branding.py** (rendimiento): Optimicé el renderizado de franjas y la generación de gradientes reemplazando listas mutables por generadores/tuplas y mejorando la gestión de la caché para reducir la presión en el recolector de basura durante el refresco de UI.
 - `2026-09-14T06:39:25` **assistant.py** (rendimiento): Optimizé la generación de texto de contexto convirtiendo `_generate_context_lines_cached` en una función que recibe un `SystemContext` directamente y utiliza un `lru_cache` sobre el hash del objeto, eliminando la sobrecarga de serializar múltiples argumentos en `context_as_text`.
 - `2026-09-14T06:38:33` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo al centralizar la lógica de conversión de claves de configuración, documentando explícitamente el contrato de los validadores y renombrando campos para evitar errores de capitalización inconsistentes (como en `asistente_enviar_METRICAS`).
 - `2026-09-14T06:38:02` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings detallados en las funciones de heurística y métodos del escáner, aclarando el propósito y las precondiciones de cada chequeo para facilitar el mantenimiento y la auditoría del código.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-14T06:08:52` **diskreport.py** (legibilidad y documentación): Se introdujo documentación explicativa en `walk_files` y `_collect_summary_data` sobre la lógica de recolección y seguridad, además de estandarizar la nomenclatura de retornos en los type hints para mejorar la legibilidad y mantenimiento futuro.
 - `2026-09-14T06:08:41` **browser.py** (legibilidad y documentación): Documenté el propósito de los filtros de seguridad y estructuras de datos críticas mediante type hints enriquecidos y docstrings detallados, eliminando ambigüedades en la lógica de resolución de rutas para asegurar la mantenibilidad del escáner.
 - `2026-09-14T06:08:12` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las estructuras de datos complejas mediante la definición explícita de `ColorSegment` y la adición de docstrings técnicos que clarifican la lógica de renderizado y el uso de la caché.
-- `2026-09-14T06:07:36` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_call_gemini` y `_build_payload`, eliminando lógica de construcción de strings compleja e insegura en favor de una estructura de mensajes más clara, y añadiendo docstrings que clarifican las responsabilidades de cada etapa del flujo de comunicación con la API.
-- `2026-09-14T05:58:21` **settings.py** (manejo de errores y validación de entradas): Refactoricé el decorador `type_check` para que sea capaz de manejar funciones con múltiples argumentos de forma robusta y ajusté `_Validators.int` para que capture explícitamente excepciones de conversión de tipos, garantizando que una entrada corrupta en el JSON no interrumpa el proceso de carga o validación.
-- `2026-09-14T05:57:21` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante errores imprevistos de la API de Windows añadiendo bloques `try-except` granulares en `_validate_ntfs_reparse_redirection` y `_validate_boundary_conditions` para evitar que la aplicación aborte ante fallos de permisos o lectura de metadatos, garantizando una validación segura y silenciosa ante casos límite del sistema de archivos.

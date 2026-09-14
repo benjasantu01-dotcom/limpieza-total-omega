@@ -116,7 +116,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         
     try:
         p = Path(path)
-        if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p):
+        if not p.is_file() or _is_file_locked(p):
             return None
             
         digest = hashlib.sha256()
@@ -139,7 +139,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
     try:
         p = Path(path)
-        if not p.is_file() or p.stat().st_size == 0 or is_protected_path(p) or not is_safe_to_modify(p):
+        if not p.is_file():
             return None
 
         with open(p, "rb") as f:
@@ -151,7 +151,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
         return None
 
 
-def _is_valid_candidate(path: Path, st: Optional[os.stat_result] = None) -> bool:
+def _is_valid_candidate(path: Path, stat_result: Optional[os.stat_result] = None) -> bool:
     """Valida que el archivo sea procesable.
     Criterios de exclusión: enlaces simbólicos, rutas protegidas, archivos bloqueados o atributos de sistema."""
     try:
@@ -160,24 +160,24 @@ def _is_valid_candidate(path: Path, st: Optional[os.stat_result] = None) -> bool
         if is_system_or_hidden(path):
             return False
             
-        st = st or path.stat()
+        st = stat_result or path.stat()
         return st.st_size > 0 and st.st_nlink == 1
     except (OSError, ValueError, TypeError, RuntimeError):
         return False
 
 
-def _should_include_entry(entry: os.DirEntry, min_size: int) -> bool:
-    """Filtro de alto nivel para os.scandir: determina si un objeto es un archivo elegible
-    basándose en el tamaño mínimo y las reglas de seguridad de la app."""
+def _should_include_entry(entry: os.DirEntry, min_size: int) -> tuple[bool, Optional[os.stat_result]]:
+    """Filtro de alto nivel para os.scandir: devuelve si es válido y su stat cacheado."""
     try:
+        st = entry.stat()
+        if st.st_size < min_size:
+            return False, None
         path = Path(entry.path)
-        if not is_safe_to_modify(path) or is_protected_path(path):
-            return False
-        if entry.is_file(follow_symlinks=False):
-            return entry.stat().st_size >= min_size and _is_valid_candidate(path)
-        return False
+        if not is_safe_to_modify(path) or is_protected_path(path) or not _is_valid_candidate(path, st):
+            return False, None
+        return True, st
     except OSError:
-        return False
+        return False, None
 
 
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
@@ -209,8 +209,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Escaneo recursivo que utiliza un set de visited_dirs para evitar ciclos y 
-    aplica la jerarquía de seguridad de `safety.py` en cada nivel."""
+    """Escaneo recursivo que utiliza un set de visited_dirs para evitar ciclos."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     visited_dirs: set[str] = set()
 
@@ -225,8 +224,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                     if entry.is_dir(follow_symlinks=False):
                         if not is_junction(Path(entry.path)):
                             _scan_dir(Path(entry.path))
-                    elif _should_include_entry(entry, min_size):
-                        size_to_paths_map[entry.stat().st_size].append(Path(entry.path))
+                    else:
+                        valid, st = _should_include_entry(entry, min_size)
+                        if valid and st:
+                            size_to_paths_map[st.st_size].append(Path(entry.path))
         except (OSError, PermissionError):
             pass
 

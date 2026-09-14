@@ -289,13 +289,11 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     else:
         rgb_stops = tuple(_hex_to_rgb(s) for s in stops)
         tramos = len(stops) - 1
-        res_list = [C_TEXT_MUTED] * n
-        for i in range(n):
-            pos = (i / (n - 1) * tramos) if n > 1 else 0
-            idx = min(int(pos), tramos - 1)
-            delta = pos - idx
-            res_list[i] = _rgb_to_hex(_interpolate_rgb(rgb_stops[idx], rgb_stops[idx + 1], delta))
-        res = tuple(res_list)
+        res = tuple(_rgb_to_hex(_interpolate_rgb(
+            rgb_stops[int((i / (n - 1) * tramos) if n > 1 else 0)],
+            rgb_stops[min(int((i / (n - 1) * tramos) if n > 1 else 0) + 1, tramos)],
+            (i / (n - 1) * tramos % 1) if n > 1 else 0
+        )) for i in range(n))
     
     _GRADIENT_CACHE[key] = res
     return res
@@ -324,11 +322,8 @@ SHIELD_BASE_COORDS: Final[Tuple[float, ...]] = (64, 18, 100, 31, 100, 67, 90, 90
 @lru_cache(maxsize=8)
 def _get_scaled_poly(scale: float, canvas_x: float, canvas_y: float) -> Tuple[float, ...]:
     """Transforma las coordenadas base del escudo aplicando un factor de escala y offset (x, y)."""
-    poly: List[float] = []
-    for i in range(0, len(SHIELD_BASE_COORDS), 2):
-        poly.append(canvas_x + SHIELD_BASE_COORDS[i] * scale)
-        poly.append(canvas_y + SHIELD_BASE_COORDS[i+1] * scale)
-    return tuple(poly)
+    return tuple(canvas_x + c * scale if i % 2 == 0 else canvas_y + c * scale 
+                 for i, c in enumerate(SHIELD_BASE_COORDS))
 
 @lru_cache(maxsize=8)
 def logo_svg(size: int = 128) -> str:
@@ -380,14 +375,13 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
     """
     try:
         franjas_count = max(6, int(28 * scale))
-        colores = gradient_colors(franjas_count)
         base_y = canvas_y + 18 * scale
         factor_y = 92 * scale / franjas_count
         center_x = canvas_x + 64 * scale
-        for seg in _get_grouped_segments(colores):
+        
+        for seg in _get_grouped_segments(gradient_colors(franjas_count)):
             mid = (seg.start_index + seg.end_index) / 2
             progreso = mid / max(1.0, float(franjas_count - 1))
-            # Ajuste de ancho cónico para dar profundidad 3D al escudo
             w = 36 * scale * (1.0 if progreso < 0.55 else 1.0 - (progreso - 0.55) * 1.9)
             canvas.create_rectangle(center_x - w, base_y + seg.start_index * factor_y, 
                                     center_x + w, base_y + seg.end_index * factor_y + 1, 
@@ -415,13 +409,11 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         s = float(size)
         if s <= 0: return
         scale = max(0.1, min(10.0, s / 128.0))
-        # Fondo radial de resplandor (Glow)
         canvas.create_oval(
             canvas_x + 64 * scale - 75 * scale, canvas_y + 58 * scale - 75 * scale, 
             canvas_x + 64 * scale + 75 * scale, canvas_y + 58 * scale + 75 * scale, 
             fill=blend(C_SURFACE, C_GLOW, 0.15), outline=""
         )
-        # Cuerpo principal del escudo
         canvas.create_polygon(*_get_scaled_poly(scale, canvas_x, canvas_y), fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
         _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, scale)

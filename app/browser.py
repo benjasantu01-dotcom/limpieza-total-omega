@@ -186,9 +186,6 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         if _is_excluded_file(entry.name):
             return True
         
-        if not os.path.lexists(entry.path):
-            return True
-
         path = entry.path
         if len(path) >= MAX_PATH_LEN or any(c in path for c in '\0\r\n'):
             return True
@@ -228,59 +225,31 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula el tamaño de un directorio mediante búsqueda en profundidad (DFS).
-    
-    Args:
-        root_abs: Ruta absoluta que se está escaneando.
-        memo: Caché de resultados para evitar re-cálculo de subcarpetas.
-        root_base: Raíz permitida para evitar saltos fuera del sandbox.
+    Calcula el tamaño de un directorio mediante búsqueda en profundidad (DFS) con memorización.
     """
     if root_abs in memo:
         return memo[root_abs]
 
-    try:
-        current_abs = str(Path(root_abs).resolve(strict=True))
-    except (OSError, RuntimeError):
-        return 0
-
-    if not current_abs or depth > MAX_SCAN_DEPTH or len(current_abs) >= MAX_PATH_LEN:
-        return 0
-    if any(c in current_abs for c in '\0\r\n') or not current_abs.startswith(root_base):
-        return 0
-    
-    root_path = Path(current_abs)
-    if not root_path.exists() or not is_safe_to_modify(root_path) or is_protected_path(root_path):
-        return 0
-        
     total: int = 0
     try:
-        with os.scandir(current_abs) as it:
+        with os.scandir(root_abs) as it:
             for entry in it:
                 if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue
                 
-                # Validación de seguridad: impedir que la resolución absoluta escape de root_base
-                try:
-                    entry_real_path = str(Path(entry.path).resolve(strict=True))
-                    if not entry_real_path.startswith(root_base):
-                        continue
-                except (OSError, RuntimeError):
-                    continue
-
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        total += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
-                    else:
+                        if depth < MAX_SCAN_DEPTH:
+                            total += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
+                    elif entry.is_file(follow_symlinks=False):
                         total += entry.stat(follow_symlinks=False).st_size
                 except OSError as e:
-                    # Ignorar errores de acceso a archivos bloqueados por otros procesos (sharing violation)
                     if kernel32 and getattr(e, 'winerror', None) == ERROR_SHARING_VIOLATION:
                         continue
-                    continue
     except (PermissionError, OSError):
         return 0
     
-    memo[current_abs] = total
+    memo[root_abs] = total
     return total
 
 
@@ -292,8 +261,8 @@ def directory_size(path: Union[str, Path, None]) -> int:
     if not p.is_absolute() or not _is_safe_to_traverse(p, None):
         return 0
     try:
-        resolved = p.resolve(strict=True)
-        return _sum_directory_recursive(str(resolved), _IS_JUNCTION_FN, _get_kernel32(), {}, str(resolved))
+        resolved = str(p.resolve(strict=True))
+        return _sum_directory_recursive(resolved, _IS_JUNCTION_FN, _get_kernel32(), {}, resolved)
     except (OSError, RuntimeError):
         return 0
 
@@ -344,7 +313,6 @@ def detect_profiles(
                     continue
                 
                 real_candidate = candidate.resolve(strict=True)
-                # Se utiliza el diccionario perf_cache para reutilizar resultados de subcarpetas entre navegadores
                 size = _sum_directory_recursive(str(real_candidate), _IS_JUNCTION_FN, k32, perf_cache, str(real_base))
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), real_candidate, size))
