@@ -396,9 +396,8 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """Inicializa un SystemContext completo integrando datos de múltiples fuentes."""
     ctx = SystemContext()
     for s in (metrics, health, extra):
-        if s is not None:
-            if ctx.ingest(s):
-                ctx.analyzed = True
+        if s is not None and ctx.ingest(s):
+            ctx.analyzed = True
     return ctx
 
 def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
@@ -668,6 +667,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             return _validate_response_length(raw_text.strip())
             
     except (urllib.error.URLError, OSError, json.JSONDecodeError, UnicodeDecodeError):
+        # Captura errores de red sin romper el flujo de la aplicación.
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None,

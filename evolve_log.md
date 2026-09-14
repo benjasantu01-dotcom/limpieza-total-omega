@@ -1383,3 +1383,15 @@ FAILED evolve/tests/test_assistant.py::test_invalid_theme_falls_back - Assertion
 - `2026-09-14T05:20:00` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-14T05:20:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T05:20:00` Corrida terminada. Total usado hoy: 123.
+- `2026-09-14T05:26:05` Arrancando corrida. Quedan hoy ~177 peticiones objetivo.
+- `2026-09-14T05:26:08` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-14T05:26:08` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-14T05:26:28` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-14T05:26:28` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-14T05:26:58` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-14T05:26:58` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-14T05:27:50` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` validando el retorno de `ingest` para evitar procesar contextos parcialmente corruptos y refiné la lógica de `_call_gemini` para capturar errores de red específicos sin comprometer la seguridad del flujo, siguiendo el enfoque de manejo estricto de excepciones y validación de estados.
+- `2026-09-14T05:28:24` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-14T05:28:35` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `base_directories` y `detect_profiles` implementando validaciones de entrada más estrictas y manejando explícitamente posibles valores `None` o rutas mal formadas para evitar excepciones en tiempo de ejecución, alineado con el enfoque de manejo de errores y validación.
+- `2026-09-14T05:28:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T05:28:35` Corrida terminada. Total usado hoy: 127.

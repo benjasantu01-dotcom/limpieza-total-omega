@@ -320,12 +320,17 @@ def detect_profiles(
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
+    if not isinstance(raw_bases, (list, tuple)):
+        return []
+
     for base in raw_bases:
         if not isinstance(base, Path) or not base.is_dir():
             continue
         try:
             real_base = base.resolve(strict=True)
             for browser_name, rel_str in browser_map.items():
+                if not isinstance(rel_str, str):
+                    continue
                 candidate = real_base.joinpath(*rel_str.split("\\"))
                 if not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                     continue
