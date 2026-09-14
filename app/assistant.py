@@ -112,9 +112,7 @@ class ProblemCriterion(NamedTuple):
         Ejecuta la comparación lógica entre la métrica actual y el umbral configurado.
         Retorna True si la condición de problema es satisfecha.
         """
-        if self.operator == "<": return val < self.threshold
-        if self.operator == ">": return val > self.threshold
-        return False
+        return val < self.threshold if self.operator == "<" else val > self.threshold
 
     def is_triggered_by(self, ctx: SystemContext) -> bool:
         """
@@ -129,13 +127,11 @@ class ProblemCriterion(NamedTuple):
         Genera un mensaje de advertencia formateado si el criterio de problema es superado.
         Valida que el mensaje resultante sea seguro antes de devolverlo.
         """
+        f_val = ctx.get_metric(self.metric_key, -1.0)
+        if f_val < 0 or not self._evaluate_metric(f_val):
+            return None
+            
         try:
-            if not self.is_triggered_by(ctx):
-                return None
-            
-            f_val = ctx.get_metric(self.metric_key, -1.0)
-            if f_val < 0: return None
-            
             msg: str = self.message_format.format(f_val)[:_MAX_MSG_CHUNK]
             return msg if _ensure_safe_text(msg) else None
         except (ValueError, TypeError, AttributeError, KeyError):
@@ -464,7 +460,7 @@ def explain_area(area: Any) -> str:
 @lru_cache(maxsize=16)
 def _get_active_problems(ctx: SystemContext) -> tuple[str, ...]:
     """Identifica problemas activos comparando el contexto contra los criterios de salud."""
-    return tuple(msg for crit in _CRITERIOS_SALUD if (msg := crit.format_if_triggered(ctx)))
+    return tuple(msg for msg in (crit.format_if_triggered(ctx) for crit in _CRITERIOS_SALUD) if msg)
 
 def _format_problem_message(problems: tuple[str, ...], score: Union[int, str]) -> str:
     """Crea una oración descriptiva con los problemas encontrados, priorizados."""

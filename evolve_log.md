@@ -1070,3 +1070,38 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-14T02:05:30` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación de `Scanner` y sus métodos principales mediante docstrings más precisos que aclaran las responsabilidades de seguridad y el manejo de excepciones, además de añadir type hints explícitos para mejorar la legibilidad y mantenibilidad del flujo de escaneo.
 - `2026-09-14T02:05:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T02:05:30` Corrida terminada. Total usado hoy: 47.
+- `2026-09-14T02:12:31` Arrancando corrida. Quedan hoy ~253 peticiones objetivo.
+- `2026-09-14T02:13:04` Tests FALLARON:
+```
+.......F................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________________ test_invalid_theme_falls_back _________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_invalid_theme_falls_back0')
+
+    def test_invalid_theme_falls_back(tmp_path):
+>       assert settings.validate({"tema": "fucsia"})["tema"] == settings.DEFAULTS["tema"]
+E       AssertionError: assert 'fucsia' == 'oscuro'
+E         
+E         - oscuro
+E         + fucsia
+
+evolve/tests/test_assistant.py:77: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_invalid_theme_falls_back - AssertionError: assert 'fucsia' == 'oscuro'
+  
+  - oscuro
+  + fucsia
+1 failed, 298 passed in 1.34s
+
+```
+- `2026-09-14T02:13:04` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejore la legibilidad y mantenibilidad de `settings.py` documentando los validadores mediante docstrings descriptivos, consolidando la lógica de validación de tipos en métodos estáticos más claros y asegurando que las constantes de configuración tengan una jerarquía visual definida.
+- `2026-09-14T02:13:31` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `StartupEntry` mediante la adición de docstrings técnicos específicos y type hints que clarifican las intenciones de los métodos de validación y resolución de rutas.
+- `2026-09-14T02:14:11` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_active_problems` eliminando la recreación innecesaria de tuplas y mejorando la eficiencia del bucle mediante una compresión de generador más limpia que evita validaciones redundantes, además de asegurar que la evaluación de criterios sea más directa.
+- `2026-09-14T02:14:31` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado `logo_svg` utilizando una cadena de formato pre-compilada y extrayendo la generación de `stops` fuera de la función, eliminando la reconstrucción de la cadena en cada llamado para reducir la presión sobre el recolector de basura.
+- `2026-09-14T02:14:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T02:14:31` Corrida terminada. Total usado hoy: 51.

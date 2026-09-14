@@ -82,7 +82,7 @@ class StartupEntry:
 
     @property
     def is_valid(self) -> bool:
-        """Valida si el comando es técnicamente procesable y seguro de analizar."""
+        """Determina si el comando es técnicamente procesable mediante heurísticas de seguridad."""
         if not self.command or self._is_path_suspicious(self.command):
             return False
         if self._is_reserved_device_name(self.command):
@@ -90,7 +90,10 @@ class StartupEntry:
         return True
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
-        """Detecta rutas que apuntan a dispositivos DOS heredados (ej. CON, NUL) para prevenir bloqueo de I/O."""
+        """
+        Verifica si la ruta corresponde a dispositivos especiales de Windows (ej. CON, NUL).
+        Evita bloqueos de I/O al intentar acceder a estos nombres reservados.
+        """
         reserved: Set[str] = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
         try:
             if "\0" in path_str:
@@ -100,25 +103,25 @@ class StartupEntry:
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:
-        """Identifica caracteres peligrosos o prefijos UNC (red) no soportados en el escaneo local."""
+        """Detecta caracteres de control o rutas UNC que exceden el alcance del escaneo local."""
         suspicious_chars: str = '<>|?*\0&;%^$'
         return any(c in path_string for c in suspicious_chars) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Verifica si la extensión coincide con binarios permitidos y descarta enlaces simbólicos."""
+        """Valida que la extensión sea ejecutable y no se trate de un enlace simbólico (evitar bucles)."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Filtra caracteres no imprimibles (ASCII < 32) para evitar errores de renderizado o inyección."""
+        """Limpia caracteres no imprimibles (ASCII < 32) de la línea de comandos recuperada."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Parsea rutas entrecomilladas eliminando comillas y validando la integridad del contenido interno."""
+        """Extrae y valida rutas encerradas en comillas (ej. "C:\Path\App.exe")."""
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
         
@@ -140,7 +143,7 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Realiza comprobaciones de bajo nivel (lstat) para verificar existencia y acceso sin seguir links."""
+        """Verifica la existencia y accesibilidad física del archivo mediante comprobaciones de sistema."""
         try:
             if not p.exists() or not os.access(p, os.F_OK) or p.is_dir() or is_protected_path(p):
                 return False
@@ -150,7 +153,7 @@ class StartupEntry:
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Normaliza la ruta, consulta el caché global y valida acceso. Retorna ruta absoluta o cadena vacía."""
+        """Normaliza rutas, gestiona el caché global de I/O y resuelve la ubicación absoluta."""
         if not self.is_valid:
             return ""
         
@@ -184,7 +187,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Selecciona la estrategia de extracción (quote-aware vs raw) para encontrar el ejecutable principal."""
+        """Estrategia de resolución de rutas según el formato de la línea de comandos."""
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -201,7 +204,7 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Retorna la ruta resuelta del ejecutable, realizando la resolución mediante 'lazy loading'."""
+        """Obtiene la ruta resuelta del ejecutable usando una estrategia de carga perezosa (lazy loading)."""
         if self._checked_exists:
             return self._exec_cache or ""
             

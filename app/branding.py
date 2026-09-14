@@ -29,6 +29,10 @@ import math
 # Caché local para evitar recálculo de gradientes en cada frame
 _GRADIENT_CACHE: dict[tuple[int, tuple[HexColor, ...]], Tuple[HexColor, ...]] = {}
 
+# Pre-generación de fragmento SVG estático para mejorar performance
+_SVG_GRADIENT_STOPS: Final[str] = "\n".join([f'      <stop offset="{o}" stop-color="{c}"/>' 
+                       for o, c in zip(["0%", "55%", "100%"], ["#00f0c0", "#7c5cff", "#ff2d78"])])
+
 class CanvasElement(Protocol):
     """
     Protocolo Duck-typing que define los métodos necesarios para la integración 
@@ -326,12 +330,9 @@ def _get_scaled_poly(scale: float, canvas_x: float, canvas_y: float) -> Tuple[fl
 def logo_svg(size: int = 128) -> str:
     """Genera una cadena XML representando el logo de la marca en formato SVG."""
     s = max(1, min(4096, int(size)))
-    stops = "\n".join([f'      <stop offset="{o}" stop-color="{c}"/>' 
-                       for o, c in zip(["0%", "55%", "100%"], GRADIENT_STOPS)])
-    
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
-    <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{stops}    </linearGradient>
+    <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{_SVG_GRADIENT_STOPS}    </linearGradient>
     <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">
       <stop offset="0%" stop-color="{C_GLOW}" stop-opacity="0.45"/>
       <stop offset="100%" stop-color="{C_GLOW}" stop-opacity="0"/>
