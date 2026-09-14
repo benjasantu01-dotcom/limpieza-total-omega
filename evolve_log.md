@@ -558,3 +558,36 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-09-14T08:12:47` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva centralizando la validación de rutas en las acciones de los botones del panel de limpieza, asegurando que `scan_target` sea verificado mediante `_is_safe_target_dir` antes de cualquier operación de I/O, evitando condiciones de carrera o validaciones parciales.
 - `2026-09-14T08:12:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T08:12:47` Corrida terminada. Total usado hoy: 191.
+- `2026-09-14T08:19:37` Arrancando corrida. Quedan hoy ~109 peticiones objetivo.
+- `2026-09-14T08:20:07` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad de `trim_working_set` al asegurar que el proceso objetivo sea verificado mediante `is_safe_to_modify` *antes* de realizar cualquier operación sobre él, y corregí la apertura redundante de handles que podía dejar recursos abiertos en caso de error.
+- `2026-09-14T08:20:35` Tests FALLARON:
+```
+True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-2/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+
+evolve/tests/test_basic.py:144: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:124: SyntaxWarning: invalid escape sequence '\P'
+    """Extrae y valida rutas encerradas en comillas (ej. "C:\Path\App.exe")."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AssertionError: el archivo debe salir de su lugar original
+assert not True
+ +  where True = exists()
+ +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-2/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+1 failed, 298 passed, 7 warnings in 1.35s
+
+```
+- `2026-09-14T08:20:35` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se introdujo una restricción de seguridad adicional en `_is_safe_for_disk_op` para prevenir el movimiento de archivos hacia su propia jerarquía o hacia directorios protegidos mediante la validación estricta de `resolve()` y `is_relative_to`, asegurando que el destino siempre esté bajo la carpeta de cuarentena autorizada.
+- `2026-09-14T08:21:11` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `quarantine_file` añadiendo una validación explícita para evitar posibles ataques de enlace simbólico (TOCTOU) mediante la verificación de `st_ino` y `st_dev` antes y después de la copia, asegurando que el archivo fuente no haya sido reemplazado por un vínculo mientras se procesaba.
+- `2026-09-14T08:21:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-14T08:21:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T08:21:15` Corrida terminada. Total usado hoy: 195.

@@ -402,7 +402,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
-    proc_handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, target_pid)
+    # Abrimos con acceso para consulta y modificación
+    proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         return False, f"Acceso denegado (Error {kernel32.GetLastError()})."
     
@@ -411,11 +412,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not is_safe: 
             return False, error_reason or "Verificación de seguridad fallida."
         
-        kernel32.CloseHandle(proc_handle)
-        proc_handle = kernel32.OpenProcess(PROCESS_SET_QUOTA, False, target_pid)
-        if not proc_handle:
-            return False, "Error al escalar privilegios para la operación."
-        
         if not psapi.EmptyWorkingSet(proc_handle): 
             return False, f"Sistema denegó la operación (Error {kernel32.GetLastError()})."
             
@@ -423,5 +419,4 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, OSError, ValueError, TypeError) as e:
         return False, f"Error de sistema: {str(e)}"
     finally:
-        if proc_handle:
-            kernel32.CloseHandle(proc_handle)
+        kernel32.CloseHandle(proc_handle)

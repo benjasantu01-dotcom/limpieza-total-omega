@@ -447,25 +447,27 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
         raise UnsafePathError("Destino en ruta protegida.")
     _check_windows_file_attributes(str(destination))
 
+    # Captura estado original para comparación TOCTOU
+    src_stat_pre = source.stat()
+    src_ino_pre = src_stat_pre.st_ino
+    src_dev_pre = src_stat_pre.st_dev
+
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
     fd = os.open(str(destination), flags, 0o600)
     
     try:
-        src_stat = source.stat()
-        src_ino = src_stat.st_ino
-        src_dev = src_stat.st_dev
-        
         with os.fdopen(fd, 'wb') as tmp:
             with open(source, 'rb') as src:
                 shutil.copyfileobj(src, tmp)
             tmp.flush()
             os.fsync(tmp.fileno())
         
+        # Verificación post-escritura
         final_src_stat = source.stat()
-        if final_src_stat.st_ino != src_ino or final_src_stat.st_dev != src_dev:
+        if final_src_stat.st_ino != src_ino_pre or final_src_stat.st_dev != src_dev_pre:
              raise OSError("Alerta de seguridad: origen reemplazado durante copia.")
         
-        if destination.stat().st_size != src_stat.st_size or destination.stat().st_size == 0:
+        if destination.stat().st_size != src_stat_pre.st_size or destination.stat().st_size == 0:
             raise OSError("Error de integridad post-escritura.")
             
         _check_windows_file_attributes(str(destination))
