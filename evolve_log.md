@@ -1126,3 +1126,10 @@ FAILED evolve/tests/test_assistant.py::test_invalid_theme_falls_back - Assertion
 - `2026-09-14T02:40:18` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó `load_manifest` mediante el uso de `json.load` sobre el descriptor de archivo directo y se reemplazó la recreación iterativa de `QuarantineItem` por una validación de esquema más eficiente, reduciendo el overhead de memoria y I/O.
 - `2026-09-14T02:40:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-14T02:40:18` Corrida terminada. Total usado hoy: 59.
+- `2026-09-14T02:43:04` Arrancando corrida. Quedan hoy ~241 peticiones objetivo.
+- `2026-09-14T02:43:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-14T02:44:04` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un decorador `@lru_cache` para la función `_is_file_in_use` y se eliminó la lógica de lectura repetida de atributos mediante el uso de una caché de atributos en `_check_file_integrity`, reduciendo drásticamente las llamadas al sistema en operaciones de escaneo masivo.
+- `2026-09-14T02:44:33` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo restringiendo el filtrado de extensiones mediante la pre-validación de `SUSPICIOUS_ALL_EXTS` y la aplicación de un filtro de exclusión temprana de carpetas (caching de lower-case paths) para evitar recorridos redundantes en directorios ya procesados.
+- `2026-09-14T02:44:47` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de caché para los resultados de la validación de rutas y estructuras de configuración en `_CACHE` y `_SAFETY_CACHE` para evitar operaciones redundantes de I/O y resolución de caminos (stat/resolve) en cada acceso, mejorando la latencia del sistema.
+- `2026-09-14T02:44:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-14T02:44:47` Corrida terminada. Total usado hoy: 63.

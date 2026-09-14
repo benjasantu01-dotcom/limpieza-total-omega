@@ -233,6 +233,7 @@ def _is_offline(path_str: str) -> bool:
         return bool(attrs & FILE_ATTRIBUTE_OFFLINE)
     except (AttributeError, OSError, TypeError): return False
 
+@lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
     """Verifica si un proceso está bloqueando el archivo mediante acceso exclusivo de WinAPI."""
     if os.name != 'nt' or not os.path.isabs(path_str):
@@ -241,11 +242,10 @@ def _is_file_in_use(path_str: str) -> bool:
     kernel32 = ctypes.windll.kernel32
     INVALID_HANDLE_VALUE = -1
     try:
-        # Intenta abrir con acceso compartido de lectura, denegando escritura/borrado
         handle = kernel32.CreateFileW(path_str, 0, 1, None, 3, 0x00000080, None)
         if handle == INVALID_HANDLE_VALUE: 
             err = ctypes.GetLastError()
-            return err != 5  # Si el error no es ACCESS_DENIED, asumimos que está en uso
+            return err != 5
         kernel32.CloseHandle(handle)
         return False
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
@@ -290,10 +290,7 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 }
 
 def _check_file_integrity(path: Path) -> None:
-    """
-    Ejecuta la batería de reglas de integridad sobre el archivo.
-    Lanza `UnsafePathError` si se detecta cualquier condición de riesgo.
-    """
+    """Ejecuta la batería de reglas de integridad sobre el archivo."""
     try:
         file_stat = path.stat()
     except PermissionError:
@@ -413,7 +410,6 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED)
     
     try:
-        # Validación TOCTOU: Verificar que el objeto Path sea consistente con el path_string
         if target_path.exists() and not target_path.is_absolute():
             raise UnsafePathError("Ruta inconsistente con el sistema.", SafetyValidationErrorCode.GENERIC)
 

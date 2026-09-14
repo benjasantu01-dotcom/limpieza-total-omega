@@ -133,30 +133,19 @@ class Scanner:
             return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """
-        Valida que la entrada sea segura para procesar:
-        - Verifica restricciones de longitud de ruta y caracteres especiales.
-        - Descarta rutas UNC, enlaces simbólicos y rutas protegidas por sistema.
-        - Asegura que la ruta no escape del directorio base original.
-        """
+        """Valida que la entrada sea segura para procesar: restricciones, UNC, symlinks, rutas protegidas."""
         name = entry.name
         path_str = entry.path
         
         if not name or not path_str or len(path_str) > MAX_PATH_LENGTH:
             return False
-            
         if path_str.startswith(("\\\\", "//")):
             return False
-            
         if INVALID_TRAILING_CHARS_RE.search(name) or RTL_CHAR_RE.search(path_str) or RESERVED_NAMES_RE.match(name):
             return False
 
         try:
-            if entry.is_symlink():
-                return False
-            if not self._is_inside_base_root(path_str):
-                return False
-            return not is_protected_path(Path(path_str))
+            return not (entry.is_symlink() or not self._is_inside_base_root(path_str) or is_protected_path(Path(path_str)))
         except (OSError, PermissionError):
             return False
 
@@ -168,17 +157,13 @@ class Scanner:
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """Agrega un directorio al stack de procesamiento si no ha sido visitado aún."""
-        if entry.path and entry.path not in self.seen:
-            self.seen.add(entry.path)
+        """Agrega un directorio al stack si no ha sido visitado."""
+        if entry.path and entry.path.lower() not in self.seen:
+            self.seen.add(entry.path.lower())
             directory_stack.append(entry.path)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """
-        Clasifica una entrada del sistema de archivos:
-        - Si es directorio seguro, lo añade a la pila para escaneo recursivo.
-        - Si es archivo ejecutable/sospechoso, dispara el motor de heurísticas.
-        """
+        """Clasifica entrada: añade directorios a stack o analiza archivos mediante heurísticas."""
         if not self._is_safe_entry(entry):
             return
             
@@ -205,7 +190,7 @@ class Scanner:
         self.results.extend(findings)
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
-    """Ejecuta reglas heurísticas sobre un archivo aislado (punto de entrada unitario)."""
+    """Ejecuta reglas heurísticas sobre un archivo aislado."""
     if path is None: return []
     findings: ScanResult = []
     
@@ -220,10 +205,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """
-    Punto de entrada superior: inicializa la sesión de escaneo recursivo 
-    y gestiona la pila de directorios pendientes de forma segura.
-    """
+    """Punto de entrada superior: inicializa escaneo recursivo y gestiona pila."""
     if directory is None: return []
         
     try:
@@ -241,7 +223,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 
         scanner = Scanner(base_root=root_input)
         directory_stack: List[str] = [str(root_input)]
-        scanner.seen.add(str(root_input))
+        scanner.seen.add(str(root_input).lower())
         
         while directory_stack:
             current_dir = directory_stack.pop()
