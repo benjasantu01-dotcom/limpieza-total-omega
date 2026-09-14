@@ -310,7 +310,7 @@ class SystemContext:
         return _ensure_safe_text(self.grade) if self.grade else True
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> bool:
-        """Intenta mapear y validar un valor individual desde una fuente de datos genérica."""
+        """Intenta mapear un valor individual desde una fuente y validarlo contra su especificación."""
         try:
             if hasattr(self, key):
                 val = _get_source_value(source, key)
@@ -324,7 +324,7 @@ class SystemContext:
         return False
 
     def _clean_grade(self, val: Any) -> str:
-        """Limpia caracteres de control del string del grado de salud."""
+        """Limpia caracteres de control y valida seguridad en el string del grado de salud."""
         if not isinstance(val, str): return ""
         clean = _CONTROL_CHARS_REGEX.sub(" ", val)[:10].strip()
         return clean if _ensure_safe_text(clean) else ""

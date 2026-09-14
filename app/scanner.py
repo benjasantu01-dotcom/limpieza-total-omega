@@ -136,29 +136,32 @@ class Scanner:
         Aplica filtros de seguridad: omite rutas protegidas, longitudes excedidas, 
         caracteres especiales y enlaces simbólicos.
         """
-        try:
-            path_str: str = entry.path
-            if not path_str: return False
+        name = entry.name
+        path_str = entry.path
+        
+        if not name or not path_str or len(path_str) > MAX_PATH_LENGTH:
+            return False
             
-            name = entry.name
-            if not name or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")):
-                return False
+        if path_str.startswith(("\\\\", "//")):
+            return False
             
-            if INVALID_TRAILING_CHARS_RE.search(name): return False
-            if entry.is_symlink(): return False
-            if name.lower().endswith(".lnk") or RTL_CHAR_RE.search(path_str) or RESERVED_NAMES_RE.match(name):
-                return False
-            if not self._is_inside_base_root(path_str): return False
+        if INVALID_TRAILING_CHARS_RE.search(name) or RTL_CHAR_RE.search(path_str) or RESERVED_NAMES_RE.match(name):
+            return False
 
+        try:
+            if entry.is_symlink():
+                return False
+            if not self._is_inside_base_root(path_str):
+                return False
             return not is_protected_path(Path(path_str))
-        except (OSError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError):
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Verifica si la entrada es un punto de reanálisis (Junction/Mount Point) para evitar bucles o recursión infinita."""
+        """Verifica si la entrada es un punto de reanálisis para evitar recursión infinita."""
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
-        except (OSError, AttributeError, PermissionError, FileNotFoundError):
+        except (OSError, AttributeError, PermissionError):
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
@@ -172,11 +175,10 @@ class Scanner:
         Punto de decisión central para cada entrada: clasifica como directorio (cola) 
         o archivo (análisis heurístico).
         """
-        try:
-            if not self._is_safe_entry(entry):
-                return
+        if not self._is_safe_entry(entry):
+            return
             
-            # Usamos una variable local para el check de is_dir/is_file para evitar doble llamada
+        try:
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
                     self._handle_directory(entry, directory_stack)
@@ -184,8 +186,7 @@ class Scanner:
                 ext_low = os.path.splitext(entry.name)[1].lower()
                 if ext_low in SUSPICIOUS_ALL_EXTS:
                     self._run_file_heuristics(Path(entry.path), entry, ext_low)
-        except (OSError, PermissionError, FileNotFoundError):
-            # OSError captura bloqueos de archivo u otros problemas de acceso transitorios
+        except (OSError, PermissionError):
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:

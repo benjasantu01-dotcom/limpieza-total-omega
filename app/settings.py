@@ -315,7 +315,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             data = validate(raw)
             # Asegurar esquema completo post-validación
             for key in DEFAULTS:
-                if key not in data:
+                if key not in data or data[key] is None:
                     data[key] = DEFAULTS[key]
         
         _CACHE[ruta] = (mtime, data)
@@ -329,6 +329,10 @@ def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
         settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
     ):
         settings["asistente_activado"] = False
+    
+    for key in DEFAULTS:
+        if settings.get(key) is None:
+            settings[key] = DEFAULTS[key] # type: ignore
     return settings
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
