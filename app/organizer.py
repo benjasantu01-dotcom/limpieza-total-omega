@@ -88,7 +88,7 @@ def is_valid_junk_extension(filename: str) -> bool:
     """Comprueba si el sufijo de un nombre de archivo coincide con una extensión basura."""
     return os.path.splitext(filename)[1].lower() in JUNK_EXTENSIONS
 
-def _get_win_attributes(path_or_entry: Union[os.DirEntry, Path]) -> int:
+def _get_win_attributes(path_or_entry: Union[os.DirEntry, Path, str]) -> int:
     """
     Extrae los bits de atributos del sistema de archivos (Win32).
     Se usa para detectar archivos ocultos o de sistema antes de interactuar con ellos.
@@ -134,8 +134,8 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está inaccesible o bloqueado por otro proceso
-    intentando obtener acceso de lectura básico mediante os.access.
+    Verifica si un archivo está inaccesible mediante os.access.
+    Considera bloqueado cualquier archivo en Junction o protegido por el sistema.
     """
     if path is None: return True
     try:
@@ -146,7 +146,7 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Previene que la operación de movimiento intente anidar recursivamente la fuente en el destino."""
+    """Previene que la operación de movimiento anide recursivamente la fuente en el destino."""
     try:
         s, d = src.resolve(), dest.resolve()
         return s == d or (d.exists() and d.is_relative_to(s))
@@ -154,13 +154,13 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
         return True
 
 def _passes_system_checks(src: Path) -> bool:
-    """Filtra archivos marcados como 'Sistema' o 'Oculto' (bits 0x02, 0x04 en Win32)."""
+    """Filtra archivos marcados como 'Sistema' (0x04) u 'Oculto' (0x02) en Win32."""
     if os.name != "nt" or src is None: return True
     attrs = _get_win_attributes(src)
     return not (attrs & 0x06) if attrs != 0 else True
 
 def _has_forbidden_chars(path: Path) -> bool:
-    """Detecta nombres reservados por Windows o caracteres prohibidos en la ruta."""
+    """Detecta nombres reservados por Windows o caracteres prohibidos en el sistema de archivos."""
     if path is None: return True
     path_str = str(path).lower()
     reserved = ["con", "prn", "aux", "nul", "com1", "lpt1"]
