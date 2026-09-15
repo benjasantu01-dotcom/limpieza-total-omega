@@ -615,3 +615,45 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-15T04:11:41` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `on_target_choice_changed` añadiendo una validación explícita de seguridad antes de procesar el directorio, asegurando que las rutas seleccionadas por el usuario sean validadas mediante `_is_safe_target_dir` y capturando excepciones de forma específica para evitar cierres inesperados de la aplicación.
 - `2026-09-15T04:11:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T04:11:41` Corrida terminada. Total usado hoy: 96.
+- `2026-09-15T04:14:59` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-09-15T04:15:33` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `parse_windows_process_csv` y `_is_valid_process_entry` mediante la validación estricta de tipos y la captura de errores en la conversión, evitando que entradas mal formadas inyecten valores nulos o corruptos en los objetos `ProcessMemory`.
+- `2026-09-15T04:15:59` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-15T04:16:37` Tests FALLARON:
+```
+if destination.exists():
+                raise FileExistsError("El destino ya existe.")
+    
+            parent = destination.parent
+            if not parent.exists():
+                try:
+                    parent.mkdir(parents=True, exist_ok=True)
+                except OSError as e:
+                    raise RuntimeError(f"Falla al crear destino: {e}")
+    
+            if not is_safe_to_modify(parent):
+                raise UnsafePathError("Directorio padre no seguro.")
+            if not is_safe_to_modify(destination):
+                raise UnsafePathError("Destino no seguro.")
+    
+            _ensure_disk_space(parent, quarantine_item.size_bytes)
+    
+            # Uso explícito de shutils para manejar cross-device de forma segura
+            shutil.move(str(stored_file), str(destination))
+    
+            save_manifest([i for i in items if i.item_id != item_id], base)
+            return destination
+        except (OSError, PermissionError, IOError, UnsafePathError) as e:
+>           raise RuntimeError(f"Error crítico en restauración: {e}")
+E           RuntimeError: Error crítico en restauración: [GENERIC] Restauración denegada: destino protegido.
+
+app/quarantine.py:683: RuntimeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error crítico en restauración: [GENERIC] Restauración denegada: destino protegido.
+1 failed, 298 passed in 1.32s
+
+```
+- `2026-09-15T04:16:37` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez del manejo de errores en `restore_item` al reemplazar el uso de `os.replace` (que puede fallar entre diferentes volúmenes sin lanzar excepciones claras o ser atómico en todos los casos) por una verificación explícita de `is_safe_to_modify` y un manejo más granular de excepciones, asegurando que cualquier fallo durante la restauración deje el sistema en un estado consistente.
+- `2026-09-15T04:16:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-15T04:16:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-09-15T04:16:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T04:16:46` Corrida terminada. Total usado hoy: 100.

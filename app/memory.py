@@ -198,20 +198,21 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         cached=BytesValue(max(0, cached))
     )
 
-def _is_valid_process_entry(name: Optional[str], pid_str: Optional[str], ws_str: Optional[str]) -> Optional[ProcessMemory]:
+def _is_valid_process_entry(name: object, pid_str: object, ws_str: object) -> Optional[ProcessMemory]:
     """
     Valida y filtra entradas de procesos crudas. Excluye procesos críticos y 
     aquellos ubicados en rutas del sistema protegidas.
     """
-    if name is None or pid_str is None or ws_str is None:
+    if not isinstance(name, str) or not isinstance(pid_str, (str, int)) or not isinstance(ws_str, (str, int)):
         return None
     try:
         pid_val, ws_val = int(pid_str), int(ws_str)
-        if not name.strip() or pid_val <= 0 or ws_val < 0 or pid_val in SYSTEM_CRITICAL_PIDS:
+        name_clean = name.strip()
+        if not name_clean or pid_val <= 0 or ws_val < 0 or pid_val in SYSTEM_CRITICAL_PIDS:
             return None
-        if is_protected_path(name):
+        if is_protected_path(name_clean):
             return None
-        return ProcessMemory(name=name, pid=pid_val, working_set=BytesValue(ws_val))
+        return ProcessMemory(name=name_clean, pid=pid_val, working_set=BytesValue(ws_val))
     except (ValueError, TypeError):
         return None
 

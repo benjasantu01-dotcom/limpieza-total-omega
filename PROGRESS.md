@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
-- Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 215
+- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 32
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-13 | 27 | 2 | 3 | 5 | 17 |
+| 2026-09-13 | 25 | 2 | 3 | 3 | 17 |
 | 2026-09-14 | 157 | 6 | 20 | 14 | 157 |
-| 2026-09-15 | 44 | 2 | 8 | 1 | 41 |
+| 2026-09-15 | 45 | 3 | 9 | 1 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
 - seguridad defensiva: **49**
+- legibilidad y documentación: **47**
 - robustez ante casos límite: **44**
+- manejo de errores y validación de entradas: **44**
 - rendimiento: **43**
-- manejo de errores y validación de entradas: **43**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
 - `browser.py`: **20**
 - `healthscore.py`: **20**
-- `settings.py`: **18**
 - `safety.py`: **18**
+- `memory.py`: **18**
 - `diskreport.py`: **17**
 - `assistant.py`: **17**
-- `memory.py`: **17**
+- `settings.py`: **17**
 - `main.py`: **15**
 - `organizer.py`: **14**
 - `scanner.py`: **14**
 - `duplicates.py`: **13**
 - `branding.py`: **13**
-- `startup.py`: **10**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T04:15:33` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_windows_process_csv` y `_is_valid_process_entry` mediante la validación estricta de tipos y la captura de errores en la conversión, evitando que entradas mal formadas inyecten valores nulos o corruptos en los objetos `ProcessMemory`.
 - `2026-09-15T04:11:41` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `on_target_choice_changed` añadiendo una validación explícita de seguridad antes de procesar el directorio, asegurando que las rutas seleccionadas por el usuario sean validadas mediante `_is_safe_target_dir` y capturando excepciones de forma específica para evitar cierres inesperados de la aplicación.
 - `2026-09-15T04:10:42` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` ante fallos en los evaluadores individuales, asegurando que si un `scorer` lanza una excepción (por ejemplo, ante datos inesperados no detectados por la validación), el proceso global no aborte y se capture el error mediante una lógica de recuperación más explícita.
 - `2026-09-15T04:05:05` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` y las funciones de análisis de alto nivel añadiendo validaciones explícitas de tipos y estados para evitar errores de ejecución silenciosos o inesperados al procesar rutas, asegurando que `current_size` y `limit` siempre operen con valores numéricos válidos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T02:14:04` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_environment` eliminando el uso de `os.access` (que puede fallar erráticamente en rutas UNC o bajo ciertos contextos de privilegios en Windows) y centralizando la validación mediante `Path.exists()` y la lógica robusta de `safety.ensure_safe_to_modify`, asegurando además una verificación explícita de `is_symlink` para prevenir ataques de redirección de rutas.
 - `2026-09-15T02:12:53` **healthscore.py** (seguridad defensiva): He fortalecido la robustez del pipeline de scoring añadiendo una validación de integridad en `_evaluate_rules` para asegurar que las entradas de texto sean seguras y evitar posibles inyecciones o desbordamientos en la interfaz, manteniendo el contrato de función pura.
 - `2026-09-15T02:12:27` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo de duplicados reforzando `_scan_dir` para que valide la seguridad de cada entrada individualmente antes de acceder a sus metadatos, evitando así posibles errores de acceso en enlaces simbólicos no resueltos o rutas que cambian de estado durante la iteración.
-- `2026-09-15T01:53:08` **settings.py** (robustez ante casos límite): Se introdujo una verificación de integridad de la estructura JSON más resiliente en `load` que permite la recuperación parcial si faltan claves opcionales (pero existen las obligatorias), evitando el reset total ante cambios de esquema menores.
