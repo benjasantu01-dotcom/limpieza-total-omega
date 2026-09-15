@@ -294,7 +294,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """Recorrido optimizado (single-pass) para consolidar métricas de uso de disco."""
     total_bytes: int = 0
     total_files: int = 0
-    ext_stats: Dict[str, ExtStats] = defaultdict(lambda: ExtStats(0, 0))
+    ext_bytes: Dict[str, int] = defaultdict(int)
+    ext_counts: Dict[str, int] = defaultdict(int)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
@@ -305,8 +306,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         total_files += 1
         
         ext = path.suffix.lower() if path.suffix else "(sin extensión)"
-        curr = ext_stats[ext]
-        ext_stats[ext] = ExtStats(curr.total_bytes + size, curr.count + 1)
+        ext_bytes[ext] += size
+        ext_counts[ext] += 1
         
         if limit > 0:
             if len(top_heap) < limit:
@@ -314,7 +315,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             elif size > top_heap[0][0]:
                 heapq.heapreplace(top_heap, (size, path))
                     
-    return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)
+    ext_stats = {ext: ExtStats(ext_bytes[ext], ext_counts[ext]) for ext in ext_bytes}
+    return SummaryData(total_bytes, total_files, ext_stats, top_heap)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:

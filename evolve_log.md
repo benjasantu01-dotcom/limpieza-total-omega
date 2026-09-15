@@ -1334,3 +1334,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-09-15T00:41:32` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el rendimiento de `gradient_colors` eliminando el uso intensivo de `range` y `len` dentro del bucle mediante una pre-calculación de los pasos, y mejoré la precisión de `_get_grouped_segments` evitando iteraciones redundantes.
 - `2026-09-15T00:41:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T00:41:32` Corrida terminada. Total usado hoy: 16.
+- `2026-09-15T00:49:45` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-09-15T00:50:15` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se implementó un mecanismo de exclusión de rutas duplicadas en `detect_profiles` para evitar escanear varias veces el mismo directorio de caché, lo cual reducía innecesariamente el rendimiento cuando múltiples navegadores comparten o apuntan a rutas de caché similares.
+- `2026-09-15T00:50:43` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_summary_data` eliminando la creación innecesaria de objetos `ExtStats` en cada iteración y utilizando un acceso más directo al diccionario, reduciendo drásticamente la carga sobre el recolector de basura durante recorridos de disco extensos.
+- `2026-09-15T00:51:08` 🛑 Propuesta bloqueada por la guardia en duplicates.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: group_by_size
+- `2026-09-15T00:51:19` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `compute_score` eliminando los múltiples accesos a `rules` (que realizaban un filtrado condicional por cada área en cada ejecución) y delegando la lógica de validación de métricas críticas a una cache pre-calculada, reduciendo la carga de cómputo en el bucle principal.
+- `2026-09-15T00:51:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T00:51:19` Corrida terminada. Total usado hoy: 20.

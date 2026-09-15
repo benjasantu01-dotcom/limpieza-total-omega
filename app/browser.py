@@ -306,7 +306,7 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Escanea los directorios base en busca de perfiles y calcula la ocupación
-    de cada caché detectada mediante suma recursiva.
+    de cada caché detectada mediante suma recursiva, evitando duplicados.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -314,6 +314,7 @@ def detect_profiles(
     k32 = _get_kernel32()
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
+    scanned_paths: set[str] = set()
     
     if not isinstance(raw_bases, (list, tuple)):
         return []
@@ -330,10 +331,14 @@ def detect_profiles(
                 if not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                     continue
                 
-                real_candidate = candidate.resolve(strict=True)
-                size = _sum_directory_recursive(str(real_candidate), _IS_JUNCTION_FN, k32, perf_cache, str(real_base))
+                real_candidate = str(candidate.resolve(strict=True))
+                if real_candidate in scanned_paths:
+                    continue
+                
+                size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, perf_cache, str(real_base))
                 if size > 0:
-                    found.append(BrowserCache(str(browser_name), real_candidate, size))
+                    scanned_paths.add(real_candidate)
+                    found.append(BrowserCache(str(browser_name), Path(real_candidate), size))
         except (OSError, PermissionError, TypeError, ValueError, RuntimeError):
             continue
                 

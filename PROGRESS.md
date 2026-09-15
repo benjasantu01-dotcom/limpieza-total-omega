@@ -16,38 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-12 | 18 | 1 | 3 | 1 | 43 |
+| 2026-09-12 | 15 | 1 | 2 | 1 | 43 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
 | 2026-09-14 | 157 | 6 | 20 | 14 | 157 |
-| 2026-09-15 | 11 | 1 | 3 | 1 | 0 |
+| 2026-09-15 | 14 | 1 | 4 | 1 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **37**
-- rendimiento: **35**
+- rendimiento: **38**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
-- `browser.py`: **20**
-- `safety.py`: **18**
+- `browser.py`: **21**
+- `quarantine.py`: **21**
+- `healthscore.py`: **19**
 - `settings.py`: **18**
 - `assistant.py`: **18**
-- `healthscore.py`: **18**
+- `safety.py`: **17**
+- `diskreport.py`: **17**
 - `memory.py`: **17**
-- `diskreport.py`: **16**
-- `organizer.py`: **14**
 - `main.py`: **14**
 - `branding.py`: **13**
 - `duplicates.py`: **13**
+- `organizer.py`: **13**
 - `scanner.py`: **13**
 - `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T00:51:19` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` eliminando los múltiples accesos a `rules` (que realizaban un filtrado condicional por cada área en cada ejecución) y delegando la lógica de validación de métricas críticas a una cache pre-calculada, reduciendo la carga de cómputo en el bucle principal.
+- `2026-09-15T00:50:43` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` eliminando la creación innecesaria de objetos `ExtStats` en cada iteración y utilizando un acceso más directo al diccionario, reduciendo drásticamente la carga sobre el recolector de basura durante recorridos de disco extensos.
+- `2026-09-15T00:50:15` **browser.py** (rendimiento): Se implementó un mecanismo de exclusión de rutas duplicadas en `detect_profiles` para evitar escanear varias veces el mismo directorio de caché, lo cual reducía innecesariamente el rendimiento cuando múltiples navegadores comparten o apuntan a rutas de caché similares.
 - `2026-09-15T00:41:32` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando el uso intensivo de `range` y `len` dentro del bucle mediante una pre-calculación de los pasos, y mejoré la precisión de `_get_grouped_segments` evitando iteraciones redundantes.
 - `2026-09-15T00:40:35` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando docstrings detallados en funciones críticas y normalizando la nomenclatura de los argumentos para mejorar la legibilidad y mantenibilidad del flujo de datos.
 - `2026-09-15T00:31:14` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la inclusión de tipado estricto en las funciones públicas y docstrings expandidos que clarifican las precondiciones y el comportamiento ante errores, facilitando el mantenimiento y la auditoría.
@@ -60,6 +63,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T00:10:07` **browser.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de recursión (`_sum_directory_recursive` y `_process_entry`) para clarificar el flujo de control, la propagación de errores y el mecanismo de seguridad ante reparse points/junctions, facilitando el mantenimiento técnico de este núcleo del módulo.
 - `2026-09-15T00:09:37` **branding.py** (legibilidad y documentación): Mejora la legibilidad del código mediante la adición de docstrings técnicos que clarifican las intenciones de diseño en las funciones de renderizado y la normalización de la estructura de las constantes globales, facilitando el mantenimiento para futuros colaboradores.
 - `2026-09-14T14:58:41` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación explícita de `val_name` y `val_cmd` como cadenas, asegurando que `csv.DictReader` no procese valores inesperados que podrían causar errores durante el saneamiento posterior.
-- `2026-09-14T14:58:14` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load` y `validate` mediante un manejo de errores más granular y preventivo, asegurando que si `json.loads` falla o los datos están corruptos, el sistema siempre revierta a `DEFAULTS` de forma segura sin propagar excepciones.
-- `2026-09-14T14:49:12` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` ante errores de E/S inesperados (como `FileNotFoundError` o `PermissionError`) al interactuar con rutas inexistentes o inaccesibles, envolviendo las validaciones dependientes de disco en bloques `try-except` granulares para evitar que la operación falle de forma disruptiva cuando el archivo no existe o los permisos son insuficientes, alineándose con el enfoque de validación defensiva.
-- `2026-09-14T14:48:09` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `purge_all` mediante la captura explícita de `FileNotFoundError` durante la iteración y el uso de un manejo de errores más específico, además de validar que el archivo en el sandbox corresponda realmente a un ítem registrado antes de intentar cualquier operación de borrado.

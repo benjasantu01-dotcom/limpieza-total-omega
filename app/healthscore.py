@@ -123,8 +123,9 @@ _RULES_BY_AREA: Final[Dict[MetricKey, List[RecommendationRule]]] = {}
 for rule in _RECOMMENDATION_RULES:
     _RULES_BY_AREA.setdefault(rule.area, []).append(rule)
 
-_CACHE_SCORERS: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], List[RecommendationRule]]]] = [
-    (a, w, _SCORERS.get(a, lambda _: 0.0), _RULES_BY_AREA.get(a, [])) for a, w in _WEIGHT_ITEMS_INT
+# Pre-cache de estructuras optimizadas para iteración directa
+_PIPELINE: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], List[RecommendationRule]]]] = [
+    (a, w, _SCORERS[a], _RULES_BY_AREA.get(a, [])) for a, w in _WEIGHT_ITEMS_INT
 ]
 
 @dataclass
@@ -144,19 +145,14 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura que los valores de las métricas estén en rangos lógicos y sean finitos."""
-        try:
-            self.junk_mb = max(0.0, _to_float(self.junk_mb))
-            self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
-            self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
-            self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings)))
-            self.startup_count = int(max(0, _to_float(self.startup_count)))
-            self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
-            self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
-            self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
-        except (ValueError, TypeError, OverflowError):
-            self.junk_mb = self.duplicate_mb = self.suspicious_count = 0.0
-            self.suspicious_warnings = self.startup_count = self.quarantined_count = 0
-            self.memory_available_percent = self.disk_free_percent = 100.0
+        self.junk_mb = max(0.0, _to_float(self.junk_mb))
+        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
+        self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
+        self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings)))
+        self.startup_count = int(max(0, _to_float(self.startup_count)))
+        self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
+        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
+        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
 
     @property
     def is_finite(self) -> bool:
@@ -203,15 +199,10 @@ def grade_for_score(score: float | int) -> str:
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta las reglas de recomendación con saneamiento de strings de salida."""
     for rule in rules:
-        try:
-            if rule.check(metrics, ratio):
-                msg = rule.message_factory(metrics)
-                if msg and isinstance(msg, str):
-                    # Sanitización: Limitar longitud y asegurar que no contenga caracteres de control peligrosos
-                    clean_msg = "".join(char for char in msg if char.isprintable())[:200]
-                    findings.append(clean_msg)
-        except Exception:
-            continue
+        if rule.check(metrics, ratio):
+            msg = rule.message_factory(metrics)
+            if msg:
+                findings.append("".join(char for char in msg if char.isprintable())[:200])
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Calcula el puntaje global de salud del sistema mediante la agregación ponderada de áreas."""
@@ -220,24 +211,20 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     metrics.validate()
     if not metrics.is_finite:
-        return HealthResult(0, "F", {}, ["Error: Inconsistencia numérica detectada en métricas."])
+        return HealthResult(0, "F", {}, ["Error: Inconsistencia numérica detectada."])
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: float = 0.0
     
-    for area, weight, scorer, rules in _CACHE_SCORERS:
-        try:
-            area_ratio = _clamp(scorer(metrics))
-            if rules:
-                _evaluate_rules(metrics, rules, area_ratio, recommendations)
-            
-            weighted_points = int(round(area_ratio * weight))
-            metric_breakdown[area] = weighted_points
-            accumulated_score += weighted_points
-        except Exception:
-            metric_breakdown[area] = 0
-            continue
+    for area, weight, scorer, rules in _PIPELINE:
+        area_ratio = _clamp(scorer(metrics))
+        if rules:
+            _evaluate_rules(metrics, rules, area_ratio, recommendations)
+        
+        weighted_points = int(round(area_ratio * weight))
+        metric_breakdown[area] = weighted_points
+        accumulated_score += weighted_points
             
     final_score = int(_clamp(accumulated_score, 0.0, 100.0))
     
