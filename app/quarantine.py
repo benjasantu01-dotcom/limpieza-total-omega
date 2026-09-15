@@ -599,32 +599,20 @@ def quarantine_file(
 
     _validate_isolation_request(source_path, dest_dir)
     
-    source_hash = _get_sha256(source_path)
-    if not source_hash:
-        raise RuntimeError("No se pudo calcular firma digital.")
+    destination = dest_dir / _generate_safe_stored_name(source_path, uuid.uuid4().hex[:12])
     
-    unique_id = uuid.uuid4().hex[:12]
-    destination = dest_dir / _generate_safe_stored_name(source_path, unique_id)
-    
+    # Flujo de aislamiento protegido mediante bloques de control
+    file_hash = _atomic_isolate_file(source_path, destination, original_size)
     try:
-        file_hash = _atomic_isolate_file(source_path, destination, original_size)
-        try:
-            item = _register_quarantine_item(destination, source_path, file_hash, reason, original_size, base)
-            if not item.verify_integrity(destination):
-                raise RuntimeError("Integridad post-registro fallida.")
-            
-            try:
-                source_path.unlink()
-            except OSError as e:
-                raise RuntimeError(f"Falla al eliminar original post-aislamiento: {e}")
-            return item
-        except Exception as e:
-            # Revertir aislamiento si falla el registro o el borrado del original
-            if destination.exists():
-                _safe_unlink(destination)
-            raise e
+        item = _register_quarantine_item(destination, source_path, file_hash, reason, original_size, base)
+        if not item.verify_integrity(destination):
+            raise RuntimeError("Integridad post-registro fallida.")
+        source_path.unlink()
+        return item
     except Exception as e:
-        raise RuntimeError(f"Error durante el aislamiento: {e}")
+        if destination.exists():
+            _safe_unlink(destination)
+        raise RuntimeError(f"Error durante aislamiento: {e}")
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna ítems validados y purga registros sin contraparte física en disco."""

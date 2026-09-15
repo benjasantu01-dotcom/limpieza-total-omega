@@ -202,7 +202,9 @@ def _is_valid_process_entry(name: object, pid_str: object, ws_str: object) -> Op
     Valida y filtra entradas de procesos crudas. Excluye procesos críticos y 
     aquellos ubicados en rutas del sistema protegidas.
     """
-    if not isinstance(name, str) or not isinstance(pid_str, (str, int)) or not isinstance(ws_str, (str, int)):
+    if name is None or pid_str is None or ws_str is None:
+        return None
+    if not isinstance(name, str) or not str(pid_str).isdigit() or not str(ws_str).isdigit():
         return None
     try:
         pid_val, ws_val = int(pid_str), int(ws_str)

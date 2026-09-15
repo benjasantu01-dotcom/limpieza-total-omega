@@ -305,10 +305,11 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         dest = Path(review_dir).expanduser().resolve()
         if not dest.exists() or not dest.is_dir() or not os.access(dest, os.W_OK) or not is_safe_to_modify(dest): return 0
     except (OSError, RuntimeError, TypeError): return 0
+    
     count = 0
     for item in dest.iterdir():
         try:
-            if item.is_file() and item.resolve().is_relative_to(dest) and is_safe_to_modify(item.resolve()):
+            if item.is_file() and is_safe_to_modify(item.resolve()):
                 ensure_safe_to_modify(item.resolve())
                 item.unlink()
                 count += 1

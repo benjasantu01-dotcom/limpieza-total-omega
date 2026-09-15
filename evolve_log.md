@@ -410,3 +410,14 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-15T13:17:09` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` asegurando que el cálculo de `weighted_points` no dependa de operaciones con `None` o valores no finitos, y añadiendo una validación explícita para evitar que `scorer(metrics)` retorne resultados fuera del dominio esperado antes de procesar el pipeline.
 - `2026-09-15T13:17:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T13:17:09` Corrida terminada. Total usado hoy: 305.
+- `2026-09-15T13:25:40` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-15T13:26:42` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-15T13:27:45` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-15T13:28:51` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-15T13:30:03` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-15T13:30:52` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_valid_process_entry` y `parse_windows_process_csv` añadiendo validaciones explícitas contra valores `None` o malformados, asegurando que el módulo no se rompa ante entradas inesperadas de PowerShell.
+- `2026-09-15T13:31:40` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` reemplazando validaciones implícitas por comprobaciones explícitas de estados de error, asegurando que cualquier falla en la resolución de rutas no comprometa la integridad de la operación mediante el uso de `try-except` granulares.
+- `2026-09-15T13:31:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-15T13:32:10` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` encapsulando la lógica de limpieza en un bloque `try-finally` para asegurar que el registro del manifiesto se mantenga consistente y que el archivo original se elimine solo tras una verificación de integridad exitosa del destino, evitando estados parciales.
+- `2026-09-15T13:32:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T13:32:10` Corrida terminada. Total usado hoy: 309.
