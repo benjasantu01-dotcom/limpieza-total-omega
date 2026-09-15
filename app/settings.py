@@ -330,7 +330,7 @@ def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
     return settings
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Persiste la configuración de forma atómica."""
+    """Persiste la configuración de forma atómica con reintentos para archivos bloqueados."""
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     parent = ruta.parent
@@ -338,6 +338,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         
     cleaned_settings = _ensure_settings_integrity(validate(values))
     temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
+    bak_path = ruta.with_suffix(".bak")
     
     for attempt in range(5):
         try:
@@ -346,15 +347,17 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 f.write(json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8"))
                 f.flush()
                 os.fsync(f.fileno())
+            
             if ruta.exists():
-                try: os.replace(ruta, ruta.with_suffix(".bak"))
+                try: os.replace(ruta, bak_path)
                 except OSError: pass
+                
             os.replace(temp_path, ruta)
             _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
             return ruta
         except (OSError, IOError, PermissionError, UnsafePathError):
             if attempt < 4:
-                time.sleep(0.2)
+                time.sleep(0.25 * (attempt + 1))
                 continue
             return None
     return None

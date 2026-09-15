@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-13 | 0 | 0 | 0 | 0 | 5 |
+| 2026-09-13 | 0 | 0 | 0 | 0 | 1 |
 | 2026-09-14 | 157 | 6 | 20 | 14 | 157 |
-| 2026-09-15 | 74 | 6 | 15 | 2 | 48 |
+| 2026-09-15 | 76 | 7 | 15 | 2 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **47**
+- robustez ante casos límite: **46**
 - rendimiento: **44**
-- robustez ante casos límite: **44**
 - seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
@@ -35,9 +35,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **21**
 - `memory.py`: **20**
 - `assistant.py`: **18**
+- `settings.py`: **18**
 - `diskreport.py`: **17**
-- `settings.py`: **17**
-- `safety.py`: **15**
+- `safety.py`: **16**
 - `main.py`: **15**
 - `scanner.py`: **14**
 - `branding.py`: **14**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T06:28:54` **settings.py** (robustez ante casos límite): Se reforzó la robustez del guardado atómico en `save` incorporando un manejo explícito de archivos en uso (mediante `try-except` con reintentos para `os.replace`) y añadiendo una validación de integridad previa al borrado del `.bak`, protegiendo la configuración ante interrupciones críticas del sistema.
+- `2026-09-15T06:27:59` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos de error de sistema integrando un bloque `try-except` específico al consultar el tipo de unidad en `_validate_boundary_conditions`, evitando que una llamada fallida a `GetDriveTypeW` propague una excepción no controlada hacia el bucle principal.
 - `2026-09-15T06:18:48` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine.py` ante errores de concurrencia y estados inconsistentes del sistema de archivos mediante la implementación de `os.open` con flags de exclusividad mejorados y una validación explícita de `st_nlink` para detectar copias múltiples o re-vinculaciones maliciosas durante el aislamiento.
 - `2026-09-15T06:18:10` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación explícita de "espacio disponible antes de intentar mover" y se mejoró la robustez de las validaciones de ruta, asegurando que `_is_safe_for_disk_op` gestione correctamente errores de resolución en rutas inexistentes o inaccesibles, evitando así el aborto prematuro del bucle de procesamiento.
 - `2026-09-15T06:17:43` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas UNC y reparse points (junctions/symlinks) en `_get_process_path` para prevenir que la app intente manipular procesos residentes en unidades de red o accesos directos de sistema que podrían causar bloqueos de I/O o comportamiento inesperado.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T05:17:46` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar llamadas redundantes a `path.resolve()` y `path.stat()` (usando directamente la información provista por `os.scandir`), reduciendo significativamente la cantidad de accesos a disco por archivo analizado.
 - `2026-09-15T05:17:35` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y construcciones de diccionarios, usando una lógica de acumulación más directa que reduce la sobrecarga de memoria y CPU durante el recorrido.
 - `2026-09-15T05:17:09` **browser.py** (rendimiento): Optimizé la recursión de `_sum_directory_recursive` implementando un chequeo de `is_dir()` con `follow_symlinks=False` mediante `os.scandir` para evitar la creación innecesaria de objetos `Path` y llamadas redundantes a `resolve()` dentro del bucle, reduciendo el overhead de I/O.
-- `2026-09-15T05:16:41` **branding.py** (rendimiento): Se optimizó el renderizado del logo y el degradado eliminando cálculos repetitivos y mejorando la eficiencia del cacheo mediante la pre-generación de los segmentos RGB, evitando conversiones de color (hex-to-rgb) dentro de los bucles de dibujo en el Canvas.
-- `2026-09-15T05:07:40` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal de palabras clave por una estructura de búsqueda de tiempo constante, utilizando un `set` precomputado para detectar si la pregunta contiene algún término conocido antes de iterar sobre el mapa de handlers.

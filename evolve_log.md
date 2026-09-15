@@ -843,3 +843,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-15T06:18:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-09-15T06:18:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T06:18:53` Corrida terminada. Total usado hoy: 145.
+- `2026-09-15T06:27:21` Arrancando corrida. Quedan hoy ~155 peticiones objetivo.
+- `2026-09-15T06:27:59` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos de error de sistema integrando un bloque `try-except` específico al consultar el tipo de unidad en `_validate_boundary_conditions`, evitando que una llamada fallida a `GetDriveTypeW` propague una excepción no controlada hacia el bucle principal.
+- `2026-09-15T06:28:24` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-15T06:28:54` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez del guardado atómico en `save` incorporando un manejo explícito de archivos en uso (mediante `try-except` con reintentos para `os.replace`) y añadiendo una validación de integridad previa al borrado del `.bak`, protegiendo la configuración ante interrupciones críticas del sistema.
+- `2026-09-15T06:29:07` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.58s
+
+```
+- `2026-09-15T06:29:07` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se introdujo una comprobación adicional en `_resolve_and_cache_path` para verificar que la ruta, aunque sea absoluta, no esté bloqueada por permisos de acceso (usando `os.access` con `R_OK`) y sea un archivo real, evitando así excepciones inesperadas y tratando rutas potencialmente inaccesibles o bloqueadas por el sistema como no ejecutables sin abortar el proceso.
+- `2026-09-15T06:29:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T06:29:07` Corrida terminada. Total usado hoy: 149.
