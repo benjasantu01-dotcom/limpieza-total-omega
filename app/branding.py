@@ -296,10 +296,11 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     else:
         rgb_stops = tuple(_hex_to_rgb(s) for s in stops)
         tramos = len(stops) - 1
+        paso = (n - 1) if n > 1 else 1
         res = tuple(_rgb_to_hex(_interpolate_rgb(
-            rgb_stops[int((i / (n - 1) * tramos) if n > 1 else 0)],
-            rgb_stops[min(int((i / (n - 1) * tramos) if n > 1 else 0) + 1, tramos)],
-            (i / (n - 1) * tramos % 1) if n > 1 else 0
+            rgb_stops[int((i / paso) * tramos)],
+            rgb_stops[min(int((i / paso) * tramos) + 1, tramos)],
+            ((i / paso) * tramos) % 1
         )) for i in range(n))
     
     _GRADIENT_CACHE[key] = res
@@ -314,12 +315,13 @@ def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, .
     segments = []
     current_color = colors[0]
     start = 0
-    for i in range(1, len(colors)):
+    total = len(colors)
+    for i in range(1, total):
         if colors[i] != current_color:
             segments.append(ColorSegment(current_color, start, i))
             current_color = colors[i]
             start = i
-    segments.append(ColorSegment(current_color, start, len(colors)))
+    segments.append(ColorSegment(current_color, start, total))
     return tuple(segments)
 
 # Coordenadas relativas del escudo (base 128x128). Define la silueta geométrica.

@@ -1316,3 +1316,21 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-09-15T00:31:14` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la inclusión de tipado estricto en las funciones públicas y docstrings expandidos que clarifican las precondiciones y el comportamiento ante errores, facilitando el mantenimiento y la auditoría.
 - `2026-09-15T00:31:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T00:31:14` Corrida terminada. Total usado hoy: 12.
+- `2026-09-15T00:39:36` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-09-15T00:40:06` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._validate_enum_str
+- `2026-09-15T00:40:35` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo incorporando docstrings detallados en funciones críticas y normalizando la nomenclatura de los argumentos para mejorar la legibilidad y mantenibilidad del flujo de datos.
+- `2026-09-15T00:41:13` Tests FALLARON:
+```
+, 2400 MB de basura, 900 MB en duplicados.'
+ +  where 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.' = Answer(text='Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 M...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_explains_they_are_signals - AssertionError: assert 'señales' in 'con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de ram, 2400 mb de basura, 900 mb en duplicados.'
+ +  where 'con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de ram, 2400 mb de basura, 900 mb en duplicados.' = <built-in method lower of str object at 0x7f8eb59d1370>()
+ +    where <built-in method lower of str object at 0x7f8eb59d1370> = 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.'.lower
+ +      where 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.' = Answer(text='Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 M...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+2 failed, 297 passed in 1.02s
+
+```
+- `2026-09-15T00:41:13` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal de tokens mediante `_TOKEN_REGEX.findall` por un acceso directo mediante el mapeo de palabras clave (`_KEYWORD_MAP`), mejorando la eficiencia algorítmica de la respuesta local.
+- `2026-09-15T00:41:32` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el rendimiento de `gradient_colors` eliminando el uso intensivo de `range` y `len` dentro del bucle mediante una pre-calculación de los pasos, y mejoré la precisión de `_get_grouped_segments` evitando iteraciones redundantes.
+- `2026-09-15T00:41:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T00:41:32` Corrida terminada. Total usado hoy: 16.

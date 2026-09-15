@@ -123,7 +123,10 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Extrae y valida rutas encerradas en comillas (ej. "C:\Path\App.exe")."""
+        """
+        Extrae y valida rutas encerradas en comillas dobles.
+        Retorna la ruta limpia como string si es válida y segura, o cadena vacía.
+        """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
         
@@ -145,17 +148,22 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Verifica la existencia y accesibilidad física del archivo mediante comprobaciones de sistema."""
+        """
+        Verifica la existencia física y permisos de lectura.
+        Excluye directorios y rutas protegidas por política de seguridad.
+        """
         try:
             if not p.exists() or p.is_dir() or is_protected_path(p):
                 return False
-            # Verifica acceso de lectura y evita archivos bloqueados por el sistema/kernel
             return os.access(p, os.R_OK) and not p.is_symlink()
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Normaliza rutas, gestiona el caché global de I/O y resuelve la ubicación absoluta."""
+        """
+        Normaliza rutas y gestiona el caché global de I/O.
+        Resuelve rutas relativas a absolutas para una verificación robusta.
+        """
         if not self.is_valid:
             return ""
         
@@ -189,7 +197,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Estrategia de resolución de rutas según el formato de la línea de comandos."""
+        """Estrategia de resolución de rutas: parsea la línea de comandos para extraer el ejecutable."""
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -206,7 +214,7 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Obtiene la ruta resuelta del ejecutable usando una estrategia de carga perezosa (lazy loading)."""
+        """Obtiene la ruta resuelta del ejecutable usando lazy loading para optimizar el I/O."""
         if self._checked_exists:
             return self._exec_cache or ""
             
@@ -263,7 +271,10 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
-    """Transforma la salida CSV de PowerShell en objetos de datos, descartando entradas potencialmente inseguras."""
+    """
+    Transforma la salida CSV de PowerShell en objetos StartupEntry.
+    Filtra entradas basadas en rutas protegidas y heurísticas básicas.
+    """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
