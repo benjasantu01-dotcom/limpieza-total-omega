@@ -360,6 +360,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 time.sleep(0.25 * (attempt + 1))
                 continue
             return None
+        finally:
+            if temp_path.exists():
+                try: os.remove(temp_path)
+                except OSError: pass
     return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:

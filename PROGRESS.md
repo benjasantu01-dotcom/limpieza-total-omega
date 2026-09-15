@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **239** (47.4% de aceptación)
+- Mejoras aceptadas: **240** (47.6% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 157 | 6 | 20 | 14 | 146 |
-| 2026-09-15 | 82 | 7 | 16 | 2 | 54 |
+| 2026-09-14 | 157 | 6 | 20 | 14 | 142 |
+| 2026-09-15 | 83 | 7 | 16 | 2 | 57 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **46**
+- seguridad defensiva: **45**
 - rendimiento: **44**
-- seguridad defensiva: **44**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,8 +34,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **21**
 - `memory.py`: **20**
 - `assistant.py`: **19**
+- `settings.py`: **19**
 - `diskreport.py`: **18**
-- `settings.py`: **18**
 - `safety.py`: **17**
 - `main.py`: **15**
 - `organizer.py`: **15**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T07:09:10` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de `save()` implementando una limpieza explícita de archivos temporales mediante `try-finally` para evitar que queden archivos basura en disco en caso de error durante la escritura o sincronización atómica.
 - `2026-09-15T06:59:50` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_in_use` implementando una técnica de apertura con acceso de solo lectura y compartición total (`FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE`) para verificar si el archivo está bloqueado por un proceso externo, eliminando falsos positivos en permisos denegados.
 - `2026-09-15T06:59:09` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y la integridad en `quarantine_file` al introducir un chequeo de identidad de archivo post-apertura mediante `os.fstat` para garantizar que el archivo origen no fue reemplazado por un enlace simbólico u otro objeto durante la operación de lectura, reforzando la seguridad defensiva sin alterar la funcionalidad.
 - `2026-09-15T06:58:32` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de la validación de rutas en `_can_move_file` y `stage_for_review` mediante el uso de `path.is_relative_to` para asegurar que las operaciones de movimiento no se escapen accidentalmente del directorio de destino configurado, previniendo así posibles ataques de "Path Traversal" ante entradas maliciosas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T06:14:56` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` implementando una validación de seguridad proactiva en el selector de directorios (`on_target_choice_changed`) para prevenir casos donde el usuario selecciona rutas no existentes o bloqueadas tras una manipulación manual en el sistema, asegurando que la app no intente procesar rutas inválidas y mejorando el feedback al usuario ante entradas erróneas.
 - `2026-09-15T06:11:11` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics` ante casos límite mediante la inclusión de una verificación estricta de tipos en `validate` y la inicialización segura en `__post_init__`, evitando que valores `None` o tipos incorrectos pasados por error desde otros módulos degraden la lógica de puntuación.
 - `2026-09-15T05:58:39` **browser.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de permisos en `base_directories` y se centralizó el manejo de excepciones de I/O en `_is_path_inside_base` para asegurar que el escaneo no colapse ante rutas bloqueadas por el SO o enlaces simbólicos maliciosos.
-- `2026-09-15T05:58:28` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante casos límite en la manipulación de rutas, asegurando que `ensure_safe_to_modify` se utilice correctamente y que el manejo de errores sea específico para evitar condiciones de carrera o fallos por rutas mal formadas.
