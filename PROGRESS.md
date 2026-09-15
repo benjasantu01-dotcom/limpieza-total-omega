@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 16
+- Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 132 | 5 | 18 | 14 | 130 |
-| 2026-09-15 | 89 | 7 | 17 | 2 | 90 |
+| 2026-09-14 | 130 | 5 | 18 | 13 | 129 |
+| 2026-09-15 | 92 | 7 | 17 | 2 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **46**
+- manejo de errores y validación de entradas: **46**
 - seguridad defensiva: **45**
 - legibilidad y documentación: **45**
-- manejo de errores y validación de entradas: **43**
-- rendimiento: **42**
+- rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **21**
-- `browser.py`: **20**
 - `quarantine.py`: **20**
+- `healthscore.py`: **20**
+- `browser.py`: **19**
 - `memory.py`: **19**
-- `settings.py`: **18**
+- `settings.py`: **19**
 - `diskreport.py`: **17**
 - `assistant.py`: **17**
-- `safety.py`: **15**
+- `safety.py`: **16**
 - `main.py`: **14**
 - `organizer.py`: **14**
 - `duplicates.py`: **14**
 - `branding.py`: **13**
 - `scanner.py`: **12**
-- `startup.py`: **7**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T09:02:16` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry._extract_quoted_path` validando explícitamente la integridad de las rutas extraídas antes de crear objetos `Path`, previniendo excepciones innecesarias ante cadenas mal formadas y reforzando la seguridad al evitar el procesamiento de rutas vacías o inválidas.
+- `2026-09-15T09:02:03` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de archivos JSON al implementar una validación de esquema más estricta que detecta claves faltantes o tipos incorrectos en el archivo cargado, evitando que datos maliciosos o corruptos inyecten tipos no esperados en `AppSettings`.
+- `2026-09-15T09:01:05` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` añadiendo un manejo de excepciones más preciso para evitar falsos negativos ante fallos de permisos o estados de archivo bloqueados, además de asegurar que `ensure_safe_to_modify` capture fallos en la resolución de rutas mediante un bloque `try-except` más específico en el flujo de validación.
 - `2026-09-15T08:50:46` **memory.py** (manejo de errores y validación de entradas): He mejorado la robustez de `_get_process_path` y `trim_working_set` implementando validaciones de entrada más estrictas y capturas de excepciones específicas, asegurando que los punteros y handles del sistema sean validados antes de operar, previniendo errores de segmentación o fallos silenciosos por punteros nulos.
 - `2026-09-15T08:43:43` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante la validación explícita de `group.paths` y el manejo preventivo de errores al realizar llamadas a `.stat()` o `.exists()` sobre rutas, evitando excepciones inesperadas que podrían interrumpir el flujo de la UI.
 - `2026-09-15T08:41:48` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` validando explícitamente el tamaño de archivo mediante `max(0, ...)` y encapsulando en bloques `try-except` más granulares para prevenir fallos durante el recorrido ante archivos bloqueados por el sistema, garantizando que una única lectura fallida no interrumpa el análisis completo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T06:58:32` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de la validación de rutas en `_can_move_file` y `stage_for_review` mediante el uso de `path.is_relative_to` para asegurar que las operaciones de movimiento no se escapen accidentalmente del directorio de destino configurado, previniendo así posibles ataques de "Path Traversal" ante entradas maliciosas.
 - `2026-09-15T06:50:11` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del pipeline de datos añadiendo una validación explícita de `is_finite` dentro del bucle de procesamiento, asegurando que cualquier error aritmético en el cálculo de `area_ratio` no contamine los resultados de salud acumulados.
 - `2026-09-15T06:39:26` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y `_collect_summary_data` al asegurar que el tamaño de archivo se obtenga mediante un `stat()` local y protegido contra excepciones de permisos, evitando el uso de atributos inciertos y reforzando la integridad de los datos recolectados ante posibles errores de I/O durante el recorrido.
-- `2026-09-15T06:38:12` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la ingesta de datos en `SystemContext` agregando una validación explícita para evitar que se inyecten diccionarios o estructuras anidadas arbitrarias que puedan contener objetos o métodos no esperados, cumpliendo con la exigencia de seguridad defensiva sobre el manejo de entradas externas.
-- `2026-09-15T06:28:54` **settings.py** (robustez ante casos límite): Se reforzó la robustez del guardado atómico en `save` incorporando un manejo explícito de archivos en uso (mediante `try-except` con reintentos para `os.replace`) y añadiendo una validación de integridad previa al borrado del `.bak`, protegiendo la configuración ante interrupciones críticas del sistema.
-- `2026-09-15T06:27:59` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos de error de sistema integrando un bloque `try-except` específico al consultar el tipo de unidad en `_validate_boundary_conditions`, evitando que una llamada fallida a `GetDriveTypeW` propague una excepción no controlada hacia el bucle principal.

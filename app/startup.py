@@ -139,6 +139,10 @@ class StartupEntry:
         if not path_str or self._is_path_suspicious(path_str):
             return ""
         
+        # Validación extra: evitar rutas que sean solo espacios o caracteres inválidos
+        if len(path_str) < 3:
+            return ""
+            
         try:
             p: Path = Path(path_str)
             if not p.parts or is_protected_path(p):

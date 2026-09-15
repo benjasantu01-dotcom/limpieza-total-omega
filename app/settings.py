@@ -132,7 +132,7 @@ DEFAULTS: Final[AppSettings] = {
     "analisis_en_paralelo": True,
     "asistente_activado": False,
     "asistente_clave_api": "",
-    "asistente_enviar_METRICAS": True,
+    "asistente_enviar_metricas": True,
     "asistente_modelo": "gemini-3.1-flash-lite",
 }
 
@@ -308,6 +308,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             if not _is_dict(raw): return DEFAULTS.copy()
             
             data = validate(raw)
+            # Validación de esquema: asegurarse que cada clave esperada exista
             for key in DEFAULTS:
                 if key not in data or data[key] is None:
                     data[key] = DEFAULTS[key]

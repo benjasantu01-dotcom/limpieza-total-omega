@@ -241,11 +241,11 @@ def _is_file_in_use(path_str: str) -> bool:
         return False
     
     kernel32 = ctypes.windll.kernel32
-    # FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE = 0x00000007
+    # Intentamos abrir con acceso nulo, solo para testear exclusividad
     try:
-        handle = kernel32.CreateFileW(path_str, 0, 0x00000007, None, 3, 0x00000080, None)
+        handle = kernel32.CreateFileW(path_str, 0, 0, None, 3, 0x00000080, None)
         if handle == -1: 
-            return True # Bloqueado por acceso exclusivo de otro proceso
+            return True # Bloqueado
         kernel32.CloseHandle(handle)
         return False
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
@@ -528,14 +528,14 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
     
-    if p.exists():
-        if os.name == 'nt':
-            _validate_ntfs_reparse_redirection(p)
-            
-        _check_file_integrity(p)
-    else:
-        # Validación preventiva para rutas que no existen pero cuyo padre sí podría ser crítico
-        try:
+    try:
+        if p.exists():
+            if os.name == 'nt':
+                _validate_ntfs_reparse_redirection(p)
+                
+            _check_file_integrity(p)
+        else:
+            # Validación preventiva para rutas que no existen pero cuyo padre sí podría ser crítico
             parent = p.parent
             if parent.exists() and is_protected_path(parent):
                 raise UnsafePathError("Directorio contenedor restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
@@ -545,8 +545,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
                 drive_type = ctypes.windll.kernel32.GetDriveTypeW(p.anchor)
                 if drive_type in (DRIVE_REMOTE, DRIVE_REMOVABLE):
                     raise UnsafePathError("Unidad no apta para modificación.", SafetyValidationErrorCode.IO_ERROR)
-        except (OSError, PermissionError, AttributeError, ctypes.ArgumentError):
-            pass
+    except (OSError, PermissionError, AttributeError, ctypes.ArgumentError) as e:
+        raise UnsafePathError(f"Fallo durante validación de integridad: {e}", SafetyValidationErrorCode.IO_ERROR)
             
     return p
 
