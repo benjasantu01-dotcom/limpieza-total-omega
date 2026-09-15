@@ -279,8 +279,17 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
 
 
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
-    """Combina base y ruta relativa de forma robusta."""
-    return real_base.joinpath(*rel_str.split("\\"))
+    """Combina base y ruta relativa validando integridad básica."""
+    if not isinstance(rel_str, str) or any(c in rel_str for c in '\0\r\n'):
+        return real_base
+    try:
+        parts = rel_str.split("\\")
+        target = real_base.joinpath(*parts)
+        if len(str(target)) >= MAX_PATH_LEN:
+            return real_base
+        return target
+    except (TypeError, ValueError, OSError):
+        return real_base
 
 
 def detect_profiles(
