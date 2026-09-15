@@ -187,8 +187,11 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado para acceso exclusivo por otros procesos.
-    Utiliza bloqueos consultivos de sistema operativo (flock/locking).
+    Verifica si un archivo está bloqueado por otro proceso.
+    
+    Usa 'msvcrt.locking' en Windows para acceso exclusivo y 'fcntl.flock' 
+    en POSIX. Retorna True si el archivo está en uso o si el acceso genera
+    un error de bloqueo, impidiendo operaciones destructivas sobre el archivo.
     """
     if not isinstance(path, Path) or not path.exists():
         return False
@@ -209,7 +212,13 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def _safe_unlink(path: Path) -> bool:
-    """Elimina un archivo tras validar políticas de seguridad y confirmar ausencia de bloqueos."""
+    """
+    Elimina un archivo tras validar políticas de seguridad y ausencia de bloqueos.
+    
+    Esta función actúa como guardián final antes de `unlink()`, garantizando
+    que el archivo no sea un enlace simbólico, no esté en rutas protegidas 
+    por `safety.py` y no presente bloqueos de sistema activos.
+    """
     if not path.is_file() or path.is_symlink() or is_protected_path(path):
         return False
         
@@ -222,7 +231,13 @@ def _safe_unlink(path: Path) -> bool:
         return False
 
 def _is_item_unreachable(path: Path) -> bool:
-    """Detecta rutas con ADS (Alternate Data Streams) o caracteres de control inválidos."""
+    """
+    Detecta si una ruta utiliza técnicas de ofuscación o ADS.
+    
+    Verifica la presencia de flujos de datos alternos (ADS) mediante la 
+    detección de ':' extra en el nombre o caracteres nulos que podrían
+    burlar filtros básicos de sistema operativo.
+    """
     if ":" in path.name.replace(path.drive, ""): return True
     if any(c in str(path) for c in ("\0", "\x00")): return True
     return False
@@ -714,7 +729,12 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
-    """Verifica requisitos de seguridad antes de purgar un ítem individual."""
+    """
+    Verifica los requisitos de seguridad antes de purgar un ítem.
+    
+    Valida la existencia del archivo, su pertenencia al sandbox y que 
+    su integridad (SHA-256) sea correcta antes de permitir el borrado.
+    """
     return (
         file_path.exists() and
         is_within_directory(file_path, base_path) and
