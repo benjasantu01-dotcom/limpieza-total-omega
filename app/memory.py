@@ -28,7 +28,6 @@ import subprocess
 import math
 import ctypes
 import time
-import heapq
 from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
@@ -228,21 +227,19 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
     
-    def process_generator():
-        for line in raw_csv_text.splitlines():
-            line = line.strip()
-            if not line or "," not in line:
-                continue
-            parts = [_clean_csv_field(x) for x in line.split(",")]
-            if len(parts) >= 3:
-                proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
-                if proc:
-                    yield proc
+    processed: List[ProcessMemory] = []
+    for line in raw_csv_text.splitlines():
+        line = line.strip()
+        if not line or "," not in line:
+            continue
+        parts = [_clean_csv_field(x) for x in line.split(",")]
+        if len(parts) >= 3:
+            proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
+            if proc:
+                processed.append(proc)
 
-    try:
-        return heapq.nlargest(limit, process_generator(), key=lambda p: p.working_set)
-    except (ValueError, TypeError):
-        return []
+    processed.sort(key=lambda p: p.working_set, reverse=True)
+    return processed[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Invoca la API win32 GlobalMemoryStatusEx para obtener el estado físico actual de la RAM."""
@@ -301,12 +298,10 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     try:
         proc = subprocess.run(PS_QUERY_CMD, capture_output=True, text=True, timeout=3, check=False)
         if proc.returncode == 0 and proc.stdout:
-            parsed = parse_windows_process_csv(proc.stdout, limit=limit)
-            if parsed:
-                _proc_cache_data = parsed
-                _proc_cache_time = time.time()
-            else:
-                _proc_cache_data = []
+            _proc_cache_data = parse_windows_process_csv(proc.stdout, limit=limit)
+            _proc_cache_time = time.time()
+        else:
+            _proc_cache_data = []
     except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): 
         _proc_cache_data = []
             

@@ -157,7 +157,10 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que ninguna métrica contenga valores NaN o infinito."""
-        return all(math.isfinite(getattr(self, attr)) for attr in self.__dataclass_fields__)
+        return (math.isfinite(self.junk_mb) and math.isfinite(self.suspicious_count) and 
+                math.isfinite(self.suspicious_warnings) and math.isfinite(self.memory_available_percent) and
+                math.isfinite(self.disk_free_percent) and math.isfinite(self.duplicate_mb) and
+                math.isfinite(self.startup_count) and math.isfinite(self.quarantined_count))
 
 @dataclass
 class HealthResult:

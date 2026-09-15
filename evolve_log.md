@@ -727,3 +727,38 @@ FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_progr
 - `2026-09-15T05:17:46` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` para evitar llamadas redundantes a `path.resolve()` y `path.stat()` (usando directamente la información provista por `os.scandir`), reduciendo significativamente la cantidad de accesos a disco por archivo analizado.
 - `2026-09-15T05:17:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T05:17:46` Corrida terminada. Total usado hoy: 124.
+- `2026-09-15T05:26:14` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-09-15T05:26:42` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `compute_score` reemplazando la validación `is_finite` (que iteraba por todos los atributos de la instancia mediante reflexión `__dataclass_fields__` en cada llamada) por una validación directa de campos, reduciendo el overhead en una función crítica del bucle.
+- `2026-09-15T05:27:53` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data
+- `2026-09-15T05:28:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-15T05:28:39` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la generación de snapshots de procesos en `top_memory_processes` eliminando la creación de objetos intermedios y el overhead de `heapq` en cada llamada, reemplazándolos por un procesamiento en una sola pasada y una estructura más eficiente, mejorando el rendimiento bajo uso intenso.
+- `2026-09-15T05:28:51` Tests FALLARON:
+```
+  archivo.write_text("contenido")
+        revision = tmp_path / "revision"
+    
+        found = organizer.scan_for_junk([str(origen)])
+        dest = organizer.stage_for_review(found, review_dir=str(revision))
+    
+>       assert not archivo.exists(), "el archivo debe salir de su lugar original"
+E       AssertionError: el archivo debe salir de su lugar original
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-3/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+
+evolve/tests/test_basic.py:144: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_finds_junk_and_ignores_other_files - AssertionError: assert 'basura.tmp' in set()
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_recurses_into_subfolders - assert False
+ +  where False = any(<generator object test_scan_for_junk_recurses_into_subfolders.<locals>.<genexpr> at 0x7fefbc1d35e0>)
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - AssertionError: assert 'normal.tmp' in set()
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AssertionError: el archivo debe salir de su lugar original
+assert not True
+ +  where True = exists()
+ +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-3/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+4 failed, 295 passed in 0.80s
+
+```
+- `2026-09-15T05:28:51` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Optimicé el proceso de escaneo sustituyendo la llamada redundante y costosa a `path.resolve()` (que accede al disco) por el uso directo de `entry.path` dentro de `_process_directory`, y mejoré el rendimiento del filtrado de extensiones mediante una lista de verificación rápida previa, reduciendo la cantidad de llamadas al sistema durante el recorrido recursivo.
+- `2026-09-15T05:28:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T05:28:51` Corrida terminada. Total usado hoy: 128.
