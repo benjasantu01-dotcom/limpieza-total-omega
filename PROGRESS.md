@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **222** (44.0% de aceptación)
-- Rechazadas por tests: 14
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 114 | 5 | 16 | 10 | 122 |
-| 2026-09-15 | 108 | 9 | 19 | 3 | 98 |
+| 2026-09-14 | 112 | 5 | 16 | 9 | 121 |
+| 2026-09-15 | 110 | 10 | 19 | 4 | 98 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **42**
 - rendimiento: **41**
-- robustez ante casos límite: **38**
+- seguridad defensiva: **40**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
 - `quarantine.py`: **20**
-- `memory.py`: **19**
 - `browser.py`: **19**
 - `settings.py`: **18**
-- `assistant.py`: **17**
+- `assistant.py`: **18**
+- `memory.py`: **18**
 - `diskreport.py`: **17**
 - `safety.py`: **16**
 - `duplicates.py`: **15**
-- `main.py`: **14**
 - `organizer.py`: **14**
-- `branding.py`: **13**
+- `branding.py`: **14**
+- `main.py`: **13**
 - `scanner.py`: **12**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T10:34:09` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` al verificar la existencia y el estado de la ruta mediante `is_safe_to_modify` antes de intentar operaciones de escritura, previniendo excepciones innecesarias en entornos de solo lectura o rutas bloqueadas, y asegurando un manejo de errores más específico.
+- `2026-09-15T10:33:53` **assistant.py** (robustez ante casos límite): Se mejora la robustez ante estados incoherentes del sistema mediante la adición de una comprobación de integridad en `SystemContext` para asegurar que el puntaje (`score`) sea consistente con la existencia de datos, y se protege la deserialización de configuraciones frente a tipos inesperados en `_parse_config`.
 - `2026-09-15T10:23:43` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` reemplazando la iteración completa sobre las partes del path por una comprobación eficiente mediante `frozenset` y `os.path.commonpath`, eliminando la creación innecesaria de múltiples objetos intermedios.
 - `2026-09-15T10:22:47` **quarantine.py** (rendimiento): Se optimizó `list_items` y `purge_all` transformando la búsqueda de ítems en el manifiesto de una lista (O(n)) a un diccionario (O(1)), evitando recorridos anidados innecesarios durante el escaneo del directorio de cuarentena.
 - `2026-09-15T10:13:36` **main.py** (rendimiento): Optimicé el sistema de caché y actualización de la interfaz en `main.py` reemplazando los recorridos redundantes en el diccionario `_cache` y los refrescos totales del widget de estado por actualizaciones granulares mediante `after_idle` y chequeos de existencia de widgets, reduciendo drásticamente el overhead del hilo principal durante análisis largos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T09:23:22` **memory.py** (legibilidad y documentación): Mejora la robustez y legibilidad mediante la adición de docstrings técnicos detallados en funciones de bajo nivel y la estandarización de type hints para reflejar con precisión la semántica de las operaciones con memoria.
 - `2026-09-15T09:21:54` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de cálculo (`score_*`) y el pipeline para documentar la lógica de normalización y el propósito de cada métrica, mejorando la legibilidad técnica del motor de análisis.
 - `2026-09-15T09:21:26` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones críticas y la clarificación de las estrategias de filtrado, asegurando que cada función explique el "porqué" de sus criterios de exclusión (como el uso de `st_nlink` para evitar contar enlaces físicos múltiples como duplicados reales).
-- `2026-09-15T09:12:32` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la documentación exhaustiva de las funciones de recorrido, la clarificación de los tipos complejos en `_collect_summary_data` y la adición de docstrings técnicos que explican el *porqué* de las decisiones de diseño, facilitando futuras auditorías.
-- `2026-09-15T09:12:20` **browser.py** (legibilidad y documentación): Introduje tipado explícito y docstrings mejorados en `_sum_directory_recursive` y `_should_skip_entry` para aclarar la lógica de exclusión y recursión, facilitando el mantenimiento y la comprensión de las restricciones de seguridad implementadas.

@@ -1269,3 +1269,45 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-15T10:23:53` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
 - `2026-09-15T10:23:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T10:23:53` Corrida terminada. Total usado hoy: 237.
+- `2026-09-15T10:32:12` Arrancando corrida. Quedan hoy ~63 peticiones objetivo.
+- `2026-09-15T10:32:42` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `load()` al evitar la lectura del archivo y el parsing de JSON cuando el `mtime` en disco coincide con el del caché, eliminando cálculos redundantes de IO y CPU.
+- `2026-09-15T10:32:44` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-15T10:33:15` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.41s
+
+```
+- `2026-09-15T10:33:15` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché en `_resolve_and_cache_path` que utiliza un conjunto (`set`) para filtrar rápidamente comandos ya procesados, reduciendo drásticamente las llamadas a `Path.resolve()` y al sistema de archivos al iterar sobre entradas duplicadas o recurrentes en el registro.
+- `2026-09-15T10:33:53` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejora la robustez ante estados incoherentes del sistema mediante la adición de una comprobación de integridad en `SystemContext` para asegurar que el puntaje (`score`) sea consistente con la existencia de datos, y se protege la deserialización de configuraciones frente a tipos inesperados en `_parse_config`.
+- `2026-09-15T10:34:09` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se mejora la robustez de `save_logo_svg` al verificar la existencia y el estado de la ruta mediante `is_safe_to_modify` antes de intentar operaciones de escritura, previniendo excepciones innecesarias en entornos de solo lectura o rutas bloqueadas, y asegurando un manejo de errores más específico.
+- `2026-09-15T10:34:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T10:34:09` Corrida terminada. Total usado hoy: 241.

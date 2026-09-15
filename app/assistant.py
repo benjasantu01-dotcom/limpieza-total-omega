@@ -284,7 +284,10 @@ class SystemContext:
     @property
     def is_empty(self) -> bool:
         """Verifica si el contexto contiene datos útiles tras el análisis."""
-        return not self.analyzed or not self.is_valid_structure
+        # Se requiere análisis positivo y, si hay puntaje, debe haber datos válidos
+        if not self.analyzed: return True
+        if self.score is not None and self.score < 0: return True
+        return not self.is_valid_structure
 
     def __hash__(self) -> int:
         return hash((self.score, self.grade, self.junk_mb, self.suspicious_count, 
@@ -604,11 +607,14 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
     try:
         if not isinstance(raw_cfg, dict):
             return AssistantConfig("", "gemini-3.1-flash-lite", True)
-        return AssistantConfig(
-            api_key=str(raw_cfg.get("asistente_api_key", "")),
-            model=str(raw_cfg.get("asistente_modelo", "gemini-3.1-flash-lite")),
-            allow_metrics=bool(raw_cfg.get("asistente_enviar_metricas", True))
-        )
+        
+        # Validar tipos estrictamente para evitar inyección de lógica
+        api_key = str(raw_cfg.get("asistente_api_key", ""))
+        model = str(raw_cfg.get("asistente_modelo", "gemini-3.1-flash-lite"))
+        metrics_val = raw_cfg.get("asistente_enviar_metricas", True)
+        allow_metrics = bool(metrics_val) if isinstance(metrics_val, bool) else True
+        
+        return AssistantConfig(api_key, model, allow_metrics)
     except (ValueError, TypeError):
         return AssistantConfig("", "gemini-3.1-flash-lite", True)
 
