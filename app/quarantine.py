@@ -456,6 +456,10 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
 
     if not source.is_file():
         raise OSError("Archivo origen inaccesible para copia.")
+    
+    # Pre-check preventivo contra colisiones de destino
+    if destination.exists():
+        raise FileExistsError(f"El destino ya existe: {destination}")
 
     src_stat_pre = source.stat()
     src_ino_pre = src_stat_pre.st_ino

@@ -464,6 +464,10 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     
+    # Prevenir acceso a subdirectorios de Windows
+    if "windows" in [p.lower() for p in target_path.parts]:
+        raise UnsafePathError("Ruta en directorio del sistema Windows bloqueada.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+    
     if os.name == 'nt':
         try:
             root = target_path.anchor

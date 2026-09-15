@@ -214,17 +214,13 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     """Determina si una entrada es un directorio escaneable o una ruta protegida."""
     if entry is None or not _is_allowed_directory(entry.name) or _is_junction(entry):
         return False
-    return entry.path not in protected_cache
+    return entry.path not in protected_cache and not is_protected_path(Path(entry.path))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0, protected_cache: Optional[set[str]] = None) -> None:
     """Recorrido recursivo del árbol de directorios con límite de profundidad."""
     if protected_cache is None: protected_cache = set()
-    if depth > 50: return
+    if depth > 50 or is_protected_path(current_dir): return
     
-    if is_protected_path(current_dir):
-        protected_cache.add(str(current_dir))
-        return
-
     try:
         with os.scandir(current_dir) as it:
             for entry in it:
