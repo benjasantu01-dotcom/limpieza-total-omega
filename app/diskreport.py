@@ -304,8 +304,10 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Motor interno de agregación de métricas. 
-    Realiza un recorrido único minimizando operaciones de string y Path.
+    Motor interno de agregación que realiza un recorrido único del árbol.
+    
+    Procesa estadísticos por extensión y mantiene un heap de archivos pesados
+    para evitar múltiples pasadas sobre el sistema de archivos.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -319,11 +321,12 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             total_files += 1
             
             suffix = path.suffix
-            ext = suffix.lower() if isinstance(suffix, str) and suffix else "(sin extensión)"
+            ext: str = suffix.lower() if isinstance(suffix, str) and suffix else "(sin extensión)"
             
             ext_bytes[ext] += size
             ext_counts[ext] += 1
             
+            # Gestión de archivos pesados mediante Heap para eficiencia O(n log k)
             if limit > 0:
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (size, path))
@@ -331,8 +334,9 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                     heapq.heapreplace(top_heap, (size, path))
         except (AttributeError, TypeError, ValueError):
             continue
-                    
-    ext_stats = {ext: ExtStats(ext_bytes[ext], ext_counts[ext]) for ext in ext_bytes}
+    
+    # Consolidación final de stats por extensión
+    ext_stats: Dict[str, ExtStats] = {ext: ExtStats(ext_bytes[ext], ext_counts[ext]) for ext in ext_bytes}
     return SummaryData(total_bytes, total_files, ext_stats, top_heap)
 
 

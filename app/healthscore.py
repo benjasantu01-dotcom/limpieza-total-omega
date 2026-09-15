@@ -29,6 +29,13 @@ class RecommendationRule(NamedTuple):
     message_factory: Callable[[SystemMetrics], str]
     check: Callable[[SystemMetrics, float], bool]
 
+class PipelineEntry(NamedTuple):
+    """Estructura de configuración para cada etapa del cálculo de salud."""
+    area: MetricKey
+    weight: int
+    scorer: Callable[[SystemMetrics], NormalizedRatio]
+    rules: List[RecommendationRule]
+
 __all__ = [
     "SystemMetrics",
     "HealthResult",
@@ -94,13 +101,13 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
 # Pre-vinculación de lógica para evitar búsquedas en diccionario o lambdas en el bucle
-_PIPELINE: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], List[RecommendationRule]]]] = [
-    ("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), []),
-    ("disco", 20, lambda m: score_disk(m.disk_free_percent), []),
-    ("memoria", 18, lambda m: score_memory(m.memory_available_percent), []),
-    ("basura", 14, lambda m: score_junk(m.junk_mb), []),
-    ("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), []),
-    ("arranque", 8, lambda m: score_startup(m.startup_count), []),
+_PIPELINE: Final[List[PipelineEntry]] = [
+    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), []),
+    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), []),
+    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), []),
+    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), []),
+    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), []),
+    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), []),
 ]
 
 _RULES_LIST: Final[Tuple[RecommendationRule, ...]] = (
@@ -114,8 +121,8 @@ _RULES_LIST: Final[Tuple[RecommendationRule, ...]] = (
 
 for rule in _RULES_LIST:
     for entry in _PIPELINE:
-        if entry[0] == rule.area:
-            entry[3].append(rule)
+        if entry.area == rule.area:
+            entry.rules.append(rule)
 
 @dataclass
 class SystemMetrics:
@@ -202,21 +209,21 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: float = 0.0
     
-    for area, weight, scorer, rules in _PIPELINE:
+    for entry in _PIPELINE:
         try:
-            val = scorer(metrics)
+            val = entry.scorer(metrics)
             # Validación de dominio: asegurar que sea un ratio finito 0.0-1.0
             area_ratio = _clamp(float(val)) if math.isfinite(val) else 0.0
             
-            if rules:
-                _evaluate_rules(metrics, rules, area_ratio, recommendations)
+            if entry.rules:
+                _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
-            weighted_points = int(round(area_ratio * weight))
-            metric_breakdown[area] = _clamp(float(weighted_points), 0.0, float(weight))
-            accumulated_score += metric_breakdown[area]
+            weighted_points = int(round(area_ratio * entry.weight))
+            metric_breakdown[entry.area] = _clamp(float(weighted_points), 0.0, float(entry.weight))
+            accumulated_score += metric_breakdown[entry.area]
         except Exception:
-            metric_breakdown[area] = 0
-            recommendations.append(f"Error al analizar el área: {area}.")
+            metric_breakdown[entry.area] = 0
+            recommendations.append(f"Error al analizar el área: {entry.area}.")
             
     final_score = int(_clamp(round(accumulated_score), 0.0, 100.0))
     

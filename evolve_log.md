@@ -438,3 +438,14 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-15T13:49:26` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo las convenciones de Google/NumPy) y se ha extraído la lógica de resolución de rutas en `detect_profiles` hacia una función privada `_resolve_browser_path` para reducir la complejidad ciclomática del bucle principal, mejorando así la mantenibilidad y legibilidad del código.
 - `2026-09-15T13:49:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T13:49:26` Corrida terminada. Total usado hoy: 317.
+- `2026-09-15T13:56:19` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-15T13:56:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-15T13:56:47` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-15T13:57:23` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del motor interno `_collect_summary_data` y añadí *type hints* faltantes en variables críticas para aclarar la estructura de datos procesada, facilitando el mantenimiento y la comprensión de las transformaciones de estado.
+- `2026-09-15T13:57:49` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica mediante la adición de docstrings estructurados y detallados que explican la lógica de decisión en las funciones críticas de ordenamiento y filtrado, mejorando la mantenibilidad para futuras auditorías de código.
+- `2026-09-15T13:58:17` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la legibilidad del pipeline de puntuación reemplazando la tupla anidada `_PIPELINE` por una estructura de datos `PipelineEntry` (NamedTuple) para evitar el uso de índices numéricos mágicos, facilitando la comprensión del código a largo plazo.
+- `2026-09-15T13:58:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-15T13:59:29` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-15T14:00:36` ✅ Mejora aceptada en main.py (enfoque: legibilidad y documentación). He refactorizado la estructura de `_compile_metrics` y la actualización visual en `on_full_analysis` para mejorar la legibilidad del flujo de datos, documentando explícitamente el origen de cada métrica mediante tipos claros y extrayendo la lógica de consolidación, lo que facilita el mantenimiento futuro del panel de salud.
+- `2026-09-15T14:00:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T14:00:36` Corrida terminada. Total usado hoy: 321.

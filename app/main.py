@@ -1144,27 +1144,32 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return None
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
-        """Compila métricas de salud del sistema."""
-        junk = self._get_cached("junk") or []
-        hallazgos = self._get_cached("suspicions") or []
-        dups = self._get_cached("dups") or []
-        startup = self._get_cached("startup") or []
+        """
+        Consolida las métricas del sistema provenientes de los distintos módulos
+        de análisis para alimentar el dashboard y el asistente.
+        """
+        # Obtenemos datos crudos del sistema
+        junk_items = self._get_cached("junk") or []
+        suspicious_items = self._get_cached("suspicions") or []
+        duplicate_items = self._get_cached("dups") or []
+        startup_items = self._get_cached("startup") or []
         quarantine_items = quarantine.list_items()
         
-        snapshot = self._get_cached("ram_snapshot", lambda: memory_mod.read_snapshot())
+        # Obtenemos snapshots de hardware
+        ram_snapshot = self._get_cached("ram_snapshot", lambda: memory_mod.read_snapshot())
         disk_info = self._get_home_disk_info()
             
         metrics = healthscore.SystemMetrics(
-            junk_mb=sum(j.size_bytes for j in junk) / 1048576,
-            suspicious_count=len(hallazgos),
-            suspicious_warnings=sum(1 for h in hallazgos if h.severity == "warning"),
-            memory_available_percent=snapshot.available_percent if snapshot else 100.0,
+            junk_mb=sum(item.size_bytes for item in junk_items) / 1048576,
+            suspicious_count=len(suspicious_items),
+            suspicious_warnings=sum(1 for item in suspicious_items if item.severity == "warning"),
+            memory_available_percent=ram_snapshot.available_percent if ram_snapshot else 100.0,
             disk_free_percent=(disk_info.free / disk_info.total * 100) if (disk_info and disk_info.total > 0) else 100.0,
-            duplicate_mb=(duplicates_mod.reclaimable_bytes(dups) / 1048576) if dups else 0.0,
-            startup_count=len(startup),
+            duplicate_mb=(duplicates_mod.reclaimable_bytes(duplicate_items) / 1048576) if duplicate_items else 0.0,
+            startup_count=len(startup_items),
             quarantined_count=len(quarantine_items),
         )
-        return metrics, snapshot or memory_mod.Snapshot(0, 0, 0), disk_info or diskreport.DriveInfo(0, 0, 0, "")
+        return metrics, ram_snapshot or memory_mod.Snapshot(0, 0, 0), disk_info or diskreport.DriveInfo(0, 0, 0, "")
 
     @validated_ui_operation
     @ensure_safety
@@ -1175,29 +1180,33 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.clear("Salud")
             self.log("Analizando... esto no modifica nada.", "Salud")
 
+            # Actualizamos métricas y generamos contexto para el asistente
             self._invalidate_cache("ram_snapshot")
             metrics, snapshot, _ = self._compile_metrics()
-            resultado = healthscore.compute_score(metrics)
+            score_result = healthscore.compute_score(metrics)
 
             if not self.assistant_context:
                 self.assistant_context = assistant.SystemContext()
             
             self.assistant_context = assistant.build_context(
-                metrics=metrics, health=resultado,
+                metrics=metrics, 
+                health=score_result,
                 memory_total_gb=snapshot.total / (1024 ** 3) if (snapshot and snapshot.total) else 0.0,
             )
 
+            # Actualización de UI
             self._update_health_visuals(
-                resultado, metrics.junk_mb, metrics.suspicious_count,
+                score_result, metrics.junk_mb, metrics.suspicious_count,
                 metrics.memory_available_percent, metrics.disk_free_percent
             )
 
-            lineas = healthscore.summarize(resultado)
+            # Log de resultados
+            summary_lines = healthscore.summarize(score_result)
             if not self._get_cached("dups"):
-                lineas += ["", "Nota: los duplicados no se contaron todavía. "
+                summary_lines += ["", "Nota: los duplicados no se contaron todavía. "
                                "Corré la pestaña Duplicados para incluirlos."]
-            self.log_lines(lineas, "Salud")
-            self.set_status(f"Salud: {resultado.score}/100 (nota {resultado.grade})")
+            self.log_lines(summary_lines, "Salud")
+            self.set_status(f"Salud: {score_result.score}/100 (nota {score_result.grade})")
 
         self.run_async(task)
 

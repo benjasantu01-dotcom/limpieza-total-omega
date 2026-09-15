@@ -143,9 +143,13 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 def _is_valid_candidate(path: Path, stat_result: Optional[os.stat_result] = None) -> bool:
     """
     Filtro de seguridad central. Valida si un archivo es apto para el análisis.
-    Excluye: enlaces simbólicos, rutas protegidas, archivos de sistema/ocultos,
-    archivos bloqueados y aquellos con hard links (st_nlink > 1), ya que estos
-    últimos son la misma entrada de disco y no duplicados en el sentido estricto.
+    
+    Criterios de exclusión:
+    1. Enlaces simbólicos: para evitar redundancia o bucles.
+    2. Rutas protegidas: validadas por `is_protected_path`.
+    3. Atributos de sistema/ocultos: para ignorar configuraciones del SO.
+    4. Hard links: st_nlink > 1 implica que el archivo comparte el mismo inodo/índice,
+       por lo que no es un duplicado real de contenido en el sentido tradicional.
     """
     try:
         if path.is_symlink() or is_protected_path(path) or not is_safe_to_modify(path) or _is_file_locked(path):
@@ -276,9 +280,10 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _get_keeper_score(path: Path) -> Optional[Tuple[float, int]]:
     """
-    Calcula una tupla de ordenamiento para sugerir el 'keeper':
-    - mtime: Prioriza archivos más antiguos.
-    - len(str(path)): En caso de empate en mtime, prioriza la ruta más corta (frecuentemente raíz o carpetas principales).
+    Calcula una tupla de ordenamiento para elegir el 'keeper' (el original):
+    1. Timestamp de modificación (mtime): Se prioriza el archivo más antiguo.
+    2. Longitud de la ruta: En caso de empate en mtime, se prioriza la ruta más corta,
+       asumiendo que los directorios principales contienen las copias maestras.
     """
     try:
         stat = path.stat()
@@ -289,9 +294,10 @@ def _get_keeper_score(path: Path) -> Optional[Tuple[float, int]]:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Selecciona el mejor candidato a conservar basándose en la estrategia:
-    1. Archivo más antiguo (mtime).
-    2. En empate, ruta más corta.
+    Selecciona el mejor candidato a conservar basándose en la estrategia de puntuación.
+    
+    Usa `min()` sobre las tuplas de puntaje obtenidas en `_get_keeper_score` para 
+    determinar la combinación óptima de antigüedad y jerarquía de carpetas.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
