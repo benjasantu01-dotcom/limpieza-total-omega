@@ -170,6 +170,8 @@ class QuarantineItem:
 
 def _get_sha256(path: Path) -> str:
     """Calcula el hash SHA-256 de un archivo mediante lectura segmentada en buffer."""
+    if not path.is_file():
+        return ""
     sha256_hash = hashlib.sha256()
     try:
         with open(path, "rb") as handle:
@@ -451,6 +453,9 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     if is_protected_path(destination):
         raise UnsafePathError("Destino en ruta protegida.")
     _check_windows_file_attributes(str(destination))
+
+    if not source.is_file():
+        raise OSError("Archivo origen inaccesible para copia.")
 
     src_stat_pre = source.stat()
     src_ino_pre = src_stat_pre.st_ino

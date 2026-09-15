@@ -272,7 +272,8 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     try:
         # Requerimos al menos 50MB de espacio libre de margen
         margin: int = 50 * 1024 * 1024
-        if shutil.disk_usage(dest_base.resolve().anchor).free < (junk_file.size_bytes + margin):
+        usage = shutil.disk_usage(dest_base.resolve().anchor)
+        if usage.free < (junk_file.size_bytes + margin):
             return None
         safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
         target = _generate_unique_target(dest_base.resolve() / safe_name)
@@ -292,7 +293,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         if not isinstance(junk_file, JunkFile): continue
         try:
             target = _can_move_file(junk_file, dest_base)
-            if target and is_safe_to_modify(junk_file.path):
+            if target and is_safe_to_modify(junk_file.path) and not _is_file_locked(junk_file.path):
                 ensure_safe_to_modify(junk_file.path)
                 ensure_safe_to_modify(target.parent)
                 shutil.move(str(junk_file.path), str(target))

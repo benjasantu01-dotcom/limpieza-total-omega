@@ -1395,3 +1395,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-15T01:33:06` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se mejora la robustez ante casos límite en la carga de pestañas y la ejecución de callbacks, implementando validaciones de existencia de widgets antes de cualquier manipulación en los métodos de construcción y en el factory de pestañas, previniendo errores de concurrencia durante el inicio rápido de la interfaz.
 - `2026-09-15T01:33:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T01:33:06` Corrida terminada. Total usado hoy: 36.
+- `2026-09-15T01:40:45` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-09-15T01:41:16` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-15T01:41:44` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se introdujo una validación de espacio en disco más robusta en `_can_move_file` mediante `shutil.disk_usage` y se añadió una verificación de estado de bloqueo de archivo (`is_file_locked`) antes de realizar la operación de `shutil.move` en `stage_for_review` para prevenir fallos por archivos en uso concurrente.
+- `2026-09-15T01:42:20` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una comprobación de existencia y accesibilidad física mediante `is_file()` y `stat()` antes de iniciar el cálculo de hashes en `_get_sha256` y `quarantine_file` para evitar excepciones no manejadas ante archivos que desaparecen entre la validación inicial y la operación, aumentando la robustez ante condiciones de carrera (TOCTOU).
+- `2026-09-15T01:42:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-15T01:42:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T01:42:24` Corrida terminada. Total usado hoy: 40.
