@@ -292,6 +292,7 @@ def detect_profiles(
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
     k32 = _get_kernel32()
+    # Compartimos el diccionario de memoización entre todos los escaneos
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     scanned_paths: set[str] = set()

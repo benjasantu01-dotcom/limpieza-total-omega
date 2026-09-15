@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 73 | 4 | 11 | 6 | 81 |
-| 2026-09-15 | 147 | 12 | 25 | 5 | 140 |
+| 2026-09-14 | 72 | 4 | 11 | 6 | 78 |
+| 2026-09-15 | 149 | 12 | 25 | 5 | 142 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **46**
-- robustez ante casos límite: **43**
-- rendimiento: **31**
+- robustez ante casos límite: **42**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
 - `diskreport.py`: **20**
+- `browser.py`: **19**
 - `memory.py`: **19**
 - `quarantine.py`: **19**
-- `browser.py`: **18**
 - `settings.py`: **17**
+- `assistant.py`: **17**
 - `safety.py`: **17**
-- `assistant.py`: **16**
 - `duplicates.py`: **14**
 - `branding.py`: **13**
 - `scanner.py`: **13**
 - `organizer.py`: **13**
-- `main.py`: **12**
+- `main.py`: **11**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T14:29:24` **browser.py** (rendimiento): Implementé la persistencia del diccionario `perf_cache` en el flujo principal de `detect_profiles` para reutilizar los resultados de cálculo de tamaño de directorios hijos comunes (como subcarpetas dentro de `User Data`), evitando escaneos redundantes y mejorando significativamente la performance en sistemas con múltiples navegadores basados en Chromium.
+- `2026-09-15T14:28:11` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal de palabras clave por una pre-compilación del mapa de tokens en un conjunto (`set`) y una búsqueda basada en `set.intersection`, evitando la iteración innecesaria en casos de consultas largas o complejas.
 - `2026-09-15T14:23:08` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones críticas `parse_registry_csv` y `list_startup_entries`, aclarando sus parámetros y el comportamiento frente a datos malformados para mejorar la mantenibilidad.
 - `2026-09-15T14:20:52` **scanner.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo `scanner.py` extrayendo la lógica compleja de filtrado de extensiones y validación de atributos dentro de `process_entry` hacia métodos con nombre descriptivo (`_is_relevant_extension` y `_is_safe_file_type`), facilitando la comprensión del flujo de escaneo sin alterar su comportamiento.
 - `2026-09-15T14:08:18` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en parámetros de funciones críticas y clarificando mediante docstrings el propósito técnico y las restricciones de seguridad de las funciones de auditoría, facilitando así su mantenimiento y auditoría por parte del equipo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T13:48:19` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_get_source_value` para eliminar el uso de `getattr` sobre objetos genéricos, sustituyéndolo por una implementación más clara y segura basada en el protocolo de dictado o atributos, reduciendo así la ambigüedad y el riesgo de errores inesperados.
 - `2026-09-15T13:38:16` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load` y `save` incorporando un manejo de errores más específico y preventivo, validando la integridad del contenido JSON antes de procesarlo y asegurando que las rutas de configuración no sean vulnerables a manipulaciones mediante la verificación explícita de `is_safe_to_modify` en el acceso a directorios.
 - `2026-09-15T13:37:33` **scanner.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `Scanner.process_entry` y `scan_directory` reemplazando bloques `pass` o capturas genéricas por un log explícito, además de validar que las rutas obtenidas de `os.DirEntry` sean válidas antes de intentar resolverlas, evitando así posibles excepciones silenciosas durante el escaneo.
-- `2026-09-15T13:37:02` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_validate_boundary_conditions` para manejar explícitamente el caso de rutas inexistentes en el cálculo de `target_path.anchor`, evitando posibles `OSError` o fallos en la validación de unidades al procesar archivos que aún no han sido creados en el disco.
-- `2026-09-15T13:32:10` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` encapsulando la lógica de limpieza en un bloque `try-finally` para asegurar que el registro del manifiesto se mantenga consistente y que el archivo original se elimine solo tras una verificación de integridad exitosa del destino, evitando estados parciales.

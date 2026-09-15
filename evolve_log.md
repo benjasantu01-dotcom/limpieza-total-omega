@@ -474,3 +474,13 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-15T14:23:08` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones críticas `parse_registry_csv` y `list_startup_entries`, aclarando sus parámetros y el comportamiento frente a datos malformados para mejorar la mantenibilidad.
 - `2026-09-15T14:23:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T14:23:08` Corrida terminada. Total usado hoy: 329.
+- `2026-09-15T14:26:58` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-15T14:27:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-15T14:27:18` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-15T14:28:11` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal de palabras clave por una pre-compilación del mapa de tokens en un conjunto (`set`) y una búsqueda basada en `set.intersection`, evitando la iteración innecesaria en casos de consultas largas o complejas.
+- `2026-09-15T14:28:42` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-15T14:28:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-15T14:29:24` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Implementé la persistencia del diccionario `perf_cache` en el flujo principal de `detect_profiles` para reutilizar los resultados de cálculo de tamaño de directorios hijos comunes (como subcarpetas dentro de `User Data`), evitando escaneos redundantes y mejorando significativamente la performance en sistemas con múltiples navegadores basados en Chromium.
+- `2026-09-15T14:29:37` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-15T14:29:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T14:29:37` Corrida terminada. Total usado hoy: 333.
