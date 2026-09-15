@@ -315,9 +315,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination: return None
     try:
         target = Path(destination).resolve()
-        # Verificar seguridad antes de cualquier operación de I/O destructiva
+        # ensure_safe_to_modify lanza excepción si la ruta no es segura
         ensure_safe_to_modify(target)
-        # Crear directorios padres solo si la ruta es segura
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
@@ -329,6 +328,7 @@ def logo_ascii() -> str:
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     try:
+        if not all(isinstance(v, (int, float)) for v in (canvas_x, canvas_y, scale)): return
         franjas_count = max(6, int(28 * scale))
         base_y = canvas_y + 18 * scale
         factor_y = 92 * scale / franjas_count
@@ -344,6 +344,7 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     try:
+        if not all(isinstance(v, (int, float)) for v in (canvas_x, canvas_y, scale)): return
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, 
                            canvas_x + 75 * scale, canvas_y + 41 * scale, 
                            fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")

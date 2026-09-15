@@ -171,11 +171,11 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
         return False
 
 
-def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
+def _should_skip_entry(entry: Optional[os.DirEntry], kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
     Filtro de exclusión para scandir: omite protegidos, junctions y symlinks.
     """
-    if entry is None:
+    if entry is None or entry.name is None:
         return True
     
     try:
@@ -183,7 +183,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
             return True
         
         path = entry.path
-        if len(path) >= MAX_PATH_LEN or any(c in path for c in '\0\r\n'):
+        if not path or len(path) >= MAX_PATH_LEN or any(c in path for c in '\0\r\n'):
             return True
         
         if entry.is_symlink() or is_junction_fn(path):

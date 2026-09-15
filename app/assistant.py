@@ -476,8 +476,8 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
         if startup_count > 12:
             parts.append(f"Sí te conviene mirar los {startup_count} programas de inicio.")
         return Answer(_validate_response_length(" ".join(parts)), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
-    except (ValueError, TypeError, AttributeError, OverflowError):
-        return Answer("Error al consultar estado de memoria.")
+    except Exception:
+        return Answer("No pude procesar el estado de memoria.")
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Procesa consultas sobre el espacio en disco y elementos recuperables."""
@@ -495,8 +495,8 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
             msg += " ¡Alerta! Estás por debajo del 10%, afecta la estabilidad."
         msg += " Empezá por Limpieza: mueve los candidatos a revisión."
         return Answer(_validate_response_length(msg), notice=OFFLINE_NOTICE)
-    except (ValueError, TypeError, AttributeError, OverflowError):
-        return Answer("Error al consultar estado de disco.")
+    except Exception:
+        return Answer("No pude procesar el estado de disco.")
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     """Procesa consultas sobre riesgos de seguridad hallados en el sistema."""
@@ -511,8 +511,8 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
             sugerencia = "Son señales, no una condena: si no reconocés alguno, usá 'Aislar hallazgos'."
             texto = f"{info} {sugerencia} La limpieza solo mueve a cuarentena."
         return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE)
-    except (ValueError, TypeError, AttributeError):
-        return Answer("Error al consultar seguridad.")
+    except Exception:
+        return Answer("No pude procesar el estado de seguridad.")
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Responde explicando cómo se compone el puntaje de salud del sistema."""
@@ -526,8 +526,8 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
         resumen = ("Lo que más te está restando: " + ", ".join(problemas[:3]) + ".") if problemas else "No hay nada urgente."
         explicacion = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio."
         return Answer(_validate_response_length(f"{score_display} {resumen}{explicacion}"), notice=OFFLINE_NOTICE)
-    except (ValueError, TypeError, AttributeError):
-        return Answer("Error al procesar el puntaje de salud.")
+    except Exception:
+        return Answer("No pude procesar el puntaje de salud.")
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     """Procesa consultas sobre los programas de arranque configurados en Windows."""
@@ -538,8 +538,8 @@ def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
         valoracion = "Son bastantes, y cada uno suma tiempo de encendido." if count > 15 else ("Es normal." if count > 8 else "Está bien.")
         cierre = " La app los lista, pero desactivalos desde el Administrador de tareas de Windows."
         return Answer(_validate_response_length(f"{estado} {valoracion}{cierre}"), notice=OFFLINE_NOTICE)
-    except (ValueError, TypeError, AttributeError):
-        return Answer("Error al consultar programas de inicio.")
+    except Exception:
+        return Answer("No pude consultar los programas de inicio.")
 
 _KEYWORD_MAP: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
     token: handler 
