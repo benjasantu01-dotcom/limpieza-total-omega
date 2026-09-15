@@ -78,27 +78,27 @@ if sum(WEIGHTS.values()) != 100:
 _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula la salud respecto a basura: mayor volumen reduce el score."""
+    """Calcula la salud respecto a basura: penaliza linealmente el exceso de MB."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula la salud de seguridad: cada hallazgo penaliza un 5%, cada advertencia un 25%."""
+    """Calcula la salud de seguridad penalizando hallazgos y advertencias críticas."""
     return _clamp(1.0 - ((_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula la salud de memoria: mayor porcentaje disponible implica mayor puntaje."""
+    """Calcula la salud de memoria basada en el porcentaje de RAM disponible."""
     return _clamp(_to_float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula la salud de disco: mayor porcentaje libre implica mayor puntaje."""
+    """Calcula la salud de disco basada en el porcentaje de espacio libre restante."""
     return _clamp(_to_float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula la salud por duplicados: mayor volumen de duplicados reduce el score."""
+    """Calcula la salud por duplicados considerando el volumen total de redundancia."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
-    """Calcula la salud por ítems de arranque: mayor cantidad reduce el score."""
+    """Calcula la salud por programas de arranque; mayor cantidad reduce el score."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
 _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
@@ -123,6 +123,7 @@ _RULES_BY_AREA: Final[Dict[MetricKey, List[RecommendationRule]]] = {}
 for rule in _RECOMMENDATION_RULES:
     _RULES_BY_AREA.setdefault(rule.area, []).append(rule)
 
+# Pipeline de ejecución: procesa secuencialmente cada área con su score y reglas
 _PIPELINE: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], List[RecommendationRule]]]] = [
     (a, w, _SCORERS[a], _RULES_BY_AREA.get(a, [])) for a, w in _WEIGHT_ITEMS_INT
 ]
@@ -140,7 +141,6 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None:
-        # Forzar conversión a tipos esperados para evitar problemas en cálculos
         for field_name in self.__dataclass_fields__:
             val = getattr(self, field_name)
             if not isinstance(val, (int, float)):
@@ -207,7 +207,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str) and msg.strip():
-                    # Sanitización básica para asegurar legibilidad en el reporte
                     safe_msg = "".join(char for char in msg if char.isprintable())
                     findings.append(safe_msg[:200].strip())
         except Exception:

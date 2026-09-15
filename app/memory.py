@@ -348,7 +348,10 @@ def _is_system_process(pid: int) -> bool:
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: int) -> Optional[Path]:
-    """Resuelve la ruta absoluta del ejecutable usando PSAPI GetModuleFileNameExW con validaciones de seguridad."""
+    """
+    Resuelve la ruta absoluta del ejecutable usando la API PSAPI GetModuleFileNameExW.
+    Realiza saneamiento inicial para descartar dispositivos especiales y reparse points.
+    """
     if not proc_handle or proc_handle <= 0: return None
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
@@ -371,8 +374,8 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
     """
-    Verifica si un proceso es candidato seguro para la operación de trim.
-    Comprueba que el proceso esté activo y su ejecutable no resida en una ruta protegida.
+    Valida la integridad y seguridad de un proceso antes de modificar su Working Set.
+    Verifica que el proceso siga activo y que su ejecutable no esté en una ruta protegida.
     """
     if not isinstance(proc_handle, int) or proc_handle <= 0: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32

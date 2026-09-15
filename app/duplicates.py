@@ -142,8 +142,10 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 def _is_valid_candidate(path: Path, stat_result: Optional[os.stat_result] = None) -> bool:
     """
-    Filtro de seguridad central. Valida si un archivo debe ser analizado, excluyendo 
-    enlaces simbólicos, rutas protegidas y archivos bloqueados por el SO.
+    Filtro de seguridad central. Valida si un archivo es apto para el análisis.
+    Excluye: enlaces simbólicos, rutas protegidas, archivos de sistema/ocultos,
+    archivos bloqueados y aquellos con hard links (st_nlink > 1), ya que estos
+    últimos son la misma entrada de disco y no duplicados en el sentido estricto.
     """
     try:
         if path.is_symlink() or is_protected_path(path) or not is_safe_to_modify(path) or _is_file_locked(path):
@@ -273,7 +275,11 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def _get_keeper_score(path: Path) -> Optional[Tuple[float, int]]:
-    """Calcula una tupla de ordenamiento: mtime (antigüedad) y longitud de ruta (brevedad)."""
+    """
+    Calcula una tupla de ordenamiento para sugerir el 'keeper':
+    - mtime: Prioriza archivos más antiguos.
+    - len(str(path)): En caso de empate en mtime, prioriza la ruta más corta (frecuentemente raíz o carpetas principales).
+    """
     try:
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
