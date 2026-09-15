@@ -44,12 +44,14 @@ __all__ = [
     "summarize",
 ]
 
+# Umbrales críticos utilizados para calcular la degradación de la salud
 _LIMIT_JUNK_MB: Final[float] = 5000.0          
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
 _LIMIT_STARTUP_COUNT: Final[int] = 20          
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
+# Factores de normalización precalculados para optimizar el rendimiento del pipeline
 _INV_JUNK: Final[float] = 1.0 / max(_LIMIT_JUNK_MB, 1.0)
 _INV_DUP: Final[float] = 1.0 / max(_LIMIT_DUPLICATE_MB, 1.0)
 _INV_STARTUP: Final[float] = 1.0 / max(float(_LIMIT_STARTUP_COUNT), 1.0)
@@ -60,6 +62,7 @@ WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
+# Pesos relativos de cada área en el score total. Deben sumar 100.
 WEIGHTS: Final[Dict[MetricKey, int]] = {
     "seguridad": 30,
     "disco": 20,
@@ -126,6 +129,7 @@ _CACHE_SCORERS: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], Norma
 
 @dataclass
 class SystemMetrics:
+    """Contenedor de datos para las métricas crudas del sistema."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -164,6 +168,7 @@ class SystemMetrics:
 
 @dataclass
 class HealthResult:
+    """Resultado procesado del análisis de salud."""
     score: int
     grade: str
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
@@ -171,6 +176,7 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
+        """Define el rango de éxito para el puntaje global."""
         return 80 <= self.score <= 100
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
@@ -195,9 +201,7 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """
-    Ejecuta las reglas de recomendación con saneamiento de strings de salida.
-    """
+    """Ejecuta las reglas de recomendación con saneamiento de strings de salida."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -214,7 +218,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     
-    # Validar integridad antes de procesar
     metrics.validate()
     if not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Inconsistencia numérica detectada en métricas."])

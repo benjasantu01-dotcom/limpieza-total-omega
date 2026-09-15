@@ -9,45 +9,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 28
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 221
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-12 | 25 | 1 | 3 | 2 | 47 |
+| 2026-09-12 | 22 | 1 | 3 | 2 | 46 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
 | 2026-09-14 | 157 | 6 | 20 | 14 | 157 |
-| 2026-09-15 | 4 | 0 | 0 | 0 | 0 |
+| 2026-09-15 | 7 | 0 | 0 | 1 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **54**
+- legibilidad y documentación: **57**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **41**
-- rendimiento: **37**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
 - `browser.py`: **20**
-- `safety.py`: **19**
-- `settings.py`: **19**
 - `assistant.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
+- `memory.py`: **18**
+- `safety.py`: **18**
+- `settings.py`: **18**
 - `diskreport.py`: **17**
-- `memory.py`: **17**
+- `organizer.py`: **14**
 - `main.py`: **14**
-- `scanner.py`: **13**
-- `organizer.py`: **13**
 - `duplicates.py`: **13**
 - `branding.py`: **12**
+- `scanner.py`: **12**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T00:21:30` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` documentando los parámetros y retornos de funciones críticas, clarificando la lógica de las comprobaciones de seguridad (`is_safe_for_disk_op`) y refinando los nombres de variables para explicitar el uso de unidades del sistema de archivos.
+- `2026-09-15T00:21:19` **memory.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de bajo nivel de acceso al kernel (Win32 API) para clarificar el flujo de manejo de punteros y estructuras, facilitando el mantenimiento futuro y la comprensión de las restricciones de seguridad.
+- `2026-09-15T00:19:34` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el propósito de las constantes y la lógica del motor de puntuación, además de añadir type hints y mejorar la claridad en la estructura de los datos para facilitar el mantenimiento del código.
 - `2026-09-15T00:11:16` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de los métodos de escaneo para clarificar el flujo de datos y la naturaleza de las restricciones de seguridad, facilitando el mantenimiento y la comprensión de la lógica de filtrado recursivo.
 - `2026-09-15T00:11:05` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` mediante type hints explícitos, docstrings detallados en las funciones de procesamiento de datos y la extracción de la lógica de conversión a MB para asegurar consistencia y legibilidad.
 - `2026-09-15T00:10:07` **browser.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de recursión (`_sum_directory_recursive` y `_process_entry`) para clarificar el flujo de control, la propagación de errores y el mecanismo de seguridad ante reparse points/junctions, facilitando el mantenimiento técnico de este núcleo del módulo.
@@ -60,6 +63,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-14T12:56:46` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para garantizar que, ante errores inesperados durante la resolución de rutas, la configuración no acepte rutas potencialmente peligrosas, fallando de forma segura (Fail-Safe).
 - `2026-09-14T12:47:22` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `_write_temp_to_final` ante ataques TOCTOU y condiciones de carrera reemplazando la apertura con `os.open` por el uso de un descriptor de archivo con flags atómicos más granulares y validación estricta post-escritura.
 - `2026-09-14T12:47:02` **organizer.py** (seguridad defensiva): He mejorado `_can_move_file` añadiendo una validación estricta de "espacio mínimo requerido" (50MB de margen) para prevenir que la operación de mover archivos agote el espacio disponible en la unidad de destino, protegiendo así la integridad del sistema ante situaciones de disco lleno.
-- `2026-09-14T12:46:35` **memory.py** (seguridad defensiva): Se reforzó la seguridad de `trim_working_set` añadiendo una validación explícita mediante `is_safe_to_modify` sobre el PID del proceso objetivo antes de abrir un handle, previniendo así la apertura de procesos cuyo ejecutable reside en rutas prohibidas o de sistema.
-- `2026-09-14T12:36:13` **healthscore.py** (seguridad defensiva): Se reforzó la robustez defensiva de `compute_score` implementando una validación de integridad previa sobre `metrics` que protege al pipeline de estados inconsistentes, y se añadió una capa de filtrado para asegurar que los mensajes de recomendación tengan una longitud controlada y contenido saneado.
-- `2026-09-14T12:35:58` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` y `group_by_size` asegurando que las rutas se resuelvan antes de cualquier verificación, previniendo así errores por rutas relativas mal formadas y garantizando que `is_safe_to_modify` evalúe la ubicación absoluta real.

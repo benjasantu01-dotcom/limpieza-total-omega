@@ -357,6 +357,7 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     
     buf = ctypes.create_unicode_buffer(1024)
     try:
+        # GetModuleFileNameExW requiere un Handle de proceso (HANDLE), Base Address y un Buffer.
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 1024) > 0:
             return Path(buf.value).resolve(strict=False)
     except (OSError, ctypes.ArgumentError, ValueError, MemoryError):
@@ -365,14 +366,15 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
     """
-    Valida la integridad de un proceso antes de cualquier operación.
-    Verifica estado activo y que la ruta del ejecutable no esté protegida por `safety.py`.
+    Valida la integridad de un proceso antes de cualquier operación de gestión.
+    Verifica estado de ejecución activo y que la ruta sea segura (no del sistema).
     """
     if not isinstance(proc_handle, int) or proc_handle <= 0: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
     
     try:
         exit_code = ctypes.c_ulong()
+        # Verificar estado del proceso mediante GetExitCodeProcess (valor 259 indica activo)
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
             return False, f"Imposible verificar estado (Error {kernel32.GetLastError()})."
             
@@ -407,6 +409,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
+    # Abrir proceso con permisos limitados (QUERY + SET QUOTA) para evitar escalada de privilegios
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         return False, f"Acceso denegado (Error {kernel32.GetLastError()})."
@@ -416,6 +419,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not is_safe: 
             return False, error_reason or "Verificación de seguridad fallida."
         
+        # Llamada a EmptyWorkingSet: obliga al SO a liberar páginas no compartidas del proceso
         if not psapi.EmptyWorkingSet(proc_handle): 
             error_code = kernel32.GetLastError()
             return False, f"Sistema denegó la operación (Error {error_code})."
