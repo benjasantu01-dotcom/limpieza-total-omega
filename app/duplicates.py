@@ -272,10 +272,13 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
 
 
-def _get_keeper_score(path: Path) -> Tuple[float, int]:
+def _get_keeper_score(path: Path) -> Optional[Tuple[float, int]]:
     """Calcula una tupla de ordenamiento: mtime (antigüedad) y longitud de ruta (brevedad)."""
-    stat = path.stat()
-    return float(stat.st_mtime), len(str(path))
+    try:
+        stat = path.stat()
+        return float(stat.st_mtime), len(str(path))
+    except (OSError, PermissionError):
+        return None
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
@@ -286,14 +289,15 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
+    
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        try:
-            if not p.exists() or not is_safe_to_modify(p):
-                continue
-            candidates.append((_get_keeper_score(p), p))
-        except (OSError, PermissionError):
+        if not is_safe_to_modify(p):
             continue
+        score = _get_keeper_score(p)
+        if score:
+            candidates.append((score, p))
+            
     return min(candidates, key=lambda x: x[0])[1] if candidates else None
 
 
@@ -313,7 +317,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
             elif not is_safe_to_modify(path):
                 lines.append(f"   [inaccesible] {path}")
             else:
-                label = 'conservar' if (keeper and path == keeper) else 'duplicado'
+                label = 'conservar' if (keeper is not None and path == keeper) else 'duplicado'
                 lines.append(f"   [{label}] {path}")
         except (OSError, PermissionError):
             lines.append(f"   [error] {path}")
