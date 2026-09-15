@@ -325,6 +325,10 @@ class SystemContext:
         """
         if source is None or not isinstance(source, (dict, object)) or _is_input_too_deep_or_complex(source):
             return False
+        
+        # Seguridad defensiva: rechazar objetos complejos con métodos o estados internos
+        if not isinstance(source, dict) and not hasattr(source, "__dict__"):
+            return False
             
         found_data = False
         # Ingesta de métricas numéricas según especificación

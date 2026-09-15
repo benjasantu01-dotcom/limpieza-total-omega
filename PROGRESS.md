@@ -6,19 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Mejoras aceptadas: **235** (46.6% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-13 | 0 | 0 | 0 | 0 | 1 |
-| 2026-09-14 | 157 | 6 | 20 | 14 | 157 |
-| 2026-09-15 | 76 | 7 | 15 | 2 | 49 |
+| 2026-09-14 | 157 | 6 | 20 | 14 | 154 |
+| 2026-09-15 | 78 | 7 | 15 | 2 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **46**
 - rendimiento: **44**
-- seguridad defensiva: **38**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,9 +33,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **21**
 - `quarantine.py`: **21**
 - `memory.py`: **20**
-- `assistant.py`: **18**
+- `assistant.py`: **19**
+- `diskreport.py`: **18**
 - `settings.py`: **18**
-- `diskreport.py`: **17**
 - `safety.py`: **16**
 - `main.py`: **15**
 - `scanner.py`: **14**
@@ -47,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T06:39:26` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y `_collect_summary_data` al asegurar que el tamaño de archivo se obtenga mediante un `stat()` local y protegido contra excepciones de permisos, evitando el uso de atributos inciertos y reforzando la integridad de los datos recolectados ante posibles errores de I/O durante el recorrido.
+- `2026-09-15T06:38:12` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la ingesta de datos en `SystemContext` agregando una validación explícita para evitar que se inyecten diccionarios o estructuras anidadas arbitrarias que puedan contener objetos o métodos no esperados, cumpliendo con la exigencia de seguridad defensiva sobre el manejo de entradas externas.
 - `2026-09-15T06:28:54` **settings.py** (robustez ante casos límite): Se reforzó la robustez del guardado atómico en `save` incorporando un manejo explícito de archivos en uso (mediante `try-except` con reintentos para `os.replace`) y añadiendo una validación de integridad previa al borrado del `.bak`, protegiendo la configuración ante interrupciones críticas del sistema.
 - `2026-09-15T06:27:59` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos de error de sistema integrando un bloque `try-except` específico al consultar el tipo de unidad en `_validate_boundary_conditions`, evitando que una llamada fallida a `GetDriveTypeW` propague una excepción no controlada hacia el bucle principal.
 - `2026-09-15T06:18:48` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine.py` ante errores de concurrencia y estados inconsistentes del sistema de archivos mediante la implementación de `os.open` con flags de exclusividad mejorados y una validación explícita de `st_nlink` para detectar copias múltiples o re-vinculaciones maliciosas durante el aislamiento.
@@ -60,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T05:28:39` **memory.py** (rendimiento): Optimizé la generación de snapshots de procesos en `top_memory_processes` eliminando la creación de objetos intermedios y el overhead de `heapq` en cada llamada, reemplazándolos por un procesamiento en una sola pasada y una estructura más eficiente, mejorando el rendimiento bajo uso intenso.
 - `2026-09-15T05:26:42` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` reemplazando la validación `is_finite` (que iteraba por todos los atributos de la instancia mediante reflexión `__dataclass_fields__` en cada llamada) por una validación directa de campos, reduciendo el overhead en una función crítica del bucle.
 - `2026-09-15T05:17:46` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar llamadas redundantes a `path.resolve()` y `path.stat()` (usando directamente la información provista por `os.scandir`), reduciendo significativamente la cantidad de accesos a disco por archivo analizado.
-- `2026-09-15T05:17:35` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y construcciones de diccionarios, usando una lógica de acumulación más directa que reduce la sobrecarga de memoria y CPU durante el recorrido.
-- `2026-09-15T05:17:09` **browser.py** (rendimiento): Optimizé la recursión de `_sum_directory_recursive` implementando un chequeo de `is_dir()` con `follow_symlinks=False` mediante `os.scandir` para evitar la creación innecesaria de objetos `Path` y llamadas redundantes a `resolve()` dentro del bucle, reduciendo el overhead de I/O.

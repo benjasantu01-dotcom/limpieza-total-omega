@@ -874,3 +874,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-15T06:29:07` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se introdujo una comprobación adicional en `_resolve_and_cache_path` para verificar que la ruta, aunque sea absoluta, no esté bloqueada por permisos de acceso (usando `os.access` con `R_OK`) y sea un archivo real, evitando así excepciones inesperadas y tratando rutas potencialmente inaccesibles o bloqueadas por el sistema como no ejecutables sin abortar el proceso.
 - `2026-09-15T06:29:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T06:29:07` Corrida terminada. Total usado hoy: 149.
+- `2026-09-15T06:37:31` Arrancando corrida. Quedan hoy ~151 peticiones objetivo.
+- `2026-09-15T06:38:12` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad de la ingesta de datos en `SystemContext` agregando una validación explícita para evitar que se inyecten diccionarios o estructuras anidadas arbitrarias que puedan contener objetos o métodos no esperados, cumpliendo con la exigencia de seguridad defensiva sobre el manejo de entradas externas.
+- `2026-09-15T06:38:48` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-15T06:39:14` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-09-15T06:39:26` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `walk_files` y `_collect_summary_data` al asegurar que el tamaño de archivo se obtenga mediante un `stat()` local y protegido contra excepciones de permisos, evitando el uso de atributos inciertos y reforzando la integridad de los datos recolectados ante posibles errores de I/O durante el recorrido.
+- `2026-09-15T06:39:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T06:39:26` Corrida terminada. Total usado hoy: 153.
