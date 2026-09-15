@@ -365,6 +365,8 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
             if path_str.startswith(("\\\\", "\\??\\")): return None
             
             p = Path(path_str)
+            # Validar existencia antes de comprobar propiedades de FS
+            if not p.exists(): return None
             # Validar que no sea un reparse point/junction para evitar recursiones inesperadas
             if p.is_symlink(): return None
             return p.resolve(strict=False)
@@ -419,7 +421,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
-    if not proc_handle or proc_handle <= 0: 
+    if not proc_handle: 
         return False, f"Acceso denegado (Error {kernel32.GetLastError()})."
     
     try:
@@ -435,4 +437,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, OSError, ValueError, TypeError) as e:
         return False, f"Error de sistema: {str(e)}"
     finally:
-        kernel32.CloseHandle(proc_handle)
+        if proc_handle:
+            kernel32.CloseHandle(proc_handle)

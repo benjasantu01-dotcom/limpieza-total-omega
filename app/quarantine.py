@@ -608,21 +608,23 @@ def quarantine_file(
     
     try:
         file_hash = _atomic_isolate_file(source_path, destination, original_size)
-        item = _register_quarantine_item(destination, source_path, file_hash, reason, original_size, base)
-        
-        if item.verify_integrity(destination):
+        try:
+            item = _register_quarantine_item(destination, source_path, file_hash, reason, original_size, base)
+            if not item.verify_integrity(destination):
+                raise RuntimeError("Integridad post-registro fallida.")
+            
             try:
                 source_path.unlink()
             except OSError as e:
-                _safe_unlink(destination)
-                raise RuntimeError(f"Falla al eliminar original: {e}")
+                raise RuntimeError(f"Falla al eliminar original post-aislamiento: {e}")
             return item
-        else:
-            raise RuntimeError("Fallo de integridad post-persistencia.")
-    except Exception:
-        if destination.exists():
-            _safe_unlink(destination)
-        raise
+        except Exception as e:
+            # Revertir aislamiento si falla el registro o el borrado del original
+            if destination.exists():
+                _safe_unlink(destination)
+            raise e
+    except Exception as e:
+        raise RuntimeError(f"Error durante el aislamiento: {e}")
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna ítems validados y purga registros sin contraparte física en disco."""
