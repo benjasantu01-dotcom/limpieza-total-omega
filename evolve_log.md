@@ -547,3 +547,11 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-15T15:10:33` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-15T15:10:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T15:10:33` Corrida terminada. Total usado hoy: 349.
+- `2026-09-15T15:18:10` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-15T15:18:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-15T15:18:24` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-15T15:18:50` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-15T15:19:21` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-15T15:19:36` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-09-15T15:19:36` Rotación — metrics: 1 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T15:19:36` Corrida terminada. Total usado hoy: 350.
