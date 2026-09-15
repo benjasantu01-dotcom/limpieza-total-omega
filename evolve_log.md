@@ -1334,3 +1334,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-15T10:59:57` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejora la robustez de `quarantine_file` ante fallas parciales durante la transferencia (copia + verificación + borrado), asegurando que si ocurre una excepción inesperada después de la copia, el archivo temporal sea limpiado y el sistema no quede en un estado inconsistente.
 - `2026-09-15T10:59:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T10:59:57` Corrida terminada. Total usado hoy: 249.
+- `2026-09-15T11:02:49` Arrancando corrida. Quedan hoy ~51 peticiones objetivo.
+- `2026-09-15T11:03:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-15T11:03:48` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_file_in_use` añadiendo un manejo de excepciones más granular y asegurando que los `handle` del kernel se cierren incluso si ocurren errores inesperados durante el acceso, evitando fugas de recursos del sistema.
+- `2026-09-15T11:04:14` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-15T11:04:30` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante estados del sistema de archivos inconsistentes añadiendo una verificación explícita en `save` para asegurar que el directorio padre de la configuración sea un directorio real y no un archivo preexistente antes de intentar operaciones de escritura.
+- `2026-09-15T11:04:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T11:04:30` Corrida terminada. Total usado hoy: 253.

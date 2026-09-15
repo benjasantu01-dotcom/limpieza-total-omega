@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 109 | 5 | 15 | 8 | 118 |
-| 2026-09-15 | 115 | 10 | 19 | 4 | 101 |
+| 2026-09-14 | 109 | 5 | 15 | 8 | 114 |
+| 2026-09-15 | 117 | 10 | 20 | 4 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
+- robustez ante casos límite: **47**
 - manejo de errores y validación de entradas: **46**
-- robustez ante casos límite: **45**
 - rendimiento: **41**
 - seguridad defensiva: **37**
 
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `memory.py`: **19**
 - `assistant.py`: **18**
+- `settings.py`: **18**
 - `diskreport.py`: **18**
-- `settings.py`: **17**
-- `safety.py`: **16**
+- `safety.py`: **17**
 - `duplicates.py`: **15**
 - `branding.py`: **14**
 - `main.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T11:04:30` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados del sistema de archivos inconsistentes añadiendo una verificación explícita en `save` para asegurar que el directorio padre de la configuración sea un directorio real y no un archivo preexistente antes de intentar operaciones de escritura.
+- `2026-09-15T11:03:48` **safety.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_in_use` añadiendo un manejo de excepciones más granular y asegurando que los `handle` del kernel se cierren incluso si ocurren errores inesperados durante el acceso, evitando fugas de recursos del sistema.
 - `2026-09-15T10:59:57` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` ante fallas parciales durante la transferencia (copia + verificación + borrado), asegurando que si ocurre una excepción inesperada después de la copia, el archivo temporal sea limpiado y el sistema no quede en un estado inconsistente.
 - `2026-09-15T10:56:50` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_get_process_path` y `trim_working_set` ante casos límite mediante la gestión explícita de recursos y validación de tipos, evitando fugas de handles y errores de desreferenciación en escenarios de procesos terminados inesperadamente o con permisos restringidos.
 - `2026-09-15T10:43:56` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a casos límite asegurando que la suma de pesos no genere resultados fuera de rango (0-100) ante entradas con errores de cálculo o redondeo, y añadí una validación explícita para evitar que `SystemMetrics` procese datos no finitos antes de los cálculos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T10:12:21` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de cálculo evitando el uso redundante de `lambda` y búsquedas por clave dentro del bucle principal, pre-vinculando los scorers y reglas en una estructura de datos estática e indexada durante la inicialización del módulo.
 - `2026-09-15T10:03:17` **diskreport.py** (rendimiento): Optimicé `_collect_summary_data` para evitar recrear objetos `Path` y realizar llamadas innecesarias a `suffix.lower()` dentro del loop de procesamiento, mejorando la eficiencia durante el recorrido de grandes volúmenes de archivos.
 - `2026-09-15T10:02:50` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo de directorios implementando un caché local dentro de `_sum_directory_recursive` que evita realizar múltiples llamadas a `os.scandir` y `stat` sobre los mismos subdirectorios en un mismo ciclo de ejecución, reduciendo drásticamente las operaciones I/O redundantes.
-- `2026-09-15T09:41:46` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de Type Hinting preciso en las funciones de escaneo y la incorporación de docstrings descriptivos que explican el propósito de las heurísticas de seguridad, facilitando el mantenimiento y la comprensión del flujo de análisis.
-- `2026-09-15T09:33:06` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna mediante la adición de docstrings estructurados y precisos en las funciones críticas de validación de integridad (`_check_file_integrity`, `_validate_structural_safety`, `_validate_boundary_conditions`) para clarificar el flujo de seguridad y facilitar el mantenimiento del colaborador senior.

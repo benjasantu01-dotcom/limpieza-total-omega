@@ -241,14 +241,17 @@ def _is_file_in_use(path_str: str) -> bool:
         return False
     
     kernel32 = ctypes.windll.kernel32
+    handle = -1
     try:
         handle = kernel32.CreateFileW(path_str, 0, 0, None, 3, 0x00000080, None)
         if handle == -1: 
             return True 
-        kernel32.CloseHandle(handle)
         return False
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         return False
+    finally:
+        if handle != -1:
+            kernel32.CloseHandle(handle)
 
 def _is_directory_junction(path: Path) -> bool:
     """Verifica si el path es un directorio con el flag de reparse point activo."""

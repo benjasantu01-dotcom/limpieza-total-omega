@@ -343,7 +343,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     for attempt in range(5):
         try:
-            if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
+            if not parent.exists():
+                parent.mkdir(parents=True, exist_ok=True)
+            elif not parent.is_dir():
+                return None
             with open(temp_path, "wb") as f:
                 f.write(json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8"))
                 f.flush()
