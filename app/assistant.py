@@ -259,7 +259,10 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
 
 @dataclass
 class SystemContext:
-    """Agregador de estado del sistema utilizado para diagnósticos."""
+    """
+    Agregador de estado del sistema utilizado para diagnósticos.
+    Almacena métricas validadas que alimentan tanto al motor local como a la IA.
+    """
     score: Optional[int] = None
     grade: str = ""
     junk_mb: float = 0.0
@@ -320,13 +323,18 @@ class SystemContext:
 
     def ingest(self, source: Any) -> bool:
         """
-        Ingesta datos externos al contexto mediante validación estricta de cada campo.
-        Retorna True solo si se procesó exitosamente al menos una métrica válida.
+        Ingesta datos externos al contexto (dict o instancia) mediante validación estricta.
+        
+        Realiza un filtrado de seguridad para evitar la inyección de atributos no deseados
+        y aplica las especificaciones de `MetricSpec` para garantizar que solo lleguen
+        números dentro de rangos físicos reales.
+        
+        Returns:
+            True si se procesó exitosamente al menos una métrica válida.
         """
         if source is None or not isinstance(source, (dict, object)) or _is_input_too_deep_or_complex(source):
             return False
         
-        # Seguridad defensiva: rechazar objetos complejos con métodos o estados internos
         if not isinstance(source, dict) and not hasattr(source, "__dict__"):
             return False
             

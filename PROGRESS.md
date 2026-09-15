@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 130 | 5 | 18 | 13 | 129 |
-| 2026-09-15 | 92 | 7 | 17 | 2 | 91 |
+| 2026-09-14 | 127 | 5 | 18 | 13 | 128 |
+| 2026-09-15 | 95 | 7 | 17 | 2 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **48**
 - robustez ante casos límite: **46**
 - manejo de errores y validación de entradas: **46**
 - seguridad defensiva: **45**
-- legibilidad y documentación: **45**
-- rendimiento: **40**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
+- `browser.py`: **20**
 - `healthscore.py`: **20**
-- `browser.py`: **19**
 - `memory.py`: **19**
+- `quarantine.py`: **19**
 - `settings.py`: **19**
-- `diskreport.py`: **17**
-- `assistant.py`: **17**
+- `diskreport.py`: **18**
+- `assistant.py`: **18**
 - `safety.py`: **16**
-- `main.py`: **14**
-- `organizer.py`: **14**
 - `duplicates.py`: **14**
+- `main.py`: **13**
+- `organizer.py`: **13**
 - `branding.py`: **13**
 - `scanner.py`: **12**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T09:12:32` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la documentación exhaustiva de las funciones de recorrido, la clarificación de los tipos complejos en `_collect_summary_data` y la adición de docstrings técnicos que explican el *porqué* de las decisiones de diseño, facilitando futuras auditorías.
+- `2026-09-15T09:12:20` **browser.py** (legibilidad y documentación): Introduje tipado explícito y docstrings mejorados en `_sum_directory_recursive` y `_should_skip_entry` para aclarar la lógica de exclusión y recursión, facilitando el mantenimiento y la comprensión de las restricciones de seguridad implementadas.
+- `2026-09-15T09:11:18` **assistant.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los métodos clave de `SystemContext` e `ingest`, eliminando la ambigüedad sobre cómo se procesan y validan los datos externos, facilitando el mantenimiento futuro y la auditoría del flujo de información.
 - `2026-09-15T09:02:16` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry._extract_quoted_path` validando explícitamente la integridad de las rutas extraídas antes de crear objetos `Path`, previniendo excepciones innecesarias ante cadenas mal formadas y reforzando la seguridad al evitar el procesamiento de rutas vacías o inválidas.
 - `2026-09-15T09:02:03` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de archivos JSON al implementar una validación de esquema más estricta que detecta claves faltantes o tipos incorrectos en el archivo cargado, evitando que datos maliciosos o corruptos inyecten tipos no esperados en `AppSettings`.
 - `2026-09-15T09:01:05` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` añadiendo un manejo de excepciones más preciso para evitar falsos negativos ante fallos de permisos o estados de archivo bloqueados, además de asegurar que `ensure_safe_to_modify` capture fallos en la resolución de rutas mediante un bloque `try-except` más específico en el flujo de validación.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T07:09:10` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de `save()` implementando una limpieza explícita de archivos temporales mediante `try-finally` para evitar que queden archivos basura en disco en caso de error durante la escritura o sincronización atómica.
 - `2026-09-15T06:59:50` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_in_use` implementando una técnica de apertura con acceso de solo lectura y compartición total (`FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE`) para verificar si el archivo está bloqueado por un proceso externo, eliminando falsos positivos en permisos denegados.
 - `2026-09-15T06:59:09` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y la integridad en `quarantine_file` al introducir un chequeo de identidad de archivo post-apertura mediante `os.fstat` para garantizar que el archivo origen no fue reemplazado por un enlace simbólico u otro objeto durante la operación de lectura, reforzando la seguridad defensiva sin alterar la funcionalidad.
-- `2026-09-15T06:58:32` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de la validación de rutas en `_can_move_file` y `stage_for_review` mediante el uso de `path.is_relative_to` para asegurar que las operaciones de movimiento no se escapen accidentalmente del directorio de destino configurado, previniendo así posibles ataques de "Path Traversal" ante entradas maliciosas.
-- `2026-09-15T06:50:11` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del pipeline de datos añadiendo una validación explícita de `is_finite` dentro del bucle de procesamiento, asegurando que cualquier error aritmético en el cálculo de `area_ratio` no contamine los resultados de salud acumulados.
-- `2026-09-15T06:39:26` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y `_collect_summary_data` al asegurar que el tamaño de archivo se obtenga mediante un `stat()` local y protegido contra excepciones de permisos, evitando el uso de atributos inciertos y reforzando la integridad de los datos recolectados ante posibles errores de I/O durante el recorrido.

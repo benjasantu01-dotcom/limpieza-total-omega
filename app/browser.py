@@ -171,11 +171,12 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
         return False
 
 
-def _should_skip_entry(entry: Optional[os.DirEntry], kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
+def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Filtro de exclusión para scandir: omite protegidos, junctions y symlinks.
+    Aplica filtros de seguridad: omite archivos protegidos (NEVER_TOUCH),
+    enlaces simbólicos, junctions y atributos de sistema para evitar bucles o acceso indebido.
     """
-    if entry is None or entry.name is None:
+    if entry.name is None:
         return True
     
     try:
@@ -214,8 +215,7 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
 
 def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionChecker, kernel32: Optional[ctypes.WinDLL], memo: Dict[str, int], depth: int) -> int:
     """
-    Procesa un único nodo del sistema de archivos.
-    Si es archivo, retorna su tamaño; si es directorio, inicia recursión.
+    Procesa un nodo: si es directorio, desciende recursivamente; si es archivo, extrae su tamaño.
     """
     try:
         if entry.is_dir(follow_symlinks=False):
@@ -238,8 +238,8 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Motor principal: calcula tamaño recursivo limitando profundidad.
-    Usa 'memo' para evitar reprocesar rutas en el mismo escaneo.
+    Motor recursivo de cálculo de tamaño. Utiliza un diccionario 'memo' para evitar 
+    reprocesar directorios ya visitados, limitando la profundidad máxima por seguridad.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH or root_abs in memo:
         return memo.get(root_abs, 0)
