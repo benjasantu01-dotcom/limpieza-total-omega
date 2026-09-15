@@ -159,6 +159,11 @@ class Scanner:
             self.seen.add(entry.path.lower())
             directory_stack.append(entry.path)
 
+    def _is_relevant_extension(self, entry: os.DirEntry, is_dir: bool, ext_low: str) -> bool:
+        """Filtra si el archivo/directorio debe ser analizado por nuestras heurísticas."""
+        if is_dir: return True
+        return ext_low in SUSPICIOUS_ALL_EXTS
+
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Analiza una entrada única y decide si debe procesarse o añadirse a la pila de directorios para continuar la recursión."""
         try:
@@ -166,7 +171,7 @@ class Scanner:
             is_dir = entry.is_dir(follow_symlinks=False)
             ext_low = os.path.splitext(entry.name)[1].lower() if not is_dir else ""
             
-            if not is_dir and ext_low not in SUSPICIOUS_ALL_EXTS:
+            if not self._is_relevant_extension(entry, is_dir, ext_low):
                 return
 
             if not self._is_safe_entry(entry):

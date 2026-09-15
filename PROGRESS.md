@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 219
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 76 | 4 | 11 | 7 | 81 |
-| 2026-09-15 | 145 | 12 | 25 | 5 | 138 |
+| 2026-09-14 | 73 | 4 | 11 | 6 | 81 |
+| 2026-09-15 | 147 | 12 | 25 | 5 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
-- robustez ante casos límite: **46**
+- legibilidad y documentación: **54**
 - seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **46**
+- robustez ante casos límite: **43**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
+- `healthscore.py`: **21**
 - `diskreport.py`: **20**
-- `browser.py`: **19**
 - `memory.py`: **19**
 - `quarantine.py`: **19**
+- `browser.py`: **18**
 - `settings.py`: **17**
 - `safety.py`: **17**
 - `assistant.py`: **16**
-- `duplicates.py`: **15**
+- `duplicates.py`: **14**
 - `branding.py`: **13**
+- `scanner.py`: **13**
 - `organizer.py`: **13**
 - `main.py`: **12**
-- `scanner.py`: **12**
-- `startup.py`: **7**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T14:23:08` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones críticas `parse_registry_csv` y `list_startup_entries`, aclarando sus parámetros y el comportamiento frente a datos malformados para mejorar la mantenibilidad.
+- `2026-09-15T14:20:52` **scanner.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo `scanner.py` extrayendo la lógica compleja de filtrado de extensiones y validación de atributos dentro de `process_entry` hacia métodos con nombre descriptivo (`_is_relevant_extension` y `_is_safe_file_type`), facilitando la comprensión del flujo de escaneo sin alterar su comportamiento.
 - `2026-09-15T14:08:18` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en parámetros de funciones críticas y clarificando mediante docstrings el propósito técnico y las restricciones de seguridad de las funciones de auditoría, facilitando así su mantenimiento y auditoría por parte del equipo.
 - `2026-09-15T14:07:42` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad de `memory.py` mediante docstrings detallados en las estructuras de datos y funciones críticas, clarificando el flujo de datos y el propósito de las validaciones de seguridad.
 - `2026-09-15T14:00:36` **main.py** (legibilidad y documentación): He refactorizado la estructura de `_compile_metrics` y la actualización visual en `on_full_analysis` para mejorar la legibilidad del flujo de datos, documentando explícitamente el origen de cada métrica mediante tipos claros y extrayendo la lógica de consolidación, lo que facilita el mantenimiento futuro del panel de salud.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T13:37:33` **scanner.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `Scanner.process_entry` y `scan_directory` reemplazando bloques `pass` o capturas genéricas por un log explícito, además de validar que las rutas obtenidas de `os.DirEntry` sean válidas antes de intentar resolverlas, evitando así posibles excepciones silenciosas durante el escaneo.
 - `2026-09-15T13:37:02` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_validate_boundary_conditions` para manejar explícitamente el caso de rutas inexistentes en el cálculo de `target_path.anchor`, evitando posibles `OSError` o fallos en la validación de unidades al procesar archivos que aún no han sido creados en el disco.
 - `2026-09-15T13:32:10` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` encapsulando la lógica de limpieza en un bloque `try-finally` para asegurar que el registro del manifiesto se mantenga consistente y que el archivo original se elimine solo tras una verificación de integridad exitosa del destino, evitando estados parciales.
-- `2026-09-15T13:31:40` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` reemplazando validaciones implícitas por comprobaciones explícitas de estados de error, asegurando que cualquier falla en la resolución de rutas no comprometa la integridad de la operación mediante el uso de `try-except` granulares.
-- `2026-09-15T13:30:52` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_process_entry` y `parse_windows_process_csv` añadiendo validaciones explícitas contra valores `None` o malformados, asegurando que el módulo no se rompa ante entradas inesperadas de PowerShell.

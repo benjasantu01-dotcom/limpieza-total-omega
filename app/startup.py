@@ -276,8 +276,15 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Transforma la salida CSV de PowerShell en objetos StartupEntry.
-    Filtra entradas basadas en rutas protegidas y heurísticas básicas.
+    Convierte una cadena en formato CSV (proveniente de PowerShell) a una lista de StartupEntry.
+    
+    Args:
+        csv_text: Salida de texto cruda generada por `ConvertTo-Csv`.
+        source: Identificador de origen para etiquetar las entradas.
+        
+    Returns:
+        Lista de objetos StartupEntry validados. Retorna lista vacía si el CSV es inválido,
+        está malformado o si no contiene campos esperados.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -347,7 +354,16 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 
 
 def list_startup_entries() -> List[StartupEntry]:
-    """Consolida las entradas de todas las fuentes y mantiene un estado único en caché."""
+    """
+    Consolida las entradas de inicio de todas las fuentes detectadas.
+    
+    Utiliza una caché interna (`_FULL_SCAN_CACHE`) para evitar re-escaneos costosos
+    de disco y registro durante una misma ejecución de la aplicación.
+    
+    Returns:
+        Una lista única de instancias de StartupEntry, filtrando duplicados 
+        por combinación de nombre y comando.
+    """
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None:
         return _FULL_SCAN_CACHE
