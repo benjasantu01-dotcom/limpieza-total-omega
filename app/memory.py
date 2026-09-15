@@ -369,7 +369,12 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
             if not p.exists(): return None
             # Validar que no sea un reparse point/junction para evitar recursiones inesperadas
             if p.is_symlink(): return None
-            return p.resolve(strict=False)
+            
+            p_resolved = p.resolve(strict=False)
+            # Defensa extra: evitar rutas del sistema protegidas
+            if is_protected_path(str(p_resolved)): return None
+            
+            return p_resolved
     except (OSError, ctypes.ArgumentError, ValueError, MemoryError):
         pass
     return None
@@ -395,9 +400,8 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
         if not exec_path:
             return False, "Acceso denegado o ejecutable no localizable."
         
-        exec_path_str = str(exec_path)
-        # Verificación contra listas protegidas y seguridad general
-        if is_protected_path(exec_path_str) or not is_safe_to_modify(exec_path_str):
+        # Verificación final de seguridad contra el ejecutable resuelto
+        if not is_safe_to_modify(str(exec_path)):
             return False, "Operación denegada: ruta protegida."
             
         return True, None

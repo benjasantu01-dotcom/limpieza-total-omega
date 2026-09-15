@@ -1361,3 +1361,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-15T11:27:41` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._ensure_path_writable_and_clean
 - `2026-09-15T11:27:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T11:27:41` Corrida terminada. Total usado hoy: 261.
+- `2026-09-15T11:33:23` Arrancando corrida. Quedan hoy ~39 peticiones objetivo.
+- `2026-09-15T11:33:55` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `_get_process_path` al asegurar que el manejo de `path` sea consistente con `safety.py` mediante el uso explícito de `is_protected_path` sobre la ruta resuelta, evitando cualquier manipulación de ejecutables que residan en directorios críticos del sistema.
+- `2026-09-15T11:34:22` 🛑 Propuesta bloqueada por la guardia en organizer.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 178): unexpected character after line continuation character
+- `2026-09-15T11:34:58` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad en `purge_all` al implementar un filtro estricto basado en una lista blanca de nombres de archivos presentes en el manifiesto, evitando confiar ciegamente en el contenido del directorio `quarantine` y asegurando que solo los archivos validados y registrados puedan ser eliminados del disco.
+- `2026-09-15T11:35:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-15T11:35:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T11:35:02` Corrida terminada. Total usado hoy: 265.

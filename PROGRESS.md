@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 36
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 109 | 5 | 15 | 8 | 106 |
-| 2026-09-15 | 121 | 10 | 21 | 4 | 105 |
+| 2026-09-14 | 109 | 5 | 15 | 8 | 102 |
+| 2026-09-15 | 123 | 10 | 23 | 4 | 105 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - robustez ante casos límite: **47**
 - manejo de errores y validación de entradas: **46**
+- seguridad defensiva: **43**
 - rendimiento: **41**
-- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **23**
 - `browser.py`: **21**
-- `quarantine.py`: **20**
-- `memory.py`: **19**
+- `quarantine.py`: **21**
+- `memory.py`: **20**
 - `diskreport.py`: **19**
 - `assistant.py`: **18**
 - `settings.py`: **18**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T11:34:58` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en `purge_all` al implementar un filtro estricto basado en una lista blanca de nombres de archivos presentes en el manifiesto, evitando confiar ciegamente en el contenido del directorio `quarantine` y asegurando que solo los archivos validados y registrados puedan ser eliminados del disco.
+- `2026-09-15T11:33:55` **memory.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_get_process_path` al asegurar que el manejo de `path` sea consistente con `safety.py` mediante el uso explícito de `is_protected_path` sobre la ruta resuelta, evitando cualquier manipulación de ejecutables que residan en directorios críticos del sistema.
 - `2026-09-15T11:24:36` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del pipeline de cálculo mediante la validación estricta de las métricas de entrada y la sanitización de los mensajes de recomendación, evitando la inyección de datos inesperados en el reporte final.
 - `2026-09-15T11:24:10` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `duplicates.py` mediante la validación explícita de `is_safe_to_modify` antes de cualquier operación de acceso a disco en las funciones de hashing, garantizando que el módulo cumpla estrictamente con la política de seguridad incluso en estados de carrera o cambios de permisos externos.
 - `2026-09-15T11:23:42` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` mediante la validación estricta de rutas relativas y la resolución de `Path` para prevenir ataques de *path traversal* o el seguimiento inesperado fuera del directorio raíz.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T10:42:54` **browser.py** (robustez ante casos límite): Se ha añadido un chequeo de profundidad y validación de tipos estricta en el motor recursivo `_sum_directory_recursive` y `_process_entry`, mitigando el riesgo de recursión infinita o desbordamiento ante estructuras de carpetas malformadas o inesperadas, reforzando así la robustez ante casos límite.
 - `2026-09-15T10:34:09` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` al verificar la existencia y el estado de la ruta mediante `is_safe_to_modify` antes de intentar operaciones de escritura, previniendo excepciones innecesarias en entornos de solo lectura o rutas bloqueadas, y asegurando un manejo de errores más específico.
 - `2026-09-15T10:33:53` **assistant.py** (robustez ante casos límite): Se mejora la robustez ante estados incoherentes del sistema mediante la adición de una comprobación de integridad en `SystemContext` para asegurar que el puntaje (`score`) sea consistente con la existencia de datos, y se protege la deserialización de configuraciones frente a tipos inesperados en `_parse_config`.
-- `2026-09-15T10:23:43` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` reemplazando la iteración completa sobre las partes del path por una comprobación eficiente mediante `frozenset` y `os.path.commonpath`, eliminando la creación innecesaria de múltiples objetos intermedios.
-- `2026-09-15T10:22:47` **quarantine.py** (rendimiento): Se optimizó `list_items` y `purge_all` transformando la búsqueda de ítems en el manifiesto de una lista (O(n)) a un diccionario (O(1)), evitando recorridos anidados innecesarios durante el escaneo del directorio de cuarentena.
