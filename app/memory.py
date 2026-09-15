@@ -58,6 +58,12 @@ STILL_ACTIVE_EXIT_CODE: Final[int] = 259
 SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
 ERROR_ACCESS_DENIED: Final[int] = 5
 
+# Comando pre-construido para evitar recrear listas en el loop de performance
+PS_QUERY_CMD: Final[List[str]] = [
+    'powershell', '-NoProfile', '-NonInteractive', '-Command', 
+    'Get-Process | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }'
+]
+
 __all__ = [
     "MemorySnapshot",
     "ProcessMemory",
@@ -291,18 +297,14 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if (time.time() - _proc_cache_time) < 60:
         return _proc_cache_data[:limit]
     
-    ps_cmd = "Get-Process | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
-    cmd = ['powershell', '-NoProfile', '-NonInteractive', '-Command', ps_cmd]
-    
     try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
+        proc = subprocess.run(PS_QUERY_CMD, capture_output=True, text=True, timeout=3, check=False)
         if proc.returncode == 0 and proc.stdout:
             parsed = parse_windows_process_csv(proc.stdout, limit=limit)
             if parsed:
                 _proc_cache_data = parsed
                 _proc_cache_time = time.time()
             else:
-                # Si falló el parseo, invalidamos caché para reintentar en próxima llamada
                 _proc_cache_data = []
     except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): 
         _proc_cache_data = []
