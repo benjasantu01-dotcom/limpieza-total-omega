@@ -241,11 +241,10 @@ def _is_file_in_use(path_str: str) -> bool:
         return False
     
     kernel32 = ctypes.windll.kernel32
-    # Intentamos abrir con acceso nulo, solo para testear exclusividad
     try:
         handle = kernel32.CreateFileW(path_str, 0, 0, None, 3, 0x00000080, None)
         if handle == -1: 
-            return True # Bloqueado
+            return True 
         kernel32.CloseHandle(handle)
         return False
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
@@ -299,16 +298,18 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 
 def _check_file_integrity(path: Path) -> None:
     """
-    Ejecuta una batería de reglas de integridad sobre el archivo.
-    Lanza UnsafePathError si el archivo está bloqueado, es de solo lectura,
-    contiene streams alternativos o presenta atributos de sistema.
+    Ejecuta una batería de reglas de integridad sobre el archivo mediante predicados.
+    
+    El proceso verifica atributos de sistema, estado de bloqueo, streams ADS y 
+    restricciones de tamaño antes de confirmar la seguridad de la operación.
+    Lanza UnsafePathError ante cualquier violación detectada.
     """
     try:
         file_stat = path.stat()
     except PermissionError:
         raise UnsafePathError(f"Acceso denegado a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     except (OSError, FileNotFoundError):
-        return # Si el archivo no existe o es inaccesible estructuralmente, no hay riesgo de modificación
+        return 
     
     if _is_directory_junction(path):
         raise UnsafePathError(f"Junction detectada: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
@@ -368,7 +369,6 @@ def _is_system_path_cached(path_str: str) -> bool:
     path_lower = path_str.lower()
     if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
         return True
-    # Divide el path y busca intersección con el set protegido en O(1) promedio
     path_parts = set(path_lower.split(os.sep))
     return not path_parts.isdisjoint(PROTECTED_DIR_NAMES)
 
@@ -410,8 +410,11 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """
-    Realiza chequeos estructurales (caracteres nulos, nombres reservados, 
-    inconsistencias de path) antes de cualquier interacción con el disco.
+    Realiza chequeos preventivos de la estructura del string de la ruta.
+    
+    Valida la ausencia de caracteres nulos, secuencias Unicode maliciosas, 
+    nombres de dispositivos reservados (DOS legacy) y longitudes de ruta 
+    fuera de los límites permitidos por el sistema.
     """
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
@@ -454,8 +457,11 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
     """
-    Aplica restricciones de alcance geográfico y tipo de unidad. Verifica que la ruta
-    no escape fuera de un directorio base o colisione con el entorno de la aplicación.
+    Valida las condiciones de borde geográficas y de entorno del sistema.
+    
+    Verifica que la ruta sea absoluta, esté dentro del contexto de usuario 
+    permitido, no colisione con el directorio de ejecución de la aplicación, 
+    y que la unidad destino no sea de tipo remoto o extraíble.
     """
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
@@ -463,7 +469,6 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     
-    # Prevenir acceso a subdirectorios de Windows
     if "windows" in [p.lower() for p in target_path.parts]:
         raise UnsafePathError("Ruta en directorio del sistema Windows bloqueada.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
     
@@ -535,12 +540,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
                 
             _check_file_integrity(p)
         else:
-            # Validación preventiva para rutas que no existen pero cuyo padre sí podría ser crítico
             parent = p.parent
             if parent.exists() and is_protected_path(parent):
                 raise UnsafePathError("Directorio contenedor restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
             
-            # Chequeo preventivo de unidad si no existe el archivo
             if os.name == 'nt' and p.anchor:
                 drive_type = ctypes.windll.kernel32.GetDriveTypeW(p.anchor)
                 if drive_type in (DRIVE_REMOTE, DRIVE_REMOVABLE):

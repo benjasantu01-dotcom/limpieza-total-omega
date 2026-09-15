@@ -189,9 +189,8 @@ def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está bloqueado por otro proceso.
     
-    Usa 'msvcrt.locking' en Windows para acceso exclusivo y 'fcntl.flock' 
-    en POSIX. Retorna True si el archivo está en uso o si el acceso genera
-    un error de bloqueo, impidiendo operaciones destructivas sobre el archivo.
+    Intenta un bloqueo de acceso exclusivo a nivel de sistema para confirmar
+    si el archivo es accesible o si se encuentra en uso por el SO.
     """
     if not isinstance(path, Path) or not path.exists():
         return False
@@ -215,9 +214,8 @@ def _safe_unlink(path: Path) -> bool:
     """
     Elimina un archivo tras validar políticas de seguridad y ausencia de bloqueos.
     
-    Esta función actúa como guardián final antes de `unlink()`, garantizando
-    que el archivo no sea un enlace simbólico, no esté en rutas protegidas 
-    por `safety.py` y no presente bloqueos de sistema activos.
+    Garantiza que la operación de borrado sea segura, verificando que el ítem
+    resida fuera de zonas protegidas y no esté siendo accedido.
     """
     if not path.is_file() or path.is_symlink() or is_protected_path(path):
         return False
@@ -230,17 +228,35 @@ def _safe_unlink(path: Path) -> bool:
     except (OSError, PermissionError):
         return False
 
-def _is_item_unreachable(path: Path) -> bool:
+def _check_path_syntax_integrity(path: Path) -> None:
     """
-    Detecta si una ruta utiliza técnicas de ofuscación o ADS.
+    Valida sintaxis, profundidad y naturaleza del objeto para prevenir Path Traversal.
     
-    Verifica la presencia de flujos de datos alternos (ADS) mediante la 
-    detección de ':' extra en el nombre o caracteres nulos que podrían
-    burlar filtros básicos de sistema operativo.
+    Verifica caracteres de control, flujos de datos alternos (ADS), profundidad
+    lógica de la ruta y asegura que no sean enlaces simbólicos o puntos de reparse.
     """
-    if ":" in path.name.replace(path.drive, ""): return True
-    if any(c in str(path) for c in ("\0", "\x00")): return True
-    return False
+    if not path:
+        raise UnsafePathError("Ruta vacía.")
+    
+    path_str = str(path)
+    if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
+        raise UnsafePathError("Ruta con caracteres de control.")
+    if len(path.parts) > 32:
+        raise UnsafePathError("Profundidad de ruta excesiva.")
+    
+    # Detección de flujos de datos alternos (ADS) o caracteres no permitidos
+    if ":" in path.name.replace(path.drive, "") or any(c in path_str for c in ("\0", "\x00")):
+        raise UnsafePathError("Ruta con flujos de datos alternos (ADS) o caracteres prohibidos.")
+    
+    try:
+        resolved = path.resolve(strict=True)
+        if resolved.is_symlink():
+            raise UnsafePathError("Operación denegada: enlace simbólico.")
+        if hasattr(resolved, 'is_junction') and resolved.is_junction():
+            raise UnsafePathError("Operación denegada: punto de reparse.")
+    except (OSError, RuntimeError):
+        pass
+
 
 def _sanitize_filename(filename: str) -> str:
     """Filtra caracteres no alfanuméricos básicos para nombres de archivo seguros."""
@@ -317,29 +333,6 @@ def _check_windows_file_attributes(path_str: str) -> None:
     if attrs != -1:
         if attrs & 0x02 or attrs & 0x04:
             raise UnsafePathError("Archivo con atributos del sistema/oculto no permitido.")
-
-
-def _check_path_syntax_integrity(path: Path) -> None:
-    """Valida sintaxis, profundidad y naturaleza del objeto para evitar Path Traversal."""
-    if not path:
-        raise UnsafePathError("Ruta vacía.")
-    
-    path_str = str(path)
-    if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
-        raise UnsafePathError("Ruta con caracteres de control.")
-    if len(path.parts) > 32:
-        raise UnsafePathError("Profundidad de ruta excesiva.")
-    if _is_item_unreachable(path):
-        raise UnsafePathError("Ruta con flujos de datos alternos (ADS) o caracteres prohibidos.")
-    
-    try:
-        resolved = path.resolve(strict=True)
-        if resolved.is_symlink():
-            raise UnsafePathError("Operación denegada: enlace simbólico.")
-        if hasattr(resolved, 'is_junction') and resolved.is_junction():
-            raise UnsafePathError("Operación denegada: punto de reparse.")
-    except (OSError, RuntimeError):
-        pass
 
 
 def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:

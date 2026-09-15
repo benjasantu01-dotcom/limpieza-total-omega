@@ -111,7 +111,7 @@ def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
     return is_sym or is_junction_attr
 
 def _is_unc_path(path: Path) -> bool:
-    """Valida si una ruta reside en un recurso de red mediante UNC."""
+    """Valida si una ruta reside en un recurso de red mediante UNC (ej. \\servidor\recurso)."""
     if not isinstance(path, Path): return True
     try:
         path_abs = path.absolute()
@@ -135,7 +135,7 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está inaccesible o bloqueado por otro proceso
-    intentando obtener acceso de lectura básico.
+    intentando obtener acceso de lectura básico mediante os.access.
     """
     if path is None: return True
     try:
@@ -146,7 +146,7 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Previene que la operación de movimiento intente anidar recursivamente."""
+    """Previene que la operación de movimiento intente anidar recursivamente la fuente en el destino."""
     try:
         s, d = src.resolve(), dest.resolve()
         return s == d or (d.exists() and d.is_relative_to(s))
@@ -160,14 +160,14 @@ def _passes_system_checks(src: Path) -> bool:
     return not (attrs & 0x06) if attrs != 0 else True
 
 def _has_forbidden_chars(path: Path) -> bool:
-    """Detecta nombres reservados por Windows o caracteres prohibidos en el path."""
+    """Detecta nombres reservados por Windows o caracteres prohibidos en la ruta."""
     if path is None: return True
     path_str = str(path).lower()
     reserved = ["con", "prn", "aux", "nul", "com1", "lpt1"]
     return any(path_str.startswith(r) for r in reserved) or any(c in str(path) for c in ["<", ">", "|", "\0"])
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
-    """Realiza una auditoría de seguridad integral antes de cualquier operación de E/S."""
+    """Realiza una auditoría de seguridad integral validando longitudes y rutas protegidas."""
     if src is None or dest is None: return False
     if _is_unc_path(src) or _is_unc_path(dest): return False
     if _has_forbidden_chars(src): return False
@@ -178,7 +178,7 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
         return False
 
 def _validate_file_attributes(src: Path) -> bool:
-    """Verifica integridad: existencia, permisos de sistema y disponibilidad para lectura."""
+    """Verifica integridad: existencia, flags de sistema y que el archivo no sea vacío."""
     try:
         if src is None or not src.is_file(): return False
         if _is_junction(src) or src.is_symlink(): return False
@@ -189,8 +189,8 @@ def _validate_file_attributes(src: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Validación centralizada que garantiza que fuente y destino sean seguros,
-    validos y se encuentren en la misma unidad física.
+    Validación centralizada que garantiza que la operación sea segura,
+    verificando colisiones, recursividad y pertenencia a la misma unidad física.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if not _validate_path_security(src, dest): return False
@@ -207,21 +207,18 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         return False
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
-    """Validador tipado para confirmar que un objeto JunkFile puede ser procesado."""
+    """Validador tipado para confirmar disponibilidad y seguridad del JunkFile antes de mover."""
     if not isinstance(junk_file, JunkFile) or dest is None: return False
     return junk_file.path is not None and junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
-    """Filtra directorios durante el escaneo para ignorar bloqueados o junctions."""
+    """Determina si un directorio es elegible para escaneo evitando bloqueados y junctions."""
     if entry is None or not _is_allowed_directory(entry.name) or _is_junction(entry):
         return False
     return entry.path not in protected_cache and not is_protected_path(Path(entry.path))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0, protected_cache: Optional[set[str]] = None) -> None:
-    """
-    Realiza un recorrido recursivo en profundidad limitada del sistema de archivos,
-    acumulando archivos detectados como basura en la lista 'found'.
-    """
+    """Realiza recorrido recursivo para detectar basura, limitando la profundidad a 50 niveles."""
     if protected_cache is None: protected_cache = set()
     if depth > 50 or is_protected_path(current_dir): return
     
@@ -239,7 +236,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0,
     except (OSError, PermissionError, RuntimeError): pass
 
 def scan_for_junk(directories: Optional[Sequence[str]] = None) -> List[JunkFile]:
-    """Escanea las rutas proporcionadas o las predeterminadas buscando archivos temporales."""
+    """Escanea las rutas proporcionadas (o por defecto) buscando archivos temporales."""
     valid_dirs: List[Path] = [Path(d) for d in (directories or DEFAULT_SCAN_DIRS) if isinstance(d, (str, Path))]
     found: List[JunkFile] = []
     protected_cache: set[str] = set()
@@ -261,13 +258,13 @@ def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
         pass
 
 def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
-    """Ordena el listado de archivos basura según un criterio registrado."""
+    """Ordena el listado de archivos basura usando los criterios definidos en SORT_REGISTRY."""
     if not isinstance(files, list): return []
     config = SORT_REGISTRY.get(by.lower(), SORT_REGISTRY["size"])
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Verifica disponibilidad de espacio en destino y calcula la ruta final sin colisiones."""
+    """Verifica espacio disponible y calcula una ruta de destino segura para evitar colisiones."""
     if not _is_safe_to_move(junk_file, dest_base): return None
     try:
         dest_res = dest_base.resolve()
@@ -277,12 +274,11 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
             return None
         safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
         target = _generate_unique_target(dest_res / safe_name)
-        # Validación extra: asegurarse que el target resultante siga bajo el dest_res
         return target if target.resolve().is_relative_to(dest_res) else None
     except (OSError, ValueError, AttributeError): return None
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Mueve de forma segura archivos candidatos a una zona de cuarentena tras validar permisos."""
+    """Mueve archivos validados a la zona de cuarentena tras verificar permisos de escritura."""
     if not files or not isinstance(review_dir, str): return None
     try:
         dest_base = Path(review_dir).expanduser().resolve()
@@ -303,7 +299,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     return dest_base
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Ejecuta la eliminación permanente de archivos en la carpeta de revisión."""
+    """Ejecuta la eliminación permanente y segura de archivos dentro de la carpeta de revisión."""
     if not isinstance(review_dir, str): return 0
     try:
         dest = Path(review_dir).expanduser().resolve()
@@ -312,7 +308,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count = 0
     for item in dest.iterdir():
         try:
-            # Asegurar que el archivo a eliminar esté dentro del directorio de cuarentena
             if item.is_file() and item.resolve().is_relative_to(dest) and is_safe_to_modify(item.resolve()):
                 ensure_safe_to_modify(item.resolve())
                 item.unlink()
