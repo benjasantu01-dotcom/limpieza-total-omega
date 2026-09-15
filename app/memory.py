@@ -369,8 +369,8 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
     """
-    Valida la integridad de un proceso antes de cualquier operación de gestión.
-    Verifica estado de ejecución activo y que la ruta sea segura (no del sistema).
+    Verifica si un proceso es candidato seguro para la operación de trim.
+    Comprueba que el proceso esté activo y su ejecutable no resida en una ruta protegida.
     """
     if not isinstance(proc_handle, int) or proc_handle <= 0: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
@@ -389,6 +389,7 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
             return False, "Acceso denegado o ejecutable no localizable."
         
         exec_path_str = str(exec_path)
+        # Aplicamos la restricción de seguridad: ni rutas del sistema, ni rutas fuera del entorno usuario
         if is_protected_path(exec_path_str) or not is_safe_to_modify(exec_path_str):
             return False, "Operación denegada: ruta protegida."
             

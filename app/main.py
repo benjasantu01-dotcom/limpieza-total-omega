@@ -248,31 +248,25 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.after_idle(callback)
 
     def _validate_environment(self) -> None:
-        """Comprueba que el directorio y sistema base sean seguros para operar."""
-        try:
-            app_root = Path(__file__).resolve().parent
-            if not app_root.exists():
-                raise RuntimeError("El directorio de la aplicación no existe.")
-            
-            safety.ensure_safe_to_modify(app_root)
-            
-            if app_root.is_symlink():
-                raise RuntimeError("La aplicación no puede ejecutarse desde un enlace simbólico.")
-            
-            home = Path.home()
-            if not home.exists():
-                raise RuntimeError("El directorio home del usuario no es accesible.")
-            
-            # Verificación estricta de la ruta base del usuario
-            if not home.resolve().is_absolute():
-                raise RuntimeError("La ruta home no es absoluta.")
-                
-        except (safety.UnsafePathError, RuntimeError) as e:
-            logging.error("Validación de entorno fallida: %s", e)
-            raise
-        except Exception as e:
-            logging.error("Error inesperado en validación: %s", e)
-            raise RuntimeError(f"Entorno no válido para operación segura: {e}")
+        """
+        Verifica que el directorio raíz de la aplicación y el entorno de usuario
+        sean seguros y posean los permisos necesarios para la ejecución.
+        """
+        app_root = Path(__file__).resolve().parent
+        home = Path.home()
+        
+        validations = [
+            (app_root.exists(), "Directorio de aplicación inexistente."),
+            (not app_root.is_symlink(), "App ubicada en enlace simbólico."),
+            (home.exists(), "Directorio home del usuario inaccesible."),
+            (home.resolve().is_absolute(), "La ruta home no es absoluta.")
+        ]
+        
+        for condition, error_msg in validations:
+            if not condition:
+                raise RuntimeError(f"Entorno inválido: {error_msg}")
+        
+        safety.ensure_safe_to_modify(app_root)
 
     def _ensure_path_writable_and_clean(self, path: Union[str, Path]) -> None:
         """Verifica que la ruta sea un directorio existente y seguro."""
@@ -305,10 +299,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         try:
             raw = get_cached_settings()
-            if isinstance(raw, dict):
-                self.settings = raw  # type: ignore
-            else:
-                self.settings = settings_mod.reset()
+            self.settings = raw if isinstance(raw, dict) else settings_mod.reset()
         except Exception:
             self.settings = settings_mod.reset()
             

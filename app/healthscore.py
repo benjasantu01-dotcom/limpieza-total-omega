@@ -78,7 +78,7 @@ if sum(WEIGHTS.values()) != 100:
 _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula la salud respecto a basura: menor es mejor (escala inversa)."""
+    """Calcula la salud respecto a basura: mayor volumen reduce el score."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
@@ -94,11 +94,11 @@ def score_disk(free_percent: float | int) -> NormalizedRatio:
     return _clamp(_to_float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula la salud por duplicados: menor volumen implica mayor puntaje."""
+    """Calcula la salud por duplicados: mayor volumen de duplicados reduce el score."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
-    """Calcula la salud por ítems de arranque: menos es mejor."""
+    """Calcula la salud por ítems de arranque: mayor cantidad reduce el score."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
 _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
@@ -169,15 +169,15 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
-        """Define el rango de éxito para el puntaje global."""
+        """Define el rango de éxito para el puntaje global (80-100)."""
         return 80 <= self.score <= 100
 
-def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    """Restringe un valor numérico a un rango definido [low, high]."""
-    return float(max(low, min(high, value)))
+def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
+    """Restringe un valor numérico al intervalo [min_val, max_val]."""
+    return float(max(min_val, min(max_val, value)))
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    """Convierte de forma segura a float, descartando casos no numéricos."""
+    """Convierte de forma segura a float, descartando valores no finitos o inválidos."""
     if value is None: return default
     try:
         val = float(value)
@@ -185,7 +185,7 @@ def _to_float(value: Any, default: float = 0.0) -> float:
     except (TypeError, ValueError, OverflowError): return default
 
 def grade_for_score(score: float | int) -> str:
-    """Asigna una letra de calificación basada en el puntaje numérico."""
+    """Asigna una letra de calificación (A-F) basada en el puntaje numérico."""
     s = float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -194,19 +194,20 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Ejecuta las reglas de recomendación con saneamiento de strings de salida."""
+    """Ejecuta reglas de recomendación y filtra strings de salida para evitar caracteres inestables."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str) and msg.strip():
+                    # Sanitización básica para asegurar legibilidad en el reporte
                     safe_msg = "".join(char for char in msg if char.isprintable())
                     findings.append(safe_msg[:200].strip())
         except Exception:
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Calcula el puntaje global de salud del sistema mediante la agregación ponderada de áreas."""
+    """Calcula el puntaje global de salud mediante la agregación ponderada de áreas."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     
@@ -243,14 +244,14 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
     )
 
-def _render_bar(pts: int, maximo: int) -> str:
-    """Genera una representación visual simple (barra) del puntaje obtenido."""
-    if maximo <= 0: return ""
-    puntos_normalizados = int(_clamp(float(pts), 0.0, float(maximo)))
-    return ('#' * puntos_normalizados) + ('.' * (maximo - puntos_normalizados))
+def _render_bar(points: int, max_val: int) -> str:
+    """Genera una barra visual (usando caracteres ASCII) proporcional al puntaje obtenido."""
+    if max_val <= 0: return ""
+    puntos_norm = int(_clamp(float(points), 0.0, float(max_val)))
+    return ('#' * puntos_norm) + ('.' * (max_val - puntos_norm))
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera un reporte legible en texto del resultado de salud."""
+    """Genera un reporte legible en formato texto para la interfaz."""
     if result is None or not hasattr(result, 'score'):
         return ["Error: Informe no disponible."]
     
