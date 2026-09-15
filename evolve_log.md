@@ -1162,3 +1162,42 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-15T09:33:06` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica interna mediante la adición de docstrings estructurados y precisos en las funciones críticas de validación de integridad (`_check_file_integrity`, `_validate_structural_safety`, `_validate_boundary_conditions`) para clarificar el flujo de seguridad y facilitar el mantenimiento del colaborador senior.
 - `2026-09-15T09:33:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T09:33:06` Corrida terminada. Total usado hoy: 221.
+- `2026-09-15T09:41:13` Arrancando corrida. Quedan hoy ~79 peticiones objetivo.
+- `2026-09-15T09:41:46` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la inclusión de Type Hinting preciso en las funciones de escaneo y la incorporación de docstrings descriptivos que explican el propósito de las heurísticas de seguridad, facilitando el mantenimiento y la comprensión del flujo de análisis.
+- `2026-09-15T09:42:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-15T09:42:59` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-15T09:43:16` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-15T09:43:51` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-15T09:44:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-15T09:45:23` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-15T09:45:56` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.17s
+
+```
+- `2026-09-15T09:45:56` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación y legibilidad de `StartupEntry` añadiendo docstrings más precisos a los métodos privados y clarificando la intención del uso de caché mediante el patrón de inicialización perezosa (lazy loading).
+- `2026-09-15T09:46:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-15T09:46:27` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-15T09:46:33` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-15T09:47:12` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-15T09:47:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T09:47:12` Corrida terminada. Total usado hoy: 225.
