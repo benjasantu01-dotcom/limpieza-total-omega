@@ -65,6 +65,13 @@ MAX_PATH_LENGTH: Final[int] = 260
 # Constante de Windows para FILE_ATTRIBUTE_REPARSE_POINT (0x400)
 WIN_FILE_ATTR_REPARSE_POINT: Final[int] = 0x400
 
+def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
+    """Helper interno para acceder a metadatos de forma segura."""
+    try:
+        return entry.stat(follow_symlinks=False)
+    except (OSError, PermissionError, AttributeError):
+        return None
+
 # Registro formal de reglas heurísticas para ejecutables
 EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
     lambda p, e, t: check_system_lookalike(p, e, t),
@@ -83,13 +90,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not path or not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     
-    try:
-        if entry and entry.is_file(follow_symlinks=False):
-            stats = entry.stat()
-            if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
-                return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
-    except (OSError, AttributeError, PermissionError):
-        pass
+    if entry and entry.is_file(follow_symlinks=False):
+        stats = _safe_stat(entry)
+        if stats and (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
+            return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
@@ -102,12 +106,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta archivos ejecutables con tamaño cero (posibles vectores de ataque)."""
-    try:
-        if entry and entry.is_file(follow_symlinks=False):
-            if entry.stat().st_size == 0:
-                return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
-    except (OSError, PermissionError, AttributeError):
-        pass
+    if entry and entry.is_file(follow_symlinks=False):
+        stats = _safe_stat(entry)
+        if stats and stats.st_size == 0:
+            return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
     return None
 
 class Scanner:
@@ -144,10 +146,10 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Detecta puntos de reanálisis (Junctions/Mount Points) para evitar recursión circular."""
-        try:
-            return bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
-        except (OSError, AttributeError, PermissionError):
-            return True 
+        stats = _safe_stat(entry)
+        if stats:
+            return bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
+        return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         if entry.path and entry.path.lower() not in self.seen:
@@ -157,7 +159,6 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Procesa una entrada del sistema de archivos, aplicando heurísticas si es ejecutable."""
         try:
-            # Optimizacion: Chequeo rapido de extension antes de validaciones pesadas
             is_dir = entry.is_dir(follow_symlinks=False)
             ext_low = os.path.splitext(entry.name)[1].lower() if not is_dir else ""
             

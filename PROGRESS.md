@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-13 | 25 | 2 | 3 | 3 | 17 |
+| 2026-09-13 | 23 | 2 | 3 | 3 | 15 |
 | 2026-09-14 | 157 | 6 | 20 | 14 | 157 |
-| 2026-09-15 | 45 | 3 | 9 | 1 | 42 |
+| 2026-09-15 | 48 | 3 | 10 | 1 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
+- manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **47**
 - robustez ante casos límite: **44**
-- manejo de errores y validación de entradas: **44**
-- rendimiento: **43**
+- rendimiento: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `browser.py`: **20**
 - `healthscore.py`: **20**
+- `browser.py`: **19**
 - `safety.py`: **18**
+- `settings.py`: **18**
 - `memory.py`: **18**
-- `diskreport.py`: **17**
 - `assistant.py`: **17**
-- `settings.py`: **17**
+- `diskreport.py`: **16**
 - `main.py`: **15**
+- `scanner.py`: **15**
 - `organizer.py`: **14**
-- `scanner.py`: **14**
 - `duplicates.py`: **13**
 - `branding.py`: **13**
-- `startup.py`: **9**
+- `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T04:26:52` **startup.py** (manejo de errores y validación de entradas): He mejorado `parse_registry_csv` para que maneje de forma robusta las excepciones durante la iteración y el acceso a los datos de la fila, asegurando que un elemento malformado no interrumpa el procesamiento completo de la lista de inicio.
+- `2026-09-15T04:26:40` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de archivos en `load` capturando `json.JSONDecodeError` y `UnicodeDecodeError` explícitamente, además de incluir una validación de estructura previa a la carga para evitar procesar archivos corruptos o maliciosos que no respeten el esquema esperado, manteniendo la integridad del sistema ante datos de entrada no confiables.
+- `2026-09-15T04:26:09` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas centralizando la validación de acceso a metadatos mediante un nuevo helper `_safe_stat` que encapsula el manejo de excepciones, evitando que errores inesperados en el sistema de archivos (bloqueos, permisos) silencien el escaneo sin control.
 - `2026-09-15T04:15:33` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_windows_process_csv` y `_is_valid_process_entry` mediante la validación estricta de tipos y la captura de errores en la conversión, evitando que entradas mal formadas inyecten valores nulos o corruptos en los objetos `ProcessMemory`.
 - `2026-09-15T04:11:41` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `on_target_choice_changed` añadiendo una validación explícita de seguridad antes de procesar el directorio, asegurando que las rutas seleccionadas por el usuario sean validadas mediante `_is_safe_target_dir` y capturando excepciones de forma específica para evitar cierres inesperados de la aplicación.
 - `2026-09-15T04:10:42` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` ante fallos en los evaluadores individuales, asegurando que si un `scorer` lanza una excepción (por ejemplo, ante datos inesperados no detectados por la validación), el proceso global no aborte y se capture el error mediante una lógica de recuperación más explícita.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T02:24:00` **safety.py** (seguridad defensiva): Se implementó un chequeo en `_validate_boundary_conditions` para evitar el acceso a rutas que residan en directorios que contengan "Windows" en su estructura jerárquica (case-insensitive), previniendo errores de sistema comunes en entornos Windows.
 - `2026-09-15T02:23:18` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_write_temp_to_final` al introducir un chequeo de pre-condición que valida que la ruta destino no exista previamente antes de abrir el descriptor de archivo, previniendo riesgos de race conditions y garantizando una operación de aislamiento atómica y sin colisiones.
 - `2026-09-15T02:22:41` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_directory` implementando una validación estricta de rutas mediante `is_protected_path` antes de procesar cualquier entrada, previniendo que el escáner se adentre en directorios protegidos incluso si son omitidos por el `DirEntry` inicial.
-- `2026-09-15T02:14:04` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_environment` eliminando el uso de `os.access` (que puede fallar erráticamente en rutas UNC o bajo ciertos contextos de privilegios en Windows) y centralizando la validación mediante `Path.exists()` y la lógica robusta de `safety.ensure_safe_to_modify`, asegurando además una verificación explícita de `is_symlink` para prevenir ataques de redirección de rutas.
-- `2026-09-15T02:12:53` **healthscore.py** (seguridad defensiva): He fortalecido la robustez del pipeline de scoring añadiendo una validación de integridad en `_evaluate_rules` para asegurar que las entradas de texto sean seguras y evitar posibles inyecciones o desbordamientos en la interfaz, manteniendo el contrato de función pura.
-- `2026-09-15T02:12:27` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo de duplicados reforzando `_scan_dir` para que valide la seguridad de cada entrada individualmente antes de acceder a sus metadatos, evitando así posibles errores de acceso en enlaces simbólicos no resueltos o rutas que cambian de estado durante la iteración.

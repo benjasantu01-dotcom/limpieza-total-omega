@@ -657,3 +657,10 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-09-15T04:16:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
 - `2026-09-15T04:16:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T04:16:46` Corrida terminada. Total usado hoy: 100.
+- `2026-09-15T04:25:08` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-09-15T04:25:44` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: _CheckResult
+- `2026-09-15T04:26:09` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las heurísticas centralizando la validación de acceso a metadatos mediante un nuevo helper `_safe_stat` que encapsula el manejo de excepciones, evitando que errores inesperados en el sistema de archivos (bloqueos, permisos) silencien el escaneo sin control.
+- `2026-09-15T04:26:40` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del manejo de archivos en `load` capturando `json.JSONDecodeError` y `UnicodeDecodeError` explícitamente, además de incluir una validación de estructura previa a la carga para evitar procesar archivos corruptos o maliciosos que no respeten el esquema esperado, manteniendo la integridad del sistema ante datos de entrada no confiables.
+- `2026-09-15T04:26:52` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). He mejorado `parse_registry_csv` para que maneje de forma robusta las excepciones durante la iteración y el acceso a los datos de la fila, asegurando que un elemento malformado no interrumpa el procesamiento completo de la lista de inicio.
+- `2026-09-15T04:26:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T04:26:52` Corrida terminada. Total usado hoy: 104.
