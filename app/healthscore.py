@@ -123,7 +123,6 @@ _RULES_BY_AREA: Final[Dict[MetricKey, List[RecommendationRule]]] = {}
 for rule in _RECOMMENDATION_RULES:
     _RULES_BY_AREA.setdefault(rule.area, []).append(rule)
 
-# Pre-cache de estructuras optimizadas para iteración directa
 _PIPELINE: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], List[RecommendationRule]]]] = [
     (a, w, _SCORERS[a], _RULES_BY_AREA.get(a, [])) for a, w in _WEIGHT_ITEMS_INT
 ]
@@ -141,6 +140,11 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None:
+        # Forzar conversión a tipos esperados para evitar problemas en cálculos
+        for field_name in self.__dataclass_fields__:
+            val = getattr(self, field_name)
+            if not isinstance(val, (int, float)):
+                setattr(self, field_name, 0.0)
         self.validate()
 
     def validate(self) -> None:

@@ -1283,7 +1283,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     self.scan_target = None
                     update_label("")
             except (OSError, ValueError):
-                self.log(f"Error: La ruta {choice} no es válida.", "Limpieza")
+                self.log(f"Error: La ruta {choice} no es válida o ya no existe.", "Limpieza")
                 self.target_choice.set("Por defecto (Temp + Descargas)")
                 self.scan_target = None
                 update_label("")
