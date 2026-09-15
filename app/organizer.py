@@ -114,7 +114,8 @@ def _is_unc_path(path: Path) -> bool:
     """Valida si una ruta reside en un recurso de red mediante UNC."""
     if not isinstance(path, Path): return True
     try:
-        return str(path.absolute()).startswith(("\\\\", "//"))
+        path_abs = path.absolute()
+        return str(path_abs).startswith(("\\\\", "//"))
     except (OSError, RuntimeError):
         return True
 
@@ -269,13 +270,14 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Verifica disponibilidad de espacio en destino y calcula la ruta final sin colisiones."""
     if not _is_safe_to_move(junk_file, dest_base): return None
     try:
+        dest_res = dest_base.resolve()
         margin: int = 50 * 1024 * 1024
-        usage = shutil.disk_usage(dest_base.resolve().anchor)
+        usage = shutil.disk_usage(dest_res.anchor)
         if usage.free < (junk_file.size_bytes + margin):
             return None
         safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
-        target = _generate_unique_target(dest_base.resolve() / safe_name)
-        return target if target.resolve().is_relative_to(dest_base.resolve()) else None
+        target = _generate_unique_target(dest_res / safe_name)
+        return target if target.resolve().is_relative_to(dest_res) else None
     except (OSError, ValueError, AttributeError): return None
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:

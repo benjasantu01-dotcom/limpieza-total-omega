@@ -479,6 +479,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     src_stat_pre = source.stat()
     src_ino_pre = src_stat_pre.st_ino
     src_dev_pre = src_stat_pre.st_dev
+    src_nlink_pre = src_stat_pre.st_nlink
 
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
     mode = 0o600
@@ -492,8 +493,8 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
             os.fsync(tmp.fileno())
         
         final_src_stat = source.stat()
-        if final_src_stat.st_ino != src_ino_pre or final_src_stat.st_dev != src_dev_pre:
-             raise OSError("Alerta de seguridad: origen reemplazado durante copia.")
+        if final_src_stat.st_ino != src_ino_pre or final_src_stat.st_dev != src_dev_pre or final_src_stat.st_nlink != src_nlink_pre:
+             raise OSError("Alerta de seguridad: origen alterado durante copia.")
         
         if destination.stat().st_size != src_stat_pre.st_size or destination.stat().st_size == 0:
             raise OSError("Error de integridad post-escritura.")

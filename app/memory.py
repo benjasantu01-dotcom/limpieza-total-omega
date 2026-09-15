@@ -200,7 +200,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 def _is_valid_process_entry(name: object, pid_str: object, ws_str: object) -> Optional[ProcessMemory]:
     """
     Valida y filtra entradas de procesos crudas. Excluye procesos críticos y 
-    aquellos ubicados en rutas del sistema protegidas.
+    aquelerin ubicados en rutas del sistema protegidas.
     """
     if not isinstance(name, str) or not isinstance(pid_str, (str, int)) or not isinstance(ws_str, (str, int)):
         return None
@@ -348,16 +348,22 @@ def _is_system_process(pid: int) -> bool:
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: int) -> Optional[Path]:
-    """Resuelve la ruta absoluta del ejecutable usando PSAPI GetModuleFileNameExW."""
+    """Resuelve la ruta absoluta del ejecutable usando PSAPI GetModuleFileNameExW con validaciones de seguridad."""
     if not proc_handle: return None
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
     
     buf = ctypes.create_unicode_buffer(1024)
     try:
-        # GetModuleFileNameExW requiere un Handle de proceso (HANDLE), Base Address y un Buffer.
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 1024) > 0:
-            return Path(buf.value).resolve(strict=False)
+            path_str = buf.value
+            # Prevenir rutas UNC o dispositivos especiales
+            if path_str.startswith(("\\\\", "\\??\\")): return None
+            
+            p = Path(path_str)
+            # Validar que no sea un reparse point/junction para evitar recursiones inesperadas
+            if p.is_symlink(): return None
+            return p.resolve(strict=False)
     except (OSError, ctypes.ArgumentError, ValueError, MemoryError):
         pass
     return None
@@ -372,7 +378,6 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
     
     try:
         exit_code = ctypes.c_ulong()
-        # Verificar estado del proceso mediante GetExitCodeProcess (valor 259 indica activo)
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
             return False, f"Imposible verificar estado (Error {kernel32.GetLastError()})."
             
@@ -384,7 +389,6 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
             return False, "Acceso denegado o ejecutable no localizable."
         
         exec_path_str = str(exec_path)
-        # Aplicamos la restricción de seguridad: ni rutas del sistema, ni rutas fuera del entorno usuario
         if is_protected_path(exec_path_str) or not is_safe_to_modify(exec_path_str):
             return False, "Operación denegada: ruta protegida."
             
@@ -408,7 +412,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
-    # Abrir proceso con permisos limitados (QUERY + SET QUOTA) para evitar escalada de privilegios
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         return False, f"Acceso denegado (Error {kernel32.GetLastError()})."
@@ -418,7 +421,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not is_safe: 
             return False, error_reason or "Verificación de seguridad fallida."
         
-        # Llamada a EmptyWorkingSet: obliga al SO a liberar páginas no compartidas del proceso
         if not psapi.EmptyWorkingSet(proc_handle): 
             error_code = kernel32.GetLastError()
             return False, f"Sistema denegó la operación (Error {error_code})."
