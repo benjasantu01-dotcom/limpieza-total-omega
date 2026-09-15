@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
+- Mejoras aceptadas: **236** (46.8% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 157 | 6 | 20 | 14 | 154 |
-| 2026-09-15 | 78 | 7 | 15 | 2 | 51 |
+| 2026-09-14 | 157 | 6 | 20 | 14 | 150 |
+| 2026-09-15 | 79 | 7 | 15 | 2 | 54 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,11 +25,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **46**
 - rendimiento: **44**
-- seguridad defensiva: **40**
+- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
+- `healthscore.py`: **23**
 - `browser.py`: **21**
 - `quarantine.py`: **21**
 - `memory.py`: **20**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T06:50:11` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del pipeline de datos añadiendo una validación explícita de `is_finite` dentro del bucle de procesamiento, asegurando que cualquier error aritmético en el cálculo de `area_ratio` no contamine los resultados de salud acumulados.
 - `2026-09-15T06:39:26` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y `_collect_summary_data` al asegurar que el tamaño de archivo se obtenga mediante un `stat()` local y protegido contra excepciones de permisos, evitando el uso de atributos inciertos y reforzando la integridad de los datos recolectados ante posibles errores de I/O durante el recorrido.
 - `2026-09-15T06:38:12` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la ingesta de datos en `SystemContext` agregando una validación explícita para evitar que se inyecten diccionarios o estructuras anidadas arbitrarias que puedan contener objetos o métodos no esperados, cumpliendo con la exigencia de seguridad defensiva sobre el manejo de entradas externas.
 - `2026-09-15T06:28:54` **settings.py** (robustez ante casos límite): Se reforzó la robustez del guardado atómico en `save` incorporando un manejo explícito de archivos en uso (mediante `try-except` con reintentos para `os.replace`) y añadiendo una validación de integridad previa al borrado del `.bak`, protegiendo la configuración ante interrupciones críticas del sistema.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T05:57:55` **assistant.py** (robustez ante casos límite): Mejoré la robustez ante estados inconsistentes o corruptos en `SystemContext.ingest` y `_apply_field`, asegurando que si una métrica falla en su validación o conversión, el proceso continúe con las demás en lugar de abortar silenciosamente, y añadí una verificación de `math.isfinite` explícita en `_apply_field` para evitar inyecciones de valores no numéricos como `inf` o `nan`.
 - `2026-09-15T05:28:39` **memory.py** (rendimiento): Optimizé la generación de snapshots de procesos en `top_memory_processes` eliminando la creación de objetos intermedios y el overhead de `heapq` en cada llamada, reemplazándolos por un procesamiento en una sola pasada y una estructura más eficiente, mejorando el rendimiento bajo uso intenso.
 - `2026-09-15T05:26:42` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` reemplazando la validación `is_finite` (que iteraba por todos los atributos de la instancia mediante reflexión `__dataclass_fields__` en cada llamada) por una validación directa de campos, reduciendo el overhead en una función crítica del bucle.
-- `2026-09-15T05:17:46` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar llamadas redundantes a `path.resolve()` y `path.stat()` (usando directamente la información provista por `os.scandir`), reduciendo significativamente la cantidad de accesos a disco por archivo analizado.

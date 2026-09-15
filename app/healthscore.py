@@ -228,7 +228,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for area, weight, scorer, rules in _PIPELINE:
         try:
-            area_ratio = _clamp(scorer(metrics))
+            val = scorer(metrics)
+            if not math.isfinite(val):
+                raise ValueError(f"Resultado no finito en {area}")
+            
+            area_ratio = _clamp(val)
             if rules:
                 _evaluate_rules(metrics, rules, area_ratio, recommendations)
             
