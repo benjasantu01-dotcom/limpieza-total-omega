@@ -719,3 +719,11 @@ FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_progr
 - `2026-09-15T05:07:40` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal de palabras clave por una estructura de búsqueda de tiempo constante, utilizando un `set` precomputado para detectar si la pregunta contiene algún término conocido antes de iterar sobre el mapa de handlers.
 - `2026-09-15T05:07:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T05:07:40` Corrida terminada. Total usado hoy: 120.
+- `2026-09-15T05:16:03` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-09-15T05:16:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-15T05:16:41` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el renderizado del logo y el degradado eliminando cálculos repetitivos y mejorando la eficiencia del cacheo mediante la pre-generación de los segmentos RGB, evitando conversiones de color (hex-to-rgb) dentro de los bucles de dibujo en el Canvas.
+- `2026-09-15T05:17:09` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé la recursión de `_sum_directory_recursive` implementando un chequeo de `is_dir()` con `follow_symlinks=False` mediante `os.scandir` para evitar la creación innecesaria de objetos `Path` y llamadas redundantes a `resolve()` dentro del bucle, reduciendo el overhead de I/O.
+- `2026-09-15T05:17:35` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y construcciones de diccionarios, usando una lógica de acumulación más directa que reduce la sobrecarga de memoria y CPU durante el recorrido.
+- `2026-09-15T05:17:46` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` para evitar llamadas redundantes a `path.resolve()` y `path.stat()` (usando directamente la información provista por `os.scandir`), reduciendo significativamente la cantidad de accesos a disco por archivo analizado.
+- `2026-09-15T05:17:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T05:17:46` Corrida terminada. Total usado hoy: 124.

@@ -146,13 +146,12 @@ def _is_valid_candidate(path: Path, stat_result: Optional[os.stat_result] = None
     enlaces simbólicos, rutas protegidas y archivos bloqueados por el SO.
     """
     try:
-        p = path.resolve()
-        if p.is_symlink() or is_protected_path(p) or not is_safe_to_modify(p) or _is_file_locked(p):
+        if path.is_symlink() or is_protected_path(path) or not is_safe_to_modify(path) or _is_file_locked(path):
             return False
-        if is_system_or_hidden(p):
+        if is_system_or_hidden(path):
             return False
             
-        st = stat_result or p.stat()
+        st = stat_result or path.stat()
         return st.st_size > 0 and st.st_nlink == 1
     except (OSError, ValueError, TypeError, RuntimeError):
         return False
@@ -206,11 +205,13 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     visited_dirs: set[str] = set()
 
     def _scan_dir(current_dir: Path) -> None:
-        dir_str = str(current_dir.resolve())
-        if dir_str in visited_dirs or is_protected_path(current_dir) or not is_safe_to_modify(current_dir):
-            return
-        visited_dirs.add(dir_str)
         try:
+            resolved_path = current_dir.resolve()
+            dir_str = str(resolved_path)
+            if dir_str in visited_dirs or is_protected_path(current_dir) or not is_safe_to_modify(current_dir):
+                return
+            visited_dirs.add(dir_str)
+            
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
@@ -221,7 +222,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         else:
                             valid, st = _should_include_entry(entry, min_size)
                             if valid and st:
-                                size_to_paths_map[st.st_size].append(Path(entry.path).resolve())
+                                size_to_paths_map[st.st_size].append(Path(entry.path))
                     except OSError:
                         continue
         except (OSError, PermissionError):

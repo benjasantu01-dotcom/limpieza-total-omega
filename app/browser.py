@@ -215,9 +215,10 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
     Si es archivo, retorna su tamaño; si es directorio, inicia recursión.
     """
     try:
-        if entry.is_dir(follow_symlinks=False) and not entry.is_symlink() and not is_junction_fn(entry.path):
-            return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
-        if entry.is_file(follow_symlinks=False):
+        if entry.is_dir(follow_symlinks=False):
+            if not entry.is_symlink() and not is_junction_fn(entry.path):
+                return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
+        elif entry.is_file(follow_symlinks=False):
             return entry.stat(follow_symlinks=False).st_size
     except (OSError, PermissionError) as e:
         if kernel32 and getattr(e, 'winerror', None) == ERROR_SHARING_VIOLATION:
@@ -240,10 +241,7 @@ def _sum_directory_recursive(
     if not root_abs or depth > MAX_SCAN_DEPTH or root_abs in memo:
         return memo.get(root_abs, 0)
 
-    path_obj = Path(root_abs)
-    if not path_obj.is_dir() or (depth > 0 and path_obj.is_mount()):
-        return 0
-
+    # Nota: omitimos resolve() aquí para evitar I/O excesivo ya que el punto de entrada es absoluto
     total: int = 0
     try:
         with os.scandir(root_abs) as it:

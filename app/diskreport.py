@@ -301,8 +301,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Realiza un recorrido único (single-pass) para recopilar métricas de uso.
-    Mantiene heaps internos para procesar los top-N archivos en tiempo real 
-    durante el recorrido del árbol.
+    Optimizado para minimizar acceso a propiedades de Path y evitar conversiones innecesarias.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -310,25 +309,21 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     ext_counts: Dict[str, int] = defaultdict(int)
     top_heap: List[Tuple[int, Path]] = []
     
-    limit_val = int(limit) if isinstance(limit, int) else 0
-    
     for path, size in walk_files(directory, skip_protected):
-        try:
-            current_size = max(0, int(size))
-            total_bytes += current_size
-            total_files += 1
-            
-            ext = path.suffix.lower() if path.suffix else "(sin extensión)"
-            ext_bytes[ext] += current_size
-            ext_counts[ext] += 1
-            
-            if limit_val > 0:
-                if len(top_heap) < limit_val:
-                    heapq.heappush(top_heap, (current_size, path))
-                elif current_size > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (current_size, path))
-        except (ValueError, TypeError, AttributeError):
-            continue
+        current_size = size
+        total_bytes += current_size
+        total_files += 1
+        
+        suffix = path.suffix.lower()
+        ext = suffix if suffix else "(sin extensión)"
+        ext_bytes[ext] += current_size
+        ext_counts[ext] += 1
+        
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (current_size, path))
+            elif current_size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (current_size, path))
                     
     ext_stats = {ext: ExtStats(ext_bytes[ext], ext_counts[ext]) for ext in ext_bytes}
     return SummaryData(total_bytes, total_files, ext_stats, top_heap)
