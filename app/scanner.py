@@ -136,7 +136,9 @@ class Scanner:
                 return False
             if INVALID_TRAILING_CHARS_RE.search(entry.name) or RTL_CHAR_RE.search(entry.path) or RESERVED_NAMES_RE.match(entry.name):
                 return False
-            return not (entry.is_symlink() or not self._is_inside_base_root(entry.path) or is_protected_path(Path(entry.path)))
+            # Validar resolución final para evitar escapes via '..' o symlinks detectados tardíamente
+            path_obj = Path(entry.path).resolve()
+            return not (entry.is_symlink() or not str(path_obj).lower().startswith(self.base_root_str) or is_protected_path(path_obj))
         except (OSError, PermissionError, UnicodeDecodeError):
             return False
 

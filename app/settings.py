@@ -180,7 +180,6 @@ class _Validators:
             
             if len(_SAFETY_CACHE) > 128: _SAFETY_CACHE.clear()
             
-            # Fail-safe: si alguna validación falla por error de sistema, consideramos la ruta insegura
             is_safe = False
             if not is_protected_path(path_str):
                 if not _Validators._is_reparse_point(resolved):
@@ -193,8 +192,10 @@ class _Validators:
 
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
-        """Verifica que el string de ruta sea absoluto, saneado contra null-bytes y seguro para I/O."""
+        """Verifica que el string de ruta sea absoluto, saneado, no UNC y seguro para I/O."""
         if not path_str or len(path_str) > 2048 or "\0" in path_str: return False
+        # Bloqueo preventivo de rutas UNC para evitar inyecciones de red
+        if path_str.startswith(("\\\\", "//")): return False
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
@@ -321,7 +322,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 
             if not _is_dict(raw): return DEFAULTS.copy()
             
-            # Verificación de integridad: asegurar persistencia sin destruir todo por una clave faltante
             data = validate(raw)
             for key in DEFAULTS:
                 if key not in data or data[key] is None:
