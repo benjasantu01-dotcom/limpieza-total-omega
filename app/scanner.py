@@ -135,9 +135,8 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Valida restricciones de seguridad: symlinks, rutas protegidas y caracteres ilegales en nombres de archivos."""
         try:
-            if not entry or not entry.name or not entry.path or len(entry.path) > MAX_PATH_LENGTH:
+            if not entry or not entry.path or len(entry.path) > MAX_PATH_LENGTH:
                 return False
-            # Bloqueo explícito de rutas UNC y caracteres RTL
             if UNC_PATH_RE.match(entry.path) or RTL_CHAR_RE.search(entry.path):
                 return False
             if INVALID_TRAILING_CHARS_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name):
@@ -163,6 +162,7 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Analiza una entrada única y decide si debe procesarse o añadirse a la pila de directorios para continuar la recursión."""
         try:
+            if not entry.path: return
             is_dir = entry.is_dir(follow_symlinks=False)
             ext_low = os.path.splitext(entry.name)[1].lower() if not is_dir else ""
             
@@ -177,8 +177,8 @@ class Scanner:
                     self._handle_directory(entry, directory_stack)
             else:
                 self._run_file_heuristics(Path(entry.path), entry, ext_low)
-        except (OSError, PermissionError):
-            pass
+        except (OSError, PermissionError) as e:
+            logger.debug(f"Acceso denegado o error en {entry.path}: {e}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """Aplica la batería de heurísticas registradas sobre un archivo identificado como candidato."""
@@ -206,7 +206,6 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if directory is None: return []
     try:
         path_str: str = str(directory).strip()
-        # Validación de seguridad defensiva para la entrada raíz
         if not path_str or len(path_str) > MAX_PATH_LENGTH or UNC_PATH_RE.match(path_str) or RTL_CHAR_RE.search(path_str): 
             return []
         base_path: Path = Path(path_str)
@@ -224,10 +223,12 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 with os.scandir(current_dir) as it:
                     for entry in it:
                         scanner.process_entry(entry, directory_stack)
-            except (PermissionError, OSError):
+            except (PermissionError, OSError) as e:
+                logger.warning(f"Error listando directorio {current_dir}: {e}")
                 continue
         return scanner.results
-    except Exception:
+    except Exception as e:
+        logger.error(f"Error crítico en scan_directory: {e}")
         return []
 
 def run_windows_defender_quick_scan() -> str:

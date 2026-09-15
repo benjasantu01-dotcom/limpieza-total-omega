@@ -555,10 +555,14 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             if parent.exists() and is_protected_path(parent):
                 raise UnsafePathError("Directorio contenedor restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
             
-            if os.name == 'nt' and p.anchor:
-                drive_type = ctypes.windll.kernel32.GetDriveTypeW(p.anchor)
-                if drive_type in (DRIVE_REMOTE, DRIVE_REMOVABLE):
-                    raise UnsafePathError("Unidad no apta para modificación.", SafetyValidationErrorCode.IO_ERROR)
+            if os.name == 'nt':
+                # Validamos contra el anchor del path, manejando la posibilidad de que
+                # el path sea relativo o no tenga anchor (aunque normalize lo hace absoluto)
+                anchor = getattr(p, 'anchor', None)
+                if anchor:
+                    drive_type = ctypes.windll.kernel32.GetDriveTypeW(anchor)
+                    if drive_type in (DRIVE_REMOTE, DRIVE_REMOVABLE):
+                        raise UnsafePathError("Unidad no apta para modificación.", SafetyValidationErrorCode.IO_ERROR)
     except (OSError, PermissionError, AttributeError, ctypes.ArgumentError) as e:
         raise UnsafePathError(f"Fallo durante validación de integridad: {e}", SafetyValidationErrorCode.IO_ERROR)
             

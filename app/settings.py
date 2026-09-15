@@ -260,7 +260,6 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     if base_path in _PATH_CACHE: return _PATH_CACHE[base_path]
     
     try:
-        # Resolver antes de validar para detectar symlinks a carpetas críticas
         resolved_parent = base_path.resolve()
         if _Validators._is_safe_path(str(resolved_parent)):
             _PATH_CACHE[base_path] = resolved_parent / SETTINGS_FILE
@@ -299,7 +298,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             
         with open(ruta, "rb") as f:
             data_bytes = f.read(MAX_SETTINGS_SIZE + 1)
-            if not (data_bytes.startswith(b"{") and data_bytes.strip().endswith(b"}")):
+            # Validamos que el archivo sea JSON estructuralmente coherente
+            if len(data_bytes) > MAX_SETTINGS_SIZE or not (data_bytes.startswith(b"{") and data_bytes.strip().endswith(b"}")):
                 return DEFAULTS.copy()
             try:
                 raw = json.loads(data_bytes.decode("utf-8"))
@@ -309,7 +309,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             if not _is_dict(raw): return DEFAULTS.copy()
             
             data = validate(raw)
-            # Validación de esquema: asegurarse que cada clave esperada exista
             for key in DEFAULTS:
                 if key not in data or data[key] is None:
                     data[key] = DEFAULTS[key]
@@ -335,7 +334,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """Persiste la configuración de forma atómica con reintentos para archivos bloqueados."""
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
-    # Validar explícitamente el padre resuelto para evitar inyecciones en rutas
+    
+    # Validar que el directorio sea seguro antes de intentar escritura
     if not _Validators._is_safe_path(str(ruta.parent.resolve())): return None
         
     cleaned_settings = _ensure_settings_integrity(validate(values))
@@ -348,6 +348,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 ruta.parent.mkdir(parents=True, exist_ok=True)
             elif not ruta.parent.is_dir():
                 return None
+            
             with open(temp_path, "wb") as f:
                 f.write(json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8"))
                 f.flush()
