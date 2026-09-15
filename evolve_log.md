@@ -591,3 +591,15 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-15T03:48:21` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-15T03:48:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T03:48:21` Corrida terminada. Total usado hoy: 88.
+- `2026-09-15T03:54:29` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-09-15T03:54:32` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-15T03:54:32` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-15T03:54:52` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-15T03:54:52` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-15T03:55:22` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-15T03:55:22` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-15T03:56:16` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del manejo de errores en `ask()` y `_call_gemini` mediante la captura explícita de excepciones durante el parsing de configuración y la comunicación HTTP, evitando que fallos parciales o malformaciones en los datos externos afecten la estabilidad del motor local.
+- `2026-09-15T03:56:50` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las funciones de acceso a la paleta (`color`) y conversiones de color (`_hex_to_rgb`, `_rgb_to_hex`) mediante la validación estricta de parámetros y tipos, evitando errores silenciosos o excepciones inesperadas durante el renderizado.
+- `2026-09-15T03:57:02` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_kernel32` y `__is_system_hidden` implementando validaciones de tipo y manejo de errores más estrictos, asegurando que cualquier entrada nula o inválida no resulte en un `AttributeError` o una interrupción no controlada durante el escaneo.
+- `2026-09-15T03:57:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T03:57:02` Corrida terminada. Total usado hoy: 92.

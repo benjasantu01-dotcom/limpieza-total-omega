@@ -167,8 +167,10 @@ def app_title() -> str:
 def color(name: str) -> HexColor:
     """
     Busca un color en la paleta global usando su clave identificadora.
-    Si la clave no existe, retorna gris neutro para evitar fallos de renderizado.
+    Si la entrada no es un string válido o no existe, retorna gris neutro.
     """
+    if not isinstance(name, str):
+        return "#808080"
     return _PALETTE_MAP.get(name, "#808080")
 
 @lru_cache(maxsize=16)
@@ -192,7 +194,7 @@ def tab_label(section: str) -> str:
 @lru_cache(maxsize=16)
 def _get_severity_style(severity: Optional[str]) -> Tuple[HexColor, str]:
     """Helper interno: recupera color y etiqueta descriptiva según nivel de severidad."""
-    if severity and (style := SEVERITY_STYLES.get(severity.lower())):
+    if isinstance(severity, str) and (style := SEVERITY_STYLES.get(severity.lower())):
         return style
     return (C_TEXT_MUTED, "Desconocido")
 
@@ -202,9 +204,9 @@ def severity_color(severity: Optional[str]) -> HexColor:
 
 def severity_label(severity: Optional[str]) -> str:
     """Devuelve una cadena legible para el usuario representando la severidad (ej. 'Peligro')."""
-    if severity and severity.lower() in SEVERITY_STYLES:
+    if isinstance(severity, str) and severity.lower() in SEVERITY_STYLES:
         return _get_severity_style(severity)[1]
-    return severity.capitalize() if severity else "Desconocido"
+    return severity.capitalize() if isinstance(severity, str) else "Desconocido"
 
 def severity_icon(severity: Optional[str]) -> str:
     """Devuelve el carácter representativo del nivel de severidad (OK, Info, etc)."""
@@ -212,7 +214,9 @@ def severity_icon(severity: Optional[str]) -> str:
 
 def grade_color(grade: Optional[str]) -> HexColor:
     """Asigna un color a las calificaciones escolares (A-F)."""
-    return GRADE_COLORS.get(grade.upper()[0], C_TEXT_MUTED) if grade and grade.strip() else C_TEXT_MUTED
+    if not isinstance(grade, str) or not grade.strip():
+        return C_TEXT_MUTED
+    return GRADE_COLORS.get(grade.strip().upper()[0], C_TEXT_MUTED)
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> HexColor:
@@ -250,16 +254,20 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=256)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
-    """Convierte color #RRGGBB a tupla (R, G, B) de enteros. Retorna (0,0,0) si el formato es inválido."""
-    if len(value) != 7 or value[0] != "#": return (0, 0, 0)
+    """Convierte color #RRGGBB a tupla (R, G, B). Retorna (0,0,0) si el formato es inválido."""
+    if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"): 
+        return (0, 0, 0)
     try:
         return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
-    except (ValueError, IndexError): return (0, 0, 0)
+    except (ValueError, IndexError): 
+        return (0, 0, 0)
 
 @lru_cache(maxsize=256)
 def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
     """Convierte tupla (R, G, B) a string #RRGGBB, normalizando cada canal a [0, 255]."""
-    return "#{:02x}{:02x}{:02x}".format(*[max(0, min(255, c)) for c in rgb])
+    if not isinstance(rgb, (tuple, list)) or len(rgb) != 3:
+        return "#000000"
+    return "#{:02x}{:02x}{:02x}".format(*[max(0, min(255, int(c))) for c in rgb])
 
 @lru_cache(maxsize=128)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
@@ -270,7 +278,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     if start == end: return start
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
-    ratio = max(0.0, min(1.0, ratio))
+    ratio = max(0.0, min(1.0, float(ratio)))
     return _rgb_to_hex((
         int(r1 + (r2 - r1) * ratio),
         int(g1 + (g2 - g1) * ratio),

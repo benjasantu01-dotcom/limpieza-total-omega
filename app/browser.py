@@ -107,10 +107,11 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
     if os.name != 'nt':
         return None
     try:
+        # Validación explícita antes de la carga
         dll = ctypes.WinDLL('kernel32.dll', use_last_error=True)
         if hasattr(dll, 'GetFileAttributesW'):
             return dll
-    except (OSError, ValueError, TypeError):
+    except (OSError, ValueError, TypeError, AttributeError):
         return None
     return None
 
@@ -165,6 +166,7 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
+        # Verificación estricta de la presencia del atributo para evitar errores
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False 

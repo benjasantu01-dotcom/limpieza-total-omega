@@ -586,13 +586,16 @@ def available(base: Union[str, Path, None] = None) -> bool:
 
 def _parse_config(raw_cfg: Any) -> AssistantConfig:
     """Parsea el diccionario de configuración externa, asegurando valores predeterminados seguros."""
-    if not isinstance(raw_cfg, dict):
+    try:
+        if not isinstance(raw_cfg, dict):
+            return AssistantConfig("", "gemini-3.1-flash-lite", True)
+        return AssistantConfig(
+            api_key=str(raw_cfg.get("asistente_api_key", "")),
+            model=str(raw_cfg.get("asistente_modelo", "gemini-3.1-flash-lite")),
+            allow_metrics=bool(raw_cfg.get("asistente_enviar_metricas", True))
+        )
+    except (ValueError, TypeError):
         return AssistantConfig("", "gemini-3.1-flash-lite", True)
-    return AssistantConfig(
-        api_key=str(raw_cfg.get("asistente_api_key", "")),
-        model=str(raw_cfg.get("asistente_modelo", "gemini-3.1-flash-lite")),
-        allow_metrics=bool(raw_cfg.get("asistente_enviar_metricas", True))
-    )
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa la pregunta y el contexto en un JSON para la API de Gemini."""
@@ -611,7 +614,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
         return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Extrae de forma segura el texto de la estructura JSON devuelta por la API."""
+    """Extracte de forma segura el texto de la estructura JSON devuelta por la API."""
     if not isinstance(data, dict): return None
     try:
         text_val = data["candidates"][0]["content"]["parts"][0]["text"]
@@ -667,5 +670,6 @@ def ask(question: str, context: Optional[SystemContext] = None,
             return respaldo
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
         
-    except (Exception, TypeError, ValueError):
+    except Exception:
+        # El motor remoto falló de forma imprevista, devolvemos respaldo local
         return respaldo
