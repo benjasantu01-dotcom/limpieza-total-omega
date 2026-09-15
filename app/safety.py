@@ -536,7 +536,13 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             parent = p.parent
             if parent.exists() and is_protected_path(parent):
                 raise UnsafePathError("Directorio contenedor restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
-        except (OSError, PermissionError):
+            
+            # Chequeo preventivo de unidad si no existe el archivo
+            if os.name == 'nt' and p.anchor:
+                drive_type = ctypes.windll.kernel32.GetDriveTypeW(p.anchor)
+                if drive_type in (DRIVE_REMOTE, DRIVE_REMOVABLE):
+                    raise UnsafePathError("Unidad no apta para modificación.", SafetyValidationErrorCode.IO_ERROR)
+        except (OSError, PermissionError, AttributeError, ctypes.ArgumentError):
             pass
             
     return p

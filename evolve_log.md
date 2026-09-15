@@ -1402,3 +1402,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-15T01:42:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-15T01:42:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T01:42:24` Corrida terminada. Total usado hoy: 40.
+- `2026-09-15T01:51:33` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-09-15T01:52:11` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad preventivo en `ensure_safe_to_modify` para detectar si el padre de una ruta inexistente es una unidad de red o un dispositivo removible antes de intentar operar sobre ella, mitigando errores de I/O en volúmenes inestables.
+- `2026-09-15T01:52:36` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-15T01:53:08` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una verificación de integridad de la estructura JSON más resiliente en `load` que permite la recuperación parcial si faltan claves opcionales (pero existen las obligatorias), evitando el reset total ante cambios de esquema menores.
+- `2026-09-15T01:53:20` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-15T01:53:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T01:53:20` Corrida terminada. Total usado hoy: 44.
