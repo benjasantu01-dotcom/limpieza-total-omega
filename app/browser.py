@@ -238,11 +238,12 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Motor recursivo de cálculo de tamaño. Utiliza un diccionario 'memo' para evitar 
-    reprocesar directorios ya visitados, limitando la profundidad máxima por seguridad.
+    Motor recursivo de cálculo de tamaño con memoización para evitar re-escaneo de subdirectorios.
     """
-    if not root_abs or depth > MAX_SCAN_DEPTH or root_abs in memo:
-        return memo.get(root_abs, 0)
+    if not root_abs or depth > MAX_SCAN_DEPTH:
+        return 0
+    if root_abs in memo:
+        return memo[root_abs]
 
     total: int = 0
     try:
@@ -252,7 +253,7 @@ def _sum_directory_recursive(
                     continue
                 total += _process_entry(entry, root_base, is_junction_fn, kernel32, memo, depth)
     except (PermissionError, OSError):
-        return total
+        pass
     
     memo[root_abs] = total
     return total

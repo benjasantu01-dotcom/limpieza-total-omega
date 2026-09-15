@@ -1201,3 +1201,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-15T09:47:12` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-15T09:47:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T09:47:12` Corrida terminada. Total usado hoy: 225.
+- `2026-09-15T10:01:47` Arrancando corrida. Quedan hoy ~75 peticiones objetivo.
+- `2026-09-15T10:02:23` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-15T10:02:50` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo de directorios implementando un caché local dentro de `_sum_directory_recursive` que evita realizar múltiples llamadas a `os.scandir` y `stat` sobre los mismos subdirectorios en un mismo ciclo de ejecución, reduciendo drásticamente las operaciones I/O redundantes.
+- `2026-09-15T10:03:17` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `_collect_summary_data` para evitar recrear objetos `Path` y realizar llamadas innecesarias a `suffix.lower()` dentro del loop de procesamiento, mejorando la eficiencia durante el recorrido de grandes volúmenes de archivos.
+- `2026-09-15T10:03:27` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-15T10:03:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T10:03:27` Corrida terminada. Total usado hoy: 229.

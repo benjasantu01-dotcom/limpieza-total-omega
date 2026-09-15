@@ -266,7 +266,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
     """Agrupa métricas por extensión, retornando las más pesadas hasta el límite."""
     root = _validate_root(directory)
     if not root: return []
-    limit_val = int(limit) if isinstance(limit, (int, float)) and limit > 0 else 15
+    limit_val = int(limit) if isinstance(limit, (int, float)) and limit > 15 else 15
     data = _collect_summary_data(root, skip_protected, limit=0)
     usage_list = [ExtensionUsage(ext, stats.total_bytes, stats.count) for ext, stats in data.ext_stats.items()]
     return heapq.nlargest(limit_val, usage_list, key=lambda u: u.size_bytes)
@@ -305,8 +305,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Motor interno de agregación de métricas. 
-    Realiza un recorrido único minimizando la creación de objetos Path y acumulando
-    stats en diccionarios locales para máxima eficiencia.
+    Realiza un recorrido único minimizando operaciones de string y Path.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -318,8 +317,10 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         total_bytes += size
         total_files += 1
         
-        suffix = path.suffix.lower()
-        ext = suffix if suffix else "(sin extensión)"
+        # Obtenemos la extensión una sola vez para no recalcular o repetir conversión a lower
+        suffix = path.suffix
+        ext = suffix.lower() if suffix else "(sin extensión)"
+        
         ext_bytes[ext] += size
         ext_counts[ext] += 1
         
