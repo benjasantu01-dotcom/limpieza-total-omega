@@ -248,6 +248,10 @@ def _sum_directory_recursive(
     if root_abs in memo:
         return memo[root_abs]
 
+    # Defensa: verificar que el nodo actual esté dentro de la base autorizada
+    if not _is_path_inside_base(Path(root_abs), Path(root_base)):
+        return 0
+
     total: int = 0
     try:
         with os.scandir(root_abs) as it:
