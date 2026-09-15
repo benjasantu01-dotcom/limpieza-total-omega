@@ -1229,7 +1229,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             "disco": f"{disco_libre:.0f}%",
         }
         
-        if all(self._last_card_values.get(k) == v for k, v in valores.items()):
+        # Actualización eficiente solo si el estado cambió
+        changed = False
+        for clave, valor in valores.items():
+            if self._last_card_values.get(clave) != valor:
+                changed = True
+                break
+        
+        if not changed:
             return
         self._last_card_values = valores
 
