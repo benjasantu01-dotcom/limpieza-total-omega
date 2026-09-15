@@ -235,17 +235,12 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
     
-    processed: List[ProcessMemory] = []
-    for line in raw_csv_text.splitlines():
-        line = line.strip()
-        if not line or "," not in line:
-            continue
-        parts = [_clean_csv_field(x) for x in line.split(",")]
-        if len(parts) >= 3:
-            proc = _is_valid_process_entry(parts[0], parts[1], parts[2])
-            if proc:
-                processed.append(proc)
-
+    # Generador para filtrar y validar líneas de forma eficiente antes de materializar la lista
+    gen = (
+        _is_valid_process_entry(*[_clean_csv_field(x) for x in line.split(",")][:3])
+        for line in raw_csv_text.splitlines() if "," in line
+    )
+    processed = [p for p in gen if p]
     processed.sort(key=lambda p: p.working_set, reverse=True)
     return processed[:limit]
 

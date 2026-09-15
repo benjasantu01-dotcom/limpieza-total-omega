@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 220
+- Rechazadas por guardia de seguridad: 35
+- Sin cambios (nada sustancial que mejorar): 10
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 72 | 4 | 11 | 6 | 78 |
-| 2026-09-15 | 149 | 12 | 25 | 5 | 142 |
+| 2026-09-14 | 71 | 4 | 10 | 5 | 77 |
+| 2026-09-15 | 151 | 12 | 25 | 5 | 144 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **46**
-- robustez ante casos límite: **42**
-- rendimiento: **33**
+- robustez ante casos límite: **41**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
 - `diskreport.py`: **20**
+- `memory.py`: **20**
 - `browser.py`: **19**
-- `memory.py`: **19**
 - `quarantine.py`: **19**
-- `settings.py`: **17**
 - `assistant.py`: **17**
 - `safety.py`: **17**
-- `duplicates.py`: **14**
+- `settings.py`: **16**
+- `duplicates.py`: **15**
 - `branding.py`: **13**
 - `scanner.py`: **13**
 - `organizer.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T14:40:58` **memory.py** (rendimiento): Se ha optimizado la función `parse_windows_process_csv` reemplazando la creación de una lista intermedia y el uso de `strip()` repetitivo por una estructura de generador para reducir la huella de memoria y el tiempo de procesamiento al analizar la salida de PowerShell.
+- `2026-09-15T14:37:42` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` utilizando un conjunto (`set`) para registrar las rutas visitadas antes de procesar, eliminando la necesidad de realizar `resolve()` repetitivos y llamadas adicionales a `stat` en el bucle principal, reduciendo drásticamente las operaciones de E/S.
 - `2026-09-15T14:29:24` **browser.py** (rendimiento): Implementé la persistencia del diccionario `perf_cache` en el flujo principal de `detect_profiles` para reutilizar los resultados de cálculo de tamaño de directorios hijos comunes (como subcarpetas dentro de `User Data`), evitando escaneos redundantes y mejorando significativamente la performance en sistemas con múltiples navegadores basados en Chromium.
 - `2026-09-15T14:28:11` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal de palabras clave por una pre-compilación del mapa de tokens en un conjunto (`set`) y una búsqueda basada en `set.intersection`, evitando la iteración innecesaria en casos de consultas largas o complejas.
 - `2026-09-15T14:23:08` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones críticas `parse_registry_csv` y `list_startup_entries`, aclarando sus parámetros y el comportamiento frente a datos malformados para mejorar la mantenibilidad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T13:49:26` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo las convenciones de Google/NumPy) y se ha extraído la lógica de resolución de rutas en `detect_profiles` hacia una función privada `_resolve_browser_path` para reducir la complejidad ciclomática del bucle principal, mejorando así la mantenibilidad y legibilidad del código.
 - `2026-09-15T13:48:53` **branding.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del sistema de colores mediante la introducción de type hints y docstrings explícitos en los métodos de transformación de color, y reemplaza operaciones mágicas por funciones con nombre descriptivo.
 - `2026-09-15T13:48:19` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_get_source_value` para eliminar el uso de `getattr` sobre objetos genéricos, sustituyéndolo por una implementación más clara y segura basada en el protocolo de dictado o atributos, reduciendo así la ambigüedad y el riesgo de errores inesperados.
-- `2026-09-15T13:38:16` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load` y `save` incorporando un manejo de errores más específico y preventivo, validando la integridad del contenido JSON antes de procesarlo y asegurando que las rutas de configuración no sean vulnerables a manipulaciones mediante la verificación explícita de `is_safe_to_modify` en el acceso a directorios.
-- `2026-09-15T13:37:33` **scanner.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `Scanner.process_entry` y `scan_directory` reemplazando bloques `pass` o capturas genéricas por un log explícito, además de validar que las rutas obtenidas de `os.DirEntry` sean válidas antes de intentar resolverlas, evitando así posibles excepciones silenciosas durante el escaneo.

@@ -212,10 +212,13 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
     def _scan_dir(current_dir: Path) -> None:
         try:
-            resolved_path = current_dir.resolve()
-            dir_str = str(resolved_path)
-            if dir_str in visited_dirs or is_protected_path(current_dir) or not is_safe_to_modify(current_dir):
+            dir_str = str(current_dir.resolve())
+            if dir_str in visited_dirs:
                 return
+            
+            if is_protected_path(current_dir) or not is_safe_to_modify(current_dir):
+                return
+                
             visited_dirs.add(dir_str)
             
             with os.scandir(current_dir) as iterator:
@@ -223,7 +226,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                     try:
                         if entry.is_dir(follow_symlinks=False):
                             entry_path = Path(entry.path)
-                            if not is_junction(entry_path) and is_safe_to_modify(entry_path):
+                            if not is_junction(entry_path):
                                 _scan_dir(entry_path)
                         else:
                             valid, st = _should_include_entry(entry, min_size)
