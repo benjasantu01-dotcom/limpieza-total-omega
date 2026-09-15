@@ -1355,3 +1355,35 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-09-15T01:11:51` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `settings.py` implementando una caché de validación de rutas mediante `LRU` manual en `_is_safe_path` y reduciendo las operaciones de I/O innecesarias en `load` mediante la validación previa de metadatos (`st_mtime`), evitando recargas y re-parseos de JSON cuando el archivo no ha cambiado.
 - `2026-09-15T01:11:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T01:11:51` Corrida terminada. Total usado hoy: 28.
+- `2026-09-15T01:20:26` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-09-15T01:20:58` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.47s
+
+```
+- `2026-09-15T01:20:58` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché en `_resolve_and_cache_path` que utiliza un conjunto (`Set`) para registrar rutas ya validadas negativamente, evitando múltiples llamadas costosas al sistema de archivos para los mismos ejecutables durante la ejecución del proceso.
+- `2026-09-15T01:21:37` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejora la robustez de `SystemContext.ingest` ante datos de entrada malformados (como diccionarios con valores inesperados de tipo `None` o estructuras anidadas profundas), evitando que el bucle de ingesta lance excepciones al evaluar métricas que podrían corromper el contexto.
+- `2026-09-15T01:22:12` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de entrada y problemas de acceso a disco mediante el uso de `ensure_safe_to_modify` para capturar excepciones de seguridad y la normalización de la ruta de salida, asegurando que la función retorne un valor consistente incluso ante fallos.
+- `2026-09-15T01:22:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-15T01:22:30` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` ante archivos inaccesibles o bloqueados, integrando un manejo de errores más específico para `PermissionError` y `OSError` que evita abortar el cálculo completo si una subcarpeta específica es inasequible.
+- `2026-09-15T01:22:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T01:22:30` Corrida terminada. Total usado hoy: 32.

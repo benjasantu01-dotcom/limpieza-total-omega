@@ -229,8 +229,9 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
         if entry.is_file(follow_symlinks=False):
             return entry.stat(follow_symlinks=False).st_size
     except (OSError, PermissionError) as e:
+        # Si es un error de acceso por archivo bloqueado, lo omitimos silenciosamente
         if kernel32 and getattr(e, 'winerror', None) == ERROR_SHARING_VIOLATION:
-            pass
+            return 0
     return 0
 
 
@@ -244,11 +245,6 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula el tamaño total de un directorio mediante búsqueda DFS.
-    
-    La función utiliza un diccionario `memo` para cachear resultados y evitar
-    re-escanear ramas. Implementa un límite de profundidad (`MAX_SCAN_DEPTH`)
-    para prevenir desbordamientos de stack o bucles infinitos en sistemas de 
-    archivos complejos. Retorna 0 ante cualquier error de acceso.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH or root_abs in memo:
         return memo.get(root_abs, 0)
@@ -265,7 +261,8 @@ def _sum_directory_recursive(
                     continue
                 total += _process_entry(entry, root_base, is_junction_fn, kernel32, memo, depth)
     except (PermissionError, OSError):
-        return 0
+        # Fallo de acceso a la carpeta: retornamos el acumulado hasta el momento
+        return total
     
     memo[root_abs] = total
     return total

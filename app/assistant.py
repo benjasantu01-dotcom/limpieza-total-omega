@@ -303,10 +303,13 @@ class SystemContext:
         if val is None or not spec.is_valid_type(val):
             return False
             
-        numeric_val = float(val)
-        if math.isfinite(numeric_val) and spec.min_val <= numeric_val <= spec.max_val:
-            setattr(self, key, spec.cast_func(val))
-            return True
+        try:
+            numeric_val = float(val)
+            if math.isfinite(numeric_val) and spec.min_val <= numeric_val <= spec.max_val:
+                setattr(self, key, spec.cast_func(val))
+                return True
+        except (ValueError, TypeError):
+            return False
         return False
 
     def _clean_grade(self, val: Any) -> str:
