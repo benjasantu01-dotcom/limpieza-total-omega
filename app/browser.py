@@ -120,10 +120,13 @@ def base_directories() -> List[Path]:
         return []
     
     try:
-        path_local = Path(local_env).resolve(strict=True)
+        p = Path(local_env)
+        if not p.exists():
+            return []
+        path_local = p.resolve(strict=True)
         if path_local.is_dir() and is_safe_to_modify(path_local) and not is_protected_path(path_local):
             return [path_local]
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, PermissionError):
         pass
     return []
 
@@ -143,7 +146,7 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
             return False
             
         return os.path.commonpath([target_abs, base_abs]) == base_abs
-    except (OSError, ValueError, RuntimeError):
+    except (OSError, ValueError, RuntimeError, PermissionError):
         return False
 
 
@@ -241,7 +244,6 @@ def _sum_directory_recursive(
     if not root_abs or depth > MAX_SCAN_DEPTH or root_abs in memo:
         return memo.get(root_abs, 0)
 
-    # Nota: omitimos resolve() aquí para evitar I/O excesivo ya que el punto de entrada es absoluto
     total: int = 0
     try:
         with os.scandir(root_abs) as it:
@@ -266,7 +268,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
     try:
         resolved = str(p.resolve(strict=True))
         return _sum_directory_recursive(resolved, _IS_JUNCTION_FN, _get_kernel32(), {}, resolved)
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, PermissionError):
         return 0
 
 

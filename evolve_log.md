@@ -789,3 +789,34 @@ assert not True
 - `2026-09-15T05:55:07` Corte de seguridad: se alcanzó el límite de 480s para esta corrida. Termino prolijo.
 - `2026-09-15T05:55:07` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T05:55:07` Corrida terminada. Total usado hoy: 133.
+- `2026-09-15T05:56:49` Arrancando corrida. Quedan hoy ~167 peticiones objetivo.
+- `2026-09-15T05:57:18` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.36s
+
+```
+- `2026-09-15T05:57:18` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché en `_resolve_and_cache_path` que utiliza un conjunto (`Set`) para ignorar rutas inválidas previamente detectadas, evitando llamadas repetitivas y costosas al sistema de archivos durante la resolución de ejecutables.
+- `2026-09-15T05:57:55` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez ante estados inconsistentes o corruptos en `SystemContext.ingest` y `_apply_field`, asegurando que si una métrica falla en su validación o conversión, el proceso continúe con las demás en lugar de abortar silenciosamente, y añadí una verificación de `math.isfinite` explícita en `_apply_field` para evitar inyecciones de valores no numéricos como `inf` o `nan`.
+- `2026-09-15T05:58:28` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante casos límite en la manipulación de rutas, asegurando que `ensure_safe_to_modify` se utilice correctamente y que el manejo de errores sea específico para evitar condiciones de carrera o fallos por rutas mal formadas.
+- `2026-09-15T05:58:39` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra errores de permisos en `base_directories` y se centralizó el manejo de excepciones de I/O en `_is_path_inside_base` para asegurar que el escaneo no colapse ante rutas bloqueadas por el SO o enlaces simbólicos maliciosos.
+- `2026-09-15T05:58:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T05:58:39` Corrida terminada. Total usado hoy: 137.

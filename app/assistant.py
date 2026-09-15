@@ -309,7 +309,7 @@ class SystemContext:
                 setattr(self, key, spec.cast_func(val))
                 return True
         except (ValueError, TypeError):
-            return False
+            pass
         return False
 
     def _clean_grade(self, val: Any) -> str:
