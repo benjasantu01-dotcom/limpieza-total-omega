@@ -893,3 +893,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-15T06:54:59` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
 - `2026-09-15T06:54:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T06:54:59` Corrida terminada. Total usado hoy: 157.
+- `2026-09-15T06:58:03` Arrancando corrida. Quedan hoy ~143 peticiones objetivo.
+- `2026-09-15T06:58:32` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de la validación de rutas en `_can_move_file` y `stage_for_review` mediante el uso de `path.is_relative_to` para asegurar que las operaciones de movimiento no se escapen accidentalmente del directorio de destino configurado, previniendo así posibles ataques de "Path Traversal" ante entradas maliciosas.
+- `2026-09-15T06:59:09` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y la integridad en `quarantine_file` al introducir un chequeo de identidad de archivo post-apertura mediante `os.fstat` para garantizar que el archivo origen no fue reemplazado por un enlace simbólico u otro objeto durante la operación de lectura, reforzando la seguridad defensiva sin alterar la funcionalidad.
+- `2026-09-15T06:59:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-15T06:59:50` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_file_in_use` implementando una técnica de apertura con acceso de solo lectura y compartición total (`FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE`) para verificar si el archivo está bloqueado por un proceso externo, eliminando falsos positivos en permisos denegados.
+- `2026-09-15T06:59:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T06:59:50` Corrida terminada. Total usado hoy: 161.

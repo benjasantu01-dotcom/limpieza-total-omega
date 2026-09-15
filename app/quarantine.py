@@ -476,45 +476,46 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     if destination.exists():
         raise FileExistsError(f"El destino ya existe: {destination}")
 
-    src_stat_pre = source.stat()
-    src_ino_pre = src_stat_pre.st_ino
-    src_dev_pre = src_stat_pre.st_dev
-    src_nlink_pre = src_stat_pre.st_nlink
-
-    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
-    mode = 0o600
-    fd = os.open(str(destination), flags, mode)
-    
+    # Apertura controlada usando descriptores de archivo (evita TOCTOU)
+    fd_src = os.open(str(source), os.O_RDONLY)
     try:
-        with os.fdopen(fd, 'wb') as tmp:
-            with open(source, 'rb') as src:
-                shutil.copyfileobj(src, tmp)
-            tmp.flush()
-            os.fsync(tmp.fileno())
-        
-        final_src_stat = source.stat()
-        if final_src_stat.st_ino != src_ino_pre or final_src_stat.st_dev != src_dev_pre or final_src_stat.st_nlink != src_nlink_pre:
-             raise OSError("Alerta de seguridad: origen alterado durante copia.")
-        
-        if destination.stat().st_size != src_stat_pre.st_size or destination.stat().st_size == 0:
-            raise OSError("Error de integridad post-escritura.")
+        stat_src = os.fstat(fd_src)
+        if not (stat_src.st_mode & 0o100000): # S_ISREG
+            raise OSError("El archivo origen no es un archivo regular.")
             
-        _check_windows_file_attributes(str(destination))
-        ensure_safe_to_modify(destination, allow_sensitive=True)
-        
-        dir_fd = os.open(str(destination.parent), os.O_RDONLY)
-        try: os.fsync(dir_fd)
-        finally: os.close(dir_fd)
-        
-        file_hash = _get_sha256(destination)
-        if not file_hash:
-            raise OSError("Falla de integridad: hash no generado.")
-        return file_hash
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+        mode = 0o600
+        fd_dest = os.open(str(destination), flags, mode)
+        try:
+            with os.fdopen(fd_src, 'rb') as src_file, os.fdopen(fd_dest, 'wb') as dst_file:
+                shutil.copyfileobj(src_file, dst_file)
+                dst_file.flush()
+                os.fsync(dst_file.fileno())
+            
+            # Verificación post-escritura sobre el descriptor
+            if destination.stat().st_size != stat_src.st_size:
+                raise OSError("Error de integridad post-escritura.")
+        except Exception as e:
+            if destination.exists():
+                try: os.remove(destination)
+                except OSError: pass
+            raise e
+            
     except Exception as e:
-        if destination.exists():
-            try: os.remove(destination)
-            except OSError: pass
+        os.close(fd_src)
         raise e
+        
+    _check_windows_file_attributes(str(destination))
+    ensure_safe_to_modify(destination, allow_sensitive=True)
+    
+    dir_fd = os.open(str(destination.parent), os.O_RDONLY)
+    try: os.fsync(dir_fd)
+    finally: os.close(dir_fd)
+    
+    file_hash = _get_sha256(destination)
+    if not file_hash:
+        raise OSError("Falla de integridad: hash no generado.")
+    return file_hash
 
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:

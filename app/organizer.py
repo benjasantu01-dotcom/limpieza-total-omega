@@ -277,6 +277,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
             return None
         safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
         target = _generate_unique_target(dest_res / safe_name)
+        # Validación extra: asegurarse que el target resultante siga bajo el dest_res
         return target if target.resolve().is_relative_to(dest_res) else None
     except (OSError, ValueError, AttributeError): return None
 
@@ -293,7 +294,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         if not isinstance(junk_file, JunkFile): continue
         try:
             target = _can_move_file(junk_file, dest_base)
-            if target and is_safe_to_modify(junk_file.path) and not _is_file_locked(junk_file.path):
+            if target and target.is_relative_to(dest_base) and is_safe_to_modify(junk_file.path) and not _is_file_locked(junk_file.path):
                 ensure_safe_to_modify(junk_file.path)
                 ensure_safe_to_modify(target.parent)
                 shutil.move(str(junk_file.path), str(target))
@@ -311,7 +312,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count = 0
     for item in dest.iterdir():
         try:
-            if item.is_file() and is_safe_to_modify(item.resolve()):
+            # Asegurar que el archivo a eliminar esté dentro del directorio de cuarentena
+            if item.is_file() and item.resolve().is_relative_to(dest) and is_safe_to_modify(item.resolve()):
                 ensure_safe_to_modify(item.resolve())
                 item.unlink()
                 count += 1

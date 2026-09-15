@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Mejoras aceptadas: **239** (47.4% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 157 | 6 | 20 | 14 | 150 |
-| 2026-09-15 | 79 | 7 | 15 | 2 | 54 |
+| 2026-09-14 | 157 | 6 | 20 | 14 | 146 |
+| 2026-09-15 | 82 | 7 | 16 | 2 | 54 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,27 +25,30 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **46**
 - rendimiento: **44**
-- seguridad defensiva: **41**
+- seguridad defensiva: **44**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **23**
+- `quarantine.py`: **22**
 - `browser.py`: **21**
-- `quarantine.py`: **21**
 - `memory.py`: **20**
 - `assistant.py`: **19**
 - `diskreport.py`: **18**
 - `settings.py`: **18**
-- `safety.py`: **16**
+- `safety.py`: **17**
 - `main.py`: **15**
+- `organizer.py`: **15**
 - `scanner.py`: **14**
 - `branding.py`: **14**
 - `duplicates.py`: **14**
-- `organizer.py`: **14**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T06:59:50` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_in_use` implementando una técnica de apertura con acceso de solo lectura y compartición total (`FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE`) para verificar si el archivo está bloqueado por un proceso externo, eliminando falsos positivos en permisos denegados.
+- `2026-09-15T06:59:09` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y la integridad en `quarantine_file` al introducir un chequeo de identidad de archivo post-apertura mediante `os.fstat` para garantizar que el archivo origen no fue reemplazado por un enlace simbólico u otro objeto durante la operación de lectura, reforzando la seguridad defensiva sin alterar la funcionalidad.
+- `2026-09-15T06:58:32` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de la validación de rutas en `_can_move_file` y `stage_for_review` mediante el uso de `path.is_relative_to` para asegurar que las operaciones de movimiento no se escapen accidentalmente del directorio de destino configurado, previniendo así posibles ataques de "Path Traversal" ante entradas maliciosas.
 - `2026-09-15T06:50:11` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del pipeline de datos añadiendo una validación explícita de `is_finite` dentro del bucle de procesamiento, asegurando que cualquier error aritmético en el cálculo de `area_ratio` no contamine los resultados de salud acumulados.
 - `2026-09-15T06:39:26` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y `_collect_summary_data` al asegurar que el tamaño de archivo se obtenga mediante un `stat()` local y protegido contra excepciones de permisos, evitando el uso de atributos inciertos y reforzando la integridad de los datos recolectados ante posibles errores de I/O durante el recorrido.
 - `2026-09-15T06:38:12` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la ingesta de datos en `SystemContext` agregando una validación explícita para evitar que se inyecten diccionarios o estructuras anidadas arbitrarias que puedan contener objetos o métodos no esperados, cumpliendo con la exigencia de seguridad defensiva sobre el manejo de entradas externas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T06:11:11` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics` ante casos límite mediante la inclusión de una verificación estricta de tipos en `validate` y la inicialización segura en `__post_init__`, evitando que valores `None` o tipos incorrectos pasados por error desde otros módulos degraden la lógica de puntuación.
 - `2026-09-15T05:58:39` **browser.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de permisos en `base_directories` y se centralizó el manejo de excepciones de I/O en `_is_path_inside_base` para asegurar que el escaneo no colapse ante rutas bloqueadas por el SO o enlaces simbólicos maliciosos.
 - `2026-09-15T05:58:28` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante casos límite en la manipulación de rutas, asegurando que `ensure_safe_to_modify` se utilice correctamente y que el manejo de errores sea específico para evitar condiciones de carrera o fallos por rutas mal formadas.
-- `2026-09-15T05:57:55` **assistant.py** (robustez ante casos límite): Mejoré la robustez ante estados inconsistentes o corruptos en `SystemContext.ingest` y `_apply_field`, asegurando que si una métrica falla en su validación o conversión, el proceso continúe con las demás en lugar de abortar silenciosamente, y añadí una verificación de `math.isfinite` explícita en `_apply_field` para evitar inyecciones de valores no numéricos como `inf` o `nan`.
-- `2026-09-15T05:28:39` **memory.py** (rendimiento): Optimizé la generación de snapshots de procesos en `top_memory_processes` eliminando la creación de objetos intermedios y el overhead de `heapq` en cada llamada, reemplazándolos por un procesamiento en una sola pasada y una estructura más eficiente, mejorando el rendimiento bajo uso intenso.
-- `2026-09-15T05:26:42` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` reemplazando la validación `is_finite` (que iteraba por todos los atributos de la instancia mediante reflexión `__dataclass_fields__` en cada llamada) por una validación directa de campos, reduciendo el overhead en una función crítica del bucle.

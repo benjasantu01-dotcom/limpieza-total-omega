@@ -241,12 +241,11 @@ def _is_file_in_use(path_str: str) -> bool:
         return False
     
     kernel32 = ctypes.windll.kernel32
-    INVALID_HANDLE_VALUE = -1
+    # FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE = 0x00000007
     try:
-        handle = kernel32.CreateFileW(path_str, 0, 1, None, 3, 0x00000080, None)
-        if handle == INVALID_HANDLE_VALUE: 
-            err = ctypes.GetLastError()
-            return err != 5
+        handle = kernel32.CreateFileW(path_str, 0, 0x00000007, None, 3, 0x00000080, None)
+        if handle == -1: 
+            return True # Bloqueado por acceso exclusivo de otro proceso
         kernel32.CloseHandle(handle)
         return False
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
