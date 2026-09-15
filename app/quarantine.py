@@ -736,8 +736,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
-    # Filtro estricto: solo purgar lo que figura en el manifiesto
-    valid_stored_names = {item.stored_name for item in items}
     item_map = {item.stored_name: item for item in items}
     purged_ids: Set[str] = set()
     
@@ -747,10 +745,9 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 continue
             
             # Solo procesar si el archivo es conocido por el manifiesto
-            if stored_path.name in valid_stored_names:
-                item = item_map.get(stored_path.name)
-                if item and _is_item_purgable(stored_path, item, quarantine_root):
-                    purged_ids.add(item.item_id)
+            item = item_map.get(stored_path.name)
+            if item and _is_item_purgable(stored_path, item, quarantine_root):
+                purged_ids.add(item.item_id)
                 
         if purged_ids:
             remaining_items = [i for i in items if i.item_id not in purged_ids]
