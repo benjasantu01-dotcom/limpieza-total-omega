@@ -215,14 +215,15 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             if rules:
                 _evaluate_rules(metrics, rules, area_ratio, recommendations)
             
-            weighted_points = int(round(area_ratio * weight))
+            # Usamos round y clamp para asegurar integridad numérica antes de sumar
+            weighted_points = int(_clamp(round(area_ratio * weight), 0, weight))
             metric_breakdown[area] = weighted_points
             accumulated_score += weighted_points
         except Exception:
             metric_breakdown[area] = 0
             recommendations.append(f"Error al analizar el área: {area}.")
             
-    final_score = int(_clamp(accumulated_score, 0.0, 100.0))
+    final_score = int(_clamp(round(accumulated_score), 0.0, 100.0))
     
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")

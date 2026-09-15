@@ -217,12 +217,15 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
     """
     Procesa un nodo: si es directorio, desciende recursivamente; si es archivo, extrae su tamaño.
     """
+    if depth > MAX_SCAN_DEPTH:
+        return 0
     try:
         if entry.is_dir(follow_symlinks=False):
             if not entry.is_symlink() and not is_junction_fn(entry.path):
                 return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
         elif entry.is_file(follow_symlinks=False):
-            return entry.stat(follow_symlinks=False).st_size
+            stat_res = entry.stat(follow_symlinks=False)
+            return int(stat_res.st_size) if hasattr(stat_res, 'st_size') else 0
     except (OSError, PermissionError) as e:
         if kernel32 and getattr(e, 'winerror', None) == ERROR_SHARING_VIOLATION:
             return 0
@@ -240,7 +243,7 @@ def _sum_directory_recursive(
     """
     Motor recursivo de cálculo de tamaño con memoización para evitar re-escaneo de subdirectorios.
     """
-    if not root_abs or depth > MAX_SCAN_DEPTH:
+    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
     if root_abs in memo:
         return memo[root_abs]
