@@ -154,16 +154,22 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Procesa una entrada del sistema de archivos, aplicando heurísticas si es ejecutable."""
-        if not self._is_safe_entry(entry):
-            return
         try:
-            if entry.is_dir(follow_symlinks=False):
+            # Optimizacion: Chequeo rapido de extension antes de validaciones pesadas
+            is_dir = entry.is_dir(follow_symlinks=False)
+            ext_low = os.path.splitext(entry.name)[1].lower() if not is_dir else ""
+            
+            if not is_dir and ext_low not in SUSPICIOUS_ALL_EXTS:
+                return
+
+            if not self._is_safe_entry(entry):
+                return
+
+            if is_dir:
                 if not self._is_reparse_point(entry):
                     self._handle_directory(entry, directory_stack)
-            elif entry.is_file(follow_symlinks=False):
-                ext_low = os.path.splitext(entry.name)[1].lower()
-                if ext_low in SUSPICIOUS_ALL_EXTS:
-                    self._run_file_heuristics(Path(entry.path), entry, ext_low)
+            else:
+                self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError):
             pass
 

@@ -1348,3 +1348,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-09-15T01:02:30` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el acceso al manifiesto de cuarentena convirtiendo la lista de ítems en un diccionario indexado por `item_id` en las funciones de manipulación y restauración, reduciendo la complejidad de búsqueda de O(N) a O(1).
 - `2026-09-15T01:02:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T01:02:30` Corrida terminada. Total usado hoy: 24.
+- `2026-09-15T01:10:07` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-09-15T01:10:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-09-15T01:11:08` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado `_is_system_path_cached` reemplazando la evaluación lineal con `any()` por una búsqueda directa en `frozenset` para nombres de carpetas y una verificación de prefijos simplificada, reduciendo la complejidad algorítmica de O(N) a O(1) en las consultas frecuentes.
+- `2026-09-15T01:11:35` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se ha optimizado el rendimiento del proceso de escaneo reemplazando la lógica de validación secuencial y repetitiva de `process_entry` por un pre-filtrado mediante conjuntos, evitando llamadas innecesarias a `is_protected_path` y `resolve()` para archivos que claramente no son ejecutables ni candidatos a revisión.
+- `2026-09-15T01:11:51` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `settings.py` implementando una caché de validación de rutas mediante `LRU` manual en `_is_safe_path` y reduciendo las operaciones de I/O innecesarias en `load` mediante la validación previa de metadatos (`st_mtime`), evitando recargas y re-parseos de JSON cuando el archivo no ha cambiado.
+- `2026-09-15T01:11:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T01:11:51` Corrida terminada. Total usado hoy: 28.

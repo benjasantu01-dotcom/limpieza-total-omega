@@ -369,8 +369,9 @@ def _is_system_path_cached(path_str: str) -> bool:
     path_lower = path_str.lower()
     if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
         return True
-    return any(f"{os.sep}{p}{os.sep}" in path_lower or path_lower.endswith(f"{os.sep}{p}") 
-               for p in PROTECTED_DIR_NAMES)
+    # Divide el path y busca intersección con el set protegido en O(1) promedio
+    path_parts = set(path_lower.split(os.sep))
+    return not path_parts.isdisjoint(PROTECTED_DIR_NAMES)
 
 @lru_cache(maxsize=2048)
 def is_protected_path(path: PathLike) -> bool:

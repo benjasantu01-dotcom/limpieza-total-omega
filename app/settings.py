@@ -178,7 +178,7 @@ class _Validators:
             if path_str in _SAFETY_CACHE:
                 return _SAFETY_CACHE[path_str]
             
-            if len(_SAFETY_CACHE) > 100: _SAFETY_CACHE.clear()
+            if len(_SAFETY_CACHE) > 128: _SAFETY_CACHE.clear()
             
             # Fail-safe: si alguna validación falla por error de sistema, consideramos la ruta insegura
             is_safe = False
