@@ -205,16 +205,15 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for area, weight, scorer, rules in _PIPELINE:
         try:
             val = scorer(metrics)
-            if not math.isfinite(val):
-                raise ValueError(f"Resultado no finito en {area}")
+            # Validación de dominio: asegurar que sea un ratio finito 0.0-1.0
+            area_ratio = _clamp(float(val)) if math.isfinite(val) else 0.0
             
-            area_ratio = _clamp(val)
             if rules:
                 _evaluate_rules(metrics, rules, area_ratio, recommendations)
             
-            weighted_points = int(_clamp(round(area_ratio * weight), 0, weight))
-            metric_breakdown[area] = weighted_points
-            accumulated_score += weighted_points
+            weighted_points = int(round(area_ratio * weight))
+            metric_breakdown[area] = _clamp(float(weighted_points), 0.0, float(weight))
+            accumulated_score += metric_breakdown[area]
         except Exception:
             metric_breakdown[area] = 0
             recommendations.append(f"Error al analizar el área: {area}.")
@@ -227,7 +226,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     return HealthResult(
         score=final_score, 
         grade=grade_for_score(final_score), 
-        breakdown=metric_breakdown, 
+        breakdown={k: int(v) for k, v in metric_breakdown.items()}, 
         recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
     )
 

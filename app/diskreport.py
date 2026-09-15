@@ -319,7 +319,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             total_files += 1
             
             suffix = path.suffix
-            ext = suffix.lower() if suffix else "(sin extensión)"
+            ext = suffix.lower() if isinstance(suffix, str) and suffix else "(sin extensión)"
             
             ext_bytes[ext] += size
             ext_counts[ext] += 1

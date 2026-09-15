@@ -128,7 +128,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
     try:
         p = Path(path).resolve()
-        if not p.is_file() or not is_safe_to_modify(p):
+        if not p.is_file() or not is_safe_to_modify(p) or _is_file_locked(p):
             return None
 
         with open(p, "rb") as f:
