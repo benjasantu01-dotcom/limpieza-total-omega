@@ -200,7 +200,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 def _is_valid_process_entry(name: object, pid_str: object, ws_str: object) -> Optional[ProcessMemory]:
     """
     Valida y filtra entradas de procesos crudas. Excluye procesos críticos y 
-    aquelerin ubicados en rutas del sistema protegidas.
+    aquellos ubicados en rutas del sistema protegidas.
     """
     if not isinstance(name, str) or not isinstance(pid_str, (str, int)) or not isinstance(ws_str, (str, int)):
         return None
@@ -349,14 +349,15 @@ def _is_system_process(pid: int) -> bool:
 
 def _get_process_path(proc_handle: int) -> Optional[Path]:
     """Resuelve la ruta absoluta del ejecutable usando PSAPI GetModuleFileNameExW con validaciones de seguridad."""
-    if not proc_handle: return None
+    if not proc_handle or proc_handle <= 0: return None
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
     
     buf = ctypes.create_unicode_buffer(1024)
     try:
+        # psapi devuelve 0 si falla la resolución del handle
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 1024) > 0:
-            path_str = buf.value
+            path_str = str(buf.value)
             # Prevenir rutas UNC o dispositivos especiales
             if path_str.startswith(("\\\\", "\\??\\")): return None
             
@@ -378,6 +379,7 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
     
     try:
         exit_code = ctypes.c_ulong()
+        # Verificar si el proceso todavía corre
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
             return False, f"Imposible verificar estado (Error {kernel32.GetLastError()})."
             
@@ -389,6 +391,7 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
             return False, "Acceso denegado o ejecutable no localizable."
         
         exec_path_str = str(exec_path)
+        # Verificación contra listas protegidas y seguridad general
         if is_protected_path(exec_path_str) or not is_safe_to_modify(exec_path_str):
             return False, "Operación denegada: ruta protegida."
             
@@ -413,7 +416,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
-    if not proc_handle: 
+    if not proc_handle or proc_handle <= 0: 
         return False, f"Acceso denegado (Error {kernel32.GetLastError()})."
     
     try:

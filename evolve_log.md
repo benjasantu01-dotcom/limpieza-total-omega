@@ -1127,3 +1127,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-15T08:46:56` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-15T08:46:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T08:46:56` Corrida terminada. Total usado hoy: 201.
+- `2026-09-15T08:50:12` Arrancando corrida. Quedan hoy ~99 peticiones objetivo.
+- `2026-09-15T08:50:46` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). He mejorado la robustez de `_get_process_path` y `trim_working_set` implementando validaciones de entrada más estrictas y capturas de excepciones específicas, asegurando que los punteros y handles del sistema sean validados antes de operar, previniendo errores de segmentación o fallos silenciosos por punteros nulos.
+- `2026-09-15T08:51:12` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-15T08:51:49` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-15T08:51:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-09-15T08:51:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T08:51:54` Corrida terminada. Total usado hoy: 205.
