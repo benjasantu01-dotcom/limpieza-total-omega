@@ -295,7 +295,6 @@ class SystemContext:
     @property
     def is_empty(self) -> bool:
         """Verifica si el contexto contiene datos útiles tras el análisis."""
-        # Se requiere análisis positivo y, si hay puntaje, debe haber datos válidos
         if not self.analyzed: return True
         if self.score is not None and self.score < 0: return True
         return not self.is_valid_structure
@@ -339,10 +338,6 @@ class SystemContext:
         """
         Ingesta datos externos al contexto (dict o instancia) mediante validación estricta.
         
-        Realiza un filtrado de seguridad para evitar la inyección de atributos no deseados
-        y aplica las especificaciones de `MetricSpec` para garantizar que solo lleguen
-        números dentro de rangos físicos reales.
-        
         Returns:
             True si se procesó exitosamente al menos una métrica válida.
         """
@@ -353,12 +348,10 @@ class SystemContext:
             return False
             
         found_data = False
-        # Ingesta de métricas numéricas según especificación
         for key, spec in _VALIDATORS.items():
             if self._apply_field(source, key, spec):
                 found_data = True
         
-        # Ingesta especial del grado de salud (string)
         grade_val = _get_source_value(source, "grade")
         if isinstance(grade_val, str):
             clean_grade = self._clean_grade(grade_val)
@@ -403,15 +396,9 @@ def _ensure_safe_text(text: Any) -> bool:
 def _get_source_value(source: Any, key: str) -> Any:
     """Acceso genérico a datos de configuración, evitando atributos privados o protegidos."""
     if key.startswith("_"): return None
-    try:
-        if isinstance(source, dict):
-            return source.get(key)
-        # Acceso restringido para evitar ataques de inyección de atributos
-        if hasattr(source, "__dict__"):
-            return getattr(source, key, None)
-        return None
-    except (AttributeError, TypeError, ValueError):
-        return None
+    if isinstance(source, dict):
+        return source.get(key)
+    return getattr(source, key, None) if not key.startswith("__") else None
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Inicializa un SystemContext completo integrando datos de múltiples fuentes."""
@@ -604,7 +591,6 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
         if not isinstance(raw_cfg, dict):
             return AssistantConfig("", "gemini-3.1-flash-lite", True)
         
-        # Validar tipos estrictamente para evitar inyección de lógica
         api_key = str(raw_cfg.get("asistente_api_key", ""))
         model = str(raw_cfg.get("asistente_modelo", "gemini-3.1-flash-lite"))
         metrics_val = raw_cfg.get("asistente_enviar_metricas", True)
@@ -617,13 +603,11 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa la pregunta y el contexto en un JSON para la API de Gemini."""
     if not context_text or not _ensure_safe_text(context_text): return None
-    # Verificación extra de seguridad para evitar comandos en el contexto enviado
     if _PS_COMMAND_REGEX.search(context_text): return None
     
     q = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
     
-    # Construcción estructurada del payload con prompts y métricas sanitizadas
     payload_data = {
         "contents": [{
             "parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]
@@ -694,5 +678,4 @@ def ask(question: str, context: Optional[SystemContext] = None,
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
         
     except Exception:
-        # El motor remoto falló de forma imprevista, devolvemos respaldo local
         return respaldo

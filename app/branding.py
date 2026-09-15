@@ -229,6 +229,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=256)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
+    """Convierte un string hexadecimal #RRGGBB a una tupla de enteros RGB."""
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"): 
         return (0, 0, 0)
     try:
@@ -238,14 +239,18 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 
 @lru_cache(maxsize=256)
 def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
-    return "#{:02x}{:02x}{:02x}".format(*[max(0, min(255, int(c))) for c in rgb])
+    """Convierte una tupla RGB a formato hexadecimal #RRGGBB."""
+    def _clamp(c: int) -> int: return max(0, min(255, c))
+    return "#{:02x}{:02x}{:02x}".format(_clamp(rgb[0]), _clamp(rgb[1]), _clamp(rgb[2]))
 
 @lru_cache(maxsize=128)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
+    """Mezcla linealmente dos colores hexadecimales según un ratio (0.0 a 1.0)."""
     if start == end: return start
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
     ratio = max(0.0, min(1.0, float(ratio)))
+    
     return _rgb_to_hex((
         int(r1 + (r2 - r1) * ratio),
         int(g1 + (g2 - g1) * ratio),
@@ -253,6 +258,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     ))
 
 def _interpolate_rgb(s1: RGBTuple, s2: RGBTuple, delta: float) -> RGBTuple:
+    """Calcula el valor intermedio entre dos colores RGB."""
     return (
         int(s1[0] + (s2[0] - s1[0]) * delta),
         int(s1[1] + (s2[1] - s1[1]) * delta),
