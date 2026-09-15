@@ -298,11 +298,14 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
     
     for path in group.paths:
-        if not path.exists():
-            lines.append(f"   [desaparecido] {path}")
-        elif not is_safe_to_modify(path):
-            lines.append(f"   [inaccesible] {path}")
-        else:
-            label = 'conservar' if (keeper and path == keeper) else 'duplicado'
-            lines.append(f"   [{label}] {path}")
+        try:
+            if not path.exists():
+                lines.append(f"   [desaparecido] {path}")
+            elif not is_safe_to_modify(path):
+                lines.append(f"   [inaccesible] {path}")
+            else:
+                label = 'conservar' if (keeper and path == keeper) else 'duplicado'
+                lines.append(f"   [{label}] {path}")
+        except (OSError, PermissionError):
+            lines.append(f"   [error] {path}")
     return lines

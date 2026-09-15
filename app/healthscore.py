@@ -157,10 +157,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que ninguna métrica contenga valores NaN o infinito."""
-        return (math.isfinite(self.junk_mb) and math.isfinite(self.suspicious_count) and 
-                math.isfinite(self.suspicious_warnings) and math.isfinite(self.memory_available_percent) and 
-                math.isfinite(self.disk_free_percent) and math.isfinite(self.duplicate_mb) and 
-                math.isfinite(self.startup_count) and math.isfinite(self.quarantined_count))
+        return all(math.isfinite(getattr(self, attr)) for attr in self.__dataclass_fields__)
 
 @dataclass
 class HealthResult:
@@ -199,10 +196,13 @@ def grade_for_score(score: float | int) -> str:
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta las reglas de recomendación con saneamiento de strings de salida."""
     for rule in rules:
-        if rule.check(metrics, ratio):
-            msg = rule.message_factory(metrics)
-            if msg:
-                findings.append("".join(char for char in msg if char.isprintable())[:200])
+        try:
+            if rule.check(metrics, ratio):
+                msg = rule.message_factory(metrics)
+                if msg:
+                    findings.append("".join(char for char in msg if char.isprintable())[:200])
+        except Exception:
+            continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Calcula el puntaje global de salud del sistema mediante la agregación ponderada de áreas."""
@@ -218,13 +218,16 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     accumulated_score: float = 0.0
     
     for area, weight, scorer, rules in _PIPELINE:
-        area_ratio = _clamp(scorer(metrics))
-        if rules:
-            _evaluate_rules(metrics, rules, area_ratio, recommendations)
-        
-        weighted_points = int(round(area_ratio * weight))
-        metric_breakdown[area] = weighted_points
-        accumulated_score += weighted_points
+        try:
+            area_ratio = _clamp(scorer(metrics))
+            if rules:
+                _evaluate_rules(metrics, rules, area_ratio, recommendations)
+            
+            weighted_points = int(round(area_ratio * weight))
+            metric_breakdown[area] = weighted_points
+            accumulated_score += weighted_points
+        except Exception:
+            metric_breakdown[area] = 0
             
     final_score = int(_clamp(accumulated_score, 0.0, 100.0))
     

@@ -437,7 +437,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         method_name = f"_build_tab_{name.lower()}"
         constructor = getattr(self, method_name, None)
         
-        if constructor:
+        if constructor and self.winfo_exists():
             try:
                 constructor()
                 self._initialized_tabs[name] = True
@@ -502,7 +502,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         franja.pack(fill="x", padx=18, pady=(12, 6))
 
         def on_resize(event: tk.Event) -> None:
-            self._debounce_action("resize", 100, lambda: (franja.delete("all"), branding.draw_gradient_bar(franja, event.width, 3)))
+            if self.winfo_exists():
+                self._debounce_action("resize", 100, lambda: (franja.delete("all"), branding.draw_gradient_bar(franja, event.width, 3)))
 
         franja.bind("<Configure>", on_resize)
 

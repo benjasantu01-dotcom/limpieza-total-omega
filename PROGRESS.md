@@ -6,48 +6,52 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **229** (45.4% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-12 | 9 | 1 | 2 | 1 | 37 |
+| 2026-09-12 | 7 | 1 | 1 | 1 | 36 |
 | 2026-09-13 | 39 | 2 | 5 | 5 | 17 |
 | 2026-09-14 | 157 | 6 | 20 | 14 | 157 |
-| 2026-09-15 | 22 | 2 | 6 | 1 | 1 |
+| 2026-09-15 | 26 | 2 | 6 | 1 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
-- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **44**
 - rendimiento: **43**
-- robustez ante casos límite: **36**
+- seguridad defensiva: **42**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
 - `browser.py`: **21**
-- `safety.py`: **18**
+- `quarantine.py`: **21**
+- `healthscore.py`: **19**
 - `settings.py`: **18**
 - `assistant.py`: **18**
-- `healthscore.py`: **18**
+- `diskreport.py`: **18**
 - `memory.py`: **18**
-- `diskreport.py`: **17**
-- `main.py`: **14**
+- `safety.py`: **17**
+- `main.py`: **15**
 - `scanner.py`: **14**
 - `branding.py`: **13**
+- `duplicates.py`: **13**
 - `organizer.py`: **13**
-- `duplicates.py`: **12**
 - `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T01:33:06` **main.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en la carga de pestañas y la ejecución de callbacks, implementando validaciones de existencia de widgets antes de cualquier manipulación en los métodos de construcción y en el factory de pestañas, previniendo errores de concurrencia durante el inicio rápido de la interfaz.
+- `2026-09-15T01:32:06` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor frente a casos límite garantizando que `is_finite` valide explícitamente todos los campos antes de cualquier cálculo y añadiendo un manejo de excepciones defensivo en `compute_score` para prevenir fallos durante la ejecución del pipeline.
+- `2026-09-15T01:31:28` **duplicates.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `suggest_keeper` y `format_group` para evitar fallos catastróficos ante archivos que desaparecen entre la detección y la visualización, asegurando que `stat()` no lance excepciones imprevistas.
+- `2026-09-15T01:31:02` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` y `_collect_summary_data` ante archivos con metadatos dañados o inalcanzables, implementando un chequeo estricto del tamaño de archivo (`st_size`) y asegurando que las operaciones aritméticas no fallen ante valores inesperados.
 - `2026-09-15T01:22:30` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` ante archivos inaccesibles o bloqueados, integrando un manejo de errores más específico para `PermissionError` y `OSError` que evita abortar el cálculo completo si una subcarpeta específica es inasequible.
 - `2026-09-15T01:22:12` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y problemas de acceso a disco mediante el uso de `ensure_safe_to_modify` para capturar excepciones de seguridad y la normalización de la ruta de salida, asegurando que la función retorne un valor consistente incluso ante fallos.
 - `2026-09-15T01:21:37` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `SystemContext.ingest` ante datos de entrada malformados (como diccionarios con valores inesperados de tipo `None` o estructuras anidadas profundas), evitando que el bucle de ingesta lance excepciones al evaluar métricas que podrían corromper el contexto.
@@ -59,7 +63,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T00:51:19` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` eliminando los múltiples accesos a `rules` (que realizaban un filtrado condicional por cada área en cada ejecución) y delegando la lógica de validación de métricas críticas a una cache pre-calculada, reduciendo la carga de cómputo en el bucle principal.
 - `2026-09-15T00:50:43` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` eliminando la creación innecesaria de objetos `ExtStats` en cada iteración y utilizando un acceso más directo al diccionario, reduciendo drásticamente la carga sobre el recolector de basura durante recorridos de disco extensos.
 - `2026-09-15T00:50:15` **browser.py** (rendimiento): Se implementó un mecanismo de exclusión de rutas duplicadas en `detect_profiles` para evitar escanear varias veces el mismo directorio de caché, lo cual reducía innecesariamente el rendimiento cuando múltiples navegadores comparten o apuntan a rutas de caché similares.
-- `2026-09-15T00:41:32` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando el uso intensivo de `range` y `len` dentro del bucle mediante una pre-calculación de los pasos, y mejoré la precisión de `_get_grouped_segments` evitando iteraciones redundantes.
-- `2026-09-15T00:40:35` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando docstrings detallados en funciones críticas y normalizando la nomenclatura de los argumentos para mejorar la legibilidad y mantenibilidad del flujo de datos.
-- `2026-09-15T00:31:14` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la inclusión de tipado estricto en las funciones públicas y docstrings expandidos que clarifican las precondiciones y el comportamiento ante errores, facilitando el mantenimiento y la auditoría.
-- `2026-09-15T00:30:00` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de bajo nivel que manejan I/O y validaciones de seguridad para mejorar la mantenibilidad y claridad del flujo de datos.
