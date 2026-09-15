@@ -50,6 +50,8 @@ RTL_CHAR_RE: Final[re.Pattern] = re.compile(r"[\u200f\u202e\u202d]")
 RESERVED_NAMES_RE: Final[re.Pattern] = re.compile(r"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$", re.IGNORECASE)
 # Validación de nombres de archivos terminados en espacios o puntos (vulnerabilidad de Windows)
 INVALID_TRAILING_CHARS_RE: Final[re.Pattern] = re.compile(r"[\. ]$")
+# Detección de rutas UNC
+UNC_PATH_RE: Final[re.Pattern] = re.compile(r"^\\\\[^\\\\]+\\")
 
 # Conjuntos de constantes para comparación rápida
 SUSPICIOUS_EXECUTABLE_EXT: Final[frozenset[str]] = frozenset({".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"})
@@ -135,9 +137,10 @@ class Scanner:
         try:
             if not entry or not entry.name or not entry.path or len(entry.path) > MAX_PATH_LENGTH:
                 return False
-            if entry.path.startswith(("\\\\", "//")):
+            # Bloqueo explícito de rutas UNC y caracteres RTL
+            if UNC_PATH_RE.match(entry.path) or RTL_CHAR_RE.search(entry.path):
                 return False
-            if INVALID_TRAILING_CHARS_RE.search(entry.name) or RTL_CHAR_RE.search(entry.path) or RESERVED_NAMES_RE.match(entry.name):
+            if INVALID_TRAILING_CHARS_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name):
                 return False
             path_obj = Path(entry.path).resolve()
             return not (entry.is_symlink() or not str(path_obj).lower().startswith(self.base_root_str) or is_protected_path(path_obj))
@@ -203,7 +206,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if directory is None: return []
     try:
         path_str: str = str(directory).strip()
-        if not path_str or len(path_str) > MAX_PATH_LENGTH or path_str.startswith(("\\\\", "//")) or RTL_CHAR_RE.search(path_str): 
+        # Validación de seguridad defensiva para la entrada raíz
+        if not path_str or len(path_str) > MAX_PATH_LENGTH or UNC_PATH_RE.match(path_str) or RTL_CHAR_RE.search(path_str): 
             return []
         base_path: Path = Path(path_str)
         if not base_path.exists() or not base_path.is_dir(): 

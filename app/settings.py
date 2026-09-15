@@ -260,10 +260,11 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     if base_path in _PATH_CACHE: return _PATH_CACHE[base_path]
     
     try:
-        resolved = base_path.resolve() / SETTINGS_FILE
-        if _Validators._is_safe_path(str(resolved.parent)):
-            _PATH_CACHE[base_path] = resolved
-            return resolved
+        # Resolver antes de validar para detectar symlinks a carpetas críticas
+        resolved_parent = base_path.resolve()
+        if _Validators._is_safe_path(str(resolved_parent)):
+            _PATH_CACHE[base_path] = resolved_parent / SETTINGS_FILE
+            return _PATH_CACHE[base_path]
     except (OSError, RuntimeError, PermissionError):
         pass
     return SETTINGS_DIR / SETTINGS_FILE
@@ -334,8 +335,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """Persiste la configuración de forma atómica con reintentos para archivos bloqueados."""
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
-    parent = ruta.parent
-    if not _Validators._is_safe_path(str(parent)): return None
+    # Validar explícitamente el padre resuelto para evitar inyecciones en rutas
+    if not _Validators._is_safe_path(str(ruta.parent.resolve())): return None
         
     cleaned_settings = _ensure_settings_integrity(validate(values))
     temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
@@ -343,9 +344,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     for attempt in range(5):
         try:
-            if not parent.exists():
-                parent.mkdir(parents=True, exist_ok=True)
-            elif not parent.is_dir():
+            if not ruta.parent.exists():
+                ruta.parent.mkdir(parents=True, exist_ok=True)
+            elif not ruta.parent.is_dir():
                 return None
             with open(temp_path, "wb") as f:
                 f.write(json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8"))

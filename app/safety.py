@@ -253,6 +253,19 @@ def _is_file_in_use(path_str: str) -> bool:
         if handle != -1:
             kernel32.CloseHandle(handle)
 
+@lru_cache(maxsize=128)
+def _is_volume_readonly(path_str: str) -> bool:
+    """Verifica mediante GetVolumeInformationW si el volumen de una ruta es de solo lectura."""
+    if os.name != 'nt': return False
+    root = os.path.splitdrive(path_str)[0] + "\\"
+    flags = ctypes.c_ulong()
+    try:
+        if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0):
+            return bool(flags.value & 0x80000) # FILE_READ_ONLY_VOLUME
+    except (AttributeError, OSError, TypeError):
+        return False
+    return False
+
 def _is_directory_junction(path: Path) -> bool:
     """Verifica si el path es un directorio con el flag de reparse point activo."""
     if os.name != 'nt': return False
@@ -274,6 +287,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _IntegrityCheck(ProtectionReason.REPARSE_POINT, lambda p, _: _is_reparse_point(str(p))),
     _IntegrityCheck(ProtectionReason.KERNEL_LOCKED, lambda p, _: _is_kernel_managed(p)),
     _IntegrityCheck(ProtectionReason.READ_ONLY, lambda _, st: not bool(st.st_mode & stat.S_IWRITE)),
+    _IntegrityCheck(ProtectionReason.VOLUME_READ_ONLY, lambda p, _: _is_volume_readonly(str(p))),
     _IntegrityCheck(ProtectionReason.IN_USE, lambda p, _: _is_file_in_use(str(p))),
     _IntegrityCheck(ProtectionReason.SYSTEM_HIDDEN, lambda p, _: _is_system_or_hidden(str(p))),
     _IntegrityCheck(ProtectionReason.OFFLINE, lambda p, _: _is_offline(str(p))),
@@ -586,6 +600,7 @@ def describe_protection(path: PathLike) -> str:
             if _is_reparse_point(str(p)): return f"'{p}' es un punto de reparse (Junction/Symlink)."
             if os.path.ismount(p): return f"'{p}' es un punto de montaje."
             if _is_readonly(str(p)): return f"'{p}' es solo lectura."
+            if _is_volume_readonly(str(p)): return f"'{p}' pertenece a un volumen de solo lectura."
             if _is_file_in_use(str(p)): return f"'{p}' en uso."
             if _is_encrypted_or_compressed(str(p)): return f"'{p}' archivo cifrado o comprimido."
             if _is_offline(str(p)): return f"'{p}' archivo offline/nube."

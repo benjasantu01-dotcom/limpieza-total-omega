@@ -1368,3 +1368,35 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-15T11:35:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-15T11:35:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T11:35:02` Corrida terminada. Total usado hoy: 265.
+- `2026-09-15T11:43:34` Arrancando corrida. Quedan hoy ~35 peticiones objetivo.
+- `2026-09-15T11:44:12` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se introdujo la verificación `_is_volume_readonly` utilizando `GetVolumeInformationW` para detectar volúmenes montados como solo lectura a nivel de sistema de archivos, mejorando la seguridad defensiva contra intentos de modificación en soportes físicamente protegidos (como medios ópticos o particiones bloqueadas).
+- `2026-09-15T11:44:38` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva del escáner añadiendo una verificación explícita en `_is_safe_entry` y `scan_directory` para filtrar rutas UNC (`\\server\share`) y rutas con caracteres RTL, asegurando que el motor de escaneo no sea engañado por rutas malformadas o dispositivos de red no permitidos.
+- `2026-09-15T11:45:08` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save` y `settings_path` para prevenir ataques de symlink y escritura accidental fuera del directorio de configuración mediante la validación explícita del destino resuelto antes de realizar operaciones de disco.
+- `2026-09-15T11:45:20` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................F............................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+1 failed, 298 passed in 1.33s
+
+```
+- `2026-09-15T11:45:20` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `_extract_quoted_path` validando que la ruta extraída no sea un nombre de dispositivo reservado y asegurando que las rutas relativas o mal formadas sean rechazadas antes de procesarlas.
+- `2026-09-15T11:45:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T11:45:20` Corrida terminada. Total usado hoy: 269.
