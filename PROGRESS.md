@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 68 | 3 | 10 | 5 | 77 |
-| 2026-09-15 | 152 | 12 | 26 | 5 | 146 |
+| 2026-09-14 | 65 | 3 | 10 | 5 | 76 |
+| 2026-09-15 | 153 | 12 | 26 | 5 | 149 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **43**
 - robustez ante casos límite: **41**
-- rendimiento: **36**
+- seguridad defensiva: **40**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **21**
-- `diskreport.py`: **20**
 - `memory.py`: **20**
 - `quarantine.py`: **20**
+- `healthscore.py`: **20**
+- `diskreport.py`: **19**
 - `browser.py`: **18**
 - `safety.py`: **17**
 - `settings.py`: **16**
 - `assistant.py`: **16**
 - `duplicates.py`: **15**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
 - `organizer.py`: **13**
 - `branding.py`: **12**
-- `main.py`: **11**
+- `main.py`: **10**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T14:58:25` **scanner.py** (rendimiento): Optimizé el método `_is_safe_entry` eliminando llamadas costosas a `Path(entry.path).resolve()` dentro del bucle principal, reemplazándolas por una validación de prefijo de cadena basada en `self.base_root_str`, lo que reduce drásticamente las llamadas al sistema de archivos durante el recorrido.
 - `2026-09-15T14:49:32` **quarantine.py** (rendimiento): Optimicé el acceso a metadatos y la lógica de `list_items` y `purge_all` transformando búsquedas de complejidad O(N) en O(1) mediante el uso de diccionarios (`set` y `dict`), reduciendo drásticamente las iteraciones redundantes y mejorando el rendimiento en escenarios con múltiples archivos en cuarentena.
 - `2026-09-15T14:40:58` **memory.py** (rendimiento): Se ha optimizado la función `parse_windows_process_csv` reemplazando la creación de una lista intermedia y el uso de `strip()` repetitivo por una estructura de generador para reducir la huella de memoria y el tiempo de procesamiento al analizar la salida de PowerShell.
 - `2026-09-15T14:37:42` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` utilizando un conjunto (`set`) para registrar las rutas visitadas antes de procesar, eliminando la necesidad de realizar `resolve()` repetitivos y llamadas adicionales a `stat` en el bucle principal, reduciendo drásticamente las operaciones de E/S.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T13:57:49` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados y detallados que explican la lógica de decisión en las funciones críticas de ordenamiento y filtrado, mejorando la mantenibilidad para futuras auditorías de código.
 - `2026-09-15T13:57:23` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del motor interno `_collect_summary_data` y añadí *type hints* faltantes en variables críticas para aclarar la estructura de datos procesada, facilitando el mantenimiento y la comprensión de las transformaciones de estado.
 - `2026-09-15T13:49:26` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo las convenciones de Google/NumPy) y se ha extraído la lógica de resolución de rutas en `detect_profiles` hacia una función privada `_resolve_browser_path` para reducir la complejidad ciclomática del bucle principal, mejorando así la mantenibilidad y legibilidad del código.
-- `2026-09-15T13:48:53` **branding.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del sistema de colores mediante la introducción de type hints y docstrings explícitos en los métodos de transformación de color, y reemplaza operaciones mágicas por funciones con nombre descriptivo.

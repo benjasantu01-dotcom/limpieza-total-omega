@@ -126,14 +126,10 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica si la ruta analizada se mantiene dentro del directorio base definido."""
-        try:
-            full_path = Path(entry_path).resolve()
-            return str(full_path).lower().startswith(self.base_root_str)
-        except OSError:
-            return False
+        return entry_path.lower().startswith(self.base_root_str)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida restricciones de seguridad: symlinks, rutas protegidas y caracteres ilegales en nombres de archivos."""
+        """Valida restricciones de seguridad evitando resolución innecesaria de rutas."""
         try:
             if not entry or not entry.path or len(entry.path) > MAX_PATH_LENGTH:
                 return False
@@ -141,8 +137,13 @@ class Scanner:
                 return False
             if INVALID_TRAILING_CHARS_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name):
                 return False
-            path_obj = Path(entry.path).resolve()
-            return not (entry.is_symlink() or not str(path_obj).lower().startswith(self.base_root_str) or is_protected_path(path_obj))
+            
+            # Chequeo rápido de prefijo sin resolución para ganar rendimiento
+            path_low = entry.path.lower()
+            if not path_low.startswith(self.base_root_str.rstrip(os.sep)):
+                return False
+            
+            return not (entry.is_symlink() or is_protected_path(Path(entry.path)))
         except (OSError, PermissionError, UnicodeDecodeError):
             return False
 
