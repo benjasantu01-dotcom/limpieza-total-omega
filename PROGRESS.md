@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 220
 
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 117 | 5 | 16 | 10 | 123 |
-| 2026-09-15 | 106 | 9 | 18 | 3 | 97 |
+| 2026-09-14 | 114 | 5 | 16 | 10 | 122 |
+| 2026-09-15 | 108 | 9 | 19 | 3 | 98 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **45**
-- rendimiento: **39**
+- seguridad defensiva: **42**
+- rendimiento: **41**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
-- `browser.py`: **20**
+- `quarantine.py`: **20**
 - `memory.py`: **19**
-- `quarantine.py`: **19**
-- `assistant.py`: **18**
-- `diskreport.py`: **18**
+- `browser.py`: **19**
 - `settings.py`: **18**
+- `assistant.py`: **17**
+- `diskreport.py`: **17**
+- `safety.py`: **16**
 - `duplicates.py`: **15**
-- `safety.py`: **15**
 - `main.py`: **14**
 - `organizer.py`: **14**
 - `branding.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T10:23:43` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` reemplazando la iteración completa sobre las partes del path por una comprobación eficiente mediante `frozenset` y `os.path.commonpath`, eliminando la creación innecesaria de múltiples objetos intermedios.
+- `2026-09-15T10:22:47` **quarantine.py** (rendimiento): Se optimizó `list_items` y `purge_all` transformando la búsqueda de ítems en el manifiesto de una lista (O(n)) a un diccionario (O(1)), evitando recorridos anidados innecesarios durante el escaneo del directorio de cuarentena.
 - `2026-09-15T10:13:36` **main.py** (rendimiento): Optimicé el sistema de caché y actualización de la interfaz en `main.py` reemplazando los recorridos redundantes en el diccionario `_cache` y los refrescos totales del widget de estado por actualizaciones granulares mediante `after_idle` y chequeos de existencia de widgets, reduciendo drásticamente el overhead del hilo principal durante análisis largos.
 - `2026-09-15T10:12:21` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de cálculo evitando el uso redundante de `lambda` y búsquedas por clave dentro del bucle principal, pre-vinculando los scorers y reglas en una estructura de datos estática e indexada durante la inicialización del módulo.
 - `2026-09-15T10:03:17` **diskreport.py** (rendimiento): Optimicé `_collect_summary_data` para evitar recrear objetos `Path` y realizar llamadas innecesarias a `suffix.lower()` dentro del loop de procesamiento, mejorando la eficiencia durante el recorrido de grandes volúmenes de archivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T09:21:26` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones críticas y la clarificación de las estrategias de filtrado, asegurando que cada función explique el "porqué" de sus criterios de exclusión (como el uso de `st_nlink` para evitar contar enlaces físicos múltiples como duplicados reales).
 - `2026-09-15T09:12:32` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la documentación exhaustiva de las funciones de recorrido, la clarificación de los tipos complejos en `_collect_summary_data` y la adición de docstrings técnicos que explican el *porqué* de las decisiones de diseño, facilitando futuras auditorías.
 - `2026-09-15T09:12:20` **browser.py** (legibilidad y documentación): Introduje tipado explícito y docstrings mejorados en `_sum_directory_recursive` y `_should_skip_entry` para aclarar la lógica de exclusión y recursión, facilitando el mantenimiento y la comprensión de las restricciones de seguridad implementadas.
-- `2026-09-15T09:11:18` **assistant.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los métodos clave de `SystemContext` e `ingest`, eliminando la ambigüedad sobre cómo se procesan y validan los datos externos, facilitando el mantenimiento futuro y la auditoría del flujo de información.
-- `2026-09-15T09:02:16` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry._extract_quoted_path` validando explícitamente la integridad de las rutas extraídas antes de crear objetos `Path`, previniendo excepciones innecesarias ante cadenas mal formadas y reforzando la seguridad al evitar el procesamiento de rutas vacías o inválidas.

@@ -746,6 +746,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
+    # Optimización: Mapeo O(1) para lookups dentro del bucle de directorio
     item_map = {item.stored_name: item for item in items}
     purged_ids: Set[str] = set()
     
@@ -756,11 +757,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             
             item = item_map.get(stored_path.name)
             if item:
-                try:
-                    if _is_item_purgable(stored_path, item, quarantine_root):
-                        purged_ids.add(item.item_id)
-                except FileNotFoundError:
-                    continue
+                if _is_item_purgable(stored_path, item, quarantine_root):
+                    purged_ids.add(item.item_id)
                 
         if purged_ids:
             remaining_items = [i for i in items if i.item_id not in purged_ids]

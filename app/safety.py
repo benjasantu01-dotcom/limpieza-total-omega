@@ -369,8 +369,7 @@ def _is_system_path_cached(path_str: str) -> bool:
     path_lower = path_str.lower()
     if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
         return True
-    path_parts = set(path_lower.split(os.sep))
-    return not path_parts.isdisjoint(PROTECTED_DIR_NAMES)
+    return not frozenset(os.path.normpath(path_str).lower().split(os.sep)).isdisjoint(PROTECTED_DIR_NAMES)
 
 @lru_cache(maxsize=2048)
 def is_protected_path(path: PathLike) -> bool:
@@ -392,12 +391,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         if is_drive_root(c_path) or is_protected_path(c_path):
             return False
             
-        parts_c = c_path.parts
-        parts_p = p_path.parts
-        
-        if len(parts_c) < len(parts_p): return False
-        if not allow_equal and parts_c == parts_p: return False
-        return parts_c[:len(parts_p)] == parts_p
+        return os.path.commonpath([c_path, p_path]) == str(p_path) if allow_equal else os.path.commonpath([c_path, p_path]) == str(p_path) and c_path != p_path
     except (ValueError, TypeError, OSError, RuntimeError): return False
 
 @lru_cache(maxsize=2048)
