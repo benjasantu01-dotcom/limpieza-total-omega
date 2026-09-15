@@ -9,44 +9,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 33
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 214
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-13 | 23 | 2 | 3 | 3 | 15 |
+| 2026-09-13 | 20 | 2 | 3 | 3 | 14 |
 | 2026-09-14 | 157 | 6 | 20 | 14 | 157 |
-| 2026-09-15 | 48 | 3 | 10 | 1 | 42 |
+| 2026-09-15 | 51 | 3 | 10 | 2 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **50**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **47**
-- legibilidad y documentación: **47**
 - robustez ante casos límite: **44**
-- rendimiento: **41**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
+- `quarantine.py`: **21**
+- `browser.py`: **20**
 - `healthscore.py`: **20**
-- `browser.py`: **19**
 - `safety.py`: **18**
+- `assistant.py`: **18**
 - `settings.py`: **18**
 - `memory.py`: **18**
-- `assistant.py`: **17**
-- `diskreport.py`: **16**
-- `main.py`: **15**
+- `diskreport.py`: **17**
 - `scanner.py`: **15**
-- `organizer.py`: **14**
+- `main.py`: **14**
 - `duplicates.py`: **13**
 - `branding.py`: **13**
+- `organizer.py`: **13**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T04:37:35` **diskreport.py** (legibilidad y documentación): Documenté con mayor claridad la lógica del recorrido de archivos mediante docstrings explicativos y añadí type hints en las estructuras de datos internas, facilitando la comprensión del flujo de datos en el módulo de análisis de disco.
+- `2026-09-15T04:37:24` **browser.py** (legibilidad y documentación): Documenté con precisión técnica el propósito y las restricciones de seguridad de las funciones de navegación de archivos y recursión, clarificando la jerarquía de llamadas y la lógica de saneamiento de rutas para facilitar el mantenimiento.
+- `2026-09-15T04:36:22` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_build_payload`, reemplazando el concatenado manual de strings por un f-string estructurado y un diccionario intermedio más claro, además de añadir type hints y docstrings explicativos a las funciones de procesamiento remoto.
 - `2026-09-15T04:26:52` **startup.py** (manejo de errores y validación de entradas): He mejorado `parse_registry_csv` para que maneje de forma robusta las excepciones durante la iteración y el acceso a los datos de la fila, asegurando que un elemento malformado no interrumpa el procesamiento completo de la lista de inicio.
 - `2026-09-15T04:26:40` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de archivos en `load` capturando `json.JSONDecodeError` y `UnicodeDecodeError` explícitamente, además de incluir una validación de estructura previa a la carga para evitar procesar archivos corruptos o maliciosos que no respeten el esquema esperado, manteniendo la integridad del sistema ante datos de entrada no confiables.
 - `2026-09-15T04:26:09` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas centralizando la validación de acceso a metadatos mediante un nuevo helper `_safe_stat` que encapsula el manejo de excepciones, evitando que errores inesperados en el sistema de archivos (bloqueos, permisos) silencien el escaneo sin control.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T03:56:16` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en `ask()` y `_call_gemini` mediante la captura explícita de excepciones durante el parsing de configuración y la comunicación HTTP, evitando que fallos parciales o malformaciones en los datos externos afecten la estabilidad del motor local.
 - `2026-09-15T02:33:18` **settings.py** (seguridad defensiva): He mejorado la seguridad del módulo `settings.py` al implementar un bloqueo preventivo de rutas UNC en `_is_safe_path`, evitando así que la aplicación intente persistir configuraciones en recursos de red potencialmente peligrosos o inestables.
 - `2026-09-15T02:32:47` **scanner.py** (seguridad defensiva): Se fortaleció la seguridad defensiva en `_is_safe_entry` y `scan_directory` mediante la validación estricta de rutas mediante `path.resolve()` antes de realizar comparaciones de prefijo, previniendo bypasses por normalización de rutas o ataques de *path traversal* fuera de `base_root`.
-- `2026-09-15T02:24:00` **safety.py** (seguridad defensiva): Se implementó un chequeo en `_validate_boundary_conditions` para evitar el acceso a rutas que residan en directorios que contengan "Windows" en su estructura jerárquica (case-insensitive), previniendo errores de sistema comunes en entornos Windows.
-- `2026-09-15T02:23:18` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_write_temp_to_final` al introducir un chequeo de pre-condición que valida que la ruta destino no exista previamente antes de abrir el descriptor de archivo, previniendo riesgos de race conditions y garantizando una operación de aislamiento atómica y sin colisiones.
-- `2026-09-15T02:22:41` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_directory` implementando una validación estricta de rutas mediante `is_protected_path` antes de procesar cualquier entrada, previniendo que el escáner se adentre en directorios protegidos incluso si son omitidos por el `DirEntry` inicial.

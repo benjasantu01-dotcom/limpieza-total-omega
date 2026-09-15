@@ -606,15 +606,21 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     q = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
     
-    data = {"contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]}]}
+    # Construcción estructurada del payload con prompts y métricas sanitizadas
+    payload_data = {
+        "contents": [{
+            "parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]
+        }]
+    }
+    
     try:
-        payload = json.dumps(data).encode("utf-8")
+        payload = json.dumps(payload_data).encode("utf-8")
         return payload if len(payload) < _MAX_PROMPT_LIMIT * 2 else None
     except (TypeError, ValueError):
         return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Extracte de forma segura el texto de la estructura JSON devuelta por la API."""
+    """Extrae de forma segura el texto de la estructura JSON devuelta por la API."""
     if not isinstance(data, dict): return None
     try:
         text_val = data["candidates"][0]["content"]["parts"][0]["text"]
@@ -623,7 +629,7 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
-    """Realiza la comunicación HTTP con Gemini tras validar el payload."""
+    """Realiza la comunicación HTTP con Gemini tras validar el payload y la respuesta."""
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): 
         return None
         

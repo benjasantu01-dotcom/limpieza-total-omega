@@ -87,7 +87,11 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(entry: os.DirEntry) -> bool:
-    """Verifica si una entrada debe ser ignorada (enlaces simbólicos o reparse points)."""
+    """
+    Verifica si una entrada debe ser ignorada. 
+    Detecta enlaces simbólicos y puntos de reparse en Windows para evitar 
+    recorridos infinitos o fuera de los límites del volumen.
+    """
     REPARSE_POINT_ATTR = 0x400
     try:
         if entry.is_symlink():
@@ -202,7 +206,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Generador recursivo que recorre el árbol de archivos evitando bucles de enlaces y zonas protegidas."""
+    """
+    Generador recursivo que recorre el árbol de archivos.
+    Utiliza una estructura de pila (stack) para evitar la recursión profunda y 
+    un conjunto de Inodes visitados para detectar ciclos en el sistema de archivos.
+    """
     root_path = _validate_root(directory)
     if root_path is None:
         return
@@ -291,7 +299,11 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Recorrido optimizado (single-pass) para consolidar métricas de uso de disco."""
+    """
+    Realiza un recorrido único (single-pass) para recopilar métricas de uso.
+    Mantiene heaps internos para procesar los top-N archivos en tiempo real 
+    durante el recorrido del árbol.
+    """
     total_bytes: int = 0
     total_files: int = 0
     ext_bytes: Dict[str, int] = defaultdict(int)

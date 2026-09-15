@@ -83,11 +83,6 @@ ERROR_SHARING_VIOLATION: int = 32
 class BrowserCache:
     """
     Representación de una carpeta de caché detectada y su peso en disco.
-    
-    Attributes:
-        browser: Nombre comercial del navegador.
-        path: Ruta absoluta al directorio de caché.
-        size_bytes: Tamaño total en bytes detectado.
     """
     browser: str
     path: Path
@@ -101,13 +96,12 @@ class BrowserCache:
 
 def _get_kernel32() -> Optional[ctypes.WinDLL]:
     """
-    Carga kernel32.dll para acceder a atributos de archivo de bajo nivel.
-    Retorna None si no es Windows o si la carga falla.
+    Intenta cargar kernel32.dll para validación de atributos Win32.
+    Retorna None si el entorno no es Windows o la API es inaccesible.
     """
     if os.name != 'nt':
         return None
     try:
-        # Validación explícita antes de la carga
         dll = ctypes.WinDLL('kernel32.dll', use_last_error=True)
         if hasattr(dll, 'GetFileAttributesW'):
             return dll
@@ -118,8 +112,8 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
 
 def base_directories() -> List[Path]:
     """
-    Determina la ruta raíz de perfiles de usuario (%LOCALAPPDATA%).
-    Valida la existencia y seguridad de la ruta antes de retornarla.
+    Localiza la ruta raíz de los datos de usuario (%LOCALAPPDATA%).
+    Verifica seguridad mediante is_safe_to_modify antes de retornar.
     """
     local_env = os.environ.get("LOCALAPPDATA")
     if not isinstance(local_env, str) or not local_env:
@@ -136,8 +130,8 @@ def base_directories() -> List[Path]:
 
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
-    Verifica si real_target reside dentro de real_base usando os.path.commonpath.
-    Previene el escape de sandboxing mediante rutas relativas o symlinks.
+    Confirma que una ruta reside bajo la jerarquía permitida (sandbox).
+    Evita escapes mediante symlinks o rutas relativas no resueltas.
     """
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
@@ -154,19 +148,18 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
 
 
 def _is_excluded_file(name: Optional[str]) -> bool:
-    """Valida si el nombre de archivo está en la lista de elementos protegidos."""
+    """Valida si un nombre de archivo está en la lista de bloqueo (NEVER_TOUCH)."""
     return name is not None and name.lower() in NEVER_TOUCH
 
 
 def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """
-    Consulta atributos del sistema mediante Win32 API.
-    Detecta archivos ocultos o de sistema para filtrar ruido de directorios.
+    Consulta atributos de archivos ocultos mediante Win32 API.
+    Solo invocado en entornos Windows.
     """
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
-        # Verificación estricta de la presencia del atributo para evitar errores
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False 
@@ -177,9 +170,7 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Determina si un objeto del sistema de archivos debe omitirse.
-    Aplica filtros de seguridad: evita recursión infinita (junctions), 
-    omite archivos protegidos y rutas excesivamente largas.
+    Filtro de exclusión para scandir: omite protegidos, junctions y symlinks.
     """
     if entry is None:
         return True
@@ -204,7 +195,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
-    """Valida que la ruta sea segura de acceder y no viole restricciones de sistema."""
+    """Valida que un directorio sea seguro para recursión."""
     if not isinstance(path_obj, Path):
         return False
     try:
@@ -220,10 +211,8 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
 
 def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionChecker, kernel32: Optional[ctypes.WinDLL], memo: Dict[str, int], depth: int) -> int:
     """
-    Calcula el tamaño de un único elemento detectado.
-    Si es un directorio, delega la recursión a `_sum_directory_recursive`.
-    Si es un archivo, retorna su tamaño en bytes. Ignora errores de violación 
-    de acceso (archivos bloqueados por el navegador).
+    Procesa un único nodo del sistema de archivos.
+    Si es archivo, retorna su tamaño; si es directorio, inicia recursión.
     """
     try:
         if entry.is_dir(follow_symlinks=False) and not entry.is_symlink() and not is_junction_fn(entry.path):
@@ -231,7 +220,6 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
         if entry.is_file(follow_symlinks=False):
             return entry.stat(follow_symlinks=False).st_size
     except (OSError, PermissionError) as e:
-        # Si es un error de acceso por archivo bloqueado, lo omitimos silenciosamente
         if kernel32 and getattr(e, 'winerror', None) == ERROR_SHARING_VIOLATION:
             return 0
     return 0
@@ -246,7 +234,8 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula el tamaño total de un directorio mediante búsqueda DFS.
+    Motor principal: calcula tamaño recursivo limitando profundidad.
+    Usa 'memo' para evitar reprocesar rutas en el mismo escaneo.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH or root_abs in memo:
         return memo.get(root_abs, 0)
@@ -263,7 +252,6 @@ def _sum_directory_recursive(
                     continue
                 total += _process_entry(entry, root_base, is_junction_fn, kernel32, memo, depth)
     except (PermissionError, OSError):
-        # Fallo de acceso a la carpeta: retornamos el acumulado hasta el momento
         return total
     
     memo[root_abs] = total
@@ -271,7 +259,7 @@ def _sum_directory_recursive(
 
 
 def directory_size(path: Union[str, Path, None]) -> int:
-    """Interfaz pública para obtener el tamaño de una ruta tras validarla."""
+    """Interfaz pública para obtener el tamaño seguro de un directorio."""
     if path is None:
         return 0
     p = Path(path)
@@ -285,7 +273,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
-    """Valida la integridad de una ruta candidata antes de iniciar el escaneo recursivo."""
+    """Verifica si un directorio de caché cumple los criterios de seguridad."""
     try:
         if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir():
             return False
@@ -304,8 +292,8 @@ def detect_profiles(
     cache_paths: Optional[BrowserMap] = None
 ) -> List[BrowserCache]:
     """
-    Escanea los directorios base en busca de perfiles y calcula la ocupación
-    de cada caché detectada mediante suma recursiva, evitando duplicados.
+    Escaneo de alto nivel: coordina la búsqueda de perfiles conocidos.
+    Evita duplicados mediante el set 'scanned_paths' y memoización.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -346,12 +334,12 @@ def detect_profiles(
 
 
 def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
-    """Calcula el peso total acumulado en bytes."""
+    """Calcula el tamaño agregado en bytes de una lista de BrowserCache."""
     return sum(c.size_bytes for c in caches) if caches else 0
 
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """Formatea la información de caché detectada para la visualización en UI."""
+    """Prepara reporte textual del escaneo para UI."""
     current_caches = caches if caches is not None else detect_profiles()
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]
