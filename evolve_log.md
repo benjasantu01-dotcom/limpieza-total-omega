@@ -1293,3 +1293,11 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-09-14T23:38:23` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-14T23:48:34` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-14T23:58:43` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-15T00:08:59` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-09-15T00:09:37` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejora la legibilidad del código mediante la adición de docstrings técnicos que clarifican las intenciones de diseño en las funciones de renderizado y la normalización de la estructura de las constantes globales, facilitando el mantenimiento para futuros colaboradores.
+- `2026-09-15T00:10:07` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Documenté con docstrings detallados las funciones de recursión (`_sum_directory_recursive` y `_process_entry`) para clarificar el flujo de control, la propagación de errores y el mecanismo de seguridad ante reparse points/junctions, facilitando el mantenimiento técnico de este núcleo del módulo.
+- `2026-09-15T00:10:36` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-15T00:11:05` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `diskreport.py` mediante type hints explícitos, docstrings detallados en las funciones de procesamiento de datos y la extracción de la lógica de conversión a MB para asegurar consistencia y legibilidad.
+- `2026-09-15T00:11:16` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el tipado de los métodos de escaneo para clarificar el flujo de datos y la naturaleza de las restricciones de seguridad, facilitando el mantenimiento y la comprensión de la lógica de filtrado recursivo.
+- `2026-09-15T00:11:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T00:11:16` Corrida terminada. Total usado hoy: 4.

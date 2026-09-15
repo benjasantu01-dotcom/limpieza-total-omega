@@ -82,6 +82,7 @@ class DuplicateGroup:
 
     @property
     def wasted_bytes(self) -> int:
+        """Calcula el espacio total que se liberaría si se eliminan todos menos uno."""
         if not self.paths or self.count <= 1 or self.size_bytes < 0:
             return 0
         return (self.count - 1) * self.size_bytes
@@ -139,7 +140,11 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 
 def _is_valid_candidate(path: Path, stat_result: Optional[os.stat_result] = None) -> bool:
-    """Valida si un archivo es apto para ser analizado como posible duplicado."""
+    """
+    Valida si un archivo es apto para análisis.
+    Aplica filtros de seguridad: no symlinks, no rutas protegidas, 
+    no sistemas/ocultos y verificación de estado de uso.
+    """
     try:
         p = path.resolve()
         if p.is_symlink() or is_protected_path(p) or not is_safe_to_modify(p) or _is_file_locked(p):
@@ -196,7 +201,10 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Escaneo recursivo de directorios recolectando archivos candidatos a duplicados."""
+    """
+    Escaneo recursivo de directorios. 
+    Evita ciclos mediante visited_dirs y junctions.
+    """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     visited_dirs: set[str] = set()
 

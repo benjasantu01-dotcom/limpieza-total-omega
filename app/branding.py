@@ -118,6 +118,7 @@ _PALETTE_MAP: Final[dict[str, HexColor]] = {
 }
 PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType(_PALETTE_MAP)
 
+# Aliases de conveniencia para colores críticos utilizados frecuentemente en la UI
 C_SURFACE: Final[HexColor] = _PALETTE_MAP["surface"]
 C_BACKGROUND: Final[HexColor] = _PALETTE_MAP["background"]
 C_GLOW: Final[HexColor] = _PALETTE_MAP["glow"]

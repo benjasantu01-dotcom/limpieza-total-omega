@@ -217,9 +217,13 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
 
 
 def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionChecker, kernel32: Optional[ctypes.WinDLL], memo: Dict[str, int], depth: int) -> int:
-    """Extrae el tamaño de un único entry de sistema de archivos, recursando si es directorio."""
+    """
+    Calcula el tamaño de un único elemento detectado.
+    Si es un directorio, delega la recursión a `_sum_directory_recursive`.
+    Si es un archivo, retorna su tamaño en bytes. Ignora errores de violación 
+    de acceso (archivos bloqueados por el navegador).
+    """
     try:
-        # Refuerzo: verificar reparse/symlink antes de entrar
         if entry.is_dir(follow_symlinks=False) and not entry.is_symlink() and not is_junction_fn(entry.path):
             return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
         if entry.is_file(follow_symlinks=False):
@@ -239,7 +243,12 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula el tamaño de un directorio mediante búsqueda en profundidad (DFS) con memorización.
+    Calcula el tamaño total de un directorio mediante búsqueda DFS.
+    
+    La función utiliza un diccionario `memo` para cachear resultados y evitar
+    re-escanear ramas. Implementa un límite de profundidad (`MAX_SCAN_DEPTH`)
+    para prevenir desbordamientos de stack o bucles infinitos en sistemas de 
+    archivos complejos. Retorna 0 ante cualquier error de acceso.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH or root_abs in memo:
         return memo.get(root_abs, 0)

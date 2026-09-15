@@ -48,11 +48,13 @@ SizeReport: TypeAlias = Tuple[int, int]
 
 
 class ExtStats(NamedTuple):
+    """Estadísticas acumuladas por extensión de archivo."""
     total_bytes: int
     count: int
 
 
 class SummaryData(NamedTuple):
+    """Estructura de datos interna para consolidar reportes de un solo recorrido."""
     total_bytes: int
     total_files: int
     ext_stats: Dict[str, ExtStats]
@@ -60,6 +62,7 @@ class SummaryData(NamedTuple):
 
 
 def _bytes_to_mb(size_bytes: int | float) -> float:
+    """Convierte bytes a Megabytes con precisión de dos decimales."""
     if not isinstance(size_bytes, (int, float)) or size_bytes < 0:
         return 0.0
     return round(float(size_bytes) / MB_SIZE, 2)
@@ -72,8 +75,6 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     try:
         raw_path = Path(directory).resolve()
         
-        # Seguridad: verificar que la resolución sea coherente con la entrada original
-        # para prevenir bypass de filtros mediante rutas relativas o '..'
         if not raw_path.exists() or not raw_path.is_dir():
             return None
             
@@ -104,6 +105,7 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
 
 
 def _get_local_windows_drives() -> List[str]:
+    """Detecta letras de unidad disponibles en entorno Windows."""
     import string
     drives: List[str] = []
     for letter in string.ascii_uppercase:
@@ -167,7 +169,7 @@ class DriveUsage:
 
 
 def format_size(num: Union[int, float, None]) -> str:
-    """Convierte bytes a una cadena legible con unidades escaladas."""
+    """Convierte bytes a una cadena legible con unidades escaladas (B, KB, MB, GB, TB)."""
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     value = float(num)
@@ -200,7 +202,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Generador recursivo que recorre el árbol de archivos."""
+    """Generador recursivo que recorre el árbol de archivos evitando bucles de enlaces y zonas protegidas."""
     root_path = _validate_root(directory)
     if root_path is None:
         return
@@ -241,6 +243,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
+    """Retorna los N archivos más grandes encontrados en el directorio especificado."""
     root = _validate_root(directory)
     if not root: return []
     limit = max(0, int(limit)) if isinstance(limit, (int, float)) else 20
@@ -249,6 +252,7 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
+    """Calcula el espacio ocupado agrupado por extensión de archivo."""
     root = _validate_root(directory)
     if not root: return []
     limit = max(1, int(limit)) if isinstance(limit, (int, float)) else 15
@@ -258,6 +262,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
+    """Identifica las subcarpetas de primer nivel que consumen más espacio."""
     root = _validate_root(directory)
     if not root: return []
     limit = max(1, int(limit)) if isinstance(limit, (int, float)) else 10
@@ -278,6 +283,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> SizeReport:
+    """Retorna el peso total en bytes y el conteo de archivos de un directorio."""
     root = _validate_root(directory)
     if not root: return (0, 0)
     data = _collect_summary_data(root, skip_protected, limit=0)
@@ -285,7 +291,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Realiza un recorrido único (single-pass) para consolidar estadísticas de disco."""
+    """Recorrido optimizado (single-pass) para consolidar métricas de uso de disco."""
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(lambda: ExtStats(0, 0))
