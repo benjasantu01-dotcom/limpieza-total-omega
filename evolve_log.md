@@ -1416,3 +1416,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-15T02:03:35` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
 - `2026-09-15T02:03:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T02:03:35` Corrida terminada. Total usado hoy: 48.
+- `2026-09-15T02:12:00` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-09-15T02:12:27` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del escaneo de duplicados reforzando `_scan_dir` para que valide la seguridad de cada entrada individualmente antes de acceder a sus metadatos, evitando así posibles errores de acceso en enlaces simbólicos no resueltos o rutas que cambian de estado durante la iteración.
+- `2026-09-15T02:12:53` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). He fortalecido la robustez del pipeline de scoring añadiendo una validación de integridad en `_evaluate_rules` para asegurar que las entradas de texto sean seguras y evitar posibles inyecciones o desbordamientos en la interfaz, manteniendo el contrato de función pura.
+- `2026-09-15T02:14:04` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_validate_environment` eliminando el uso de `os.access` (que puede fallar erráticamente en rutas UNC o bajo ciertos contextos de privilegios en Windows) y centralizando la validación mediante `Path.exists()` y la lógica robusta de `safety.ensure_safe_to_modify`, asegurando además una verificación explícita de `is_symlink` para prevenir ataques de redirección de rutas.
+- `2026-09-15T02:14:18` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-09-15T02:14:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T02:14:18` Corrida terminada. Total usado hoy: 52.

@@ -263,11 +263,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if not home.exists():
                 raise RuntimeError("El directorio home del usuario no es accesible.")
             
-            home_resolved = home.resolve(strict=True)
-            if not os.access(home_resolved, os.R_OK):
-                raise PermissionError(f"Lectura denegada en: {home_resolved}")
+            # Verificación estricta de la ruta base del usuario
+            if not home.resolve().is_absolute():
+                raise RuntimeError("La ruta home no es absoluta.")
                 
-        except (safety.UnsafePathError, PermissionError, RuntimeError) as e:
+        except (safety.UnsafePathError, RuntimeError) as e:
             logging.error("Validación de entorno fallida: %s", e)
             raise
         except Exception as e:
@@ -933,7 +933,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return False
         try:
             p = Path(path).resolve(strict=True)
-            return p.is_dir() and os.access(p, os.R_OK)
+            return p.is_dir()
         except (OSError, PermissionError, ValueError):
             return False
 

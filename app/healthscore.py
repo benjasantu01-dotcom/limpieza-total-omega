@@ -199,8 +199,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
-                if msg:
-                    findings.append("".join(char for char in msg if char.isprintable())[:200])
+                if isinstance(msg, str) and msg.strip():
+                    # Sanitización: caracteres imprimibles y límite estricto de longitud
+                    safe_msg = "".join(char for char in msg if char.isprintable())
+                    findings.append(safe_msg[:200].strip())
         except Exception:
             continue
 
