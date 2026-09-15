@@ -130,10 +130,6 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None:
-        for field_name in self.__dataclass_fields__:
-            val = getattr(self, field_name)
-            if not isinstance(val, (int, float)):
-                setattr(self, field_name, 0.0)
         self.validate()
 
     def validate(self) -> None:
@@ -169,7 +165,6 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     return float(max(min_val, min(max_val, value)))
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    if value is None: return default
     try:
         val = float(value)
         return val if math.isfinite(val) else default
@@ -187,9 +182,11 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
-                msg = rule.message_factory(metrics)
-                if isinstance(msg, str) and msg.strip():
-                    findings.append("".join(char for char in msg if char.isprintable())[:200].strip())
+                msg = str(rule.message_factory(metrics))
+                # Sanitización defensiva: solo texto imprimible, límite de 200 caracteres y sin caracteres de control
+                clean_msg = "".join(c for c in msg if c.isprintable()).strip()
+                if clean_msg:
+                    findings.append(clean_msg[:200])
         except Exception:
             continue
 
@@ -215,7 +212,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             if rules:
                 _evaluate_rules(metrics, rules, area_ratio, recommendations)
             
-            # Usamos round y clamp para asegurar integridad numérica antes de sumar
             weighted_points = int(_clamp(round(area_ratio * weight), 0, weight))
             metric_breakdown[area] = weighted_points
             accumulated_score += weighted_points

@@ -1352,3 +1352,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-15T11:17:29` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la validación estricta de límites (`MAX_SCAN_DEPTH`) y una verificación proactiva de que cada subdirectorio visitado resida dentro de la jerarquía de la base permitida, evitando así escapes a través de enlaces malintencionados o estructuras inusuales.
 - `2026-09-15T11:17:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T11:17:29` Corrida terminada. Total usado hoy: 257.
+- `2026-09-15T11:23:12` Arrancando corrida. Quedan hoy ~43 peticiones objetivo.
+- `2026-09-15T11:23:42` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` mediante la validación estricta de rutas relativas y la resolución de `Path` para prevenir ataques de *path traversal* o el seguimiento inesperado fuera del directorio raíz.
+- `2026-09-15T11:24:10` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `duplicates.py` mediante la validación explícita de `is_safe_to_modify` antes de cualquier operación de acceso a disco en las funciones de hashing, garantizando que el módulo cumpla estrictamente con la política de seguridad incluso en estados de carrera o cambios de permisos externos.
+- `2026-09-15T11:24:36` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad del pipeline de cálculo mediante la validación estricta de las métricas de entrada y la sanitización de los mensajes de recomendación, evitando la inyección de datos inesperados en el reporte final.
+- `2026-09-15T11:25:36` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-15T11:26:39` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-15T11:27:41` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._ensure_path_writable_and_clean
+- `2026-09-15T11:27:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T11:27:41` Corrida terminada. Total usado hoy: 261.

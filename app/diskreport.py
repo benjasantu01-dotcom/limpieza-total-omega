@@ -211,9 +211,8 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador recursivo iterativo: recorre el sistema de archivos usando una pila
-    para evitar el desbordamiento de pila en estructuras profundas. 
-    Usa `visited_inodes` para prevenir procesamiento redundante ante ciclos de enlaces.
+    Generador recursivo iterativo: recorre el sistema de archivos usando una pila.
+    Valida que las rutas hijas permanezcan dentro del alcance del directorio base.
     """
     root_path = _validate_root(directory)
     if root_path is None:
@@ -228,26 +227,26 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Asegurar containment para evitar escape de directorio
+                        entry_path = Path(entry.path).resolve()
+                        if root_path not in entry_path.parents and entry_path != root_path:
+                            continue
+
                         if _is_excluded_path(entry): continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            entry_path = Path(entry.path)
                             if skip_protected and is_protected_path(entry_path): continue
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                inode: Inode = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
-                                if inode[0] != 0 and inode not in visited_inodes:
-                                    visited_inodes.add(inode)
-                                    stack.append(entry_path)
-                            except (OSError, PermissionError): continue
+                            
+                            st = entry.stat(follow_symlinks=False)
+                            inode: Inode = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
+                            if inode[0] != 0 and inode not in visited_inodes:
+                                visited_inodes.add(inode)
+                                stack.append(entry_path)
+                                
                         elif entry.is_file(follow_symlinks=False):
-                            try:
-                                st = entry.stat()
-                                # Asegurar que el tamaño no sea negativo o inválido por errores de lectura
-                                size = max(0, int(getattr(st, 'st_size', 0)))
-                                yield Path(entry.path), size
-                            except (OSError, PermissionError, ValueError, TypeError):
-                                continue
+                            st = entry.stat()
+                            size = max(0, int(getattr(st, 'st_size', 0)))
+                            yield entry_path, size
                     except (PermissionError, OSError, AttributeError):
                         continue
         except (PermissionError, OSError):
@@ -319,7 +318,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             total_bytes += size
             total_files += 1
             
-            # Obtenemos la extensión una sola vez para no recalcular o repetir conversión a lower
             suffix = path.suffix
             ext = suffix.lower() if suffix else "(sin extensión)"
             
