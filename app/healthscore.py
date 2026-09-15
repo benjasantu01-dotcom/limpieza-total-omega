@@ -200,7 +200,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str) and msg.strip():
-                    # Sanitización: caracteres imprimibles y límite estricto de longitud
                     safe_msg = "".join(char for char in msg if char.isprintable())
                     findings.append(safe_msg[:200].strip())
         except Exception:
@@ -230,6 +229,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             accumulated_score += weighted_points
         except Exception:
             metric_breakdown[area] = 0
+            recommendations.append(f"Error al analizar el área: {area}.")
             
     final_score = int(_clamp(accumulated_score, 0.0, 100.0))
     

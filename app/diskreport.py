@@ -246,8 +246,8 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
     """Retorna los N archivos más grandes encontrados en el directorio especificado."""
     root = _validate_root(directory)
     if not root: return []
-    limit = max(0, int(limit)) if isinstance(limit, (int, float)) else 20
-    data = _collect_summary_data(root, skip_protected, limit=limit)
+    limit_val = int(limit) if isinstance(limit, (int, float)) and limit > 0 else 20
+    data = _collect_summary_data(root, skip_protected, limit=limit_val)
     return [FileEntry(p, s) for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True)]
 
 
@@ -255,17 +255,17 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
     """Calcula el espacio ocupado agrupado por extensión de archivo."""
     root = _validate_root(directory)
     if not root: return []
-    limit = max(1, int(limit)) if isinstance(limit, (int, float)) else 15
+    limit_val = int(limit) if isinstance(limit, (int, float)) and limit > 0 else 15
     data = _collect_summary_data(root, skip_protected, limit=0)
     usage_list = [ExtensionUsage(ext, stats.total_bytes, stats.count) for ext, stats in data.ext_stats.items()]
-    return heapq.nlargest(limit, usage_list, key=lambda u: u.size_bytes)
+    return heapq.nlargest(limit_val, usage_list, key=lambda u: u.size_bytes)
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """Identifica las subcarpetas de primer nivel que consumen más espacio."""
     root = _validate_root(directory)
     if not root: return []
-    limit = max(1, int(limit)) if isinstance(limit, (int, float)) else 10
+    limit_val = int(limit) if isinstance(limit, (int, float)) and limit > 0 else 10
     folder_total_bytes: Dict[Path, int] = defaultdict(int)
     folder_file_counts: Dict[Path, int] = defaultdict(int)
     
@@ -279,7 +279,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
         except (ValueError, OSError, RuntimeError): continue
 
     results = [FolderUsage(p, folder_total_bytes[p], folder_file_counts[p]) for p in folder_total_bytes]
-    return heapq.nlargest(limit, results, key=lambda f: f.size_bytes)
+    return heapq.nlargest(limit_val, results, key=lambda f: f.size_bytes)
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> SizeReport:
@@ -298,20 +298,25 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     ext_counts: Dict[str, int] = defaultdict(int)
     top_heap: List[Tuple[int, Path]] = []
     
+    limit_val = int(limit) if isinstance(limit, int) else 0
+    
     for path, size in walk_files(directory, skip_protected):
-        current_size = max(0, int(size))
-        total_bytes += current_size
-        total_files += 1
-        
-        ext = path.suffix.lower() if path.suffix else "(sin extensión)"
-        ext_bytes[ext] += current_size
-        ext_counts[ext] += 1
-        
-        if limit > 0:
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, (current_size, path))
-            elif current_size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (current_size, path))
+        try:
+            current_size = max(0, int(size))
+            total_bytes += current_size
+            total_files += 1
+            
+            ext = path.suffix.lower() if path.suffix else "(sin extensión)"
+            ext_bytes[ext] += current_size
+            ext_counts[ext] += 1
+            
+            if limit_val > 0:
+                if len(top_heap) < limit_val:
+                    heapq.heappush(top_heap, (current_size, path))
+                elif current_size > top_heap[0][0]:
+                    heapq.heapreplace(top_heap, (current_size, path))
+        except (ValueError, TypeError, AttributeError):
+            continue
                     
     ext_stats = {ext: ExtStats(ext_bytes[ext], ext_counts[ext]) for ext in ext_bytes}
     return SummaryData(total_bytes, total_files, ext_stats, top_heap)
