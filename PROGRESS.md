@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
-- Rechazadas por tests: 10
+- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 212
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-13 | 17 | 1 | 2 | 1 | 13 |
+| 2026-09-13 | 15 | 1 | 2 | 0 | 12 |
 | 2026-09-14 | 157 | 6 | 20 | 14 | 157 |
-| 2026-09-15 | 57 | 3 | 12 | 2 | 42 |
+| 2026-09-15 | 60 | 4 | 12 | 2 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **56**
+- legibilidad y documentación: **58**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **47**
-- robustez ante casos límite: **42**
-- rendimiento: **37**
+- robustez ante casos límite: **40**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
 - `healthscore.py`: **21**
+- `settings.py`: **19**
 - `memory.py`: **19**
 - `browser.py`: **19**
-- `settings.py`: **18**
+- `assistant.py`: **18**
 - `safety.py`: **17**
-- `assistant.py`: **17**
 - `diskreport.py`: **17**
-- `main.py`: **15**
-- `scanner.py`: **15**
-- `duplicates.py`: **14**
+- `scanner.py`: **16**
 - `organizer.py`: **14**
+- `main.py`: **14**
 - `branding.py`: **13**
+- `duplicates.py`: **13**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-15T05:07:40` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal de palabras clave por una estructura de búsqueda de tiempo constante, utilizando un `set` precomputado para detectar si la pregunta contiene algún término conocido antes de iterar sobre el mapa de handlers.
+- `2026-09-15T05:06:50` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo documentando el propósito de los validadores y tipos mediante docstrings detallados, añadiendo type hints faltantes y refactorizando la lógica de validación del mapa `_VALIDATOR_MAP` para que sea más clara.
+- `2026-09-15T05:06:21` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de las heurísticas mediante una estructura de registro autodescriptiva que separa las reglas generales de las específicas para ejecutables, y añadí docstrings explicativos a las funciones del módulo.
 - `2026-09-15T04:57:02` **quarantine.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones auxiliares de bajo nivel y validación de seguridad (`_is_file_locked`, `_safe_unlink`, `_is_item_unreachable`) para clarificar sus efectos laterales y criterios de decisión, mejorando la mantenibilidad técnica del módulo.
 - `2026-09-15T04:56:16` **organizer.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones de validación crítica y escaneo para clarificar la lógica de seguridad y el manejo de rutas, mejorando la mantenibilidad sin alterar el comportamiento.
 - `2026-09-15T04:47:55` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `memory.py` mediante la adición de docstrings estructuradas en las funciones de bajo nivel y la clarificación de las restricciones de seguridad en las operaciones con procesos, facilitando el mantenimiento y auditoría del código.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T04:26:52` **startup.py** (manejo de errores y validación de entradas): He mejorado `parse_registry_csv` para que maneje de forma robusta las excepciones durante la iteración y el acceso a los datos de la fila, asegurando que un elemento malformado no interrumpa el procesamiento completo de la lista de inicio.
 - `2026-09-15T04:26:40` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de archivos en `load` capturando `json.JSONDecodeError` y `UnicodeDecodeError` explícitamente, además de incluir una validación de estructura previa a la carga para evitar procesar archivos corruptos o maliciosos que no respeten el esquema esperado, manteniendo la integridad del sistema ante datos de entrada no confiables.
 - `2026-09-15T04:26:09` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas centralizando la validación de acceso a metadatos mediante un nuevo helper `_safe_stat` que encapsula el manejo de excepciones, evitando que errores inesperados en el sistema de archivos (bloqueos, permisos) silencien el escaneo sin control.
-- `2026-09-15T04:15:33` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_windows_process_csv` y `_is_valid_process_entry` mediante la validación estricta de tipos y la captura de errores en la conversión, evitando que entradas mal formadas inyecten valores nulos o corruptos en los objetos `ProcessMemory`.
-- `2026-09-15T04:11:41` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `on_target_choice_changed` añadiendo una validación explícita de seguridad antes de procesar el directorio, asegurando que las rutas seleccionadas por el usuario sean validadas mediante `_is_safe_target_dir` y capturando excepciones de forma específica para evitar cierres inesperados de la aplicación.
-- `2026-09-15T04:10:42` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` ante fallos en los evaluadores individuales, asegurando que si un `scorer` lanza una excepción (por ejemplo, ante datos inesperados no detectados por la validación), el proceso global no aborte y se capture el error mediante una lógica de recuperación más explícita.

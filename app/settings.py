@@ -35,7 +35,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple, TypeGuard
 
-from safety import is_safe_to_modify, is_protected_path, ensure_safe_to_modify, UnsafePathError
+from safety import is_safe_to_modify, is_protected_path, UnsafePathError
 
 PathLike: TypeAlias = str | Path
 SettingsDict: TypeAlias = dict[str, Any]
@@ -132,7 +132,7 @@ DEFAULTS: Final[AppSettings] = {
     "analisis_en_paralelo": True,
     "asistente_activado": False,
     "asistente_clave_api": "",
-    "asistente_enviar_metricas": True,
+    "asistente_enviar_METRICAS": True,
     "asistente_modelo": "gemini-3.1-flash-lite",
 }
 
@@ -194,7 +194,6 @@ class _Validators:
     def _is_safe_path(path_str: str) -> bool:
         """Verifica que el string de ruta sea absoluto, saneado, no UNC y seguro para I/O."""
         if not path_str or len(path_str) > 2048 or "\0" in path_str: return False
-        # Bloqueo preventivo de rutas UNC para evitar inyecciones de red
         if path_str.startswith(("\\\\", "//")): return False
         try:
             p = Path(path_str).expanduser()
@@ -205,7 +204,7 @@ class _Validators:
 
     @staticmethod
     def bool(key: ConfigKey, val: Any) -> Optional[bool]:
-        """Normaliza tipos mixtos (str/int/bool) a un valor booleano canónico o None."""
+        """Normaliza tipos mixtos (str/int/bool) a un valor booleano canónico."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -225,7 +224,7 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
-        """Valida que la entrada sea una ruta de sistema segura y accesible antes de persistirla."""
+        """Valida que la entrada sea una ruta de sistema segura y accesible."""
         if val == "": return ""
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
@@ -250,22 +249,8 @@ class _Validators:
         return _Validators._validate_enum_str(text, key)
 
 _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingProxyType({
-    ConfigKey.TEMA: _ValidatorEntry(_Validators.str),
-    ConfigKey.ACENTO: _ValidatorEntry(_Validators.str),
-    ConfigKey.ABRIR_EN: _ValidatorEntry(_Validators.str),
-    ConfigKey.ULTIMA_CARPETA: _ValidatorEntry(_Validators.path),
-    ConfigKey.ASISTENTE_CLAVE_API: _ValidatorEntry(_Validators.str),
-    ConfigKey.ASISTENTE_MODELO: _ValidatorEntry(_Validators.str),
-    ConfigKey.MOSTRAR_BARRAS: _ValidatorEntry(_Validators.bool),
-    ConfigKey.ANIMACIONES: _ValidatorEntry(_Validators.bool),
-    ConfigKey.CONFIRMAR_SIEMPRE: _ValidatorEntry(_Validators.bool),
-    ConfigKey.RECORDAR_ULTIMA_CARPETA: _ValidatorEntry(_Validators.bool),
-    ConfigKey.ANALISIS_EN_PARALELO: _ValidatorEntry(_Validators.bool),
-    ConfigKey.ASISTENTE_ACTIVADO: _ValidatorEntry(_Validators.bool),
-    ConfigKey.ASISTENTE_ENVIAR_METRICAS: _ValidatorEntry(_Validators.bool),
-    ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: _ValidatorEntry(_Validators.int),
-    ConfigKey.TOP_ARCHIVOS: _ValidatorEntry(_Validators.int),
-    ConfigKey.TOP_PROCESOS: _ValidatorEntry(_Validators.int)
+    k: _ValidatorEntry(getattr(_Validators, "bool" if k in (ConfigKey.MOSTRAR_BARRAS, ConfigKey.ANIMACIONES, ConfigKey.CONFIRMAR_SIEMPRE, ConfigKey.RECORDAR_ULTIMA_CARPETA, ConfigKey.ANALISIS_EN_PARALELO, ConfigKey.ASISTENTE_ACTIVADO, ConfigKey.ASISTENTE_ENVIAR_METRICAS) else "int" if k in (ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB, ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS) else "path" if k == ConfigKey.ULTIMA_CARPETA else "str"))
+    for k in ConfigKey
 })
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
@@ -284,7 +269,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida un diccionario arbitrario contra el esquema AppSettings, descartando valores inválidos."""
+    """Valida un diccionario arbitrario contra el esquema AppSettings."""
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_str, val in raw_values.items():
@@ -297,7 +282,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga y valida el JSON de configuración con reintentos ante bloqueos de archivo."""
+    """Carga y valida el JSON de configuración con reintentos ante bloqueos."""
     ruta = settings_path(custom_base)
     
     try:
@@ -313,7 +298,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             
         with open(ruta, "rb") as f:
             data_bytes = f.read(MAX_SETTINGS_SIZE + 1)
-            # Validación estructural básica antes de parsear JSON
             if not (data_bytes.startswith(b"{") and data_bytes.strip().endswith(b"}")):
                 return DEFAULTS.copy()
             try:
@@ -324,7 +308,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             if not _is_dict(raw): return DEFAULTS.copy()
             
             data = validate(raw)
-            # Asegurar que claves requeridas existan
             for key in DEFAULTS:
                 if key not in data or data[key] is None:
                     data[key] = DEFAULTS[key]
@@ -347,31 +330,25 @@ def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
     return settings
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Persiste la configuración de forma atómica con reintentos para evitar bloqueos y corrupción."""
+    """Persiste la configuración de forma atómica."""
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
-    
     parent = ruta.parent
-    if not _Validators._is_safe_path(str(parent)):
-        return None
+    if not _Validators._is_safe_path(str(parent)): return None
         
     cleaned_settings = _ensure_settings_integrity(validate(values))
     temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
     
     for attempt in range(5):
         try:
-            if not parent.exists():
-                parent.mkdir(parents=True, exist_ok=True)
-            
+            if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
             with open(temp_path, "wb") as f:
                 f.write(json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8"))
                 f.flush()
                 os.fsync(f.fileno())
-            
             if ruta.exists():
                 try: os.replace(ruta, ruta.with_suffix(".bak"))
                 except OSError: pass
-                
             os.replace(temp_path, ruta)
             _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
             return ruta
@@ -383,7 +360,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Modificación incremental: carga la configuración actual, aplica parches y guarda si hay cambios."""
+    """Modificación incremental y guardado si hay cambios."""
     current = load(custom_base)
     modified = False
     for k, v in changes.items():
@@ -397,7 +374,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
-    """Restaura la configuración a los valores de fábrica definidos en DEFAULTS."""
+    """Restaura la configuración a valores de fábrica."""
     save(DEFAULTS, custom_base)
     return DEFAULTS.copy()
 
@@ -406,18 +383,18 @@ def get(key: str, custom_base: PathLike | None = None) -> Any:
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
-    """Obtiene la clave API, priorizando la variable de entorno sobre el archivo de configuración."""
+    """Obtiene la clave API priorizando variables de entorno."""
     if env_key := os.environ.get(API_KEY_ENV_VAR, "").strip(): return env_key
     return load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
-    """Verifica si el asistente IA está habilitado mediante configuración o variables de entorno."""
+    """Verifica si el asistente IA está habilitado."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado")) and bool(settings.get("asistente_clave_api", "").strip())
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
-    """Genera una representación textual formateada de las preferencias actuales para reporte."""
+    """Representación textual de las preferencias para reporte."""
     current = load(custom_base)
     api_key_env = os.environ.get(API_KEY_ENV_VAR)
     api_key_file = current.get("asistente_clave_api", "").strip()

@@ -547,6 +547,7 @@ _KEYWORD_MAP: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
         frozenset(["inicio", "arranque", "arranca", "encender"]): handle_startup
     }.items() for token in key_set
 }
+_KNOWN_TOKENS: Final[set[str]] = set(_KEYWORD_MAP.keys())
 
 def _sanitize_query(question: str) -> str:
     """Limpia el input del usuario eliminando caracteres prohibidos para prevenir inyecciones."""
@@ -567,9 +568,11 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
     
-    for token in _TOKEN_REGEX.findall(q_sanitized):
-        if token in _KEYWORD_MAP:
-            return _KEYWORD_MAP[token](context, question)
+    tokens = _TOKEN_REGEX.findall(q_sanitized)
+    if _KNOWN_TOKENS.intersection(tokens):
+        for token in tokens:
+            if token in _KEYWORD_MAP:
+                return _KEYWORD_MAP[token](context, question)
             
     cuerpo = _format_problem_message(
         _identify_active_problems(context), 

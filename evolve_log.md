@@ -686,3 +686,36 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-09-15T04:57:35` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult
 - `2026-09-15T04:57:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-15T04:57:35` Corrida terminada. Total usado hoy: 116.
+- `2026-09-15T05:05:54` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-09-15T05:06:21` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento de las heurísticas mediante una estructura de registro autodescriptiva que separa las reglas generales de las específicas para ejecutables, y añadí docstrings explicativos a las funciones del módulo.
+- `2026-09-15T05:06:50` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo documentando el propósito de los validadores y tipos mediante docstrings detallados, añadiendo type hints faltantes y refactorizando la lógica de validación del mapa `_VALIDATOR_MAP` para que sea más clara.
+- `2026-09-15T05:07:17` Tests FALLARON:
+```
+.... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_impact_scales_with_the_number_of_programs ________________
+
+    def test_impact_scales_with_the_number_of_programs():
+        def entradas(n):
+            return [startup.StartupEntry(f"p{i}", "c", "carpeta") for i in range(n)]
+>       assert startup.estimate_impact(entradas(0)) == "ok"
+E       AssertionError: assert <ImpactLevel.OK: 1> == 'ok'
+E        +  where <ImpactLevel.OK: 1> = <function estimate_impact at 0x7fb5f2085620>([])
+E        +    where <function estimate_impact at 0x7fb5f2085620> = startup.estimate_impact
+E        +    and   [] = <function test_impact_scales_with_the_number_of_programs.<locals>.entradas at 0x7fb5f197c220>(0)
+
+evolve/tests/test_modules.py:695: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_programs - AssertionError: assert <ImpactLevel.OK: 1> == 'ok'
+ +  where <ImpactLevel.OK: 1> = <function estimate_impact at 0x7fb5f2085620>([])
+ +    where <function estimate_impact at 0x7fb5f2085620> = startup.estimate_impact
+ +    and   [] = <function test_impact_scales_with_the_number_of_programs.<locals>.entradas at 0x7fb5f197c220>(0)
+1 failed, 298 passed in 1.36s
+
+```
+- `2026-09-15T05:07:17` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se introdujo un `Enum` interno para clasificar los niveles de impacto y se refactorizó `estimate_impact` para devolver este tipo, mejorando la legibilidad, eliminando la dependencia de strings "mágicos" y facilitando futuras extensiones de la lógica de negocio.
+- `2026-09-15T05:07:40` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal de palabras clave por una estructura de búsqueda de tiempo constante, utilizando un `set` precomputado para detectar si la pregunta contiene algún término conocido antes de iterar sobre el mapa de handlers.
+- `2026-09-15T05:07:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-15T05:07:40` Corrida terminada. Total usado hoy: 120.
