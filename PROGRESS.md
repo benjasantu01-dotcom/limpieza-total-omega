@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 235
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 152 | 12 | 26 | 5 | 153 |
-| 2026-09-16 | 52 | 1 | 14 | 7 | 82 |
+| 2026-09-15 | 149 | 12 | 26 | 4 | 153 |
+| 2026-09-16 | 53 | 1 | 14 | 7 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **50**
+- legibilidad y documentación: **47**
 - robustez ante casos límite: **44**
 - seguridad defensiva: **40**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **40**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **21**
+- `healthscore.py`: **20**
 - `browser.py`: **19**
 - `quarantine.py`: **18**
-- `diskreport.py`: **17**
+- `assistant.py`: **17**
 - `memory.py`: **16**
+- `diskreport.py`: **16**
 - `settings.py`: **16**
-- `assistant.py`: **16**
 - `safety.py`: **15**
-- `duplicates.py`: **14**
 - `scanner.py`: **13**
+- `duplicates.py`: **13**
 - `organizer.py`: **12**
 - `branding.py`: **11**
 - `main.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T06:42:36` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` y `_call_gemini` mediante una validación estricta de tipos y manejo explícito de errores, evitando que una respuesta inesperada de la API (por ejemplo, un JSON mal formado o estructura truncada) provoque comportamientos indefinidos.
 - `2026-09-16T05:19:03` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva al invocar `ensure_safe_to_modify` en `save()` antes de realizar operaciones de disco, protegiendo la integridad del sistema contra posibles ataques de *path traversal* o manipulación de rutas que apunten a ubicaciones críticas.
 - `2026-09-16T05:18:48` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva en `scanner.py` reemplazando el uso de `os.path.splitext` por `pathlib.Path.suffix` y añadiendo validaciones de ruta con `is_protected_path` directamente en `process_entry`, asegurando que ninguna entrada pase a las heurísticas sin una validación de seguridad robusta.
 - `2026-09-16T05:14:31` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_locked` para evitar falsos positivos y posibles bloqueos mediante el uso de `os.open` con flags de acceso atómico, garantizando que el chequeo sea consistente en todas las plataformas soportadas sin depender de módulos externos innecesarios.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T04:18:17` **duplicates.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante errores de lectura mediante la implementación de `try-except` más granulares en `_get_keeper_score` y la adición de una validación de existencia en `suggest_keeper` para prevenir fallos durante la iteración sobre grupos de archivos dinámicos.
 - `2026-09-16T04:18:07` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante casos límite mediante la validación estricta de tipos en los tamaños de archivo y la protección contra `OSError` durante la lectura de atributos, asegurando que el proceso no se interrumpa ante metadatos corruptos o archivos bloqueados a nivel de sistema.
 - `2026-09-16T04:17:40` **browser.py** (robustez ante casos límite): Se ha robustecido el escaneo de directorios frente a permisos denegados durante el proceso de enumeración, asegurando que `_sum_directory_recursive` maneje errores de acceso de forma atómica sin abortar la suma del resto del contenido accesible y añadiendo una validación de ruta absoluta en la resolución de candidatos para prevenir inyecciones de paths fuera del alcance permitido.
-- `2026-09-16T04:17:13` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de rutas y valores de escala, asegurando que las operaciones de sistema y renderizado no fallen ante estados inesperados.

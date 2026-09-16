@@ -625,12 +625,16 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     if not isinstance(data, dict): return None
     try:
         candidates = data.get("candidates")
-        if not isinstance(candidates, list) or len(candidates) == 0: return None
-        content = candidates[0].get("content")
+        if not isinstance(candidates, list) or not candidates: return None
+        first_candidate = candidates[0]
+        if not isinstance(first_candidate, dict): return None
+        content = first_candidate.get("content")
         if not isinstance(content, dict): return None
         parts = content.get("parts")
-        if not isinstance(parts, list) or len(parts) == 0: return None
-        text_val = parts[0].get("text")
+        if not isinstance(parts, list) or not parts: return None
+        first_part = parts[0]
+        if not isinstance(first_part, dict): return None
+        text_val = first_part.get("text")
         return str(text_val) if isinstance(text_val, str) else None
     except (AttributeError, TypeError, IndexError): 
         return None
@@ -652,11 +656,15 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
             if len(raw_res) > _MAX_RESPONSE_BYTES: return None
             
-            data = json.loads(raw_res.decode("utf-8"))
+            try:
+                data = json.loads(raw_res.decode("utf-8"))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                return None
+                
             raw_text = _extract_text_from_gemini_json(data)
             return _validate_response_length(raw_text.strip()) if raw_text and _ensure_safe_text(raw_text) else None
             
-    except (urllib.error.URLError, OSError, json.JSONDecodeError, UnicodeDecodeError):
+    except (urllib.error.URLError, OSError):
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None,
