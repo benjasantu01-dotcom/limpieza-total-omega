@@ -395,7 +395,7 @@ def _is_system_path_cached(path_str: str) -> bool:
     path_lower = path_str.lower()
     if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
         return True
-    return not frozenset(os.path.normpath(path_str).lower().split(os.sep)).isdisjoint(PROTECTED_DIR_NAMES)
+    return not PROTECTED_DIR_NAMES.isdisjoint(os.path.normpath(path_str).lower().split(os.sep))
 
 @lru_cache(maxsize=2048)
 def is_protected_path(path: PathLike) -> bool:
