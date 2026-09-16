@@ -325,14 +325,19 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination: return None
     try:
         target = Path(destination).resolve()
-        # Verificación centralizada: el chequeo es mandatorio y debe lanzar error si es inseguro
+        # Verificación de seguridad: no modificar si está protegida o fuera de límites
+        if not is_safe_to_modify(target):
+            return None
+            
+        # Verificación centralizada: asegura que el destino sea válido antes de escribir
         ensure_safe_to_modify(target)
+        
         # Asegurar existencia de directorio padre con manejo de permisos
         if target.parent:
             target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
-    except (OSError, PermissionError, ValueError, RuntimeError, OSError): 
+    except (OSError, PermissionError, ValueError, RuntimeError): 
         return None
 
 def logo_ascii() -> str:

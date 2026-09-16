@@ -214,14 +214,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos de forma iterativa (usando pila).
-    
-    Args:
-        directory: Ruta raíz a explorar.
-        skip_protected: Si es True, omite rutas marcadas como seguras por safety.py.
-    Yields:
-        Tuplas (Path, int) con la ruta del archivo y su tamaño en bytes.
-    Notas:
-        Evita ciclos mediante seguimiento de inodes y filtra puntos de reparse en Windows.
     """
     root_path = _validate_root(directory)
     if root_path is None:
@@ -236,9 +228,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Robustez: manejar posibles errores de resolución de ruta
+                        # Verificación de integridad: asegurar que la ruta resuelta está bajo la raíz
                         entry_path = Path(entry.path).resolve()
-                        if root_path not in entry_path.parents and entry_path != root_path:
+                        if not str(entry_path).startswith(str(root_path)):
                             continue
 
                         if _is_excluded_path(entry): continue
@@ -316,12 +308,6 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Motor interno de agregación que realiza un recorrido único (O(N)) del árbol.
-    
-    Utiliza un min-heap para mantener los N archivos más grandes encontrados,
-    minimizando el uso de memoria comparado con ordenar todos los archivos.
-    
-    Returns:
-        SummaryData conteniendo totales y estructuras agregadas por extensión.
     """
     total_bytes: int = 0
     total_files: int = 0

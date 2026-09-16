@@ -124,6 +124,7 @@ def base_directories() -> List[Path]:
         if not p.exists():
             return []
         path_local = p.resolve(strict=True)
+        # Validación defensiva contra rutas de sistema protegidas
         if path_local.is_dir() and is_safe_to_modify(path_local) and not is_protected_path(path_local):
             return [path_local]
     except (OSError, RuntimeError, PermissionError):
@@ -139,7 +140,8 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
         target_abs = str(real_target.resolve(strict=True))
         base_abs = str(real_base.resolve(strict=True))
         
-        if len(target_abs) >= MAX_PATH_LEN or len(base_abs) >= MAX_PATH_LEN:
+        # Longitud y validación de sanitización de string de ruta
+        if len(target_abs) >= MAX_PATH_LEN or len(base_abs) >= MAX_PATH_LEN or any(c in target_abs for c in '\0\r\n'):
             return False
             
         return os.path.commonpath([target_abs, base_abs]) == base_abs
@@ -195,6 +197,7 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
         return False
     try:
         p_res = path_obj.resolve(strict=True)
+        # Refuerzo: se usa is_safe_to_modify como filtro booleano previo a cualquier acceso
         if _is_unc_path(str(p_res)) or not p_res.is_dir() or not is_safe_to_modify(p_res) or is_protected_path(p_res):
             return False
         if base_check_path and not _is_path_inside_base(p_res, base_check_path):
@@ -240,17 +243,17 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """Motor recursivo de cálculo de tamaño con memoización y validación de sandbox."""
-    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or _is_unc_path(root_abs):
+    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or _is_unc_path(root_abs) or any(c in root_abs for c in '\0\r\n'):
         return 0
     
     root_path = Path(root_abs)
-    if not root_path.is_absolute() or not root_path.exists():
+    # Seguridad adicional: validar que el directorio no haya sido marcado como protegido tras la resolución
+    if not root_path.is_absolute() or not root_path.exists() or is_protected_path(root_path):
         return 0
         
     if root_abs in memo:
         return memo[root_abs]
 
-    # Verificar que el punto de inicio de este sub-escaneo sigue en zona segura
     if not _is_path_inside_base(root_path, Path(root_base)):
         return 0
 
@@ -277,7 +280,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
         return 0
     try:
         resolved = str(p.resolve(strict=True))
-        if _is_unc_path(resolved):
+        if _is_unc_path(resolved) or any(c in resolved for c in '\0\r\n'):
             return 0
         return _sum_directory_recursive(resolved, _IS_JUNCTION_FN, _get_kernel32(), {}, resolved)
     except (OSError, RuntimeError, PermissionError):
@@ -290,6 +293,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
         if not isinstance(candidate, Path) or not candidate.is_absolute() or not candidate.exists() or not candidate.is_dir():
             return False
         real_candidate = candidate.resolve(strict=True)
+        # Verificación explícita de seguridad antes de procesar
         if _is_unc_path(str(real_candidate)) or not _is_path_inside_base(real_candidate, base_path):
             return False
         if not is_safe_to_modify(real_candidate) or is_protected_path(real_candidate):
@@ -322,7 +326,6 @@ def detect_profiles(
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
     k32 = _get_kernel32()
-    # Cache global de directorios ya procesados para evitar re-escaneo
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     scanned_paths: set[str] = set()
@@ -347,7 +350,6 @@ def detect_profiles(
                 if real_candidate in scanned_paths:
                     continue
                 
-                # Se reutiliza perf_cache para evitar re-calcular nodos comunes
                 size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, perf_cache, str(real_base))
                 if size > 0:
                     scanned_paths.add(real_candidate)

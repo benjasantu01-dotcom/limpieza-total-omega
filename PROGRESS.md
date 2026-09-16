@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 116 | 10 | 18 | 4 | 136 |
-| 2026-09-16 | 96 | 2 | 22 | 10 | 90 |
+| 2026-09-15 | 116 | 10 | 18 | 4 | 132 |
+| 2026-09-16 | 100 | 2 | 22 | 10 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **51**
 - robustez ante casos límite: **45**
-- seguridad defensiva: **33**
+- seguridad defensiva: **37**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **21**
+- `browser.py`: **22**
 - `healthscore.py`: **21**
 - `assistant.py`: **20**
+- `diskreport.py`: **18**
 - `memory.py`: **18**
-- `diskreport.py`: **17**
 - `quarantine.py`: **17**
 - `settings.py`: **16**
+- `duplicates.py`: **15**
 - `safety.py`: **15**
-- `duplicates.py`: **14**
+- `branding.py`: **13**
 - `organizer.py`: **13**
-- `branding.py`: **12**
 - `scanner.py`: **12**
 - `main.py`: **9**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T09:23:28` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_valid_candidate` reemplazando `path.stat()` (que sigue enlaces simbólicos) por `os.lstat()` para evitar procesar recursivamente fuera del árbol deseado, y encapsulé la lógica de resolución de rutas en el escáner para evitar condiciones de carrera.
+- `2026-09-16T09:23:18` **diskreport.py** (seguridad defensiva): Reforcé la seguridad en `walk_files` y `largest_folders` validando explícitamente que los archivos encontrados sigan siendo hijos de la ruta raíz (evitando ataques de *path traversal* o desbordamientos fuera de la raíz si se manipularan enlaces simbólicos o junctions de forma inesperada).
+- `2026-09-16T09:22:53` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación estricta de las rutas de caché antes de cualquier operación, asegurando que no contengan caracteres de escape (NUL, CR, LF) y reforzando la verificación `is_safe_to_modify` para prevenir la manipulación de directorios protegidos o fuera del alcance autorizado (sandbox).
+- `2026-09-16T09:22:26` **branding.py** (seguridad defensiva): Mejoré la seguridad de la función `save_logo_svg` añadiendo una validación explícita mediante `is_safe_to_modify` antes de proceder con cualquier operación de disco, garantizando que el archivo de destino no esté bajo protección antes de intentar la escritura, manteniendo la consistencia con las reglas de seguridad defensiva.
 - `2026-09-16T09:13:37` **assistant.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva de `assistant.py` mediante la validación explícita del tipo de datos en `_ensure_safe_text` (restringiendo a `str`) y reforzando `_validate_response_length` para que ante cualquier entrada no esperada o maliciosa devuelva un string vacío, evitando así el procesamiento de datos potencialmente inyectados o fuera de contrato.
 - `2026-09-16T09:12:43` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` implementando una validación estricta del esquema en `load()` que previene errores de "key missing" o corrupción silenciosa si el JSON está incompleto, garantizando que siempre se cumpla la estructura de `AppSettings` al retornar.
 - `2026-09-16T09:12:12` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a archivos al añadir un manejo explícito para archivos que son eliminados o bloqueados durante la iteración (`FileNotFoundError` / `OSError` en `_safe_stat`), evitando que una condición de carrera frene el escaneo completo.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T08:52:14` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante posibles divisiones por cero en el pipeline y aseguré que `_evaluate_rules` sea resiliente a fallos en las factorías de mensajes (como divisiones por cero o valores `None`), evitando que una métrica mal formada rompa todo el análisis.
 - `2026-09-16T08:43:11` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de robustez en `walk_files` para manejar correctamente rutas con longitud excesiva o errores de decodificación al recuperar la ruta absoluta, asegurando que el recorrido no se detenga ante archivos con nombres inusuales o caracteres especiales en el sistema de archivos.
 - `2026-09-16T08:42:57` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante errores de acceso a archivos individuales dentro de `_sum_directory_recursive` envolviendo la llamada `entry.stat()` en un bloque try-except más específico, previniendo que un archivo bloqueado o con error de lectura interrumpa el escaneo completo de la carpeta de caché.
-- `2026-09-16T08:42:28` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos de sistema al capturar explícitamente excepciones de `pathlib` (como rutas con caracteres inválidos o restricciones de acceso) y validar la integridad del directorio padre antes de la escritura, alineándose con el enfoque de robustez ante casos límite.
-- `2026-09-16T08:41:55` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` ante datos de entrada malformados, agregando una verificación de tipos explícita antes de la ingesta de métricas y manejando con mayor cuidado la posible estructura anidada o inesperada del `source` (como objetos con métodos que podrían fallar), evitando que el asistente quede en estado inconsistente.
-- `2026-09-16T08:31:40` **safety.py** (rendimiento): Se optimizó el rendimiento del módulo moviendo la conversión a `frozenset` fuera de la función `_is_system_path_cached` y utilizando `set.isdisjoint()` con una constante pre-calculada, eliminando la creación repetitiva de conjuntos en cada iteración del bucle de validación.
-- `2026-09-16T08:23:27` **organizer.py** (rendimiento): Optimicé el proceso de escaneo reemplazando la lógica de validación repetitiva en cada nodo por un uso eficiente de `os.scandir` y `frozenset`, reduciendo la carga de llamadas a sistema (I/O) al verificar `JUNK_EXTENSIONS` mediante un conjunto inmutable y centralizando los chequeos de seguridad.

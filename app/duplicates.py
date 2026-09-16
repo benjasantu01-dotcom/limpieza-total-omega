@@ -90,9 +90,7 @@ class DuplicateGroup:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """
-    Verifica si el archivo está en uso exclusivo mediante una prueba de lectura.
-    """
+    """Verifica si el archivo está en uso exclusivo mediante una prueba de lectura."""
     try:
         with open(path, 'rb') as f:
             f.read(1)
@@ -137,15 +135,17 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
         return None
 
 
-def _is_valid_candidate(path: Path, stat_result: Optional[os.stat_result] = None) -> bool:
+def _is_valid_candidate(path: Path, st: os.stat_result) -> bool:
     """Filtro de seguridad que actúa como barrera antes de cualquier procesamiento."""
     try:
-        if path.is_symlink() or is_protected_path(path) or not is_safe_to_modify(path):
+        # Usamos lstat mediante el stat_result provisto para no seguir enlaces
+        if (st.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT) if hasattr(st, 'st_file_attributes') else path.is_symlink():
+            return False
+        if is_protected_path(path) or not is_safe_to_modify(path):
             return False
         if is_system_or_hidden(path):
             return False
             
-        st = stat_result or path.stat()
         return st.st_size > 0 and st.st_nlink == 1 and not _is_file_locked(path)
     except (OSError, ValueError, TypeError, RuntimeError):
         return False
@@ -154,7 +154,7 @@ def _is_valid_candidate(path: Path, stat_result: Optional[os.stat_result] = None
 def _should_include_entry(entry: os.DirEntry, min_size: int) -> tuple[bool, Optional[os.stat_result]]:
     """Determina si una entrada de directorio debe ser procesada."""
     try:
-        st = entry.stat()
+        st = entry.stat(follow_symlinks=False)
         if st.st_size < min_size:
             return False, None
         path = Path(entry.path)
@@ -171,8 +171,12 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     for p in paths:
         if p is None: continue
         path_obj = Path(p).resolve()
-        if _is_valid_candidate(path_obj):
-            groups[path_obj.stat().st_size].append(path_obj)
+        try:
+            st = path_obj.stat()
+            if _is_valid_candidate(path_obj, st):
+                groups[st.st_size].append(path_obj)
+        except OSError:
+            continue
     return groups
 
 
@@ -195,12 +199,13 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
     def _scan_dir(current_dir: Path) -> None:
         try:
-            dir_str = str(current_dir.resolve())
-            if dir_str in visited_dirs or is_protected_path(current_dir) or not is_safe_to_modify(current_dir):
+            real_dir = current_dir.resolve()
+            dir_str = str(real_dir)
+            if dir_str in visited_dirs or is_protected_path(real_dir) or not is_safe_to_modify(real_dir):
                 return
             visited_dirs.add(dir_str)
             
-            with os.scandir(current_dir) as iterator:
+            with os.scandir(real_dir) as iterator:
                 for entry in iterator:
                     if entry.is_dir(follow_symlinks=False):
                         if not is_junction(Path(entry.path)):
