@@ -329,7 +329,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         try:
             if item.is_file():
                 resolved_item = item.resolve()
-                if is_safe_to_modify(resolved_item):
+                if resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
                     ensure_safe_to_modify(resolved_item)
                     item.unlink()
                     count += 1

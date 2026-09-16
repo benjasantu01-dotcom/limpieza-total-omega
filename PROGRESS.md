@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 5 | 1 | 2 | 2 | 24 |
+| 2026-09-14 | 5 | 1 | 2 | 2 | 20 |
 | 2026-09-15 | 154 | 12 | 26 | 5 | 153 |
-| 2026-09-16 | 48 | 1 | 13 | 6 | 52 |
+| 2026-09-16 | 50 | 1 | 13 | 6 | 54 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **44**
-- seguridad defensiva: **36**
+- seguridad defensiva: **38**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
 - `browser.py`: **20**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
 - `memory.py`: **17**
 - `diskreport.py`: **17**
 - `safety.py`: **16**
@@ -40,13 +40,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **16**
 - `duplicates.py`: **14**
 - `branding.py`: **12**
+- `organizer.py`: **12**
 - `scanner.py`: **12**
-- `organizer.py`: **11**
 - `main.py`: **10**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T05:14:31` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_locked` para evitar falsos positivos y posibles bloqueos mediante el uso de `os.open` con flags de acceso atómico, garantizando que el chequeo sea consistente en todas las plataformas soportadas sin depender de módulos externos innecesarios.
+- `2026-09-16T05:13:04` **organizer.py** (seguridad defensiva): Se reforzó la seguridad de `stage_for_review` y `delete_reviewed` implementando una validación estricta de que los archivos estén efectivamente dentro del directorio de cuarentena antes de cualquier operación destructiva, previniendo ataques de escalada de directorio (path traversal).
 - `2026-09-16T04:58:36` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del pipeline de datos limitando la entrada al método `compute_score` mediante una validación explícita de finitud (NaN/Inf) y asegurando que las reglas de recomendación no puedan inyectar contenido inesperado al resultado final mediante una sanitización estricta de strings.
 - `2026-09-16T04:57:34` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de `_is_unc_path` para detectar y rechazar rutas UNC, evitando así riesgos de seguridad asociados con el acceso a recursos de red no autorizados o inestables durante la enumeración de archivos.
 - `2026-09-16T04:48:31` **assistant.py** (seguridad defensiva): Se endureció la seguridad de la función `_build_payload` en `assistant.py` mediante la validación del contenido mediante `_ensure_safe_text` antes de la serialización JSON, garantizando que ninguna métrica malintencionada que pudiera contener caracteres de escape o inyección llegue a ser procesada por el motor remoto.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T04:17:13` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de rutas y valores de escala, asegurando que las operaciones de sistema y renderizado no fallen ante estados inesperados.
 - `2026-09-16T04:07:51` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_parse_config` ante entradas inesperadas, implementando una lógica de validación más estricta que evita fallos por tipos de datos erróneos o estructuras anidadas que podrían comprometer la estabilidad durante el parseo.
 - `2026-09-16T03:57:27` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando las búsquedas sobre el manifiesto de complejidad O(N*M) a O(N+M) mediante el uso de diccionarios (hash maps), reduciendo drásticamente las operaciones de I/O redundantes.
-- `2026-09-16T03:46:34` **healthscore.py** (rendimiento): Optimicé el bucle de cálculo en `compute_score` sustituyendo los `getattr` (que realizan búsquedas de atributos por nombre en cada iteración) por acceso directo a los campos, aprovechando que el objeto `SystemMetrics` es una clase conocida y estructurada.
-- `2026-09-16T03:37:04` **browser.py** (rendimiento): He implementado una optimización en `detect_profiles` para evitar el cálculo redundante de `Path.resolve(strict=True)` dentro de los loops internos y utilicé el `set` `scanned_paths` ya existente para prevenir la re-evaluación completa de subárboles de caché que podrían estar compartidos entre diferentes perfiles o mapeos de navegadores, mejorando el rendimiento en sistemas con múltiples navegadores basados en Chromium.
