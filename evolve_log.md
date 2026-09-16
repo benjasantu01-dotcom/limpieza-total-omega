@@ -605,3 +605,13 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-15T23:30:29` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-15T23:40:38` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-15T23:50:47` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-16T00:00:59` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-09-16T00:01:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-16T00:02:05` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-16T00:03:11` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-16T00:04:37` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se implementó un control robusto en el método `run_async` para evitar operaciones de disco con rutas mal formadas, inexistentes o que no pasan los filtros de seguridad, añadiendo una validación temprana que protege el pool de hilos de excepciones innecesarias y comportamientos indefinidos al interactuar con rutas inválidas.
+- `2026-09-16T00:05:11` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-16T00:05:39` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-16T00:06:01` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se mejora la robustez de `quarantine.py` ante errores inesperados durante el aislamiento de archivos, asegurando que si ocurre un fallo parcial tras mover el archivo, el estado de la cuarentena no quede corrompido, implementando un bloque `try...finally` más estricto y validaciones de estado previas.
+- `2026-09-16T00:06:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-16T00:06:01` Corrida terminada. Total usado hoy: 4.
