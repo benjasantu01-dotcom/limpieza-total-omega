@@ -224,7 +224,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                 clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                 if clean_msg:
                     findings.append(clean_msg[:200])
-        except (TypeError, ValueError, AttributeError):
+        except Exception:
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

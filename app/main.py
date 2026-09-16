@@ -1255,9 +1255,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             "ram": branding.score_color(ram_libre * 3),
             "disco": branding.score_color(disco_libre * 5),
         }
-        for clave, label in self.cards.items():
-            if label is not None and label.winfo_exists():
-                label.configure(text=valores.get(clave, "-"), text_color=colores.get(clave, branding.color("text")))
+        try:
+            for clave, label in self.cards.items():
+                if label is not None and label.winfo_exists():
+                    label.configure(text=valores.get(clave, "-"), text_color=colores.get(clave, branding.color("text")))
+        except Exception:
+            pass
 
     @safe_ui_operation
     def _update_health_bars(self, resultado: healthscore.ScoreResult) -> None:

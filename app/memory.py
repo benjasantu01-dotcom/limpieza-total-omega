@@ -339,12 +339,16 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     
     buf = ctypes.create_unicode_buffer(1024)
     try:
+        # psapi.GetModuleFileNameExW devuelve 0 si falla
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 1024) > 0:
             path_str = str(buf.value)
-            if path_str.startswith(("\\\\", "\\??\\")): return None
+            # Detectar rutas UNC o dispositivos lógicos reservados
+            if any(path_str.startswith(prefix) for prefix in ("\\\\", "\\??\\", "\\Device\\")):
+                return None
             
             p = Path(path_str)
             if not p.exists() or not p.is_file(): return None
+            # Evitar seguir enlaces simbólicos o junctions que podrían causar loops
             if p.is_symlink(): return None
             
             p_resolved = p.resolve(strict=False)
@@ -412,5 +416,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, OSError, ValueError, TypeError) as e:
         return False, f"Error de sistema: {str(e)}"
     finally:
-        if proc_handle:
-            kernel32.CloseHandle(proc_handle)
+        # Asegurar liberación de recursos incluso ante excepciones
+        kernel32.CloseHandle(proc_handle)
