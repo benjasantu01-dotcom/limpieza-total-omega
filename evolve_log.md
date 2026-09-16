@@ -863,3 +863,10 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-16T02:16:35` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-16T02:16:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-16T02:16:35` Corrida terminada. Total usado hoy: 56.
+- `2026-09-16T02:23:38` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-09-16T02:24:06` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-16T02:24:32` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `_collect_summary_data` y `walk_files` capturando errores potenciales durante el acceso a atributos y conversión de tipos, evitando que el escaneo se detenga silenciosamente o falle ante metadatos corruptos.
+- `2026-09-16T02:24:58` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `_get_keeper_score` agregando validaciones explícitas para prevenir fallos silenciosos cuando `stat()` falla debido a archivos en uso o bloqueados por el sistema, asegurando que el proceso de selección no sea nulo prematuramente.
+- `2026-09-16T02:25:09` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del pipeline en `compute_score` agregando una validación de `metrics` que protege contra datos corrompidos, reemplazando el acceso directo a atributos por el uso de `getattr` con valores por defecto seguros para prevenir `AttributeError` ante cambios futuros en el esquema de la clase.
+- `2026-09-16T02:25:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-16T02:25:09` Corrida terminada. Total usado hoy: 60.

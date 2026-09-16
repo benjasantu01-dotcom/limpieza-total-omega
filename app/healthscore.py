@@ -102,12 +102,12 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 
 # Pre-vinculación de lógica para evitar búsquedas en diccionario o lambdas en el bucle
 _PIPELINE: Final[List[PipelineEntry]] = [
-    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), []),
-    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), []),
-    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), []),
-    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), []),
-    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), []),
-    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), []),
+    PipelineEntry("seguridad", 30, lambda m: score_security(getattr(m, 'suspicious_count', 0), getattr(m, 'suspicious_warnings', 0)), []),
+    PipelineEntry("disco", 20, lambda m: score_disk(getattr(m, 'disk_free_percent', 100.0)), []),
+    PipelineEntry("memoria", 18, lambda m: score_memory(getattr(m, 'memory_available_percent', 100.0)), []),
+    PipelineEntry("basura", 14, lambda m: score_junk(getattr(m, 'junk_mb', 0.0)), []),
+    PipelineEntry("duplicados", 10, lambda m: score_duplicates(getattr(m, 'duplicate_mb', 0.0)), []),
+    PipelineEntry("arranque", 8, lambda m: score_startup(getattr(m, 'startup_count', 0)), []),
 ]
 
 _RULES_LIST: Final[Tuple[RecommendationRule, ...]] = (
@@ -190,7 +190,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
         try:
             if rule.check(metrics, ratio):
                 msg = str(rule.message_factory(metrics))
-                # Sanitización defensiva: solo texto imprimible, límite de 200 caracteres y sin caracteres de control
                 clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                 if clean_msg:
                     findings.append(clean_msg[:200])
@@ -201,9 +200,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     
-    metrics.validate()
-    if not metrics.is_finite:
-        return HealthResult(0, "F", {}, ["Error: Inconsistencia numérica detectada."])
+    try:
+        metrics.validate()
+        if not metrics.is_finite:
+            return HealthResult(0, "F", {}, ["Error: Inconsistencia numérica detectada."])
+    except Exception:
+        return HealthResult(0, "F", {}, ["Error: Fallo al validar métricas."])
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -212,13 +214,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in _PIPELINE:
         try:
             val = entry.scorer(metrics)
-            # Validación de dominio: asegurar que sea un ratio finito 0.0-1.0
             area_ratio = _clamp(float(val)) if math.isfinite(val) else 0.0
             
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
-            # Validación de integridad post-cálculo de peso
             weighted_points = _clamp(round(area_ratio * entry.weight), 0, entry.weight)
             metric_breakdown[entry.area] = int(weighted_points)
             accumulated_score += weighted_points
@@ -228,8 +228,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             
     final_score = int(_clamp(round(accumulated_score), 0.0, 100.0))
     
-    if metrics.quarantined_count > 0:
-        recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")
+    q_count = getattr(metrics, 'quarantined_count', 0)
+    if q_count > 0:
+        recommendations.append(f"Tenés {int(q_count)} archivo(s) en cuarentena.")
     
     return HealthResult(
         score=final_score, 

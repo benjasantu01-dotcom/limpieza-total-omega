@@ -229,7 +229,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Asegurar containment para evitar escape de directorio
                         entry_path = Path(entry.path).resolve()
                         if root_path not in entry_path.parents and entry_path != root_path:
                             continue
@@ -247,8 +246,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat()
-                            size = max(0, int(getattr(st, 'st_size', 0)))
-                            yield entry_path, size
+                            size_val = getattr(st, 'st_size', 0)
+                            if not isinstance(size_val, (int, float)):
+                                size_val = 0
+                            yield entry_path, max(0, int(size_val))
                     except (PermissionError, OSError, AttributeError):
                         continue
         except (PermissionError, OSError):
@@ -323,12 +324,14 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             total_files += 1
             
             suffix = path.suffix
-            ext: str = suffix.lower() if isinstance(suffix, str) and suffix else "(sin extensión)"
+            if not isinstance(suffix, str):
+                ext = "(sin extensión)"
+            else:
+                ext = suffix.lower() if suffix else "(sin extensión)"
             
             ext_bytes[ext] += size
             ext_counts[ext] += 1
             
-            # Gestión de archivos pesados mediante Heap para eficiencia O(n log k)
             if limit > 0:
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (size, path))
@@ -337,7 +340,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         except (AttributeError, TypeError, ValueError):
             continue
     
-    # Consolidación final de stats por extensión
     ext_stats: Dict[str, ExtStats] = {ext: ExtStats(ext_bytes[ext], ext_counts[ext]) for ext in ext_bytes}
     return SummaryData(total_bytes, total_files, ext_stats, top_heap)
 

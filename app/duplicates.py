@@ -283,12 +283,12 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _get_keeper_score(path: Path) -> Optional[Tuple[float, int]]:
     """
-    Calcula una tupla de ordenamiento para elegir el 'keeper' (el original):
-    1. Timestamp de modificación (mtime): Se prioriza el archivo más antiguo.
-    2. Longitud de la ruta: En caso de empate en mtime, se prioriza la ruta más corta,
-       asumiendo que los directorios principales contienen las copias maestras.
+    Calcula una tupla de ordenamiento para elegir el 'keeper' (el original).
+    Falla si el archivo no existe o no se puede acceder a sus metadatos.
     """
     try:
+        if not path.exists():
+            return None
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
     except (OSError, PermissionError):
@@ -298,9 +298,7 @@ def _get_keeper_score(path: Path) -> Optional[Tuple[float, int]]:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Selecciona el mejor candidato a conservar basándose en la estrategia de puntuación.
-    
-    Usa `min()` sobre las tuplas de puntaje obtenidas en `_get_keeper_score` para 
-    determinar la combinación óptima de antigüedad y jerarquía de carpetas.
+    Filtra candidatos inaccesibles antes de calcular el mínimo.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
@@ -310,7 +308,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if not is_safe_to_modify(p):
             continue
         score = _get_keeper_score(p)
-        if score:
+        if score is not None:
             candidates.append((score, p))
             
     return min(candidates, key=lambda x: x[0])[1] if candidates else None
