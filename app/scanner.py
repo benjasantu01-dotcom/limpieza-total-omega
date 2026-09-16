@@ -138,8 +138,10 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Valida restricciones de seguridad evitando resolución innecesaria de rutas."""
+        if not entry or not entry.path:
+            return False
         try:
-            if not entry or not entry.path or len(entry.path) > MAX_PATH_LENGTH:
+            if len(entry.path) > MAX_PATH_LENGTH:
                 return False
             if UNC_PATH_RE.match(entry.path) or RTL_CHAR_RE.search(entry.path):
                 return False
@@ -179,7 +181,7 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Analiza una entrada única y decide si debe procesarse o añadirse a la pila."""
         try:
-            if not entry or not entry.path or not self._is_safe_entry(entry):
+            if not self._is_safe_entry(entry):
                 return
             
             is_dir = entry.is_dir(follow_symlinks=False)

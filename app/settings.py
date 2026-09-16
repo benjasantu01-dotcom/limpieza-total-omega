@@ -349,12 +349,12 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     ruta = settings_path(custom_base)
     
     try:
-        # Validación defensiva crítica antes de tocar el sistema de archivos
         ensure_safe_to_modify(ruta.parent)
-    except UnsafePathError:
+        cleaned_settings = _ensure_settings_integrity(validate(values))
+        serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
+    except (UnsafePathError, TypeError, ValueError):
         return None
-        
-    cleaned_settings = _ensure_settings_integrity(validate(values))
+    
     temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
     bak_path = ruta.with_suffix(".bak")
     
@@ -366,7 +366,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 return None
             
             with open(temp_path, "wb") as f:
-                f.write(json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8"))
+                f.write(serialized)
                 f.flush()
                 os.fsync(f.fileno())
             
@@ -377,7 +377,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             os.replace(temp_path, ruta)
             _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
             return ruta
-        except (OSError, IOError, PermissionError, UnsafePathError):
+        except (OSError, IOError, PermissionError):
             if attempt < 4:
                 time.sleep(0.25 * (attempt + 1))
                 continue

@@ -283,8 +283,8 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             if not isinstance(row, dict) or f_name not in row or f_cmd not in row:
                 continue
                     
-            val_name = row[f_name]
-            val_cmd = row[f_cmd]
+            val_name = row.get(f_name)
+            val_cmd = row.get(f_cmd)
             
             if not isinstance(val_name, str) or not isinstance(val_cmd, str):
                 continue
