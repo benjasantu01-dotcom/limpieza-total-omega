@@ -649,3 +649,11 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-16T00:43:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-16T00:43:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-16T00:43:23` Corrida terminada. Total usado hoy: 20.
+- `2026-09-16T00:51:58` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-09-16T00:52:40` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se implementó un chequeo preventivo de privilegios de escritura mediante `os.access(path, os.W_OK)` antes de intentar cualquier operación, cerrando una brecha donde archivos bloqueados a nivel de sistema operativo (pero no por handles de WinAPI) podrían haber escapado a la validación.
+- `2026-09-16T00:52:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-16T00:53:15` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root
+- `2026-09-16T00:54:25` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré `_Validators._is_safe_path` para prevenir ataques de sustitución mediante enlaces simbólicos o junctions que apunten a rutas críticas, asegurando que `realpath` se evalúe antes de cualquier validación de seguridad.
+- `2026-09-16T00:55:11` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-09-16T00:55:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-16T00:55:11` Corrida terminada. Total usado hoy: 24.

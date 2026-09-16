@@ -172,6 +172,7 @@ class _Validators:
     def _run_safety_checks(path_obj: Path) -> bool:
         """Valida una ruta contra `safety.py` resolviendo el destino real para prevenir traversal."""
         try:
+            # Resolvemos primero para detectar donde apunta realmente la ruta (symlinks/junctions)
             resolved = path_obj.resolve(strict=False)
             path_str = str(resolved)
             
@@ -197,6 +198,7 @@ class _Validators:
         if path_str.startswith(("\\\\", "//")): return False
         try:
             p = Path(path_str).expanduser()
+            # El chequeo requiere ruta absoluta para prevenir resolución relativa a CWD
             if not p.is_absolute(): return False
             return _Validators._run_safety_checks(p)
         except (OSError, RuntimeError, PermissionError, AttributeError, ValueError):

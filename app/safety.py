@@ -89,6 +89,7 @@ class SafetyValidationErrorCode(IntEnum):
     REMOTE_DRIVE_DETECTED = 21
     REMOVABLE_DRIVE_DETECTED = 22
     KERNEL_LOCKED_FILE = 23
+    WRITE_ACCESS_DENIED = 24
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
@@ -117,6 +118,7 @@ class ProtectionReason(Enum):
     REMOTE_DRIVE = "unidad de red detectada"
     REMOVABLE_DRIVE = "unidad extraíble detectada"
     KERNEL_LOCKED = "archivo bloqueado por kernel"
+    ACCESS_WRITE = "acceso de escritura denegado"
 
 class ValidationContext(Enum):
     """Define si la validación es puramente estructural o requiere acceso a disco."""
@@ -312,7 +314,8 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.VOLUME_READ_ONLY: SafetyValidationErrorCode.VOLUME_READ_ONLY,
     ProtectionReason.REMOTE_DRIVE: SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED,
     ProtectionReason.REMOVABLE_DRIVE: SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED,
-    ProtectionReason.KERNEL_LOCKED: SafetyValidationErrorCode.KERNEL_LOCKED_FILE
+    ProtectionReason.KERNEL_LOCKED: SafetyValidationErrorCode.KERNEL_LOCKED_FILE,
+    ProtectionReason.ACCESS_WRITE: SafetyValidationErrorCode.WRITE_ACCESS_DENIED
 }
 
 def _check_file_integrity(path: Path) -> None:
@@ -543,6 +546,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
 
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
+    
+    if p.exists() and not os.access(p, os.W_OK):
+        raise UnsafePathError(f"Acceso de escritura denegado: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
     
     try:
         if p.exists():

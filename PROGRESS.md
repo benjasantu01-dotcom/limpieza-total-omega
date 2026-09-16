@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 59 | 2 | 9 | 5 | 59 |
+| 2026-09-14 | 59 | 2 | 9 | 5 | 55 |
 | 2026-09-15 | 154 | 12 | 26 | 5 | 153 |
-| 2026-09-16 | 11 | 0 | 2 | 2 | 5 |
+| 2026-09-16 | 13 | 0 | 3 | 2 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **46**
-- seguridad defensiva: **41**
+- seguridad defensiva: **43**
 - rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
@@ -35,9 +35,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **20**
 - `memory.py`: **20**
 - `quarantine.py`: **20**
-- `safety.py`: **17**
+- `safety.py`: **18**
+- `settings.py`: **17**
 - `assistant.py`: **16**
-- `settings.py`: **16**
 - `duplicates.py`: **15**
 - `scanner.py`: **14**
 - `organizer.py`: **13**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T00:54:25` **settings.py** (seguridad defensiva): Mejoré `_Validators._is_safe_path` para prevenir ataques de sustitución mediante enlaces simbólicos o junctions que apunten a rutas críticas, asegurando que `realpath` se evalúe antes de cualquier validación de seguridad.
+- `2026-09-16T00:52:40` **safety.py** (seguridad defensiva): Se implementó un chequeo preventivo de privilegios de escritura mediante `os.access(path, os.W_OK)` antes de intentar cualquier operación, cerrando una brecha donde archivos bloqueados a nivel de sistema operativo (pero no por handles de WinAPI) podrían haber escapado a la validación.
 - `2026-09-16T00:43:19` **quarantine.py** (seguridad defensiva): Se reforzó el aislamiento preventivo en `quarantine_file` al introducir una verificación estricta de la existencia del archivo origen después de cada operación crítica de I/O, previniendo posibles estados de inconsistencia si un proceso externo interviene en el sistema de archivos durante la ejecución.
 - `2026-09-16T00:42:17` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `_get_process_path` para evitar posibles ataques de suplantación mediante enlaces simbólicos o reparse points, añadiendo una comprobación explícita mediante `is_symlink()` sobre la ruta resuelta y validando que el archivo sea un archivo regular (`is_file()`) antes de cualquier operación.
 - `2026-09-16T00:33:48` **main.py** (seguridad defensiva): Se ha añadido una validación explícita mediante `is_safe_to_modify` dentro de la lógica del bucle en `on_stage` y `on_quarantine_findings` para garantizar que los elementos individuales de una lista de archivos procesados se filtren correctamente antes de cualquier intento de operación, evitando así errores de ejecución en el bucle si una ruta específica dentro de una lista fuera insegura.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T00:12:07` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la validación de integridad al agregar un chequeo de 'Long Path' (más allá del límite de la API estándar de Windows) mediante el prefijo `\\?\` en las llamadas a `GetFileAttributesW` y `CreateFileW`, previniendo errores de `OSError` cuando la IA encuentre rutas que excedan los 260 caracteres pero que sean válidas.
 - `2026-09-15T15:09:20` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas corruptas o inexistentes en la composición de `_resolve_browser_path`, añadiendo un chequeo preventivo contra caracteres de control y longitudes excesivas antes de intentar instanciar `Path`.
 - `2026-09-15T14:58:25` **scanner.py** (rendimiento): Optimizé el método `_is_safe_entry` eliminando llamadas costosas a `Path(entry.path).resolve()` dentro del bucle principal, reemplazándolas por una validación de prefijo de cadena basada en `self.base_root_str`, lo que reduce drásticamente las llamadas al sistema de archivos durante el recorrido.
-- `2026-09-15T14:49:32` **quarantine.py** (rendimiento): Optimicé el acceso a metadatos y la lógica de `list_items` y `purge_all` transformando búsquedas de complejidad O(N) en O(1) mediante el uso de diccionarios (`set` y `dict`), reduciendo drásticamente las iteraciones redundantes y mejorando el rendimiento en escenarios con múltiples archivos en cuarentena.
-- `2026-09-15T14:40:58` **memory.py** (rendimiento): Se ha optimizado la función `parse_windows_process_csv` reemplazando la creación de una lista intermedia y el uso de `strip()` repetitivo por una estructura de generador para reducir la huella de memoria y el tiempo de procesamiento al analizar la salida de PowerShell.
