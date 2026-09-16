@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 232
+- Sin respuesta de la IA (error o límite): 234
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 22 | 1 | 4 | 4 | 39 |
+| 2026-09-14 | 19 | 1 | 4 | 4 | 38 |
 | 2026-09-15 | 154 | 12 | 26 | 5 | 153 |
-| 2026-09-16 | 33 | 0 | 7 | 4 | 40 |
+| 2026-09-16 | 34 | 0 | 7 | 4 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **44**
 - seguridad defensiva: **43**
-- robustez ante casos límite: **42**
-- rendimiento: **28**
+- robustez ante casos límite: **39**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
+- `browser.py`: **19**
 - `healthscore.py`: **19**
-- `memory.py`: **18**
 - `settings.py`: **18**
-- `browser.py`: **18**
+- `quarantine.py`: **18**
 - `diskreport.py`: **17**
+- `memory.py`: **17**
 - `safety.py`: **16**
 - `assistant.py`: **15**
 - `duplicates.py`: **14**
 - `scanner.py`: **13**
 - `branding.py`: **12**
 - `organizer.py`: **12**
-- `main.py`: **10**
+- `main.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T03:37:04` **browser.py** (rendimiento): He implementado una optimización en `detect_profiles` para evitar el cálculo redundante de `Path.resolve(strict=True)` dentro de los loops internos y utilicé el `set` `scanned_paths` ya existente para prevenir la re-evaluación completa de subárboles de caché que podrían estar compartidos entre diferentes perfiles o mapeos de navegadores, mejorando el rendimiento en sistemas con múltiples navegadores basados en Chromium.
 - `2026-09-16T03:26:49` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos a las funciones públicas y estandarizando los retornos mediante el uso consistente de `copy()` para evitar la mutación accidental del caché interno.
 - `2026-09-16T03:26:18` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo mediante la adición de Type Hints detallados, documentación de docstrings en funciones críticas y la estandarización de las firmas de funciones para asegurar la consistencia en el uso de los parámetros `entry` y `now_ts`.
 - `2026-09-16T03:16:42` **quarantine.py** (legibilidad y documentación): He añadido docstrings detallados y clarificadores a las funciones de persistencia y aislamiento, y he refactorizado la lógica de `_write_temp_to_final` para incluir anotaciones de tipo más estrictas y una mejor descripción de sus salvaguardas contra condiciones de carrera, mejorando así la legibilidad técnica y la auditabilidad del código.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T02:46:35` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de archivos implementando un manejo explícito de errores durante la lectura y decodificación del JSON, evitando dejar el sistema en un estado inconsistente si `json.loads` o `decode` fallan.
 - `2026-09-16T02:45:52` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante errores de sistema encapsulando las verificaciones de metadatos en un bloque `try-except` más específico y asegurando que las llamadas a `kernel32` no propaguen excepciones inesperadas que interrumpan el flujo de la aplicación.
 - `2026-09-16T02:37:05` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez de `load_manifest` mediante la captura explícita de `FileNotFoundError` y validación de tipos, evitando que errores de E/S o corrupción silenciosa del JSON provoquen fallos en cascada en la interfaz.
-- `2026-09-16T02:36:42` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones de seguridad en `stage_for_review` y `delete_reviewed` al asegurar que las rutas sean resueltas antes de las comprobaciones de `is_safe_to_modify`, previniendo errores de comparación de rutas relativas/absolutas y consolidando el manejo de excepciones para evitar fallos silenciosos en operaciones de disco.

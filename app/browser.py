@@ -335,6 +335,7 @@ def detect_profiles(
                     continue
                 
                 real_candidate = str(candidate.resolve(strict=True))
+                # Optimización: si ya escaneamos esta ruta exacta, saltar
                 if real_candidate in scanned_paths:
                     continue
                 
