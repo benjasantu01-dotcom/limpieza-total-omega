@@ -755,7 +755,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
                 continue
             
-            # Solo procesar si el archivo es conocido por el manifiesto
+            # Búsqueda O(1) en el map en lugar de iterar sobre ítems
             item = item_map.get(stored_path.name)
             if item and _is_item_purgable(stored_path, item, quarantine_root):
                 purged_ids.add(item.item_id)
