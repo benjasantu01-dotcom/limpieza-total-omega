@@ -691,3 +691,11 @@ FAILED evolve/tests/test_modules.py::test_read_snapshot_never_crashes - UnboundL
 - `2026-09-16T13:21:31` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-09-16T13:21:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-16T13:21:31` Corrida terminada. Total usado hoy: 316.
+- `2026-09-16T13:26:48` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-16T13:27:20` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha robustecido el proceso de lectura de memoria en Linux al añadir un manejo explícito de errores de lectura de archivos (`OSError`, `PermissionError`, etc.) y validaciones de formato más estrictas en el parsing, asegurando que ante archivos vacíos, ilegibles o con contenido inesperado (casos límite comunes en entornos restringidos) la aplicación retorne un estado neutral en lugar de fallar o propagar excepciones.
+- `2026-09-16T13:27:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-16T13:27:52` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejora la robustez del proceso de escaneo y gestión de archivos añadiendo verificaciones explícitas contra archivos cuyo tamaño excede la capacidad de representación de Python (archivos corruptos/masivos) y garantizando que las operaciones de movimiento no se bloqueen por errores de lectura en metadatos de archivos inaccesibles.
+- `2026-09-16T13:28:29` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos inexistentes o bloqueos por permisos, previniendo errores de sistema al verificar archivos candidatos a cuarentena o purga.
+- `2026-09-16T13:28:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-16T13:28:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-16T13:28:33` Corrida terminada. Total usado hoy: 320.

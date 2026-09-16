@@ -168,7 +168,7 @@ _EMPTY_SNAPSHOT: MemorySnapshot = MemorySnapshot(BytesValue(0), BytesValue(0))
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     """Parsea el contenido crudo de /proc/meminfo para extraer métricas de RAM."""
-    if not isinstance(meminfo_text, str) or not meminfo_text:
+    if not isinstance(meminfo_text, str) or not meminfo_text.strip():
         return _EMPTY_SNAPSHOT
     
     metrics: Dict[str, BytesValue] = {}
@@ -262,9 +262,12 @@ def read_snapshot() -> MemorySnapshot:
         snapshot = _read_windows_snapshot()
     elif _linux_available:
         try:
+            # Uso de read_text con manejo de errores de sistema o formato de archivo inesperado
             content = _linux_mem_path.read_text(encoding="utf-8")
             snapshot = parse_linux_meminfo(content)
-        except (OSError, UnicodeDecodeError, RuntimeError):
+            if snapshot == _EMPTY_SNAPSHOT:
+                _linux_available = False
+        except (OSError, PermissionError, UnicodeDecodeError, RuntimeError):
             _linux_available = False
             snapshot = _EMPTY_SNAPSHOT
     

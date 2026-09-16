@@ -166,7 +166,9 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 def _validate_file_attributes(src: Path) -> bool:
     """Verifica si el archivo es apto para procesar: existe, no es vacío y no está bloqueado."""
     try:
-        if not src.is_file() or _is_junction(src) or src.stat().st_size == 0: return False
+        st = src.stat()
+        # Verificar tamaño coherente (menor a 100GB para evitar errores de tipo en entornos restrictivos)
+        if not src.is_file() or _is_junction(src) or st.st_size == 0 or st.st_size > 100_000_000_000: return False
         return _passes_system_checks(src) and not _is_file_locked(src)
     except (OSError, PermissionError):
         return False
@@ -224,9 +226,10 @@ def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
     """Evalúa metadata de una entrada de directorio para decidir si se agrega a la lista de JunkFile."""
     try:
         stat_info = entry.stat(follow_symlinks=False)
-        if stat_info.st_size > 0 and not (_get_win_attributes(entry) & WIN_ATTR_MASK):
+        # Validación de tamaño: positivo y menor a 100GB
+        if 0 < stat_info.st_size < 100_000_000_000 and not (_get_win_attributes(entry) & WIN_ATTR_MASK):
             found.append(JunkFile(Path(entry.path), stat_info.st_size, datetime.fromtimestamp(stat_info.st_mtime)))
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, ValueError):
         pass
 
 def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
