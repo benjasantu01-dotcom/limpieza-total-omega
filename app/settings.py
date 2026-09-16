@@ -248,10 +248,23 @@ class _Validators:
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(key, text)
         return _Validators._validate_enum_str(text, key)
 
-_VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingProxyType({
-    k: _ValidatorEntry(getattr(_Validators, "bool" if k in (ConfigKey.MOSTRAR_BARRAS, ConfigKey.ANIMACIONES, ConfigKey.CONFIRMAR_SIEMPRE, ConfigKey.RECORDAR_ULTIMA_CARPETA, ConfigKey.ANALISIS_EN_PARALELO, ConfigKey.ASISTENTE_ACTIVADO, ConfigKey.ASISTENTE_ENVIAR_METRICAS) else "int" if k in (ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB, ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS) else "path" if k == ConfigKey.ULTIMA_CARPETA else "str"))
-    for k in ConfigKey
-})
+def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
+    """Factory que categoriza los validadores según el tipo de dato de la clave."""
+    mapping = {}
+    for k in ConfigKey:
+        if k in (ConfigKey.MOSTRAR_BARRAS, ConfigKey.ANIMACIONES, ConfigKey.CONFIRMAR_SIEMPRE, 
+                 ConfigKey.RECORDAR_ULTIMA_CARPETA, ConfigKey.ANALISIS_EN_PARALELO, 
+                 ConfigKey.ASISTENTE_ACTIVADO, ConfigKey.ASISTENTE_ENVIAR_METRICAS):
+            mapping[k] = _ValidatorEntry(_Validators.bool)
+        elif k in (ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB, ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS):
+            mapping[k] = _ValidatorEntry(_Validators.int)
+        elif k == ConfigKey.ULTIMA_CARPETA:
+            mapping[k] = _ValidatorEntry(_Validators.path)
+        else:
+            mapping[k] = _ValidatorEntry(_Validators.str)
+    return MappingProxyType(mapping)
+
+_VALIDATOR_MAP: Final = _build_validator_map()
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Calcula y retorna la ruta absoluta del archivo config.json."""

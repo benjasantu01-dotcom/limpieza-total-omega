@@ -1276,3 +1276,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-16T07:41:47` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando formato Google Style) en las funciones auxiliares de bajo nivel, lo que facilita el mantenimiento y la comprensión de las salvaguardas de seguridad implementadas.
 - `2026-09-16T07:41:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-16T07:41:47` Corrida terminada. Total usado hoy: 184.
+- `2026-09-16T07:50:11` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-09-16T07:50:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-16T07:51:14` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _CheckResult
+- `2026-09-16T07:51:39` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Scanner._run_file_heuristics
+- `2026-09-16T07:52:01` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings explicativos y se refactorizó la lógica de validación de `_VALIDATOR_MAP` utilizando una función de fábrica más clara en lugar de una expresión compleja, mejorando la mantenibilidad del código sin alterar su comportamiento funcional.
+- `2026-09-16T07:52:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-16T07:52:01` Corrida terminada. Total usado hoy: 188.
