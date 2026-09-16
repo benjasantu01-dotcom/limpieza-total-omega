@@ -51,6 +51,10 @@ REGISTRY_RUN_KEYS: Tuple[str, ...] = (
 # Extensiones consideradas ejecutables para el escaneo de carpetas.
 EXECUTABLE_EXTS: Set[str] = {'.exe', '.bat', '.cmd', '.scr', '.lnk'}
 
+# Definición de nombres de dispositivos reservados y caracteres inválidos (legacy Windows)
+RESERVED_DEVICE_NAMES: Set[str] = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
+SUSPICIOUS_CHARS: str = '<>|?*\0&;%^$'
+
 # Caché global para evitar operaciones de I/O redundantes durante la sesión.
 _EXISTS_CACHE: Dict[str, bool] = {}
 _FULL_SCAN_CACHE: Optional[List[StartupEntry]] = None
@@ -90,20 +94,17 @@ class StartupEntry:
         return True
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
-        """Valida si la ruta coincide con alias de dispositivos del sistema (NUL, CON, etc)."""
-        reserved: Set[str] = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
+        """Verifica si el nombre de archivo corresponde a un dispositivo reservado del sistema."""
         try:
             if "\0" in path_str:
                 return True
-            path_obj = Path(path_str)
-            return path_obj.stem.upper() in reserved
+            return Path(path_str).stem.upper() in RESERVED_DEVICE_NAMES
         except (ValueError, TypeError):
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:
-        """Filtra rutas que contienen caracteres no permitidos en el sistema de archivos."""
-        suspicious_chars: str = '<>|?*\0&;%^$'
-        return any(c in path_string for c in suspicious_chars) or path_string.startswith(r"\\")
+        """Detecta caracteres no permitidos en rutas de Windows o prefijos UNC riesgosos."""
+        return any(c in path_string for c in SUSPICIOUS_CHARS) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
         """Valida extensión del archivo y asegura que no sea un enlace simbólico."""

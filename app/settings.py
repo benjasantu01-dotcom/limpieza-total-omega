@@ -248,21 +248,23 @@ class _Validators:
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(key, text)
         return _Validators._validate_enum_str(text, key)
 
+def _get_validator_for_key(key: ConfigKey) -> _ValidatorEntry:
+    """Selecciona el validador estático apropiado según la semántica de la clave."""
+    if key in {
+        ConfigKey.MOSTRAR_BARRAS, ConfigKey.ANIMACIONES, ConfigKey.CONFIRMAR_SIEMPRE, 
+        ConfigKey.RECORDAR_ULTIMA_CARPETA, ConfigKey.ANALISIS_EN_PARALELO, 
+        ConfigKey.ASISTENTE_ACTIVADO, ConfigKey.ASISTENTE_ENVIAR_METRICAS
+    }:
+        return _ValidatorEntry(_Validators.bool)
+    if key in {ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB, ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS}:
+        return _ValidatorEntry(_Validators.int)
+    if key == ConfigKey.ULTIMA_CARPETA:
+        return _ValidatorEntry(_Validators.path)
+    return _ValidatorEntry(_Validators.str)
+
 def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
-    """Factory que categoriza los validadores según el tipo de dato de la clave."""
-    mapping = {}
-    for k in ConfigKey:
-        if k in (ConfigKey.MOSTRAR_BARRAS, ConfigKey.ANIMACIONES, ConfigKey.CONFIRMAR_SIEMPRE, 
-                 ConfigKey.RECORDAR_ULTIMA_CARPETA, ConfigKey.ANALISIS_EN_PARALELO, 
-                 ConfigKey.ASISTENTE_ACTIVADO, ConfigKey.ASISTENTE_ENVIAR_METRICAS):
-            mapping[k] = _ValidatorEntry(_Validators.bool)
-        elif k in (ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB, ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS):
-            mapping[k] = _ValidatorEntry(_Validators.int)
-        elif k == ConfigKey.ULTIMA_CARPETA:
-            mapping[k] = _ValidatorEntry(_Validators.path)
-        else:
-            mapping[k] = _ValidatorEntry(_Validators.str)
-    return MappingProxyType(mapping)
+    """Genera el mapa de validación aplicando la estrategia de selección por clave."""
+    return MappingProxyType({k: _get_validator_for_key(k) for k in ConfigKey})
 
 _VALIDATOR_MAP: Final = _build_validator_map()
 

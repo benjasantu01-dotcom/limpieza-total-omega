@@ -595,3 +595,21 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-16T12:20:15` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: legibilidad y documentación).
 - `2026-09-16T12:20:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-16T12:20:15` Corrida terminada. Total usado hoy: 292.
+- `2026-09-16T12:25:36` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-09-16T12:26:11` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo documentando el propósito de `_build_validator_map` y delegando la lógica de categorización de tipos en una función de ayuda más clara, reduciendo la complejidad ciclomática de la inicialización de validadores.
+- `2026-09-16T12:26:40` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_is_reserved_device_name` y `_is_path_suspicious` para usar un conjunto de reglas constantes y explícitas, añadiendo type hints faltantes y un docstring que clarifica la lógica de las validaciones de seguridad.
+- `2026-09-16T12:27:23` Tests FALLARON:
+```
+, 2400 MB de basura, 900 MB en duplicados.'
+ +  where 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.' = Answer(text='Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 M...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_explains_they_are_signals - AssertionError: assert 'señales' in 'con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de ram, 2400 mb de basura, 900 mb en duplicados.'
+ +  where 'con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de ram, 2400 mb de basura, 900 mb en duplicados.' = <built-in method lower of str object at 0x7f70e7fbcb30>()
+ +    where <built-in method lower of str object at 0x7f70e7fbcb30> = 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.'.lower
+ +      where 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.' = Answer(text='Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 M...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+2 failed, 297 passed in 1.34s
+
+```
+- `2026-09-16T12:27:23` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimizé `local_answer` para evitar la tokenización completa de cada pregunta mediante el uso de `str.split()` con un set de palabras clave, reemplazando la expresión regular `re.findall` que se ejecutaba en cada iteración, mejorando así la eficiencia en tiempo de ejecución.
+- `2026-09-16T12:27:43` 🛑 Propuesta bloqueada por la guardia en branding.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: PaletteDict
+- `2026-09-16T12:27:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-16T12:27:43` Corrida terminada. Total usado hoy: 296.
