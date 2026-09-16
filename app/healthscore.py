@@ -109,12 +109,12 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 
 # Pre-vinculación de lógica para evitar búsquedas en diccionario o lambdas en el bucle
 _PIPELINE: Final[List[PipelineEntry]] = [
-    PipelineEntry("seguridad", 30, lambda m: score_security(getattr(m, 'suspicious_count', 0), getattr(m, 'suspicious_warnings', 0)), []),
-    PipelineEntry("disco", 20, lambda m: score_disk(getattr(m, 'disk_free_percent', 100.0)), []),
-    PipelineEntry("memoria", 18, lambda m: score_memory(getattr(m, 'memory_available_percent', 100.0)), []),
-    PipelineEntry("basura", 14, lambda m: score_junk(getattr(m, 'junk_mb', 0.0)), []),
-    PipelineEntry("duplicados", 10, lambda m: score_duplicates(getattr(m, 'duplicate_mb', 0.0)), []),
-    PipelineEntry("arranque", 8, lambda m: score_startup(getattr(m, 'startup_count', 0)), []),
+    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), []),
+    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), []),
+    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), []),
+    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), []),
+    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), []),
+    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), []),
 ]
 
 _RULES_LIST: Final[Tuple[RecommendationRule, ...]] = (
@@ -243,7 +243,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             
     final_score = int(_clamp(round(accumulated_score), 0.0, 100.0))
     
-    q_count = getattr(metrics, 'quarantined_count', 0)
+    q_count = metrics.quarantined_count
     if q_count > 0:
         recommendations.append(f"Tenés {int(q_count)} archivo(s) en cuarentena.")
     

@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 234
+- Sin respuesta de la IA (error o límite): 235
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 19 | 1 | 4 | 4 | 38 |
+| 2026-09-14 | 16 | 1 | 3 | 4 | 38 |
 | 2026-09-15 | 154 | 12 | 26 | 5 | 153 |
-| 2026-09-16 | 34 | 0 | 7 | 4 | 43 |
+| 2026-09-16 | 35 | 0 | 9 | 4 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **44**
 - seguridad defensiva: **43**
-- robustez ante casos límite: **39**
-- rendimiento: **29**
+- robustez ante casos límite: **36**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **20**
 - `browser.py`: **19**
-- `healthscore.py`: **19**
-- `settings.py`: **18**
 - `quarantine.py`: **18**
 - `diskreport.py`: **17**
 - `memory.py`: **17**
-- `safety.py`: **16**
+- `settings.py`: **17**
 - `assistant.py`: **15**
+- `safety.py`: **15**
 - `duplicates.py`: **14**
-- `scanner.py`: **13**
 - `branding.py`: **12**
 - `organizer.py`: **12**
+- `scanner.py`: **12**
 - `main.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T03:46:34` **healthscore.py** (rendimiento): Optimicé el bucle de cálculo en `compute_score` sustituyendo los `getattr` (que realizan búsquedas de atributos por nombre en cada iteración) por acceso directo a los campos, aprovechando que el objeto `SystemMetrics` es una clase conocida y estructurada.
 - `2026-09-16T03:37:04` **browser.py** (rendimiento): He implementado una optimización en `detect_profiles` para evitar el cálculo redundante de `Path.resolve(strict=True)` dentro de los loops internos y utilicé el `set` `scanned_paths` ya existente para prevenir la re-evaluación completa de subárboles de caché que podrían estar compartidos entre diferentes perfiles o mapeos de navegadores, mejorando el rendimiento en sistemas con múltiples navegadores basados en Chromium.
 - `2026-09-16T03:26:49` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos a las funciones públicas y estandarizando los retornos mediante el uso consistente de `copy()` para evitar la mutación accidental del caché interno.
 - `2026-09-16T03:26:18` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo mediante la adición de Type Hints detallados, documentación de docstrings en funciones críticas y la estandarización de las firmas de funciones para asegurar la consistencia en el uso de los parámetros `entry` y `now_ts`.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T02:55:16` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que el comando extraído del registro no sea una cadena vacía o contenga solo espacios antes de intentar procesarlo como ruta, evitando así errores innecesarios durante el análisis del registro.
 - `2026-09-16T02:46:35` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de archivos implementando un manejo explícito de errores durante la lectura y decodificación del JSON, evitando dejar el sistema en un estado inconsistente si `json.loads` o `decode` fallan.
 - `2026-09-16T02:45:52` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante errores de sistema encapsulando las verificaciones de metadatos en un bloque `try-except` más específico y asegurando que las llamadas a `kernel32` no propaguen excepciones inesperadas que interrumpan el flujo de la aplicación.
-- `2026-09-16T02:37:05` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez de `load_manifest` mediante la captura explícita de `FileNotFoundError` y validación de tipos, evitando que errores de E/S o corrupción silenciosa del JSON provoquen fallos en cascada en la interfaz.
