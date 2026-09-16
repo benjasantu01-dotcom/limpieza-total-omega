@@ -204,19 +204,22 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
         return False
 
 
+def _is_valid_traversal_step(entry: os.DirEntry, root_base: str) -> bool:
+    """Verifica condiciones de seguridad específicas para descender en un subdirectorio."""
+    return (
+        entry.is_dir(follow_symlinks=False) and 
+        not entry.is_symlink() and 
+        _is_path_inside_base(Path(entry.path), Path(root_base))
+    )
+
 def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionChecker, kernel32: Optional[ctypes.WinDLL], memo: Dict[str, int], depth: int) -> int:
-    """
-    Procesa un elemento individual de directorio. Si es carpeta, desciende (recursivo);
-    si es archivo, retorna su tamaño en bytes.
-    """
+    """Procesa un elemento individual: si es directorio válido, desciende recursivamente; si es archivo, obtiene su tamaño."""
     if depth > MAX_SCAN_DEPTH:
         return 0
     try:
-        if entry.is_dir(follow_symlinks=False):
-            if not entry.is_symlink() and not is_junction_fn(entry.path):
-                # Validar seguridad antes de descender nuevamente
-                if _is_path_inside_base(Path(entry.path), Path(root_base)):
-                    return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
+        if _is_valid_traversal_step(entry, root_base):
+            if not is_junction_fn(entry.path):
+                return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
         elif entry.is_file(follow_symlinks=False):
             stat_res = entry.stat(follow_symlinks=False)
             return int(stat_res.st_size) if hasattr(stat_res, 'st_size') else 0
@@ -233,13 +236,10 @@ def _sum_directory_recursive(
     root_base: str,
     depth: int = 0
 ) -> int:
-    """
-    Motor recursivo de cálculo de tamaño con memoización.
-    """
+    """Motor recursivo de cálculo de tamaño con memoización y validación de sandbox."""
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or _is_unc_path(root_abs):
         return 0
     
-    # Validar que sea una ruta absoluta y exista físicamente
     root_path = Path(root_abs)
     if not root_path.is_absolute() or not root_path.exists():
         return 0
@@ -247,7 +247,7 @@ def _sum_directory_recursive(
     if root_abs in memo:
         return memo[root_abs]
 
-    # Validar integridad contra el sandbox antes de escanear
+    # Verificar que el punto de inicio de este sub-escaneo sigue en zona segura
     if not _is_path_inside_base(root_path, Path(root_base)):
         return 0
 

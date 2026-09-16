@@ -5,22 +5,41 @@ Este módulo implementa un motor de puntuación (scoring) de arquitectura funcio
 Toma un objeto 'SystemMetrics' y, mediante un pipeline de normalización y 
 ponderación, lo transforma en un 'HealthResult' comprensible para el usuario.
 
-DISEÑO:
-- `compute_score` es una función pura: no tiene efectos secundarios, facilitando
-  la verificabilidad y los tests unitarios.
-- El pipeline utiliza una estrategia de 'Clamping' para asegurar que cualquier
-  entrada de métrica, sin importar su origen, resulte en un valor entre 0 y 1.
-- Los factores de normalización se calculan como el inverso del umbral crítico.
+DISEÑO DEL PIPELINE:
+- `compute_score`: Función central que procesa las métricas a través de `_PIPELINE`.
+- Cada entrada del pipeline (PipelineEntry) define:
+    1. Un área de evaluación (ej. 'seguridad').
+    2. Un peso relativo (influencia en el score total de 0 a 100).
+    3. Una función 'scorer' que normaliza la métrica cruda a un ratio [0, 1].
+    4. Un conjunto de reglas que generan recomendaciones si el ratio es bajo.
 """
 
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Any, Final, Tuple, TypeAlias, NamedTuple, Annotated, Callable
+from enum import Enum
 import math
 
 ScoreMap: TypeAlias = Dict[str, float]
 NormalizedRatio: TypeAlias = Annotated[float, "Un valor entre 0.0 y 1.0 representando salud"]
 MetricKey: TypeAlias = str
+
+class Grade(Enum):
+    """Calificaciones posibles según el puntaje final obtenido."""
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
+    F = "F"
+
+    @classmethod
+    def from_score(cls, score: float | int) -> str:
+        s = float(score)
+        if s >= 90: return cls.A.value
+        if s >= 80: return cls.B.value
+        if s >= 65: return cls.C.value
+        if s >= 50: return cls.D.value
+        return cls.F.value
 
 class RecommendationRule(NamedTuple):
     """Define una lógica de evaluación para generar sugerencias al usuario."""
@@ -195,12 +214,7 @@ def _to_float(value: Any, default: float = 0.0) -> float:
 
 def grade_for_score(score: float | int) -> str:
     """Mapea una puntuación numérica a una calificación alfabética."""
-    s = float(score)
-    if s >= 90: return "A"
-    if s >= 80: return "B"
-    if s >= 65: return "C"
-    if s >= 50: return "D"
-    return "F"
+    return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
     """Evalúa reglas de recomendación y acumula mensajes de hallazgos sanitizados."""
@@ -215,7 +229,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Punto de entrada principal para calcular el score de salud del sistema."""
+    """Ejecuta el pipeline de evaluación para obtener un HealthResult."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     
