@@ -397,7 +397,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
-        return False, f"Acceso denegado (Error {kernel32.GetLastError()})."
+        return False, f"Acceso denegado o proceso inexistente (Error {kernel32.GetLastError()})."
     
     try:
         is_safe, error_reason = _is_safe_to_trim(proc_handle)

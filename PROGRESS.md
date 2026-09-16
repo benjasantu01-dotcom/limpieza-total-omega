@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 237
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 236
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 6 | 1 | 2 | 3 | 38 |
+| 2026-09-14 | 5 | 1 | 2 | 2 | 36 |
 | 2026-09-15 | 154 | 12 | 26 | 5 | 153 |
-| 2026-09-16 | 41 | 0 | 12 | 5 | 46 |
+| 2026-09-16 | 44 | 0 | 12 | 5 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **40**
-- seguridad defensiva: **34**
+- robustez ante casos límite: **43**
+- seguridad defensiva: **33**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **20**
 - `browser.py`: **19**
-- `healthscore.py`: **19**
 - `quarantine.py`: **18**
-- `settings.py`: **17**
+- `memory.py`: **17**
 - `diskreport.py`: **17**
-- `memory.py`: **16**
+- `settings.py`: **16**
 - `safety.py`: **15**
 - `assistant.py`: **15**
 - `duplicates.py`: **14**
 - `branding.py`: **12**
 - `scanner.py`: **12**
 - `organizer.py`: **11**
-- `main.py`: **9**
+- `main.py`: **10**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T04:28:35` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una validación explícita para evitar que `OpenProcess` intente abrir un PID inexistente o inaccesible que resulte en un handle nulo, y se asegura que la consulta de `GetExitCodeProcess` sea tratada como una precondición antes de cualquier operación sobre el handle.
+- `2026-09-16T04:28:06` **main.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas inexistentes, vacías o caracteres no imprimibles en el selector de carpetas de la pestaña de Limpieza (`on_target_choice_changed`), evitando que `Path(choice).resolve(strict=True)` lance excepciones no controladas que podrían romper el hilo principal si el usuario cancela o selecciona una ruta degradada.
+- `2026-09-16T04:26:56` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de `_PIPELINE` añadiendo un chequeo explícito de división por cero y valores no finitos durante la configuración, evitando excepciones en tiempo de ejecución si los límites configurados fueran modificados a valores inválidos.
 - `2026-09-16T04:18:17` **duplicates.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante errores de lectura mediante la implementación de `try-except` más granulares en `_get_keeper_score` y la adición de una validación de existencia en `suggest_keeper` para prevenir fallos durante la iteración sobre grupos de archivos dinámicos.
 - `2026-09-16T04:18:07` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante casos límite mediante la validación estricta de tipos en los tamaños de archivo y la protección contra `OSError` durante la lectura de atributos, asegurando que el proceso no se interrumpa ante metadatos corruptos o archivos bloqueados a nivel de sistema.
 - `2026-09-16T04:17:40` **browser.py** (robustez ante casos límite): Se ha robustecido el escaneo de directorios frente a permisos denegados durante el proceso de enumeración, asegurando que `_sum_directory_recursive` maneje errores de acceso de forma atómica sin abortar la suma del resto del contenido accesible y añadiendo una validación de ruta absoluta en la resolución de candidatos para prevenir inyecciones de paths fuera del alcance permitido.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T03:26:18` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo mediante la adición de Type Hints detallados, documentación de docstrings en funciones críticas y la estandarización de las firmas de funciones para asegurar la consistencia en el uso de los parámetros `entry` y `now_ts`.
 - `2026-09-16T03:16:42` **quarantine.py** (legibilidad y documentación): He añadido docstrings detallados y clarificadores a las funciones de persistencia y aislamiento, y he refactorizado la lógica de `_write_temp_to_final` para incluir anotaciones de tipo más estrictas y una mejor descripción de sus salvaguardas contra condiciones de carrera, mejorando así la legibilidad técnica y la auditabilidad del código.
 - `2026-09-16T03:16:06` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los parámetros y valores de retorno en funciones críticas (`_is_safe_for_disk_op`, `stage_for_review`, `_process_directory`) para clarificar el flujo de seguridad, y se han ajustado los nombres de algunas variables locales (`target` -> `destination_path`) para eliminar ambigüedades técnicas y mejorar la legibilidad.
-- `2026-09-16T03:15:39` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints, la estandarización de docstrings siguiendo convenciones de estilo técnico, y la clarificación de la intención en las funciones de validación, eliminando ambigüedades en los tipos de datos utilizados.
-- `2026-09-16T03:06:20` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos y type hints a funciones y constantes críticas para aclarar la intención del diseño de puntuación, facilitando su mantenimiento.
-- `2026-09-16T03:05:52` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo *docstrings* detallados en las funciones de hashing y en los filtros de seguridad (`_is_valid_candidate`), aclarando la lógica de las comprobaciones de integridad y seguridad exigidas por el proyecto.

@@ -1289,7 +1289,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             update_label("")
         else:
             try:
-                target_path = Path(choice).resolve(strict=True)
+                # Sanitización robusta contra caracteres no imprimibles o malformaciones
+                clean_choice = "".join(c for c in choice if c.isprintable())
+                target_path = Path(clean_choice).resolve(strict=True)
                 if self._is_safe_target_dir(target_path):
                     self.scan_target = str(target_path)
                     update_label(f"Unidad completa: {choice}")
@@ -1298,7 +1300,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     self.target_choice.set("Por defecto (Temp + Descargas)")
                     self.scan_target = None
                     update_label("")
-            except (OSError, ValueError):
+            except (OSError, ValueError, RuntimeError):
                 self.log(f"Error: La ruta {choice} no es válida o ya no existe.", "Limpieza")
                 self.target_choice.set("Por defecto (Temp + Descargas)")
                 self.scan_target = None
