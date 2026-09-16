@@ -451,7 +451,7 @@ def explain_area(area: Any) -> str:
 @lru_cache(maxsize=16)
 def _get_active_problems(ctx: SystemContext) -> tuple[str, ...]:
     """Identifica problemas activos comparando el contexto contra los criterios de salud."""
-    return tuple(msg for msg in (crit.format_if_triggered(ctx) for crit in _CRITERIOS_SALUD) if msg)
+    return tuple(msg for crit in _CRITERIOS_SALUD if (msg := crit.format_if_triggered(ctx)))
 
 def _format_problem_message(problems: tuple[str, ...], score: Union[int, str]) -> str:
     """Crea una oración descriptiva con los problemas encontrados, priorizados."""

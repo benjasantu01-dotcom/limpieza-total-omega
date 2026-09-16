@@ -340,15 +340,17 @@ def logo_ascii() -> str:
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     try:
-        # Validación de tipos y valores críticos antes de operar
         if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in (canvas_x, canvas_y, scale)): return
         franjas_count = max(6, int(28 * scale))
         base_y = canvas_y + 18 * scale
         factor_y = 92 * scale / franjas_count
         center_x = canvas_x + 64 * scale
+        # Pre-calculo de constantes de bucle
+        max_inv = max(1.0, float(franjas_count - 1))
+        
         for seg in _get_grouped_segments(gradient_colors(franjas_count)):
             mid = (seg.start_index + seg.end_index) / 2
-            progreso = mid / max(1.0, float(franjas_count - 1))
+            progreso = mid / max_inv
             w = 36 * scale * (1.0 if progreso < 0.55 else 1.0 - (progreso - 0.55) * 1.9)
             canvas.create_rectangle(center_x - w, base_y + seg.start_index * factor_y, 
                                     center_x + w, base_y + seg.end_index * factor_y + 1, 
@@ -358,14 +360,15 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     try:
         if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in (canvas_x, canvas_y, scale)): return
-        canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, 
-                           canvas_x + 75 * scale, canvas_y + 41 * scale, 
+        c_x, c_y = canvas_x, canvas_y
+        canvas.create_line(c_x + 41 * scale, c_y + 75 * scale, 
+                           c_x + 75 * scale, c_y + 41 * scale, 
                            fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
-        canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, 
-                              canvas_x + 89 * scale, canvas_y + 38 * scale, 
-                              canvas_x + 92 * scale, canvas_y + 52 * scale, 
+        canvas.create_polygon(c_x + 75 * scale, c_y + 41 * scale, 
+                              c_x + 89 * scale, c_y + 38 * scale, 
+                              c_x + 92 * scale, c_y + 52 * scale, 
                               fill=C_BACKGROUND, outline="")
-        canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", 
+        canvas.create_text(c_x + 64 * scale, c_y + 96 * scale, text="\u03a9", 
                            fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(UI_FONT_HEADER_SIZE * scale)), UI_FONT_BOLD))
     except Exception: pass
 
@@ -375,9 +378,10 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         s = float(size)
         if not math.isfinite(s) or s <= 0: return
         scale = max(0.1, min(10.0, s / 128.0))
+        offset = 64 * scale
         canvas.create_oval(
-            canvas_x + 64 * scale - 75 * scale, canvas_y + 58 * scale - 75 * scale, 
-            canvas_x + 64 * scale + 75 * scale, canvas_y + 58 * scale + 75 * scale, 
+            canvas_x + offset - 75 * scale, canvas_y + (58 * scale) - 75 * scale, 
+            canvas_x + offset + 75 * scale, canvas_y + (58 * scale) + 75 * scale, 
             fill=blend(C_SURFACE, C_GLOW, 0.15), outline=""
         )
         canvas.create_polygon(*_get_scaled_poly(scale, canvas_x, canvas_y), fill=GRADIENT_STOPS[1], outline="")
@@ -389,8 +393,9 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     """Dibuja una línea de progreso con degradado de colores en el canvas."""
     try:
         w_val = max(1, int(width))
+        h_val = max(1, int(height))
         for seg in _get_grouped_segments(gradient_colors(w_val, stops)):
-            canvas.create_line(canvas_x + seg.start_index, canvas_y, canvas_x + seg.end_index, canvas_y, fill=seg.hex_color, width=max(1, int(height)))
+            canvas.create_line(canvas_x + seg.start_index, canvas_y, canvas_x + seg.end_index, canvas_y, fill=seg.hex_color, width=h_val)
     except Exception: pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[HexColor] = None, fill: Optional[HexColor] = None) -> None:
