@@ -337,7 +337,10 @@ def _is_system_process(pid: int) -> bool:
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: int) -> Optional[Path]:
-    """Resuelve y valida la ruta del ejecutable de un proceso dado su handle."""
+    """
+    Resuelve la ruta absoluta del ejecutable de un proceso mediante PSAPI.
+    Retorna None si la ruta es inaccesible, es un reparse point, o está protegida.
+    """
     if not proc_handle or proc_handle <= 0: return None
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
@@ -365,7 +368,10 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
-    """Verifica si un proceso es candidato seguro para una operación de trim."""
+    """
+    Verifica los requisitos de seguridad y estado antes de intentar un trim.
+    Retorna (True, None) si es seguro, o (False, razón) si está bloqueado.
+    """
     if not isinstance(proc_handle, int) or proc_handle <= 0: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
     
@@ -389,7 +395,10 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
         return False, "Error interno durante la verificación de integridad."
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Intenta liberar el Working Set de memoria de un proceso específico."""
+    """
+    Intenta solicitar al kernel la liberación del working set de un proceso.
+    Solo tiene efecto en Windows y requiere permisos de consulta.
+    """
     if not _is_windows: return False, "Operación solo soportada en Windows."
     
     try:
