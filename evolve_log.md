@@ -625,3 +625,44 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-09-16T12:40:17` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): el archivo se encogió al 59% del original (posible pérdida de código)
 - `2026-09-16T12:40:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-16T12:40:17` Corrida terminada. Total usado hoy: 300.
+- `2026-09-16T12:46:02` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-16T12:47:19` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimicé el renderizado de la UI de salud y las tarjetas de métricas implementando un mecanismo de comparación de estados antes de redibujar, evitando el refresco innecesario de widgets y el uso redundante de recursos en el hilo principal durante el análisis.
+- `2026-09-16T12:47:49` Tests FALLARON:
+```
+.................................................................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________________ test_read_snapshot_never_crashes _______________________
+
+    def test_read_snapshot_never_crashes():
+>       snap = memory.read_snapshot()
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:404: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def read_snapshot() -> MemorySnapshot:
+        """Obtiene un snapshot global de RAM con una caché de 5 segundos."""
+        now = time.monotonic()
+        if (now - _snap_cache["time"]) < 5:
+            return _snap_cache["data"] # type: ignore
+    
+        snapshot = _EMPTY_SNAPSHOT
+        if _is_windows:
+            snapshot = _read_windows_snapshot()
+>       elif _linux_available:
+             ^^^^^^^^^^^^^^^^
+E       UnboundLocalError: cannot access local variable '_linux_available' where it is not associated with a value
+
+app/memory.py:261: UnboundLocalError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_read_snapshot_never_crashes - UnboundLocalError: cannot access local variable '_linux_available' where it is not associated with a value
+1 failed, 298 passed in 1.42s
+
+```
+- `2026-09-16T12:47:49` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `read_snapshot` y `top_memory_processes` reemplazando los llamados repetidos a `time.time()` y las comparaciones de diferencia de tiempo por un mecanismo de caché más eficiente y legible que asegura la frescura de los datos solo cuando es necesario, reduciendo la carga de ejecución en cada refresco de la UI.
+- `2026-09-16T12:48:15` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-16T12:48:36` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `list_items` y `purge_all` transformando las búsquedas sobre manifiestos de listas a diccionarios (O(1)), evitando bucles anidados innecesarios que degradaban el desempeño al crecer la cantidad de archivos cuarentenados.
+- `2026-09-16T12:48:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-16T12:48:36` Corrida terminada. Total usado hoy: 304.
