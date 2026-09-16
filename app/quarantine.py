@@ -632,6 +632,7 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
+        # Verificación segura de iteración de directorio
         existing_names = {f.name for f in base_path.iterdir() if f.is_file()}
         
         valid_items = [i for i in items if i.stored_name in existing_names]
@@ -639,7 +640,7 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
             save_manifest(valid_items, base)
             
         return sorted(valid_items, key=lambda x: x.quarantined_at, reverse=True)
-    except (OSError, UnsafePathError):
+    except (OSError, UnsafePathError, PermissionError):
         return []
 
 
@@ -728,7 +729,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
     """Verifica requisitos de seguridad antes de purgar un ítem."""
-    if not file_path.is_file() or file_path.is_symlink():
+    if not isinstance(file_path, Path) or not file_path.is_file() or file_path.is_symlink():
         return False
     return (
         file_path.exists() and
@@ -750,12 +751,13 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     purged_ids: Set[str] = set()
     
     try:
+        # Iteración defensiva sobre el directorio
         for stored_path in quarantine_root.iterdir():
             if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
                 continue
             
             item = item_map.get(stored_path.name)
-            if item and _is_item_purgable(stored_path, item, quarantine_root):
+            if item is not None and _is_item_purgable(stored_path, item, quarantine_root):
                 purged_ids.add(item.item_id)
                 
         if purged_ids:
