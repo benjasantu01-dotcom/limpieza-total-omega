@@ -205,11 +205,12 @@ def _safe_unlink(path: Path) -> bool:
     """
     Elimina un archivo tras validar políticas de seguridad y ausencia de bloqueos.
     """
-    if not path.is_file() or path.is_symlink() or is_protected_path(path):
-        return False
-        
     try:
-        if is_safe_to_modify(path) and not _is_file_locked(path):
+        resolved = path.resolve()
+        if not resolved.is_file() or resolved.is_symlink() or is_protected_path(resolved):
+            return False
+            
+        if is_safe_to_modify(resolved) and not _is_file_locked(resolved):
             path.unlink()
             return True
         return False
