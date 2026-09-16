@@ -321,8 +321,7 @@ class SystemContext:
             return False
             
         try:
-            numeric_val = float(val)
-            if math.isfinite(numeric_val) and spec.min_val <= numeric_val <= spec.max_val:
+            if spec.min_val <= val <= spec.max_val:
                 setattr(self, key, spec.cast_func(val))
                 return True
         except (ValueError, TypeError):
@@ -342,7 +341,7 @@ class SystemContext:
         Returns:
             True si se procesó exitosamente al menos una métrica válida.
         """
-        if source is None or not isinstance(source, (dict, object)) or _is_input_too_deep_or_complex(source):
+        if source is None or _is_input_too_deep_or_complex(source):
             return False
         
         if not isinstance(source, dict) and not hasattr(source, "__dict__"):
@@ -587,17 +586,17 @@ def available(base: Union[str, Path, None] = None) -> bool:
 
 def _parse_config(raw_cfg: Any) -> AssistantConfig:
     """Parsea el diccionario de configuración externa, asegurando valores predeterminados seguros."""
+    if not isinstance(raw_cfg, dict):
+        return AssistantConfig("", "gemini-3.1-flash-lite", True)
+    
     try:
-        if not isinstance(raw_cfg, dict):
-            return AssistantConfig("", "gemini-3.1-flash-lite", True)
-        
         api_key = str(raw_cfg.get("asistente_api_key", ""))
         model = str(raw_cfg.get("asistente_modelo", "gemini-3.1-flash-lite"))
         metrics_val = raw_cfg.get("asistente_enviar_metricas", True)
-        allow_metrics = bool(metrics_val) if isinstance(metrics_val, bool) else True
+        allow_metrics = bool(metrics_val)
         
         return AssistantConfig(api_key, model, allow_metrics)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, AttributeError):
         return AssistantConfig("", "gemini-3.1-flash-lite", True)
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:

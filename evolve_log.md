@@ -938,3 +938,10 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-16T03:58:06` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult, _IntegrityCheck
 - `2026-09-16T03:58:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-16T03:58:06` Corrida terminada. Total usado hoy: 96.
+- `2026-09-16T04:06:04` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-09-16T04:06:31` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root, Scanner._is_relevant_extension
+- `2026-09-16T04:07:00` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Se optimizó el acceso a las configuraciones implementando una estrategia de "shallow copy" y evitando la carga repetitiva de archivos mediante una mejora en la lógica de validación de caché, reduciendo las operaciones de I/O innecesarias en cada llamada a `get` o `load`.
+- `2026-09-16T04:07:26` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-16T04:07:51` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` y `_parse_config` ante entradas inesperadas, implementando una lógica de validación más estricta que evita fallos por tipos de datos erróneos o estructuras anidadas que podrían comprometer la estabilidad durante el parseo.
+- `2026-09-16T04:07:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-16T04:07:51` Corrida terminada. Total usado hoy: 100.
