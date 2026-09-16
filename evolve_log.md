@@ -642,3 +642,10 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-16T00:33:48` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita mediante `is_safe_to_modify` dentro de la lógica del bucle en `on_stage` y `on_quarantine_findings` para garantizar que los elementos individuales de una lista de archivos procesados se filtren correctamente antes de cualquier intento de operación, evitando así errores de ejecución en el bucle si una ruta específica dentro de una lista fuera insegura.
 - `2026-09-16T00:33:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-16T00:33:48` Corrida terminada. Total usado hoy: 16.
+- `2026-09-16T00:41:45` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-09-16T00:42:17` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `_get_process_path` para evitar posibles ataques de suplantación mediante enlaces simbólicos o reparse points, añadiendo una comprobación explícita mediante `is_symlink()` sobre la ruta resuelta y validando que el archivo sea un archivo regular (`is_file()`) antes de cualquier operación.
+- `2026-09-16T00:42:42` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-16T00:43:19` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó el aislamiento preventivo en `quarantine_file` al introducir una verificación estricta de la existencia del archivo origen después de cada operación crítica de I/O, previniendo posibles estados de inconsistencia si un proceso externo interviene en el sistema de archivos durante la ejecución.
+- `2026-09-16T00:43:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-16T00:43:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-16T00:43:23` Corrida terminada. Total usado hoy: 20.

@@ -604,9 +604,14 @@ def quarantine_file(
     # Flujo de aislamiento protegido mediante bloques de control
     file_hash = _atomic_isolate_file(source_path, destination, original_size)
     try:
+        # Re-validación del origen antes de eliminarlo tras moverlo exitosamente
+        if not source_path.exists():
+            raise RuntimeError("El archivo origen ha desaparecido inesperadamente.")
+        
         item = _register_quarantine_item(destination, source_path, file_hash, reason, original_size, base)
         if not item.verify_integrity(destination):
             raise RuntimeError("Integridad post-registro fallida.")
+        
         source_path.unlink()
         return item
     except Exception as e:

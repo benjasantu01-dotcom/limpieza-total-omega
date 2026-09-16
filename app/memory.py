@@ -373,8 +373,8 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
             if path_str.startswith(("\\\\", "\\??\\")): return None
             
             p = Path(path_str)
-            if not p.exists(): return None
-            # Evitar reparse points para prevenir recursiones
+            if not p.exists() or not p.is_file(): return None
+            # Evitar symlinks/reparse points para prevenir recursiones o ataques de path
             if p.is_symlink(): return None
             
             p_resolved = p.resolve(strict=False)
