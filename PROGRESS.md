@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
-- Rechazadas por tests: 13
+- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 231
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 5 | 1 | 2 | 2 | 32 |
+| 2026-09-14 | 5 | 1 | 2 | 2 | 28 |
 | 2026-09-15 | 154 | 12 | 26 | 5 | 153 |
-| 2026-09-16 | 45 | 0 | 13 | 6 | 48 |
+| 2026-09-16 | 46 | 1 | 13 | 6 | 50 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **44**
-- seguridad defensiva: **33**
+- seguridad defensiva: **34**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
@@ -37,7 +37,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **17**
 - `safety.py`: **16**
 - `settings.py`: **16**
-- `assistant.py`: **15**
+- `assistant.py`: **16**
 - `duplicates.py`: **14**
 - `branding.py`: **12**
 - `scanner.py`: **12**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T04:48:31` **assistant.py** (seguridad defensiva): Se endureció la seguridad de la función `_build_payload` en `assistant.py` mediante la validación del contenido mediante `_ensure_safe_text` antes de la serialización JSON, garantizando que ninguna métrica malintencionada que pudiera contener caracteres de escape o inyección llegue a ser procesada por el motor remoto.
 - `2026-09-16T04:38:09` **safety.py** (robustez ante casos límite): Se añadió una validación específica para detectar rutas que contienen componentes con caracteres de "espacio final" (trailing spaces) o "punto final" (trailing dots), una vulnerabilidad común en Windows donde la API de archivos puede normalizar estas rutas de forma inesperada, permitiendo bypass de protecciones de seguridad.
 - `2026-09-16T04:28:35` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una validación explícita para evitar que `OpenProcess` intente abrir un PID inexistente o inaccesible que resulte en un handle nulo, y se asegura que la consulta de `GetExitCodeProcess` sea tratada como una precondición antes de cualquier operación sobre el handle.
 - `2026-09-16T04:28:06` **main.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas inexistentes, vacías o caracteres no imprimibles en el selector de carpetas de la pestaña de Limpieza (`on_target_choice_changed`), evitando que `Path(choice).resolve(strict=True)` lance excepciones no controladas que podrían romper el hilo principal si el usuario cancela o selecciona una ruta degradada.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T03:37:04` **browser.py** (rendimiento): He implementado una optimización en `detect_profiles` para evitar el cálculo redundante de `Path.resolve(strict=True)` dentro de los loops internos y utilicé el `set` `scanned_paths` ya existente para prevenir la re-evaluación completa de subárboles de caché que podrían estar compartidos entre diferentes perfiles o mapeos de navegadores, mejorando el rendimiento en sistemas con múltiples navegadores basados en Chromium.
 - `2026-09-16T03:26:49` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos a las funciones públicas y estandarizando los retornos mediante el uso consistente de `copy()` para evitar la mutación accidental del caché interno.
 - `2026-09-16T03:26:18` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo mediante la adición de Type Hints detallados, documentación de docstrings en funciones críticas y la estandarización de las firmas de funciones para asegurar la consistencia en el uso de los parámetros `entry` y `now_ts`.
-- `2026-09-16T03:16:42` **quarantine.py** (legibilidad y documentación): He añadido docstrings detallados y clarificadores a las funciones de persistencia y aislamiento, y he refactorizado la lógica de `_write_temp_to_final` para incluir anotaciones de tipo más estrictas y una mejor descripción de sus salvaguardas contra condiciones de carrera, mejorando así la legibilidad técnica y la auditabilidad del código.

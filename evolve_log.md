@@ -966,3 +966,36 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-16T04:38:17` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-09-16T04:38:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-16T04:38:17` Corrida terminada. Total usado hoy: 112.
+- `2026-09-16T04:46:50` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-09-16T04:47:23` Tests FALLARON:
+```
+ssert 15 == 33
+ +  where 15 = <function get at 0x7f87f56b7420>('top_procesos', PosixPath('/tmp/pytest-of-runner/pytest-1/test_get_reads_a_single_value0'))
+ +    where <function get at 0x7f87f56b7420> = settings.get
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - AssertionError: assert '' == 'del-archivo'
+  
+  - del-archivo
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AssertionError: assert False is True
+ +  where False = <function assistant_enabled at 0x7f87f56b7560>(PosixPath('/tmp/pytest-of-runner/pytest-1/test_enabled_requires_both_the0'))
+ +    where <function assistant_enabled at 0x7f87f56b7560> = settings.assistant_enabled
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /tmp/pytest-of-runner/pytest-1/test_describe_never_prints_the0/config.json\n\n  Ap...is en paralelo: sí\n\n  Asistente IA\n    Activado: no\n    Clave: no configurada\n    Modelo: gemini-3.1-flash-lite\n'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C
+    Basura: 2400 MB
+  ?         ++++
+    Sospechosos: 3
+    RAM disponible: 11 percent
+    Disco libre: 6 percent
+    Duplicados: 900 MB
+    Inicio: 19 items
+10 failed, 289 passed in 1.40s
+
+```
+- `2026-09-16T04:47:23` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se introdujo una verificación de integridad basada en `os.stat` dentro de `_Validators._run_safety_checks` para detectar si el sistema de archivos cambió abruptamente (ej. unidad desconectada) y se añadió un manejo de errores robusto al intentar acceder a los metadatos de rutas en `_Validators._is_safe_path`, evitando excepciones durante el proceso de validación.
+- `2026-09-16T04:47:50` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-16T04:48:31` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la seguridad de la función `_build_payload` en `assistant.py` mediante la validación del contenido mediante `_ensure_safe_text` antes de la serialización JSON, garantizando que ninguna métrica malintencionada que pudiera contener caracteres de escape o inyección llegue a ser procesada por el motor remoto.
+- `2026-09-16T04:48:50` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-16T04:48:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-16T04:48:50` Corrida terminada. Total usado hoy: 116.

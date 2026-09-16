@@ -614,6 +614,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     }
     
     try:
+        if not _ensure_safe_text(str(payload_data)): return None
         payload = json.dumps(payload_data).encode("utf-8")
         return payload if len(payload) < _MAX_PROMPT_LIMIT * 2 else None
     except (TypeError, ValueError):
