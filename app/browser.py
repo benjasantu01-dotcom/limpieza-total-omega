@@ -216,7 +216,10 @@ def _is_valid_traversal_step(entry: os.DirEntry, root_base: str) -> bool:
     )
 
 def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionChecker, kernel32: Optional[ctypes.WinDLL], memo: Dict[str, int], depth: int) -> int:
-    """Procesa un elemento individual: si es directorio válido, desciende recursivamente; si es archivo, obtiene su tamaño."""
+    """
+    Evalúa una entrada del sistema de archivos.
+    Si es un directorio, delega la recursión. Si es archivo, computa su tamaño.
+    """
     if depth > MAX_SCAN_DEPTH:
         return 0
     try:
@@ -242,7 +245,11 @@ def _sum_directory_recursive(
     root_base: str,
     depth: int = 0
 ) -> int:
-    """Motor recursivo de cálculo de tamaño con memoización y validación de sandbox."""
+    """
+    Motor recursivo para calcular el peso de un árbol de directorios.
+    Utiliza memoización para evitar re-escaneo y validación constante de 'sandbox'
+    para asegurar que no se escape de la carpeta base del perfil.
+    """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or _is_unc_path(root_abs) or any(c in root_abs for c in '\0\r\n'):
         return 0
     

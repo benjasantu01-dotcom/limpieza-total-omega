@@ -213,7 +213,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre el sistema de archivos de forma iterativa (usando pila).
+    Recorre el árbol de directorios usando una pila (DFS).
+    
+    Implementa prevención de bucles infinitos rastreando inodos visitados, lo cual 
+    es crítico en sistemas de archivos con enlaces simbólicos o puntos de montaje 
+    anidados que podrían causar recursión infinita.
     """
     root_path = _validate_root(directory)
     if root_path is None:
@@ -308,6 +312,9 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Motor interno de agregación que realiza un recorrido único (O(N)) del árbol.
+    
+    Utiliza un min-heap para mantener los 'limit' archivos más grandes eficientemente
+    durante el recorrido, evitando la necesidad de ordenar toda la lista de archivos.
     """
     total_bytes: int = 0
     total_files: int = 0
