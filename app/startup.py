@@ -182,6 +182,9 @@ class StartupEntry:
             return path_string if _EXISTS_CACHE[path_string] else path_string
         
         try:
+            # Validación extra para caracteres prohibidos en nombres de archivos/carpetas
+            if any(c in norm for c in r'<>:"|?*'):
+                return ""
             p: Path = Path(norm)
             if not p.is_absolute():
                 _EXISTS_CACHE[path_string] = False

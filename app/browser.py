@@ -208,7 +208,9 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
     try:
         if entry.is_dir(follow_symlinks=False):
             if not entry.is_symlink() and not is_junction_fn(entry.path):
-                return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
+                # Validar seguridad antes de descender nuevamente
+                if _is_path_inside_base(Path(entry.path), Path(root_base)):
+                    return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
         elif entry.is_file(follow_symlinks=False):
             stat_res = entry.stat(follow_symlinks=False)
             return int(stat_res.st_size) if hasattr(stat_res, 'st_size') else 0
@@ -232,6 +234,7 @@ def _sum_directory_recursive(
     if root_abs in memo:
         return memo[root_abs]
 
+    # Validar integridad contra el sandbox antes de escanear
     if not _is_path_inside_base(Path(root_abs), Path(root_base)):
         return 0
 
