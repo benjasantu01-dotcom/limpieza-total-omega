@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **205** (40.7% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 234
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 101 | 9 | 16 | 3 | 111 |
-| 2026-09-16 | 104 | 3 | 23 | 11 | 123 |
+| 2026-09-15 | 97 | 9 | 16 | 3 | 111 |
+| 2026-09-16 | 107 | 4 | 23 | 11 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **48**
 - robustez ante casos límite: **45**
+- legibilidad y documentación: **44**
+- manejo de errores y validación de entradas: **44**
 - seguridad defensiva: **41**
-- manejo de errores y validación de entradas: **41**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **20**
+- `browser.py`: **21**
+- `assistant.py`: **19**
 - `healthscore.py`: **19**
-- `quarantine.py`: **18**
-- `assistant.py`: **18**
-- `memory.py`: **17**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
+- `quarantine.py`: **17**
+- `memory.py`: **16**
 - `safety.py`: **16**
 - `settings.py`: **15**
 - `duplicates.py`: **14**
-- `organizer.py`: **13**
 - `scanner.py`: **12**
 - `branding.py`: **12**
-- `main.py`: **9**
+- `organizer.py`: **12**
+- `main.py`: **8**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T11:16:16` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez de `walk_files` y `largest_folders` añadiendo validaciones preventivas ante rutas inesperadas o fallos de sistema al manipular `Path.parts`, evitando que el iterador falle silenciosamente ante nombres de archivos con caracteres especiales o estados de permiso restringidos.
+- `2026-09-16T11:16:04` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_sum_directory_recursive` mediante la implementación de un manejo de errores más específico y un chequeo preventivo de la integridad de los resultados, evitando excepciones silenciosas y asegurando que las rutas base sean siempre tratadas como absolutas y normalizadas antes de cualquier comparación de sandbox.
+- `2026-09-16T11:14:55` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `ingest` y los validadores de métricas mediante la adición de chequeos específicos de desbordamiento y tipos de dato, asegurando que `SystemContext` no pueda entrar en un estado inconsistente ante entradas malformadas o inesperadas.
 - `2026-09-16T09:44:08` **scanner.py** (seguridad defensiva): He mejorado la integridad del escaneo en `process_entry` al mover la validación de `is_protected_path` después de la verificación inicial de la entrada, asegurando que no se acceda a rutas restringidas mediante `is_dir` antes de haber validado la seguridad de la ruta completa, manteniendo la consistencia con las reglas del proyecto.
 - `2026-09-16T09:43:52` **safety.py** (seguridad defensiva): Se ha añadido una validación de seguridad proactiva en `ensure_safe_to_modify` para detectar si el archivo es un enlace simbólico mediante `path.is_symlink()` (independiente de atributos Win32), reforzando la protección contra la manipulación de rutas que apunten fuera del entorno permitido.
 - `2026-09-16T09:42:56` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_write_temp_to_final` añadiendo una validación explícita de `is_safe_to_modify` para el directorio destino antes de la escritura, asegurando que el sandbox no se desplace accidentalmente fuera de zonas permitidas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T09:12:43` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` implementando una validación estricta del esquema en `load()` que previene errores de "key missing" o corrupción silenciosa si el JSON está incompleto, garantizando que siempre se cumpla la estructura de `AppSettings` al retornar.
 - `2026-09-16T09:12:12` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a archivos al añadir un manejo explícito para archivos que son eliminados o bloqueados durante la iteración (`FileNotFoundError` / `OSError` en `_safe_stat`), evitando que una condición de carrera frene el escaneo completo.
 - `2026-09-16T09:03:48` **safety.py** (robustez ante casos límite): Se ha implementado una validación de redundancia de red en `_validate_boundary_conditions` para detectar y bloquear rutas que, mediante enlaces simbólicos o junctions, apunten fuera de la unidad local, previniendo el acceso accidental a recursos compartidos o volúmenes montados dinámicamente que podrían comportarse de forma inesperada.
-- `2026-09-16T09:03:05` **quarantine.py** (robustez ante casos límite): Se introdujo una mejora robusta en `_is_file_locked` para manejar archivos inaccesibles mediante la captura explícita de `PermissionError`, además de mejorar la fiabilidad del cierre de descriptores de archivo en la operación de aislamiento, evitando fugas de recursos en escenarios de error crítico.
-- `2026-09-16T09:02:28` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones explícitas de espacio en disco y accesibilidad antes de realizar operaciones de E/S, evitando fallos silenciosos por volúmenes de solo lectura o falta de cuota, alineándome con el enfoque de robustez ante casos límite.
-- `2026-09-16T08:53:45` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` y `_get_process_path` para prevenir fugas de recursos (handles de procesos abiertos) ante errores imprevistos, asegurando que el cierre del handle ocurra incluso si ocurren excepciones en las validaciones, y mejorando la gestión de rutas UNC/reparse points que podrían causar bloqueos en el sistema.

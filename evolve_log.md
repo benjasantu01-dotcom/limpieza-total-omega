@@ -510,3 +510,37 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-09-16T11:08:20` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-16T11:08:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-16T11:08:20` Corrida terminada. Total usado hoy: 264.
+- `2026-09-16T11:14:11` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-09-16T11:14:55` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la función `ingest` y los validadores de métricas mediante la adición de chequeos específicos de desbordamiento y tipos de dato, asegurando que `SystemContext` no pueda entrar en un estado inconsistente ante entradas malformadas o inesperadas.
+- `2026-09-16T11:15:35` Tests FALLARON:
+```
+ size = 150, canvas_x = 0.0, canvas_y = 0.0
+thickness = 14, track = None, fill = None
+
+    def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[HexColor] = None, fill: Optional[HexColor] = None) -> None:
+        """Dibuja un indicador circular de progreso basado en el porcentaje proporcionado."""
+        if percent is None: return
+        try:
+            val = float(percent)
+            if not math.isfinite(val): return
+            val = max(0.0, min(100.0, val))
+            diam = max(20, int(size))
+            thick = max(2, min(int(thickness), (diam // 2) - 1))
+            borde = thick / 2.0
+            caja = (canvas_x + borde, canvas_y + borde, canvas_x + diam - borde, canvas_y + diam - borde)
+>           canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)
+            ^^^^^^^^^^^^^^^^^
+E           AttributeError: 'NoneType' object has no attribute 'create_arc'
+
+app/branding.py:411: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - AttributeError: 'NoneType' object has no attribute 'create_line'
+FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missing_canvas - AttributeError: 'NoneType' object has no attribute 'create_arc'
+2 failed, 297 passed in 1.40s
+
+```
+- `2026-09-16T11:15:35` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `save_logo_svg` y las funciones de dibujo refinando el manejo de excepciones, asegurando que `Path` sea validado contra `None` antes de instanciarse y reemplazando bloques `except Exception` genéricos por capturas de errores específicos para prevenir la supresión de errores críticos.
+- `2026-09-16T11:16:04` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_sum_directory_recursive` mediante la implementación de un manejo de errores más específico y un chequeo preventivo de la integridad de los resultados, evitando excepciones silenciosas y asegurando que las rutas base sean siempre tratadas como absolutas y normalizadas antes de cualquier comparación de sandbox.
+- `2026-09-16T11:16:16` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `walk_files` y `largest_folders` añadiendo validaciones preventivas ante rutas inesperadas o fallos de sistema al manipular `Path.parts`, evitando que el iterador falle silenciosamente ante nombres de archivos con caracteres especiales o estados de permiso restringidos.
+- `2026-09-16T11:16:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-16T11:16:16` Corrida terminada. Total usado hoy: 268.

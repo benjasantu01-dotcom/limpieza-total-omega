@@ -298,7 +298,7 @@ class SystemContext:
     def is_empty(self) -> bool:
         """Verifica si el contexto contiene datos útiles tras el análisis."""
         if not self.analyzed: return True
-        if self.score is not None and self.score < 0: return True
+        if self.score is not None and (not isinstance(self.score, int) or self.score < 0): return True
         return not self.is_valid_structure
 
     def __hash__(self) -> int:
@@ -325,7 +325,7 @@ class SystemContext:
             if spec.min_val <= val <= spec.max_val:
                 setattr(self, key, spec.cast_func(val))
                 return True
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, OverflowError):
             pass
         return False
 
@@ -345,7 +345,7 @@ class SystemContext:
         if source is None or _is_input_too_deep_or_complex(source):
             return False
         
-        # Solo permitir dicts o clases simples de datos; ignorar objetos complejos con side-effects
+        # Solo permitir dicts o instancias con __dict__; evitar tipos o objetos globales
         if not isinstance(source, dict) and (not hasattr(source, "__dict__") or isinstance(source, type)):
             return False
             
@@ -402,9 +402,11 @@ def _get_source_value(source: Any, key: str) -> Any:
         return source.get(key)
     # Evitar acceder a propiedades que disparan lógica (solo data simple)
     try:
-        return getattr(source, key, None) if not key.startswith("__") else None
+        if isinstance(key, str) and not key.startswith("__"):
+            return getattr(source, key, None)
     except Exception:
         return None
+    return None
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Inicializa un SystemContext completo integrando datos de múltiples fuentes."""

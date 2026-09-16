@@ -228,7 +228,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Verificación de integridad: asegurar que la ruta resuelta está bajo la raíz
+                        # Verificación estricta de ruta resuelta
                         entry_path = Path(entry.path).resolve()
                         if not str(entry_path).startswith(str(root_path)):
                             continue
@@ -250,7 +250,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             if not isinstance(size_val, (int, float)):
                                 continue
                             yield entry_path, max(0, int(size_val))
-                    except (PermissionError, OSError, AttributeError, RuntimeError):
+                    except (PermissionError, OSError, AttributeError, RuntimeError, ValueError):
                         continue
         except (PermissionError, OSError):
             continue
@@ -286,11 +286,11 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     for path, size in walk_files(root, skip_protected):
         try:
             rel = path.relative_to(root)
-            if rel.parts:
+            if rel and rel.parts:
                 top_level_folder = root / rel.parts[0]
                 folder_total_bytes[top_level_folder] += max(0, int(size))
                 folder_file_counts[top_level_folder] += 1
-        except (ValueError, OSError, RuntimeError, TypeError): 
+        except (ValueError, OSError, RuntimeError, TypeError, IndexError): 
             continue
 
     results = [FolderUsage(p, folder_total_bytes[p], folder_file_counts[p]) for p in folder_total_bytes]

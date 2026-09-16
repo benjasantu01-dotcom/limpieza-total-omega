@@ -246,29 +246,29 @@ def _sum_directory_recursive(
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or _is_unc_path(root_abs) or any(c in root_abs for c in '\0\r\n'):
         return 0
     
-    root_path = Path(root_abs)
-    # Seguridad adicional: validar que el directorio no haya sido marcado como protegido tras la resolución
-    if not root_path.is_absolute() or not root_path.exists() or is_protected_path(root_path):
-        return 0
-        
-    if root_abs in memo:
-        return memo[root_abs]
-
-    if not _is_path_inside_base(root_path, Path(root_base)):
-        return 0
-
-    total: int = 0
     try:
-        with os.scandir(root_abs) as it:
+        root_path = Path(root_abs).resolve(strict=True)
+        if not root_path.is_absolute() or not root_path.is_dir() or is_protected_path(root_path):
+            return 0
+        
+        current_abs = str(root_path)
+        if current_abs in memo:
+            return memo[current_abs]
+
+        if not _is_path_inside_base(root_path, Path(root_base).resolve(strict=True)):
+            return 0
+
+        total: int = 0
+        with os.scandir(current_abs) as it:
             for entry in it:
                 if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue
                 total += _process_entry(entry, root_base, is_junction_fn, kernel32, memo, depth)
-    except (PermissionError, OSError):
-        pass
-    
-    memo[root_abs] = total
-    return total
+        
+        memo[current_abs] = total
+        return total
+    except (OSError, PermissionError, RuntimeError, ValueError):
+        return 0
 
 
 def directory_size(path: Union[str, Path, None]) -> int:
