@@ -178,9 +178,10 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Analiza una entrada única y decide si debe procesarse o añadirse a la pila."""
         try:
-            if not entry.path: return
+            if not entry.path or is_protected_path(Path(entry.path)): 
+                return
             is_dir = entry.is_dir(follow_symlinks=False)
-            ext_low = os.path.splitext(entry.name)[1].lower() if not is_dir else ""
+            ext_low = Path(entry.name).suffix.lower() if not is_dir else ""
             
             if not self._is_relevant_extension(entry, is_dir, ext_low):
                 return
@@ -207,7 +208,7 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """Realiza un escaneo granular de un archivo específico."""
-    if not path: return []
+    if not path or is_protected_path(path): return []
     findings: ScanResult = []
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)

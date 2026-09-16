@@ -35,7 +35,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple, TypeGuard
 
-from safety import is_safe_to_modify, is_protected_path, UnsafePathError
+from safety import is_safe_to_modify, is_protected_path, UnsafePathError, ensure_safe_to_modify
 
 PathLike: TypeAlias = str | Path
 SettingsDict: TypeAlias = dict[str, Any]
@@ -335,7 +335,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     
-    if not _Validators._is_safe_path(str(ruta.absolute())): return None
+    try:
+        # Validación defensiva crítica antes de tocar el sistema de archivos
+        ensure_safe_to_modify(ruta.parent)
+    except UnsafePathError:
+        return None
         
     cleaned_settings = _ensure_settings_integrity(validate(values))
     temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
