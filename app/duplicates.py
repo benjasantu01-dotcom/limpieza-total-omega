@@ -212,15 +212,18 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             
             with os.scandir(real_dir) as iterator:
                 for entry in iterator:
-                    if entry.is_dir(follow_symlinks=False):
-                        if not is_junction(Path(entry.path)):
-                            _scan_dir(Path(entry.path))
-                    else:
-                        valid, st = _should_include_entry(entry, min_size)
-                        if valid and st:
-                            size_to_paths_map[st.st_size].append(Path(entry.path))
+                    try:
+                        if entry.is_dir(follow_symlinks=False):
+                            if not is_junction(Path(entry.path)):
+                                _scan_dir(Path(entry.path))
+                        else:
+                            valid, st = _should_include_entry(entry, min_size)
+                            if valid and st:
+                                size_to_paths_map[st.st_size].append(Path(entry.path))
+                    except (OSError, PermissionError):
+                        continue
         except (OSError, PermissionError):
-            pass
+            return
 
     for item in directories:
         if (root := _resolve_and_verify_root(item)):

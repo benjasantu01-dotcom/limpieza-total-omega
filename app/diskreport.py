@@ -312,7 +312,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         if limit > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size, path))
-            elif size > top_heap[0][0]:
+            elif size > (top_heap[0][0] if top_heap else 0):
                 heapq.heapreplace(top_heap, (size, path))
     
     ext_stats = {ext: ExtStats(ext_bytes[ext], ext_counts[ext]) for ext in ext_bytes}

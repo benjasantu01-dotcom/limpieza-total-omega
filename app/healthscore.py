@@ -257,7 +257,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             weighted_points = _clamp(round(area_ratio * entry.weight), 0, entry.weight)
             metric_breakdown[entry.area] = int(weighted_points)
             accumulated_score += weighted_points
-        except Exception:
+        except (Exception, TypeError, ValueError):
             metric_breakdown[entry.area] = 0
             recommendations.append(f"Error al analizar el área: {entry.area}.")
             

@@ -680,3 +680,14 @@ FAILED evolve/tests/test_modules.py::test_read_snapshot_never_crashes - UnboundL
 - `2026-09-16T13:08:57` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita de "path traversal" usando `os.path.commonpath` dentro del bucle de `detect_profiles` y en `_sum_directory_recursive` para asegurar que, bajo ninguna circunstancia de resolución de rutas (como symlinks maliciosos en la estructura de `User Data`), la recursión escape de la carpeta base del perfil del usuario.
 - `2026-09-16T13:08:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-16T13:08:57` Corrida terminada. Total usado hoy: 312.
+- `2026-09-16T13:16:36` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-16T13:16:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-16T13:17:11` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_collect_summary_data` y las funciones dependientes ante archivos con permisos denegados durante el acceso a atributos, protegiendo el bucle de recolección frente a errores inesperados de sistema mediante el uso de `getattr(st, 'st_size', 0)` y capturas de excepciones más específicas.
+- `2026-09-16T13:17:39` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). He mejorado `_collect_candidates` para manejar robustamente directorios inaccesibles y errores de permisos durante el escaneo, evitando que una sola carpeta con acceso denegado detenga la detección en todo el árbol de directorios.
+- `2026-09-16T13:18:09` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez ante casos límite en `compute_score` asegurando que, ante fallos en los `scorer` (como divisiones por cero imprevistas o tipos erróneos), el sistema no colapse y devuelva un puntaje conservador (0) para el área afectada, manteniendo la integridad del resultado global.
+- `2026-09-16T13:19:10` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-16T13:19:13` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-16T13:20:19` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-16T13:21:31` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-16T13:21:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-16T13:21:31` Corrida terminada. Total usado hoy: 316.
