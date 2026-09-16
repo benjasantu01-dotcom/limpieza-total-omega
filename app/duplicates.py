@@ -138,7 +138,6 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 def _is_valid_candidate(path: Path, st: os.stat_result) -> bool:
     """Filtro de seguridad que actúa como barrera antes de cualquier procesamiento."""
     try:
-        # Usamos lstat mediante el stat_result provisto para no seguir enlaces
         if (st.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT) if hasattr(st, 'st_file_attributes') else path.is_symlink():
             return False
         if is_protected_path(path) or not is_safe_to_modify(path):
@@ -266,7 +265,7 @@ def _get_keeper_score(path: Path) -> Optional[Tuple[float, int]]:
     try:
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
-    except (OSError, PermissionError, ValueError):
+    except (OSError, PermissionError, ValueError, AttributeError):
         return None
 
 
@@ -275,7 +274,14 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
     
-    candidates = [(s, p) for p in group.paths if (s := _get_keeper_score(p))]
+    # Filtramos solo aquellos que realmente existan al momento de sugerir
+    candidates = []
+    for p in group.paths:
+        if not isinstance(p, Path) or not p.exists():
+            continue
+        if score := _get_keeper_score(p):
+            candidates.append((score, p))
+            
     return min(candidates, key=lambda x: x[0])[1] if candidates else None
 
 
@@ -289,7 +295,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
     
     for path in group.paths:
-        if not path.exists() or not is_safe_to_modify(path):
+        if not isinstance(path, Path) or not path.exists() or not is_safe_to_modify(path):
             lines.append(f"   [inaccesible] {path}")
         else:
             label = 'conservar' if (keeper is not None and path == keeper) else 'duplicado'

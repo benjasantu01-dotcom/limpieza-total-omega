@@ -170,14 +170,20 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura que los valores de las métricas estén dentro de rangos lógicos."""
-        self.junk_mb = max(0.0, _to_float(self.junk_mb))
-        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
-        self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
-        self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings)))
-        self.startup_count = int(max(0, _to_float(self.startup_count)))
-        self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
-        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
-        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
+        try:
+            self.junk_mb = max(0.0, _to_float(self.junk_mb))
+            self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
+            self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
+            self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings)))
+            self.startup_count = int(max(0, _to_float(self.startup_count)))
+            self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
+            self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
+            self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
+        except (TypeError, ValueError):
+            self.junk_mb = self.duplicate_mb = 0.0
+            self.suspicious_count = self.suspicious_warnings = 0
+            self.startup_count = self.quarantined_count = 0
+            self.memory_available_percent = self.disk_free_percent = 100.0
 
     @property
     def is_finite(self) -> bool:
@@ -232,12 +238,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     
-    try:
-        metrics.validate()
-        if not metrics.is_finite:
-            return HealthResult(0, "F", {}, ["Error: Inconsistencia numérica detectada."])
-    except Exception:
-        return HealthResult(0, "F", {}, ["Error: Fallo al validar métricas."])
+    metrics.validate()
+    if not metrics.is_finite:
+        return HealthResult(0, "F", {}, ["Error: Inconsistencia numérica detectada."])
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}

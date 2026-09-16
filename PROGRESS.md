@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 39
-- Sin cambios (nada sustancial que mejorar): 14
+- Rechazadas por guardia de seguridad: 37
+- Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 234
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 97 | 9 | 16 | 3 | 111 |
-| 2026-09-16 | 107 | 4 | 23 | 11 | 123 |
+| 2026-09-15 | 95 | 9 | 14 | 3 | 111 |
+| 2026-09-16 | 110 | 4 | 23 | 12 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **45**
-- legibilidad y documentación: **44**
-- manejo de errores y validación de entradas: **44**
+- legibilidad y documentación: **42**
 - seguridad defensiva: **41**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **21**
+- `healthscore.py`: **20**
 - `assistant.py`: **19**
-- `healthscore.py`: **19**
 - `diskreport.py`: **17**
+- `memory.py`: **17**
 - `quarantine.py`: **17**
-- `memory.py`: **16**
 - `safety.py`: **16**
-- `settings.py`: **15**
-- `duplicates.py`: **14**
-- `scanner.py`: **12**
+- `duplicates.py`: **15**
+- `settings.py`: **14**
 - `branding.py`: **12**
 - `organizer.py`: **12**
+- `scanner.py`: **11**
 - `main.py`: **8**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T11:28:56` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` y `_is_valid_process_entry` al manejar explícitamente posibles errores de parseo de datos crudos, asegurando que un campo mal formateado no interrumpa el procesamiento de la lista de procesos.
+- `2026-09-16T11:25:18` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.validate` y la inicialización del pipeline capturando posibles errores de configuración en tiempo de ejecución, asegurando que un valor inválido o no numérico en las métricas no interrumpa el hilo principal y proporcione un diagnóstico claro.
+- `2026-09-16T11:24:49` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones de tipo explícitas y chequeos de estado (`path.exists()`), previniendo errores en tiempo de ejecución si el sistema de archivos cambia durante la inspección.
 - `2026-09-16T11:16:16` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez de `walk_files` y `largest_folders` añadiendo validaciones preventivas ante rutas inesperadas o fallos de sistema al manipular `Path.parts`, evitando que el iterador falle silenciosamente ante nombres de archivos con caracteres especiales o estados de permiso restringidos.
 - `2026-09-16T11:16:04` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_sum_directory_recursive` mediante la implementación de un manejo de errores más específico y un chequeo preventivo de la integridad de los resultados, evitando excepciones silenciosas y asegurando que las rutas base sean siempre tratadas como absolutas y normalizadas antes de cualquier comparación de sandbox.
 - `2026-09-16T11:14:55` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `ingest` y los validadores de métricas mediante la adición de chequeos específicos de desbordamiento y tipos de dato, asegurando que `SystemContext` no pueda entrar en un estado inconsistente ante entradas malformadas o inesperadas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T09:22:53` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación estricta de las rutas de caché antes de cualquier operación, asegurando que no contengan caracteres de escape (NUL, CR, LF) y reforzando la verificación `is_safe_to_modify` para prevenir la manipulación de directorios protegidos o fuera del alcance autorizado (sandbox).
 - `2026-09-16T09:22:26` **branding.py** (seguridad defensiva): Mejoré la seguridad de la función `save_logo_svg` añadiendo una validación explícita mediante `is_safe_to_modify` antes de proceder con cualquier operación de disco, garantizando que el archivo de destino no esté bajo protección antes de intentar la escritura, manteniendo la consistencia con las reglas de seguridad defensiva.
 - `2026-09-16T09:13:37` **assistant.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva de `assistant.py` mediante la validación explícita del tipo de datos en `_ensure_safe_text` (restringiendo a `str`) y reforzando `_validate_response_length` para que ante cualquier entrada no esperada o maliciosa devuelva un string vacío, evitando así el procesamiento de datos potencialmente inyectados o fuera de contrato.
-- `2026-09-16T09:12:43` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` implementando una validación estricta del esquema en `load()` que previene errores de "key missing" o corrupción silenciosa si el JSON está incompleto, garantizando que siempre se cumpla la estructura de `AppSettings` al retornar.
-- `2026-09-16T09:12:12` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a archivos al añadir un manejo explícito para archivos que son eliminados o bloqueados durante la iteración (`FileNotFoundError` / `OSError` en `_safe_stat`), evitando que una condición de carrera frene el escaneo completo.
-- `2026-09-16T09:03:48` **safety.py** (robustez ante casos límite): Se ha implementado una validación de redundancia de red en `_validate_boundary_conditions` para detectar y bloquear rutas que, mediante enlaces simbólicos o junctions, apunten fuera de la unidad local, previniendo el acceso accidental a recursos compartidos o volúmenes montados dinámicamente que podrían comportarse de forma inesperada.

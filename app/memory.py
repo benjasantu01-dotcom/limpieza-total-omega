@@ -195,13 +195,15 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         cached=BytesValue(max(0, cached))
     )
 
-def _is_valid_process_entry(name: object, pid_str: object, ws_str: object) -> Optional[ProcessMemory]:
+def _is_valid_process_entry(fields: List[str]) -> Optional[ProcessMemory]:
     """Valida los campos crudos extraídos de PowerShell para un proceso."""
-    if name is None or pid_str is None or ws_str is None:
+    if len(fields) < 3:
         return None
     try:
-        pid_val, ws_val = int(pid_str), int(ws_str)
-        name_clean = str(name).strip()
+        name_clean = fields[0].strip()
+        pid_val = int(fields[1])
+        ws_val = int(fields[2])
+        
         if not name_clean or pid_val <= 0 or ws_val < 0 or is_protected_path(name_clean):
             return None
         return ProcessMemory(name=name_clean, pid=pid_val, working_set=BytesValue(ws_val))
@@ -217,11 +219,14 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
     
-    gen = (
-        _is_valid_process_entry(*[_clean_csv_field(x) for x in line.split(",")][:3])
-        for line in raw_csv_text.splitlines() if "," in line
-    )
-    processed = [p for p in gen if p]
+    processed: List[ProcessMemory] = []
+    for line in raw_csv_text.splitlines():
+        if "," in line:
+            parts = [_clean_csv_field(x) for x in line.split(",")]
+            entry = _is_valid_process_entry(parts)
+            if entry:
+                processed.append(entry)
+                
     processed.sort(key=lambda p: p.working_set, reverse=True)
     return processed[:limit]
 
