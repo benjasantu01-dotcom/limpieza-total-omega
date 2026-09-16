@@ -104,6 +104,9 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
         return None
     return None
 
+def _is_unc_path(path_str: str) -> bool:
+    """Detecta si la ruta es un recurso de red (UNC) para evitar bloqueos/riesgos."""
+    return path_str.startswith(r"\\") or path_str.startswith("//")
 
 def base_directories() -> List[Path]:
     """
@@ -113,7 +116,7 @@ def base_directories() -> List[Path]:
         Lista conteniendo la ruta de perfil local si es segura.
     """
     local_env = os.environ.get("LOCALAPPDATA")
-    if not isinstance(local_env, str) or not local_env:
+    if not isinstance(local_env, str) or not local_env or _is_unc_path(local_env):
         return []
     
     try:
@@ -172,7 +175,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
             return True
         
         path = entry.path
-        if not path or len(path) >= MAX_PATH_LEN or any(c in path for c in '\0\r\n'):
+        if not path or len(path) >= MAX_PATH_LEN or any(c in path for c in '\0\r\n') or _is_unc_path(path):
             return True
         
         if entry.is_symlink() or is_junction_fn(path):
@@ -192,7 +195,7 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
         return False
     try:
         p_res = path_obj.resolve(strict=True)
-        if not p_res.is_dir() or not is_safe_to_modify(p_res) or is_protected_path(p_res):
+        if _is_unc_path(str(p_res)) or not p_res.is_dir() or not is_safe_to_modify(p_res) or is_protected_path(p_res):
             return False
         if base_check_path and not _is_path_inside_base(p_res, base_check_path):
             return False
@@ -233,7 +236,7 @@ def _sum_directory_recursive(
     """
     Motor recursivo de cálculo de tamaño con memoización.
     """
-    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
+    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or _is_unc_path(root_abs):
         return 0
     if root_abs in memo:
         return memo[root_abs]
@@ -265,6 +268,8 @@ def directory_size(path: Union[str, Path, None]) -> int:
         return 0
     try:
         resolved = str(p.resolve(strict=True))
+        if _is_unc_path(resolved):
+            return 0
         return _sum_directory_recursive(resolved, _IS_JUNCTION_FN, _get_kernel32(), {}, resolved)
     except (OSError, RuntimeError, PermissionError):
         return 0
@@ -276,7 +281,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
         if not isinstance(candidate, Path) or not candidate.is_absolute() or not candidate.exists() or not candidate.is_dir():
             return False
         real_candidate = candidate.resolve(strict=True)
-        if not _is_path_inside_base(real_candidate, base_path):
+        if _is_unc_path(str(real_candidate)) or not _is_path_inside_base(real_candidate, base_path):
             return False
         if not is_safe_to_modify(real_candidate) or is_protected_path(real_candidate):
             return False

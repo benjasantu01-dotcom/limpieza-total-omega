@@ -203,11 +203,12 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Evalúa reglas de recomendación y acumula mensajes de hallazgos."""
+    """Evalúa reglas de recomendación y acumula mensajes de hallazgos sanitizados."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
                 msg = str(rule.message_factory(metrics))
+                # Sanitización: solo texto imprimible, sin saltos de línea ni inyecciones
                 clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                 if clean_msg:
                     findings.append(clean_msg[:200])

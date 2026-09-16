@@ -999,3 +999,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-16T04:48:50` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-09-16T04:48:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-16T04:48:50` Corrida terminada. Total usado hoy: 116.
+- `2026-09-16T04:57:05` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-09-16T04:57:34` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la implementación de `_is_unc_path` para detectar y rechazar rutas UNC, evitando así riesgos de seguridad asociados con el acceso a recursos de red no autorizados o inestables durante la enumeración de archivos.
+- `2026-09-16T04:57:59` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-09-16T04:58:25` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-09-16T04:58:36` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad del pipeline de datos limitando la entrada al método `compute_score` mediante una validación explícita de finitud (NaN/Inf) y asegurando que las reglas de recomendación no puedan inyectar contenido inesperado al resultado final mediante una sanitización estricta de strings.
+- `2026-09-16T04:58:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-16T04:58:36` Corrida terminada. Total usado hoy: 120.
