@@ -202,7 +202,10 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
 
 
 def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionChecker, kernel32: Optional[ctypes.WinDLL], memo: Dict[str, int], depth: int) -> int:
-    """Nodo recursivo: desciende en directorios o mide archivos."""
+    """
+    Procesa un elemento individual de directorio. Si es carpeta, desciende (recursivo);
+    si es archivo, retorna su tamaño en bytes.
+    """
     if depth > MAX_SCAN_DEPTH:
         return 0
     try:
@@ -228,7 +231,13 @@ def _sum_directory_recursive(
     root_base: str,
     depth: int = 0
 ) -> int:
-    """Motor recursivo de cálculo de tamaño con memoización."""
+    """
+    Motor recursivo de cálculo de tamaño con memoización.
+    Args:
+        root_abs: Ruta absoluta a escanear.
+        memo: Caché de resultados para evitar re-procesar subdirectorios.
+        Returns: Suma total de bytes del árbol validado.
+    """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
     if root_abs in memo:

@@ -138,12 +138,13 @@ class ProblemCriterion(NamedTuple):
         Genera un mensaje de advertencia formateado si el criterio de problema es superado.
         Valida que el mensaje resultante sea seguro antes de devolverlo.
         """
-        f_val = ctx.get_metric(self.metric_key, -1.0)
-        if f_val < 0 or not self._evaluate_metric(f_val):
+        val: float = ctx.get_metric(self.metric_key, -1.0)
+        
+        if val < 0 or not self._evaluate_metric(val):
             return None
             
         try:
-            msg: str = self.message_format.format(f_val)[:_MAX_MSG_CHUNK]
+            msg: str = self.message_format.format(val)[:_MAX_MSG_CHUNK]
             return msg if _ensure_safe_text(msg) else None
         except (ValueError, TypeError, AttributeError, KeyError):
             return None

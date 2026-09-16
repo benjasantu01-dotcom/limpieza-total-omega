@@ -318,6 +318,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
                 name = "".join(c for c in val_name if ord(c) >= 32).strip()
                 cmd = "".join(c for c in val_cmd if ord(c) >= 32).strip()
                 
+                # Validación estricta: verificar que ni nombre ni comando sean vacíos
                 if not name or not cmd or cmd.startswith(r"\\") or cmd in seen_commands or name.upper().startswith("PS"):
                     continue
                 

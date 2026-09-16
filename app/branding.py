@@ -26,8 +26,9 @@ from functools import lru_cache
 from safety import is_safe_to_modify, ensure_safe_to_modify, is_protected_path
 import math
 
-# Caché local para evitar recálculo de gradientes en cada frame
-_GRADIENT_CACHE: dict[tuple[int, tuple[HexColor, ...]], Tuple[HexColor, ...]] = {}
+# Caché local para evitar recálculo de gradientes en cada frame.
+# Clave: (número de pasos, tupla de colores hexadecimales).
+_GRADIENT_CACHE: dict[Tuple[int, Tuple[HexColor, ...]], Tuple[HexColor, ...]] = {}
 
 # Pre-generación de fragmento SVG estático para mejorar performance
 _SVG_GRADIENT_STOPS: Final[str] = "\n".join([f'      <stop offset="{o}" stop-color="{c}"/>' 
@@ -245,7 +246,9 @@ def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
 
 @lru_cache(maxsize=128)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """Mezcla linealmente dos colores hexadecimales según un ratio (0.0 a 1.0)."""
+    """
+    Mezcla linealmente dos colores hexadecimales según un ratio (0.0 a 1.0).
+    """
     if start == end: return start
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -258,7 +261,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     ))
 
 def _interpolate_rgb(s1: RGBTuple, s2: RGBTuple, delta: float) -> RGBTuple:
-    """Calcula el valor intermedio entre dos colores RGB."""
+    """Calcula el color RGB intermedio (delta 0.0-1.0) entre dos puntos RGB."""
     return (
         int(s1[0] + (s2[0] - s1[0]) * delta),
         int(s1[1] + (s2[1] - s1[1]) * delta),
@@ -295,6 +298,7 @@ SHIELD_BASE_COORDS: Final[Tuple[float, ...]] = (64, 18, 100, 31, 100, 67, 90, 90
 
 @lru_cache(maxsize=8)
 def _get_scaled_poly(scale: float, canvas_x: float, canvas_y: float) -> Tuple[float, ...]:
+    """Escala las coordenadas base del escudo a partir de un factor de escala."""
     return tuple(canvas_x + c * scale if i % 2 == 0 else canvas_y + c * scale 
                  for i, c in enumerate(SHIELD_BASE_COORDS))
 

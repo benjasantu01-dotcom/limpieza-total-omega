@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 32 | 1 | 5 | 4 | 44 |
+| 2026-09-14 | 28 | 1 | 5 | 4 | 44 |
 | 2026-09-15 | 154 | 12 | 26 | 5 | 153 |
-| 2026-09-16 | 22 | 0 | 4 | 2 | 40 |
+| 2026-09-16 | 26 | 0 | 4 | 2 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **46**
+- legibilidad y documentación: **45**
+- manejo de errores y validación de entradas: **44**
 - seguridad defensiva: **43**
-- manejo de errores y validación de entradas: **43**
-- legibilidad y documentación: **42**
-- rendimiento: **34**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
 - `quarantine.py`: **19**
-- `memory.py`: **18**
+- `healthscore.py`: **19**
 - `diskreport.py`: **18**
+- `browser.py`: **18**
 - `safety.py`: **17**
+- `memory.py`: **17**
 - `settings.py`: **17**
-- `browser.py`: **17**
+- `assistant.py`: **15**
 - `duplicates.py`: **14**
-- `assistant.py`: **14**
-- `organizer.py`: **12**
-- `branding.py`: **12**
+- `branding.py`: **13**
 - `scanner.py`: **12**
-- `main.py`: **11**
-- `startup.py`: **7**
+- `organizer.py`: **11**
+- `main.py`: **10**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T02:56:39` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `browser.py` documentando los parámetros y retornos de funciones críticas (como `_sum_directory_recursive` y `_process_entry`) para clarificar el flujo de trabajo del motor recursivo y la gestión del sandbox.
+- `2026-09-16T02:56:27` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en la constante `_GRADIENT_CACHE` y docstrings descriptivos en funciones críticas, clarificando las unidades de medida (ej. píxeles, ratio 0-1) y el propósito de las transformaciones geométricas para facilitar futuras integraciones.
+- `2026-09-16T02:55:55` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `ProblemCriterion.format_if_triggered` para extraer la lógica de validación de métricas y formateo en pasos claros, eliminando la redundancia en las comprobaciones de valores negativos y garantizando la robustez mediante tipado explícito.
+- `2026-09-16T02:55:16` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que el comando extraído del registro no sea una cadena vacía o contenga solo espacios antes de intentar procesarlo como ruta, evitando así errores innecesarios durante el análisis del registro.
 - `2026-09-16T02:46:35` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de archivos implementando un manejo explícito de errores durante la lectura y decodificación del JSON, evitando dejar el sistema en un estado inconsistente si `json.loads` o `decode` fallan.
 - `2026-09-16T02:45:52` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante errores de sistema encapsulando las verificaciones de metadatos en un bloque `try-except` más específico y asegurando que las llamadas a `kernel32` no propaguen excepciones inesperadas que interrumpan el flujo de la aplicación.
 - `2026-09-16T02:37:05` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez de `load_manifest` mediante la captura explícita de `FileNotFoundError` y validación de tipos, evitando que errores de E/S o corrupción silenciosa del JSON provoquen fallos en cascada en la interfaz.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T02:16:20` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` al validar explícitamente el tipo de los índices de la estructura anidada y utilicé `get()` para evitar excepciones de `KeyError`, alineándome con el enfoque de validación defensiva y manejo de errores específicos.
 - `2026-09-16T00:54:25` **settings.py** (seguridad defensiva): Mejoré `_Validators._is_safe_path` para prevenir ataques de sustitución mediante enlaces simbólicos o junctions que apunten a rutas críticas, asegurando que `realpath` se evalúe antes de cualquier validación de seguridad.
 - `2026-09-16T00:52:40` **safety.py** (seguridad defensiva): Se implementó un chequeo preventivo de privilegios de escritura mediante `os.access(path, os.W_OK)` antes de intentar cualquier operación, cerrando una brecha donde archivos bloqueados a nivel de sistema operativo (pero no por handles de WinAPI) podrían haber escapado a la validación.
-- `2026-09-16T00:43:19` **quarantine.py** (seguridad defensiva): Se reforzó el aislamiento preventivo en `quarantine_file` al introducir una verificación estricta de la existencia del archivo origen después de cada operación crítica de I/O, previniendo posibles estados de inconsistencia si un proceso externo interviene en el sistema de archivos durante la ejecución.
-- `2026-09-16T00:42:17` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `_get_process_path` para evitar posibles ataques de suplantación mediante enlaces simbólicos o reparse points, añadiendo una comprobación explícita mediante `is_symlink()` sobre la ruta resuelta y validando que el archivo sea un archivo regular (`is_file()`) antes de cualquier operación.
-- `2026-09-16T00:33:48` **main.py** (seguridad defensiva): Se ha añadido una validación explícita mediante `is_safe_to_modify` dentro de la lógica del bucle en `on_stage` y `on_quarantine_findings` para garantizar que los elementos individuales de una lista de archivos procesados se filtren correctamente antes de cualquier intento de operación, evitando así errores de ejecución en el bucle si una ruta específica dentro de una lista fuera insegura.
-- `2026-09-16T00:32:54` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del pipeline de cálculo mediante la validación estricta de las métricas después de su procesamiento individual, asegurando que cualquier entrada maliciosa o corrupta no propague valores fuera de rango al score final.
