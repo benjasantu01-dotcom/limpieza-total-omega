@@ -246,9 +246,11 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, hash_file)
     else:
+        # Filtrar candidatos usando hash parcial, solo procesar grupos con más de 1 archivo
         partial_groups = _group_paths_by_hash(paths, partial_hash)
         results: Dict[str, List[Path]] = {}
         for subset in partial_groups.values():
+            # Solo realizamos hash_file completo en grupos que ya tienen coincidencias parciales
             results.update(_group_paths_by_hash(subset, hash_file))
             
     return [DuplicateGroup(digest, size, sorted(p)) for digest, p in results.items()]

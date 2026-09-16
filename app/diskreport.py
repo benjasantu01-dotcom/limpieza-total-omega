@@ -77,7 +77,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if directory is None:
         return None
     try:
-        raw_path = Path(directory).resolve()
+        raw_path = Path(directory).absolute()
         
         if not raw_path.exists() or not raw_path.is_dir():
             return None
@@ -103,7 +103,6 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
             return True
         if os.name == 'nt':
             try:
-                # Verificamos atributos de archivo sin seguir el enlace
                 st = entry.stat(follow_symlinks=False)
                 if hasattr(st, 'st_file_attributes'):
                     return bool(st.st_file_attributes & REPARSE_POINT_ATTR)
@@ -196,7 +195,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None:
         return None
     try:
-        p = Path(mount).resolve()
+        p = Path(mount).absolute()
         if p.exists() and not is_protected_path(p):
             usage = shutil.disk_usage(p)
             return DriveUsage(str(p), usage.total, usage.used, usage.free)
@@ -212,19 +211,12 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """
-    Recorre el árbol de directorios usando una pila (DFS).
-    
-    Implementa prevención de bucles infinitos rastreando inodos visitados, lo cual 
-    es crítico en sistemas de archivos con enlaces simbólicos o puntos de montaje 
-    anidados que podrían causar recursión infinita.
-    """
+    """Recorre el árbol de directorios usando una pila (DFS) y evitando resolución innecesaria de rutas."""
     root_path = _validate_root(directory)
-    if root_path is None:
-        return
+    if root_path is None: return
 
     visited_inodes: set[Inode] = set()
-    stack: List[Path] = [root_path]
+    stack: List[str] = [str(root_path)]
     
     while stack:
         current_dir = stack.pop()
@@ -232,29 +224,22 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Verificación estricta de ruta resuelta
-                        entry_path = Path(entry.path).resolve()
-                        if not str(entry_path).startswith(str(root_path)):
-                            continue
-
                         if _is_excluded_path(entry): continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            if skip_protected and is_protected_path(entry_path): continue
+                            path_obj = Path(entry.path)
+                            if skip_protected and is_protected_path(path_obj): continue
                             
                             st = entry.stat(follow_symlinks=False)
-                            inode: Inode = (getattr(st, 'st_dev', 0), getattr(st, 'st_ino', 0))
-                            if inode[0] != 0 and inode not in visited_inodes:
+                            inode = (st.st_dev, st.st_ino)
+                            if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(entry_path)
+                                stack.append(entry.path)
                                 
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat()
-                            size_val = getattr(st, 'st_size', 0)
-                            if not isinstance(size_val, (int, float)):
-                                continue
-                            yield entry_path, max(0, int(size_val))
-                    except (PermissionError, OSError, AttributeError, RuntimeError, ValueError):
+                            yield Path(entry.path), int(getattr(st, 'st_size', 0))
+                    except (PermissionError, OSError, AttributeError):
                         continue
         except (PermissionError, OSError):
             continue
@@ -292,7 +277,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             rel = path.relative_to(root)
             if rel and rel.parts:
                 top_level_folder = root / rel.parts[0]
-                folder_total_bytes[top_level_folder] += max(0, int(size))
+                folder_total_bytes[top_level_folder] += size
                 folder_file_counts[top_level_folder] += 1
         except (ValueError, OSError, RuntimeError, TypeError, IndexError): 
             continue
@@ -310,12 +295,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """
-    Motor interno de agregación que realiza un recorrido único (O(N)) del árbol.
-    
-    Utiliza un min-heap para mantener los 'limit' archivos más grandes eficientemente
-    durante el recorrido, evitando la necesidad de ordenar toda la lista de archivos.
-    """
+    """Motor interno de agregación O(N) que utiliza heap para eficiencia de memoria."""
     total_bytes: int = 0
     total_files: int = 0
     ext_bytes: Dict[str, int] = defaultdict(int)
@@ -323,25 +303,19 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        if not isinstance(size, (int, float)):
-            continue
-            
-        total_bytes += int(size)
+        total_bytes += size
         total_files += 1
-        
-        suffix = path.suffix
-        ext = suffix.lower() if isinstance(suffix, str) and suffix else "(sin extensión)"
-        
-        ext_bytes[ext] += int(size)
+        ext = path.suffix.lower() or "(sin extensión)"
+        ext_bytes[ext] += size
         ext_counts[ext] += 1
         
         if limit > 0:
             if len(top_heap) < limit:
-                heapq.heappush(top_heap, (int(size), path))
+                heapq.heappush(top_heap, (size, path))
             elif size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (int(size), path))
+                heapq.heapreplace(top_heap, (size, path))
     
-    ext_stats: Dict[str, ExtStats] = {ext: ExtStats(ext_bytes[ext], ext_counts[ext]) for ext in ext_bytes}
+    ext_stats = {ext: ExtStats(ext_bytes[ext], ext_counts[ext]) for ext in ext_bytes}
     return SummaryData(total_bytes, total_files, ext_stats, top_heap)
 
 

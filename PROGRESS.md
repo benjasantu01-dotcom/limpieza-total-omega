@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 232
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 82 | 6 | 12 | 3 | 105 |
-| 2026-09-16 | 126 | 5 | 26 | 12 | 127 |
+| 2026-09-15 | 79 | 6 | 11 | 3 | 105 |
+| 2026-09-16 | 128 | 5 | 27 | 12 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **52**
 - seguridad defensiva: **41**
-- robustez ante casos límite: **39**
-- rendimiento: **23**
+- robustez ante casos límite: **36**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **20**
-- `quarantine.py`: **19**
 - `healthscore.py`: **19**
 - `assistant.py`: **18**
-- `safety.py`: **17**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
+- `quarantine.py`: **18**
 - `settings.py`: **16**
+- `safety.py`: **16**
+- `duplicates.py`: **16**
 - `memory.py`: **16**
-- `duplicates.py`: **15**
-- `organizer.py`: **13**
+- `organizer.py`: **12**
 - `scanner.py`: **12**
 - `branding.py`: **11**
 - `startup.py`: **8**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T12:39:30` **duplicates.py** (rendimiento): Optimicé el cálculo del hash en `_decide_hash_strategy_and_process` evitando llamadas redundantes a `hash_file` y `partial_hash` sobre archivos que ya fueron identificados como únicos tras el filtrado por tamaño inicial, reduciendo drásticamente las operaciones de E/S en conjuntos de datos grandes.
+- `2026-09-16T12:38:20` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando la resolución costosa de rutas mediante `path.resolve()` (que hace llamadas a sistema bloqueantes) por una manipulación de strings y caché de inodos, reduciendo significativamente la latencia en directorios con mucha profundidad.
 - `2026-09-16T12:26:40` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_is_reserved_device_name` y `_is_path_suspicious` para usar un conjunto de reglas constantes y explícitas, añadiendo type hints faltantes y un docstring que clarifica la lógica de las validaciones de seguridad.
 - `2026-09-16T12:26:11` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo documentando el propósito de `_build_validator_map` y delegando la lógica de categorización de tipos en una función de ayuda más clara, reduciendo la complejidad ciclomática de la inicialización de validadores.
 - `2026-09-16T12:16:34` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones críticas de validación y persistencia (`_write_temp_to_final`, `_atomic_isolate_file`, `_register_quarantine_item`), clarificando las precondiciones de seguridad y el flujo de los descriptores de archivo para evitar comportamientos ambiguos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T11:46:45` **assistant.py** (legibilidad y documentación): Se introdujeron type hints explícitos, se refinó la documentación (docstrings) de métodos críticos para clarificar su propósito pedagógico y técnico, y se extrajo `_is_metric_within_bounds` para mejorar la legibilidad del proceso de validación en `SystemContext`.
 - `2026-09-16T11:46:21` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que los campos obtenidos del CSV sean cadenas válidas antes de operar sobre ellos, evitando posibles errores de tipo (TypeError) si la estructura del CSV es inesperada.
 - `2026-09-16T11:45:52` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando excepciones específicas durante la escritura y validación, asegurando que la integridad del archivo original no se vea comprometida ante errores de E/S inesperados, cumpliendo con el enfoque de manejo de errores y validación.
-- `2026-09-16T11:45:20` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `_is_safe_entry` añadiendo validaciones proactivas contra valores `None` o rutas mal formadas antes de procesar, evitando posibles excepciones de tipo durante la iteración del disco.
-- `2026-09-16T11:36:20` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_validate_boundary_conditions` reemplazando la lógica de detección de directorios críticos basada en una simple búsqueda de string ("windows") por una comparación exacta y normalizada contra la lista de rutas del sistema del SO, evitando falsos positivos y errores de validación.
