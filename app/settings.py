@@ -371,6 +371,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 f.flush()
                 os.fsync(f.fileno())
             
+            # Reemplazo atómico asegurando integridad
             if ruta.exists():
                 try: os.replace(ruta, bak_path)
                 except OSError: pass

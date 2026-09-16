@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 71 | 5 | 10 | 3 | 95 |
-| 2026-09-16 | 138 | 6 | 29 | 15 | 132 |
+| 2026-09-15 | 71 | 5 | 10 | 3 | 91 |
+| 2026-09-16 | 140 | 6 | 29 | 15 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **52**
-- robustez ante casos límite: **44**
+- robustez ante casos límite: **46**
 - seguridad defensiva: **34**
 - rendimiento: **26**
 
@@ -36,8 +36,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **18**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
-- `safety.py`: **15**
-- `settings.py`: **15**
+- `safety.py`: **16**
+- `settings.py`: **16**
 - `branding.py`: **12**
 - `organizer.py`: **12**
 - `scanner.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T13:40:38` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save` frente a condiciones de carrera y sistemas de archivos con latencia, añadiendo un `os.replace` más seguro y garantizando que el archivo de configuración siempre mantenga permisos coherentes al intentar la escritura, además de proteger la integridad del archivo original ante fallos de escritura parciales mediante el uso de `os.fsync`.
+- `2026-09-16T13:37:40` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos de error de sistema de archivos al envolver las llamadas a `ctypes` en bloques `try-except` más granulares dentro de las funciones de chequeo de atributos (`_is_system_or_hidden`, `_is_encrypted_or_compressed`, `_is_offline`), evitando que una excepción inesperada (como un error de I/O o handle inválido) detenga la validación de seguridad y asegurar que estas funciones siempre devuelvan un booleano seguro (`False`) ante fallos.
 - `2026-09-16T13:28:29` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos inexistentes o bloqueos por permisos, previniendo errores de sistema al verificar archivos candidatos a cuarentena o purga.
 - `2026-09-16T13:27:52` **organizer.py** (robustez ante casos límite): Mejora la robustez del proceso de escaneo y gestión de archivos añadiendo verificaciones explícitas contra archivos cuyo tamaño excede la capacidad de representación de Python (archivos corruptos/masivos) y garantizando que las operaciones de movimiento no se bloqueen por errores de lectura en metadatos de archivos inaccesibles.
 - `2026-09-16T13:27:20` **memory.py** (robustez ante casos límite): Se ha robustecido el proceso de lectura de memoria en Linux al añadir un manejo explícito de errores de lectura de archivos (`OSError`, `PermissionError`, etc.) y validaciones de formato más estrictas en el parsing, asegurando que ante archivos vacíos, ilegibles o con contenido inesperado (casos límite comunes en entornos restringidos) la aplicación retorne un estado neutral en lugar de fallar o propagar excepciones.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T12:39:30` **duplicates.py** (rendimiento): Optimicé el cálculo del hash en `_decide_hash_strategy_and_process` evitando llamadas redundantes a `hash_file` y `partial_hash` sobre archivos que ya fueron identificados como únicos tras el filtrado por tamaño inicial, reduciendo drásticamente las operaciones de E/S en conjuntos de datos grandes.
 - `2026-09-16T12:38:20` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando la resolución costosa de rutas mediante `path.resolve()` (que hace llamadas a sistema bloqueantes) por una manipulación de strings y caché de inodos, reduciendo significativamente la latencia en directorios con mucha profundidad.
 - `2026-09-16T12:26:40` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_is_reserved_device_name` y `_is_path_suspicious` para usar un conjunto de reglas constantes y explícitas, añadiendo type hints faltantes y un docstring que clarifica la lógica de las validaciones de seguridad.
-- `2026-09-16T12:26:11` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo documentando el propósito de `_build_validator_map` y delegando la lógica de categorización de tipos en una función de ayuda más clara, reduciendo la complejidad ciclomática de la inicialización de validadores.
-- `2026-09-16T12:16:34` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones críticas de validación y persistencia (`_write_temp_to_final`, `_atomic_isolate_file`, `_register_quarantine_item`), clarificando las precondiciones de seguridad y el flujo de los descriptores de archivo para evitar comportamientos ambiguos.

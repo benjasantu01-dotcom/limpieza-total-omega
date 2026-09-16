@@ -206,7 +206,7 @@ def _is_system_or_hidden(path_str: str) -> bool:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == 0xFFFFFFFF: return False
         return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
-    except (AttributeError, OSError, FileNotFoundError, ctypes.ArgumentError):
+    except (AttributeError, OSError, FileNotFoundError, ctypes.ArgumentError, Exception):
         return False 
 
 @lru_cache(maxsize=2048)
@@ -219,7 +219,7 @@ def _is_reparse_point(path_str: str) -> bool:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == 0xFFFFFFFF: return False
         return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT)
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError, Exception):
         return False
 
 @lru_cache(maxsize=2048)
@@ -230,7 +230,7 @@ def _is_encrypted_or_compressed(path_str: str) -> bool:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == 0xFFFFFFFF: return False
         return bool(attrs & (FILE_ATTRIBUTE_COMPRESSED | FILE_ATTRIBUTE_ENCRYPTED))
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError, Exception):
         return False
 
 @lru_cache(maxsize=2048)
@@ -241,7 +241,8 @@ def _is_offline(path_str: str) -> bool:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == 0xFFFFFFFF: return False
         return bool(attrs & FILE_ATTRIBUTE_OFFLINE)
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError): return False
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError, Exception):
+        return False
 
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
@@ -279,7 +280,7 @@ def _is_directory_junction(path: Path) -> bool:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(str(path)))
         if attrs == 0xFFFFFFFF: return False
         return bool(attrs & FILE_ATTRIBUTE_DIRECTORY and attrs & FILE_ATTRIBUTE_REPARSE_POINT)
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError): return False
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError, Exception): return False
 
 def _is_kernel_managed(path: Path) -> bool:
     """Detecta archivos de paginación o hibernación bloqueados por el sistema operativo."""
