@@ -291,6 +291,7 @@ def _is_sensitive_extension(path: Path) -> bool:
 
 # Lista de validadores de integridad aplicada secuencialmente
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
+    _IntegrityCheck(ProtectionReason.SYMLINK, lambda p, _: p.is_symlink()),
     _IntegrityCheck(ProtectionReason.REPARSE_POINT, lambda p, _: _is_reparse_point(str(p))),
     _IntegrityCheck(ProtectionReason.KERNEL_LOCKED, lambda p, _: _is_kernel_managed(p)),
     _IntegrityCheck(ProtectionReason.READ_ONLY, lambda _, st: not bool(st.st_mode & stat.S_IWRITE)),
@@ -308,6 +309,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 ]
 
 _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
+    ProtectionReason.SYMLINK: SafetyValidationErrorCode.REPARSE_POINT_DETECTED,
     ProtectionReason.HARD_LINK: SafetyValidationErrorCode.HARD_LINK_DETECTED,
     ProtectionReason.OFFLINE: SafetyValidationErrorCode.OFFLINE_FILE,
     ProtectionReason.ENCRYPTED_OR_COMPRESSED: SafetyValidationErrorCode.ENCRYPTED_OR_COMPRESSED,
@@ -617,6 +619,7 @@ def describe_protection(path: PathLike) -> str:
     if is_protected_path(p): return f"'{p}' protegida por sistema."
     try:
         if p.exists():
+            if p.is_symlink(): return f"'{p}' es un enlace simbólico."
             if _is_reparse_point(str(p)): return f"'{p}' es un punto de reparse (Junction/Symlink)."
             if os.path.ismount(p): return f"'{p}' es un punto de montaje."
             if _is_readonly(str(p)): return f"'{p}' es solo lectura."

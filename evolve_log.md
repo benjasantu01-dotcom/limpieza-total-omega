@@ -1398,3 +1398,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-16T09:35:30` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-09-16T09:35:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-16T09:35:30` Corrida terminada. Total usado hoy: 228.
+- `2026-09-16T09:42:18` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-09-16T09:42:56` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_write_temp_to_final` añadiendo una validación explícita de `is_safe_to_modify` para el directorio destino antes de la escritura, asegurando que el sandbox no se desplace accidentalmente fuera de zonas permitidas.
+- `2026-09-16T09:43:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-16T09:43:52` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación de seguridad proactiva en `ensure_safe_to_modify` para detectar si el archivo es un enlace simbólico mediante `path.is_symlink()` (independiente de atributos Win32), reforzando la protección contra la manipulación de rutas que apunten fuera del entorno permitido.
+- `2026-09-16T09:44:08` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). He mejorado la integridad del escaneo en `process_entry` al mover la validación de `is_protected_path` después de la verificación inicial de la entrada, asegurando que no se acceda a rutas restringidas mediante `is_dir` antes de haber validado la seguridad de la ruta completa, manteniendo la consistencia con las reglas del proyecto.
+- `2026-09-16T09:44:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-16T09:44:08` Corrida terminada. Total usado hoy: 232.

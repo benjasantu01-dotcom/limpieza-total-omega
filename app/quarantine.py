@@ -479,6 +479,8 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     _check_path_syntax_integrity(destination)
     if is_protected_path(destination):
         raise UnsafePathError("Destino en ruta protegida.")
+    if not is_safe_to_modify(destination.parent):
+        raise UnsafePathError("Directorio destino no es seguro para escritura.")
     _check_windows_file_attributes(str(destination))
 
     if not source.is_file():

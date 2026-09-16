@@ -179,15 +179,13 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Analiza una entrada única y decide si debe procesarse o añadirse a la pila."""
         try:
-            if not entry or not entry.path or is_protected_path(Path(entry.path)): 
+            if not entry or not entry.path or not self._is_safe_entry(entry):
                 return
+            
             is_dir = entry.is_dir(follow_symlinks=False)
             ext_low = Path(entry.name).suffix.lower() if not is_dir else ""
             
             if not self._is_relevant_extension(entry, is_dir, ext_low):
-                return
-
-            if not self._is_safe_entry(entry):
                 return
 
             if is_dir:
