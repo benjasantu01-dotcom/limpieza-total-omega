@@ -457,8 +457,11 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
              raise UnsafePathError("Ruta raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS)
 
         for part in target_path.parts:
-            if not part or part.strip() != part or part.endswith(('.', ' ')):
-                raise UnsafePathError(f"Componente '{part}' malformado.", SafetyValidationErrorCode.INVALID_CHARS)
+            if not part or part.strip() != part:
+                raise UnsafePathError(f"Componente '{part}' con espacios envolventes.", SafetyValidationErrorCode.INVALID_CHARS)
+            
+            if part.endswith(('.', ' ')):
+                raise UnsafePathError(f"Componente '{part}' termina en caracter inválido.", SafetyValidationErrorCode.INVALID_CHARS)
             
             if "  " in part:
                  raise UnsafePathError(f"Componente '{part}' con espacios excesivos.", SafetyValidationErrorCode.INVALID_CHARS)

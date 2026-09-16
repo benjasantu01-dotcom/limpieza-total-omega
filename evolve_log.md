@@ -959,3 +959,10 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-16T04:28:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-09-16T04:28:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-16T04:28:45` Corrida terminada. Total usado hoy: 108.
+- `2026-09-16T04:36:37` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-09-16T04:37:13` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una validación de concurrencia y estado de archivo en `_write_temp_to_final` utilizando `os.fstat` sobre el descriptor de archivo ya abierto, evitando la condición de carrera (TOCTOU) al asegurar que el archivo fuente no cambió de tipo o tamaño entre la validación inicial y el inicio de la copia.
+- `2026-09-16T04:37:32` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-16T04:38:09` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se añadió una validación específica para detectar rutas que contienen componentes con caracteres de "espacio final" (trailing spaces) o "punto final" (trailing dots), una vulnerabilidad común en Windows donde la API de archivos puede normalizar estas rutas de forma inesperada, permitiendo bypass de protecciones de seguridad.
+- `2026-09-16T04:38:17` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-16T04:38:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-16T04:38:17` Corrida terminada. Total usado hoy: 112.

@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 236
+- Rechazadas por guardia de seguridad: 41
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 5 | 1 | 2 | 2 | 36 |
+| 2026-09-14 | 5 | 1 | 2 | 2 | 32 |
 | 2026-09-15 | 154 | 12 | 26 | 5 | 153 |
-| 2026-09-16 | 44 | 0 | 12 | 5 | 47 |
+| 2026-09-16 | 45 | 0 | 13 | 6 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **43**
+- robustez ante casos límite: **44**
 - seguridad defensiva: **33**
 - rendimiento: **31**
 
@@ -35,8 +35,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **18**
 - `memory.py`: **17**
 - `diskreport.py`: **17**
+- `safety.py`: **16**
 - `settings.py`: **16**
-- `safety.py`: **15**
 - `assistant.py`: **15**
 - `duplicates.py`: **14**
 - `branding.py`: **12**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T04:38:09` **safety.py** (robustez ante casos límite): Se añadió una validación específica para detectar rutas que contienen componentes con caracteres de "espacio final" (trailing spaces) o "punto final" (trailing dots), una vulnerabilidad común en Windows donde la API de archivos puede normalizar estas rutas de forma inesperada, permitiendo bypass de protecciones de seguridad.
 - `2026-09-16T04:28:35` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una validación explícita para evitar que `OpenProcess` intente abrir un PID inexistente o inaccesible que resulte en un handle nulo, y se asegura que la consulta de `GetExitCodeProcess` sea tratada como una precondición antes de cualquier operación sobre el handle.
 - `2026-09-16T04:28:06` **main.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas inexistentes, vacías o caracteres no imprimibles en el selector de carpetas de la pestaña de Limpieza (`on_target_choice_changed`), evitando que `Path(choice).resolve(strict=True)` lance excepciones no controladas que podrían romper el hilo principal si el usuario cancela o selecciona una ruta degradada.
 - `2026-09-16T04:26:56` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de `_PIPELINE` añadiendo un chequeo explícito de división por cero y valores no finitos durante la configuración, evitando excepciones en tiempo de ejecución si los límites configurados fueran modificados a valores inválidos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T03:26:49` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos a las funciones públicas y estandarizando los retornos mediante el uso consistente de `copy()` para evitar la mutación accidental del caché interno.
 - `2026-09-16T03:26:18` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo mediante la adición de Type Hints detallados, documentación de docstrings en funciones críticas y la estandarización de las firmas de funciones para asegurar la consistencia en el uso de los parámetros `entry` y `now_ts`.
 - `2026-09-16T03:16:42` **quarantine.py** (legibilidad y documentación): He añadido docstrings detallados y clarificadores a las funciones de persistencia y aislamiento, y he refactorizado la lógica de `_write_temp_to_final` para incluir anotaciones de tipo más estrictas y una mejor descripción de sus salvaguardas contra condiciones de carrera, mejorando así la legibilidad técnica y la auditabilidad del código.
-- `2026-09-16T03:16:06` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los parámetros y valores de retorno en funciones críticas (`_is_safe_for_disk_op`, `stage_for_review`, `_process_directory`) para clarificar el flujo de seguridad, y se han ajustado los nombres de algunas variables locales (`target` -> `destination_path`) para eliminar ambigüedades técnicas y mejorar la legibilidad.
