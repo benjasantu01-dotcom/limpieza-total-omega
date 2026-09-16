@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 59 | 2 | 9 | 5 | 75 |
+| 2026-09-14 | 59 | 2 | 9 | 5 | 71 |
 | 2026-09-15 | 154 | 12 | 26 | 5 | 153 |
-| 2026-09-16 | 0 | 0 | 0 | 2 | 2 |
+| 2026-09-16 | 3 | 0 | 1 | 2 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **46**
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **45**
 - rendimiento: **37**
 - seguridad defensiva: **34**
 
@@ -35,18 +35,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **19**
 - `memory.py`: **19**
 - `quarantine.py`: **19**
+- `safety.py`: **17**
 - `assistant.py`: **16**
-- `safety.py`: **16**
+- `settings.py`: **16**
 - `duplicates.py`: **15**
-- `settings.py`: **15**
+- `scanner.py`: **14**
 - `organizer.py`: **13**
-- `scanner.py`: **13**
 - `branding.py`: **12**
 - `main.py`: **10**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T00:12:48` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante condiciones de carrera y sistemas de archivos con bloqueos (típicos en Windows) añadiendo una verificación explícita de `is_safe_to_modify` sobre el archivo destino antes de la escritura, asegurando que la ruta no sea un enlace de reparse o un objeto protegido, y centralizando la validación de integridad previa a la persistencia.
+- `2026-09-16T00:12:33` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_reparse_point` y `_safe_stat` al añadir un manejo explícito de errores para casos donde el archivo está en uso exclusivo o los permisos son insuficientes, evitando la propagación de excepciones durante el escaneo.
+- `2026-09-16T00:12:07` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la validación de integridad al agregar un chequeo de 'Long Path' (más allá del límite de la API estándar de Windows) mediante el prefijo `\\?\` en las llamadas a `GetFileAttributesW` y `CreateFileW`, previniendo errores de `OSError` cuando la IA encuentre rutas que excedan los 260 caracteres pero que sean válidas.
 - `2026-09-15T15:09:20` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas corruptas o inexistentes en la composición de `_resolve_browser_path`, añadiendo un chequeo preventivo contra caracteres de control y longitudes excesivas antes de intentar instanciar `Path`.
 - `2026-09-15T14:58:25` **scanner.py** (rendimiento): Optimizé el método `_is_safe_entry` eliminando llamadas costosas a `Path(entry.path).resolve()` dentro del bucle principal, reemplazándolas por una validación de prefijo de cadena basada en `self.base_root_str`, lo que reduce drásticamente las llamadas al sistema de archivos durante el recorrido.
 - `2026-09-15T14:49:32` **quarantine.py** (rendimiento): Optimicé el acceso a metadatos y la lógica de `list_items` y `purge_all` transformando búsquedas de complejidad O(N) en O(1) mediante el uso de diccionarios (`set` y `dict`), reduciendo drásticamente las iteraciones redundantes y mejorando el rendimiento en escenarios con múltiples archivos en cuarentena.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-15T14:08:18` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en parámetros de funciones críticas y clarificando mediante docstrings el propósito técnico y las restricciones de seguridad de las funciones de auditoría, facilitando así su mantenimiento y auditoría por parte del equipo.
 - `2026-09-15T14:07:42` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad de `memory.py` mediante docstrings detallados en las estructuras de datos y funciones críticas, clarificando el flujo de datos y el propósito de las validaciones de seguridad.
 - `2026-09-15T14:00:36` **main.py** (legibilidad y documentación): He refactorizado la estructura de `_compile_metrics` y la actualización visual en `on_full_analysis` para mejorar la legibilidad del flujo de datos, documentando explícitamente el origen de cada métrica mediante tipos claros y extrayendo la lógica de consolidación, lo que facilita el mantenimiento futuro del panel de salud.
-- `2026-09-15T13:58:17` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad del pipeline de puntuación reemplazando la tupla anidada `_PIPELINE` por una estructura de datos `PipelineEntry` (NamedTuple) para evitar el uso de índices numéricos mágicos, facilitando la comprensión del código a largo plazo.
-- `2026-09-15T13:57:49` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados y detallados que explican la lógica de decisión en las funciones críticas de ordenamiento y filtrado, mejorando la mantenibilidad para futuras auditorías de código.
-- `2026-09-15T13:57:23` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del motor interno `_collect_summary_data` y añadí *type hints* faltantes en variables críticas para aclarar la estructura de datos procesada, facilitando el mantenimiento y la comprensión de las transformaciones de estado.

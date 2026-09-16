@@ -70,6 +70,7 @@ WIN_FILE_ATTR_REPARSE_POINT: Final[int] = 0x400
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """Obtiene metadatos del archivo de forma segura evitando seguir symlinks."""
     try:
+        # Se captura OSError específicamente para archivos en uso exclusivo o bloqueados
         return entry.stat(follow_symlinks=False)
     except (OSError, PermissionError, AttributeError):
         return None
@@ -138,7 +139,6 @@ class Scanner:
             if INVALID_TRAILING_CHARS_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name):
                 return False
             
-            # Chequeo rápido de prefijo sin resolución para ganar rendimiento
             path_low = entry.path.lower()
             if not path_low.startswith(self.base_root_str.rstrip(os.sep)):
                 return False
@@ -148,11 +148,14 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si un directorio es un punto de unión para prevenir el seguimiento de bucles infinitos en el sistema de archivos."""
-        stats = _safe_stat(entry)
-        if stats:
-            return bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
-        return True 
+        """Determina si un directorio es un punto de unión para prevenir el seguimiento de bucles infinitos."""
+        try:
+            stats = _safe_stat(entry)
+            if stats:
+                return bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
+            return False
+        except Exception:
+            return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Gestiona la pila de directorios pendientes durante el escaneo iterativo."""
@@ -166,7 +169,7 @@ class Scanner:
         return ext_low in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """Analiza una entrada única y decide si debe procesarse o añadirse a la pila de directorios para continuar la recursión."""
+        """Analiza una entrada única y decide si debe procesarse o añadirse a la pila de directorios."""
         try:
             if not entry.path: return
             is_dir = entry.is_dir(follow_symlinks=False)

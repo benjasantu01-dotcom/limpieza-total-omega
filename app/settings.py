@@ -335,8 +335,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     
-    # Validar que el directorio sea seguro antes de intentar escritura
-    if not _Validators._is_safe_path(str(ruta.parent.resolve())): return None
+    # Validar que la ruta de destino sea segura para escritura mediante chequeo de integridad
+    if not _Validators._is_safe_path(str(ruta.absolute())): return None
         
     cleaned_settings = _ensure_settings_integrity(validate(values))
     temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")

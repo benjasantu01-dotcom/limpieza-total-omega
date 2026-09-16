@@ -56,6 +56,13 @@ DRIVE_REMOTE: Final[int] = 4
 DRIVE_CDROM: Final[int] = 5
 DRIVE_RAMDISK: Final[int] = 6
 
+def _to_long_path(path_str: str) -> str:
+    """Asegura el manejo de rutas largas en Windows prefijándolas con \\\\?\\."""
+    if os.name == 'nt' and not path_str.startswith("\\\\?\\"):
+        if path_str.startswith("\\\\"): return "\\\\?\\UNC" + path_str[1:]
+        return "\\\\?\\" + path_str
+    return path_str
+
 class SafetyValidationErrorCode(IntEnum):
     """Códigos de error para diagnósticos específicos en fallos de seguridad."""
     GENERIC = 0
@@ -194,10 +201,8 @@ def _is_system_or_hidden(path_str: str) -> bool:
     """Verifica mediante la estructura de atributos de archivo si es oculto o de sistema."""
     if not os.path.isabs(path_str): return False
     try:
-        path = Path(path_str)
-        if not path.exists(): return False
-        st = path.lstat()
-        attrs = getattr(st, 'st_file_attributes', 0)
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
+        if attrs == 0xFFFFFFFF: return False
         return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
     except (AttributeError, OSError, FileNotFoundError):
         return False 
@@ -209,7 +214,7 @@ def _is_reparse_point(path_str: str) -> bool:
     if os.name != 'nt':
         return os.path.islink(path_str)
     try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(path_str)
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == 0xFFFFFFFF: return False
         return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT)
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
@@ -220,7 +225,7 @@ def _is_encrypted_or_compressed(path_str: str) -> bool:
     """Verifica atributos NTFS de compresión o cifrado."""
     if os.name != 'nt': return False
     try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(path_str)
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         return bool(attrs & (FILE_ATTRIBUTE_COMPRESSED | FILE_ATTRIBUTE_ENCRYPTED))
     except (AttributeError, OSError, TypeError):
         return False
@@ -230,7 +235,7 @@ def _is_offline(path_str: str) -> bool:
     """Verifica si el archivo está marcado como offline (ej: placeholder de nube)."""
     if os.name != 'nt': return False
     try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(path_str)
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         return bool(attrs & FILE_ATTRIBUTE_OFFLINE)
     except (AttributeError, OSError, TypeError): return False
 
@@ -241,13 +246,10 @@ def _is_file_in_use(path_str: str) -> bool:
         return False
     
     kernel32 = ctypes.windll.kernel32
-    handle = -1
+    handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 0, None, 3, 0x00000080, None)
     try:
-        handle = kernel32.CreateFileW(path_str, 0, 0, None, 3, 0x00000080, None)
         if handle == -1: 
             return True 
-        return False
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         return False
     finally:
         if handle != -1:
@@ -270,7 +272,7 @@ def _is_directory_junction(path: Path) -> bool:
     """Verifica si el path es un directorio con el flag de reparse point activo."""
     if os.name != 'nt': return False
     try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(str(path)))
         return bool(attrs & FILE_ATTRIBUTE_DIRECTORY and attrs & FILE_ATTRIBUTE_REPARSE_POINT)
     except (AttributeError, OSError, TypeError): return False
 
@@ -463,8 +465,6 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
 
     if path_string.startswith(("\\\\", "//")):
         raise UnsafePathError("Rutas UNC bloqueadas.", SafetyValidationErrorCode.UNC_PATH)
-    if len(str(target_path)) >= MAX_PATH_LENGTH:
-        raise UnsafePathError("Ruta excede MAX_PATH.", SafetyValidationErrorCode.PATH_TOO_LONG)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
     """
@@ -515,7 +515,7 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
     """Verifica si la ruta real difiere del path esperado tras resolver links/junctions."""
     try:
         kernel32 = ctypes.windll.kernel32
-        handle = kernel32.CreateFileW(str(path), 0, 0, None, 3, 0x02000000, None)
+        handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, 0, None, 3, 0x02000000, None)
         if handle != -1:
             buf = ctypes.create_unicode_buffer(1024)
             if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0):
@@ -556,8 +556,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
                 raise UnsafePathError("Directorio contenedor restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
             
             if os.name == 'nt':
-                # Validamos contra el anchor del path, manejando la posibilidad de que
-                # el path sea relativo o no tenga anchor (aunque normalize lo hace absoluto)
                 anchor = getattr(p, 'anchor', None)
                 if anchor:
                     drive_type = ctypes.windll.kernel32.GetDriveTypeW(anchor)
@@ -600,7 +598,6 @@ def describe_protection(path: PathLike) -> str:
     if is_protected_path(p): return f"'{p}' protegida por sistema."
     try:
         if p.exists():
-            if len(str(p)) >= MAX_PATH_LENGTH: return f"'{p}' longitud excesiva."
             if _is_reparse_point(str(p)): return f"'{p}' es un punto de reparse (Junction/Symlink)."
             if os.path.ismount(p): return f"'{p}' es un punto de montaje."
             if _is_readonly(str(p)): return f"'{p}' es solo lectura."
