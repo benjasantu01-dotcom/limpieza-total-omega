@@ -208,11 +208,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
         try:
             if rule.check(metrics, ratio):
                 msg = str(rule.message_factory(metrics))
-                # Sanitización: solo texto imprimible, sin saltos de línea ni inyecciones
                 clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                 if clean_msg:
                     findings.append(clean_msg[:200])
-        except Exception:
+        except (TypeError, ValueError, AttributeError):
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -267,8 +266,8 @@ def _render_bar(points: int, max_val: int) -> str:
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una representación en texto del informe de salud."""
-    if result is None or not hasattr(result, 'score'):
-        return ["Error: Informe no disponible."]
+    if not isinstance(result, HealthResult):
+        return ["Error: Informe de salud no disponible."]
     
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in WEIGHTS.items():

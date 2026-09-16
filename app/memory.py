@@ -137,7 +137,7 @@ class ProcessMemory:
         return MegabytesValue(round(self.working_set / BYTES_IN_MB, 1))
 
 def format_bytes(num: Optional[int | float]) -> str:
-    """Convierte bytes a string legible usando unidades SI (B, KB, MB, etc.)."""
+    """Converite bytes a string legible usando unidades SI (B, KB, MB, etc.)."""
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
     idx: int = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
@@ -153,8 +153,13 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
 def _kb_to_bytes(kb_str: str) -> BytesValue:
     """Parsea una cadena con números y unidades opcionales a bytes (asumiendo KB)."""
     if not isinstance(kb_str, str): return BytesValue(0)
-    digits = "".join(c for c in kb_str if c.isdigit())
-    return BytesValue(int(digits) * 1024) if digits else BytesValue(0)
+    # Extraer solo los dígitos del valor reportado
+    val_str = "".join(c for c in kb_str if c.isdigit())
+    if not val_str: return BytesValue(0)
+    try:
+        return BytesValue(int(val_str) * 1024)
+    except (ValueError, OverflowError):
+        return BytesValue(0)
 
 _win_mem_buffer: MEMORYSTATUSEX = _create_mem_status_ex()
 _is_windows: bool = os.name == "nt"
@@ -182,6 +187,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     if not isinstance(total, int) or total <= 0: 
         return _EMPTY_SNAPSHOT
     
+    # MemAvailable es preferible por precisión en kernels modernos, MemFree como respaldo
     available = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))
     cached = metrics.get("Cached", BytesValue(0))
     

@@ -291,12 +291,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     except (OSError, ValueError, AttributeError): return None
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """
-    Mueve archivos validados a la zona de cuarentena tras verificar permisos de escritura.
-    
-    Returns:
-        La ruta de la carpeta de revisión si la operación fue exitosa, None en caso contrario.
-    """
+    """Mueve archivos validados a la zona de cuarentena tras verificar permisos de escritura."""
     if not files or not isinstance(review_dir, str): return None
     try:
         dest_base = Path(review_dir).expanduser().resolve()
@@ -305,12 +300,11 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     except (OSError, RuntimeError, TypeError): return None
     
     for junk_file in files:
-        if not isinstance(junk_file, JunkFile): continue
+        if not isinstance(junk_file, JunkFile) or junk_file.path is None: continue
         try:
             target_path = _can_move_file(junk_file, dest_base)
-            if target_path and target_path.parent.resolve().is_relative_to(dest_base) and is_safe_to_modify(junk_file.path) and not _is_file_locked(junk_file.path):
+            if target_path and is_safe_to_modify(junk_file.path) and not _is_file_locked(junk_file.path):
                 ensure_safe_to_modify(junk_file.path)
-                ensure_safe_to_modify(target_path.parent)
                 shutil.move(str(junk_file.path), str(target_path))
         except (OSError, PermissionError, shutil.Error, RuntimeError, TypeError) as e:
             logger.error(f"Error moviendo {junk_file.path}: {e}")
@@ -327,12 +321,10 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count = 0
     for item in dest.iterdir():
         try:
-            if item.is_file():
-                resolved_item = item.resolve()
-                if resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
-                    ensure_safe_to_modify(resolved_item)
-                    item.unlink()
-                    count += 1
+            if item.is_file() and is_safe_to_modify(item):
+                ensure_safe_to_modify(item)
+                item.unlink()
+                count += 1
         except (PermissionError, OSError, ValueError, TypeError) as e:
             logger.error(f"Error eliminando {item}: {e}")
     return count
