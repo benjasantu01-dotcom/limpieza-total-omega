@@ -906,3 +906,4 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-09-16T19:45:09` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-16T19:55:24` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-16T20:05:34` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-16T20:15:44` Presupuesto diario agotado (350 usados). Corte hasta mañana.
