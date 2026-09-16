@@ -169,7 +169,15 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path) -> str:
-    """Calcula el hash SHA-256 de un archivo mediante lectura segmentada en buffer."""
+    """
+    Calcula el hash SHA-256 de un archivo.
+
+    Args:
+        path: Objeto Path del archivo a procesar.
+
+    Returns:
+        String con el hash en hexadecimal o cadena vacía si falla la lectura.
+    """
     if not path.is_file():
         return ""
     sha256_hash = hashlib.sha256()
@@ -187,7 +195,13 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado mediante intento de apertura exclusiva.
+    Verifica si un archivo está bloqueado por el S.O. mediante apertura exclusiva.
+
+    Args:
+        path: Ruta del archivo.
+
+    Returns:
+        True si el archivo está en uso por otro proceso, False en caso contrario.
     """
     if not isinstance(path, Path) or not path.exists():
         return False
@@ -202,6 +216,12 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_unlink(path: Path) -> bool:
     """
     Elimina un archivo tras validar políticas de seguridad y ausencia de bloqueos.
+
+    Args:
+        path: Ruta del archivo a eliminar.
+
+    Returns:
+        True si la operación fue exitosa, False si fue bloqueada o falló.
     """
     if not path.is_file() or path.is_symlink() or is_protected_path(path):
         return False
@@ -217,6 +237,12 @@ def _safe_unlink(path: Path) -> bool:
 def _check_path_syntax_integrity(path: Path) -> None:
     """
     Valida sintaxis, profundidad y naturaleza del objeto para prevenir Path Traversal.
+
+    Args:
+        path: Ruta a validar.
+
+    Raises:
+        UnsafePathError: Si la ruta contiene caracteres peligrosos o es inválida.
     """
     if not path:
         raise UnsafePathError("Ruta vacía.")
@@ -241,7 +267,15 @@ def _check_path_syntax_integrity(path: Path) -> None:
 
 
 def _sanitize_filename(filename: str) -> str:
-    """Filtra caracteres no alfanuméricos básicos para nombres de archivo seguros."""
+    """
+    Filtra caracteres no alfanuméricos básicos para nombres de archivo seguros.
+
+    Args:
+        filename: Nombre de archivo original.
+
+    Returns:
+        Nombre saneado.
+    """
     return "".join(c for c in filename if c.isalnum() or c in "._-")
 
 def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:

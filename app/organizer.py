@@ -26,6 +26,12 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 SortKey: TypeAlias = Union[int, datetime]
 
+# Constantes de atributos de Windows (Win32 API)
+WIN_ATTR_JUNCTION: Final[int] = 0x400  # Reparse Point (Junction)
+WIN_ATTR_SYSTEM: Final[int] = 0x04     # FILE_ATTRIBUTE_SYSTEM
+WIN_ATTR_HIDDEN: Final[int] = 0x02     # FILE_ATTRIBUTE_HIDDEN
+WIN_ATTR_MASK: Final[int] = WIN_ATTR_SYSTEM | WIN_ATTR_HIDDEN
+
 class SortConfig(NamedTuple):
     """Configuración para criterios de ordenamiento de archivos."""
     field: str
@@ -86,7 +92,8 @@ class JunkFile:
 
 def is_valid_junk_extension(filename: str) -> bool:
     """Comprueba si el sufijo de un nombre de archivo coincide con una extensión basura."""
-    return os.path.splitext(filename)[1].lower() in JUNK_EXTENSIONS
+    ext = os.path.splitext(filename)[1].lower()
+    return ext in JUNK_EXTENSIONS
 
 def _get_win_attributes(path_or_entry: Union[os.DirEntry, Path, str]) -> int:
     """
@@ -107,7 +114,7 @@ def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
     """
     if entry is None: return False
     is_sym = entry.is_symlink() if hasattr(entry, 'is_symlink') else Path(str(entry)).is_symlink()
-    is_junction_attr = os.name == "nt" and bool(_get_win_attributes(entry) & 0x400)
+    is_junction_attr = os.name == "nt" and bool(_get_win_attributes(entry) & WIN_ATTR_JUNCTION)
     return is_sym or is_junction_attr
 
 def _is_unc_path(path: Path) -> bool:
@@ -157,7 +164,8 @@ def _passes_system_checks(src: Path) -> bool:
     """Filtra archivos marcados como 'Sistema' (0x04) u 'Oculto' (0x02) en Win32."""
     if os.name != "nt" or src is None: return True
     attrs = _get_win_attributes(src)
-    return not (attrs & 0x06) if attrs != 0 else True
+    # Retorna True solo si no posee bits de sistema ni de oculto activados
+    return not (attrs & WIN_ATTR_MASK) if attrs != 0 else True
 
 def _has_forbidden_chars(path: Path) -> bool:
     """Detecta nombres reservados por Windows o caracteres prohibidos en el sistema de archivos."""
@@ -265,7 +273,7 @@ def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
     """Evalúa metadata de entrada para validar si debe incluirse en los resultados."""
     try:
         stat_info = entry.stat(follow_symlinks=False)
-        if stat_info.st_size > 0 and not (_get_win_attributes(entry) & 0x06):
+        if stat_info.st_size > 0 and not (_get_win_attributes(entry) & WIN_ATTR_MASK):
             found.append(JunkFile(Path(entry.path), stat_info.st_size, datetime.fromtimestamp(stat_info.st_mtime)))
     except (OSError, PermissionError):
         pass
@@ -318,7 +326,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         if not dest.exists() or not dest.is_dir() or not os.access(dest, os.W_OK) or not is_safe_to_modify(dest): return 0
     except (OSError, RuntimeError, TypeError): return 0
     
-    count = 0
+    count: int = 0
     for item in dest.iterdir():
         try:
             if item.is_file() and is_safe_to_modify(item):
