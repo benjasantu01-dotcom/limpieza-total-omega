@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **203** (40.3% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 239
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 144 | 12 | 23 | 4 | 153 |
-| 2026-09-16 | 59 | 1 | 14 | 8 | 86 |
+| 2026-09-15 | 141 | 11 | 23 | 4 | 153 |
+| 2026-09-16 | 62 | 1 | 15 | 8 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **46**
+- manejo de errores y validación de entradas: **49**
 - robustez ante casos límite: **44**
 - legibilidad y documentación: **42**
 - seguridad defensiva: **40**
-- rendimiento: **31**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
-- `browser.py`: **20**
-- `diskreport.py`: **17**
-- `quarantine.py`: **17**
+- `browser.py`: **19**
+- `quarantine.py`: **18**
 - `assistant.py`: **17**
 - `memory.py`: **16**
+- `safety.py`: **16**
 - `settings.py`: **16**
-- `safety.py`: **15**
+- `diskreport.py`: **16**
 - `duplicates.py`: **14**
-- `scanner.py`: **12**
+- `scanner.py`: **13**
 - `organizer.py`: **12**
-- `branding.py`: **11**
+- `branding.py`: **10**
 - `main.py`: **10**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T07:11:11` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_reparse_point` y `_handle_directory` añadiendo validaciones explícitas contra valores `None` y errores de acceso, asegurando que el bucle de escaneo no falle ante entradas malformadas o inaccesibles.
+- `2026-09-16T07:11:00` **safety.py** (manejo de errores y validación de entradas): Se introdujo un manejo de excepciones más robusto en `_check_file_integrity` y `_validate_boundary_conditions` para evitar que fallos inesperados de E/S o permisos propaguen excepciones genéricas que rompan el bucle principal, asegurando que la validación falle de forma controlada con códigos de error específicos.
+- `2026-09-16T07:10:05` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `purge_all` y `quarantine_file` añadiendo validaciones preventivas de estado antes de operar sobre el disco y normalizando la captura de excepciones para evitar estados inconsistentes (específicamente, asegurar que el archivo sea un archivo regular y esté en el sandbox antes de intentar cualquier acción de borrado o movimiento).
 - `2026-09-16T07:01:36` **organizer.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `stage_for_review` y `delete_reviewed` mediante la validación explícita de tipos, estados de ruta y capturas de excepciones más granulares, asegurando que cualquier entrada nula o inválida no interrumpa el bucle de procesamiento.
 - `2026-09-16T07:01:24` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` mediante una validación más estricta de las métricas obtenidas y agregué un manejo de errores preventivo en `_kb_to_bytes` para asegurar que el parsing de datos de sistema sea resiliente ante entradas inesperadas.
 - `2026-09-16T06:59:46` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_evaluate_rules` capturando excepciones específicas dentro del bucle de reglas para evitar que un `message_factory` mal definido bloquee el informe completo, y añadí una validación de tipo para `result` en `summarize` siguiendo el enfoque de manejo de errores defensivo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T05:14:31` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_locked` para evitar falsos positivos y posibles bloqueos mediante el uso de `os.open` con flags de acceso atómico, garantizando que el chequeo sea consistente en todas las plataformas soportadas sin depender de módulos externos innecesarios.
 - `2026-09-16T05:13:04` **organizer.py** (seguridad defensiva): Se reforzó la seguridad de `stage_for_review` y `delete_reviewed` implementando una validación estricta de que los archivos estén efectivamente dentro del directorio de cuarentena antes de cualquier operación destructiva, previniendo ataques de escalada de directorio (path traversal).
 - `2026-09-16T04:58:36` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del pipeline de datos limitando la entrada al método `compute_score` mediante una validación explícita de finitud (NaN/Inf) y asegurando que las reglas de recomendación no puedan inyectar contenido inesperado al resultado final mediante una sanitización estricta de strings.
-- `2026-09-16T04:57:34` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de `_is_unc_path` para detectar y rechazar rutas UNC, evitando así riesgos de seguridad asociados con el acceso a recursos de red no autorizados o inestables durante la enumeración de archivos.
-- `2026-09-16T04:48:31` **assistant.py** (seguridad defensiva): Se endureció la seguridad de la función `_build_payload` en `assistant.py` mediante la validación del contenido mediante `_ensure_safe_text` antes de la serialización JSON, garantizando que ninguna métrica malintencionada que pudiera contener caracteres de escape o inyección llegue a ser procesada por el motor remoto.
-- `2026-09-16T04:38:09` **safety.py** (robustez ante casos límite): Se añadió una validación específica para detectar rutas que contienen componentes con caracteres de "espacio final" (trailing spaces) o "punto final" (trailing dots), una vulnerabilidad común en Windows donde la API de archivos puede normalizar estas rutas de forma inesperada, permitiendo bypass de protecciones de seguridad.

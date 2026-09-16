@@ -331,7 +331,7 @@ def _check_file_integrity(path: Path) -> None:
     """
     try:
         file_stat = path.stat()
-    except (PermissionError, OSError):
+    except (PermissionError, OSError) as e:
         raise UnsafePathError(f"Acceso denegado a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     
     if _is_directory_junction(path):
@@ -574,6 +574,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
                     drive_type = ctypes.windll.kernel32.GetDriveTypeW(anchor)
                     if drive_type in (DRIVE_REMOTE, DRIVE_REMOVABLE):
                         raise UnsafePathError("Unidad no apta para modificación.", SafetyValidationErrorCode.IO_ERROR)
+    except (UnsafePathError):
+        raise
     except (OSError, PermissionError, AttributeError, ctypes.ArgumentError) as e:
         raise UnsafePathError(f"Fallo durante validación de integridad: {e}", SafetyValidationErrorCode.IO_ERROR)
             

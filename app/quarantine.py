@@ -192,7 +192,6 @@ def _is_file_locked(path: Path) -> bool:
     if not isinstance(path, Path) or not path.exists():
         return False
     try:
-        # Intenta abrir el archivo con acceso exclusivo no bloqueante
         fd = os.open(str(path), os.O_RDONLY | getattr(os, 'O_NONBLOCK', 0))
         os.close(fd)
         return False
@@ -203,9 +202,6 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_unlink(path: Path) -> bool:
     """
     Elimina un archivo tras validar políticas de seguridad y ausencia de bloqueos.
-    
-    Garantiza que la operación de borrado sea segura, verificando que el ítem
-    resida fuera de zonas protegidas y no esté siendo accedido.
     """
     if not path.is_file() or path.is_symlink() or is_protected_path(path):
         return False
@@ -221,9 +217,6 @@ def _safe_unlink(path: Path) -> bool:
 def _check_path_syntax_integrity(path: Path) -> None:
     """
     Valida sintaxis, profundidad y naturaleza del objeto para prevenir Path Traversal.
-    
-    Verifica caracteres de control, flujos de datos alternos (ADS), profundidad
-    lógica de la ruta y asegura que no sean enlaces simbólicos o puntos de reparse.
     """
     if not path:
         raise UnsafePathError("Ruta vacía.")
@@ -234,7 +227,6 @@ def _check_path_syntax_integrity(path: Path) -> None:
     if len(path.parts) > 32:
         raise UnsafePathError("Profundidad de ruta excesiva.")
     
-    # Detección de flujos de datos alternos (ADS) o caracteres no permitidos
     if ":" in path.name.replace(path.drive, "") or any(c in path_str for c in ("\0", "\x00")):
         raise UnsafePathError("Ruta con flujos de datos alternos (ADS) o caracteres prohibidos.")
     
@@ -449,10 +441,6 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 def _write_temp_to_final(source: Path, destination: Path) -> str:
     """
     Copia el archivo origen al sandbox destino utilizando descriptores de archivo.
-    
-    Aplica flags O_EXCL y O_WRONLY para asegurar una operación de escritura atómica
-    que prevenga condiciones de carrera (TOCTOU). Valida la integridad final mediante
-    la comparación de hashes SHA-256 calculados directamente del flujo de datos.
     """
     _check_path_syntax_integrity(destination)
     if is_protected_path(destination):
@@ -465,11 +453,10 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     if destination.exists():
         raise FileExistsError(f"El destino ya existe: {destination}")
 
-    # Apertura controlada usando descriptores de archivo (evita TOCTOU)
     fd_src: int = os.open(str(source), os.O_RDONLY)
     try:
         stat_src = os.fstat(fd_src)
-        if not (stat_src.st_mode & 0o100000): # S_ISREG
+        if not (stat_src.st_mode & 0o100000): 
             raise OSError("El archivo origen no es un archivo regular.")
             
         flags: int = os.O_WRONLY | os.O_CREAT | os.O_EXCL
@@ -481,7 +468,6 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
                 dst_file.flush()
                 os.fsync(dst_file.fileno())
             
-            # Verificación post-escritura sobre el descriptor
             if destination.stat().st_size != stat_src.st_size:
                 raise OSError("Error de integridad post-escritura.")
         except Exception as e:
@@ -566,15 +552,7 @@ def quarantine_file(
     base: PathLike = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
     """
-    Ejecuta el flujo completo de aislamiento: validación, copia atómica y registro.
-
-    Args:
-        source: Ruta del archivo sospechoso.
-        reason: Motivo de la acción.
-        base: Directorio raíz de cuarentena.
-
-    Returns:
-        Instancia de QuarantineItem con el estado registrado.
+    Ejecuta el flujo completo de aislamiento.
     """
     if not source:
         raise ValueError("Ruta de origen vacía.")
@@ -597,10 +575,8 @@ def quarantine_file(
     
     destination = dest_dir / _generate_safe_stored_name(source_path, uuid.uuid4().hex[:12])
     
-    # Flujo de aislamiento protegido mediante bloques de control
     file_hash = _atomic_isolate_file(source_path, destination, original_size)
     try:
-        # Re-validación del origen antes de eliminarlo tras moverlo exitosamente
         if not source_path.exists():
             raise RuntimeError("El archivo origen ha desaparecido inesperadamente.")
         
@@ -715,12 +691,9 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
-    """
-    Verifica los requisitos de seguridad antes de purgar un ítem.
-    
-    Valida la existencia del archivo, su pertenencia al sandbox y que 
-    su integridad (SHA-256) sea correcta antes de permitir el borrado.
-    """
+    """Verifica requisitos de seguridad antes de purgar un ítem."""
+    if not file_path.is_file() or file_path.is_symlink():
+        return False
     return (
         file_path.exists() and
         is_within_directory(file_path, base_path) and
@@ -745,7 +718,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
                 continue
             
-            # Búsqueda O(1) en el map en lugar de iterar sobre ítems
             item = item_map.get(stored_path.name)
             if item and _is_item_purgable(stored_path, item, quarantine_root):
                 purged_ids.add(item.item_id)

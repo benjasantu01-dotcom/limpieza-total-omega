@@ -157,6 +157,7 @@ class Scanner:
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Detecta si un directorio es una unión (Reparse Point) para evitar bucles infinitos."""
         try:
+            if not entry: return True
             stats = _safe_stat(entry)
             if stats:
                 return bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
@@ -166,7 +167,7 @@ class Scanner:
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Gestiona la pila de directorios pendientes durante el escaneo iterativo."""
-        if entry.path and entry.path.lower() not in self.seen:
+        if entry and entry.path and entry.path.lower() not in self.seen:
             self.seen.add(entry.path.lower())
             directory_stack.append(entry.path)
 
@@ -178,7 +179,7 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Analiza una entrada única y decide si debe procesarse o añadirse a la pila."""
         try:
-            if not entry.path or is_protected_path(Path(entry.path)): 
+            if not entry or not entry.path or is_protected_path(Path(entry.path)): 
                 return
             is_dir = entry.is_dir(follow_symlinks=False)
             ext_low = Path(entry.name).suffix.lower() if not is_dir else ""
@@ -195,7 +196,7 @@ class Scanner:
             else:
                 self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError) as e:
-            logger.debug(f"Acceso denegado en {entry.path}: {e}")
+            logger.debug(f"Acceso denegado en {entry.path if entry else 'unknown'}: {e}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """Ejecuta las heurísticas registradas sobre un archivo identificado."""
