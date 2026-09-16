@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 231
+- Sin respuesta de la IA (error o límite): 234
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 43 | 2 | 8 | 5 | 44 |
+| 2026-09-14 | 39 | 2 | 8 | 5 | 44 |
 | 2026-09-15 | 154 | 12 | 26 | 5 | 153 |
-| 2026-09-16 | 13 | 0 | 3 | 2 | 34 |
+| 2026-09-16 | 14 | 0 | 3 | 2 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **50**
+- legibilidad y documentación: **46**
 - robustez ante casos límite: **46**
 - seguridad defensiva: **43**
 - rendimiento: **37**
-- manejo de errores y validación de entradas: **34**
+- manejo de errores y validación de entradas: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
-- `memory.py`: **19**
 - `quarantine.py`: **19**
+- `healthscore.py`: **19**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
+- `memory.py`: **18**
 - `safety.py`: **17**
 - `settings.py`: **16**
-- `duplicates.py`: **14**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
 - `scanner.py`: **13**
+- `duplicates.py`: **13**
 - `organizer.py`: **12**
 - `branding.py`: **12**
-- `main.py`: **11**
+- `main.py`: **10**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T02:16:20` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` al validar explícitamente el tipo de los índices de la estructura anidada y utilicé `get()` para evitar excepciones de `KeyError`, alineándome con el enfoque de validación defensiva y manejo de errores específicos.
 - `2026-09-16T00:54:25` **settings.py** (seguridad defensiva): Mejoré `_Validators._is_safe_path` para prevenir ataques de sustitución mediante enlaces simbólicos o junctions que apunten a rutas críticas, asegurando que `realpath` se evalúe antes de cualquier validación de seguridad.
 - `2026-09-16T00:52:40` **safety.py** (seguridad defensiva): Se implementó un chequeo preventivo de privilegios de escritura mediante `os.access(path, os.W_OK)` antes de intentar cualquier operación, cerrando una brecha donde archivos bloqueados a nivel de sistema operativo (pero no por handles de WinAPI) podrían haber escapado a la validación.
 - `2026-09-16T00:43:19` **quarantine.py** (seguridad defensiva): Se reforzó el aislamiento preventivo en `quarantine_file` al introducir una verificación estricta de la existencia del archivo origen después de cada operación crítica de I/O, previniendo posibles estados de inconsistencia si un proceso externo interviene en el sistema de archivos durante la ejecución.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T00:12:33` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_reparse_point` y `_safe_stat` al añadir un manejo explícito de errores para casos donde el archivo está en uso exclusivo o los permisos son insuficientes, evitando la propagación de excepciones durante el escaneo.
 - `2026-09-16T00:12:07` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la validación de integridad al agregar un chequeo de 'Long Path' (más allá del límite de la API estándar de Windows) mediante el prefijo `\\?\` en las llamadas a `GetFileAttributesW` y `CreateFileW`, previniendo errores de `OSError` cuando la IA encuentre rutas que excedan los 260 caracteres pero que sean válidas.
 - `2026-09-15T15:09:20` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas corruptas o inexistentes en la composición de `_resolve_browser_path`, añadiendo un chequeo preventivo contra caracteres de control y longitudes excesivas antes de intentar instanciar `Path`.
-- `2026-09-15T14:58:25` **scanner.py** (rendimiento): Optimizé el método `_is_safe_entry` eliminando llamadas costosas a `Path(entry.path).resolve()` dentro del bucle principal, reemplazándolas por una validación de prefijo de cadena basada en `self.base_root_str`, lo que reduce drásticamente las llamadas al sistema de archivos durante el recorrido.
