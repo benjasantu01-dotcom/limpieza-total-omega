@@ -238,6 +238,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     
+    # Asegurar integridad de datos antes del procesamiento
     metrics.validate()
     if not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Inconsistencia numérica detectada."])
@@ -249,6 +250,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in _PIPELINE:
         try:
             val = entry.scorer(metrics)
+            # Sanitización de salida del scorer
             area_ratio = _clamp(float(val)) if math.isfinite(val) else 0.0
             
             if entry.rules:

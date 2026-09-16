@@ -743,3 +743,13 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-16T13:49:09` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_validate_root` para prevenir ataques de trayectoria (path traversal) mediante el uso de `resolve()` y una comprobación estricta de que la ruta normalizada sigue contenida dentro del directorio base original, evitando accesos fuera de los límites permitidos.
 - `2026-09-16T13:49:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-16T13:49:09` Corrida terminada. Total usado hoy: 328.
+- `2026-09-16T13:57:23` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-16T13:57:54` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `hash_file` y `partial_hash` al reemplazar la apertura directa del archivo con un contexto que maneja el acceso exclusivo mediante `msvcrt` en Windows para evitar violaciones de acceso (acceso denegado) en archivos bloqueados por el sistema, además de asegurar que la resolución de rutas sea consistente antes de cualquier operación de lectura.
+- `2026-09-16T13:58:23` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la sanitización estricta de las entradas al pipeline, añadiendo validación de tipos e integridad de los datos en `compute_score` para prevenir inyecciones de valores inesperados que pudieran corromper el cálculo de salud.
+- `2026-09-16T13:59:23` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-16T13:59:43` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-16T14:00:17` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-16T14:00:56` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-16T14:01:31` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_get_process_path` validando que la ruta del ejecutable no sea una ruta de dispositivo especial o UNC antes de resolverla, y añadiendo una verificación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier operación.
+- `2026-09-16T14:01:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-16T14:01:31` Corrida terminada. Total usado hoy: 332.

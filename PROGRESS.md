@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 71 | 5 | 10 | 3 | 87 |
-| 2026-09-16 | 143 | 7 | 29 | 15 | 134 |
+| 2026-09-15 | 71 | 5 | 10 | 3 | 83 |
+| 2026-09-16 | 146 | 7 | 29 | 15 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **52**
 - robustez ante casos límite: **46**
-- seguridad defensiva: **37**
+- seguridad defensiva: **40**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **22**
+- `healthscore.py`: **20**
 - `assistant.py`: **19**
 - `diskreport.py`: **19**
-- `healthscore.py`: **19**
+- `duplicates.py`: **18**
+- `memory.py`: **18**
 - `quarantine.py`: **18**
-- `duplicates.py`: **17**
-- `memory.py`: **17**
 - `safety.py`: **16**
 - `settings.py`: **16**
 - `branding.py`: **12**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T14:01:31` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_get_process_path` validando que la ruta del ejecutable no sea una ruta de dispositivo especial o UNC antes de resolverla, y añadiendo una verificación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier operación.
+- `2026-09-16T13:58:23` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la sanitización estricta de las entradas al pipeline, añadiendo validación de tipos e integridad de los datos en `compute_score` para prevenir inyecciones de valores inesperados que pudieran corromper el cálculo de salud.
+- `2026-09-16T13:57:54` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `hash_file` y `partial_hash` al reemplazar la apertura directa del archivo con un contexto que maneja el acceso exclusivo mediante `msvcrt` en Windows para evitar violaciones de acceso (acceso denegado) en archivos bloqueados por el sistema, además de asegurar que la resolución de rutas sea consistente antes de cualquier operación de lectura.
 - `2026-09-16T13:49:09` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` para prevenir ataques de trayectoria (path traversal) mediante el uso de `resolve()` y una comprobación estricta de que la ruta normalizada sigue contenida dentro del directorio base original, evitando accesos fuera de los límites permitidos.
 - `2026-09-16T13:48:56` **browser.py** (seguridad defensiva): Se reforzó la seguridad de `_sum_directory_recursive` mediante una validación estricta de la ruta resuelta contra `root_base` utilizando `is_protected_path` y `is_safe_to_modify` antes de iniciar cualquier iteración, asegurando que la recursión no pueda escapar del sandbox incluso ante manipulaciones de enlaces simbólicos o rutas maliciosas.
 - `2026-09-16T13:47:54` **assistant.py** (seguridad defensiva): Se endurecieron los criterios de seguridad defensiva en `_is_safe_text_structure` para rechazar explícitamente caracteres de control y secuencias que intentan ofuscar comandos o rutas, protegiendo al motor de inferencia de inyecciones de bajo nivel en los prompts.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T13:17:39` **duplicates.py** (robustez ante casos límite): He mejorado `_collect_candidates` para manejar robustamente directorios inaccesibles y errores de permisos durante el escaneo, evitando que una sola carpeta con acceso denegado detenga la detección en todo el árbol de directorios.
 - `2026-09-16T13:17:11` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `_collect_summary_data` y las funciones dependientes ante archivos con permisos denegados durante el acceso a atributos, protegiendo el bucle de recolección frente a errores inesperados de sistema mediante el uso de `getattr(st, 'st_size', 0)` y capturas de excepciones más específicas.
 - `2026-09-16T13:08:57` **browser.py** (robustez ante casos límite): Se introdujo una comprobación explícita de "path traversal" usando `os.path.commonpath` dentro del bucle de `detect_profiles` y en `_sum_directory_recursive` para asegurar que, bajo ninguna circunstancia de resolución de rutas (como symlinks maliciosos en la estructura de `User Data`), la recursión escape de la carpeta base del perfil del usuario.
-- `2026-09-16T13:08:41` **branding.py** (robustez ante casos límite): Reforcé la robustez de `save_logo_svg` ante errores de entrada y condiciones de carrera al asegurar que la validación de rutas ocurra fuera del bloque de escritura y añadiendo un manejo de excepciones más granular para evitar abortos inesperados.
-- `2026-09-16T13:08:06` **assistant.py** (robustez ante casos límite): Se introdujo una validación robusta para el parámetro `extra` en `build_context` y se mejoró la resiliencia de la ingestión de datos mediante `_get_source_value` para manejar estructuras de datos arbitrarias o malformadas sin excepciones no controladas.
-- `2026-09-16T12:57:53` **settings.py** (rendimiento): Optimizé la carga de configuración eliminando la creación redundante de copias del diccionario de `DEFAULTS` y reduciendo el uso de `copy()` durante el proceso de validación, mejorando el rendimiento en llamadas repetidas al sistema.

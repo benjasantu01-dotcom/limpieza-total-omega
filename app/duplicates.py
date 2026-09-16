@@ -108,7 +108,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         return None
         
     try:
-        p = Path(path).resolve()
+        p = Path(path).resolve(strict=True)
         if not p.is_file() or not is_safe_to_modify(p) or _is_file_locked(p):
             return None
             
@@ -127,7 +127,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
         return None
 
     try:
-        p = Path(path).resolve()
+        p = Path(path).resolve(strict=True)
         if not p.is_file() or not is_safe_to_modify(p) or _is_file_locked(p):
             return None
 
@@ -204,7 +204,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
     def _scan_dir(current_dir: Path) -> None:
         try:
-            real_dir = current_dir.resolve()
+            real_dir = current_dir.resolve(strict=True)
             dir_str = str(real_dir)
             if dir_str in visited_dirs or is_protected_path(real_dir) or not is_safe_to_modify(real_dir):
                 return

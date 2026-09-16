@@ -262,7 +262,6 @@ def read_snapshot() -> MemorySnapshot:
         snapshot = _read_windows_snapshot()
     elif _linux_available:
         try:
-            # Uso de read_text con manejo de errores de sistema o formato de archivo inesperado
             content = _linux_mem_path.read_text(encoding="utf-8")
             snapshot = parse_linux_meminfo(content)
             if snapshot == _EMPTY_SNAPSHOT:
@@ -350,20 +349,18 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     
     buf = ctypes.create_unicode_buffer(1024)
     try:
-        # psapi.GetModuleFileNameExW devuelve 0 si falla
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 1024) > 0:
             path_str = str(buf.value)
-            # Detectar rutas UNC o dispositivos lógicos reservados
+            # Defensa: Rechazar rutas UNC o de dispositivos virtuales antes de instanciar Path
             if any(path_str.startswith(prefix) for prefix in ("\\\\", "\\??\\", "\\Device\\")):
                 return None
             
             p = Path(path_str)
-            if not p.exists() or not p.is_file(): return None
-            # Evitar seguir enlaces simbólicos o junctions que podrían causar loops
-            if p.is_symlink(): return None
+            if not p.exists() or not p.is_file() or p.is_symlink(): return None
             
             p_resolved = p.resolve(strict=False)
-            if is_protected_path(str(p_resolved)): return None
+            if is_protected_path(str(p_resolved)) or not is_safe_to_modify(str(p_resolved)): 
+                return None
             
             return p_resolved
     except (OSError, ctypes.ArgumentError, ValueError, MemoryError):
@@ -390,9 +387,6 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
         if not exec_path:
             return False, "Acceso denegado o ejecutable no localizable."
         
-        if not is_safe_to_modify(str(exec_path)):
-            return False, "Operación denegada: ruta protegida."
-            
         return True, None
     except (AttributeError, ValueError, ctypes.ArgumentError, OSError):
         return False, "Error interno durante la verificación de integridad."
@@ -433,5 +427,4 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, OSError, ValueError, TypeError) as e:
         return False, f"Error de sistema: {str(e)}"
     finally:
-        # Asegurar liberación de recursos incluso ante excepciones
         kernel32.CloseHandle(proc_handle)
