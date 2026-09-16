@@ -344,7 +344,8 @@ class SystemContext:
         if source is None or _is_input_too_deep_or_complex(source):
             return False
         
-        if not isinstance(source, dict) and not hasattr(source, "__dict__"):
+        # Solo permitir dicts o clases simples de datos; ignorar objetos complejos con side-effects
+        if not isinstance(source, dict) and (not hasattr(source, "__dict__") or isinstance(source, type)):
             return False
             
         found_data = False
@@ -398,7 +399,11 @@ def _get_source_value(source: Any, key: str) -> Any:
     if key.startswith("_"): return None
     if isinstance(source, dict):
         return source.get(key)
-    return getattr(source, key, None) if not key.startswith("__") else None
+    # Evitar acceder a propiedades que disparan lógica (solo data simple)
+    try:
+        return getattr(source, key, None) if not key.startswith("__") else None
+    except Exception:
+        return None
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Inicializa un SystemContext completo integrando datos de múltiples fuentes."""

@@ -236,6 +236,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Robustez: manejar posibles errores de resolución de ruta
                         entry_path = Path(entry.path).resolve()
                         if root_path not in entry_path.parents and entry_path != root_path:
                             continue
@@ -253,12 +254,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat()
-                            # Validar que st_size es numérico antes de procesar
                             size_val = getattr(st, 'st_size', 0)
                             if not isinstance(size_val, (int, float)):
                                 continue
                             yield entry_path, max(0, int(size_val))
-                    except (PermissionError, OSError, AttributeError):
+                    except (PermissionError, OSError, AttributeError, RuntimeError):
                         continue
         except (PermissionError, OSError):
             continue

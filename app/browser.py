@@ -221,8 +221,11 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
             if not is_junction_fn(entry.path):
                 return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
         elif entry.is_file(follow_symlinks=False):
-            stat_res = entry.stat(follow_symlinks=False)
-            return int(stat_res.st_size) if hasattr(stat_res, 'st_size') else 0
+            try:
+                stat_res = entry.stat(follow_symlinks=False)
+                return int(stat_res.st_size) if hasattr(stat_res, 'st_size') else 0
+            except (OSError, PermissionError):
+                return 0
     except (OSError, PermissionError):
         return 0
     return 0
