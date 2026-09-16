@@ -206,7 +206,7 @@ def _is_system_or_hidden(path_str: str) -> bool:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == 0xFFFFFFFF: return False
         return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
-    except (AttributeError, OSError, FileNotFoundError):
+    except (AttributeError, OSError, FileNotFoundError, ctypes.ArgumentError):
         return False 
 
 @lru_cache(maxsize=2048)
@@ -228,8 +228,9 @@ def _is_encrypted_or_compressed(path_str: str) -> bool:
     if os.name != 'nt': return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
+        if attrs == 0xFFFFFFFF: return False
         return bool(attrs & (FILE_ATTRIBUTE_COMPRESSED | FILE_ATTRIBUTE_ENCRYPTED))
-    except (AttributeError, OSError, TypeError):
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         return False
 
 @lru_cache(maxsize=2048)
@@ -238,8 +239,9 @@ def _is_offline(path_str: str) -> bool:
     if os.name != 'nt': return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
+        if attrs == 0xFFFFFFFF: return False
         return bool(attrs & FILE_ATTRIBUTE_OFFLINE)
-    except (AttributeError, OSError, TypeError): return False
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError): return False
 
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
@@ -266,7 +268,7 @@ def _is_volume_readonly(path_str: str) -> bool:
     try:
         if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0):
             return bool(flags.value & 0x80000) # FILE_READ_ONLY_VOLUME
-    except (AttributeError, OSError, TypeError):
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         return False
     return False
 
@@ -275,8 +277,9 @@ def _is_directory_junction(path: Path) -> bool:
     if os.name != 'nt': return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(str(path)))
+        if attrs == 0xFFFFFFFF: return False
         return bool(attrs & FILE_ATTRIBUTE_DIRECTORY and attrs & FILE_ATTRIBUTE_REPARSE_POINT)
-    except (AttributeError, OSError, TypeError): return False
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError): return False
 
 def _is_kernel_managed(path: Path) -> bool:
     """Detecta archivos de paginación o hibernación bloqueados por el sistema operativo."""
@@ -328,18 +331,19 @@ def _check_file_integrity(path: Path) -> None:
     """
     try:
         file_stat = path.stat()
-    except PermissionError:
+    except (PermissionError, OSError):
         raise UnsafePathError(f"Acceso denegado a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-    except (OSError, FileNotFoundError):
-        return 
     
     if _is_directory_junction(path):
         raise UnsafePathError(f"Junction detectada: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
     for rule in _VALIDATORS:
-        if rule.predicate(path, file_stat):
-            code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
-            raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
+        try:
+            if rule.predicate(path, file_stat):
+                code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
+                raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
+        except (AttributeError, OSError, ctypes.ArgumentError):
+            continue
 
 @lru_cache(maxsize=2048)
 def _is_readonly(path_str: str) -> bool:

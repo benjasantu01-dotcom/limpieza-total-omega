@@ -877,3 +877,10 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-16T02:37:05` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `load_manifest` mediante la captura explícita de `FileNotFoundError` y validación de tipos, evitando que errores de E/S o corrupción silenciosa del JSON provoquen fallos en cascada en la interfaz.
 - `2026-09-16T02:37:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-16T02:37:05` Corrida terminada. Total usado hoy: 64.
+- `2026-09-16T02:44:35` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-09-16T02:45:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
+- `2026-09-16T02:45:52` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` ante errores de sistema encapsulando las verificaciones de metadatos en un bloque `try-except` más específico y asegurando que las llamadas a `kernel32` no propaguen excepciones inesperadas que interrumpan el flujo de la aplicación.
+- `2026-09-16T02:46:18` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-16T02:46:35` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la carga de archivos implementando un manejo explícito de errores durante la lectura y decodificación del JSON, evitando dejar el sistema en un estado inconsistente si `json.loads` o `decode` fallan.
+- `2026-09-16T02:46:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-16T02:46:35` Corrida terminada. Total usado hoy: 68.

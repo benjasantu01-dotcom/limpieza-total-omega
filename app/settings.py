@@ -303,6 +303,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             # Validamos que el archivo sea JSON estructuralmente coherente
             if len(data_bytes) > MAX_SETTINGS_SIZE or not (data_bytes.startswith(b"{") and data_bytes.strip().endswith(b"}")):
                 return DEFAULTS.copy()
+            
             try:
                 raw = json.loads(data_bytes.decode("utf-8"))
             except (json.JSONDecodeError, UnicodeDecodeError):
