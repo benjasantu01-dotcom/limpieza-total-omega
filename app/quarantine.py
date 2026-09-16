@@ -209,7 +209,7 @@ def _is_file_locked(path: Path) -> bool:
         fd = os.open(str(path), os.O_RDONLY | getattr(os, 'O_NONBLOCK', 0))
         os.close(fd)
         return False
-    except OSError:
+    except (OSError, PermissionError):
         return True
 
 

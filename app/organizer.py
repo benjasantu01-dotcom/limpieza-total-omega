@@ -239,7 +239,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     if not files: return None
     try:
         dest_base = Path(review_dir).expanduser().resolve()
-        dest_base.mkdir(parents=True, exist_ok=True)
+        if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
         if not os.access(dest_base, os.W_OK) or not is_safe_to_modify(dest_base): return None
     except (OSError, RuntimeError): return None
     
@@ -255,8 +255,10 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Calcula una ruta de destino segura para evitar colisiones."""
     if not _is_safe_to_move(junk_file, dest_base): return None
-    usage = shutil.disk_usage(dest_base.anchor)
-    if usage.free < (junk_file.size_bytes + 52428800): return None
+    try:
+        usage = shutil.disk_usage(dest_base.anchor)
+        if usage.free < (junk_file.size_bytes + 52428800): return None
+    except (OSError, FileNotFoundError): return None
     safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
     return _generate_unique_target(dest_base / safe_name)
 
@@ -264,7 +266,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """Ejecuta la eliminación permanente y segura de archivos."""
     try:
         dest = Path(review_dir).expanduser().resolve()
-        if not dest.is_dir() or not is_safe_to_modify(dest): return 0
+        if not dest.is_dir() or not os.access(dest, os.W_OK) or not is_safe_to_modify(dest): return 0
         count = 0
         for item in dest.iterdir():
             if item.is_file() and is_safe_to_modify(item):

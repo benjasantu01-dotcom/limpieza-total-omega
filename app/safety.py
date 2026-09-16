@@ -529,7 +529,11 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
         if handle != -1:
             buf = ctypes.create_unicode_buffer(1024)
             if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0):
-                if not Path(buf.value).resolve().as_posix().startswith(path.resolve().as_posix()[:len(str(path.parent))+1]):
+                final_path = Path(buf.value).resolve()
+                # Verificar redundancia de unidad/red tras resolución de path final
+                if final_path.drive != path.resolve().drive:
+                    raise UnsafePathError("Redirección de unidad detectada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+                if not final_path.as_posix().startswith(path.resolve().as_posix()[:len(str(path.parent))+1]):
                         raise UnsafePathError("Redirección detectada vía reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
             kernel32.CloseHandle(handle)
     except (AttributeError, OSError, ctypes.ArgumentError): 

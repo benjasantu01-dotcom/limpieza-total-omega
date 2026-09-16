@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 116 | 10 | 18 | 4 | 144 |
-| 2026-09-16 | 90 | 2 | 21 | 10 | 89 |
+| 2026-09-15 | 116 | 10 | 18 | 4 | 140 |
+| 2026-09-16 | 93 | 2 | 22 | 10 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **51**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **43**
 - seguridad defensiva: **32**
 - rendimiento: **30**
 
@@ -34,18 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **19**
 - `memory.py`: **18**
 - `diskreport.py`: **17**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
 - `settings.py`: **15**
+- `safety.py`: **15**
 - `duplicates.py`: **14**
-- `safety.py`: **14**
+- `organizer.py`: **13**
 - `branding.py`: **12**
-- `organizer.py`: **12**
 - `scanner.py`: **11**
 - `main.py`: **9**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T09:03:48` **safety.py** (robustez ante casos límite): Se ha implementado una validación de redundancia de red en `_validate_boundary_conditions` para detectar y bloquear rutas que, mediante enlaces simbólicos o junctions, apunten fuera de la unidad local, previniendo el acceso accidental a recursos compartidos o volúmenes montados dinámicamente que podrían comportarse de forma inesperada.
+- `2026-09-16T09:03:05` **quarantine.py** (robustez ante casos límite): Se introdujo una mejora robusta en `_is_file_locked` para manejar archivos inaccesibles mediante la captura explícita de `PermissionError`, además de mejorar la fiabilidad del cierre de descriptores de archivo en la operación de aislamiento, evitando fugas de recursos en escenarios de error crítico.
+- `2026-09-16T09:02:28` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones explícitas de espacio en disco y accesibilidad antes de realizar operaciones de E/S, evitando fallos silenciosos por volúmenes de solo lectura o falta de cuota, alineándome con el enfoque de robustez ante casos límite.
 - `2026-09-16T08:53:45` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` y `_get_process_path` para prevenir fugas de recursos (handles de procesos abiertos) ante errores imprevistos, asegurando que el cierre del handle ocurra incluso si ocurren excepciones en las validaciones, y mejorando la gestión de rutas UNC/reparse points que podrían causar bloqueos en el sistema.
 - `2026-09-16T08:53:30` **main.py** (robustez ante casos límite): Se introdujo una comprobación robusta en `on_trim_process` y `on_quarantine_duplicates` utilizando `is_safe_path` para prevenir la manipulación de rutas potencialmente maliciosas, errores de concurrencia al validar widgets antes de manipularlos, y se añadió una gestión de excepciones específica en `_apply_card_updates` para evitar cierres ante cambios rápidos de estado.
 - `2026-09-16T08:52:14` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante posibles divisiones por cero en el pipeline y aseguré que `_evaluate_rules` sea resiliente a fallos en las factorías de mensajes (como divisiones por cero o valores `None`), evitando que una métrica mal formada rompa todo el análisis.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T08:22:05` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` al mover la lógica de filtrado de procesos de Python a PowerShell, reduciendo drásticamente la cantidad de objetos creados y el tiempo de ejecución en cada refresco.
 - `2026-09-16T08:11:50` **healthscore.py** (rendimiento): Se ha optimizado la estructura de datos del pipeline convirtiendo la inicialización de las reglas de una iteración for ineficiente a una estructura de diccionarios pre-mapeados (`_RULES_BY_AREA`), eliminando la necesidad de recorrer la lista de reglas cada vez que se procesa el pipeline.
 - `2026-09-16T08:11:25` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `is_protected_path` al consolidar las comprobaciones en un solo flujo, y reemplacé la iteración sobre listas por una lógica de filtrado más eficiente para evitar redundancias en el mapa de tamaño.
-- `2026-09-16T08:02:21` **browser.py** (rendimiento): Se implementó un mecanismo de caché local (memoización) en `detect_profiles` para evitar el cálculo recursivo redundante de subdirectorios compartidos entre distintas rutas de caché, mejorando drásticamente el rendimiento en entornos donde múltiples navegadores utilizan rutas de datos similares o anidadas.
-- `2026-09-16T08:02:08` **branding.py** (rendimiento): Optimicé el renderizado de franjas y la creación de elementos de canvas centralizando el cálculo de factores de escalado y pre-calculando el segmento de degradado en una única llamada, evitando divisiones innecesarias dentro de los bucles de dibujado.
-- `2026-09-16T08:01:35` **assistant.py** (rendimiento): Optimicé el rendimiento de `_get_active_problems` eliminando la creación innecesaria de generadores y listas en cada iteración, utilizando un iterador eficiente con `next()` y cacheando el resultado de manera más efectiva para evitar procesar repetidamente criterios inalterables durante la sesión.
