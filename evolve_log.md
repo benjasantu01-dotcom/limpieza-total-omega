@@ -673,3 +673,10 @@ FAILED evolve/tests/test_modules.py::test_read_snapshot_never_crashes - UnboundL
 - `2026-09-16T12:57:53` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la carga de configuración eliminando la creación redundante de copias del diccionario de `DEFAULTS` y reduciendo el uso de `copy()` durante el proceso de validación, mejorando el rendimiento en llamadas repetidas al sistema.
 - `2026-09-16T12:57:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-16T12:57:53` Corrida terminada. Total usado hoy: 308.
+- `2026-09-16T13:06:26` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-16T13:06:57` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-16T13:08:06` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta para el parámetro `extra` en `build_context` y se mejoró la resiliencia de la ingestión de datos mediante `_get_source_value` para manejar estructuras de datos arbitrarias o malformadas sin excepciones no controladas.
+- `2026-09-16T13:08:41` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Reforcé la robustez de `save_logo_svg` ante errores de entrada y condiciones de carrera al asegurar que la validación de rutas ocurra fuera del bloque de escritura y añadiendo un manejo de excepciones más granular para evitar abortos inesperados.
+- `2026-09-16T13:08:57` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita de "path traversal" usando `os.path.commonpath` dentro del bucle de `detect_profiles` y en `_sum_directory_recursive` para asegurar que, bajo ninguna circunstancia de resolución de rutas (como symlinks maliciosos en la estructura de `User Data`), la recursión escape de la carpeta base del perfil del usuario.
+- `2026-09-16T13:08:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-16T13:08:57` Corrida terminada. Total usado hoy: 312.

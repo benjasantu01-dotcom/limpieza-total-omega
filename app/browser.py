@@ -255,15 +255,15 @@ def _sum_directory_recursive(
     
     try:
         root_path = Path(root_abs).resolve(strict=True)
+        # Validación adicional contra el root_base ante cualquier redirección de resolución
         if not root_path.is_absolute() or not root_path.is_dir() or is_protected_path(root_path):
+            return 0
+        if not _is_path_inside_base(root_path, Path(root_base).resolve(strict=True)):
             return 0
         
         current_abs = str(root_path)
         if current_abs in memo:
             return memo[current_abs]
-
-        if not _is_path_inside_base(root_path, Path(root_base).resolve(strict=True)):
-            return 0
 
         total: int = 0
         with os.scandir(current_abs) as it:
@@ -355,6 +355,10 @@ def detect_profiles(
                 
                 real_candidate = str(candidate.resolve(strict=True))
                 if real_candidate in scanned_paths:
+                    continue
+                
+                # Doble chequeo de seguridad antes de recursar
+                if not _is_path_inside_base(Path(real_candidate), real_base):
                     continue
                 
                 size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, perf_cache, str(real_base))

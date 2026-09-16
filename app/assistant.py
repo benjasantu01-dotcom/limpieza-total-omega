@@ -402,12 +402,12 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def _get_source_value(source: Any, key: str) -> Any:
     """Acceso genérico a datos de configuración, evitando atributos privados o protegidos."""
-    if key.startswith("_"): return None
+    if not isinstance(key, str) or key.startswith("_"): return None
     if isinstance(source, dict):
         return source.get(key)
     # Evitar acceder a propiedades que disparan lógica (solo data simple)
     try:
-        if isinstance(key, str) and not key.startswith("__"):
+        if not key.startswith("__"):
             return getattr(source, key, None)
     except Exception:
         return None
@@ -416,6 +416,7 @@ def _get_source_value(source: Any, key: str) -> Any:
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Inicializa un SystemContext completo integrando datos de múltiples fuentes."""
     ctx = SystemContext()
+    # Procesar métricas, salud y extra con validación de ingesta
     for s in (metrics, health, extra):
         if s is not None and ctx.ingest(s):
             ctx.analyzed = True
