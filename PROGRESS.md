@@ -9,36 +9,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 237
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 236
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 28 | 1 | 5 | 4 | 44 |
+| 2026-09-14 | 26 | 1 | 4 | 4 | 43 |
 | 2026-09-15 | 154 | 12 | 26 | 5 | 153 |
-| 2026-09-16 | 26 | 0 | 4 | 2 | 40 |
+| 2026-09-16 | 28 | 0 | 5 | 3 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **47**
 - robustez ante casos límite: **46**
-- legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
 - seguridad defensiva: **43**
-- rendimiento: **30**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
-- `healthscore.py`: **19**
+- `healthscore.py`: **20**
 - `diskreport.py`: **18**
+- `quarantine.py`: **18**
 - `browser.py`: **18**
-- `safety.py`: **17**
 - `memory.py`: **17**
 - `settings.py`: **17**
+- `safety.py`: **16**
+- `duplicates.py`: **15**
 - `assistant.py`: **15**
-- `duplicates.py`: **14**
 - `branding.py`: **13**
 - `scanner.py`: **12**
 - `organizer.py`: **11**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T03:06:20` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos y type hints a funciones y constantes críticas para aclarar la intención del diseño de puntuación, facilitando su mantenimiento.
+- `2026-09-16T03:05:52` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo *docstrings* detallados en las funciones de hashing y en los filtros de seguridad (`_is_valid_candidate`), aclarando la lógica de las comprobaciones de integridad y seguridad exigidas por el proyecto.
 - `2026-09-16T02:56:39` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `browser.py` documentando los parámetros y retornos de funciones críticas (como `_sum_directory_recursive` y `_process_entry`) para clarificar el flujo de trabajo del motor recursivo y la gestión del sandbox.
 - `2026-09-16T02:56:27` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en la constante `_GRADIENT_CACHE` y docstrings descriptivos en funciones críticas, clarificando las unidades de medida (ej. píxeles, ratio 0-1) y el propósito de las transformaciones geométricas para facilitar futuras integraciones.
 - `2026-09-16T02:55:55` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `ProblemCriterion.format_if_triggered` para extraer la lógica de validación de métricas y formateo en pasos claros, eliminando la redundancia en las comprobaciones de valores negativos y garantizando la robustez mediante tipado explícito.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T02:24:58` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `_get_keeper_score` agregando validaciones explícitas para prevenir fallos silenciosos cuando `stat()` falla debido a archivos en uso o bloqueados por el sistema, asegurando que el proceso de selección no sea nulo prematuramente.
 - `2026-09-16T02:24:32` **diskreport.py** (manejo de errores y validación de entradas): Reforcé la robustez de `_collect_summary_data` y `walk_files` capturando errores potenciales durante el acceso a atributos y conversión de tipos, evitando que el escaneo se detenga silenciosamente o falle ante metadatos corruptos.
 - `2026-09-16T02:16:20` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` al validar explícitamente el tipo de los índices de la estructura anidada y utilicé `get()` para evitar excepciones de `KeyError`, alineándome con el enfoque de validación defensiva y manejo de errores específicos.
-- `2026-09-16T00:54:25` **settings.py** (seguridad defensiva): Mejoré `_Validators._is_safe_path` para prevenir ataques de sustitución mediante enlaces simbólicos o junctions que apunten a rutas críticas, asegurando que `realpath` se evalúe antes de cualquier validación de seguridad.
-- `2026-09-16T00:52:40` **safety.py** (seguridad defensiva): Se implementó un chequeo preventivo de privilegios de escritura mediante `os.access(path, os.W_OK)` antes de intentar cualquier operación, cerrando una brecha donde archivos bloqueados a nivel de sistema operativo (pero no por handles de WinAPI) podrían haber escapado a la validación.

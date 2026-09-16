@@ -100,7 +100,11 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo de un archivo mediante bloques para optimizar memoria."""
+    """
+    Calcula el hash SHA256 completo. 
+    Aplica chequeos de seguridad estrictos antes de abrir el archivo:
+    verifica que la ruta sea segura, que el archivo sea accesible y no esté bloqueado.
+    """
     if path is None or chunk_size <= 0:
         return None
         
@@ -122,7 +126,10 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula un hash de huella digital basado exclusivamente en los primeros N bytes del archivo."""
+    """
+    Calcula el hash de los primeros N bytes para filtrado rápido.
+    Se utiliza como optimización previa al cálculo del hash completo (SHA256).
+    """
     if path is None or read_bytes <= 0:
         return None
 
@@ -142,14 +149,12 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 def _is_valid_candidate(path: Path, stat_result: Optional[os.stat_result] = None) -> bool:
     """
-    Filtro de seguridad central. Valida si un archivo es apto para el análisis.
+    Filtro de seguridad que actúa como barrera antes de cualquier procesamiento pesado.
     
-    Criterios de exclusión:
-    1. Enlaces simbólicos: para evitar redundancia o bucles.
-    2. Rutas protegidas: validadas por `is_protected_path`.
-    3. Atributos de sistema/ocultos: para ignorar configuraciones del SO.
-    4. Hard links: st_nlink > 1 implica que el archivo comparte el mismo inodo/índice,
-       por lo que no es un duplicado real de contenido en el sentido tradicional.
+    Validaciones:
+    - Symlinks/Junctions: Se ignoran para prevenir recursión infinita.
+    - Seguridad: Aplica `is_safe_to_modify` y `is_protected_path`.
+    - Integridad: Verifica que no haya locks y que el inodo sea único (no hardlinks).
     """
     try:
         if path.is_symlink() or is_protected_path(path) or not is_safe_to_modify(path) or _is_file_locked(path):

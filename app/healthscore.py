@@ -58,13 +58,14 @@ _LIMIT_STARTUP_COUNT: Final[int] = 20
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-# Factores de normalización precalculados para optimizar el rendimiento del pipeline
+# Factores de normalización precalculados: inversos de los límites para cálculo lineal
 _INV_JUNK: Final[float] = 1.0 / max(_LIMIT_JUNK_MB, 1.0)
 _INV_DUP: Final[float] = 1.0 / max(_LIMIT_DUPLICATE_MB, 1.0)
 _INV_STARTUP: Final[float] = 1.0 / max(float(_LIMIT_STARTUP_COUNT), 1.0)
 _INV_RAM: Final[float] = 1.0 / max(_LIMIT_RAM_PERCENT, 0.1)
 _INV_DISK: Final[float] = 1.0 / max(_LIMIT_DISK_PERCENT, 0.1)
 
+# Umbrales para clasificación de severidad de recomendaciones
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
@@ -83,21 +84,27 @@ if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
+    """Calcula el ratio de salud basado en volumen de archivos basura."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
+    """Evalúa la salud de seguridad penalizando hallazgos y advertencias."""
     return _clamp(1.0 - ((_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
+    """Normaliza el porcentaje de RAM disponible."""
     return _clamp(_to_float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
+    """Normaliza el porcentaje de disco libre."""
     return _clamp(_to_float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
+    """Calcula el ratio basado en el espacio ocupado por duplicados."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
+    """Evalúa la salud basándose en la cantidad de programas en inicio."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
 # Pre-vinculación de lógica para evitar búsquedas en diccionario o lambdas en el bucle
@@ -140,6 +147,7 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
+        """Asegura que los valores de las métricas estén dentro de rangos lógicos."""
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
         self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
@@ -151,6 +159,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
+        """Verifica que todas las métricas numéricas sean valores reales finitos."""
         return (math.isfinite(self.junk_mb) and math.isfinite(self.suspicious_count) and 
                 math.isfinite(self.suspicious_warnings) and math.isfinite(self.memory_available_percent) and
                 math.isfinite(self.disk_free_percent) and math.isfinite(self.duplicate_mb) and
@@ -166,18 +175,22 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
+        """Determina si el sistema está en un estado saludable."""
         return 80 <= self.score <= 100
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
+    """Fuerza un valor a mantenerse dentro del rango [min_val, max_val]."""
     return float(max(min_val, min(max_val, value)))
 
 def _to_float(value: Any, default: float = 0.0) -> float:
+    """Convierte de forma segura cualquier entrada a flotante."""
     try:
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError, OverflowError): return default
 
 def grade_for_score(score: float | int) -> str:
+    """Mapea una puntuación numérica a una calificación alfabética."""
     s = float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -186,6 +199,7 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
+    """Evalúa reglas de recomendación y acumula mensajes de hallazgos."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -197,6 +211,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
+    """Punto de entrada principal para calcular el score de salud del sistema."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     
@@ -240,11 +255,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(points: int, max_val: int) -> str:
+    """Renderiza visualmente una barra de progreso basada en texto."""
     if max_val <= 0: return ""
     puntos_norm = int(_clamp(float(points), 0.0, float(max_val)))
     return ('#' * puntos_norm) + ('.' * (max_val - puntos_norm))
 
 def summarize(result: HealthResult | None) -> List[str]:
+    """Genera una representación en texto del informe de salud."""
     if result is None or not hasattr(result, 'score'):
         return ["Error: Informe no disponible."]
     
