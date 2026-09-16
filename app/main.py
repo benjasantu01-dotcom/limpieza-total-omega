@@ -160,6 +160,7 @@ def validated_ui_operation(func: Callable) -> Callable:
 # Validación de seguridad defensiva en el inicio
 try:
     safety.ensure_safe_to_modify(Path.home().resolve())
+    safety.ensure_safe_to_modify(Path.cwd().resolve())
 except safety.UnsafePathError as e:
     logging.critical("Iniciando desde ruta insegura: %s", e)
     raise
@@ -253,13 +254,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         sean seguros y posean los permisos necesarios para la ejecución.
         """
         app_root = Path(__file__).resolve().parent
+        cwd = Path.cwd().resolve()
         home = Path.home()
         
         validations = [
             (app_root.exists(), "Directorio de aplicación inexistente."),
             (not app_root.is_symlink(), "App ubicada en enlace simbólico."),
             (home.exists(), "Directorio home del usuario inaccesible."),
-            (home.resolve().is_absolute(), "La ruta home no es absoluta.")
+            (home.resolve().is_absolute(), "La ruta home no es absoluta."),
+            (safety.is_safe_to_modify(cwd), "Directorio de trabajo inseguro.")
         ]
         
         for condition, error_msg in validations:

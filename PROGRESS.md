@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 222
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 116 | 10 | 18 | 4 | 132 |
-| 2026-09-16 | 100 | 2 | 22 | 10 | 90 |
+| 2026-09-15 | 116 | 10 | 18 | 4 | 128 |
+| 2026-09-16 | 101 | 2 | 22 | 11 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **51**
 - robustez ante casos límite: **45**
-- seguridad defensiva: **37**
+- seguridad defensiva: **38**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
@@ -41,11 +41,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **13**
 - `organizer.py`: **13**
 - `scanner.py`: **12**
-- `main.py`: **9**
+- `main.py`: **10**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T09:34:52` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_environment` para impedir la ejecución de la aplicación si el directorio de trabajo actual no es seguro, evitando riesgos de inyección o ejecución no autorizada en entornos controlados.
 - `2026-09-16T09:23:28` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_valid_candidate` reemplazando `path.stat()` (que sigue enlaces simbólicos) por `os.lstat()` para evitar procesar recursivamente fuera del árbol deseado, y encapsulé la lógica de resolución de rutas en el escáner para evitar condiciones de carrera.
 - `2026-09-16T09:23:18` **diskreport.py** (seguridad defensiva): Reforcé la seguridad en `walk_files` y `largest_folders` validando explícitamente que los archivos encontrados sigan siendo hijos de la ruta raíz (evitando ataques de *path traversal* o desbordamientos fuera de la raíz si se manipularan enlaces simbólicos o junctions de forma inesperada).
 - `2026-09-16T09:22:53` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación estricta de las rutas de caché antes de cualquier operación, asegurando que no contengan caracteres de escape (NUL, CR, LF) y reforzando la verificación `is_safe_to_modify` para prevenir la manipulación de directorios protegidos o fuera del alcance autorizado (sandbox).
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T08:53:30` **main.py** (robustez ante casos límite): Se introdujo una comprobación robusta en `on_trim_process` y `on_quarantine_duplicates` utilizando `is_safe_path` para prevenir la manipulación de rutas potencialmente maliciosas, errores de concurrencia al validar widgets antes de manipularlos, y se añadió una gestión de excepciones específica en `_apply_card_updates` para evitar cierres ante cambios rápidos de estado.
 - `2026-09-16T08:52:14` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante posibles divisiones por cero en el pipeline y aseguré que `_evaluate_rules` sea resiliente a fallos en las factorías de mensajes (como divisiones por cero o valores `None`), evitando que una métrica mal formada rompa todo el análisis.
 - `2026-09-16T08:43:11` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de robustez en `walk_files` para manejar correctamente rutas con longitud excesiva o errores de decodificación al recuperar la ruta absoluta, asegurando que el recorrido no se detenga ante archivos con nombres inusuales o caracteres especiales en el sistema de archivos.
-- `2026-09-16T08:42:57` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante errores de acceso a archivos individuales dentro de `_sum_directory_recursive` envolviendo la llamada `entry.stat()` en un bloque try-except más específico, previniendo que un archivo bloqueado o con error de lectura interrumpa el escaneo completo de la carpeta de caché.
