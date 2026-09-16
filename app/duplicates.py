@@ -292,8 +292,7 @@ def _get_keeper_score(path: Path) -> Optional[Tuple[float, int]]:
     Falla si el archivo no existe o no se puede acceder a sus metadatos.
     """
     try:
-        # Validación de existencia garantizada antes del stat
-        if not path.is_file():
+        if not path.is_file() or not is_safe_to_modify(path):
             return None
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
@@ -311,9 +310,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        # Validación extra de seguridad y existencia antes de puntuar
-        if not is_safe_to_modify(p):
-            continue
         score = _get_keeper_score(p)
         if score is not None:
             candidates.append((score, p))
@@ -331,14 +327,9 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
     
     for path in group.paths:
-        try:
-            if not path.exists():
-                lines.append(f"   [desaparecido] {path}")
-            elif not is_safe_to_modify(path):
-                lines.append(f"   [inaccesible] {path}")
-            else:
-                label = 'conservar' if (keeper is not None and path == keeper) else 'duplicado'
-                lines.append(f"   [{label}] {path}")
-        except (OSError, PermissionError):
-            lines.append(f"   [error] {path}")
+        if not path.exists() or not is_safe_to_modify(path):
+            lines.append(f"   [inaccesible] {path}")
+        else:
+            label = 'conservar' if (keeper is not None and path == keeper) else 'duplicado'
+            lines.append(f"   [{label}] {path}")
     return lines

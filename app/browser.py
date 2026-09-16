@@ -238,11 +238,17 @@ def _sum_directory_recursive(
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or _is_unc_path(root_abs):
         return 0
+    
+    # Validar que sea una ruta absoluta y exista físicamente
+    root_path = Path(root_abs)
+    if not root_path.is_absolute() or not root_path.exists():
+        return 0
+        
     if root_abs in memo:
         return memo[root_abs]
 
     # Validar integridad contra el sandbox antes de escanear
-    if not _is_path_inside_base(Path(root_abs), Path(root_base)):
+    if not _is_path_inside_base(root_path, Path(root_base)):
         return 0
 
     total: int = 0

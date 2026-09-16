@@ -246,9 +246,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat()
+                            # Validar que st_size es numérico antes de procesar
                             size_val = getattr(st, 'st_size', 0)
                             if not isinstance(size_val, (int, float)):
-                                size_val = 0
+                                continue
                             yield entry_path, max(0, int(size_val))
                     except (PermissionError, OSError, AttributeError):
                         continue
@@ -319,29 +320,23 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        try:
-            if not isinstance(size, int):
-                continue
-                
-            total_bytes += size
-            total_files += 1
-            
-            suffix = path.suffix
-            if not isinstance(suffix, str):
-                ext = "(sin extensión)"
-            else:
-                ext = suffix.lower() if suffix else "(sin extensión)"
-            
-            ext_bytes[ext] += size
-            ext_counts[ext] += 1
-            
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif size > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (size, path))
-        except (AttributeError, TypeError, ValueError, OSError):
+        if not isinstance(size, (int, float)):
             continue
+            
+        total_bytes += int(size)
+        total_files += 1
+        
+        suffix = path.suffix
+        ext = suffix.lower() if isinstance(suffix, str) and suffix else "(sin extensión)"
+        
+        ext_bytes[ext] += int(size)
+        ext_counts[ext] += 1
+        
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (int(size), path))
+            elif size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (int(size), path))
     
     ext_stats: Dict[str, ExtStats] = {ext: ExtStats(ext_bytes[ext], ext_counts[ext]) for ext in ext_bytes}
     return SummaryData(total_bytes, total_files, ext_stats, top_heap)
