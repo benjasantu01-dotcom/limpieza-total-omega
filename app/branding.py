@@ -325,9 +325,11 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination: return None
     try:
         target = Path(destination).resolve()
-        # Verificación centralizada antes de cualquier operación de escritura
+        # Verificación centralizada: el chequeo es mandatorio y debe lanzar error si es inseguro
         ensure_safe_to_modify(target)
-        target.parent.mkdir(parents=True, exist_ok=True)
+        # Asegurar existencia de directorio padre con manejo de permisos
+        if target.parent:
+            target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, ValueError, RuntimeError): 
@@ -338,7 +340,8 @@ def logo_ascii() -> str:
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     try:
-        if not all(isinstance(v, (int, float)) for v in (canvas_x, canvas_y, scale)): return
+        # Validación de tipos y valores críticos antes de operar
+        if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in (canvas_x, canvas_y, scale)): return
         franjas_count = max(6, int(28 * scale))
         base_y = canvas_y + 18 * scale
         factor_y = 92 * scale / franjas_count
@@ -354,7 +357,7 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     try:
-        if not all(isinstance(v, (int, float)) for v in (canvas_x, canvas_y, scale)): return
+        if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in (canvas_x, canvas_y, scale)): return
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, 
                            canvas_x + 75 * scale, canvas_y + 41 * scale, 
                            fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
@@ -369,7 +372,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     try:
         s = float(size)
-        if s <= 0: return
+        if not math.isfinite(s) or s <= 0: return
         scale = max(0.1, min(10.0, s / 128.0))
         canvas.create_oval(
             canvas_x + 64 * scale - 75 * scale, canvas_y + 58 * scale - 75 * scale, 

@@ -217,9 +217,8 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
         elif entry.is_file(follow_symlinks=False):
             stat_res = entry.stat(follow_symlinks=False)
             return int(stat_res.st_size) if hasattr(stat_res, 'st_size') else 0
-    except (OSError, PermissionError) as e:
-        if kernel32 and getattr(e, 'winerror', None) == ERROR_SHARING_VIOLATION:
-            return 0
+    except (OSError, PermissionError):
+        return 0
     return 0
 
 
@@ -233,10 +232,6 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Motor recursivo de cálculo de tamaño con memoización.
-    Args:
-        root_abs: Ruta absoluta a escanear.
-        memo: Caché de resultados para evitar re-procesar subdirectorios.
-        Returns: Suma total de bytes del árbol validado.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
@@ -278,7 +273,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """Verifica si el directorio de caché cumple criterios de seguridad."""
     try:
-        if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir():
+        if not isinstance(candidate, Path) or not candidate.is_absolute() or not candidate.exists() or not candidate.is_dir():
             return False
         real_candidate = candidate.resolve(strict=True)
         if not _is_path_inside_base(real_candidate, base_path):
@@ -313,7 +308,6 @@ def detect_profiles(
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
     k32 = _get_kernel32()
-    # Compartimos el diccionario de memoización entre todos los escaneos
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     scanned_paths: set[str] = set()
@@ -335,7 +329,6 @@ def detect_profiles(
                     continue
                 
                 real_candidate = str(candidate.resolve(strict=True))
-                # Optimización: si ya escaneamos esta ruta exacta, saltar
                 if real_candidate in scanned_paths:
                     continue
                 

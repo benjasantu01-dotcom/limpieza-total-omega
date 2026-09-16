@@ -320,6 +320,9 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     for path, size in walk_files(directory, skip_protected):
         try:
+            if not isinstance(size, int):
+                continue
+                
             total_bytes += size
             total_files += 1
             
@@ -337,7 +340,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                     heapq.heappush(top_heap, (size, path))
                 elif size > top_heap[0][0]:
                     heapq.heapreplace(top_heap, (size, path))
-        except (AttributeError, TypeError, ValueError):
+        except (AttributeError, TypeError, ValueError, OSError):
             continue
     
     ext_stats: Dict[str, ExtStats] = {ext: ExtStats(ext_bytes[ext], ext_counts[ext]) for ext in ext_bytes}

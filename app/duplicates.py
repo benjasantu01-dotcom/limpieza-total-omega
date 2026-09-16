@@ -292,11 +292,12 @@ def _get_keeper_score(path: Path) -> Optional[Tuple[float, int]]:
     Falla si el archivo no existe o no se puede acceder a sus metadatos.
     """
     try:
-        if not path.exists():
+        # Validación de existencia garantizada antes del stat
+        if not path.is_file():
             return None
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, ValueError):
         return None
 
 
@@ -310,6 +311,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
+        # Validación extra de seguridad y existencia antes de puntuar
         if not is_safe_to_modify(p):
             continue
         score = _get_keeper_score(p)
