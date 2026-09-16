@@ -130,16 +130,6 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
     """Evalúa la salud basándose en la cantidad de programas en inicio."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
-# Pre-vinculación de lógica para evitar búsquedas en diccionario o lambdas en el bucle
-_PIPELINE: Final[List[PipelineEntry]] = [
-    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), []),
-    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), []),
-    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), []),
-    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), []),
-    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), []),
-    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), []),
-]
-
 _RULES_LIST: Final[Tuple[RecommendationRule, ...]] = (
     RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),
     RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW),
@@ -149,10 +139,19 @@ _RULES_LIST: Final[Tuple[RecommendationRule, ...]] = (
     RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),
 )
 
-for rule in _RULES_LIST:
-    for entry in _PIPELINE:
-        if entry.area == rule.area:
-            entry.rules.append(rule)
+_RULES_BY_AREA: Final[Dict[MetricKey, List[RecommendationRule]]] = {}
+for r in _RULES_LIST:
+    _RULES_BY_AREA.setdefault(r.area, []).append(r)
+
+# Pre-vinculación de lógica para evitar búsquedas en diccionario o lambdas en el bucle
+_PIPELINE: Final[List[PipelineEntry]] = [
+    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), _RULES_BY_AREA.get("seguridad", [])),
+    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), _RULES_BY_AREA.get("disco", [])),
+    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), _RULES_BY_AREA.get("memoria", [])),
+    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), _RULES_BY_AREA.get("basura", [])),
+    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), _RULES_BY_AREA.get("duplicados", [])),
+    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), _RULES_BY_AREA.get("arranque", [])),
+]
 
 @dataclass
 class SystemMetrics:
