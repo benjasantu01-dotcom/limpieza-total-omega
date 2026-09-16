@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 38
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 233
+- Rechazadas por guardia de seguridad: 39
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 231
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 77 | 5 | 11 | 3 | 104 |
-| 2026-09-16 | 128 | 6 | 27 | 14 | 129 |
+| 2026-09-15 | 76 | 5 | 11 | 3 | 101 |
+| 2026-09-16 | 129 | 6 | 28 | 15 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **52**
-- seguridad defensiva: **40**
+- seguridad defensiva: **39**
 - robustez ante casos límite: **35**
-- rendimiento: **25**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **20**
 - `healthscore.py`: **19**
-- `diskreport.py`: **18**
 - `quarantine.py`: **18**
 - `assistant.py`: **17**
+- `diskreport.py`: **17**
 - `safety.py`: **16**
+- `settings.py`: **16**
 - `duplicates.py`: **16**
 - `memory.py`: **16**
-- `settings.py`: **15**
 - `organizer.py`: **12**
 - `scanner.py`: **12**
 - `branding.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T12:57:53` **settings.py** (rendimiento): Optimizé la carga de configuración eliminando la creación redundante de copias del diccionario de `DEFAULTS` y reduciendo el uso de `copy()` durante el proceso de validación, mejorando el rendimiento en llamadas repetidas al sistema.
 - `2026-09-16T12:39:30` **duplicates.py** (rendimiento): Optimicé el cálculo del hash en `_decide_hash_strategy_and_process` evitando llamadas redundantes a `hash_file` y `partial_hash` sobre archivos que ya fueron identificados como únicos tras el filtrado por tamaño inicial, reduciendo drásticamente las operaciones de E/S en conjuntos de datos grandes.
 - `2026-09-16T12:38:20` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando la resolución costosa de rutas mediante `path.resolve()` (que hace llamadas a sistema bloqueantes) por una manipulación de strings y caché de inodos, reduciendo significativamente la latencia en directorios con mucha profundidad.
 - `2026-09-16T12:26:40` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_is_reserved_device_name` y `_is_path_suspicious` para usar un conjunto de reglas constantes y explícitas, añadiendo type hints faltantes y un docstring que clarifica la lógica de las validaciones de seguridad.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T11:55:33` **branding.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `branding.py` mediante la normalización de la nomenclatura de colores (`HexColor` a `ColorHex`), la inclusión de comentarios explicativos para las funciones de renderizado geométrico y la corrección de una inconsistencia en `draw_ring` donde la declaración de `borde` usaba tipos implícitos.
 - `2026-09-16T11:46:45` **assistant.py** (legibilidad y documentación): Se introdujeron type hints explícitos, se refinó la documentación (docstrings) de métodos críticos para clarificar su propósito pedagógico y técnico, y se extrajo `_is_metric_within_bounds` para mejorar la legibilidad del proceso de validación en `SystemContext`.
 - `2026-09-16T11:46:21` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que los campos obtenidos del CSV sean cadenas válidas antes de operar sobre ellos, evitando posibles errores de tipo (TypeError) si la estructura del CSV es inesperada.
-- `2026-09-16T11:45:52` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando excepciones específicas durante la escritura y validación, asegurando que la integridad del archivo original no se vea comprometida ante errores de E/S inesperados, cumpliendo con el enfoque de manejo de errores y validación.

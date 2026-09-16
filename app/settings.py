@@ -323,9 +323,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 
             if not _is_dict(raw): return DEFAULTS.copy()
             
-            # Validar contra el esquema completo y rellenar faltantes
-            data = validate(raw)
-            final_data: AppSettings = {k: data.get(k, DEFAULTS[k]) for k in DEFAULTS.keys()} # type: ignore
+            # Validar y completar esquema
+            final_data = validate(raw)
         
         _CACHE[ruta] = (mtime, final_data)
         return final_data.copy()
