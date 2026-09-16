@@ -172,7 +172,6 @@ class _Validators:
     def _run_safety_checks(path_obj: Path) -> bool:
         """Valida una ruta contra `safety.py` resolviendo el destino real para prevenir traversal."""
         try:
-            # Resolvemos primero para detectar donde apunta realmente la ruta (symlinks/junctions)
             resolved = path_obj.resolve(strict=False)
             path_str = str(resolved)
             
@@ -198,7 +197,6 @@ class _Validators:
         if path_str.startswith(("\\\\", "//")): return False
         try:
             p = Path(path_str).expanduser()
-            # El chequeo requiere ruta absoluta para prevenir resolución relativa a CWD
             if not p.is_absolute(): return False
             return _Validators._run_safety_checks(p)
         except (OSError, RuntimeError, PermissionError, AttributeError, ValueError):
@@ -256,7 +254,7 @@ _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingPro
 })
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
-    """Retorna la ruta absoluta del archivo de configuración, priorizando el caché de rutas."""
+    """Calcula y retorna la ruta absoluta del archivo config.json."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     base_path = Path(custom_base).expanduser()
     if base_path in _PATH_CACHE: return _PATH_CACHE[base_path]
@@ -271,7 +269,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida un diccionario arbitrario contra el esquema AppSettings."""
+    """Valida y normaliza un diccionario arbitrario contra el esquema AppSettings."""
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_str, val in raw_values.items():
@@ -284,7 +282,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga y valida el JSON de configuración con reintentos ante bloqueos."""
+    """Carga, valida y cachea la configuración persistida en disco."""
     ruta = settings_path(custom_base)
     
     try:
@@ -300,7 +298,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             
         with open(ruta, "rb") as f:
             data_bytes = f.read(MAX_SETTINGS_SIZE + 1)
-            # Validamos que el archivo sea JSON estructuralmente coherente
             if len(data_bytes) > MAX_SETTINGS_SIZE or not (data_bytes.startswith(b"{") and data_bytes.strip().endswith(b"}")):
                 return DEFAULTS.copy()
             
@@ -322,7 +319,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         return DEFAULTS.copy()
 
 def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
-    """Lógica de validación cruzada antes de persistir los datos."""
+    """Aplica reglas de consistencia de negocio antes de persistir cambios."""
     if settings.get("asistente_activado"):
         if not (settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
             settings["asistente_activado"] = False
@@ -334,11 +331,10 @@ def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
     return settings
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Persiste la configuración de forma atómica con reintentos para archivos bloqueados."""
+    """Persiste la configuración de forma atómica con rotación de backups."""
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     
-    # Validar que la ruta de destino sea segura para escritura mediante chequeo de integridad
     if not _Validators._is_safe_path(str(ruta.absolute())): return None
         
     cleaned_settings = _ensure_settings_integrity(validate(values))
@@ -376,7 +372,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Modificación incremental y guardado si hay cambios."""
+    """Aplica actualizaciones parciales y guarda el nuevo estado si hay cambios."""
     current = load(custom_base)
     modified = False
     for k, v in changes.items():
@@ -390,27 +386,27 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
-    """Restaura la configuración a valores de fábrica."""
+    """Restaura la configuración a los valores definidos en DEFAULTS."""
     save(DEFAULTS, custom_base)
     return DEFAULTS.copy()
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
-    """Extrae un valor único de la configuración."""
+    """Obtiene un valor individual de la configuración cargada."""
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
-    """Obtiene la clave API priorizando variables de entorno."""
+    """Recupera la clave API priorizando la variable de entorno sobre el archivo."""
     if env_key := os.environ.get(API_KEY_ENV_VAR, "").strip(): return env_key
     return load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
-    """Verifica si el asistente IA está habilitado."""
+    """Determina si el asistente está listo para operar según configuración y entorno."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado")) and bool(settings.get("asistente_clave_api", "").strip())
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
-    """Representación textual de las preferencias para reporte."""
+    """Genera una lista de strings detallando el estado actual para reportes."""
     current = load(custom_base)
     api_key_env = os.environ.get(API_KEY_ENV_VAR)
     api_key_file = current.get("asistente_clave_api", "").strip()

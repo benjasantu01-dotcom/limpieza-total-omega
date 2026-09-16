@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 233
+- Rechazadas por guardia de seguridad: 37
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 25 | 1 | 4 | 4 | 40 |
+| 2026-09-14 | 22 | 1 | 4 | 4 | 39 |
 | 2026-09-15 | 154 | 12 | 26 | 5 | 153 |
-| 2026-09-16 | 31 | 0 | 6 | 3 | 40 |
+| 2026-09-16 | 33 | 0 | 7 | 4 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **50**
-- robustez ante casos límite: **45**
+- legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **44**
 - seguridad defensiva: **43**
+- robustez ante casos límite: **42**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
 - `quarantine.py`: **19**
-- `diskreport.py`: **18**
+- `healthscore.py`: **19**
 - `memory.py`: **18**
+- `settings.py`: **18**
 - `browser.py`: **18**
-- `settings.py`: **17**
+- `diskreport.py`: **17**
 - `safety.py`: **16**
-- `duplicates.py`: **15**
 - `assistant.py`: **15**
-- `scanner.py`: **12**
+- `duplicates.py`: **14**
+- `scanner.py`: **13**
 - `branding.py`: **12**
 - `organizer.py`: **12**
 - `main.py`: **10**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T03:26:49` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos a las funciones públicas y estandarizando los retornos mediante el uso consistente de `copy()` para evitar la mutación accidental del caché interno.
+- `2026-09-16T03:26:18` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo mediante la adición de Type Hints detallados, documentación de docstrings en funciones críticas y la estandarización de las firmas de funciones para asegurar la consistencia en el uso de los parámetros `entry` y `now_ts`.
 - `2026-09-16T03:16:42` **quarantine.py** (legibilidad y documentación): He añadido docstrings detallados y clarificadores a las funciones de persistencia y aislamiento, y he refactorizado la lógica de `_write_temp_to_final` para incluir anotaciones de tipo más estrictas y una mejor descripción de sus salvaguardas contra condiciones de carrera, mejorando así la legibilidad técnica y la auditabilidad del código.
 - `2026-09-16T03:16:06` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los parámetros y valores de retorno en funciones críticas (`_is_safe_for_disk_op`, `stage_for_review`, `_process_directory`) para clarificar el flujo de seguridad, y se han ajustado los nombres de algunas variables locales (`target` -> `destination_path`) para eliminar ambigüedades técnicas y mejorar la legibilidad.
 - `2026-09-16T03:15:39` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints, la estandarización de docstrings siguiendo convenciones de estilo técnico, y la clarificación de la intención en las funciones de validación, eliminando ambigüedades en los tipos de datos utilizados.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T02:45:52` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante errores de sistema encapsulando las verificaciones de metadatos en un bloque `try-except` más específico y asegurando que las llamadas a `kernel32` no propaguen excepciones inesperadas que interrumpan el flujo de la aplicación.
 - `2026-09-16T02:37:05` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez de `load_manifest` mediante la captura explícita de `FileNotFoundError` y validación de tipos, evitando que errores de E/S o corrupción silenciosa del JSON provoquen fallos en cascada en la interfaz.
 - `2026-09-16T02:36:42` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones de seguridad en `stage_for_review` y `delete_reviewed` al asegurar que las rutas sean resueltas antes de las comprobaciones de `is_safe_to_modify`, previniendo errores de comparación de rutas relativas/absolutas y consolidando el manejo de excepciones para evitar fallos silenciosos en operaciones de disco.
-- `2026-09-16T02:35:43` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_safe_get_entry_value` para prevenir posibles excepciones `TclError` al interactuar con widgets de entrada, asegurando que cualquier entrada malformada sea tratada como un valor por defecto en lugar de detener la ejecución.
-- `2026-09-16T02:25:09` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del pipeline en `compute_score` agregando una validación de `metrics` que protege contra datos corrompidos, reemplazando el acceso directo a atributos por el uso de `getattr` con valores por defecto seguros para prevenir `AttributeError` ante cambios futuros en el esquema de la clase.
