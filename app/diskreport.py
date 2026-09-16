@@ -77,7 +77,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if directory is None:
         return None
     try:
-        raw_path = Path(directory).absolute()
+        raw_path = Path(directory).resolve()
         
         if not raw_path.exists() or not raw_path.is_dir():
             return None

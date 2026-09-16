@@ -255,8 +255,10 @@ def _sum_directory_recursive(
     
     try:
         root_path = Path(root_abs).resolve(strict=True)
-        # Validación adicional contra el root_base ante cualquier redirección de resolución
-        if not root_path.is_absolute() or not root_path.is_dir() or is_protected_path(root_path):
+        # Validación estricta: si no es seguro tocar o está fuera del sandbox, abortar.
+        if not root_path.is_absolute() or not root_path.is_dir():
+            return 0
+        if not is_safe_to_modify(root_path) or is_protected_path(root_path):
             return 0
         if not _is_path_inside_base(root_path, Path(root_base).resolve(strict=True)):
             return 0
