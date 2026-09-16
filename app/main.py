@@ -1349,6 +1349,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Sin candidatos", "Primero usá 'Buscar basura'.")
             return
         
+        # Filtramos explícitamente cada ruta antes de procesar
         aptos = [jf for jf in junk if self._is_safe_path(jf.path)]
         
         if not aptos:
@@ -1456,6 +1457,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Sin hallazgos", "Primero corré un escaneo heurístico.")
             return
         
+        # Filtramos explícitamente cada ruta antes de procesar
         aptos = [s for s in suspicions if self._is_safe_path(s.path)]
         if not aptos:
             messagebox.showwarning("Nada que aislar", "Los archivos sospechosos se encuentran en rutas protegidas.")
@@ -1730,6 +1732,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             conservar = duplicates_mod.suggest_keeper(grupo)
             a_mover.extend([p for p in grupo.paths if p != conservar])
 
+        # Filtramos explícitamente cada ruta antes de procesar
         aptos = [r for r in a_mover if self._is_safe_path(r)]
         
         if not aptos:

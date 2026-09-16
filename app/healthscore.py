@@ -218,9 +218,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
-            weighted_points = int(round(area_ratio * entry.weight))
-            metric_breakdown[entry.area] = _clamp(float(weighted_points), 0.0, float(entry.weight))
-            accumulated_score += metric_breakdown[entry.area]
+            # Validación de integridad post-cálculo de peso
+            weighted_points = _clamp(round(area_ratio * entry.weight), 0, entry.weight)
+            metric_breakdown[entry.area] = int(weighted_points)
+            accumulated_score += weighted_points
         except Exception:
             metric_breakdown[entry.area] = 0
             recommendations.append(f"Error al analizar el área: {entry.area}.")

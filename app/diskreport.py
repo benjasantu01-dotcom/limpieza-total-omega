@@ -96,16 +96,18 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
     Ignora enlaces simbólicos (para evitar ciclos) y puntos de reparse (junctions) 
     en Windows para evitar salir del volumen de origen.
     """
+    # 0x400: FILE_ATTRIBUTE_REPARSE_POINT (WinNT.h)
     REPARSE_POINT_ATTR = 0x400
     try:
         if entry.is_symlink():
             return True
         if os.name == 'nt':
             try:
+                # Verificamos atributos de archivo sin seguir el enlace
                 st = entry.stat(follow_symlinks=False)
                 if hasattr(st, 'st_file_attributes'):
                     return bool(st.st_file_attributes & REPARSE_POINT_ATTR)
-            except OSError:
+            except (OSError, PermissionError):
                 return True
     except (OSError, PermissionError, AttributeError):
         return True
