@@ -257,9 +257,10 @@ def _safe_float(val: Any, default: float = 0.0) -> float:
     except (TypeError, ValueError):
         return default
 
-def _validate_response_length(text: str) -> str:
-    """Trunca el texto asegurando que no exceda el límite de caracteres definido."""
-    return str(text)[:_MAX_TEXT_LENGTH]
+def _validate_response_length(text: Any) -> str:
+    """Trunca el texto asegurando que no exceda el límite de caracteres definido y sea un string válido."""
+    if not isinstance(text, str): return ""
+    return text[:_MAX_TEXT_LENGTH]
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     """Detecta si una estructura de datos es peligrosamente profunda para el parseo recursivo."""

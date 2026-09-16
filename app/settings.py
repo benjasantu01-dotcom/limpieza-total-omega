@@ -321,14 +321,12 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 
             if not _is_dict(raw): return DEFAULTS.copy()
             
+            # Validar contra el esquema completo y rellenar faltantes
             data = validate(raw)
-            # Asegurar que ninguna clave del esquema falte (evita KeyError)
-            for key in DEFAULTS:
-                if key not in data:
-                    data[key] = DEFAULTS[key]
+            final_data: AppSettings = {k: data.get(k, DEFAULTS[k]) for k in DEFAULTS.keys()} # type: ignore
         
-        _CACHE[ruta] = (mtime, data)
-        return data.copy()
+        _CACHE[ruta] = (mtime, final_data)
+        return final_data.copy()
     except (OSError, PermissionError, ValueError):
         return DEFAULTS.copy()
 

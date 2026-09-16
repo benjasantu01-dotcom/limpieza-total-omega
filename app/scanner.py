@@ -79,7 +79,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
     try:
         return entry.stat(follow_symlinks=False)
-    except (OSError, PermissionError, AttributeError):
+    except (OSError, PermissionError, AttributeError, FileNotFoundError):
         return None
 
 # Registro de reglas heurísticas para ejecutables específicos
