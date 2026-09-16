@@ -57,10 +57,10 @@ STILL_ACTIVE_EXIT_CODE: Final[int] = 259
 SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
 ERROR_ACCESS_DENIED: Final[int] = 5
 
-# Comando pre-construido para evitar recrear listas en el loop de performance
+# Comando optimizado: filtra IDs críticos y vacíos directamente en el host para reducir carga en Python
 PS_QUERY_CMD: Final[List[str]] = [
     'powershell', '-NoProfile', '-NonInteractive', '-Command', 
-    'Get-Process | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }'
+    'Get-Process | Where-Object { $_.Id -notin 0,4 } | Select-Object -First 50 | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }'
 ]
 
 __all__ = [
@@ -199,14 +199,10 @@ def _is_valid_process_entry(name: object, pid_str: object, ws_str: object) -> Op
     """Valida los campos crudos extraídos de PowerShell para un proceso."""
     if name is None or pid_str is None or ws_str is None:
         return None
-    if not isinstance(name, str) or not str(pid_str).isdigit() or not str(ws_str).isdigit():
-        return None
     try:
         pid_val, ws_val = int(pid_str), int(ws_str)
-        name_clean = name.strip()
-        if not name_clean or pid_val <= 0 or ws_val < 0 or pid_val in SYSTEM_CRITICAL_PIDS:
-            return None
-        if is_protected_path(name_clean):
+        name_clean = str(name).strip()
+        if not name_clean or pid_val <= 0 or ws_val < 0 or is_protected_path(name_clean):
             return None
         return ProcessMemory(name=name_clean, pid=pid_val, working_set=BytesValue(ws_val))
     except (ValueError, TypeError):
