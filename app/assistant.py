@@ -607,11 +607,8 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     q = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
     
-    payload_data = {
-        "contents": [{
-            "parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]
-        }]
-    }
+    full_prompt = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
+    payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
     
     try:
         if not _ensure_safe_text(str(payload_data)): return None

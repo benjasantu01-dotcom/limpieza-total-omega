@@ -370,6 +370,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     except Exception: pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
+    """Renderiza el logo de la aplicación en el canvas provisto usando escalado dinámico."""
     try:
         s = float(size)
         if not math.isfinite(s) or s <= 0: return
@@ -385,6 +386,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except Exception: pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
+    """Dibuja una línea de progreso con degradado de colores en el canvas."""
     try:
         w_val = max(1, int(width))
         for seg in _get_grouped_segments(gradient_colors(w_val, stops)):
@@ -392,6 +394,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except Exception: pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[HexColor] = None, fill: Optional[HexColor] = None) -> None:
+    """Dibuja un indicador circular de progreso basado en el porcentaje proporcionado."""
     if percent is None: return
     try:
         val = float(percent)

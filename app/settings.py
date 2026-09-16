@@ -309,8 +309,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             if not _is_dict(raw): return DEFAULTS.copy()
             
             data = validate(raw)
+            # Asegurar que ninguna clave del esquema falte (evita KeyError)
             for key in DEFAULTS:
-                if key not in data or data[key] is None:
+                if key not in data:
                     data[key] = DEFAULTS[key]
         
         _CACHE[ruta] = (mtime, data)
@@ -325,7 +326,8 @@ def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
             settings["asistente_activado"] = False
     
     for key in [ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS]:
-        if settings.get(key.value, 0) <= 0:
+        val = settings.get(key.value)
+        if not isinstance(val, int) or val <= 0:
             settings[key.value] = DEFAULTS[key.value]
             
     return settings
