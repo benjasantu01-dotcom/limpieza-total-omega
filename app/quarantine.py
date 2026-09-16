@@ -457,7 +457,13 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 
 
 def _write_temp_to_final(source: Path, destination: Path) -> str:
-    """Copia el archivo al sandbox usando flags de exclusividad para evitar ataques TOCTOU."""
+    """
+    Copia el archivo origen al sandbox destino utilizando descriptores de archivo.
+    
+    Aplica flags O_EXCL y O_WRONLY para asegurar una operación de escritura atómica
+    que prevenga condiciones de carrera (TOCTOU). Valida la integridad final mediante
+    la comparación de hashes SHA-256 calculados directamente del flujo de datos.
+    """
     _check_path_syntax_integrity(destination)
     if is_protected_path(destination):
         raise UnsafePathError("Destino en ruta protegida.")
@@ -466,20 +472,19 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     if not source.is_file():
         raise OSError("Archivo origen inaccesible para copia.")
     
-    # Pre-check preventivo contra colisiones de destino
     if destination.exists():
         raise FileExistsError(f"El destino ya existe: {destination}")
 
     # Apertura controlada usando descriptores de archivo (evita TOCTOU)
-    fd_src = os.open(str(source), os.O_RDONLY)
+    fd_src: int = os.open(str(source), os.O_RDONLY)
     try:
         stat_src = os.fstat(fd_src)
         if not (stat_src.st_mode & 0o100000): # S_ISREG
             raise OSError("El archivo origen no es un archivo regular.")
             
-        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
-        mode = 0o600
-        fd_dest = os.open(str(destination), flags, mode)
+        flags: int = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+        mode: int = 0o600
+        fd_dest: int = os.open(str(destination), flags, mode)
         try:
             with os.fdopen(fd_src, 'rb') as src_file, os.fdopen(fd_dest, 'wb') as dst_file:
                 shutil.copyfileobj(src_file, dst_file)
@@ -502,11 +507,11 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     _check_windows_file_attributes(str(destination))
     ensure_safe_to_modify(destination, allow_sensitive=True)
     
-    dir_fd = os.open(str(destination.parent), os.O_RDONLY)
+    dir_fd: int = os.open(str(destination.parent), os.O_RDONLY)
     try: os.fsync(dir_fd)
     finally: os.close(dir_fd)
     
-    file_hash = _get_sha256(destination)
+    file_hash: str = _get_sha256(destination)
     if not file_hash:
         raise OSError("Falla de integridad: hash no generado.")
     return file_hash

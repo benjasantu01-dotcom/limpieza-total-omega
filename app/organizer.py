@@ -189,8 +189,14 @@ def _validate_file_attributes(src: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Validación centralizada que garantiza que la operación sea segura,
-    verificando colisiones, recursividad y pertenencia a la misma unidad física.
+    Validación centralizada que garantiza que la operación sea segura.
+    
+    Args:
+        src: Ruta del archivo origen.
+        dest: Ruta del destino o carpeta destino.
+        
+    Returns:
+        True si la operación cumple todas las reglas de seguridad y restricciones de disco.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if not _validate_path_security(src, dest): return False
@@ -218,7 +224,14 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     return entry.path not in protected_cache and not is_protected_path(Path(entry.path))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0, protected_cache: Optional[set[str]] = None) -> None:
-    """Realiza recorrido recursivo para detectar basura, limitando la profundidad a 50 niveles."""
+    """
+    Realiza recorrido recursivo para detectar basura, limitando la profundidad a 50 niveles.
+    
+    Args:
+        current_dir: Directorio actual a escanear.
+        found: Lista acumulativa de JunkFiles hallados.
+        depth: Profundidad de recursión actual.
+    """
     if protected_cache is None: protected_cache = set()
     if depth > 50 or is_protected_path(current_dir): return
     
@@ -273,12 +286,17 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         if usage.free < (junk_file.size_bytes + margin):
             return None
         safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
-        target = _generate_unique_target(dest_res / safe_name)
-        return target if target.resolve().is_relative_to(dest_res) else None
+        destination_path = _generate_unique_target(dest_res / safe_name)
+        return destination_path if destination_path.resolve().is_relative_to(dest_res) else None
     except (OSError, ValueError, AttributeError): return None
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Mueve archivos validados a la zona de cuarentena tras verificar permisos de escritura."""
+    """
+    Mueve archivos validados a la zona de cuarentena tras verificar permisos de escritura.
+    
+    Returns:
+        La ruta de la carpeta de revisión si la operación fue exitosa, None en caso contrario.
+    """
     if not files or not isinstance(review_dir, str): return None
     try:
         dest_base = Path(review_dir).expanduser().resolve()
@@ -289,11 +307,11 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     for junk_file in files:
         if not isinstance(junk_file, JunkFile): continue
         try:
-            target = _can_move_file(junk_file, dest_base)
-            if target and target.parent.resolve().is_relative_to(dest_base) and is_safe_to_modify(junk_file.path) and not _is_file_locked(junk_file.path):
+            target_path = _can_move_file(junk_file, dest_base)
+            if target_path and target_path.parent.resolve().is_relative_to(dest_base) and is_safe_to_modify(junk_file.path) and not _is_file_locked(junk_file.path):
                 ensure_safe_to_modify(junk_file.path)
-                ensure_safe_to_modify(target.parent)
-                shutil.move(str(junk_file.path), str(target))
+                ensure_safe_to_modify(target_path.parent)
+                shutil.move(str(junk_file.path), str(target_path))
         except (OSError, PermissionError, shutil.Error, RuntimeError, TypeError) as e:
             logger.error(f"Error moviendo {junk_file.path}: {e}")
     return dest_base
