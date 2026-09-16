@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 235
+- Rechazadas por guardia de seguridad: 35
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 236
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-14 | 36 | 2 | 7 | 5 | 44 |
+| 2026-09-14 | 34 | 2 | 6 | 4 | 44 |
 | 2026-09-15 | 154 | 12 | 26 | 5 | 153 |
-| 2026-09-16 | 17 | 0 | 3 | 2 | 38 |
+| 2026-09-16 | 20 | 0 | 3 | 2 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **46**
-- legibilidad y documentación: **43**
 - seguridad defensiva: **43**
-- manejo de errores y validación de entradas: **38**
-- rendimiento: **37**
+- legibilidad y documentación: **42**
+- manejo de errores y validación de entradas: **41**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **20**
 - `diskreport.py`: **19**
+- `quarantine.py`: **19**
 - `browser.py`: **18**
 - `memory.py`: **18**
-- `quarantine.py`: **18**
 - `safety.py`: **16**
 - `settings.py`: **16**
-- `assistant.py`: **15**
 - `duplicates.py`: **14**
-- `scanner.py`: **13**
+- `assistant.py`: **14**
+- `organizer.py`: **12**
 - `branding.py`: **12**
-- `organizer.py`: **11**
-- `main.py`: **10**
+- `scanner.py`: **12**
+- `main.py`: **11**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-16T02:37:05` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez de `load_manifest` mediante la captura explícita de `FileNotFoundError` y validación de tipos, evitando que errores de E/S o corrupción silenciosa del JSON provoquen fallos en cascada en la interfaz.
+- `2026-09-16T02:36:42` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones de seguridad en `stage_for_review` y `delete_reviewed` al asegurar que las rutas sean resueltas antes de las comprobaciones de `is_safe_to_modify`, previniendo errores de comparación de rutas relativas/absolutas y consolidando el manejo de excepciones para evitar fallos silenciosos en operaciones de disco.
+- `2026-09-16T02:35:43` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_safe_get_entry_value` para prevenir posibles excepciones `TclError` al interactuar con widgets de entrada, asegurando que cualquier entrada malformada sea tratada como un valor por defecto en lugar de detener la ejecución.
 - `2026-09-16T02:25:09` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del pipeline en `compute_score` agregando una validación de `metrics` que protege contra datos corrompidos, reemplazando el acceso directo a atributos por el uso de `getattr` con valores por defecto seguros para prevenir `AttributeError` ante cambios futuros en el esquema de la clase.
 - `2026-09-16T02:24:58` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `_get_keeper_score` agregando validaciones explícitas para prevenir fallos silenciosos cuando `stat()` falla debido a archivos en uso o bloqueados por el sistema, asegurando que el proceso de selección no sea nulo prematuramente.
 - `2026-09-16T02:24:32` **diskreport.py** (manejo de errores y validación de entradas): Reforcé la robustez de `_collect_summary_data` y `walk_files` capturando errores potenciales durante el acceso a atributos y conversión de tipos, evitando que el escaneo se detenga silenciosamente o falle ante metadatos corruptos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T00:32:54` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del pipeline de cálculo mediante la validación estricta de las métricas después de su procesamiento individual, asegurando que cualquier entrada maliciosa o corrupta no propague valores fuera de rango al score final.
 - `2026-09-16T00:32:04` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` añadiendo un chequeo explícito de bits de reparse/puntos de montaje para prevenir la salida del volumen raíz y se mejoró la resiliencia contra errores de acceso al manejar `OSError` de forma más granular durante la recolección de atributos de archivos.
 - `2026-09-16T00:29:29` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación estricta de la ruta real antes de realizar cualquier operación de escaneo, garantizando que el escáner nunca escape del sandbox de `LOCALAPPDATA` incluso si se encuentran enlaces simbólicos o redirecciones maliciosas durante la recursión.
-- `2026-09-16T00:29:18` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la verificación secuencial por una única llamada a `ensure_safe_to_modify` antes de cualquier operación de disco, evitando así condiciones de carrera y validando la integridad del destino antes de intentar crear directorios o escribir archivos.
-- `2026-09-16T00:23:17` **startup.py** (robustez ante casos límite): Mejoré la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un manejo explícito de rutas que contienen caracteres no válidos para el sistema de archivos de Windows (como `:` fuera de la unidad) que podrían causar excepciones al instanciar `Path`, asegurando que el bucle de escaneo no se interrumpa ante entradas de registro malformadas.
-- `2026-09-16T00:12:48` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante condiciones de carrera y sistemas de archivos con bloqueos (típicos en Windows) añadiendo una verificación explícita de `is_safe_to_modify` sobre el archivo destino antes de la escritura, asegurando que la ruta no sea un enlace de reparse o un objeto protegido, y centralizando la validación de integridad previa a la persistencia.

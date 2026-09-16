@@ -857,9 +857,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _safe_get_entry_value(self, entry_widget: ctk.CTkEntry, default: Any, numeric: bool = False) -> Any:
         """Extrae de forma segura el valor de un widget entry, sanitizando entrada."""
-        if entry_widget is None or not entry_widget.winfo_exists():
-            return default
         try:
+            if entry_widget is None or not entry_widget.winfo_exists():
+                return default
             raw = entry_widget.get().strip()
             if not raw:
                 return default
