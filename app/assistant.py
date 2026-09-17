@@ -643,7 +643,8 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     full_prompt = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
     payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
     try:
-        if not _ensure_safe_text(str(payload_data)): return None
+        # Validación de estructura de transporte completa antes de volcar a bytes
+        if not _is_safe_text_structure(str(payload_data)): return None
         payload = json.dumps(payload_data).encode("utf-8")
         return payload if len(payload) < _MAX_PROMPT_LIMIT * 2 else None
     except (TypeError, ValueError):
@@ -686,6 +687,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             except (json.JSONDecodeError, UnicodeDecodeError):
                 return None
             raw_text = _extract_text_from_gemini_json(data)
+            # Validación de respuesta externa
             return _validate_response_length(raw_text.strip()) if raw_text and _ensure_safe_text(raw_text) else None
     except (urllib.error.URLError, OSError, ValueError, KeyError):
         return None

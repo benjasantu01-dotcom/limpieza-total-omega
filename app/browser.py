@@ -188,6 +188,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         if not path or len(path) >= MAX_PATH_LEN or any(c in path for c in '\0\r\n') or _is_unc_path(path):
             return True
         
+        # Validación estricta: si es link o junction, no se debe procesar
         if entry.is_symlink() or is_junction_fn(path):
             return True
             
@@ -232,6 +233,7 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
     Procesa un elemento del sistema de archivos, delegando la recursión o
     la suma del peso según el tipo de objeto (directorio vs archivo).
     """
+    # Chequeo preventivo de seguridad antes de cualquier acción
     if depth > MAX_SCAN_DEPTH or _should_skip_entry(entry, kernel32, is_junction_fn):
         return 0
     try:
@@ -274,6 +276,10 @@ def _sum_directory_recursive(
         if not root_path or not root_path.is_absolute() or not root_path.is_dir():
             return 0
         
+        # Validación extra: no seguir junctions/symlinks detectados en el nivel raíz del sub-árbol
+        if root_path.is_symlink() or is_junction_fn(str(root_path)):
+            return 0
+
         # Uso de la memoización global para evitar procesar subcarpetas ya calculadas
         if root_abs in memo:
             return memo[root_abs]
