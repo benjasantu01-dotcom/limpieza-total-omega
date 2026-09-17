@@ -226,11 +226,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
         try:
             if rule.check(metrics, ratio):
                 msg = str(rule.message_factory(metrics))
-                # Sanitización: caracteres imprimibles y límite de longitud
                 clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                 if clean_msg:
                     findings.append(clean_msg[:200])
-        except (Exception, TypeError, ValueError):
+        except Exception:
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -249,7 +248,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in _PIPELINE:
         try:
             val = entry.scorer(metrics)
-            area_ratio = _clamp(float(val)) if math.isfinite(val) else 0.0
+            if not isinstance(val, (float, int)) or not math.isfinite(val):
+                raise ValueError(f"Resultado no numérico en area {entry.area}")
+            
+            area_ratio = _clamp(float(val))
             
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
@@ -257,11 +259,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             weighted_points = _clamp(round(area_ratio * entry.weight), 0, entry.weight)
             metric_breakdown[entry.area] = int(weighted_points)
             accumulated_score += weighted_points
-        except (Exception, TypeError, ValueError):
+        except Exception as e:
             metric_breakdown[entry.area] = 0
-            recommendations.append(f"Error al analizar el área: {entry.area}.")
+            recommendations.append(f"Error técnico en área {entry.area}: {type(e).__name__}.")
             
-    final_score = int(_clamp(round(accumulated_score), 0.0, 100.0)) if math.isfinite(accumulated_score) else 0
+    final_score = int(_clamp(round(accumulated_score), 0.0, 100.0))
     
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")

@@ -302,10 +302,15 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates = []
     for p in group.paths:
-        if not isinstance(p, Path) or not p.exists():
+        if not isinstance(p, Path):
             continue
-        if score := _get_keeper_score(p):
-            candidates.append((score, p))
+        try:
+            if not p.exists():
+                continue
+            if score := _get_keeper_score(p):
+                candidates.append((score, p))
+        except (OSError, PermissionError):
+            continue
             
     return min(candidates, key=lambda x: x[0])[1] if candidates else None
 
@@ -320,9 +325,12 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
     
     for path in group.paths:
-        if not isinstance(path, Path) or not path.exists() or not is_safe_to_modify(path):
-            lines.append(f"   [inaccesible] {path}")
-        else:
-            label = 'conservar' if (keeper is not None and path == keeper) else 'duplicado'
-            lines.append(f"   [{label}] {path}")
+        try:
+            if not isinstance(path, Path) or not path.exists() or not is_safe_to_modify(path):
+                lines.append(f"   [inaccesible] {path}")
+            else:
+                label = 'conservar' if (keeper is not None and path == keeper) else 'duplicado'
+                lines.append(f"   [{label}] {path}")
+        except (OSError, PermissionError):
+            lines.append(f"   [error de acceso] {path}")
     return lines

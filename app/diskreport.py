@@ -241,7 +241,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 
                         elif entry.is_file():
                             st = entry.stat(follow_symlinks=False)
-                            yield Path(entry.path), int(getattr(st, 'st_size', 0))
+                            # Asegurar que el tamaño sea un entero positivo
+                            size = max(0, int(getattr(st, 'st_size', 0)))
+                            yield Path(entry.path), size
                     except (PermissionError, OSError, AttributeError):
                         continue
         except (PermissionError, OSError):
@@ -280,7 +282,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             rel = path.relative_to(root)
             if rel and rel.parts:
                 top_level_folder = root / rel.parts[0]
-                folder_total_bytes[top_level_folder] += size
+                folder_total_bytes[top_level_folder] += max(0, size)
                 folder_file_counts[top_level_folder] += 1
         except (ValueError, OSError, RuntimeError, TypeError, IndexError, AttributeError): 
             continue
@@ -306,17 +308,18 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        total_bytes += size
+        val = max(0, size)
+        total_bytes += val
         total_files += 1
         ext = path.suffix.lower() or "(sin extensión)"
-        ext_bytes[ext] += size
+        ext_bytes[ext] += val
         ext_counts[ext] += 1
         
-        if limit > 0:
+        if limit > 0 and val > 0:
             if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size, path))
-            elif size > (top_heap[0][0] if top_heap else 0):
-                heapq.heapreplace(top_heap, (size, path))
+                heapq.heappush(top_heap, (val, path))
+            elif val > (top_heap[0][0] if top_heap else 0):
+                heapq.heapreplace(top_heap, (val, path))
     
     ext_stats = {ext: ExtStats(ext_bytes[ext], ext_counts[ext]) for ext in ext_bytes}
     return SummaryData(total_bytes, total_files, ext_stats, top_heap)
