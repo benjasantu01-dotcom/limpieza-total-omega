@@ -350,8 +350,8 @@ class SystemContext:
         if source is None or _is_input_too_deep_or_complex(source):
             return False
         
-        # Solo permitir dicts o instancias con __dict__; evitar tipos o objetos globales
-        if not isinstance(source, dict) and (not hasattr(source, "__dict__") or isinstance(source, type)):
+        # Validación de fuente: permitimos dicts o instancias simples que no sean clases base
+        if not isinstance(source, dict) and not (hasattr(source, "__dict__") and not isinstance(source, type)):
             return False
             
         found_data = False
@@ -405,14 +405,19 @@ def _ensure_safe_text(text: Any) -> bool:
 def _get_source_value(source: Any, key: str) -> Any:
     """Acceso genérico a datos de configuración, evitando atributos privados o protegidos."""
     if not isinstance(key, str) or key.startswith("_"): return None
+    
     if isinstance(source, dict):
         return source.get(key)
-    # Evitar acceder a propiedades que disparan lógica (solo data simple)
+        
+    # Acceso a objetos: evitar propiedades que ejecutan lógica (usar vars o getattr directo)
     try:
-        if not key.startswith("__"):
-            return getattr(source, key, None)
+        # Solo acceder a datos de instancia, evitar dunder y atributos de clase
+        if not key.startswith("__") and hasattr(source, key):
+            val = getattr(source, key)
+            if not callable(val):
+                return val
     except Exception:
-        return None
+        pass
     return None
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:

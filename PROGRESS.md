@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 39
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 227
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 60 | 5 | 9 | 3 | 61 |
+| 2026-09-15 | 57 | 5 | 9 | 2 | 61 |
 | 2026-09-16 | 147 | 8 | 30 | 15 | 150 |
-| 2026-09-17 | 0 | 0 | 0 | 0 | 16 |
+| 2026-09-17 | 1 | 0 | 0 | 0 | 19 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **51**
+- legibilidad y documentación: **48**
 - robustez ante casos límite: **46**
-- manejo de errores y validación de entradas: **43**
+- manejo de errores y validación de entradas: **44**
 - seguridad defensiva: **41**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
 - `browser.py`: **20**
 - `quarantine.py`: **19**
-- `diskreport.py`: **18**
-- `duplicates.py`: **17**
+- `healthscore.py`: **19**
+- `assistant.py`: **18**
 - `memory.py`: **17**
-- `assistant.py`: **17**
+- `diskreport.py`: **17**
+- `duplicates.py`: **16**
 - `safety.py`: **15**
 - `settings.py`: **15**
 - `organizer.py`: **12**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T00:54:34` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y `SystemContext.ingest` para manejar fuentes de datos malformadas o inesperadas que podrían causar excepciones al intentar acceder a atributos no existentes, asegurando que la app no aborte ante datos corruptos.
 - `2026-09-16T14:09:24` **quarantine.py** (seguridad defensiva): Se reforzó `_safe_unlink` para implementar una verificación de seguridad proactiva mediante `is_protected_path` sobre la ruta resuelta antes de cualquier operación destructiva, asegurando que ni siquiera en el sandbox se pueda manipular una ruta que, por resolución de enlaces o caracteres especiales, termine siendo del sistema.
 - `2026-09-16T14:01:31` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_get_process_path` validando que la ruta del ejecutable no sea una ruta de dispositivo especial o UNC antes de resolverla, y añadiendo una verificación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier operación.
 - `2026-09-16T13:58:23` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la sanitización estricta de las entradas al pipeline, añadiendo validación de tipos e integridad de los datos en `compute_score` para prevenir inyecciones de valores inesperados que pudieran corromper el cálculo de salud.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T13:27:20` **memory.py** (robustez ante casos límite): Se ha robustecido el proceso de lectura de memoria en Linux al añadir un manejo explícito de errores de lectura de archivos (`OSError`, `PermissionError`, etc.) y validaciones de formato más estrictas en el parsing, asegurando que ante archivos vacíos, ilegibles o con contenido inesperado (casos límite comunes en entornos restringidos) la aplicación retorne un estado neutral en lugar de fallar o propagar excepciones.
 - `2026-09-16T13:18:09` **healthscore.py** (robustez ante casos límite): Mejoré la robustez ante casos límite en `compute_score` asegurando que, ante fallos en los `scorer` (como divisiones por cero imprevistas o tipos erróneos), el sistema no colapse y devuelva un puntaje conservador (0) para el área afectada, manteniendo la integridad del resultado global.
 - `2026-09-16T13:17:39` **duplicates.py** (robustez ante casos límite): He mejorado `_collect_candidates` para manejar robustamente directorios inaccesibles y errores de permisos durante el escaneo, evitando que una sola carpeta con acceso denegado detenga la detección en todo el árbol de directorios.
-- `2026-09-16T13:17:11` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `_collect_summary_data` y las funciones dependientes ante archivos con permisos denegados durante el acceso a atributos, protegiendo el bucle de recolección frente a errores inesperados de sistema mediante el uso de `getattr(st, 'st_size', 0)` y capturas de excepciones más específicas.
