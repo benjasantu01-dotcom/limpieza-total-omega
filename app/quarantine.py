@@ -591,8 +591,8 @@ def quarantine_file(
     Ejecuta el flujo completo de aislamiento, integrando validación y persistencia.
     Verifica seguridad de rutas, espacio en disco, integridad hash y atomicidad.
     """
-    if not source:
-        raise ValueError("Ruta de origen vacía.")
+    if source is None:
+        raise ValueError("Ruta de origen nula o vacía.")
     
     p_source = Path(source)
     if not p_source.is_absolute():

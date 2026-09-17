@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 225
+- Rechazadas por guardia de seguridad: 35
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 74 | 7 | 12 | 7 | 64 |
-| 2026-09-17 | 132 | 9 | 24 | 14 | 161 |
+| 2026-09-16 | 71 | 7 | 11 | 7 | 64 |
+| 2026-09-17 | 133 | 9 | 24 | 15 | 163 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **46**
 - seguridad defensiva: **45**
-- manejo de errores y validación de entradas: **42**
-- legibilidad y documentación: **38**
-- rendimiento: **35**
+- manejo de errores y validación de entradas: **43**
+- legibilidad y documentación: **36**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **21**
 - `diskreport.py`: **21**
 - `healthscore.py`: **19**
-- `assistant.py`: **18**
-- `settings.py`: **17**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
 - `safety.py`: **17**
-- `quarantine.py`: **14**
+- `assistant.py`: **17**
+- `settings.py`: **16**
+- `quarantine.py`: **15**
 - `scanner.py`: **12**
 - `branding.py`: **10**
 - `organizer.py`: **8**
 - `main.py`: **8**
-- `startup.py`: **7**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T14:50:47` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita de `None` para el parámetro `source` y un manejo de excepciones más granular al resolver la ruta origen, asegurando que los fallos en la resolución de `path` no se propaguen como errores genéricos.
 - `2026-09-17T14:38:22` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_evaluate_rules` mediante la validación proactiva de tipos y estados, asegurando que las funciones no fallen silenciosamente ante datos inconsistentes y garantizando que el `message_factory` produzca siempre una cadena válida.
 - `2026-09-17T14:38:11` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante la validación explícita de `group` y sus atributos, evitando errores en tiempo de ejecución si el grupo está vacío o contiene tipos de datos inesperados, siguiendo el enfoque de manejo de errores y validación de entradas.
 - `2026-09-17T14:37:45` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `largest_folders` añadiendo chequeos específicos contra valores inesperados (como `None` o resultados de `relative_to` fallidos), asegurando que el manejo de errores ante rutas mal formadas sea consistente con el resto del módulo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T12:46:11` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del cálculo de puntajes añadiendo una validación de `math.isfinite` en cada `PipelineEntry` y encapsulando la ejecución de los `scorer` en bloques de protección que previenen que un valor atípico o una división por cero en un área específica corrompa la totalidad del `HealthResult`.
 - `2026-09-17T12:45:12` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `largest_folders` agregando una validación estricta de que cada subcarpeta procesada esté contenida dentro de la raíz original, mitigando posibles escapes por manipulaciones de rutas o enlaces simbólicos maliciosos durante la iteración.
 - `2026-09-17T12:42:17` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_process_entry` y `_sum_directory_recursive` validando explícitamente el estado de reparse (`is_symlink`/`is_junction_fn`) antes de cualquier acceso al sistema de archivos, asegurando que ninguna operación de escaneo pueda seguir enlaces hacia afuera del entorno sandbox o hacia estructuras potencialmente cíclicas o bloqueadas.
-- `2026-09-17T12:37:53` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_build_payload` y `_call_gemini` añadiendo una validación de `_is_safe_text_structure` sobre el contenido completo del JSON de transporte, garantizando que ninguna estructura anidada del payload pueda contener caracteres maliciosos o secuencias de escape antes de la salida al socket.
