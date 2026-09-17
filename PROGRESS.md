@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 9 | 0 | 1 | 0 | 14 |
+| 2026-09-15 | 6 | 0 | 1 | 0 | 13 |
 | 2026-09-16 | 147 | 8 | 30 | 15 | 150 |
-| 2026-09-17 | 43 | 5 | 8 | 8 | 66 |
+| 2026-09-17 | 44 | 5 | 8 | 8 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **44**
-- manejo de errores y validación de entradas: **43**
-- legibilidad y documentación: **42**
+- manejo de errores y validación de entradas: **44**
 - seguridad defensiva: **42**
-- rendimiento: **28**
+- legibilidad y documentación: **40**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **20**
 - `healthscore.py`: **19**
-- `assistant.py`: **18**
+- `memory.py`: **17**
+- `assistant.py`: **17**
 - `duplicates.py`: **16**
-- `memory.py`: **16**
 - `quarantine.py`: **16**
 - `diskreport.py`: **16**
 - `settings.py`: **14**
 - `safety.py`: **13**
-- `scanner.py`: **12**
 - `branding.py`: **12**
+- `scanner.py`: **11**
 - `organizer.py`: **10**
-- `startup.py`: **9**
+- `startup.py`: **8**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T05:50:30` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_linux_meminfo` mediante una validación más estricta de las líneas de entrada y el manejo de excepciones localizadas, evitando errores silenciosos al procesar formatos inesperados en `/proc/meminfo`.
 - `2026-09-17T05:41:08` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo de salud mediante la implementación de una validación de tipo y valor más estricta en el `_PIPELINE`, asegurando que cualquier fallo inesperado en una función `scorer` individual no comprometa la integridad del puntaje acumulado y proporcione mensajes de error más informativos.
 - `2026-09-17T05:40:55` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `suggest_keeper` y `format_group` mediante la validación explícita de `group` y la adición de manejo de errores defensivo para asegurar que, ante cualquier inconsistencia en los objetos internos o falta de permisos en el sistema de archivos, la app no se interrumpa inesperadamente.
 - `2026-09-17T05:38:19` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_collect_summary_data` y `largest_folders` validando que los tamaños y contadores no procesen valores corruptos o negativos ante errores imprevistos en `walk_files`, garantizando que la integridad de los datos reportados no se vea comprometida por archivos con metadatos anómalos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T03:35:43` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_process_entry` y `_should_skip_entry` al verificar que los elementos escaneados no sean archivos de sistema ni posean atributos ocultos/de sistema que pudieran indicar componentes críticos, evitando así escaneos accidentales sobre archivos sensibles del SO.
 - `2026-09-17T03:35:29` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` reemplazando la creación de directorios implícita por una validación explícita mediante `ensure_safe_to_modify`, garantizando que tanto la carpeta padre como el archivo de destino cumplan con las restricciones de seguridad antes de cualquier operación de escritura.
 - `2026-09-17T03:34:55` **assistant.py** (seguridad defensiva): Se ha restringido el acceso a atributos dentro de `SystemContext` en `_get_source_value` para prevenir la ejecución accidental de propiedades o métodos (como `__dict__` o métodos internos), garantizando que solo se ingesten datos numéricos puros y seguros.
-- `2026-09-17T03:34:16` **startup.py** (robustez ante casos límite): Mejoré la robustez de `StartupEntry._validate_file_access` para manejar explícitamente posibles bloqueos de archivos en uso (mediante `OSError` al intentar abrir/verificar permisos) y añadí una verificación de existencia de directorio antes de llamar a `resolve()` para evitar fallos cuando las rutas del registro apuntan a unidades o volúmenes inexistentes o desconectados.

@@ -177,9 +177,12 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         if ":" not in line: 
             continue
         try:
-            key, value_part = line.split(":", 1)
+            parts = line.split(":", 1)
+            if len(parts) != 2:
+                continue
+            key, value_part = parts
             metrics[key.strip()] = _kb_to_bytes(value_part)
-        except (ValueError, TypeError, KeyError):
+        except Exception:
             continue
             
     total = metrics.get("MemTotal", BytesValue(0))
