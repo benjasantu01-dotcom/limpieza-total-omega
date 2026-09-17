@@ -453,3 +453,11 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-17T06:38:48` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
 - `2026-09-17T06:38:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T06:38:48` Corrida terminada. Total usado hoy: 154.
+- `2026-09-17T06:47:17` Arrancando corrida. Quedan hoy ~146 peticiones objetivo.
+- `2026-09-17T06:48:02` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé `local_answer` para evitar el parseo innecesario de tokens cuando la consulta es corta o no contiene palabras clave relevantes, reduciendo el overhead de procesamiento en cada iteración de la interfaz.
+- `2026-09-17T06:48:35` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-17T06:48:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-17T06:49:09` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de directorios integrando un caché de resultados (`memo`) en todas las llamadas recursivas de `_sum_directory_recursive` y eliminando la recálculo de rutas base dentro del bucle de `detect_profiles`, evitando redundancias en la ejecución de I/O.
+- `2026-09-17T06:49:19` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el motor de escaneo `_collect_summary_data` y las funciones de consulta evitando múltiples recorridos redundantes del sistema de archivos, asegurando que `summarize`, `largest_files`, `usage_by_extension` y `total_size` compartan un único paso de lectura bajo demanda.
+- `2026-09-17T06:49:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T06:49:19` Corrida terminada. Total usado hoy: 158.

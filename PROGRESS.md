@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **206** (40.9% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 224
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 147 | 8 | 30 | 15 | 150 |
-| 2026-09-17 | 56 | 5 | 10 | 9 | 74 |
+| 2026-09-16 | 147 | 8 | 30 | 13 | 148 |
+| 2026-09-17 | 59 | 5 | 10 | 9 | 75 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,14 +25,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **43**
 - seguridad defensiva: **42**
-- rendimiento: **22**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
+- `browser.py`: **20**
 - `healthscore.py`: **20**
-- `browser.py`: **19**
-- `assistant.py`: **18**
-- `diskreport.py`: **17**
+- `assistant.py`: **19**
+- `diskreport.py`: **18**
 - `settings.py`: **16**
 - `memory.py`: **16**
 - `quarantine.py`: **16**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T06:49:19` **diskreport.py** (rendimiento): Optimicé el motor de escaneo `_collect_summary_data` y las funciones de consulta evitando múltiples recorridos redundantes del sistema de archivos, asegurando que `summarize`, `largest_files`, `usage_by_extension` y `total_size` compartan un único paso de lectura bajo demanda.
+- `2026-09-17T06:49:09` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios integrando un caché de resultados (`memo`) en todas las llamadas recursivas de `_sum_directory_recursive` y eliminando la recálculo de rutas base dentro del bucle de `detect_profiles`, evitando redundancias en la ejecución de I/O.
+- `2026-09-17T06:48:02` **assistant.py** (rendimiento): Optimizé `local_answer` para evitar el parseo innecesario de tokens cuando la consulta es corta o no contiene palabras clave relevantes, reduciendo el overhead de procesamiento en cada iteración de la interfaz.
 - `2026-09-17T06:38:38` **settings.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo `settings.py` al extraer la lógica de selección de validadores en un diccionario de mapeo directo, eliminando la complejidad ciclomática de la función `_get_validator_for_key` y facilitando futuras adiciones de claves de configuración sin modificar la estructura del código.
 - `2026-09-17T06:38:09` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en las funciones de heurística y clarificando mediante docstrings la lógica de los chequeos de archivos para mejorar la legibilidad y mantenibilidad del código.
 - `2026-09-17T06:29:41` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `quarantine.py` mediante la adición de docstrings detallados en las funciones críticas de validación de seguridad, explicando el propósito y las restricciones de cada una para facilitar el mantenimiento preventivo ante el error histórico de importaciones y chequeos mal situados.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T05:58:05` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_Validators.path` y `_Validators.str` implementando una validación explícita de caracteres nulos y longitudes de cadena antes de cualquier procesamiento de rutas, evitando así posibles excepciones inesperadas durante la normalización.
 - `2026-09-17T05:57:50` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_entry` y `scan_directory` añadiendo validaciones explícitas para prevenir el procesamiento de rutas vacías o inválidas antes de interactuar con el sistema de archivos, asegurando que las excepciones de `pathlib` no interrumpan el flujo de escaneo.
 - `2026-09-17T05:57:23` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_check_file_integrity` para capturar errores de sistema específicos y evitar que una falla en una llamada al kernel (como `GetFileAttributesW`) interrumpa el proceso completo de validación al escanear, permitiendo que el bucle continúe evaluando el resto de los archivos.
-- `2026-09-17T05:50:30` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_linux_meminfo` mediante una validación más estricta de las líneas de entrada y el manejo de excepciones localizadas, evitando errores silenciosos al procesar formatos inesperados en `/proc/meminfo`.
-- `2026-09-17T05:41:08` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo de salud mediante la implementación de una validación de tipo y valor más estricta en el `_PIPELINE`, asegurando que cualquier fallo inesperado en una función `scorer` individual no comprometa la integridad del puntaje acumulado y proporcione mensajes de error más informativos.
-- `2026-09-17T05:40:55` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `suggest_keeper` y `format_group` mediante la validación explícita de `group` y la adición de manejo de errores defensivo para asegurar que, ante cualquier inconsistencia en los objetos internos o falta de permisos en el sistema de archivos, la app no se interrumpa inesperadamente.

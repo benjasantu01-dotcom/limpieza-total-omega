@@ -593,7 +593,13 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
     
-    tokens = set(_TOKEN_REGEX.findall(q_sanitized))
+    # Optimizacion: Evitar parseo complejo si la query es trivialmente corta
+    if len(q_sanitized) < 30:
+        for token in _KNOWN_TOKENS:
+            if token in q_sanitized.lower():
+                return _KEYWORD_MAP[token](context, question)
+    
+    tokens = set(_TOKEN_REGEX.findall(q_sanitized.lower()))
     matches = _KNOWN_TOKENS.intersection(tokens)
     if matches:
         return _KEYWORD_MAP[next(iter(matches))](context, question)

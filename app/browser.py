@@ -362,9 +362,6 @@ def detect_profiles(
                 if real_candidate in scanned_paths:
                     continue
                 
-                if not _is_path_inside_base(Path(real_candidate), real_base):
-                    continue
-                
                 size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, perf_cache, str(real_base))
                 if size > 0:
                     scanned_paths.add(real_candidate)
