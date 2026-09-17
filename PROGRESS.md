@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 39
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 219
+- Rechazadas por guardia de seguridad: 38
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 99 | 7 | 17 | 9 | 96 |
-| 2026-09-17 | 111 | 9 | 22 | 11 | 123 |
+| 2026-09-16 | 97 | 7 | 16 | 8 | 96 |
+| 2026-09-17 | 114 | 9 | 22 | 11 | 124 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
 - legibilidad y documentación: **47**
-- robustez ante casos límite: **40**
-- seguridad defensiva: **39**
+- robustez ante casos límite: **43**
+- seguridad defensiva: **37**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **20**
-- `diskreport.py`: **20**
+- `browser.py`: **21**
+- `diskreport.py`: **21**
 - `healthscore.py`: **19**
 - `settings.py`: **18**
 - `assistant.py`: **18**
+- `duplicates.py`: **18**
 - `memory.py`: **18**
-- `duplicates.py`: **17**
-- `quarantine.py`: **16**
 - `safety.py`: **16**
+- `quarantine.py`: **15**
 - `scanner.py`: **13**
 - `branding.py`: **11**
-- `organizer.py`: **9**
+- `organizer.py`: **8**
 - `main.py`: **8**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T12:05:02` **duplicates.py** (robustez ante casos límite): Se mejora la robustez de `_collect_candidates` ante archivos que desaparecen entre el `os.scandir` y el `stat()`, añadiendo un bloque `try-except` específico para manejar `FileNotFoundError`, evitando que una condición de carrera común (archivos temporales/efímeros) detenga el escaneo completo.
+- `2026-09-17T12:04:36` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante archivos bloqueados o con metadatos inaccesibles (como archivos en uso o system-locked) añadiendo un `try-except` específico al obtener `st_size` para evitar interrupciones en el flujo de escaneo cuando el sistema niega la lectura de atributos de archivo.
+- `2026-09-17T12:04:10` **browser.py** (robustez ante casos límite): Se mejora la robustez frente a errores inesperados durante el escaneo de disco al capturar `OSError` de manera granular dentro del bucle de `os.scandir` en `_sum_directory_recursive`, evitando que un solo archivo con permiso denegado o entrada corrupta aborte el cálculo del tamaño de toda la carpeta.
 - `2026-09-17T11:55:00` **assistant.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de configuración o tipos inesperados en `SystemContext.ingest` y sus métodos auxiliares, asegurando que si una métrica está corrupta o fuera de rango no invalide la ingesta del resto del objeto.
 - `2026-09-17T11:53:46` **settings.py** (rendimiento): Optimizé la carga de configuración eliminando la serialización innecesaria a bytes durante el cacheo y añadiendo una comprobación rápida de `mtime` antes de realizar cualquier operación de I/O, mejorando el rendimiento en accesos recurrentes.
 - `2026-09-17T11:44:46` **safety.py** (rendimiento): Se ha optimizado la validación de rutas mediante la implementación de un caché para `is_protected_path`, evitando el cálculo repetitivo de normalización y el recorrido de los componentes de la ruta en cada llamada, mejorando sustancialmente el rendimiento en escaneos masivos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T11:13:01` **scanner.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad de `scanner.py` documentando los contratos de las funciones de heurística y mejorando la precisión de los *type hints* para reflejar que `entry` es opcional en contextos de escaneo individual.
 - `2026-09-17T11:04:06` **safety.py** (legibilidad y documentación): Se ha documentado la lógica de `_VALIDATORS` mediante un comentario de bloque que detalla explícitamente el orden de evaluación, mejorando la legibilidad sobre la jerarquía de chequeos de seguridad.
 - `2026-09-17T10:56:00` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación de la API `EmptyWorkingSet` y se añadieron type hints más precisos a `_get_process_path` y `_is_safe_to_trim` para clarificar el flujo de seguridad, facilitando el mantenimiento y auditoría del código.
-- `2026-09-17T10:53:05` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en los métodos de cálculo (`score_*`) y se corrigió la consistencia en el uso de `_to_float` para asegurar que el pipeline de `compute_score` sea robusto ante entradas inesperadas.
-- `2026-09-17T10:52:35` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints en los retornos de funciones críticas y se mejoró la documentación interna mediante docstrings que explican el "porqué" de las decisiones de seguridad, específicamente en la lógica de exclusión de archivos.
-- `2026-09-17T10:44:04` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones clave (`walk_files` y `_collect_summary_data`), explicando explícitamente las asunciones sobre el manejo de errores y la lógica de filtrado de archivos para facilitar su mantenimiento futuro.

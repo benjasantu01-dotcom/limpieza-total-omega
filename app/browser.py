@@ -284,9 +284,12 @@ def _sum_directory_recursive(
             return 0
         
         total: int = 0
-        with os.scandir(root_abs) as it:
-            for entry in it:
-                total += _process_entry(entry, root_base, is_junction_fn, kernel32, memo, depth)
+        try:
+            with os.scandir(root_abs) as it:
+                for entry in it:
+                    total += _process_entry(entry, root_base, is_junction_fn, kernel32, memo, depth)
+        except OSError:
+            return 0
         
         memo[root_abs] = total
         return total

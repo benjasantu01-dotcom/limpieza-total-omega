@@ -217,7 +217,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                                 path = Path(entry.path)
                                 if _is_valid_candidate(path, st):
                                     size_to_paths_map[st.st_size].append(path)
-                    except (OSError, PermissionError):
+                    except (FileNotFoundError, OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
             return

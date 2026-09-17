@@ -955,3 +955,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-17T11:55:22` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-09-17T11:55:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T11:55:22` Corrida terminada. Total usado hoy: 276.
+- `2026-09-17T12:03:37` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-09-17T12:04:10` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se mejora la robustez frente a errores inesperados durante el escaneo de disco al capturar `OSError` de manera granular dentro del bucle de `os.scandir` en `_sum_directory_recursive`, evitando que un solo archivo con permiso denegado o entrada corrupta aborte el cálculo del tamaño de toda la carpeta.
+- `2026-09-17T12:04:36` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `walk_files` ante archivos bloqueados o con metadatos inaccesibles (como archivos en uso o system-locked) añadiendo un `try-except` específico al obtener `st_size` para evitar interrupciones en el flujo de escaneo cuando el sistema niega la lectura de atributos de archivo.
+- `2026-09-17T12:05:02` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_collect_candidates` ante archivos que desaparecen entre el `os.scandir` y el `stat()`, añadiendo un bloque `try-except` específico para manejar `FileNotFoundError`, evitando que una condición de carrera común (archivos temporales/efímeros) detenga el escaneo completo.
+- `2026-09-17T12:05:13` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-09-17T12:05:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T12:05:13` Corrida terminada. Total usado hoy: 280.
