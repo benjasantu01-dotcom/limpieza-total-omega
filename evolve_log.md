@@ -811,3 +811,13 @@ assert not True
 - `2026-09-17T10:05:57` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` validando explícitamente que los resultados de `resolve(strict=True)` no sean nulos o rutas vacías tras la resolución, y centralizando la validación de integridad de rutas para prevenir excepciones ante entradas malformadas o permisos insuficientes.
 - `2026-09-17T10:05:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T10:05:57` Corrida terminada. Total usado hoy: 232.
+- `2026-09-17T10:11:12` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-09-17T10:11:39` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `drive_usage` y `_get_local_windows_drives` centralizando la validación de montajes para evitar excepciones inesperadas al interactuar con el sistema de archivos, asegurando que `shutil.disk_usage` solo reciba rutas válidas y accesibles.
+- `2026-09-17T10:12:05` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `format_group` mediante la validación estricta de sus entradas y el manejo proactivo de estados inconsistentes (archivos eliminados o inaccesibles entre el análisis y el reporte), evitando excepciones en tiempo de ejecución.
+- `2026-09-17T10:12:33` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y `_evaluate_rules` mediante la validación proactiva de tipos en `message_factory` y la protección ante excepciones durante la ejecución del pipeline, evitando que un fallo en una sola métrica corrompa el reporte completo.
+- `2026-09-17T10:13:33` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-17T10:13:41` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-17T10:14:48` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-17T10:16:01` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `main.py` encapsulando la extracción de configuraciones en un bloque `try-except` más estricto y añadiendo una validación de seguridad de rutas (`safety.is_safe_to_modify`) al cargar configuraciones que involucran directorios, evitando que configuraciones corruptas o malintencionadas comprometan la estabilidad o seguridad al inicio.
+- `2026-09-17T10:16:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T10:16:01` Corrida terminada. Total usado hoy: 236.

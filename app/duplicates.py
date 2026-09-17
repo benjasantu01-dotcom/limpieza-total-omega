@@ -308,7 +308,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if not isinstance(p, Path):
             continue
         try:
-            if not p.exists():
+            if not p.exists() or not is_safe_to_modify(p):
                 continue
             if score := _get_keeper_score(p):
                 candidates.append((score, p))

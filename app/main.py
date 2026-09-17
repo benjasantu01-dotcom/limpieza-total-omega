@@ -94,7 +94,17 @@ HEALTH_METRICS_CONFIG: List[HealthMetricConfig] = [
 @lru_cache(maxsize=1)
 def get_cached_settings() -> Dict[str, Any]:
     """Carga inicial de configuración desde el archivo persistente."""
-    return settings_mod.load()
+    try:
+        raw = settings_mod.load()
+        if isinstance(raw, dict):
+            # Validar que carpetas guardadas en ajustes sigan siendo seguras
+            for key in ["carpeta_excluida"]:
+                if key in raw and raw[key] and not safety.is_safe_to_modify(Path(raw[key])):
+                    raw[key] = ""
+            return raw
+    except Exception:
+        pass
+    return settings_mod.reset()
 
 class AppSettings(TypedDict, total=False):
     """Esquema de configuración de la aplicación para mayor legibilidad y tipado."""
@@ -315,11 +325,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.report_data: Dict[str, List[str]] = {}
         self.assistant_context = assistant.SystemContext()
         
-        try:
-            raw = get_cached_settings()
-            self.settings = raw if isinstance(raw, dict) else settings_mod.reset()
-        except Exception:
-            self.settings = settings_mod.reset()
+        self.settings = get_cached_settings()
             
         with self._task_lock:
             self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
