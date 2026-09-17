@@ -197,6 +197,16 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
         return False
     return True
 
+def _is_valid_junk_file(entry: os.DirEntry) -> bool:
+    """Determina si una entrada de archivo es un candidato legítimo para limpieza."""
+    try:
+        st = entry.stat(follow_symlinks=False)
+        return (0 < st.st_size < 100_000_000_000 and 
+                not (_get_win_attributes(entry) & WIN_ATTR_MASK) and
+                is_valid_junk_extension(entry.name))
+    except (OSError, PermissionError):
+        return False
+
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str]) -> None:
     """Recorrido recursivo limitado para detección de archivos basura."""
     if depth > 50: return
@@ -207,7 +217,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache)
-                    elif entry.is_file(follow_symlinks=False) and is_valid_junk_extension(entry.name):
+                    elif entry.is_file(follow_symlinks=False) and _is_valid_junk_file(entry):
                         _evaluate_entry(entry, found)
                 except (OSError, PermissionError): continue
     except (OSError, PermissionError, RuntimeError): pass
@@ -226,9 +236,7 @@ def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
     """Evalúa metadata de una entrada de directorio para decidir si se agrega a la lista de JunkFile."""
     try:
         stat_info = entry.stat(follow_symlinks=False)
-        # Validación de tamaño: positivo y menor a 100GB
-        if 0 < stat_info.st_size < 100_000_000_000 and not (_get_win_attributes(entry) & WIN_ATTR_MASK):
-            found.append(JunkFile(Path(entry.path), stat_info.st_size, datetime.fromtimestamp(stat_info.st_mtime)))
+        found.append(JunkFile(Path(entry.path), stat_info.st_size, datetime.fromtimestamp(stat_info.st_mtime)))
     except (OSError, PermissionError, ValueError):
         pass
 

@@ -394,8 +394,8 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Intenta solicitar al kernel la liberación del working set de un proceso.
-    Solo tiene efecto en Windows y requiere permisos de consulta.
+    Solicita al kernel la liberación del working set de un proceso mediante `EmptyWorkingSet`.
+    Solo tiene efecto en Windows. Requiere permisos administrativos o propiedad del proceso.
     """
     if not _is_windows: return False, "Operación solo soportada en Windows."
     
