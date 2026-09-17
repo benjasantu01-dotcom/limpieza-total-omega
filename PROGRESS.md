@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
-- Rechazadas por tests: 13
+- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 134 | 8 | 27 | 13 | 138 |
-| 2026-09-17 | 74 | 5 | 13 | 9 | 83 |
+| 2026-09-16 | 134 | 8 | 27 | 13 | 134 |
+| 2026-09-17 | 77 | 6 | 13 | 9 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
 - robustez ante casos límite: **48**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **33**
+- seguridad defensiva: **36**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
+- `browser.py`: **21**
 - `assistant.py`: **20**
-- `browser.py`: **20**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `memory.py`: **17**
 - `duplicates.py`: **16**
 - `quarantine.py`: **16**
 - `settings.py`: **16**
 - `safety.py`: **14**
+- `branding.py`: **13**
 - `scanner.py`: **13**
-- `branding.py`: **12**
 - `organizer.py`: **10**
 - `main.py`: **8**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T08:10:41` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad en `walk_files` implementando una validación explícita de contención de rutas para asegurar que, tras seguir un enlace o acceder a un directorio, la ruta resultante no haya escapado fuera de la jerarquía del directorio raíz solicitado, previniendo accesos accidentales a rutas fuera del alcance del usuario.
+- `2026-09-17T08:10:30` **browser.py** (seguridad defensiva): Se ha implementado un chequeo adicional en `_sum_directory_recursive` para verificar que la ruta actual no contenga caracteres de escape o secuencias de control potencialmente maliciosas mediante una validación de `Path.parts` y normalización estricta, reforzando la defensa contra rutas fabricadas que pudieran intentar evadir el sandbox del `LOCALAPPDATA`.
+- `2026-09-17T08:10:02` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la verificación condicional por el uso exclusivo de `ensure_safe_to_modify` para evitar excepciones no controladas, y se añadieron chequeos explícitos de tipo y saneamiento de entrada para prevenir inyección de rutas en la escritura de archivos.
 - `2026-09-17T08:00:18` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `load` y `save` ante fallos catastróficos del sistema de archivos (como errores de lectura parcial o interrupciones durante el `fsync`) agregando verificaciones explícitas de integridad del contenido y manejando la posibilidad de que el archivo `config.json` exista pero sea inaccesible por bloqueos de otros procesos, asegurando que el estado de la app siempre sea válido.
 - `2026-09-17T07:59:47` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_safe_stat` y `_is_reparse_point` incorporando un manejo explícito de errores para archivos inaccesibles o bloqueados por el sistema, evitando interrupciones innecesarias en el bucle de escaneo.
 - `2026-09-17T07:59:21` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_validate_access_permissions` en `ensure_safe_to_modify` para detectar si el sistema de archivos deniega el acceso a nivel de metadatos o atributos antes de intentar operaciones, evitando excepciones inesperadas del SO en entornos con permisos restrictivos (casos límite de IO).
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T07:19:39` **settings.py** (rendimiento): Se implementó un mecanismo de caché más eficiente para los validadores de rutas, integrando un `lru_cache` explícito con un tamaño limitado para reducir las llamadas repetitivas al sistema de archivos y mejorar el rendimiento en los chequeos de seguridad.
 - `2026-09-17T07:19:08` **scanner.py** (rendimiento): Optimicé el método `_run_file_heuristics` y `scan_file` para evitar redundancias, asegurando que `check_double_extension` solo se ejecute una vez y utilizando el conjunto `SUSPICIOUS_ALL_EXTS` para filtrar rápidamente antes de procesar cualquier heurística.
 - `2026-09-17T07:18:29` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la creación dinámica de un `frozenset` de partes de la ruta en cada llamada por una comprobación jerárquica de prefijos, evitando así múltiples alocaciones de memoria y ciclos de CPU en escaneos masivos.
-- `2026-09-17T07:09:10` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando las búsquedas sobre archivos en el disco de O(N*M) a O(N+M) mediante el uso de sets, y centralicé la carga del manifiesto para evitar lecturas redundantes.
-- `2026-09-17T07:08:09` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` evitando la creación de objetos `ProcessMemory` intermedios mediante una pre-validación de los datos en el bloque `try-except` de la función de parseo, reduciendo el overhead de instanciación en procesos de larga duración.
-- `2026-09-17T07:02:06` **healthscore.py** (rendimiento): Se ha optimizado `_evaluate_rules` reemplazando la creación innecesaria de listas de caracteres mediante `join` por una validación de visibilidad de cadena más directa, reduciendo la carga de cómputo y el uso de memoria durante el análisis de reglas.

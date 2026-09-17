@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List, Optional, Union, TypedDict, Protocol, NamedTuple
 from types import MappingProxyType
 from functools import lru_cache
-from safety import is_safe_to_modify, ensure_safe_to_modify, is_protected_path
+from safety import ensure_safe_to_modify, is_protected_path
 import math
 
 # Definición de tipos para mejorar la semántica del código
@@ -318,10 +318,10 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda una representación SVG del logo en el sistema tras validar permisos de escritura."""
-    if not destination: return None
+    if not isinstance(destination, (str, Path)): return None
     try:
         target = Path(destination).resolve()
-        if not is_safe_to_modify(target): return None
+        # ensure_safe_to_modify lanza RuntimeError/PermissionError si no es seguro
         ensure_safe_to_modify(target)
         
         parent = target.parent

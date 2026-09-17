@@ -529,3 +529,29 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-17T08:03:35` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-17T08:03:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T08:03:35` Corrida terminada. Total usado hoy: 184.
+- `2026-09-17T08:08:49` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-09-17T08:09:30` Tests FALLARON:
+```
+ure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:125: SyntaxWarning: invalid escape sequence '\R'
+    El registro de Windows suele guardar rutas con espacios como '"C:\Ruta\App.exe" /arg'.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_extras - AssertionError: assert 0.0 == 8.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+2 failed, 297 passed, 7 warnings in 1.40s
+
+```
+- `2026-09-17T08:09:30` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva al limitar la recursión de datos durante la ingesta (`_is_input_too_deep_or_complex`) y al validar que las claves de métricas no utilicen nombres reservados o peligrosos que puedan interferir con `__dict__` o métodos internos de `SystemContext`, centralizando el control en `ingest`.
+- `2026-09-17T08:10:02` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la verificación condicional por el uso exclusivo de `ensure_safe_to_modify` para evitar excepciones no controladas, y se añadieron chequeos explícitos de tipo y saneamiento de entrada para prevenir inyección de rutas en la escritura de archivos.
+- `2026-09-17T08:10:30` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha implementado un chequeo adicional en `_sum_directory_recursive` para verificar que la ruta actual no contenga caracteres de escape o secuencias de control potencialmente maliciosas mediante una validación de `Path.parts` y normalización estricta, reforzando la defensa contra rutas fabricadas que pudieran intentar evadir el sandbox del `LOCALAPPDATA`.
+- `2026-09-17T08:10:41` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `walk_files` implementando una validación explícita de contención de rutas para asegurar que, tras seguir un enlace o acceder a un directorio, la ruta resultante no haya escapado fuera de la jerarquía del directorio raíz solicitado, previniendo accesos accidentales a rutas fuera del alcance del usuario.
+- `2026-09-17T08:10:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T08:10:41` Corrida terminada. Total usado hoy: 188.

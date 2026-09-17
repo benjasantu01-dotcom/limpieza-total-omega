@@ -217,8 +217,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         if _is_excluded_path(entry): continue
                         
+                        path_obj = Path(entry.path).resolve()
+                        if root_path not in path_obj.parents and path_obj != root_path:
+                            continue
+                        
                         if entry.is_dir(follow_symlinks=False):
-                            path_obj = Path(entry.path)
                             if skip_protected and is_protected_path(path_obj): continue
                             
                             st = entry.stat(follow_symlinks=False)
@@ -229,7 +232,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
-                            yield Path(entry.path), max(0, int(getattr(st, 'st_size', 0)))
+                            yield path_obj, max(0, int(getattr(st, 'st_size', 0)))
                     except (PermissionError, OSError, AttributeError):
                         continue
         except (PermissionError, OSError):
@@ -259,9 +262,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            # Validar si path es hijo de root antes de operar
-            if root not in path.parents and path != root:
-                continue
             rel = path.relative_to(root)
             if rel and rel.parts:
                 top_level_folder = root / rel.parts[0]

@@ -264,6 +264,10 @@ def _sum_directory_recursive(
     
     try:
         root_path = Path(root_abs).resolve(strict=True)
+        # Validación adicional contra rutas con caracteres de control inyectados tras resolución
+        if any(c in str(root_path) for c in '\0\r\n') or any(part in ('', '.', '..') for part in root_path.parts):
+            return 0
+            
         if not root_path.is_absolute() or not root_path.is_dir():
             return 0
         if not is_safe_to_modify(root_path) or is_protected_path(root_path):
