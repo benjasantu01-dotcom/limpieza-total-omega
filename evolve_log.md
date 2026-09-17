@@ -512,3 +512,10 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-17T07:42:59` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-09-17T07:42:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T07:42:59` Corrida terminada. Total usado hoy: 176.
+- `2026-09-17T07:48:27` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-09-17T07:49:10` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `parse_windows_process_csv` añadiendo un manejo de excepciones más granular y defensivo ante líneas malformadas que podrían ocurrir si la salida de `Get-Process` se trunca, evitando que un fallo en un proceso individual invalide todo el análisis de la lista.
+- `2026-09-17T07:49:35` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-17T07:50:12` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-09-17T07:50:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-17T07:50:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T07:50:15` Corrida terminada. Total usado hoy: 180.

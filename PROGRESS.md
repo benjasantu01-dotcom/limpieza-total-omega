@@ -8,23 +8,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 135 | 8 | 27 | 13 | 145 |
-| 2026-09-17 | 70 | 5 | 12 | 9 | 80 |
+| 2026-09-16 | 134 | 8 | 27 | 13 | 142 |
+| 2026-09-17 | 71 | 5 | 13 | 9 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
 - manejo de errores y validación de entradas: **47**
-- robustez ante casos límite: **44**
-- seguridad defensiva: **34**
+- robustez ante casos límite: **45**
+- seguridad defensiva: **33**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
@@ -33,10 +33,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **20**
 - `browser.py`: **20**
 - `diskreport.py`: **18**
-- `settings.py`: **16**
+- `memory.py`: **17**
 - `duplicates.py`: **16**
 - `quarantine.py`: **16**
-- `memory.py`: **16**
+- `settings.py`: **15**
 - `safety.py`: **13**
 - `branding.py`: **12**
 - `scanner.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T07:49:10` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` añadiendo un manejo de excepciones más granular y defensivo ante líneas malformadas que podrían ocurrir si la salida de `Get-Process` se trunca, evitando que un fallo en un proceso individual invalide todo el análisis de la lista.
 - `2026-09-17T07:39:37` **healthscore.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de tipos dentro de `_evaluate_rules` y `compute_score` para asegurar que fallos en la lógica de las funciones lambda o datos inesperados durante el procesamiento del pipeline no aborten el cálculo global, garantizando la resiliencia del sistema.
 - `2026-09-17T07:39:08` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `duplicates.py` mediante una validación estricta de la integridad del archivo antes de calcular el hash, asegurando que si un archivo se elimina o bloquea durante el proceso (concurrencia), la función `hash_file` y `partial_hash` retornen `None` de forma segura en lugar de propagar excepciones o fallar en el `with`.
 - `2026-09-17T07:38:42` **diskreport.py** (robustez ante casos límite): Se mejora la resiliencia ante errores de lectura en `walk_files` y `largest_folders` al manejar explícitamente rutas de archivo que podrían ser inaccesibles o haber sido eliminadas durante la iteración, evitando el fallo de toda la operación.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T06:49:19` **diskreport.py** (rendimiento): Optimicé el motor de escaneo `_collect_summary_data` y las funciones de consulta evitando múltiples recorridos redundantes del sistema de archivos, asegurando que `summarize`, `largest_files`, `usage_by_extension` y `total_size` compartan un único paso de lectura bajo demanda.
 - `2026-09-17T06:49:09` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios integrando un caché de resultados (`memo`) en todas las llamadas recursivas de `_sum_directory_recursive` y eliminando la recálculo de rutas base dentro del bucle de `detect_profiles`, evitando redundancias en la ejecución de I/O.
 - `2026-09-17T06:48:02` **assistant.py** (rendimiento): Optimizé `local_answer` para evitar el parseo innecesario de tokens cuando la consulta es corta o no contiene palabras clave relevantes, reduciendo el overhead de procesamiento en cada iteración de la interfaz.
-- `2026-09-17T06:38:38` **settings.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo `settings.py` al extraer la lógica de selección de validadores en un diccionario de mapeo directo, eliminando la complejidad ciclomática de la función `_get_validator_for_key` y facilitando futuras adiciones de claves de configuración sin modificar la estructura del código.

@@ -225,10 +225,13 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     
     raw_entries: List[Tuple[int, ProcessMemory]] = []
     for line in raw_csv_text.splitlines():
-        parts = [_clean_csv_field(x) for x in line.split(",")]
-        entry = _is_valid_process_entry(parts)
-        if entry:
-            raw_entries.append((entry.working_set, entry))
+        try:
+            parts = [_clean_csv_field(x) for x in line.split(",")]
+            entry = _is_valid_process_entry(parts)
+            if entry:
+                raw_entries.append((entry.working_set, entry))
+        except (AttributeError, IndexError, ValueError):
+            continue
                 
     raw_entries.sort(key=lambda x: x[0], reverse=True)
     return [e[1] for e in raw_entries[:limit]]
