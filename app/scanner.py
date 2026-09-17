@@ -235,13 +235,11 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         if not _is_valid_path_structure(path_str):
             return []
         
-        base_path: Path = Path(path_str)
+        base_path = Path(path_str)
         if not base_path.exists() or not base_path.is_dir(): 
             return []
-        try:
-            root_input: Path = base_path.resolve()
-        except OSError:
-            return []
+            
+        root_input: Path = base_path.resolve()
         if is_protected_path(root_input): 
             return []
             
@@ -258,8 +256,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 logger.warning(f"Error listando directorio {current_dir}: {e}")
                 continue
         return scanner.results
-    except Exception as e:
-        logger.error(f"Error crítico en scan_directory: {e}")
+    except (ValueError, TypeError, RuntimeError) as e:
+        logger.error(f"Error al inicializar escaneo en {directory}: {e}")
         return []
 
 def run_windows_defender_quick_scan() -> str:

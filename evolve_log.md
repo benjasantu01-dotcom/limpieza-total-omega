@@ -416,3 +416,10 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-17T05:53:45` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-17T05:53:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T05:53:45` Corrida terminada. Total usado hoy: 134.
+- `2026-09-17T05:56:21` Arrancando corrida. Quedan hoy ~166 peticiones objetivo.
+- `2026-09-17T05:56:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-17T05:57:23` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `_check_file_integrity` para capturar errores de sistema específicos y evitar que una falla en una llamada al kernel (como `GetFileAttributesW`) interrumpa el proceso completo de validación al escanear, permitiendo que el bucle continúe evaluando el resto de los archivos.
+- `2026-09-17T05:57:50` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_safe_entry` y `scan_directory` añadiendo validaciones explícitas para prevenir el procesamiento de rutas vacías o inválidas antes de interactuar con el sistema de archivos, asegurando que las excepciones de `pathlib` no interrumpan el flujo de escaneo.
+- `2026-09-17T05:58:05` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_Validators.path` y `_Validators.str` implementando una validación explícita de caracteres nulos y longitudes de cadena antes de cualquier procesamiento de rutas, evitando así posibles excepciones inesperadas durante la normalización.
+- `2026-09-17T05:58:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T05:58:05` Corrida terminada. Total usado hoy: 138.

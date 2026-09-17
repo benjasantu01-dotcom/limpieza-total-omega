@@ -228,6 +228,7 @@ class _Validators:
         if val == "": return ""
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
+        if not path_string or "\0" in path_string or len(path_string) > 2048: return None
         return path_string if _Validators._is_safe_path(path_string) else None
 
     @staticmethod
