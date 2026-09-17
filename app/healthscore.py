@@ -230,7 +230,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                 clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                 if clean_msg:
                     findings.append(clean_msg[:200])
-        except Exception:
+        except (Exception, TypeError, ValueError):
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -238,7 +238,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     
-    # Asegurar integridad de datos antes del procesamiento
     metrics.validate()
     if not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Inconsistencia numérica detectada."])
@@ -250,7 +249,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in _PIPELINE:
         try:
             val = entry.scorer(metrics)
-            # Sanitización de salida del scorer
             area_ratio = _clamp(float(val)) if math.isfinite(val) else 0.0
             
             if entry.rules:
@@ -265,9 +263,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             
     final_score = int(_clamp(round(accumulated_score), 0.0, 100.0))
     
-    q_count = metrics.quarantined_count
-    if q_count > 0:
-        recommendations.append(f"Tenés {int(q_count)} archivo(s) en cuarentena.")
+    if metrics.quarantined_count > 0:
+        recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")
     
     return HealthResult(
         score=final_score, 

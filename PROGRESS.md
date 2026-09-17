@@ -7,46 +7,48 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **203** (40.3% de aceptación)
-- Rechazadas por tests: 13
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 38
-- Sin cambios (nada sustancial que mejorar): 17
+- Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 54 | 5 | 8 | 2 | 61 |
+| 2026-09-15 | 52 | 4 | 8 | 2 | 60 |
 | 2026-09-16 | 147 | 8 | 30 | 15 | 150 |
-| 2026-09-17 | 2 | 0 | 0 | 0 | 22 |
+| 2026-09-17 | 4 | 0 | 0 | 1 | 23 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **46**
-- legibilidad y documentación: **45**
-- manejo de errores y validación de entradas: **45**
+- legibilidad y documentación: **43**
 - seguridad defensiva: **41**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **20**
-- `healthscore.py`: **19**
+- `healthscore.py`: **20**
 - `diskreport.py`: **18**
 - `quarantine.py`: **18**
 - `assistant.py`: **18**
-- `memory.py`: **16**
+- `memory.py`: **17**
 - `duplicates.py`: **16**
-- `safety.py`: **15**
 - `settings.py`: **15**
-- `scanner.py`: **12**
+- `safety.py`: **14**
 - `branding.py`: **11**
+- `scanner.py`: **11**
 - `organizer.py`: **11**
 - `main.py`: **7**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T01:14:25` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_windows_process_csv` y `_kb_to_bytes` mediante la validación estricta de tipos y la eliminación de posibles `None` o valores no numéricos antes de operar, previniendo errores en tiempo de ejecución.
+- `2026-09-17T01:11:40` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_evaluate_rules` mediante la captura explícita de excepciones y validación de tipos, evitando que errores de ejecución en los factories de mensajes o en el pipeline detengan el proceso de diagnóstico completo.
 - `2026-09-17T01:02:30` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validaciones explícitas para capturar errores de tipo o rutas vacías antes de procesar, asegurando que el bucle de escaneo no falle ante entradas inesperadas.
 - `2026-09-17T00:54:34` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y `SystemContext.ingest` para manejar fuentes de datos malformadas o inesperadas que podrían causar excepciones al intentar acceder a atributos no existentes, asegurando que la app no aborte ante datos corruptos.
 - `2026-09-16T14:09:24` **quarantine.py** (seguridad defensiva): Se reforzó `_safe_unlink` para implementar una verificación de seguridad proactiva mediante `is_protected_path` sobre la ruta resuelta antes de cualquier operación destructiva, asegurando que ni siquiera en el sandbox se pueda manipular una ruta que, por resolución de enlaces o caracteres especiales, termine siendo del sistema.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T13:37:40` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos de error de sistema de archivos al envolver las llamadas a `ctypes` en bloques `try-except` más granulares dentro de las funciones de chequeo de atributos (`_is_system_or_hidden`, `_is_encrypted_or_compressed`, `_is_offline`), evitando que una excepción inesperada (como un error de I/O o handle inválido) detenga la validación de seguridad y asegurar que estas funciones siempre devuelvan un booleano seguro (`False`) ante fallos.
 - `2026-09-16T13:28:29` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos inexistentes o bloqueos por permisos, previniendo errores de sistema al verificar archivos candidatos a cuarentena o purga.
 - `2026-09-16T13:27:52` **organizer.py** (robustez ante casos límite): Mejora la robustez del proceso de escaneo y gestión de archivos añadiendo verificaciones explícitas contra archivos cuyo tamaño excede la capacidad de representación de Python (archivos corruptos/masivos) y garantizando que las operaciones de movimiento no se bloqueen por errores de lectura en metadatos de archivos inaccesibles.
-- `2026-09-16T13:27:20` **memory.py** (robustez ante casos límite): Se ha robustecido el proceso de lectura de memoria en Linux al añadir un manejo explícito de errores de lectura de archivos (`OSError`, `PermissionError`, etc.) y validaciones de formato más estrictas en el parsing, asegurando que ante archivos vacíos, ilegibles o con contenido inesperado (casos límite comunes en entornos restringidos) la aplicación retorne un estado neutral en lugar de fallar o propagar excepciones.
-- `2026-09-16T13:18:09` **healthscore.py** (robustez ante casos límite): Mejoré la robustez ante casos límite en `compute_score` asegurando que, ante fallos en los `scorer` (como divisiones por cero imprevistas o tipos erróneos), el sistema no colapse y devuelva un puntaje conservador (0) para el área afectada, manteniendo la integridad del resultado global.

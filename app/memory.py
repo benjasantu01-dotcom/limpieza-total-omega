@@ -212,6 +212,7 @@ def _is_valid_process_entry(fields: List[str]) -> Optional[ProcessMemory]:
 
 def _clean_csv_field(field: str) -> str:
     """Limpia caracteres de escape y espacios de campos CSV de PowerShell."""
+    if not field: return ""
     return field.strip().strip("'\" ")
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
