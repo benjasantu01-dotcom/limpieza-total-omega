@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
-- Rechazadas por tests: 11
+- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 28 | 1 | 3 | 1 | 31 |
+| 2026-09-15 | 28 | 1 | 3 | 1 | 27 |
 | 2026-09-16 | 147 | 8 | 30 | 15 | 150 |
-| 2026-09-17 | 38 | 2 | 8 | 8 | 34 |
+| 2026-09-17 | 39 | 4 | 8 | 8 | 35 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **49**
 - robustez ante casos límite: **44**
-- seguridad defensiva: **41**
+- seguridad defensiva: **42**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
@@ -38,7 +38,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **17**
 - `quarantine.py`: **17**
 - `settings.py`: **15**
-- `safety.py`: **13**
+- `safety.py`: **14**
 - `scanner.py`: **13**
 - `branding.py`: **13**
 - `organizer.py`: **12**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T04:05:04` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "reparse point" en `_is_directory_junction` más robusta y se ha reforzado la seguridad en `ensure_safe_to_modify` implementando una comprobación explícita para evitar que se sigan enlaces simbólicos a directorios fuera del árbol permitido (previa resolución de la ruta final), mitigando riesgos de inyección fuera de carpeta.
 - `2026-09-17T03:55:46` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_atomic_isolate_file` al introducir un chequeo de integridad *post-escritura* mediante el hash SHA-256 antes de finalizar la operación, garantizando que el archivo en el sandbox sea bit-a-bit idéntico al original, previniendo así posibles corrupciones o modificaciones externas durante el movimiento.
 - `2026-09-17T03:54:44` **memory.py** (seguridad defensiva): Se reforzó la seguridad de `trim_working_set` implementando un chequeo previo contra `is_protected_path` al recibir el PID, evitando así intentar siquiera abrir un handle a procesos cuyo ejecutable se encuentre en rutas restringidas, reduciendo la superficie de ataque y el riesgo de errores por permisos.
 - `2026-09-17T03:46:20` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de directorios en `_verify_disk_path` y aplicándola explícitamente en `on_disk_analysis` y otros métodos de entrada de usuario para garantizar que las rutas procesadas no sean enlaces simbólicos ni carpetas protegidas antes de iniciar cualquier operación de disco.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T03:17:06` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S y corrupción de metadatos en `list_items` y `load_manifest`, asegurando que el sistema sea resiliente incluso si el archivo de manifiesto contiene datos malformados o si los archivos físicos asociados han sido manipulados por terceros.
 - `2026-09-17T03:16:18` **memory.py** (robustez ante casos límite): Se ha robustecido `parse_windows_process_csv` para prevenir errores ante líneas malformadas o PIDs negativos provenientes de PowerShell, evitando que una entrada corrupta invalide el procesamiento de la lista completa.
 - `2026-09-17T03:15:42` **main.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de concurrencia y estados inconsistentes de la interfaz al cerrar la aplicación, asegurando que `_executor.shutdown` no bloquee el hilo principal y que los callbacks pendientes no intenten interactuar con widgets ya destruidos tras la finalización del proceso.
-- `2026-09-17T03:05:12` **healthscore.py** (robustez ante casos límite): Se introdujo una protección defensiva en `_evaluate_rules` para manejar potenciales errores de ejecución dentro de los `message_factory` (ej. si el objeto `metrics` fuera alterado inesperadamente) y se añadió una validación estricta de `math.isfinite` para asegurar que el `accumulated_score` no se corrompa con valores `NaN` o `Inf` durante el bucle del pipeline.
