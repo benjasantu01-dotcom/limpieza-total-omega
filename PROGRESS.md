@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 79 | 7 | 15 | 7 | 64 |
-| 2026-09-17 | 127 | 9 | 24 | 14 | 158 |
+| 2026-09-16 | 76 | 7 | 14 | 7 | 64 |
+| 2026-09-17 | 128 | 9 | 24 | 14 | 161 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **46**
 - seguridad defensiva: **45**
-- legibilidad y documentación: **43**
-- manejo de errores y validación de entradas: **37**
+- legibilidad y documentación: **40**
+- manejo de errores y validación de entradas: **38**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **20**
 - `diskreport.py`: **20**
-- `healthscore.py`: **19**
-- `memory.py`: **18**
-- `duplicates.py`: **17**
+- `assistant.py`: **18**
+- `healthscore.py`: **18**
 - `settings.py`: **17**
-- `assistant.py`: **17**
+- `memory.py`: **17**
 - `safety.py`: **17**
+- `duplicates.py`: **16**
 - `quarantine.py`: **15**
 - `scanner.py`: **12**
 - `branding.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T14:29:36` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingesta de datos en `SystemContext` agregando validaciones explícitas de tipo y manejo de errores mediante `try-except` en la conversión de cada campo, evitando que un dato malformado corrompa la carga completa del contexto.
 - `2026-09-17T13:07:05` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_file_access` reemplazando la apertura del archivo (`open(p, 'rb')`) por una consulta de metadatos mediante `os.stat` para verificar la existencia y el tipo sin intentar acceder al contenido, mitigando riesgos innecesarios de I/O y bloqueos de archivos.
 - `2026-09-17T13:06:52` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_Validators._run_safety_checks` para prevenir ataques de *symlink traversal* durante la validación de rutas, asegurando que la ruta resuelta no sea un punto de reparse antes de permitir la modificación.
 - `2026-09-17T13:06:20` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta `entry.path` antes de cualquier procesamiento, garantizando que incluso si un archivo es renombrado o movido durante la iteración, nunca se escape de las restricciones de seguridad ni acceda a puntos de reanálisis fuera del alcance permitido.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T12:19:54` **organizer.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en la operación de limpieza al añadir una verificación de integridad de la ruta destino en `stage_for_review`, asegurando que no se intente mover archivos a una ruta que haya quedado fuera de los controles de seguridad o sea inválida debido a condiciones de carrera o cambios en el sistema de archivos durante la ejecución.
 - `2026-09-17T12:19:28` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` y sus ayudantes ante errores de concurrencia y limpieza de recursos (handles de Windows), asegurando que el cierre del handle ocurra incluso ante excepciones inesperadas y validando correctamente los permisos de acceso antes de cualquier operación.
 - `2026-09-17T12:05:02` **duplicates.py** (robustez ante casos límite): Se mejora la robustez de `_collect_candidates` ante archivos que desaparecen entre el `os.scandir` y el `stat()`, añadiendo un bloque `try-except` específico para manejar `FileNotFoundError`, evitando que una condición de carrera común (archivos temporales/efímeros) detenga el escaneo completo.
-- `2026-09-17T12:04:36` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante archivos bloqueados o con metadatos inaccesibles (como archivos en uso o system-locked) añadiendo un `try-except` específico al obtener `st_size` para evitar interrupciones en el flujo de escaneo cuando el sistema niega la lectura de atributos de archivo.

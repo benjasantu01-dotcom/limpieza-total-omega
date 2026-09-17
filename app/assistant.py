@@ -327,7 +327,7 @@ class SystemContext:
             return False
             
         try:
-            float_val: float = float(val)
+            float_val = float(val)
             if _is_metric_within_bounds(float_val, spec):
                 setattr(self, key, spec.cast_func(val))
                 return True
