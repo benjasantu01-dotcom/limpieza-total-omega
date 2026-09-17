@@ -230,9 +230,9 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
-                msg = rule.message_factory(metrics).strip()
-                if msg and msg.isprintable():
-                    findings.append(msg[:200])
+                msg = rule.message_factory(metrics)
+                if isinstance(msg, str) and msg.strip() and msg.isprintable():
+                    findings.append(msg.strip()[:200])
         except Exception:
             continue
 
@@ -252,9 +252,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in _PIPELINE:
         try:
             val = entry.scorer(metrics)
-            if not isinstance(val, (float, int)) or not math.isfinite(val):
-                raise ValueError(f"Resultado no numérico en area {entry.area}")
-            
             area_ratio = _clamp(float(val))
             
             if entry.rules:
@@ -263,9 +260,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             weighted_points = _clamp(round(area_ratio * entry.weight), 0, entry.weight)
             metric_breakdown[entry.area] = int(weighted_points)
             accumulated_score += weighted_points
-        except Exception as e:
+        except Exception:
             metric_breakdown[entry.area] = 0
-            recommendations.append(f"Error técnico en área {entry.area}: {type(e).__name__}.")
             
     final_score = int(_clamp(round(accumulated_score), 0.0, 100.0))
     

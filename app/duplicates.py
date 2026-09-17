@@ -139,7 +139,8 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
         with open(p, "rb") as f:
             content = f.read(read_bytes)
-            return hashlib.sha256(content).hexdigest() if content else None
+            if not content: return None
+            return hashlib.sha256(content).hexdigest()
     except (OSError, PermissionError, IOError, TypeError, ValueError):
         return None
 
