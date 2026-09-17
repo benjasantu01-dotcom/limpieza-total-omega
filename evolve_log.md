@@ -1174,3 +1174,39 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-09-17T02:44:40` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizamos `Scanner.process_entry` reemplazando la creación innecesaria de objetos `Path` y múltiples llamadas a `lower()` dentro del bucle principal por una comparación directa de extensiones pre-filtradas, reduciendo la carga de CPU en recorridos extensos.
 - `2026-09-17T02:44:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T02:44:40` Corrida terminada. Total usado hoy: 62.
+- `2026-09-17T02:53:04` Arrancando corrida. Quedan hoy ~238 peticiones objetivo.
+- `2026-09-17T02:53:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-17T02:53:45` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-17T02:54:48` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-17T02:55:41` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la carga de configuración eliminando lecturas redundantes del sistema de archivos al verificar directamente el timestamp del archivo en caché antes de cualquier operación de I/O, reduciendo llamadas innecesarias al sistema operativo.
+- `2026-09-17T02:56:08` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-17T02:56:50` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejora la robustez del motor local al añadir un manejo explícito de la división por cero en `handle_ram` y `handle_disk`, evitando que el asistente falle ante situaciones de estado incompleto o valores de métricas inesperados (como 0 bytes totales en mediciones de hardware).
+- `2026-09-17T02:57:12` Tests FALLARON:
+```
+s None: return
+>       val = max(0.0, min(100.0, float(percent)))
+                                  ^^^^^^^^^^^^^^
+E       ValueError: could not convert string to float: 'mucho'
+
+app/branding.py:390: ValueError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:125: SyntaxWarning: invalid escape sequence '\R'
+    El registro de Windows suele guardar rutas con espacios como '"C:\Ruta\App.exe" /arg'.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - ValueError: invalid literal for int() with base 10: 'ancho'
+FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missing_canvas - ValueError: could not convert string to float: 'mucho'
+2 failed, 297 passed, 7 warnings in 1.38s
+
+```
+- `2026-09-17T02:57:12` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se ha robustecido el manejo de rutas en `save_logo_svg` y se eliminaron los bloques `try-except` genéricos demasiado amplios en las funciones de dibujo, reemplazándolos por validaciones específicas de estado antes de intentar operaciones gráficas.
+- `2026-09-17T02:57:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T02:57:12` Corrida terminada. Total usado hoy: 66.

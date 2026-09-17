@@ -300,14 +300,19 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga, valida y cachea la configuración persistida en disco."""
     ruta = settings_path(custom_base)
     
+    # Verificación de caché antes de cualquier I/O
+    if ruta.exists():
+        try:
+            mtime = ruta.stat().st_mtime
+            if (cached := _CACHE.get(ruta)) and cached[0] == mtime:
+                return cached[1].copy()
+        except OSError:
+            pass
+    else:
+        return DEFAULTS.copy()
+    
     try:
-        if not ruta.exists(): return DEFAULTS.copy()
         stats = ruta.stat()
-        mtime = stats.st_mtime
-        
-        if (cached := _CACHE.get(ruta)) and cached[0] == mtime:
-            return cached[1].copy()
-            
         if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
             return DEFAULTS.copy()
             
@@ -323,10 +328,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 
             if not _is_dict(raw): return DEFAULTS.copy()
             
-            # Validar y completar esquema
             final_data = validate(raw)
         
-        _CACHE[ruta] = (mtime, final_data)
+        _CACHE[ruta] = (stats.st_mtime, final_data)
         return final_data.copy()
     except (OSError, PermissionError, ValueError):
         return DEFAULTS.copy()
@@ -371,7 +375,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 f.flush()
                 os.fsync(f.fileno())
             
-            # Reemplazo atómico asegurando integridad
             if ruta.exists():
                 try: os.replace(ruta, bak_path)
                 except OSError: pass
