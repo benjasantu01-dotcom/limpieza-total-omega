@@ -10,8 +10,7 @@ DISEÑO DEL PIPELINE:
 - Cada entrada del pipeline (`PipelineEntry`) define:
     1. Un área de evaluación (ej. 'seguridad').
     2. Un peso relativo (influencia en el score total de 0 a 100).
-    3. Una función `scorer` que normaliza la métrica cruda a un ratio [0, 1].
-    4. Un conjunto de reglas que generan recomendaciones si el ratio es bajo.
+    3. Un conjunto de reglas que generan recomendaciones si el ratio es bajo.
 """
 
 from __future__ import annotations
@@ -261,7 +260,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             metric_breakdown[entry.area] = 0
             recommendations.append(f"Error al analizar el área: {entry.area}.")
             
-    final_score = int(_clamp(round(accumulated_score), 0.0, 100.0))
+    final_score = int(_clamp(round(accumulated_score), 0.0, 100.0)) if math.isfinite(accumulated_score) else 0
     
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")

@@ -234,7 +234,10 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
             try:
                 stat_res = entry.stat(follow_symlinks=False)
                 return int(stat_res.st_size) if hasattr(stat_res, 'st_size') else 0
-            except (OSError, PermissionError):
+            except OSError as e:
+                # Si el archivo está en uso por el navegador, se omite de forma silenciosa
+                if e.winerror == ERROR_SHARING_VIOLATION:
+                    return 0
                 return 0
     except (OSError, PermissionError):
         return 0

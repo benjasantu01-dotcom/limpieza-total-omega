@@ -1210,3 +1210,10 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-17T02:57:12` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se ha robustecido el manejo de rutas en `save_logo_svg` y se eliminaron los bloques `try-except` genéricos demasiado amplios en las funciones de dibujo, reemplazándolos por validaciones específicas de estado antes de intentar operaciones gráficas.
 - `2026-09-17T02:57:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T02:57:12` Corrida terminada. Total usado hoy: 66.
+- `2026-09-17T03:03:15` Arrancando corrida. Quedan hoy ~234 peticiones objetivo.
+- `2026-09-17T03:04:06` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una validación de concurrencia en `_sum_directory_recursive` para manejar el `ERROR_SHARING_VIOLATION` (código 32) de forma explícita, evitando que el escáner se interrumpa ante archivos bloqueados por el navegador en ejecución.
+- `2026-09-17T03:04:31` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-09-17T03:04:56` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-17T03:05:12` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se introdujo una protección defensiva en `_evaluate_rules` para manejar potenciales errores de ejecución dentro de los `message_factory` (ej. si el objeto `metrics` fuera alterado inesperadamente) y se añadió una validación estricta de `math.isfinite` para asegurar que el `accumulated_score` no se corrompa con valores `NaN` o `Inf` durante el bucle del pipeline.
+- `2026-09-17T03:05:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T03:05:12` Corrida terminada. Total usado hoy: 70.
