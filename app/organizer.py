@@ -256,7 +256,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     for junk_file in files:
         try:
             target_path = _can_move_file(junk_file, dest_base)
-            if target_path and is_safe_to_modify(junk_file.path):
+            if target_path and is_safe_to_modify(junk_file.path) and is_safe_to_modify(dest_base):
                 ensure_safe_to_modify(junk_file.path)
                 shutil.move(str(junk_file.path), str(target_path))
         except (OSError, shutil.Error): continue

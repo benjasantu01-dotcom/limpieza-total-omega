@@ -349,11 +349,6 @@ def _is_system_process(pid: int) -> bool:
 def _get_process_path(proc_handle: int) -> Optional[Path]:
     """
     Resuelve la ruta absoluta del ejecutable de un proceso mediante PSAPI.
-    
-    Utiliza GetModuleFileNameExW para obtener la ruta y valida:
-    1. Que no sea una ruta virtual o UNC (bloqueo de seguridad).
-    2. Que el archivo exista y no sea un enlace simbólico.
-    3. Que la ruta final pase el filtro de seguridad (is_safe_to_modify).
     """
     if not proc_handle or proc_handle <= 0: return None
     psapi = getattr(ctypes.windll, "psapi", None)
@@ -363,7 +358,6 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     try:
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 1024) > 0:
             path_str = str(buf.value)
-            # Defensa: Rechazar rutas UNC o de dispositivos virtuales antes de instanciar Path
             if any(path_str.startswith(prefix) for prefix in ("\\\\", "\\??\\", "\\Device\\")):
                 return None
             
@@ -380,14 +374,7 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
-    """
-    Verifica los requisitos de seguridad y estado antes de intentar un trim.
-    
-    1. Verifica mediante GetExitCodeProcess si el proceso sigue en ejecución.
-    2. Valida la integridad de la ruta del ejecutable mediante _get_process_path.
-    
-    Retorna (True, None) si es seguro, o (False, razón) si está bloqueado.
-    """
+    """Verifica el estado del proceso antes de intentar un trim."""
     if not isinstance(proc_handle, int) or proc_handle <= 0: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
     
@@ -408,13 +395,7 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
         return False, "Error interno durante la verificación de integridad."
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Solicita al kernel la liberación del working set de un proceso mediante `EmptyWorkingSet`.
-    
-    NOTA: Esta función interactúa con la API Win32 `psapi!EmptyWorkingSet`.
-    El sistema operativo puede denegar esta petición si el proceso tiene un
-    nivel de prioridad alto o es esencial para la estabilidad del sistema.
-    """
+    """Solicita al kernel la liberación del working set de un proceso."""
     if not _is_windows: return False, "Operación solo soportada en Windows."
     
     try:

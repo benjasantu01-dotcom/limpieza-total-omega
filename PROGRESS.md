@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 97 | 7 | 16 | 8 | 96 |
-| 2026-09-17 | 114 | 9 | 22 | 11 | 124 |
+| 2026-09-16 | 95 | 7 | 16 | 8 | 94 |
+| 2026-09-17 | 116 | 9 | 22 | 11 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
 - legibilidad y documentación: **47**
-- robustez ante casos límite: **43**
-- seguridad defensiva: **37**
+- robustez ante casos límite: **45**
 - rendimiento: **35**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **21**
 - `diskreport.py`: **21**
 - `healthscore.py`: **19**
-- `settings.py`: **18**
+- `memory.py`: **19**
 - `assistant.py`: **18**
 - `duplicates.py`: **18**
-- `memory.py`: **18**
+- `settings.py`: **17**
 - `safety.py`: **16**
 - `quarantine.py`: **15**
-- `scanner.py`: **13**
+- `scanner.py`: **12**
 - `branding.py`: **11**
-- `organizer.py`: **8**
+- `organizer.py`: **9**
 - `main.py`: **8**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T12:19:54` **organizer.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en la operación de limpieza al añadir una verificación de integridad de la ruta destino en `stage_for_review`, asegurando que no se intente mover archivos a una ruta que haya quedado fuera de los controles de seguridad o sea inválida debido a condiciones de carrera o cambios en el sistema de archivos durante la ejecución.
+- `2026-09-17T12:19:28` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` y sus ayudantes ante errores de concurrencia y limpieza de recursos (handles de Windows), asegurando que el cierre del handle ocurra incluso ante excepciones inesperadas y validando correctamente los permisos de acceso antes de cualquier operación.
 - `2026-09-17T12:05:02` **duplicates.py** (robustez ante casos límite): Se mejora la robustez de `_collect_candidates` ante archivos que desaparecen entre el `os.scandir` y el `stat()`, añadiendo un bloque `try-except` específico para manejar `FileNotFoundError`, evitando que una condición de carrera común (archivos temporales/efímeros) detenga el escaneo completo.
 - `2026-09-17T12:04:36` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante archivos bloqueados o con metadatos inaccesibles (como archivos en uso o system-locked) añadiendo un `try-except` específico al obtener `st_size` para evitar interrupciones en el flujo de escaneo cuando el sistema niega la lectura de atributos de archivo.
 - `2026-09-17T12:04:10` **browser.py** (robustez ante casos límite): Se mejora la robustez frente a errores inesperados durante el escaneo de disco al capturar `OSError` de manera granular dentro del bucle de `os.scandir` en `_sum_directory_recursive`, evitando que un solo archivo con permiso denegado o entrada corrupta aborte el cálculo del tamaño de toda la carpeta.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T11:23:51` **browser.py** (rendimiento): Se optimizó `detect_profiles` reemplazando la creación y llenado de `perf_cache` (que era local y se descartaba en cada llamada) por un `set` global de `scanned_paths` y una estructura que aprovecha mejor la memoria, evitando recorridos redundantes si múltiples navegadores comparten el mismo directorio base.
 - `2026-09-17T11:13:40` **settings.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo `settings.py` documentando explícitamente el esquema de datos y los límites operativos, y refactorizando el método `validate` para separar la iteración de la lógica de validación, facilitando su comprensión para futuras auditorías de seguridad.
 - `2026-09-17T11:13:01` **scanner.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad de `scanner.py` documentando los contratos de las funciones de heurística y mejorando la precisión de los *type hints* para reflejar que `entry` es opcional en contextos de escaneo individual.
-- `2026-09-17T11:04:06` **safety.py** (legibilidad y documentación): Se ha documentado la lógica de `_VALIDATORS` mediante un comentario de bloque que detalla explícitamente el orden de evaluación, mejorando la legibilidad sobre la jerarquía de chequeos de seguridad.
-- `2026-09-17T10:56:00` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación de la API `EmptyWorkingSet` y se añadieron type hints más precisos a `_get_process_path` y `_is_safe_to_trim` para clarificar el flujo de seguridad, facilitando el mantenimiento y auditoría del código.
