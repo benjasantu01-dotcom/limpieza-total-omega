@@ -266,15 +266,18 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     if not root: return []
     folder_total_bytes: Dict[Path, int] = defaultdict(int)
     folder_file_counts: Dict[Path, int] = defaultdict(int)
+    root_str = str(root)
     
     for path, size in walk_files(root, skip_protected):
+        # Determinar el primer nivel bajo la raíz de forma eficiente
         try:
-            rel = path.relative_to(root)
-            if rel and rel.parts:
-                top_level_folder = root / rel.parts[0]
+            parts = path.parts
+            root_len = len(root.parts)
+            if len(parts) > root_len:
+                top_level_folder = root / parts[root_len]
                 folder_total_bytes[top_level_folder] += size
                 folder_file_counts[top_level_folder] += 1
-        except (ValueError, OSError, RuntimeError, TypeError, IndexError, AttributeError): 
+        except (OSError, RuntimeError, TypeError, IndexError): 
             continue
 
     results = [FolderUsage(p, folder_total_bytes[p], folder_file_counts[p]) for p in folder_total_bytes]

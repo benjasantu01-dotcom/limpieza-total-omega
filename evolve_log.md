@@ -893,3 +893,10 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-09-17T11:14:35` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: rendimiento).
 - `2026-09-17T11:14:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T11:14:35` Corrida terminada. Total usado hoy: 260.
+- `2026-09-17T11:22:41` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-09-17T11:23:20` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-17T11:23:51` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó `detect_profiles` reemplazando la creación y llenado de `perf_cache` (que era local y se descartaba en cada llamada) por un `set` global de `scanned_paths` y una estructura que aprovecha mejor la memoria, evitando recorridos redundantes si múltiples navegadores comparten el mismo directorio base.
+- `2026-09-17T11:24:17` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para evitar la sobrecarga de crear objetos `Path` y múltiples llamadas a `relative_to` durante el recorrido, utilizando un método más directo para identificar la carpeta raíz de cada archivo.
+- `2026-09-17T11:24:27` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `Path.resolve()` y `stat()` sobre el mismo objeto, reemplazando las operaciones repetitivas sobre `Path` por el uso directo de los atributos provistos por `DirEntry`.
+- `2026-09-17T11:24:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T11:24:27` Corrida terminada. Total usado hoy: 264.

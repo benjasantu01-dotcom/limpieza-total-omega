@@ -163,20 +163,6 @@ def _is_valid_candidate(path: Path, st: os.stat_result) -> bool:
         return False
 
 
-def _should_include_entry(entry: os.DirEntry, min_size: int) -> tuple[bool, Optional[os.stat_result]]:
-    """Valida si la entrada es apta (tamaño cumplido y seguridad aprobada)."""
-    try:
-        st = entry.stat(follow_symlinks=False)
-        if st.st_size < min_size:
-            return False, None
-        path = Path(entry.path)
-        if _is_valid_candidate(path, st):
-            return True, st
-        return False, None
-    except OSError:
-        return False, None
-
-
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa rutas por tamaño para evitar cómputos de hash innecesarios."""
     groups: Dict[int, List[Path]] = defaultdict(list)
@@ -226,9 +212,11 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             if not is_junction(Path(entry.path)):
                                 _scan_dir(Path(entry.path))
                         else:
-                            valid, st = _should_include_entry(entry, min_size)
-                            if valid and st:
-                                size_to_paths_map[st.st_size].append(Path(entry.path))
+                            st = entry.stat(follow_symlinks=False)
+                            if st.st_size >= min_size:
+                                path = Path(entry.path)
+                                if _is_valid_candidate(path, st):
+                                    size_to_paths_map[st.st_size].append(path)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

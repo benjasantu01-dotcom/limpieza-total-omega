@@ -273,25 +273,22 @@ def _sum_directory_recursive(
         root_path = Path(root_abs).resolve(strict=True)
         if not root_path or not root_path.is_absolute() or not root_path.is_dir():
             return 0
-        # Validación adicional contra rutas con caracteres de control inyectados tras resolución
-        if any(c in str(root_path) for c in '\0\r\n') or any(part in ('', '.', '..') for part in root_path.parts):
-            return 0
-            
+        
+        # Uso de la memoización global para evitar procesar subcarpetas ya calculadas
+        if root_abs in memo:
+            return memo[root_abs]
+
         if not is_safe_to_modify(root_path) or is_protected_path(root_path):
             return 0
         if not _is_path_inside_base(root_path, Path(root_base).resolve(strict=True)):
             return 0
         
-        current_abs = str(root_path)
-        if current_abs in memo:
-            return memo[current_abs]
-
         total: int = 0
-        with os.scandir(current_abs) as it:
+        with os.scandir(root_abs) as it:
             for entry in it:
                 total += _process_entry(entry, root_base, is_junction_fn, kernel32, memo, depth)
         
-        memo[current_abs] = total
+        memo[root_abs] = total
         return total
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
@@ -356,13 +353,14 @@ def detect_profiles(
     
     Itera sobre las carpetas base (ej: LOCALAPPDATA), resuelve las rutas
     relativas de cada navegador definido, valida la seguridad de cada una
-    y calcula recursivamente su tamaño.
+    y calcula recursivamente su tamaño usando memoización global.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
     k32 = _get_kernel32()
-    perf_cache: Dict[str, int] = {}
+    # Cache global para evitar re-escaneo de subcarpetas compartidas
+    global_memo: Dict[str, int] = {}
     found: List[BrowserCache] = []
     scanned_paths: set[str] = set()
     
@@ -389,7 +387,7 @@ def detect_profiles(
                 if real_candidate in scanned_paths:
                     continue
                 
-                size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, perf_cache, str(real_base))
+                size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, global_memo, str(real_base))
                 if size > 0:
                     scanned_paths.add(real_candidate)
                     found.append(BrowserCache(str(browser_name), Path(real_candidate), size))
