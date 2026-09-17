@@ -178,15 +178,14 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
             continue
         try:
             parts = line.split(":", 1)
-            if len(parts) != 2:
-                continue
-            key, value_part = parts
-            metrics[key.strip()] = _kb_to_bytes(value_part)
+            if len(parts) == 2:
+                key, value_part = parts
+                metrics[key.strip()] = _kb_to_bytes(value_part)
         except Exception:
             continue
             
     total = metrics.get("MemTotal", BytesValue(0))
-    if not isinstance(total, int) or total <= 0: 
+    if total <= 0: 
         return _EMPTY_SNAPSHOT
     
     available = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))

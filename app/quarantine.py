@@ -419,6 +419,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
 
     temp_path: Optional[Path] = None
     try:
+        # Usar tempfile.NamedTemporaryFile en la misma partición garantiza atomicidad con os.replace
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
             temp_path = Path(tf.name)
             tf.write(encoded_content)
@@ -430,6 +431,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
 
         os.replace(temp_path, target_path)
         
+        # Sincronizar directorio para garantizar persistencia del puntero en el FS
         dir_fd = os.open(str(base_path), os.O_RDONLY)
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)
@@ -472,7 +474,6 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     if destination.exists():
         raise FileExistsError(f"El destino ya existe: {destination}")
 
-    # Obtener hash previo para verificación comparativa
     source_hash = _get_sha256(source)
 
     fd_src: int = os.open(str(source), os.O_RDONLY)
@@ -502,7 +503,6 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
         os.close(fd_src)
         raise e
         
-    # Verificación final de integridad hash
     final_hash = _get_sha256(destination)
     if not final_hash or final_hash != source_hash:
         if destination.exists():
@@ -550,19 +550,25 @@ def _register_quarantine_item(
     """
     Registra el ítem en el manifiesto JSON tras la confirmación de escritura.
     """
-    items_list = load_manifest(base)
-    quarantine_item = QuarantineItem(
-        item_id=uuid.uuid4().hex[:12],
-        original_path=str(source_path),
-        stored_name=destination.name,
-        size_bytes=original_size,
-        reason=str(reason) if reason else "Sin motivo",
-        quarantined_at=datetime.now().isoformat(timespec="seconds"),
-        sha256=file_hash,
-    )
-    items_list.append(quarantine_item)
-    save_manifest(items_list, base)
-    return quarantine_item
+    try:
+        items_list = load_manifest(base)
+        quarantine_item = QuarantineItem(
+            item_id=uuid.uuid4().hex[:12],
+            original_path=str(source_path),
+            stored_name=destination.name,
+            size_bytes=original_size,
+            reason=str(reason) if reason else "Sin motivo",
+            quarantined_at=datetime.now().isoformat(timespec="seconds"),
+            sha256=file_hash,
+        )
+        items_list.append(quarantine_item)
+        save_manifest(items_list, base)
+        return quarantine_item
+    except Exception as e:
+        # Si falla el registro, intentamos limpiar el archivo huérfano para evitar inconsistencia
+        if destination.exists():
+            _safe_unlink(destination)
+        raise RuntimeError(f"Falla al registrar ítem en manifiesto: {e}")
 
 
 def _validate_source_for_quarantine(source: Path) -> Path:

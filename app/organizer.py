@@ -167,7 +167,6 @@ def _validate_file_attributes(src: Path) -> bool:
     """Verifica si el archivo es apto para procesar: existe, no es vacío y no está bloqueado."""
     try:
         st = src.stat()
-        # Verificar tamaño coherente (menor a 100GB para evitar errores de tipo en entornos restrictivos)
         if not src.is_file() or _is_junction(src) or st.st_size == 0 or st.st_size > 100_000_000_000: return False
         return _passes_system_checks(src) and not _is_file_locked(src)
     except (OSError, PermissionError):
@@ -251,7 +250,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     try:
         dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-        if not os.access(dest_base, os.W_OK) or not is_safe_to_modify(dest_base): return None
+        ensure_safe_to_modify(dest_base)
     except (OSError, RuntimeError): return None
     
     for junk_file in files:
@@ -277,7 +276,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """Ejecuta la eliminación permanente, aplicando verificaciones de seguridad en cada archivo."""
     try:
         dest = Path(review_dir).expanduser().resolve()
-        if not dest.is_dir() or not os.access(dest, os.W_OK) or not is_safe_to_modify(dest): return 0
+        if not dest.is_dir(): return 0
+        ensure_safe_to_modify(dest)
         count = 0
         for item in dest.iterdir():
             if item.is_file() and is_safe_to_modify(item):
