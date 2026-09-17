@@ -5,47 +5,48 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Iteraciones totales: **503**
+- Mejoras aceptadas: **204** (40.6% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 147 | 8 | 30 | 13 | 148 |
-| 2026-09-17 | 59 | 5 | 10 | 9 | 75 |
+| 2026-09-16 | 144 | 8 | 29 | 13 | 148 |
+| 2026-09-17 | 60 | 5 | 10 | 9 | 77 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
 - manejo de errores y validación de entradas: **47**
-- robustez ante casos límite: **43**
 - seguridad defensiva: **42**
-- rendimiento: **25**
+- robustez ante casos límite: **40**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **21**
 - `browser.py`: **20**
-- `healthscore.py`: **20**
 - `assistant.py`: **19**
 - `diskreport.py`: **18**
-- `settings.py`: **16**
 - `memory.py`: **16**
 - `quarantine.py`: **16**
+- `settings.py`: **15**
 - `duplicates.py`: **15**
-- `safety.py`: **14**
 - `branding.py`: **13**
-- `scanner.py`: **12**
+- `safety.py`: **13**
+- `scanner.py`: **11**
 - `organizer.py`: **10**
 - `main.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T07:02:06` **healthscore.py** (rendimiento): Se ha optimizado `_evaluate_rules` reemplazando la creación innecesaria de listas de caracteres mediante `join` por una validación de visibilidad de cadena más directa, reduciendo la carga de cómputo y el uso de memoria durante el análisis de reglas.
 - `2026-09-17T06:49:19` **diskreport.py** (rendimiento): Optimicé el motor de escaneo `_collect_summary_data` y las funciones de consulta evitando múltiples recorridos redundantes del sistema de archivos, asegurando que `summarize`, `largest_files`, `usage_by_extension` y `total_size` compartan un único paso de lectura bajo demanda.
 - `2026-09-17T06:49:09` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios integrando un caché de resultados (`memo`) en todas las llamadas recursivas de `_sum_directory_recursive` y eliminando la recálculo de rutas base dentro del bucle de `detect_profiles`, evitando redundancias en la ejecución de I/O.
 - `2026-09-17T06:48:02` **assistant.py** (rendimiento): Optimizé `local_answer` para evitar el parseo innecesario de tokens cuando la consulta es corta o no contiene palabras clave relevantes, reduciendo el overhead de procesamiento en cada iteración de la interfaz.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T06:07:38` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `assistant.py` mediante la refactorización de `_KEYWORD_MAP` para utilizar nombres de variables más descriptivos (`CATEGORIES_TO_HANDLERS` y `TOKENS_BY_CATEGORY`) y añadiendo docstrings que explican el contrato de datos, facilitando la comprensión del flujo de mapeo de lenguaje natural a funciones de diagnóstico.
 - `2026-09-17T05:58:05` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_Validators.path` y `_Validators.str` implementando una validación explícita de caracteres nulos y longitudes de cadena antes de cualquier procesamiento de rutas, evitando así posibles excepciones inesperadas durante la normalización.
 - `2026-09-17T05:57:50` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_entry` y `scan_directory` añadiendo validaciones explícitas para prevenir el procesamiento de rutas vacías o inválidas antes de interactuar con el sistema de archivos, asegurando que las excepciones de `pathlib` no interrumpan el flujo de escaneo.
-- `2026-09-17T05:57:23` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_check_file_integrity` para capturar errores de sistema específicos y evitar que una falla en una llamada al kernel (como `GetFileAttributesW`) interrumpa el proceso completo de validación al escanear, permitiendo que el bucle continúe evaluando el resto de los archivos.
