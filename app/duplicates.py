@@ -103,7 +103,10 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo del archivo tras validar permisos y seguridad."""
+    """
+    Calcula el hash SHA256 completo del archivo tras validar permisos.
+    Retorna None si el acceso es denegado, el archivo está bloqueado o es inseguro.
+    """
     if path is None or chunk_size <= 0:
         return None
         
@@ -122,7 +125,10 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula el hash de los primeros N bytes del archivo para una identificación rápida."""
+    """
+    Calcula el hash de los primeros N bytes del archivo para una identificación rápida.
+    Utilizado como pre-filtro de alto rendimiento en archivos grandes.
+    """
     if path is None or read_bytes <= 0:
         return None
 
@@ -243,24 +249,30 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Optimiza el proceso de hashing: archivos pequeños se hashean completamente, 
-    archivos grandes se filtran primero por hash parcial.
+    Aplica la estrategia de hashing en cascada: 
+    1. Archivos pequeños (<=64KB) se procesan con hash completo directamente.
+    2. Archivos grandes se reducen mediante hash parcial (primeros 64KB) para descartar 
+       rápidamente los no duplicados antes de invertir tiempo en hash completo.
     """
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, hash_file)
     else:
-        # Filtrar candidatos usando hash parcial, solo procesar grupos con más de 1 archivo
         partial_groups = _group_paths_by_hash(paths, partial_hash)
         results: Dict[str, List[Path]] = {}
         for subset in partial_groups.values():
-            # Solo realizamos hash_file completo en grupos que ya tienen coincidencias parciales
             results.update(_group_paths_by_hash(subset, hash_file))
             
     return [DuplicateGroup(digest, size, sorted(p)) for digest, p in results.items()]
 
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
-    """Orquestador principal: identifica y agrupa duplicados en los directorios indicados."""
+    """
+    Orquestador principal del análisis.
+    1. Recopila todos los archivos candidatos.
+    2. Agrupa por tamaño (primera criba).
+    3. Resuelve grupos finales mediante hashing (parcial -> completo).
+    4. Retorna lista ordenada de mayor a menor impacto (espacio desperdiciado).
+    """
     size_map = _collect_candidates(directories, min_size, skip_protected)
     groups: List[DuplicateGroup] = []
     for size, paths in size_map.items():

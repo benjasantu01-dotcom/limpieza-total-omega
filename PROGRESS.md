@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 231
+- Rechazadas por guardia de seguridad: 39
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 48 | 3 | 8 | 2 | 57 |
+| 2026-09-15 | 46 | 3 | 7 | 2 | 56 |
 | 2026-09-16 | 147 | 8 | 30 | 15 | 150 |
-| 2026-09-17 | 7 | 1 | 2 | 2 | 24 |
+| 2026-09-17 | 10 | 1 | 2 | 3 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
+- legibilidad y documentación: **47**
 - robustez ante casos límite: **46**
-- legibilidad y documentación: **44**
 - seguridad defensiva: **41**
-- rendimiento: **22**
+- rendimiento: **20**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **19**
+- `browser.py`: **20**
 - `healthscore.py`: **19**
-- `quarantine.py`: **18**
 - `assistant.py`: **18**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
 - `memory.py`: **17**
-- `duplicates.py`: **16**
-- `safety.py`: **15**
+- `quarantine.py`: **17**
+- `duplicates.py`: **17**
 - `settings.py`: **15**
+- `safety.py`: **14**
 - `branding.py`: **12**
 - `scanner.py`: **12**
 - `organizer.py`: **11**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T01:43:12` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en las funciones de procesamiento de hashes y el orquestador principal, clarificando los criterios de filtrado, el manejo de errores esperado y la lógica de seguridad implementada.
+- `2026-09-17T01:42:45` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en los métodos de las clases `dataclass` para mejorar la legibilidad y claridad de la API interna del módulo.
+- `2026-09-17T01:42:19` **browser.py** (legibilidad y documentación): Mejora la legibilidad del módulo mediante la adición de docstrings técnicos detallados y type hints en funciones internas para documentar las asunciones de seguridad y los límites de la recursión.
 - `2026-09-17T01:33:35` **branding.py** (legibilidad y documentación): Se introdujo documentación explicativa en las funciones críticas de renderizado (gradientes y manejo de coordenadas) y se mejoró la robustez de los `type hints` y validaciones en funciones geométricas para asegurar que los componentes visuales sean predecibles, cumpliendo con el enfoque de legibilidad y mantenibilidad técnica.
 - `2026-09-17T01:23:09` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `_is_safe_entry` mediante la validación proactiva de rutas `None` o vacías y la inclusión de manejo de excepciones específico para evitar que nombres de archivo mal formados o errores de resolución detengan el escaneo.
 - `2026-09-17T01:22:59` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` refactorizando el manejo de errores de validación de unidades (DriveType) para asegurar que cualquier fallo en la API de Windows se capture explícitamente y se trate como una denegación segura, evitando que excepciones inesperadas escapen del control de seguridad.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T13:58:23` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la sanitización estricta de las entradas al pipeline, añadiendo validación de tipos e integridad de los datos en `compute_score` para prevenir inyecciones de valores inesperados que pudieran corromper el cálculo de salud.
 - `2026-09-16T13:57:54` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `hash_file` y `partial_hash` al reemplazar la apertura directa del archivo con un contexto que maneja el acceso exclusivo mediante `msvcrt` en Windows para evitar violaciones de acceso (acceso denegado) en archivos bloqueados por el sistema, además de asegurar que la resolución de rutas sea consistente antes de cualquier operación de lectura.
 - `2026-09-16T13:49:09` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` para prevenir ataques de trayectoria (path traversal) mediante el uso de `resolve()` y una comprobación estricta de que la ruta normalizada sigue contenida dentro del directorio base original, evitando accesos fuera de los límites permitidos.
-- `2026-09-16T13:48:56` **browser.py** (seguridad defensiva): Se reforzó la seguridad de `_sum_directory_recursive` mediante una validación estricta de la ruta resuelta contra `root_base` utilizando `is_protected_path` y `is_safe_to_modify` antes de iniciar cualquier iteración, asegurando que la recursión no pueda escapar del sandbox incluso ante manipulaciones de enlaces simbólicos o rutas maliciosas.
-- `2026-09-16T13:47:54` **assistant.py** (seguridad defensiva): Se endurecieron los criterios de seguridad defensiva en `_is_safe_text_structure` para rechazar explícitamente caracteres de control y secuencias que intentan ofuscar comandos o rutas, protegiendo al motor de inferencia de inyecciones de bajo nivel en los prompts.
-- `2026-09-16T13:40:38` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save` frente a condiciones de carrera y sistemas de archivos con latencia, añadiendo un `os.replace` más seguro y garantizando que el archivo de configuración siempre mantenga permisos coherentes al intentar la escritura, además de proteger la integridad del archivo original ante fallos de escritura parciales mediante el uso de `os.fsync`.

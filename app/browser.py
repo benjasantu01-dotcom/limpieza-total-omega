@@ -93,7 +93,7 @@ class BrowserCache:
 
 
 def _get_kernel32() -> Optional[ctypes.WinDLL]:
-    """Carga kernel32.dll para validación de atributos Win32."""
+    """Carga kernel32.dll para validación de atributos Win32 (solo Windows)."""
     if os.name != 'nt':
         return None
     try:
@@ -113,7 +113,7 @@ def base_directories() -> List[Path]:
     Localiza la ruta raíz de los datos de usuario (%LOCALAPPDATA%).
     
     Returns:
-        Lista conteniendo la ruta de perfil local si es segura.
+        Lista conteniendo la ruta de perfil local si es segura y existe.
     """
     local_env = os.environ.get("LOCALAPPDATA")
     if not isinstance(local_env, str) or not local_env or _is_unc_path(local_env):
@@ -150,12 +150,12 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
 
 
 def _is_excluded_file(name: Optional[str]) -> bool:
-    """Indica si un nombre de archivo está en la lista de bloqueo."""
+    """Indica si un nombre de archivo está en la lista de bloqueo (`NEVER_TOUCH`)."""
     return name is not None and name.lower() in NEVER_TOUCH
 
 
 def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
-    """Consulta atributos Win32 para detectar archivos ocultos."""
+    """Consulta atributos Win32 para detectar archivos ocultos usando kernel32."""
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
@@ -168,7 +168,12 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
-    """Filtra archivos protegidos, symlinks y junctions."""
+    """
+    Determina si un objeto del sistema de archivos debe ser ignorado.
+    
+    Aplica filtros de seguridad: symlinks, junctions, rutas UNC, archivos protegidos
+    por configuración o atributos de sistema.
+    """
     if entry.name is None:
         return True
     
@@ -192,12 +197,11 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
-    """Valida que el directorio sea seguro y esté en la base autorizada."""
+    """Valida que el directorio sea seguro y esté en la base autorizada (sandbox)."""
     if not isinstance(path_obj, Path):
         return False
     try:
         p_res = path_obj.resolve(strict=True)
-        # Refuerzo: se usa is_safe_to_modify como filtro booleano previo a cualquier acceso
         if _is_unc_path(str(p_res)) or not p_res.is_dir() or not is_safe_to_modify(p_res) or is_protected_path(p_res):
             return False
         if base_check_path and not _is_path_inside_base(p_res, base_check_path):
@@ -208,7 +212,7 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
 
 
 def _is_valid_traversal_step(entry: os.DirEntry, root_base: str) -> bool:
-    """Verifica condiciones de seguridad específicas para descender en un subdirectorio."""
+    """Verifica condiciones de seguridad para descender en un subdirectorio."""
     return (
         entry.is_dir(follow_symlinks=False) and 
         not entry.is_symlink() and 
@@ -217,8 +221,8 @@ def _is_valid_traversal_step(entry: os.DirEntry, root_base: str) -> bool:
 
 def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionChecker, kernel32: Optional[ctypes.WinDLL], memo: Dict[str, int], depth: int) -> int:
     """
-    Evalúa una entrada del sistema de archivos.
-    Si es un directorio, delega la recursión. Si es archivo, computa su tamaño.
+    Evalúa una entrada del sistema. Si es directorio recursa (hasta MAX_SCAN_DEPTH), 
+    si es archivo suma su tamaño a bytes.
     """
     if depth > MAX_SCAN_DEPTH:
         return 0
@@ -247,15 +251,15 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Motor recursivo para calcular el peso de un árbol de directorios.
-    Utiliza memoización para evitar re-escaneo y validación constante de 'sandbox'
-    para asegurar que no se escape de la carpeta base del perfil.
+    
+    Usa memoización para evitar re-escaneo y validación de 'sandbox' en cada nivel 
+    para prevenir escapes hacia carpetas protegidas.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or _is_unc_path(root_abs) or any(c in root_abs for c in '\0\r\n'):
         return 0
     
     try:
         root_path = Path(root_abs).resolve(strict=True)
-        # Validación estricta: si no es seguro tocar o está fuera del sandbox, abortar.
         if not root_path.is_absolute() or not root_path.is_dir():
             return 0
         if not is_safe_to_modify(root_path) or is_protected_path(root_path):
@@ -297,12 +301,11 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
-    """Verifica si el directorio de caché cumple criterios de seguridad."""
+    """Verifica si el directorio de caché cumple criterios de integridad de sandbox."""
     try:
         if not isinstance(candidate, Path) or not candidate.is_absolute() or not candidate.exists() or not candidate.is_dir():
             return False
         real_candidate = candidate.resolve(strict=True)
-        # Verificación explícita de seguridad antes de procesar
         if _is_unc_path(str(real_candidate)) or not _is_path_inside_base(real_candidate, base_path):
             return False
         if not is_safe_to_modify(real_candidate) or is_protected_path(real_candidate):
@@ -313,7 +316,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
 
 
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
-    """Combina base y ruta relativa validando integridad básica."""
+    """Combina base de usuario con ruta relativa de caché validando longitud."""
     if not isinstance(rel_str, str) or any(c in rel_str for c in '\0\r\n'):
         return real_base
     try:
@@ -359,7 +362,6 @@ def detect_profiles(
                 if real_candidate in scanned_paths:
                     continue
                 
-                # Doble chequeo de seguridad antes de recursar
                 if not _is_path_inside_base(Path(real_candidate), real_base):
                     continue
                 

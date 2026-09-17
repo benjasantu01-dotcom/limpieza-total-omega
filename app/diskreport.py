@@ -134,6 +134,7 @@ class FileEntry:
 
     @property
     def size_mb(self) -> float:
+        """Retorna el tamaño del archivo convertido a MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -145,6 +146,7 @@ class ExtensionUsage:
 
     @property
     def size_mb(self) -> float:
+        """Retorna el tamaño acumulado de la extensión en MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -156,6 +158,7 @@ class FolderUsage:
 
     @property
     def size_mb(self) -> float:
+        """Retorna el tamaño total de la carpeta en MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -168,12 +171,14 @@ class DriveUsage:
 
     @property
     def used_percent(self) -> float:
+        """Calcula el porcentaje de espacio utilizado (0-100)."""
         if not isinstance(self.total, (int, float)) or self.total <= 0:
             return 0.0
         return round(self.used / self.total * 100, 1)
 
     @property
     def is_almost_full(self) -> bool:
+        """Retorna True si el espacio libre es menor al 10% del total."""
         return self.total > 0 and (self.free / self.total) < 0.10
 
 
