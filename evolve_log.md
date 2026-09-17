@@ -1225,3 +1225,10 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-17T03:17:06` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores de E/S y corrupción de metadatos en `list_items` y `load_manifest`, asegurando que el sistema sea resiliente incluso si el archivo de manifiesto contiene datos malformados o si los archivos físicos asociados han sido manipulados por terceros.
 - `2026-09-17T03:17:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T03:17:06` Corrida terminada. Total usado hoy: 74.
+- `2026-09-17T03:23:36` Arrancando corrida. Quedan hoy ~226 peticiones objetivo.
+- `2026-09-17T03:23:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-09-17T03:24:34` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-09-17T03:25:26` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-17T03:25:42` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejora la robustez del manejo de archivos de configuración ante concurrencia y fallos de sistema al implementar un chequeo explícito de integridad tras el proceso de escritura y asegurar el cierre de descriptores antes de intentos de reemplazo.
+- `2026-09-17T03:25:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T03:25:42` Corrida terminada. Total usado hoy: 78.

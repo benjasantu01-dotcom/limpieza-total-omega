@@ -375,6 +375,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 f.flush()
                 os.fsync(f.fileno())
             
+            # Verificación de integridad post-escritura
+            with open(temp_path, "rb") as f:
+                if not (f.read(1) == b"{"): raise OSError("Archivo corrupto")
+            
             if ruta.exists():
                 try: os.replace(ruta, bak_path)
                 except OSError: pass

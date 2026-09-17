@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 228
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 28 | 1 | 3 | 1 | 47 |
+| 2026-09-15 | 28 | 1 | 3 | 1 | 43 |
 | 2026-09-16 | 147 | 8 | 30 | 15 | 150 |
-| 2026-09-17 | 27 | 2 | 6 | 8 | 31 |
+| 2026-09-17 | 28 | 2 | 7 | 8 | 33 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **43**
 - seguridad defensiva: **32**
 - rendimiento: **28**
 
@@ -37,7 +37,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **16**
 - `duplicates.py`: **16**
 - `quarantine.py`: **16**
-- `settings.py`: **14**
+- `settings.py`: **15**
 - `safety.py`: **13**
 - `scanner.py`: **13**
 - `organizer.py`: **12**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T03:25:42` **settings.py** (robustez ante casos límite): Mejora la robustez del manejo de archivos de configuración ante concurrencia y fallos de sistema al implementar un chequeo explícito de integridad tras el proceso de escritura y asegurar el cierre de descriptores antes de intentos de reemplazo.
 - `2026-09-17T03:17:06` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S y corrupción de metadatos en `list_items` y `load_manifest`, asegurando que el sistema sea resiliente incluso si el archivo de manifiesto contiene datos malformados o si los archivos físicos asociados han sido manipulados por terceros.
 - `2026-09-17T03:16:18` **memory.py** (robustez ante casos límite): Se ha robustecido `parse_windows_process_csv` para prevenir errores ante líneas malformadas o PIDs negativos provenientes de PowerShell, evitando que una entrada corrupta invalide el procesamiento de la lista completa.
 - `2026-09-17T03:15:42` **main.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de concurrencia y estados inconsistentes de la interfaz al cerrar la aplicación, asegurando que `_executor.shutdown` no bloquee el hilo principal y que los callbacks pendientes no intenten interactuar con widgets ya destruidos tras la finalización del proceso.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T02:14:36` **branding.py** (rendimiento): Optimicé el cálculo de colores del gradiente pre-computando la lógica de interpolación dentro de `gradient_colors` mediante una pre-lista de índices y mejorando el manejo de `_get_grouped_segments` para evitar iteraciones redundantes en el bucle principal de renderizado.
 - `2026-09-17T02:14:03` **assistant.py** (rendimiento): Optimicé el método `get_metric` de `SystemContext` para evitar el uso de `getattr` en cada consulta —que es costoso en términos de performance al ser una llamada al sistema de reflexión de Python— sustituyéndolo por un acceso directo al diccionario `__dict__` del objeto, aprovechando que el estado es una clase simple, mejorando así la eficiencia del bucle de inferencia local.
 - `2026-09-17T02:13:26` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de los métodos de resolución de rutas en la clase `StartupEntry`, clarificando mediante comentarios técnicos el flujo de saneamiento y las razones de las validaciones de seguridad aplicadas.
-- `2026-09-17T02:03:40` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados, type hints precisos y la extracción de una función de chequeo de integridad (`_is_valid_path_structure`) que clarifica las precondiciones de escaneo.
