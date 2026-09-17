@@ -622,9 +622,9 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
+        # Usar set para O(1) en búsquedas
         existing_names = {f.name for f in base_path.iterdir() if f.is_file()}
         
-        # Filtramos ítems que existen y cuya integridad no ha sido violada
         valid_items = []
         for i in items:
             stored = base_path / i.stored_name
@@ -749,12 +749,13 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     purged_ids: Set[str] = set()
     
     try:
+        # Optimizado iterando una vez y usando el map O(1)
         for stored_path in quarantine_root.iterdir():
             if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
                 continue
             
             item = item_map.get(stored_path.name)
-            if item is not None and _is_item_purgable(stored_path, item, quarantine_root):
+            if item and _is_item_purgable(stored_path, item, quarantine_root):
                 purged_ids.add(item.item_id)
                 
         if purged_ids:
