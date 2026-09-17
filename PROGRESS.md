@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 228
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 1 | 0 | 0 | 0 | 7 |
+| 2026-09-15 | 1 | 0 | 0 | 0 | 3 |
 | 2026-09-16 | 147 | 8 | 30 | 15 | 150 |
-| 2026-09-17 | 53 | 5 | 9 | 8 | 71 |
+| 2026-09-17 | 54 | 5 | 10 | 8 | 73 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **47**
 - robustez ante casos límite: **44**
 - seguridad defensiva: **42**
 - rendimiento: **22**
@@ -35,8 +35,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **18**
 - `diskreport.py`: **17**
 - `memory.py`: **16**
+- `quarantine.py`: **16**
 - `settings.py`: **15**
-- `quarantine.py`: **15**
 - `duplicates.py`: **15**
 - `safety.py`: **14**
 - `branding.py`: **13**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T06:29:41` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `quarantine.py` mediante la adición de docstrings detallados en las funciones críticas de validación de seguridad, explicando el propósito y las restricciones de cada una para facilitar el mantenimiento preventivo ante el error histórico de importaciones y chequeos mal situados.
 - `2026-09-17T06:19:08` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `main.py` documentando los métodos del registro de componentes y consolidando la lógica de inicialización en una estructura más clara, facilitando la comprensión del flujo de trabajo de la UI.
 - `2026-09-17T06:18:09` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings específicos que clarifican la intención detrás de las constantes, la lógica de normalización y el contrato de la clase `SystemMetrics`.
 - `2026-09-17T06:17:12` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en `_collect_summary_data` y `walk_files` para clarificar la lógica de agregación y el manejo de recursos, mejorando la mantenibilidad sin alterar la funcionalidad.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T05:40:55` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `suggest_keeper` y `format_group` mediante la validación explícita de `group` y la adición de manejo de errores defensivo para asegurar que, ante cualquier inconsistencia en los objetos internos o falta de permisos en el sistema de archivos, la app no se interrumpa inesperadamente.
 - `2026-09-17T05:38:19` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_collect_summary_data` y `largest_folders` validando que los tamaños y contadores no procesen valores corruptos o negativos ante errores imprevistos en `walk_files`, garantizando que la integridad de los datos reportados no se vea comprometida por archivos con metadatos anómalos.
 - `2026-09-17T05:28:45` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` al introducir un chequeo de tipos explícito para evitar fallos de ejecución al procesar objetos arbitrarios, asegurando que `ingest` sea capaz de manejar errores de acceso a atributos de forma silenciosa y segura tal como requiere el enfoque de validación de entradas.
-- `2026-09-17T04:05:04` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "reparse point" en `_is_directory_junction` más robusta y se ha reforzado la seguridad en `ensure_safe_to_modify` implementando una comprobación explícita para evitar que se sigan enlaces simbólicos a directorios fuera del árbol permitido (previa resolución de la ruta final), mitigando riesgos de inyección fuera de carpeta.

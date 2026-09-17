@@ -190,6 +190,7 @@ def _get_sha256(path: Path) -> str:
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está bloqueado por el S.O. mediante apertura exclusiva.
+    Esta función NO modifica el estado del archivo, solo intenta abrirlo en modo lectura.
     """
     if not isinstance(path, Path) or not path.exists():
         return False
@@ -204,6 +205,7 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_unlink(path: Path) -> bool:
     """
     Elimina un archivo tras validar políticas de seguridad y ausencia de bloqueos.
+    Utiliza `is_safe_to_modify` para asegurar que el path no sea de sistema.
     """
     try:
         resolved = path.resolve()
@@ -220,6 +222,7 @@ def _safe_unlink(path: Path) -> bool:
 def _check_path_syntax_integrity(path: Path) -> None:
     """
     Valida sintaxis, profundidad y naturaleza del objeto para prevenir Path Traversal.
+    Impide acceso a flujos de datos alternos (ADS) o paths excesivamente profundos.
     """
     if not path:
         raise UnsafePathError("Ruta vacía.")
@@ -310,7 +313,7 @@ def _validate_quarantine_path(path: Path, base: Path) -> Path:
     return resolved_path
 
 def _check_windows_file_attributes(path_str: str) -> None:
-    """Detecta atributos ocultos o de sistema en Windows."""
+    """Detecta atributos ocultos o de sistema en Windows para evitar aislar archivos críticos."""
     if os.name != 'nt':
         return
     path_obj = Path(path_str)
@@ -323,7 +326,10 @@ def _check_windows_file_attributes(path_str: str) -> None:
 
 
 def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
-    """Verifica condiciones de seguridad origen-destino previo a la operación."""
+    """
+    Verifica condiciones de seguridad origen-destino previo a la operación.
+    Asegura que el origen y destino sean válidos y no se trate de una operación circular.
+    """
     resolved_source = source_path.resolve(strict=True)
     resolved_dest_dir = dest_dir.resolve()
     
@@ -391,7 +397,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste el manifiesto usando escritura atómica."""
+    """Persiste el manifiesto usando escritura atómica para evitar corrupción de datos."""
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista.")
     
@@ -447,6 +453,7 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 def _write_temp_to_final(source: Path, destination: Path) -> str:
     """
     Copia física del archivo origen al sandbox mediante descriptores de archivo.
+    Verifica integridad mediante SHA-256 antes y después de la operación.
     """
     _check_path_syntax_integrity(destination)
     if is_protected_path(destination):
@@ -571,6 +578,7 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Ejecuta el flujo completo de aislamiento, integrando validación y persistencia.
+    Verifica seguridad de rutas, espacio en disco, integridad hash y atomicidad.
     """
     if not source:
         raise ValueError("Ruta de origen vacía.")
@@ -632,7 +640,10 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
 
 
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Restaura un ítem al origen tras validar su integridad y permisos."""
+    """
+    Restaura un ítem al origen tras validar integridad y permisos de destino.
+    Asegura que no se restaure en rutas de sistema o protegidas.
+    """
     if not isinstance(item_id, str) or not item_id.strip():
         raise ValueError("ID de ítem inválido.")
     
@@ -715,7 +726,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
-    """Verifica requisitos de seguridad antes de purgar un ítem."""
+    """Verifica requisitos de seguridad antes de purgar un ítem del sandbox."""
     if not isinstance(file_path, Path) or not file_path.is_file() or file_path.is_symlink():
         return False
     return (
