@@ -75,7 +75,7 @@ def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Calla
         if ctx.is_empty: return Answer("Primero analizá el sistema.")
         try:
             return func(ctx, q)
-        except Exception:
+        except (ValueError, TypeError, AttributeError, KeyError, ZeroDivisionError):
             return Answer("No pude procesar la información del sistema.")
     return wrapper
 
@@ -614,25 +614,19 @@ def available(base: Union[str, Path, None] = None) -> bool:
     """Verifica si el asistente remoto (Gemini) está habilitado en las configuraciones."""
     try:
         return settings.assistant_enabled(base)
-    except Exception:
+    except (TypeError, ValueError, AttributeError, OSError):
         return False
 
 def _parse_config(raw_cfg: Any) -> AssistantConfig:
     """Parsea el diccionario de configuración externa, asegurando valores predeterminados seguros."""
-    # Valor por defecto seguro ante cualquier entrada inválida
     default = AssistantConfig("", "gemini-3.1-flash-lite", True)
-    
     if not isinstance(raw_cfg, dict):
         return default
-    
     try:
-        # Extraer y validar tipos de forma defensiva
         api_key = str(raw_cfg.get("asistente_api_key", ""))
         model = str(raw_cfg.get("asistente_modelo", "gemini-3.1-flash-lite"))
         metrics_val = raw_cfg.get("asistente_enviar_metricas")
-        
         allow_metrics = True if metrics_val is None else bool(metrics_val)
-        
         return AssistantConfig(api_key, model, allow_metrics)
     except (ValueError, TypeError, AttributeError):
         return default
@@ -641,13 +635,10 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa la pregunta y el contexto en un JSON para la API de Gemini."""
     if not context_text or not _ensure_safe_text(context_text): return None
     if _PS_COMMAND_REGEX.search(context_text): return None
-    
     q = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
-    
     full_prompt = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
     payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
-    
     try:
         if not _ensure_safe_text(str(payload_data)): return None
         payload = json.dumps(payload_data).encode("utf-8")
@@ -678,28 +669,22 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     """Realiza la comunicación HTTP con Gemini tras validar el payload y la respuesta."""
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): 
         return None
-        
     payload = _build_payload(question, context_text)
     if not payload: return None
-    
     try:
         url = _ENDPOINT.format(model=model) + f"?key={api_key}"
         req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"}, method="POST")
-        
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
             if len(raw_res) > _MAX_RESPONSE_BYTES: return None
-            
             try:
                 data = json.loads(raw_res.decode("utf-8"))
             except (json.JSONDecodeError, UnicodeDecodeError):
                 return None
-                
             raw_text = _extract_text_from_gemini_json(data)
             return _validate_response_length(raw_text.strip()) if raw_text and _ensure_safe_text(raw_text) else None
-            
-    except (urllib.error.URLError, OSError):
+    except (urllib.error.URLError, OSError, ValueError, KeyError):
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None,
@@ -707,26 +692,18 @@ def ask(question: str, context: Optional[SystemContext] = None,
     """Punto de entrada unificado para consultas de usuario, con validación de settings."""
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")
-        
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
-    
     if not available(base):
         return respaldo
-        
     try:
         settings_data = settings.load(base)
-        # _parse_config siempre retorna un objeto válido, nunca falla
         cfg = _parse_config(settings_data)
-        
         texto_contexto = context_as_text(ctx) if cfg.allow_metrics else "El usuario no autorizó enviar métricas."
         remoto = _call_gemini(question, texto_contexto, cfg.api_key, cfg.model)
-        
         if not remoto:
             respaldo.notice = "No se pudo consultar al asistente en línea, respondí con el motor local."
             return respaldo
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
-        
-    except Exception:
-        # En caso de error crítico en la lectura de settings, persistir en el motor local
+    except (Exception):
         return respaldo

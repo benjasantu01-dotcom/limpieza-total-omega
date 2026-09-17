@@ -264,12 +264,12 @@ def _sum_directory_recursive(
     
     try:
         root_path = Path(root_abs).resolve(strict=True)
+        if not root_path or not root_path.is_absolute() or not root_path.is_dir():
+            return 0
         # Validación adicional contra rutas con caracteres de control inyectados tras resolución
         if any(c in str(root_path) for c in '\0\r\n') or any(part in ('', '.', '..') for part in root_path.parts):
             return 0
             
-        if not root_path.is_absolute() or not root_path.is_dir():
-            return 0
         if not is_safe_to_modify(root_path) or is_protected_path(root_path):
             return 0
         if not _is_path_inside_base(root_path, Path(root_base).resolve(strict=True)):
@@ -298,10 +298,10 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not p.is_absolute() or not _is_safe_to_traverse(p, None):
         return 0
     try:
-        resolved = str(p.resolve(strict=True))
-        if _is_unc_path(resolved) or any(c in resolved for c in '\0\r\n'):
+        resolved = p.resolve(strict=True)
+        if not resolved or _is_unc_path(str(resolved)) or any(c in str(resolved) for c in '\0\r\n'):
             return 0
-        return _sum_directory_recursive(resolved, _IS_JUNCTION_FN, _get_kernel32(), {}, resolved)
+        return _sum_directory_recursive(str(resolved), _IS_JUNCTION_FN, _get_kernel32(), {}, str(resolved))
     except (OSError, RuntimeError, PermissionError):
         return 0
 
@@ -312,7 +312,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
         if not isinstance(candidate, Path) or not candidate.is_absolute() or not candidate.exists() or not candidate.is_dir():
             return False
         real_candidate = candidate.resolve(strict=True)
-        if _is_unc_path(str(real_candidate)) or not _is_path_inside_base(real_candidate, base_path):
+        if not real_candidate or _is_unc_path(str(real_candidate)) or not _is_path_inside_base(real_candidate, base_path):
             return False
         if not is_safe_to_modify(real_candidate) or is_protected_path(real_candidate):
             return False
@@ -364,7 +364,10 @@ def detect_profiles(
                 if not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                     continue
                 
-                real_candidate = str(candidate.resolve(strict=True))
+                res_candidate = candidate.resolve(strict=True)
+                if not res_candidate:
+                    continue
+                real_candidate = str(res_candidate)
                 if real_candidate in scanned_paths:
                     continue
                 

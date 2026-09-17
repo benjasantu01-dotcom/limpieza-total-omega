@@ -796,3 +796,18 @@ assert not True
 - `2026-09-17T09:55:00` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-17T09:55:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T09:55:00` Corrida terminada. Total usado hoy: 228.
+- `2026-09-17T10:01:01` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-09-17T10:01:03` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-17T10:01:03` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-17T10:01:23` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-17T10:01:23` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-17T10:01:53` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-17T10:01:53` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-17T10:03:08` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-17T10:03:12` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-17T10:04:18` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-17T10:05:09` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de errores en `ask()` y `_call_gemini` al capturar fallos específicos de red y parseo, evitando que excepciones inesperadas rompan el flujo de la aplicación.
+- `2026-09-17T10:05:43` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-17T10:05:57` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` validando explícitamente que los resultados de `resolve(strict=True)` no sean nulos o rutas vacías tras la resolución, y centralizando la validación de integridad de rutas para prevenir excepciones ante entradas malformadas o permisos insuficientes.
+- `2026-09-17T10:05:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T10:05:57` Corrida terminada. Total usado hoy: 232.
