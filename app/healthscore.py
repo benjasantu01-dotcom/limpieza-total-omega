@@ -269,7 +269,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     return HealthResult(
         score=final_score, 
         grade=grade_for_score(final_score), 
-        breakdown={k: int(v) for k, v in metric_breakdown.items()}, 
+        breakdown=metric_breakdown, 
         recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
     )
 

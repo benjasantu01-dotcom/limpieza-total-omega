@@ -5,48 +5,50 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **202** (40.2% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 41
-- Sin cambios (nada sustancial que mejorar): 21
+- Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 38 | 2 | 6 | 1 | 51 |
+| 2026-09-15 | 37 | 2 | 6 | 1 | 50 |
 | 2026-09-16 | 147 | 8 | 30 | 15 | 150 |
-| 2026-09-17 | 17 | 1 | 5 | 5 | 26 |
+| 2026-09-17 | 19 | 1 | 5 | 6 | 27 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **41**
-- robustez ante casos límite: **38**
-- rendimiento: **23**
+- robustez ante casos límite: **37**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **20**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
 - `assistant.py`: **18**
 - `diskreport.py`: **17**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
 - `quarantine.py`: **16**
-- `settings.py`: **15**
+- `settings.py`: **14**
 - `safety.py`: **13**
 - `scanner.py`: **13**
 - `organizer.py`: **12**
 - `branding.py`: **12**
 - `startup.py`: **8**
-- `main.py`: **6**
+- `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T02:34:29` **main.py** (rendimiento): Optimicé el manejo de la memoria y el rendimiento de la UI mediante la implementación de `_flush_logs` con `after_idle` y un procesamiento de colas por lotes más eficiente, reduciendo el overhead de refresco de pantalla durante operaciones masivas.
+- `2026-09-17T02:33:13` **healthscore.py** (rendimiento): Se optimizó el proceso de cómputo eliminando la reconstrucción constante de diccionarios y listas dentro del bucle `compute_score`, aprovechando que `_PIPELINE` es una constante estática, lo que reduce la carga de procesamiento en cada llamada.
 - `2026-09-17T02:15:02` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` mediante la reutilización del diccionario de memoización `perf_cache` a lo largo de toda la iteración de navegadores, evitando el re-escaneo de subdirectorios compartidos (como `User Data`) y reduciendo significativamente las llamadas al sistema operativo.
 - `2026-09-17T02:14:36` **branding.py** (rendimiento): Optimicé el cálculo de colores del gradiente pre-computando la lógica de interpolación dentro de `gradient_colors` mediante una pre-lista de índices y mejorando el manejo de `_get_grouped_segments` para evitar iteraciones redundantes en el bucle principal de renderizado.
 - `2026-09-17T02:14:03` **assistant.py** (rendimiento): Optimicé el método `get_metric` de `SystemContext` para evitar el uso de `getattr` en cada consulta —que es costoso en términos de performance al ser una llamada al sistema de reflexión de Python— sustituyéndolo por un acceso directo al diccionario `__dict__` del objeto, aprovechando que el estado es una clase simple, mejorando así la eficiencia del bucle de inferencia local.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T01:33:35` **branding.py** (legibilidad y documentación): Se introdujo documentación explicativa en las funciones críticas de renderizado (gradientes y manejo de coordenadas) y se mejoró la robustez de los `type hints` y validaciones en funciones geométricas para asegurar que los componentes visuales sean predecibles, cumpliendo con el enfoque de legibilidad y mantenibilidad técnica.
 - `2026-09-17T01:23:09` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `_is_safe_entry` mediante la validación proactiva de rutas `None` o vacías y la inclusión de manejo de excepciones específico para evitar que nombres de archivo mal formados o errores de resolución detengan el escaneo.
 - `2026-09-17T01:22:59` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` refactorizando el manejo de errores de validación de unidades (DriveType) para asegurar que cualquier fallo en la API de Windows se capture explícitamente y se trate como una denegación segura, evitando que excepciones inesperadas escapen del control de seguridad.
-- `2026-09-17T01:14:25` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_windows_process_csv` y `_kb_to_bytes` mediante la validación estricta de tipos y la eliminación de posibles `None` o valores no numéricos antes de operar, previniendo errores en tiempo de ejecución.
-- `2026-09-17T01:11:40` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_evaluate_rules` mediante la captura explícita de excepciones y validación de tipos, evitando que errores de ejecución en los factories de mensajes o en el pipeline detengan el proceso de diagnóstico completo.

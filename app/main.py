@@ -983,7 +983,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._log_queue.append((tab, text))
             if not self._log_scheduled:
                 self._log_scheduled = True
-                self.after(50, self._flush_logs)
+                self.after_idle(self._flush_logs)
 
     @safe_ui_operation
     def _flush_logs(self) -> None:
@@ -995,11 +995,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             pendientes = self._log_queue
             self._log_queue = []
         
-        logs_por_tab: Dict[str, List[str]] = {}
-        for tab, msg in pendientes:
-            logs_por_tab.setdefault(tab, []).append(msg)
-            
-        for tab, msgs in logs_por_tab.items():
+        # Agrupamos por pestaña para reducir operaciones de inserción
+        for tab, msgs in {t: [m for tab_name, m in pendientes if tab_name == t] 
+                         for t in {item[0] for item in pendientes}}.items():
             box = self._box(tab)
             if box and box.winfo_exists():
                 box.insert("end", "\n".join(msgs) + "\n")

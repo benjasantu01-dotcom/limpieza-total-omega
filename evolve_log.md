@@ -1160,3 +1160,10 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-09-17T02:30:46` Corte de seguridad: se alcanzó el límite de 480s para esta corrida. Termino prolijo.
 - `2026-09-17T02:30:46` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T02:30:46` Corrida terminada. Total usado hoy: 54.
+- `2026-09-17T02:32:40` Arrancando corrida. Quedan hoy ~246 peticiones objetivo.
+- `2026-09-17T02:33:13` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el proceso de cómputo eliminando la reconstrucción constante de diccionarios y listas dentro del bucle `compute_score`, aprovechando que `_PIPELINE` es una constante estática, lo que reduce la carga de procesamiento en cada llamada.
+- `2026-09-17T02:34:29` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el manejo de la memoria y el rendimiento de la UI mediante la implementación de `_flush_logs` con `after_idle` y un procesamiento de colas por lotes más eficiente, reduciendo el overhead de refresco de pantalla durante operaciones masivas.
+- `2026-09-17T02:34:56` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de `subprocess` por un método de caché de procesos más robusto, evitando la sobrecarga de invocar al CLI de PowerShell si los datos ya fueron recolectados recientemente.
+- `2026-09-17T02:35:06` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-17T02:35:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T02:35:06` Corrida terminada. Total usado hoy: 58.
