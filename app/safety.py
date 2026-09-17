@@ -144,11 +144,11 @@ SENSITIVE_EXTENSIONS: Final[frozenset[str]] = frozenset({
 })
 
 _SYSTEM_ROOT_PATHS: Final[tuple[str, ...]] = tuple(
-    os.normcase(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
+    os.path.normcase(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
 )
 
-_SYSTEM_ROOT_PATHS_STR: Final[tuple[str, ...]] = tuple(p.lower() for p in _SYSTEM_ROOT_PATHS)
+_SYSTEM_ROOT_PATHS_SET: Final[frozenset[str]] = frozenset(p.lower() for p in _SYSTEM_ROOT_PATHS)
 
 _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
     r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$', re.IGNORECASE
@@ -395,10 +395,15 @@ def is_drive_root(path: PathLike) -> bool:
 @lru_cache(maxsize=2048)
 def _is_system_path_cached(path_str: str) -> bool:
     """Compara la ruta normalizada contra listas de directorios protegidos de forma eficiente."""
-    path_lower = path_str.lower()
-    if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_STR):
+    path_norm = os.path.normpath(path_str).lower()
+    path_parts = frozenset(path_norm.split(os.sep))
+    
+    # Verificación de raíz del sistema (O(1) average lookup)
+    if any(path_norm.startswith(root) for root in _SYSTEM_ROOT_PATHS_SET):
         return True
-    return not PROTECTED_DIR_NAMES.isdisjoint(os.path.normpath(path_str).lower().split(os.sep))
+        
+    # Verificación de intersección de conjuntos (O(1) average lookup)
+    return not PROTECTED_DIR_NAMES.isdisjoint(path_parts)
 
 @lru_cache(maxsize=2048)
 def is_protected_path(path: PathLike) -> bool:

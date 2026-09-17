@@ -8,38 +8,38 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 41
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 227
+- Rechazadas por guardia de seguridad: 42
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 37 | 2 | 6 | 1 | 50 |
+| 2026-09-15 | 35 | 2 | 6 | 1 | 48 |
 | 2026-09-16 | 147 | 8 | 30 | 15 | 150 |
-| 2026-09-17 | 19 | 1 | 5 | 6 | 27 |
+| 2026-09-17 | 21 | 1 | 6 | 7 | 27 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **41**
+- seguridad defensiva: **39**
 - robustez ante casos límite: **37**
-- rendimiento: **25**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **20**
 - `healthscore.py`: **19**
+- `browser.py`: **19**
 - `assistant.py`: **18**
-- `diskreport.py`: **17**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
 - `quarantine.py`: **16**
+- `diskreport.py`: **16**
+- `safety.py`: **14**
+- `scanner.py`: **14**
 - `settings.py`: **14**
-- `safety.py`: **13**
-- `scanner.py`: **13**
 - `organizer.py`: **12**
 - `branding.py`: **12**
 - `startup.py`: **8**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T02:44:40` **scanner.py** (rendimiento): Optimizamos `Scanner.process_entry` reemplazando la creación innecesaria de objetos `Path` y múltiples llamadas a `lower()` dentro del bucle principal por una comparación directa de extensiones pre-filtradas, reduciendo la carga de CPU en recorridos extensos.
+- `2026-09-17T02:44:25` **safety.py** (rendimiento): Se implementó un cacheo más eficiente en `_is_system_path_cached` y `is_protected_path` al utilizar una estructura de `set` para búsquedas O(1) y pre-normalizar las rutas de sistema para evitar operaciones repetitivas sobre `os.environ` y `normpath` en cada iteración de un escaneo.
 - `2026-09-17T02:34:29` **main.py** (rendimiento): Optimicé el manejo de la memoria y el rendimiento de la UI mediante la implementación de `_flush_logs` con `after_idle` y un procesamiento de colas por lotes más eficiente, reduciendo el overhead de refresco de pantalla durante operaciones masivas.
 - `2026-09-17T02:33:13` **healthscore.py** (rendimiento): Se optimizó el proceso de cómputo eliminando la reconstrucción constante de diccionarios y listas dentro del bucle `compute_score`, aprovechando que `_PIPELINE` es una constante estática, lo que reduce la carga de procesamiento en cada llamada.
 - `2026-09-17T02:15:02` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` mediante la reutilización del diccionario de memoización `perf_cache` a lo largo de toda la iteración de navegadores, evitando el re-escaneo de subdirectorios compartidos (como `User Data`) y reduciendo significativamente las llamadas al sistema operativo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T01:42:45` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en los métodos de las clases `dataclass` para mejorar la legibilidad y claridad de la API interna del módulo.
 - `2026-09-17T01:42:19` **browser.py** (legibilidad y documentación): Mejora la legibilidad del módulo mediante la adición de docstrings técnicos detallados y type hints en funciones internas para documentar las asunciones de seguridad y los límites de la recursión.
 - `2026-09-17T01:33:35` **branding.py** (legibilidad y documentación): Se introdujo documentación explicativa en las funciones críticas de renderizado (gradientes y manejo de coordenadas) y se mejoró la robustez de los `type hints` y validaciones en funciones geométricas para asegurar que los componentes visuales sean predecibles, cumpliendo con el enfoque de legibilidad y mantenibilidad técnica.
-- `2026-09-17T01:23:09` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `_is_safe_entry` mediante la validación proactiva de rutas `None` o vacías y la inclusión de manejo de excepciones específico para evitar que nombres de archivo mal formados o errores de resolución detengan el escaneo.
-- `2026-09-17T01:22:59` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` refactorizando el manejo de errores de validación de unidades (DriveType) para asegurar que cualquier fallo en la API de Windows se capture explícitamente y se trate como una denegación segura, evitando que excepciones inesperadas escapen del control de seguridad.

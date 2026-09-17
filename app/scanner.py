@@ -179,10 +179,12 @@ class Scanner:
             self.seen.add(entry.path.lower())
             directory_stack.append(entry.path)
 
-    def _is_relevant_extension(self, entry: os.DirEntry, is_dir: bool, ext_low: str) -> bool:
-        """Filtra si una entrada es candidata para ser analizada por heurísticas."""
-        if is_dir: return True
-        return ext_low in SUSPICIOUS_ALL_EXTS
+    def _is_relevant_extension(self, name: str, is_dir: bool) -> Optional[str]:
+        """Devuelve la extensión minúscula si es relevante para análisis, sino None."""
+        if is_dir: return ""
+        _, ext = os.path.splitext(name)
+        ext_low = ext.lower()
+        return ext_low if ext_low in SUSPICIOUS_ALL_EXTS else None
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Analiza una entrada única y decide si debe procesarse o añadirse a la pila."""
@@ -191,9 +193,9 @@ class Scanner:
                 return
             
             is_dir = entry.is_dir(follow_symlinks=False)
-            ext_low = Path(entry.name).suffix.lower() if not is_dir else ""
+            ext_low = self._is_relevant_extension(entry.name, is_dir)
             
-            if not self._is_relevant_extension(entry, is_dir, ext_low):
+            if ext_low is None:
                 return
 
             if is_dir:

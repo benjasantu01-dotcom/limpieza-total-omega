@@ -1167,3 +1167,10 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-09-17T02:35:06` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-09-17T02:35:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T02:35:06` Corrida terminada. Total usado hoy: 58.
+- `2026-09-17T02:42:50` Arrancando corrida. Quedan hoy ~242 peticiones objetivo.
+- `2026-09-17T02:43:28` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `load_manifest` y `list_items` evitando recrear el sistema de archivos (IO) mediante el uso de un diccionario para el acceso rápido a los ítems, reduciendo la complejidad algorítmica de $O(N \cdot M)$ a $O(N + M)$.
+- `2026-09-17T02:43:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-09-17T02:44:25` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un cacheo más eficiente en `_is_system_path_cached` y `is_protected_path` al utilizar una estructura de `set` para búsquedas O(1) y pre-normalizar las rutas de sistema para evitar operaciones repetitivas sobre `os.environ` y `normpath` en cada iteración de un escaneo.
+- `2026-09-17T02:44:40` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizamos `Scanner.process_entry` reemplazando la creación innecesaria de objetos `Path` y múltiples llamadas a `lower()` dentro del bucle principal por una comparación directa de extensiones pre-filtradas, reduciendo la carga de CPU en recorridos extensos.
+- `2026-09-17T02:44:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T02:44:40` Corrida terminada. Total usado hoy: 62.
