@@ -38,7 +38,8 @@ class Suspicion:
     severity: str
 
 # Alias para funciones de chequeo heurístico.
-# La firma espera la ruta, un objeto DirEntry opcional y el timestamp actual de la corrida.
+# La firma espera la ruta, un objeto DirEntry opcional (disponible durante el escaneo de directorios)
+# y el timestamp actual de la corrida para mediciones de antigüedad.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 
 # Lista acumulativa de hallazgos durante el proceso de escaneo.

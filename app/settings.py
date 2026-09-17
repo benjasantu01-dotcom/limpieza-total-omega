@@ -63,7 +63,7 @@ class ConfigKey(Enum):
     ASISTENTE_MODELO = "asistente_modelo"
 
 class AppSettings(TypedDict):
-    """Define el esquema estricto de la configuración persistida en disco."""
+    """Esquema de configuración: define las claves persistidas y tipos esperados."""
     tema: str
     acento: str
     mostrar_barras: bool
@@ -82,12 +82,12 @@ class AppSettings(TypedDict):
     asistente_modelo: str
 
 class _NumericRange(NamedTuple):
-    """Límites definidos para validar entradas numéricas y evitar desbordamientos."""
+    """Define los umbrales seguros para valores numéricos configurables."""
     min: int
     max: int
 
 class _ValidatorEntry(NamedTuple):
-    """Vincula una función validadora con la lógica de procesamiento necesaria."""
+    """Empaqueta la lógica de validación para una clave de configuración específica."""
     func: Callable[[ConfigKey, Any], Any]
 
 def _is_dict(val: Any) -> TypeGuard[SettingsDict]:
@@ -289,13 +289,14 @@ def validate(raw_values: Any) -> AppSettings:
     """Valida y normaliza un diccionario arbitrario contra el esquema AppSettings."""
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
-    for key_str, val in raw_values.items():
+    
+    for key_str, raw_val in raw_values.items():
         key_enum = _KEY_TO_ENUM.get(key_str)
         if key_enum and key_enum in _VALIDATOR_MAP:
             validator = _VALIDATOR_MAP[key_enum].func
-            validated = validator(key_enum, val)
-            if validated is not None:
-                config[key_enum.value] = validated
+            if (validated_val := validator(key_enum, raw_val)) is not None:
+                config[key_enum.value] = validated_val
+                
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
