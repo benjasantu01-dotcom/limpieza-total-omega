@@ -1682,7 +1682,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_disk_analysis(self) -> None:
         """Inicia análisis de estructura de carpetas."""
         folder = self._ask_folder()
-        if not folder:
+        if not folder or not self._verify_disk_path(folder):
             return
         
         self.analysis_folder = folder
@@ -1700,7 +1700,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_find_duplicates(self) -> None:
         """Inicia búsqueda de duplicados por hash."""
         folder = self._ask_folder()
-        if not folder:
+        if not folder or not self._verify_disk_path(folder):
             return
 
         def task() -> None:

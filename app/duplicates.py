@@ -181,12 +181,12 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
         if p is None: continue
-        path_obj = Path(p).resolve()
         try:
+            path_obj = Path(p).resolve(strict=True)
             st = path_obj.stat()
             if _is_valid_candidate(path_obj, st):
                 groups[st.st_size].append(path_obj)
-        except OSError:
+        except (OSError, RuntimeError):
             continue
     return groups
 
@@ -195,7 +195,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
     """Normaliza una ruta de entrada y verifica que sea un directorio seguro para escanear."""
     try:
         if not item: return None
-        root = Path(item).resolve(strict=False)
+        root = Path(item).resolve(strict=True)
         if root.is_dir() and not is_protected_path(root) and is_safe_to_modify(root):
             return root
     except (OSError, ValueError, RuntimeError, TypeError):

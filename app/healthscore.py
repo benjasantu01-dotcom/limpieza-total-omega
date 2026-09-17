@@ -226,6 +226,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
         try:
             if rule.check(metrics, ratio):
                 msg = str(rule.message_factory(metrics))
+                # Sanitización: caracteres imprimibles y límite de longitud
                 clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                 if clean_msg:
                     findings.append(clean_msg[:200])
