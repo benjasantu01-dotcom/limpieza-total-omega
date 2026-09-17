@@ -507,8 +507,8 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
                      raise UnsafePathError("Unidad de red bloqueada.", SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED)
                 if drive_type == DRIVE_REMOVABLE:
                      raise UnsafePathError("Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED)
-        except (OSError, AttributeError, ctypes.ArgumentError, Exception):
-             raise UnsafePathError("Error al consultar estado de unidad.", SafetyValidationErrorCode.IO_ERROR)
+        except (OSError, AttributeError, ctypes.ArgumentError, Exception) as e:
+             raise UnsafePathError(f"Fallo al consultar unidad: {e}", SafetyValidationErrorCode.IO_ERROR)
 
     try:
         app_root = Path(os.getcwd()).resolve()

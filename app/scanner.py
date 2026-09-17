@@ -141,18 +141,19 @@ class Scanner:
         if not entry or not entry.path:
             return False
         try:
-            if len(entry.path) > MAX_PATH_LENGTH:
+            name = entry.name
+            path_str = entry.path
+            if len(path_str) > MAX_PATH_LENGTH:
                 return False
-            if UNC_PATH_RE.match(entry.path) or RTL_CHAR_RE.search(entry.path):
+            if UNC_PATH_RE.match(path_str) or RTL_CHAR_RE.search(path_str):
                 return False
-            if INVALID_TRAILING_CHARS_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name):
-                return False
-            
-            path_low = entry.path.lower()
-            if not path_low.startswith(self.base_root_str.rstrip(os.sep)):
+            if INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name):
                 return False
             
-            return not (entry.is_symlink() or is_protected_path(Path(entry.path)))
+            if not path_str.lower().startswith(self.base_root_str.rstrip(os.sep)):
+                return False
+            
+            return not (entry.is_symlink() or is_protected_path(Path(path_str)))
         except (OSError, PermissionError, UnicodeDecodeError):
             return False
 
@@ -221,7 +222,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Escaneo recursivo seguro utilizando una pila LIFO."""
-    if directory is None: return []
+    if not directory: return []
     try:
         path_str: str = str(directory).strip()
         if not path_str or len(path_str) > MAX_PATH_LENGTH or UNC_PATH_RE.match(path_str) or RTL_CHAR_RE.search(path_str): 
@@ -229,7 +230,10 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         base_path: Path = Path(path_str)
         if not base_path.exists() or not base_path.is_dir(): 
             return []
-        root_input: Path = base_path.resolve()
+        try:
+            root_input: Path = base_path.resolve()
+        except OSError:
+            return []
         if is_protected_path(root_input): 
             return []
         scanner = Scanner(base_root=root_input)

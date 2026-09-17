@@ -1075,3 +1075,10 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-09-17T01:14:37` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-17T01:14:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T01:14:37` Corrida terminada. Total usado hoy: 28.
+- `2026-09-17T01:21:23` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-09-17T01:22:02` ➖ Sin cambios en quarantine.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejora la robustez del manejo de errores en `save_manifest` mediante la captura explícita y el manejo seguro de archivos temporales huérfanos, garantizando que el estado del sistema no quede en un limbo ante fallos de escritura o de sistema de archivos.
+- `2026-09-17T01:22:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-17T01:22:59` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `ensure_safe_to_modify` refactorizando el manejo de errores de validación de unidades (DriveType) para asegurar que cualquier fallo en la API de Windows se capture explícitamente y se trate como una denegación segura, evitando que excepciones inesperadas escapen del control de seguridad.
+- `2026-09-17T01:23:09` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scan_directory` y `_is_safe_entry` mediante la validación proactiva de rutas `None` o vacías y la inclusión de manejo de excepciones específico para evitar que nombres de archivo mal formados o errores de resolución detengan el escaneo.
+- `2026-09-17T01:23:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T01:23:09` Corrida terminada. Total usado hoy: 32.
