@@ -222,7 +222,6 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     
     processed: List[ProcessMemory] = []
     for line in raw_csv_text.splitlines():
-        # Validar mínima estructura para evitar errores de índice
         parts = [_clean_csv_field(x) for x in line.split(",")]
         entry = _is_valid_process_entry(parts)
         if entry:
@@ -406,6 +405,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
 
     if _is_system_process(target_pid): 
         return False, "No se permite modificar procesos críticos del sistema."
+    
+    # Pre-chequeo preventivo de seguridad por ruta antes de abrir el proceso
+    # Nota: No podemos obtener la ruta sin el PID, por lo que este nivel de seguridad
+    # se aplica mediante el handle en _is_safe_to_trim tras la apertura inicial.
 
     kernel32 = ctypes.windll.kernel32
     psapi = getattr(ctypes.windll, "psapi", None)

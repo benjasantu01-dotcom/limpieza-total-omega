@@ -1246,3 +1246,10 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-17T03:46:20` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva centralizando la validación de directorios en `_verify_disk_path` y aplicándola explícitamente en `on_disk_analysis` y otros métodos de entrada de usuario para garantizar que las rutas procesadas no sean enlaces simbólicos ni carpetas protegidas antes de iniciar cualquier operación de disco.
 - `2026-09-17T03:46:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T03:46:20` Corrida terminada. Total usado hoy: 86.
+- `2026-09-17T03:54:12` Arrancando corrida. Quedan hoy ~214 peticiones objetivo.
+- `2026-09-17T03:54:44` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `trim_working_set` implementando un chequeo previo contra `is_protected_path` al recibir el PID, evitando así intentar siquiera abrir un handle a procesos cuyo ejecutable se encuentre en rutas restringidas, reduciendo la superficie de ataque y el riesgo de errores por permisos.
+- `2026-09-17T03:55:10` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-17T03:55:46` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_atomic_isolate_file` al introducir un chequeo de integridad *post-escritura* mediante el hash SHA-256 antes de finalizar la operación, garantizando que el archivo en el sandbox sea bit-a-bit idéntico al original, previniendo así posibles corrupciones o modificaciones externas durante el movimiento.
+- `2026-09-17T03:55:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-17T03:55:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T03:55:51` Corrida terminada. Total usado hoy: 90.

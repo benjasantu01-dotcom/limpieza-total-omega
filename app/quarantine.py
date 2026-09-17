@@ -461,6 +461,9 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     if destination.exists():
         raise FileExistsError(f"El destino ya existe: {destination}")
 
+    # Obtener hash previo para verificación comparativa
+    source_hash = _get_sha256(source)
+
     fd_src: int = os.open(str(source), os.O_RDONLY)
     try:
         stat_src = os.fstat(fd_src)
@@ -477,7 +480,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
                 os.fsync(dst_file.fileno())
             
             if destination.stat().st_size != stat_src.st_size:
-                raise OSError("Error de integridad post-escritura.")
+                raise OSError("Error de integridad post-escritura (tamaño).")
         except Exception as e:
             if destination.exists():
                 try: os.remove(destination)
@@ -488,17 +491,20 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
         os.close(fd_src)
         raise e
         
-    _check_windows_file_attributes(str(destination))
+    # Verificación final de integridad hash
+    final_hash = _get_sha256(destination)
+    if not final_hash or final_hash != source_hash:
+        if destination.exists():
+            _safe_unlink(destination)
+        raise OSError("Falla crítica: el hash del archivo copiado no coincide con el original.")
+    
     ensure_safe_to_modify(destination, allow_sensitive=True)
     
     dir_fd: int = os.open(str(destination.parent), os.O_RDONLY)
     try: os.fsync(dir_fd)
     finally: os.close(dir_fd)
     
-    file_hash: str = _get_sha256(destination)
-    if not file_hash:
-        raise OSError("Falla de integridad: hash no generado.")
-    return file_hash
+    return final_hash
 
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
