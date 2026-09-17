@@ -401,7 +401,7 @@ def is_drive_root(path: PathLike) -> bool:
         return p == Path(p.anchor)
     except (ValueError, TypeError, OSError): return True
 
-@lru_cache(maxsize=2048)
+@lru_cache(maxsize=4096)
 def _is_system_path_cached(path_str: str) -> bool:
     """Compara la ruta normalizada contra listas de directorios protegidos de forma eficiente."""
     path_norm = os.path.normpath(path_str).lower()
@@ -415,7 +415,7 @@ def _is_system_path_cached(path_str: str) -> bool:
             
     return False
 
-@lru_cache(maxsize=2048)
+@lru_cache(maxsize=4096)
 def is_protected_path(path: PathLike) -> bool:
     """Verifica si la ruta se encuentra dentro de carpetas restringidas por el sistema."""
     if not path: return True

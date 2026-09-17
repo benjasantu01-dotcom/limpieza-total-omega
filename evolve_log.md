@@ -910,3 +910,10 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-09-17T11:37:38` 🛑 Propuesta bloqueada por la guardia en organizer.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: JunkFile.__post_init__
 - `2026-09-17T11:37:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T11:37:38` Corrida terminada. Total usado hoy: 268.
+- `2026-09-17T11:43:04` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-09-17T11:43:50` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `list_items` y `purge_all` reemplazando iteraciones redundantes y búsquedas lineales con conjuntos (sets) y diccionarios, reduciendo la complejidad algorítmica de O(N*M) a O(N+M) para las operaciones sobre el manifiesto y el sistema de archivos.
+- `2026-09-17T11:44:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-09-17T11:44:46` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado la validación de rutas mediante la implementación de un caché para `is_protected_path`, evitando el cálculo repetitivo de normalización y el recorrido de los componentes de la ruta en cada llamada, mejorando sustancialmente el rendimiento en escaneos masivos.
+- `2026-09-17T11:44:56` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
+- `2026-09-17T11:44:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T11:44:56` Corrida terminada. Total usado hoy: 272.
