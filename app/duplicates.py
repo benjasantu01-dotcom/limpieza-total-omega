@@ -184,6 +184,8 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         if p is None: continue
         try:
             path_obj = Path(p).resolve(strict=True)
+            if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
+                continue
             st = path_obj.stat()
             if _is_valid_candidate(path_obj, st):
                 groups[st.st_size].append(path_obj)

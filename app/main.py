@@ -276,7 +276,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             (not app_root.is_symlink(), "App ubicada en enlace simbólico."),
             (home.exists(), "Directorio home del usuario inaccesible."),
             (home.resolve().is_absolute(), "La ruta home no es absoluta."),
-            (safety.is_safe_to_modify(cwd), "Directorio de trabajo inseguro.")
+            (safety.is_safe_to_modify(cwd), "Directorio de trabajo inseguro."),
+            (not safety.is_protected_path(app_root), "Directorio de aplicación protegido.")
         ]
         
         for condition, error_msg in validations:

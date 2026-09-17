@@ -231,8 +231,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
-                if isinstance(msg, str) and msg.strip() and msg.isprintable():
-                    findings.append(msg.strip()[:200])
+                if isinstance(msg, str):
+                    clean_msg = msg.strip()
+                    if clean_msg.isprintable():
+                        findings.append(clean_msg[:200])
         except Exception:
             continue
 
