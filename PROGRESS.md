@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 95 | 7 | 16 | 8 | 78 |
-| 2026-09-17 | 123 | 9 | 24 | 14 | 130 |
+| 2026-09-16 | 95 | 7 | 16 | 8 | 74 |
+| 2026-09-17 | 127 | 9 | 24 | 14 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
 - legibilidad y documentación: **47**
 - robustez ante casos límite: **46**
-- seguridad defensiva: **41**
+- seguridad defensiva: **45**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
@@ -35,17 +35,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **19**
 - `memory.py`: **19**
 - `duplicates.py`: **18**
-- `safety.py`: **17**
-- `settings.py`: **17**
+- `safety.py`: **18**
+- `settings.py`: **18**
 - `quarantine.py`: **16**
-- `scanner.py`: **12**
+- `scanner.py`: **13**
 - `branding.py`: **11**
 - `organizer.py`: **10**
+- `startup.py`: **8**
 - `main.py`: **8**
-- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T13:07:05` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_file_access` reemplazando la apertura del archivo (`open(p, 'rb')`) por una consulta de metadatos mediante `os.stat` para verificar la existencia y el tipo sin intentar acceder al contenido, mitigando riesgos innecesarios de I/O y bloqueos de archivos.
+- `2026-09-17T13:06:52` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_Validators._run_safety_checks` para prevenir ataques de *symlink traversal* durante la validación de rutas, asegurando que la ruta resuelta no sea un punto de reparse antes de permitir la modificación.
+- `2026-09-17T13:06:20` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta `entry.path` antes de cualquier procesamiento, garantizando que incluso si un archivo es renombrado o movido durante la iteración, nunca se escape de las restricciones de seguridad ni acceda a puntos de reanálisis fuera del alcance permitido.
+- `2026-09-17T13:05:52` **safety.py** (seguridad defensiva): Se ha añadido la detección de archivos con el atributo `FILE_ATTRIBUTE_DIRECTORY` que poseen el bit `FILE_ATTRIBUTE_REPARSE_POINT` activo, pero que son realmente **Puntos de Montaje de Volumen** (no solo Junctions), bloqueando su modificación mediante una nueva validación en `_validate_boundary_conditions` para prevenir daños estructurales en el sistema de archivos montado.
 - `2026-09-17T13:02:20` **quarantine.py** (seguridad defensiva): Se mejora la resiliencia ante condiciones de carrera (Race Conditions) y errores de I/O en `_atomic_isolate_file` utilizando un bloqueo exclusivo (`O_EXCL`) y la sincronización explícita de descriptores para garantizar que el archivo en el sandbox esté completo y persistido antes de que el manifiesto lo registre como válido.
 - `2026-09-17T12:58:21` **organizer.py** (seguridad defensiva): Mejoré la robustez de `stage_for_review` aplicando estrictamente el uso de `is_safe_to_modify` para el filtrado en bucle, eliminando redundancias y garantizando que las verificaciones de seguridad ocurran antes de cualquier intento de movimiento, evitando excepciones innecesarias.
 - `2026-09-17T12:46:11` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del cálculo de puntajes añadiendo una validación de `math.isfinite` en cada `PipelineEntry` y encapsulando la ejecución de los `scorer` en bloques de protección que previenen que un valor atípico o una división por cero en un área específica corrompa la totalidad del `HealthResult`.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T12:19:28` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` y sus ayudantes ante errores de concurrencia y limpieza de recursos (handles de Windows), asegurando que el cierre del handle ocurra incluso ante excepciones inesperadas y validando correctamente los permisos de acceso antes de cualquier operación.
 - `2026-09-17T12:05:02` **duplicates.py** (robustez ante casos límite): Se mejora la robustez de `_collect_candidates` ante archivos que desaparecen entre el `os.scandir` y el `stat()`, añadiendo un bloque `try-except` específico para manejar `FileNotFoundError`, evitando que una condición de carrera común (archivos temporales/efímeros) detenga el escaneo completo.
 - `2026-09-17T12:04:36` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante archivos bloqueados o con metadatos inaccesibles (como archivos en uso o system-locked) añadiendo un `try-except` específico al obtener `st_size` para evitar interrupciones en el flujo de escaneo cuando el sistema niega la lectura de atributos de archivo.
-- `2026-09-17T12:04:10` **browser.py** (robustez ante casos límite): Se mejora la robustez frente a errores inesperados durante el escaneo de disco al capturar `OSError` de manera granular dentro del bucle de `os.scandir` en `_sum_directory_recursive`, evitando que un solo archivo con permiso denegado o entrada corrupta aborte el cálculo del tamaño de toda la carpeta.
-- `2026-09-17T11:55:00` **assistant.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de configuración o tipos inesperados en `SystemContext.ingest` y sus métodos auxiliares, asegurando que si una métrica está corrupta o fuera de rango no invalide la ingesta del resto del objeto.
-- `2026-09-17T11:53:46` **settings.py** (rendimiento): Optimizé la carga de configuración eliminando la serialización innecesaria a bytes durante el cacheo y añadiendo una comprobación rápida de `mtime` antes de realizar cualquier operación de I/O, mejorando el rendimiento en accesos recurrentes.
-- `2026-09-17T11:44:46` **safety.py** (rendimiento): Se ha optimizado la validación de rutas mediante la implementación de un caché para `is_protected_path`, evitando el cálculo repetitivo de normalización y el recorrido de los componentes de la ruta en cada llamada, mejorando sustancialmente el rendimiento en escaneos masivos.

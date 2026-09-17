@@ -153,13 +153,13 @@ class StartupEntry:
         no esté en zona protegida y no sea un enlace simbólico (evita inyección).
         """
         try:
-            # Primero verificar existencia sin abrir el archivo
-            if not p.exists() or p.is_dir() or is_protected_path(p):
-                return False
-            
-            # Verificar si se puede abrir en modo lectura (test de archivo bloqueado/en uso)
-            with open(p, 'rb') as f:
-                return not p.is_symlink()
+            # Verificar existencia y metadatos sin abrir el contenido
+            stat = p.stat()
+            return (
+                not is_protected_path(p) and 
+                os.path.isfile(p) and 
+                not p.is_symlink()
+            )
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
             return False
 

@@ -156,10 +156,15 @@ class Scanner:
             if INVALID_TRAILING_CHARS_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name):
                 return False
             
+            # Verificación doble: estructura base y chequeo estricto del módulo de seguridad
             if not entry.path.lower().startswith(self.base_root_str.rstrip(os.sep)):
                 return False
             
-            return not (entry.is_symlink() or is_protected_path(Path(entry.path)))
+            path_obj = Path(entry.path)
+            if is_protected_path(path_obj):
+                return False
+            
+            return not entry.is_symlink()
         except (OSError, PermissionError, UnicodeDecodeError):
             return False
 

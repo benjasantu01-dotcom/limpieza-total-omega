@@ -166,6 +166,10 @@ class _Validators:
         """Determina si una ruta es un junction o symlink para prevenir bucles de recursión."""
         try:
             path = Path(path_str)
+            # Verificamos componentes para detectar enlaces en la jerarquía
+            for parent in path.parents:
+                if parent.is_symlink() or (hasattr(parent, 'is_junction') and parent.is_junction()):
+                    return True
             return path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction())
         except (OSError, PermissionError):
             return True
@@ -179,9 +183,12 @@ class _Validators:
             resolved = path_obj.resolve(strict=False)
             resolved_str = str(resolved)
             
+            # El chequeo defensivo debe rechazar cualquier punto de reparse
+            if _Validators._is_reparse_point(resolved_str):
+                return False
+                
             if not is_protected_path(resolved_str):
-                if not _Validators._is_reparse_point(resolved_str):
-                    return is_safe_to_modify(resolved_str)
+                return is_safe_to_modify(resolved_str)
             return False
         except (OSError, PermissionError, RuntimeError, UnsafePathError, IndexError):
             return False

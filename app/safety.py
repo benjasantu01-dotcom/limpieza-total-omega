@@ -90,6 +90,7 @@ class SafetyValidationErrorCode(IntEnum):
     REMOVABLE_DRIVE_DETECTED = 22
     KERNEL_LOCKED_FILE = 23
     WRITE_ACCESS_DENIED = 24
+    MOUNT_POINT_DETECTED = 25
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
@@ -325,7 +326,8 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.REMOTE_DRIVE: SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED,
     ProtectionReason.REMOVABLE_DRIVE: SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED,
     ProtectionReason.KERNEL_LOCKED: SafetyValidationErrorCode.KERNEL_LOCKED_FILE,
-    ProtectionReason.ACCESS_WRITE: SafetyValidationErrorCode.WRITE_ACCESS_DENIED
+    ProtectionReason.ACCESS_WRITE: SafetyValidationErrorCode.WRITE_ACCESS_DENIED,
+    ProtectionReason.MOUNT_POINT: SafetyValidationErrorCode.MOUNT_POINT_DETECTED
 }
 
 def _check_file_integrity(path: Path) -> None:
@@ -513,6 +515,13 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
                      raise UnsafePathError("Unidad de red bloqueada.", SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED)
                 if drive_type == DRIVE_REMOVABLE:
                      raise UnsafePathError("Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED)
+            
+            # Detectar si el nodo actual es un volumen montado
+            attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(str(target_path)))
+            if attrs != 0xFFFFFFFF and (attrs & FILE_ATTRIBUTE_DIRECTORY) and (attrs & FILE_ATTRIBUTE_REPARSE_POINT):
+                 if os.path.ismount(target_path):
+                     raise UnsafePathError("Punto de montaje de volumen detectado.", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
+                     
         except (OSError, AttributeError, ctypes.ArgumentError, Exception) as e:
              raise UnsafePathError(f"Fallo al consultar unidad: {e}", SafetyValidationErrorCode.IO_ERROR)
 
