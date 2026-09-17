@@ -482,6 +482,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
         if not (stat_src.st_mode & 0o100000): 
             raise OSError("El archivo origen no es un archivo regular.")
             
+        # O_EXCL garantiza que fallará si el archivo fue creado por otra instancia
         flags: int = os.O_WRONLY | os.O_CREAT | os.O_EXCL
         mode: int = 0o600
         fd_dest: int = os.open(str(destination), flags, mode)
