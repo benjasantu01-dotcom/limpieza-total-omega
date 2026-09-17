@@ -40,6 +40,7 @@ __all__ = [
 # Tipos definidos para mejorar la legibilidad de la arquitectura del módulo
 JunctionChecker: TypeAlias = Callable[[str], bool]
 BrowserMap: TypeAlias = Dict[str, str]
+OSPath: TypeAlias = Union[str, Path]
 
 def _is_junction_default(path: str) -> bool:
     """Fallback si el entorno no soporta la detección de junctions."""
@@ -133,14 +134,14 @@ def base_directories() -> List[Path]:
 
 
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
-    """Verifica si el objetivo reside dentro de la jerarquía de base (sandbox)."""
+    """Verifica que el target resida físicamente dentro de la base (evita escapes)."""
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
     try:
         target_abs = str(real_target.resolve(strict=True))
         base_abs = str(real_base.resolve(strict=True))
         
-        # Longitud y validación de sanitización de string de ruta
+        # Validación de longitud y caracteres nulos prohibidos
         if len(target_abs) >= MAX_PATH_LEN or len(base_abs) >= MAX_PATH_LEN or any(c in target_abs for c in '\0\r\n'):
             return False
             
@@ -253,8 +254,8 @@ def _sum_directory_recursive(
     """
     Motor recursivo para calcular el peso de un árbol de directorios.
     
-    Usa memoización para evitar re-escaneo y validación de 'sandbox' en cada nivel 
-    para prevenir escapes hacia carpetas protegidas.
+    Aplica 'sandbox' en cada nodo visitado. Solo considera archivos dentro de
+    `root_base`. Usa `memo` para evitar ciclos y re-procesamiento innecesario.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or _is_unc_path(root_abs) or any(c in root_abs for c in '\0\r\n'):
         return 0
@@ -283,7 +284,7 @@ def _sum_directory_recursive(
         return 0
 
 
-def directory_size(path: Union[str, Path, None]) -> int:
+def directory_size(path: Optional[OSPath]) -> int:
     """Interfaz pública para obtener el tamaño seguro de un directorio."""
     if path is None:
         return 0
