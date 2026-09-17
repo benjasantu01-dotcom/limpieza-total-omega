@@ -342,6 +342,7 @@ def _check_file_integrity(path: Path) -> None:
                 code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
                 raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
         except (AttributeError, OSError, ctypes.ArgumentError, Exception):
+            # Fallo en una regla individual no debe detener el escaneo global
             continue
 
 @lru_cache(maxsize=2048)

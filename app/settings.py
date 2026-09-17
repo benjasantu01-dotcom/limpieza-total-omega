@@ -315,7 +315,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             
         with open(ruta, "rb") as f:
             data_bytes = f.read(MAX_SETTINGS_SIZE + 1)
-            if len(data_bytes) > MAX_SETTINGS_SIZE or not (data_bytes.startswith(b"{") and data_bytes.strip().endswith(b"}")):
+            # Validación estricta de estructura antes de procesar
+            stripped = data_bytes.strip()
+            if len(data_bytes) > MAX_SETTINGS_SIZE or not (stripped.startswith(b"{") and stripped.endswith(b"}")):
                 return DEFAULTS.copy()
             
             try:
@@ -367,7 +369,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             elif not ruta.parent.is_dir():
                 return None
             
-            # Si existe, asegurar que es un archivo normal (evitar symlink hijacking)
             if ruta.exists():
                 if ruta.is_symlink() or not ruta.is_file():
                     return None
@@ -379,9 +380,12 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 f.flush()
                 os.fsync(f.fileno())
             
-            # Verificación de integridad post-escritura leyendo el archivo real
+            # Verificación post-escritura: integridad del JSON y tamaño coincidente
+            if temp_path.stat().st_size != len(serialized):
+                raise OSError("Escritura incompleta detectada")
+                
             with open(temp_path, "rb") as f:
-                content = f.read(MAX_SETTINGS_SIZE + 1)
+                content = f.read(MAX_SETTINGS_SIZE + 1).strip()
                 if not (content.startswith(b"{") and content.endswith(b"}")):
                     raise OSError("Corrupción detectada en escritura")
             

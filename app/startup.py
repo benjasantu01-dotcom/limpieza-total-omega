@@ -282,7 +282,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
-    """Convierte salida CSV de PowerShell en objetos StartupEntry."""
+    """Convierte salida CSV de PowerShell en objetos StartupEntry, validando la integridad de los datos."""
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
@@ -299,9 +299,9 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f_name, f_cmd = reader.fieldnames[0], reader.fieldnames[1]
             
         for row in reader:
-            if not isinstance(row, dict) or f_name not in row or f_cmd not in row:
+            if not isinstance(row, dict):
                 continue
-                    
+            
             val_name = row.get(f_name)
             val_cmd = row.get(f_cmd)
             
@@ -314,8 +314,11 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             if not name or not cmd or cmd.startswith(r"\\") or cmd in seen_commands or name.upper().startswith("PS"):
                 continue
             
-            p_cmd: Path = Path(cmd)
-            if not p_cmd.parts or is_protected_path(p_cmd):
+            try:
+                p_cmd = Path(cmd)
+                if not p_cmd.parts or is_protected_path(p_cmd):
+                    continue
+            except (ValueError, TypeError):
                 continue
             
             seen_commands.add(cmd)

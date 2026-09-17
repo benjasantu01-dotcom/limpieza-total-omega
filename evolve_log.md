@@ -828,3 +828,10 @@ assert not True
 - `2026-09-17T10:23:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-17T10:23:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T10:23:04` Corrida terminada. Total usado hoy: 240.
+- `2026-09-17T10:31:34` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-09-17T10:32:14` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_check_file_integrity` al reemplazar el bloque `try-except` genérico que silenciaba fallos durante la iteración de reglas, por una lógica que captura excepciones específicas de acceso, permitiendo que la validación sea más predecible y transparente ante errores de sistema.
+- `2026-09-17T10:32:41` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-17T10:33:14` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` agregando una validación de escritura post-flujo más estricta y asegurando que la lectura inicial del archivo de configuración verifique la integridad del JSON antes de intentar cualquier operación de parseo, protegiendo contra lecturas parciales o corrompidas.
+- `2026-09-17T10:33:27` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del parseo del registro integrando validaciones de tipos y manejo de excepciones específicas en `parse_registry_csv`, evitando que una estructura de CSV inesperada o campos mal formados interrumpan el análisis del sistema.
+- `2026-09-17T10:33:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T10:33:27` Corrida terminada. Total usado hoy: 244.
