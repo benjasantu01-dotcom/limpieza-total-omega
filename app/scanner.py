@@ -82,6 +82,14 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     except (OSError, PermissionError, AttributeError, FileNotFoundError):
         return None
 
+def _is_valid_path_structure(path_str: str) -> bool:
+    """Verifica si la cadena de ruta cumple con los límites de seguridad básicos."""
+    if not path_str or len(path_str) > MAX_PATH_LENGTH:
+        return False
+    if UNC_PATH_RE.match(path_str) or RTL_CHAR_RE.search(path_str):
+        return False
+    return True
+
 # Registro de reglas heurísticas para ejecutables específicos
 EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
     lambda p, e, t: check_system_lookalike(p, e, t),
@@ -141,19 +149,16 @@ class Scanner:
         if not entry or not entry.path:
             return False
         try:
-            name = entry.name
-            path_str = entry.path
-            if len(path_str) > MAX_PATH_LENGTH:
-                return False
-            if UNC_PATH_RE.match(path_str) or RTL_CHAR_RE.search(path_str):
-                return False
-            if INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name):
+            if not _is_valid_path_structure(entry.path):
                 return False
             
-            if not path_str.lower().startswith(self.base_root_str.rstrip(os.sep)):
+            if INVALID_TRAILING_CHARS_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name):
                 return False
             
-            return not (entry.is_symlink() or is_protected_path(Path(path_str)))
+            if not entry.path.lower().startswith(self.base_root_str.rstrip(os.sep)):
+                return False
+            
+            return not (entry.is_symlink() or is_protected_path(Path(entry.path)))
         except (OSError, PermissionError, UnicodeDecodeError):
             return False
 
@@ -225,8 +230,9 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if not directory: return []
     try:
         path_str: str = str(directory).strip()
-        if not path_str or len(path_str) > MAX_PATH_LENGTH or UNC_PATH_RE.match(path_str) or RTL_CHAR_RE.search(path_str): 
+        if not _is_valid_path_structure(path_str):
             return []
+        
         base_path: Path = Path(path_str)
         if not base_path.exists() or not base_path.is_dir(): 
             return []
@@ -236,6 +242,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             return []
         if is_protected_path(root_input): 
             return []
+            
         scanner = Scanner(base_root=root_input)
         directory_stack: List[str] = [str(root_input)]
         scanner.seen.add(str(root_input).lower())
