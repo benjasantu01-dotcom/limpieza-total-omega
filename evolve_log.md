@@ -1059,3 +1059,11 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-09-17T00:54:34` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_source_value` y `SystemContext.ingest` para manejar fuentes de datos malformadas o inesperadas que podrían causar excepciones al intentar acceder a atributos no existentes, asegurando que la app no aborte ante datos corruptos.
 - `2026-09-17T00:54:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T00:54:34` Corrida terminada. Total usado hoy: 20.
+- `2026-09-17T01:01:03` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-09-17T01:01:35` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-17T01:02:04` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-17T01:02:30` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validaciones explícitas para capturar errores de tipo o rutas vacías antes de procesar, asegurando que el bucle de escaneo no falle ante entradas inesperadas.
+- `2026-09-17T01:02:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-17T01:02:49` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-17T01:02:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T01:02:49` Corrida terminada. Total usado hoy: 24.
