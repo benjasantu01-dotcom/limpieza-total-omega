@@ -170,7 +170,7 @@ class Scanner:
             if stats:
                 return bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
             return False
-        except Exception:
+        except (OSError, PermissionError, AttributeError):
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:

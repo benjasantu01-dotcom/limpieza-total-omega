@@ -302,19 +302,14 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga, valida y cachea la configuración persistida en disco."""
     ruta = settings_path(custom_base)
     
-    # Verificación de caché antes de cualquier I/O
-    if ruta.exists():
-        try:
-            mtime = ruta.stat().st_mtime
-            if (cached := _CACHE.get(ruta)) and cached[0] == mtime:
-                return cached[1].copy()
-        except OSError:
-            pass
-    else:
+    if not ruta.exists():
         return DEFAULTS.copy()
     
     try:
         stats = ruta.stat()
+        if (cached := _CACHE.get(ruta)) and cached[0] == stats.st_mtime:
+            return cached[1].copy()
+            
         if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
             return DEFAULTS.copy()
             
@@ -377,9 +372,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 f.flush()
                 os.fsync(f.fileno())
             
-            # Verificación de integridad post-escritura
+            # Verificación de integridad post-escritura leyendo el archivo real
             with open(temp_path, "rb") as f:
-                if not (f.read(1) == b"{"): raise OSError("Archivo corrupto")
+                content = f.read(MAX_SETTINGS_SIZE + 1)
+                if not (content.startswith(b"{") and content.endswith(b"}")):
+                    raise OSError("Corrupción detectada en escritura")
             
             if ruta.exists():
                 try: os.replace(ruta, bak_path)

@@ -359,6 +359,14 @@ def _is_readonly(path_str: str) -> bool:
     except (OSError, PermissionError, FileNotFoundError):
         return True
 
+def _validate_access_permissions(path: Path) -> None:
+    """Valida si el proceso tiene permisos básicos de lectura/escritura sobre la ruta."""
+    try:
+        if path.exists() and not os.access(path, os.R_OK):
+            raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED)
+    except (OSError, PermissionError):
+        raise UnsafePathError("Acceso al sistema de archivos denegado.", SafetyValidationErrorCode.ACCESS_DENIED)
+
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
     """Estandariza una ruta, validando intentos de path traversal y resolviendo enlaces simbólicos."""
@@ -567,6 +575,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
 
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
+    _validate_access_permissions(p)
     
     if p.exists() and not os.access(p, os.W_OK):
         raise UnsafePathError(f"Acceso de escritura denegado: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)

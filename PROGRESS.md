@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 134 | 8 | 27 | 13 | 142 |
-| 2026-09-17 | 71 | 5 | 13 | 9 | 82 |
+| 2026-09-16 | 134 | 8 | 27 | 13 | 138 |
+| 2026-09-17 | 74 | 5 | 13 | 9 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
+- robustez ante casos límite: **48**
 - manejo de errores y validación de entradas: **47**
-- robustez ante casos límite: **45**
 - seguridad defensiva: **33**
 - rendimiento: **31**
 
@@ -36,16 +36,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **17**
 - `duplicates.py`: **16**
 - `quarantine.py`: **16**
-- `settings.py`: **15**
-- `safety.py`: **13**
+- `settings.py`: **16**
+- `safety.py`: **14**
+- `scanner.py`: **13**
 - `branding.py`: **12**
-- `scanner.py`: **12**
 - `organizer.py`: **10**
 - `main.py`: **8**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T08:00:18` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `load` y `save` ante fallos catastróficos del sistema de archivos (como errores de lectura parcial o interrupciones durante el `fsync`) agregando verificaciones explícitas de integridad del contenido y manejando la posibilidad de que el archivo `config.json` exista pero sea inaccesible por bloqueos de otros procesos, asegurando que el estado de la app siempre sea válido.
+- `2026-09-17T07:59:47` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_safe_stat` y `_is_reparse_point` incorporando un manejo explícito de errores para archivos inaccesibles o bloqueados por el sistema, evitando interrupciones innecesarias en el bucle de escaneo.
+- `2026-09-17T07:59:21` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_validate_access_permissions` en `ensure_safe_to_modify` para detectar si el sistema de archivos deniega el acceso a nivel de metadatos o atributos antes de intentar operaciones, evitando excepciones inesperadas del SO en entornos con permisos restrictivos (casos límite de IO).
 - `2026-09-17T07:49:10` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` añadiendo un manejo de excepciones más granular y defensivo ante líneas malformadas que podrían ocurrir si la salida de `Get-Process` se trunca, evitando que un fallo en un proceso individual invalide todo el análisis de la lista.
 - `2026-09-17T07:39:37` **healthscore.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de tipos dentro de `_evaluate_rules` y `compute_score` para asegurar que fallos en la lógica de las funciones lambda o datos inesperados durante el procesamiento del pipeline no aborten el cálculo global, garantizando la resiliencia del sistema.
 - `2026-09-17T07:39:08` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `duplicates.py` mediante una validación estricta de la integridad del archivo antes de calcular el hash, asegurando que si un archivo se elimina o bloquea durante el proceso (concurrencia), la función `hash_file` y `partial_hash` retornen `None` de forma segura en lugar de propagar excepciones o fallar en el `with`.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T07:09:10` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando las búsquedas sobre archivos en el disco de O(N*M) a O(N+M) mediante el uso de sets, y centralicé la carga del manifiesto para evitar lecturas redundantes.
 - `2026-09-17T07:08:09` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` evitando la creación de objetos `ProcessMemory` intermedios mediante una pre-validación de los datos en el bloque `try-except` de la función de parseo, reduciendo el overhead de instanciación en procesos de larga duración.
 - `2026-09-17T07:02:06` **healthscore.py** (rendimiento): Se ha optimizado `_evaluate_rules` reemplazando la creación innecesaria de listas de caracteres mediante `join` por una validación de visibilidad de cadena más directa, reduciendo la carga de cómputo y el uso de memoria durante el análisis de reglas.
-- `2026-09-17T06:49:19` **diskreport.py** (rendimiento): Optimicé el motor de escaneo `_collect_summary_data` y las funciones de consulta evitando múltiples recorridos redundantes del sistema de archivos, asegurando que `summarize`, `largest_files`, `usage_by_extension` y `total_size` compartan un único paso de lectura bajo demanda.
-- `2026-09-17T06:49:09` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios integrando un caché de resultados (`memo`) en todas las llamadas recursivas de `_sum_directory_recursive` y eliminando la recálculo de rutas base dentro del bucle de `detect_profiles`, evitando redundancias en la ejecución de I/O.
-- `2026-09-17T06:48:02` **assistant.py** (rendimiento): Optimizé `local_answer` para evitar el parseo innecesario de tokens cuando la consulta es corta o no contiene palabras clave relevantes, reduciendo el overhead de procesamiento en cada iteración de la interfaz.

@@ -519,3 +519,13 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-17T07:50:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-09-17T07:50:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T07:50:15` Corrida terminada. Total usado hoy: 180.
+- `2026-09-17T07:58:38` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-09-17T07:59:21` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo la verificación `_validate_access_permissions` en `ensure_safe_to_modify` para detectar si el sistema de archivos deniega el acceso a nivel de metadatos o atributos antes de intentar operaciones, evitando excepciones inesperadas del SO en entornos con permisos restrictivos (casos límite de IO).
+- `2026-09-17T07:59:47` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_safe_stat` y `_is_reparse_point` incorporando un manejo explícito de errores para archivos inaccesibles o bloqueados por el sistema, evitando interrupciones innecesarias en el bucle de escaneo.
+- `2026-09-17T08:00:18` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `load` y `save` ante fallos catastróficos del sistema de archivos (como errores de lectura parcial o interrupciones durante el `fsync`) agregando verificaciones explícitas de integridad del contenido y manejando la posibilidad de que el archivo `config.json` exista pero sea inaccesible por bloqueos de otros procesos, asegurando que el estado de la app siempre sea válido.
+- `2026-09-17T08:01:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-17T08:01:52` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-17T08:02:58` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-17T08:03:35` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-17T08:03:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T08:03:35` Corrida terminada. Total usado hoy: 184.
