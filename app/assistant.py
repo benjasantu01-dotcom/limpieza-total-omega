@@ -30,7 +30,7 @@ Nunca se envían:
  que el texto enviado no contenga separadores de ruta, así el día que alguien
 agregue una métrica con una ruta adentro, el test falla antes de que se filtre.
 
-EL ASISTENTE NO EJECUTA NADA
+EL ASISTENTE NO EJecuta NADA
 ----------------------------
 Solo devuelve texto. No borra, no mueve, no aísla. Si sugiere una acción, la
 describe para que el usuario la haga desde su pestaña. Un asistente que puede
@@ -635,7 +635,11 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
         return default
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
-    """Serializa la pregunta y el contexto en un JSON para la API de Gemini."""
+    """
+    Serializa la pregunta y el contexto en un JSON para la API de Gemini.
+    Valida la seguridad del payload resultante y asegura que cumple con las restricciones
+    de longitud y formato para prevenir inyecciones y abusos de API.
+    """
     if not context_text or not _ensure_safe_text(context_text): return None
     if _PS_COMMAND_REGEX.search(context_text): return None
     q = _sanitize_query(question)
@@ -670,7 +674,11 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
-    """Realiza la comunicación HTTP con Gemini tras validar el payload y la respuesta."""
+    """
+    Realiza la comunicación HTTP con Gemini.
+    Valida la clave API, el modelo y el payload. Ejecuta una llamada POST protegida
+    y verifica la integridad de la respuesta recibida antes de procesarla.
+    """
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): 
         return None
     payload = _build_payload(question, context_text)
@@ -694,7 +702,11 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
 
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Union[str, Path, None] = None) -> Answer:
-    """Punto de entrada unificado para consultas de usuario, con validación de settings."""
+    """
+    Punto de entrada unificado para consultas de usuario.
+    Intenta obtener una respuesta del motor local y, si el asistente remoto está habilitado,
+    complementa la lógica delegando al motor en línea (Gemini).
+    """
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()

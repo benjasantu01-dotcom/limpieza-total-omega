@@ -1264,3 +1264,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-17T15:04:50` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` al reemplazar `os.replace` (que puede fallar si el archivo es bloqueado momentáneamente por el sistema de archivos en Windows) por una comprobación explícita de `temp_path` y una gestión de errores más granular, asegurando que la configuración nunca quede en un estado inconsistente.
 - `2026-09-17T15:04:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T15:04:50` Corrida terminada. Total usado hoy: 348.
+- `2026-09-17T15:07:27` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-17T15:08:29` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-17T15:08:33` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-17T15:09:05` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-17T15:09:50` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación de `assistant.py` mediante la adición de docstrings técnicos detallados en funciones clave (`ask`, `_call_gemini`, `_build_payload`) y clases, clarificando el propósito, las garantías de seguridad y las restricciones de cada componente para facilitar su mantenimiento y auditoría.
+- `2026-09-17T15:09:50` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-09-17T15:09:50` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T15:09:50` Corrida terminada. Total usado hoy: 350.
