@@ -153,9 +153,13 @@ class StartupEntry:
         no esté en zona protegida y no sea un enlace simbólico (evita inyección).
         """
         try:
+            # Primero verificar existencia sin abrir el archivo
             if not p.exists() or p.is_dir() or is_protected_path(p):
                 return False
-            return os.access(p, os.R_OK) and not p.is_symlink()
+            
+            # Verificar si se puede abrir en modo lectura (test de archivo bloqueado/en uso)
+            with open(p, 'rb') as f:
+                return not p.is_symlink()
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
             return False
 
@@ -183,6 +187,10 @@ class StartupEntry:
             p: Path = Path(norm)
             if not p.is_absolute():
                 _EXISTS_CACHE[path_string] = False
+                return ""
+            
+            # Verificación preventiva: si el drive o directorio base no existe, omitir
+            if not p.anchor or not Path(p.anchor).exists():
                 return ""
                 
             # strict=False evita excepciones si la ruta no existe, manejamos la lógica abajo

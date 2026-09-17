@@ -76,7 +76,7 @@ SAFETY_NOTE: str = (
 
 MAX_SCAN_DEPTH: int = 15
 MAX_PATH_LEN: int = 260
-SYSTEM_HIDDEN_FLAGS: int = 0x01 | 0x02 | 0x400
+SYSTEM_HIDDEN_FLAGS: int = 0x01 | 0x02 | 0x04 | 0x400
 ERROR_SHARING_VIOLATION: int = 32
 
 @dataclass
@@ -224,18 +224,16 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
     Evalúa una entrada del sistema. Si es directorio recursa (hasta MAX_SCAN_DEPTH), 
     si es archivo suma su tamaño a bytes.
     """
-    if depth > MAX_SCAN_DEPTH:
+    if depth > MAX_SCAN_DEPTH or _should_skip_entry(entry, kernel32, is_junction_fn):
         return 0
     try:
         if _is_valid_traversal_step(entry, root_base):
-            if not is_junction_fn(entry.path):
-                return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
+            return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
         elif entry.is_file(follow_symlinks=False):
             try:
                 stat_res = entry.stat(follow_symlinks=False)
                 return int(stat_res.st_size) if hasattr(stat_res, 'st_size') else 0
             except OSError as e:
-                # Si el archivo está en uso por el navegador, se omite de forma silenciosa
                 if e.winerror == ERROR_SHARING_VIOLATION:
                     return 0
                 return 0
@@ -277,8 +275,6 @@ def _sum_directory_recursive(
         total: int = 0
         with os.scandir(current_abs) as it:
             for entry in it:
-                if _should_skip_entry(entry, kernel32, is_junction_fn):
-                    continue
                 total += _process_entry(entry, root_base, is_junction_fn, kernel32, memo, depth)
         
         memo[current_abs] = total
@@ -341,7 +337,6 @@ def detect_profiles(
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
     k32 = _get_kernel32()
-    # Cache compartido para persistir resultados entre navegadores en una misma ejecución
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     scanned_paths: set[str] = set()
@@ -369,7 +364,6 @@ def detect_profiles(
                 if not _is_path_inside_base(Path(real_candidate), real_base):
                     continue
                 
-                # Pasamos el perf_cache persistente para evitar escaneos redundantes
                 size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, perf_cache, str(real_base))
                 if size > 0:
                     scanned_paths.add(real_candidate)

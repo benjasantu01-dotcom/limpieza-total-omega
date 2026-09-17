@@ -404,22 +404,21 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _get_source_value(source: Any, key: str) -> Any:
-    """Acceso genérico a datos de configuración, evitando atributos privados o protegidos."""
+    """Acceso seguro restringido a atributos de datos de instancia."""
+    # Evitar inyección de llaves, acceso a métodos especiales y protegidos
     if not isinstance(key, str) or key.startswith("_"): return None
     
     if isinstance(source, dict):
         return source.get(key)
         
-    # Acceso a objetos: evitar propiedades que ejecutan lógica (usar vars o getattr directo)
+    # Acceso a objetos: solo permitimos campos que son datos, no métodos o dunders
     try:
-        # Solo acceder a datos de instancia, evitar dunder y atributos de clase
-        if not key.startswith("__") and hasattr(source, key):
-            val = getattr(source, key)
-            if not callable(val):
-                return val
+        val = getattr(source, key, None)
+        if val is None or callable(val) or key.startswith("__"):
+            return None
+        return val
     except Exception:
-        pass
-    return None
+        return None
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Inicializa un SystemContext completo integrando datos de múltiples fuentes."""
