@@ -104,7 +104,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Identifica ejecutables descargados recientemente en carpetas monitoreadas."""
+    """Identifica ejecutables descargados recientemente (24h) en carpetas de usuario monitoreadas."""
     if not path or not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     
@@ -115,7 +115,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta binarios con nombres de procesos de sistema ubicados fuera de carpetas protegidas."""
+    """Detecta binarios con nombres de procesos de sistema ubicados fuera de System32 para prevenir suplantación."""
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         path_str = str(path).lower()
         if SYSTEM32_LOWER not in path_str:
@@ -123,7 +123,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta ejecutables vacíos, técnica utilizada para ofuscar payloads."""
+    """Detecta archivos ejecutables de tamaño cero, técnica común de ofuscación o errores de descarga."""
     if entry and entry.is_file(follow_symlinks=False):
         stats = _safe_stat(entry)
         if stats and stats.st_size == 0:
@@ -138,7 +138,7 @@ class Scanner:
         self.base_root: Path = base_root.resolve()
         self.base_root_str: str = str(self.base_root).lower() + os.sep
         self.now_ts: float = datetime.now().timestamp()
-        self._registry = EXECUTABLE_CHECK_REGISTRY
+        self._registry: List[SuspicionCheck] = EXECUTABLE_CHECK_REGISTRY
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Valida recursión lógica dentro del directorio base."""
@@ -216,7 +216,7 @@ class Scanner:
                     self.results.append(result)
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
-    """Realiza un escaneo granular de un archivo específico."""
+    """Realiza un escaneo granular de un archivo específico aplicando heurísticas."""
     if not path or is_protected_path(path): return []
     findings: ScanResult = []
     if (double_ext := check_double_extension(path, entry, now_ts)):
@@ -228,7 +228,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Escaneo recursivo seguro utilizando una pila LIFO."""
+    """Escaneo recursivo seguro utilizando una pila LIFO para traversal."""
     if not directory: return []
     try:
         path_str: str = str(directory).strip()
