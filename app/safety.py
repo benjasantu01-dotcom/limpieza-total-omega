@@ -397,14 +397,17 @@ def is_drive_root(path: PathLike) -> bool:
 def _is_system_path_cached(path_str: str) -> bool:
     """Compara la ruta normalizada contra listas de directorios protegidos de forma eficiente."""
     path_norm = os.path.normpath(path_str).lower()
-    path_parts = frozenset(path_norm.split(os.sep))
     
-    # Verificación de raíz del sistema (O(1) average lookup)
+    # 1. Verificación O(1) contra raíces del sistema (ej: C:\Windows)
     if any(path_norm.startswith(root) for root in _SYSTEM_ROOT_PATHS_SET):
         return True
         
-    # Verificación de intersección de conjuntos (O(1) average lookup)
-    return not PROTECTED_DIR_NAMES.isdisjoint(path_parts)
+    # 2. Verificación jerárquica de componentes sin crear conjuntos temporales en el loop
+    for part in path_norm.split(os.sep):
+        if part in PROTECTED_DIR_NAMES:
+            return True
+            
+    return False
 
 @lru_cache(maxsize=2048)
 def is_protected_path(path: PathLike) -> bool:

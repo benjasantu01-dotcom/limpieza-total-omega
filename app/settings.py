@@ -34,6 +34,7 @@ from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple, TypeGuard
+from functools import lru_cache
 
 from safety import is_safe_to_modify, is_protected_path, UnsafePathError, ensure_safe_to_modify
 
@@ -109,7 +110,6 @@ API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
 _CACHE: dict[Path, tuple[float, AppSettings]] = {}
 _PATH_CACHE: dict[Path, Path] = {}
-_SAFETY_CACHE: dict[str, bool] = {}
 
 VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
 VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))
@@ -161,32 +161,28 @@ class _Validators:
     """Namespace de validadores estáticos para asegurar la integridad de la configuración."""
 
     @staticmethod
-    def _is_reparse_point(path: Path) -> bool:
+    @lru_cache(maxsize=64)
+    def _is_reparse_point(path_str: str) -> bool:
         """Determina si una ruta es un junction o symlink para prevenir bucles de recursión."""
         try:
+            path = Path(path_str)
             return path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction())
         except (OSError, PermissionError):
             return True
 
     @staticmethod
-    def _run_safety_checks(path_obj: Path) -> bool:
+    @lru_cache(maxsize=128)
+    def _run_safety_checks(path_str: str) -> bool:
         """Valida una ruta contra `safety.py` resolviendo el destino real para prevenir traversal."""
         try:
+            path_obj = Path(path_str)
             resolved = path_obj.resolve(strict=False)
-            path_str = str(resolved)
+            resolved_str = str(resolved)
             
-            if path_str in _SAFETY_CACHE:
-                return _SAFETY_CACHE[path_str]
-            
-            if len(_SAFETY_CACHE) > 128: _SAFETY_CACHE.clear()
-            
-            is_safe = False
-            if not is_protected_path(path_str):
-                if not _Validators._is_reparse_point(resolved):
-                    is_safe = is_safe_to_modify(path_str)
-            
-            _SAFETY_CACHE[path_str] = is_safe
-            return is_safe
+            if not is_protected_path(resolved_str):
+                if not _Validators._is_reparse_point(resolved_str):
+                    return is_safe_to_modify(resolved_str)
+            return False
         except (OSError, PermissionError, RuntimeError, UnsafePathError, IndexError):
             return False
 
@@ -198,7 +194,7 @@ class _Validators:
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
-            return _Validators._run_safety_checks(p)
+            return _Validators._run_safety_checks(str(p))
         except (OSError, RuntimeError, PermissionError, AttributeError, ValueError):
             return False
 

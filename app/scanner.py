@@ -218,9 +218,11 @@ class Scanner:
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """Realiza un escaneo granular de un archivo específico aplicando heurísticas."""
     if not path or is_protected_path(path): return []
+    
     findings: ScanResult = []
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
+        
     if ext and ext.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         for check_fn in EXECUTABLE_CHECK_REGISTRY:
             if (result := check_fn(path, entry, now_ts)):

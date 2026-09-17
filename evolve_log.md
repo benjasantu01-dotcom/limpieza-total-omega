@@ -481,3 +481,11 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-17T07:09:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
 - `2026-09-17T07:09:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T07:09:14` Corrida terminada. Total usado hoy: 165.
+- `2026-09-17T07:17:48` Arrancando corrida. Quedan hoy ~135 peticiones objetivo.
+- `2026-09-17T07:18:29` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` reemplazando la creación dinámica de un `frozenset` de partes de la ruta en cada llamada por una comprobación jerárquica de prefijos, evitando así múltiples alocaciones de memoria y ciclos de CPU en escaneos masivos.
+- `2026-09-17T07:18:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-17T07:19:08` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el método `_run_file_heuristics` y `scan_file` para evitar redundancias, asegurando que `check_double_extension` solo se ejecute una vez y utilizando el conjunto `SUSPICIOUS_ALL_EXTS` para filtrar rápidamente antes de procesar cualquier heurística.
+- `2026-09-17T07:19:39` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un mecanismo de caché más eficiente para los validadores de rutas, integrando un `lru_cache` explícito con un tamaño limitado para reducir las llamadas repetitivas al sistema de archivos y mejorar el rendimiento en los chequeos de seguridad.
+- `2026-09-17T07:19:48` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-17T07:19:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T07:19:48` Corrida terminada. Total usado hoy: 169.
