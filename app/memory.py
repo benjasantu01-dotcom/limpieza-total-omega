@@ -28,6 +28,7 @@ import subprocess
 import math
 import ctypes
 import time
+import bisect
 from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
@@ -222,18 +223,20 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
     
-    raw_entries: List[Tuple[int, ProcessMemory]] = []
+    top_procs: List[ProcessMemory] = []
     for line in raw_csv_text.splitlines():
         try:
             parts = [_clean_csv_field(x) for x in line.split(",")]
             entry = _is_valid_process_entry(parts)
             if entry:
-                raw_entries.append((entry.working_set, entry))
+                # Mantener orden descendente mediante insort (invertimos el valor para usar bisect default)
+                bisect.insort(top_procs, entry, key=lambda p: -p.working_set)
+                if len(top_procs) > limit:
+                    top_procs.pop()
         except (AttributeError, IndexError, ValueError):
             continue
                 
-    raw_entries.sort(key=lambda x: x[0], reverse=True)
-    return [e[1] for e in raw_entries[:limit]]
+    return top_procs
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Ejecuta la API Win32 GlobalMemoryStatusEx para obtener RAM física."""

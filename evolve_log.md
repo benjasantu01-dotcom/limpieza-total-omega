@@ -900,3 +900,13 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-09-17T11:24:27` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `Path.resolve()` y `stat()` sobre el mismo objeto, reemplazando las operaciones repetitivas sobre `Path` por el uso directo de los atributos provistos por `DirEntry`.
 - `2026-09-17T11:24:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T11:24:27` Corrida terminada. Total usado hoy: 264.
+- `2026-09-17T11:32:52` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-09-17T11:33:18` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.__post_init__
+- `2026-09-17T11:34:18` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-17T11:35:21` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-17T11:35:28` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-17T11:36:40` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-17T11:37:26` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación de una lista de tuplas intermedia y el ordenamiento posterior por una inserción ordenada usando `bisect.insort`, reduciendo la complejidad temporal de $O(N \log N)$ a $O(N \cdot K)$ donde $K$ es el límite de procesos.
+- `2026-09-17T11:37:38` 🛑 Propuesta bloqueada por la guardia en organizer.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: JunkFile.__post_init__
+- `2026-09-17T11:37:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T11:37:38` Corrida terminada. Total usado hoy: 268.

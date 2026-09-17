@@ -7,25 +7,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **209** (41.5% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 103 | 8 | 17 | 9 | 103 |
-| 2026-09-17 | 106 | 8 | 18 | 11 | 121 |
+| 2026-09-16 | 102 | 7 | 17 | 9 | 101 |
+| 2026-09-17 | 107 | 8 | 20 | 11 | 122 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
 - legibilidad y documentación: **47**
 - seguridad defensiva: **42**
-- robustez ante casos límite: **40**
-- rendimiento: **31**
+- robustez ante casos límite: **39**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,11 +33,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **20**
 - `diskreport.py`: **20**
 - `assistant.py`: **18**
+- `memory.py`: **18**
 - `settings.py`: **17**
 - `duplicates.py`: **17**
-- `memory.py`: **17**
-- `safety.py`: **16**
 - `quarantine.py`: **15**
+- `safety.py`: **15**
 - `scanner.py`: **13**
 - `branding.py`: **11**
 - `organizer.py`: **9**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T11:37:26` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación de una lista de tuplas intermedia y el ordenamiento posterior por una inserción ordenada usando `bisect.insort`, reduciendo la complejidad temporal de $O(N \log N)$ a $O(N \cdot K)$ donde $K$ es el límite de procesos.
 - `2026-09-17T11:24:27` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `Path.resolve()` y `stat()` sobre el mismo objeto, reemplazando las operaciones repetitivas sobre `Path` por el uso directo de los atributos provistos por `DirEntry`.
 - `2026-09-17T11:24:17` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la sobrecarga de crear objetos `Path` y múltiples llamadas a `relative_to` durante el recorrido, utilizando un método más directo para identificar la carpeta raíz de cada archivo.
 - `2026-09-17T11:23:51` **browser.py** (rendimiento): Se optimizó `detect_profiles` reemplazando la creación y llenado de `perf_cache` (que era local y se descartaba en cada llamada) por un `set` global de `scanned_paths` y una estructura que aprovecha mejor la memoria, evitando recorridos redundantes si múltiples navegadores comparten el mismo directorio base.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T10:33:27` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez del parseo del registro integrando validaciones de tipos y manejo de excepciones específicas en `parse_registry_csv`, evitando que una estructura de CSV inesperada o campos mal formados interrumpan el análisis del sistema.
 - `2026-09-17T10:33:14` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` agregando una validación de escritura post-flujo más estricta y asegurando que la lectura inicial del archivo de configuración verifique la integridad del JSON antes de intentar cualquier operación de parseo, protegiendo contra lecturas parciales o corrompidas.
 - `2026-09-17T10:32:14` **safety.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_check_file_integrity` al reemplazar el bloque `try-except` genérico que silenciaba fallos durante la iteración de reglas, por una lógica que captura excepciones específicas de acceso, permitiendo que la validación sea más predecible y transparente ante errores de sistema.
-- `2026-09-17T10:22:59` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `save_manifest` y `quarantine_file` para evitar estados inconsistentes (archivos huérfanos o manifiestos corruptos) mediante un manejo más granular de excepciones y validaciones preventivas, siguiendo el enfoque de validación de entradas antes de la operación.
