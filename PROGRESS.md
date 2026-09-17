@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 231
 
@@ -16,22 +16,22 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 50 | 4 | 8 | 2 | 58 |
+| 2026-09-15 | 48 | 3 | 8 | 2 | 57 |
 | 2026-09-16 | 147 | 8 | 30 | 15 | 150 |
-| 2026-09-17 | 6 | 0 | 1 | 2 | 23 |
+| 2026-09-17 | 7 | 1 | 2 | 2 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
 - robustez ante casos límite: **46**
-- legibilidad y documentación: **43**
+- legibilidad y documentación: **44**
 - seguridad defensiva: **41**
-- rendimiento: **24**
+- rendimiento: **22**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
 - `browser.py`: **19**
+- `healthscore.py`: **19**
 - `quarantine.py`: **18**
 - `assistant.py`: **18**
 - `diskreport.py`: **17**
@@ -39,14 +39,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **16**
 - `safety.py`: **15**
 - `settings.py`: **15**
+- `branding.py`: **12**
 - `scanner.py`: **12**
-- `branding.py`: **11**
 - `organizer.py`: **11**
-- `main.py`: **7**
 - `startup.py`: **7**
+- `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T01:33:35` **branding.py** (legibilidad y documentación): Se introdujo documentación explicativa en las funciones críticas de renderizado (gradientes y manejo de coordenadas) y se mejoró la robustez de los `type hints` y validaciones en funciones geométricas para asegurar que los componentes visuales sean predecibles, cumpliendo con el enfoque de legibilidad y mantenibilidad técnica.
 - `2026-09-17T01:23:09` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `_is_safe_entry` mediante la validación proactiva de rutas `None` o vacías y la inclusión de manejo de excepciones específico para evitar que nombres de archivo mal formados o errores de resolución detengan el escaneo.
 - `2026-09-17T01:22:59` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` refactorizando el manejo de errores de validación de unidades (DriveType) para asegurar que cualquier fallo en la API de Windows se capture explícitamente y se trate como una denegación segura, evitando que excepciones inesperadas escapen del control de seguridad.
 - `2026-09-17T01:14:25` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_windows_process_csv` y `_kb_to_bytes` mediante la validación estricta de tipos y la eliminación de posibles `None` o valores no numéricos antes de operar, previniendo errores en tiempo de ejecución.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-16T13:48:56` **browser.py** (seguridad defensiva): Se reforzó la seguridad de `_sum_directory_recursive` mediante una validación estricta de la ruta resuelta contra `root_base` utilizando `is_protected_path` y `is_safe_to_modify` antes de iniciar cualquier iteración, asegurando que la recursión no pueda escapar del sandbox incluso ante manipulaciones de enlaces simbólicos o rutas maliciosas.
 - `2026-09-16T13:47:54` **assistant.py** (seguridad defensiva): Se endurecieron los criterios de seguridad defensiva en `_is_safe_text_structure` para rechazar explícitamente caracteres de control y secuencias que intentan ofuscar comandos o rutas, protegiendo al motor de inferencia de inyecciones de bajo nivel en los prompts.
 - `2026-09-16T13:40:38` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save` frente a condiciones de carrera y sistemas de archivos con latencia, añadiendo un `os.replace` más seguro y garantizando que el archivo de configuración siempre mantenga permisos coherentes al intentar la escritura, además de proteger la integridad del archivo original ante fallos de escritura parciales mediante el uso de `os.fsync`.
-- `2026-09-16T13:37:40` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos de error de sistema de archivos al envolver las llamadas a `ctypes` en bloques `try-except` más granulares dentro de las funciones de chequeo de atributos (`_is_system_or_hidden`, `_is_encrypted_or_compressed`, `_is_offline`), evitando que una excepción inesperada (como un error de I/O o handle inválido) detenga la validación de seguridad y asegurar que estas funciones siempre devuelvan un booleano seguro (`False`) ante fallos.

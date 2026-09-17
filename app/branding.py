@@ -50,7 +50,7 @@ class CanvasElement(Protocol):
     def create_arc(self, x0: float, y0: float, x1: float, y1: float, **kwargs: Any) -> int: ...
 
 class ColorSegment(NamedTuple):
-    """Representa un segmento contiguo de colores para optimizar el dibujo de tiras."""
+    """Representa un rango de pixeles con un mismo color para optimizar el dibujo en canvas."""
     hex_color: ColorHex
     start_index: int
     end_index: int
@@ -219,6 +219,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=256)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
+    """Convierte hex #RRGGBB a tupla de enteros (R, G, B)."""
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"): 
         return (0, 0, 0)
     try:
@@ -228,6 +229,7 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
 
 @lru_cache(maxsize=256)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
+    """Convierte tupla (R, G, B) a string hex #RRGGBB."""
     def _clamp(c: int) -> int: return max(0, min(255, c))
     return "#{:02x}{:02x}{:02x}".format(_clamp(rgb[0]), _clamp(rgb[1]), _clamp(rgb[2]))
 
@@ -246,6 +248,7 @@ def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     ))
 
 def _interpolate_rgb(s1: RGBTuple, s2: RGBTuple, delta: float) -> RGBTuple:
+    """Calcula el punto intermedio entre dos colores RGB para suavizado de gradientes."""
     return (
         int(s1[0] + (s2[0] - s1[0]) * delta),
         int(s1[1] + (s2[1] - s1[1]) * delta),
@@ -254,6 +257,7 @@ def _interpolate_rgb(s1: RGBTuple, s2: RGBTuple, delta: float) -> RGBTuple:
 
 @lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
+    """Genera una serie de colores intermedios distribuidos equitativamente entre los stops."""
     n = max(1, int(steps))
     if not stops or len(stops) < 2: 
         return (stops[0] if stops else C_TEXT_MUTED,) * n
@@ -268,6 +272,7 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=64)
 def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
+    """Agrupa colores consecutivos idénticos para reducir llamadas al motor gráfico."""
     if not colors: return ()
     segments = []
     current_color, start = colors[0], 0
@@ -288,6 +293,7 @@ def _get_scaled_poly(scale: float, canvas_x: float, canvas_y: float) -> Tuple[fl
 
 @lru_cache(maxsize=8)
 def logo_svg(size: int = 128) -> str:
+    """Genera el código fuente de un archivo SVG del logo principal."""
     s = max(1, min(4096, int(size)))
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
@@ -306,10 +312,10 @@ def logo_svg(size: int = 128) -> str:
 </svg>"""
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
+    """Guarda una representación SVG del logo en el sistema de archivos."""
     if not destination: return None
     try:
         target = Path(destination).resolve()
-        # Verificación de seguridad previa antes de cualquier operación de I/O
         if not is_safe_to_modify(target): return None
         ensure_safe_to_modify(target)
         

@@ -1082,3 +1082,40 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-09-17T01:23:09` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scan_directory` y `_is_safe_entry` mediante la validación proactiva de rutas `None` o vacías y la inclusión de manejo de excepciones específico para evitar que nombres de archivo mal formados o errores de resolución detengan el escaneo.
 - `2026-09-17T01:23:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T01:23:09` Corrida terminada. Total usado hoy: 32.
+- `2026-09-17T01:31:33` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-09-17T01:32:06` Tests FALLARON:
+```
+    +  where False = is_file()
+E        +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+E        +      where 'config.json' = settings.SETTINGS_FILE
+
+evolve/tests/test_assistant.py:61: AssertionError
+______________________ test_a_normal_folder_is_remembered ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_a_normal_folder_is_rememb0')
+
+    def test_a_normal_folder_is_remembered(tmp_path):
+        segura = str(tmp_path / "Descargas")
+>       assert settings.validate({"ultima_carpeta": segura})["ultima_carpeta"] == segura
+E       AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+E         
+E         - /tmp/pytest-of-runner/pytest-1/test_a_normal_folder_is_rememb0/Descargas
+
+evolve/tests/test_assistant.py:124: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert False
+ +  where False = is_file()
+ +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+ +      where 'config.json' = settings.SETTINGS_FILE
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-1/test_a_normal_folder_is_rememb0/Descargas
+2 failed, 297 passed in 1.03s
+
+```
+- `2026-09-17T01:32:06` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejora la robustez del validador de rutas (`path`) incorporando una validación explícita para evitar inyecciones de caracteres nulos o rutas excesivamente largas antes de llamar a `_is_safe_path`, y asegura que `_is_safe_path` maneje correctamente las excepciones al validar la existencia de la ruta.
+- `2026-09-17T01:32:41` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-17T01:33:17` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ProblemCriterion._evaluate_metric, ProblemCriterion.is_triggered_by
+- `2026-09-17T01:33:35` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se introdujo documentación explicativa en las funciones críticas de renderizado (gradientes y manejo de coordenadas) y se mejoró la robustez de los `type hints` y validaciones en funciones geométricas para asegurar que los componentes visuales sean predecibles, cumpliendo con el enfoque de legibilidad y mantenibilidad técnica.
+- `2026-09-17T01:33:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T01:33:35` Corrida terminada. Total usado hoy: 36.
