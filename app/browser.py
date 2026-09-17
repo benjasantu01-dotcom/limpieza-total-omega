@@ -171,10 +171,11 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Determina si un objeto del sistema de archivos debe ser ignorado.
+    Filtra entradas del sistema de archivos no seguras o prohibidas.
     
-    Aplica filtros de seguridad: symlinks, junctions, rutas UNC, archivos protegidos
-    por configuración o atributos de sistema.
+    Verifica: bloqueos de seguridad (`NEVER_TOUCH`), límites de longitud de ruta,
+    rutas UNC, enlaces simbólicos/junctions (para evitar recursión infinita) y
+    atributos de sistema ocultos (vía kernel32).
     """
     if entry.name is None:
         return True
@@ -199,7 +200,12 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
-    """Valida que el directorio sea seguro y esté en la base autorizada (sandbox)."""
+    """
+    Valida si un directorio es transitable dentro del contexto de seguridad.
+    
+    Requiere que la ruta sea absoluta, no esté bloqueada por `safety.py`,
+    no sea una ruta de red y esté contenida dentro de la base autorizada.
+    """
     if not isinstance(path_obj, Path):
         return False
     try:
@@ -214,7 +220,7 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
 
 
 def _is_valid_traversal_step(entry: os.DirEntry, root_base: str) -> bool:
-    """Verifica condiciones de seguridad para descender en un subdirectorio."""
+    """Verifica si es seguro descender en una subcarpeta (evita seguir symlinks)."""
     return (
         entry.is_dir(follow_symlinks=False) and 
         not entry.is_symlink() and 
@@ -223,8 +229,8 @@ def _is_valid_traversal_step(entry: os.DirEntry, root_base: str) -> bool:
 
 def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionChecker, kernel32: Optional[ctypes.WinDLL], memo: Dict[str, int], depth: int) -> int:
     """
-    Evalúa una entrada del sistema. Si es directorio recursa (hasta MAX_SCAN_DEPTH), 
-    si es archivo suma su tamaño a bytes.
+    Procesa un elemento del sistema de archivos, delegando la recursión o
+    la suma del peso según el tipo de objeto (directorio vs archivo).
     """
     if depth > MAX_SCAN_DEPTH or _should_skip_entry(entry, kernel32, is_junction_fn):
         return 0
@@ -256,8 +262,9 @@ def _sum_directory_recursive(
     """
     Motor recursivo para calcular el peso de un árbol de directorios.
     
-    Aplica 'sandbox' en cada nodo visitado. Solo considera archivos dentro de
-    `root_base`. Usa `memo` para evitar ciclos y re-procesamiento innecesario.
+    Implementa un 'sandbox' estricto: rechaza cualquier ruta que intente
+    escapar de `root_base` o que viole las políticas de `safety.py`.
+    Usa `memo` (caché de resultados) para evitar el re-procesamiento.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN or _is_unc_path(root_abs) or any(c in root_abs for c in '\0\r\n'):
         return 0
@@ -307,7 +314,12 @@ def directory_size(path: Optional[OSPath]) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
-    """Verifica si el directorio de caché cumple criterios de integridad de sandbox."""
+    """
+    Verifica que la carpeta de caché candidato sea un destino válido.
+    
+    Valida existencia, contención dentro del sandbox, y ausencia de elementos
+    protegidos o enlaces simbólicos peligrosos.
+    """
     try:
         if not isinstance(candidate, Path) or not candidate.is_absolute() or not candidate.exists() or not candidate.is_dir():
             return False
@@ -339,7 +351,13 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[BrowserMap] = None
 ) -> List[BrowserCache]:
-    """Escanea perfiles conocidos y devuelve una lista de objetos BrowserCache."""
+    """
+    Escanea las rutas configuradas en busca de cachés de navegadores.
+    
+    Itera sobre las carpetas base (ej: LOCALAPPDATA), resuelve las rutas
+    relativas de cada navegador definido, valida la seguridad de cada una
+    y calcula recursivamente su tamaño.
+    """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     

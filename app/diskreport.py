@@ -115,7 +115,6 @@ def _get_local_windows_drives() -> List[str]:
     for letter in string.ascii_uppercase:
         drive = f"{letter}:\\"
         try:
-            # Validación estricta mediante Path.exists() y seguridad
             p = Path(drive)
             if p.exists() and not is_protected_path(p):
                 drives.append(drive)
@@ -191,7 +190,6 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
     try:
         p = Path(mount).resolve()
-        # Verificar existencia antes de intentar medir uso
         if p.exists() and not is_protected_path(p):
             usage = shutil.disk_usage(p)
             return DriveUsage(str(p), usage.total, usage.used, usage.free)
@@ -206,6 +204,12 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
+    """
+    Itera recursivamente sobre archivos en 'directory'.
+    Usa un stack para evitar recursión profunda y mantiene un set de 'visited_inodes' 
+    para detectar ciclos o archivos hard-linked duplicados. Saltea errores de acceso
+    y rutas marcadas como protegidas según el módulo safety.
+    """
     root_path = _validate_root(directory)
     if root_path is None: return
 
@@ -285,6 +289,12 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
+    """
+    Función central de agregación de métricas. Consume el generador de `walk_files`
+    para calcular el tamaño total, conteo de archivos, estadísticas por extensión
+    y mantiene un heap de tamaño fijo para encontrar los archivos más grandes de
+    forma eficiente (O(N log L) donde L es el límite).
+    """
     total_bytes, total_files = 0, 0
     ext_bytes, ext_counts = defaultdict(int), defaultdict(int)
     top_heap: List[Tuple[int, Path]] = []
