@@ -107,27 +107,27 @@ if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula salud de 'basura': 1.0 es 0MB, decrece linealmente hacia 0.0 en el límite crítico."""
+    """Calcula salud de 'basura': 1.0 es 0MB, decrece linealmente hacia 0.0 según umbral."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Evalúa seguridad: penalización acumulativa por hallazgos y advertencias, sin límite fijo."""
+    """Calcula salud de 'seguridad': penaliza con 5% por hallazgo y 25% por advertencia."""
     return _clamp(1.0 - ((_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula salud de 'memoria': 1.0 es nivel óptimo, decrece hacia 0.0 conforme se agota."""
+    """Calcula salud de 'memoria': mayor disponibilidad resulta en mayor ratio hasta saturación."""
     return _clamp(_to_float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula salud de 'disco': 1.0 es 100% libre, decrece hacia 0.0 conforme se agota."""
+    """Calcula salud de 'disco': escala el porcentaje libre según umbrales de advertencia."""
     return _clamp(_to_float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula salud de 'duplicados': ratio basado en el volumen total de redundancia hallada."""
+    """Calcula salud de 'duplicados': inverso al volumen de redundancia detectado."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
-    """Calcula salud de 'arranque': penalización creciente según número de programas en inicio."""
+    """Calcula salud de 'arranque': penalización lineal basada en la cantidad de entradas."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
 _RULES_LIST: Final[Tuple[RecommendationRule, ...]] = (
@@ -253,12 +253,14 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
+            # Entrada normalizada en [0.0, 1.0]
             val = entry.scorer(metrics)
             area_ratio = _clamp(float(val))
             
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
+            # Peso aplicado sobre el rango de 0 a entry.weight
             weighted_points = _clamp(round(area_ratio * entry.weight), 0, entry.weight)
             metric_breakdown[entry.area] = int(weighted_points)
             accumulated_score += weighted_points

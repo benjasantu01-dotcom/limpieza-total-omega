@@ -843,3 +843,13 @@ assert not True
 - `2026-09-17T10:44:04` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones clave (`walk_files` y `_collect_summary_data`), explicando explícitamente las asunciones sobre el manejo de errores y la lógica de filtrado de archivos para facilitar su mantenimiento futuro.
 - `2026-09-17T10:44:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T10:44:04` Corrida terminada. Total usado hoy: 248.
+- `2026-09-17T10:52:06` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-09-17T10:52:35` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se introdujeron type hints en los retornos de funciones críticas y se mejoró la documentación interna mediante docstrings que explican el "porqué" de las decisiones de seguridad, específicamente en la lógica de exclusión de archivos.
+- `2026-09-17T10:53:05` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings explicativos en los métodos de cálculo (`score_*`) y se corrigió la consistencia en el uso de `_to_float` para asegurar que el pipeline de `compute_score` sea robusto ante entradas inesperadas.
+- `2026-09-17T10:53:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-17T10:53:09` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-17T10:54:15` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-17T10:55:27` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-17T10:56:00` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de la API `EmptyWorkingSet` y se añadieron type hints más precisos a `_get_process_path` y `_is_safe_to_trim` para clarificar el flujo de seguridad, facilitando el mantenimiento y auditoría del código.
+- `2026-09-17T10:56:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T10:56:00` Corrida terminada. Total usado hoy: 252.
