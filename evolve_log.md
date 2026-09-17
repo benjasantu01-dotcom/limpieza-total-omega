@@ -1505,3 +1505,46 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-17T05:19:44` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-17T05:19:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T05:19:44` Corrida terminada. Total usado hoy: 122.
+- `2026-09-17T05:25:45` Arrancando corrida. Quedan hoy ~178 peticiones objetivo.
+- `2026-09-17T05:25:47` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-17T05:25:47` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-17T05:26:07` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-17T05:26:07` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-17T05:26:37` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-17T05:26:37` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-17T05:26:52` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-17T05:26:52` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-17T05:27:12` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-17T05:27:12` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-17T05:27:43` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-17T05:27:43` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-17T05:28:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-17T05:28:45` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemContext.ingest` al introducir un chequeo de tipos explícito para evitar fallos de ejecución al procesar objetos arbitrarios, asegurando que `ingest` sea capaz de manejar errores de acceso a atributos de forma silenciosa y segura tal como requiere el enfoque de validación de entradas.
+- `2026-09-17T05:29:05` Tests FALLARON:
+```
+e or not math.isfinite(float(percent)): return
+                                                ^^^^^^^^^^^^^^
+E       ValueError: could not convert string to float: 'mucho'
+
+app/branding.py:395: ValueError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:125: SyntaxWarning: invalid escape sequence '\R'
+    El registro de Windows suele guardar rutas con espacios como '"C:\Ruta\App.exe" /arg'.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - AttributeError: 'NoneType' object has no attribute 'create_line'
+FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missing_canvas - ValueError: could not convert string to float: 'mucho'
+2 failed, 297 passed, 7 warnings in 1.37s
+
+```
+- `2026-09-17T05:29:05` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `save_logo_svg` y `draw_ring` validando explícitamente las entradas críticas antes de realizar operaciones de sistema o cálculos matemáticos, evitando el uso innecesario de `ensure_safe_to_modify` tras comprobar `is_safe_to_modify` y reemplazando bloques `except Exception` genéricos por capturas específicas.
+- `2026-09-17T05:29:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T05:29:05` Corrida terminada. Total usado hoy: 126.

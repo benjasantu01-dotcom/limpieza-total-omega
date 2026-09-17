@@ -351,7 +351,7 @@ class SystemContext:
         if source is None or _is_input_too_deep_or_complex(source):
             return False
         
-        # Validación de fuente: permitimos dicts o instancias simples que no sean clases base
+        # Validación de fuente: permitimos dicts o instancias simples, excluyendo tipos.
         if not isinstance(source, dict) and not (hasattr(source, "__dict__") and not isinstance(source, type)):
             return False
             
@@ -413,6 +413,7 @@ def _get_source_value(source: Any, key: str) -> Any:
         
     # Acceso a objetos: solo permitimos campos que son datos, no métodos o dunders
     try:
+        if isinstance(source, type): return None
         val = getattr(source, key, None)
         if val is None or callable(val) or key.startswith("__"):
             return None
