@@ -372,9 +372,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 try: os.replace(ruta, bak_path)
                 except OSError: pass
                 
-            os.replace(temp_path, ruta)
-            _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
-            return ruta
+            if temp_path.exists():
+                os.replace(temp_path, ruta)
+                _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
+                return ruta
+            return None
         except (OSError, IOError, PermissionError):
             if attempt < 4:
                 time.sleep(0.25 * (attempt + 1))

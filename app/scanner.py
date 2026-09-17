@@ -111,16 +111,17 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     
     if entry and entry.is_file(follow_symlinks=False):
         stats = _safe_stat(entry)
-        if stats and (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
+        if stats and hasattr(stats, 'st_mtime') and (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta binarios con nombres de procesos de sistema ubicados fuera de System32 para prevenir suplantación."""
-    if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
-        path_str = str(path).lower()
-        if SYSTEM32_LOWER not in path_str:
-            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    if path and path.name:
+        if path.name.lower() in SYSTEM_LOOKALIKES:
+            path_str = str(path).lower()
+            if SYSTEM32_LOWER not in path_str:
+                return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
@@ -173,7 +174,7 @@ class Scanner:
         try:
             if not entry: return True
             stats = _safe_stat(entry)
-            if stats:
+            if stats and hasattr(stats, 'st_file_attributes'):
                 return bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
             return False
         except (OSError, PermissionError, AttributeError):

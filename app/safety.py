@@ -291,11 +291,7 @@ def _is_sensitive_extension(path: Path) -> bool:
     """Verifica si la extensión del archivo está listada como crítica/ejecutable."""
     return path.suffix.lower() in SENSITIVE_EXTENSIONS
 
-# Lista de validadores de integridad aplicada secuencialmente:
-# 1. Estructura y enlaces (Symlinks/Reparse Points/Junctions)
-# 2. Bloqueos de SO y estado de hardware (Kernel/Read-only/In-use)
-# 3. Atributos de archivos y metadatos (Hidden/Offline/Size/ADS)
-# 4. Validación de tipo y contenido (Hard links/File types)
+# Lista de validadores de integridad aplicada secuencialmente
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _IntegrityCheck(ProtectionReason.SYMLINK, lambda p, _: p.is_symlink()),
     _IntegrityCheck(ProtectionReason.REPARSE_POINT, lambda p, _: _is_reparse_point(str(p))),
@@ -331,9 +327,7 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 }
 
 def _check_file_integrity(path: Path) -> None:
-    """
-    Ejecuta una batería de reglas de integridad sobre el archivo mediante predicados.
-    """
+    """Ejecuta una batería de reglas de integridad sobre el archivo mediante predicados."""
     if not path.exists():
         return
         
@@ -351,7 +345,6 @@ def _check_file_integrity(path: Path) -> None:
                 code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
                 raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
         except (AttributeError, OSError, ctypes.ArgumentError, Exception):
-            # Fallo en una regla individual no debe detener el escaneo global
             continue
 
 @lru_cache(maxsize=2048)
@@ -515,13 +508,6 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
                      raise UnsafePathError("Unidad de red bloqueada.", SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED)
                 if drive_type == DRIVE_REMOVABLE:
                      raise UnsafePathError("Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED)
-            
-            # Detectar si el nodo actual es un volumen montado
-            attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(str(target_path)))
-            if attrs != 0xFFFFFFFF and (attrs & FILE_ATTRIBUTE_DIRECTORY) and (attrs & FILE_ATTRIBUTE_REPARSE_POINT):
-                 if os.path.ismount(target_path):
-                     raise UnsafePathError("Punto de montaje de volumen detectado.", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
-                     
         except (OSError, AttributeError, ctypes.ArgumentError, Exception) as e:
              raise UnsafePathError(f"Fallo al consultar unidad: {e}", SafetyValidationErrorCode.IO_ERROR)
 
@@ -534,8 +520,6 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
         
     if is_drive_root(target_path):
         raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS)
-    if _is_reparse_point(str(target_path)):
-        raise UnsafePathError("Nodo de reparse detectado.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
 def _validate_ntfs_reparse_redirection(path: Path) -> None:
     """Verifica si la ruta real difiere del path esperado tras resolver links/junctions."""
