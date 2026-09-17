@@ -205,23 +205,32 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._setup_application()
 
     def _init_component_registry(self) -> None:
-        """Reserva las estructuras de datos y estados iniciales de la app."""
+        """Reserva las estructuras de datos, estados iniciales y registros de UI."""
         self._initialized_tabs: Dict[str, bool] = {name: False for name in TABS}
         self._health_bars_initialized = False
+        
+        # Concurrencia y control de estado
         self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
-        self._log_queue: List[LogEntry] = []
-        self._log_lock = threading.Lock()
         self._task_lock = threading.Lock()
         self._closing = False
+        self._tasks_running = 0
+        
+        # Logs y colas de UI
+        self._log_queue: List[LogEntry] = []
+        self._log_lock = threading.Lock()
         self._log_scheduled = False
         self._active_buttons: List[ctk.CTkButton] = []
-        self._tasks_running = 0
+        
+        # Caché y persistencia
         self._last_card_values: Dict[str, str] = {}
         self.settings: AppSettings = {}
         self.setting_vars: Dict[str, Any] = {}
+        
+        # UI Component Reference Registry
         self.outputs: Dict[str, ctk.CTkTextbox] = {}
         self.cards: Dict[str, ctk.CTkLabel] = {}
         self.area_bars: Dict[str, Tuple[ctk.CTkProgressBar, ctk.CTkLabel]] = {}
+        self._debounces: Dict[str, str] = {}
 
     def _setup_application(self) -> None:
         """Configura entorno, ventana y dispara el layout inicial."""
@@ -243,7 +252,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._executor = None
         
         if executor:
-            # Shutdown no bloqueante, no esperamos a los threads para que no colapse la UI
             executor.shutdown(wait=False)
         
         self.quit()
@@ -314,7 +322,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             
         with self._task_lock:
             self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
-        self._debounces: Dict[str, str] = {}
             
     @safe_ui_operation
     def _toggle_ui_availability(self, active: bool) -> None:

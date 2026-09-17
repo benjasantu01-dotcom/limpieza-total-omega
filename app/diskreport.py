@@ -214,7 +214,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Recorre el árbol de directorios usando una pila (DFS) y evitando resolución innecesaria de rutas."""
+    """
+    Recorre el árbol de directorios mediante DFS (pila).
+    Evita ciclos mediante seguimiento de inodos y saltea rutas protegidas o reparse points.
+    """
     root_path = _validate_root(directory)
     if root_path is None: return
 
@@ -241,7 +244,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 
                         elif entry.is_file():
                             st = entry.stat(follow_symlinks=False)
-                            # Asegurar que el tamaño sea un entero positivo
                             size = max(0, int(getattr(st, 'st_size', 0)))
                             yield Path(entry.path), size
                     except (PermissionError, OSError, AttributeError):
@@ -300,7 +302,11 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Motor interno de agregación O(N) que utiliza heap para eficiencia de memoria."""
+    """
+    Motor central de recolección de métricas.
+    Recorre el sistema de archivos una sola vez (O(N)), calculando bytes por extensión
+    y manteniendo un heap de tamaño 'limit' para los archivos más pesados.
+    """
     total_bytes: int = 0
     total_files: int = 0
     ext_bytes: Dict[str, int] = defaultdict(int)
@@ -315,6 +321,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         ext_bytes[ext] += val
         ext_counts[ext] += 1
         
+        # Mantener el heap de archivos más grandes de forma eficiente
         if limit > 0 and val > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (val, path))
