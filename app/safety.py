@@ -327,10 +327,6 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 def _check_file_integrity(path: Path) -> None:
     """
     Ejecuta una batería de reglas de integridad sobre el archivo mediante predicados.
-    
-    El proceso verifica atributos de sistema, estado de bloqueo, streams ADS y 
-    restricciones de tamaño antes de confirmar la seguridad de la operación.
-    Lanza UnsafePathError ante cualquier violación detectada.
     """
     try:
         file_stat = path.stat()
@@ -346,7 +342,6 @@ def _check_file_integrity(path: Path) -> None:
                 code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
                 raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
         except (AttributeError, OSError, ctypes.ArgumentError, Exception):
-            # Ignoramos fallos en chequeos puntuales de metadatos del kernel para mantener la robustez
             continue
 
 @lru_cache(maxsize=2048)
@@ -406,11 +401,9 @@ def _is_system_path_cached(path_str: str) -> bool:
     """Compara la ruta normalizada contra listas de directorios protegidos de forma eficiente."""
     path_norm = os.path.normpath(path_str).lower()
     
-    # 1. Verificación O(1) contra raíces del sistema (ej: C:\Windows)
     if any(path_norm.startswith(root) for root in _SYSTEM_ROOT_PATHS_SET):
         return True
         
-    # 2. Verificación jerárquica de componentes sin crear conjuntos temporales en el loop
     for part in path_norm.split(os.sep):
         if part in PROTECTED_DIR_NAMES:
             return True
@@ -449,13 +442,7 @@ def is_sensitive_file(path: PathLike) -> bool:
     except (TypeError, ValueError, OSError): return True 
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
-    """
-    Realiza chequeos preventivos de la estructura del string de la ruta.
-    
-    Valida la ausencia de caracteres nulos, secuencias Unicode maliciosas, 
-    nombres de dispositivos reservados (DOS legacy) y longitudes de ruta 
-    fuera de los límites permitidos por el sistema.
-    """
+    """Realiza chequeos preventivos de la estructura del string de la ruta."""
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
     if "\0" in path_string:
@@ -497,13 +484,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Rutas UNC bloqueadas.", SafetyValidationErrorCode.UNC_PATH)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
-    """
-    Valida las condiciones de borde geográficas y de entorno del sistema.
-    
-    Verifica que la ruta sea absoluta, esté dentro del contexto de usuario 
-    permitido, no colisione con el directorio de ejecución de la aplicación, 
-    y que la unidad destino no sea de tipo remoto o extraíble.
-    """
+    """Valida las condiciones de borde geográficas y de entorno del sistema."""
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
         
@@ -541,27 +522,22 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
 
 def _validate_ntfs_reparse_redirection(path: Path) -> None:
     """Verifica si la ruta real difiere del path esperado tras resolver links/junctions."""
-    try:
-        kernel32 = ctypes.windll.kernel32
-        handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, 0, None, 3, 0x02000000, None)
-        if handle != -1:
+    kernel32 = ctypes.windll.kernel32
+    handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, 0, None, 3, 0x02000000, None)
+    if handle != -1:
+        try:
             buf = ctypes.create_unicode_buffer(1024)
             if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0):
                 final_path = Path(buf.value).resolve()
-                # Verificar redundancia tras resolución y asegurar que el destino real no escape del padre
                 if final_path.drive != path.resolve().drive:
                     raise UnsafePathError("Redirección de unidad detectada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
                 if not str(final_path).startswith(str(path.parent)):
                     raise UnsafePathError("Salida de carpeta permitida vía redirección.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+        finally:
             kernel32.CloseHandle(handle)
-    except (AttributeError, OSError, ctypes.ArgumentError): 
-        pass
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
-    """
-    Valida rigurosamente si una ruta es segura para ser modificada.
-    Lanza `UnsafePathError` si la ruta viola cualquier política de seguridad.
-    """
+    """Valida rigurosamente si una ruta es segura para ser modificada."""
     if path is None: 
         raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
     
@@ -584,7 +560,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         if p.exists():
             if os.name == 'nt':
                 _validate_ntfs_reparse_redirection(p)
-                
             _check_file_integrity(p)
         else:
             parent = p.parent
@@ -597,7 +572,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
                     drive_type = ctypes.windll.kernel32.GetDriveTypeW(anchor)
                     if drive_type in (DRIVE_REMOTE, DRIVE_REMOVABLE):
                         raise UnsafePathError("Unidad no apta para modificación.", SafetyValidationErrorCode.IO_ERROR)
-    except (UnsafePathError):
+    except UnsafePathError:
         raise
     except (OSError, PermissionError, AttributeError, ctypes.ArgumentError) as e:
         raise UnsafePathError(f"Fallo durante validación de integridad: {e}", SafetyValidationErrorCode.IO_ERROR)

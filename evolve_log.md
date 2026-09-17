@@ -562,3 +562,36 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-09-17T08:21:26` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva al invocar `EmptyWorkingSet` asegurando que el `proc_handle` sea obtenido con privilegios mínimos y validando explícitamente que la ruta del ejecutable no sea una ruta de sistema crítica ni un punto de reparse antes de proceder, integrando `is_safe_to_modify` para el chequeo de integridad.
 - `2026-09-17T08:21:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T08:21:26` Corrida terminada. Total usado hoy: 192.
+- `2026-09-17T08:29:12` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-09-17T08:29:41` Tests FALLARON:
+```
+ts()
+E        +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-1/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+
+evolve/tests/test_basic.py:144: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:125: SyntaxWarning: invalid escape sequence '\R'
+    El registro de Windows suele guardar rutas con espacios como '"C:\Ruta\App.exe" /arg'.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AssertionError: el archivo debe salir de su lugar original
+assert not True
+ +  where True = exists()
+ +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-1/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+1 failed, 298 passed, 7 warnings in 1.33s
+
+```
+- `2026-09-17T08:29:41` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` integrando una verificación de "propiedad" de la ruta, asegurando que `src` y `dest` no solo coincidan en unidad lógica, sino que la ruta de origen esté físicamente contenida dentro de un directorio permitido, evitando posibles ataques de recorrido de directorio (path traversal) o manipulación de rutas externas a los escaneos.
+- `2026-09-17T08:30:19` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se implementó un bloqueo preventivo adicional en `_check_isolation_safety` para verificar que el origen no sea un directorio raíz o una unidad lógica, evitando errores de permisos o bloqueos en sistemas de archivos críticos al intentar moverlos.
+- `2026-09-17T08:30:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-17T08:30:59` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la adición de una verificación explícita de `st_nlink` para detectar archivos con múltiples enlaces duros en `_check_file_integrity` y se actualizó el chequeo de `reparse points` para ser más exhaustivo en el manejo de posibles errores de la API de Windows, evitando que condiciones de carrera o bloqueos del kernel silencien fallos críticos.
+- `2026-09-17T08:30:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T08:30:59` Corrida terminada. Total usado hoy: 196.

@@ -340,6 +340,10 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     if resolved_source.stat().st_size == 0:
         raise UnsafePathError("Archivos vacíos prohibidos.")
     
+    # Bloqueo adicional para evitar raíces de sistema
+    if len(resolved_source.parts) <= 1:
+        raise UnsafePathError("Rutas raíz no pueden ser aisladas.")
+
     try:
         if os.path.samefile(resolved_source, resolved_dest_dir):
             raise UnsafePathError("Operación circular detectada.")
