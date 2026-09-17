@@ -225,7 +225,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry): continue
                         
                         path_obj = Path(entry.path).resolve()
-                        if root_path not in path_obj.parents and path_obj != root_path:
+                        if not path_obj.is_relative_to(root_path):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
@@ -238,13 +238,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 stack.append(entry.path)
                                 
                         elif entry.is_file(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                size = int(getattr(st, 'st_size', 0))
-                                yield path_obj, max(0, size)
-                            except (OSError, PermissionError):
-                                continue
-                    except (PermissionError, OSError, AttributeError):
+                            st = entry.stat(follow_symlinks=False)
+                            size = int(getattr(st, 'st_size', 0))
+                            yield path_obj, max(0, size)
+                    except (PermissionError, OSError, ValueError):
                         continue
         except (PermissionError, OSError):
             continue
@@ -272,17 +269,14 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     folder_file_counts: Dict[Path, int] = defaultdict(int)
     
     for path, size in walk_files(root, skip_protected):
-        # Validación: Asegurar que el archivo pertenece a la raíz, no ha escapado por enlaces
-        if root not in path.parents and path != root:
-            continue
-            
         try:
-            parts = path.relative_to(root).parts
-            if parts:
-                top_level_folder = root / parts[0]
-                folder_total_bytes[top_level_folder] += size
-                folder_file_counts[top_level_folder] += 1
-        except (OSError, RuntimeError, TypeError, ValueError): 
+            relative = path.relative_to(root)
+            if not relative.parts: continue
+            
+            top_level_folder = root / relative.parts[0]
+            folder_total_bytes[top_level_folder] += size
+            folder_file_counts[top_level_folder] += 1
+        except (ValueError, IndexError): 
             continue
 
     results = [FolderUsage(p, folder_total_bytes[p], folder_file_counts[p]) for p in folder_total_bytes]

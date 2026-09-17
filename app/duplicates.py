@@ -300,16 +300,19 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Formatea la información del grupo para visualización en UI."""
-    if not isinstance(group, DuplicateGroup):
-        return ["Error: Grupo inválido"]
+    if not isinstance(group, DuplicateGroup) or not group.paths:
+        return ["Error: Grupo inválido o vacío"]
         
     keeper = suggest_keeper(group)
     mb_t, mb_w = round(group.size_bytes / 1048576, 2), round(group.wasted_bytes / 1048576, 2)
     lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
     
     for path in group.paths:
+        if not isinstance(path, Path):
+            lines.append(f"   [error] ruta inválida")
+            continue
         try:
-            if not isinstance(path, Path) or not path.exists() or not is_safe_to_modify(path):
+            if not path.exists() or not is_safe_to_modify(path):
                 lines.append(f"   [inaccesible] {path}")
             else:
                 label = 'conservar' if (keeper is not None and path == keeper) else 'duplicado'

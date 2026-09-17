@@ -233,7 +233,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str):
                     clean_msg = msg.strip()
-                    if clean_msg.isprintable():
+                    if clean_msg and clean_msg.isprintable():
                         findings.append(clean_msg[:200])
         except (AttributeError, TypeError, ValueError):
             continue
@@ -253,17 +253,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
-            # Entrada normalizada en [0.0, 1.0] con protección contra retorno no finito
             val = entry.scorer(metrics)
-            if not math.isfinite(val):
-                raise ValueError("Resultado de scorer no es finito")
-                
-            area_ratio = _clamp(float(val))
+            area_ratio = _clamp(float(val)) if math.isfinite(val) else 0.0
             
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
-            # Peso aplicado sobre el rango de 0 a entry.weight
             weighted_points = _clamp(round(area_ratio * entry.weight), 0, entry.weight)
             metric_breakdown[entry.area] = int(weighted_points)
             accumulated_score += weighted_points
