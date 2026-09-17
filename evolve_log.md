@@ -996,3 +996,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-17T12:42:17` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_process_entry` y `_sum_directory_recursive` validando explícitamente el estado de reparse (`is_symlink`/`is_junction_fn`) antes de cualquier acceso al sistema de archivos, asegurando que ninguna operación de escaneo pueda seguir enlaces hacia afuera del entorno sandbox o hacia estructuras potencialmente cíclicas o bloqueadas.
 - `2026-09-17T12:42:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T12:42:17` Corrida terminada. Total usado hoy: 292.
+- `2026-09-17T12:44:45` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-09-17T12:45:12` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `largest_folders` agregando una validación estricta de que cada subcarpeta procesada esté contenida dentro de la raíz original, mitigando posibles escapes por manipulaciones de rutas o enlaces simbólicos maliciosos durante la iteración.
+- `2026-09-17T12:45:37` ➖ Sin cambios en duplicates.py (enfoque: seguridad defensiva). Motivo: Se ha añadido una verificación de "estatus de archivo" (`is_file` y `exists`) utilizando los métodos de `pathlib` antes de realizar operaciones de I/O en `hash_file` y `partial_hash` para evitar el acceso a enlaces simbólicos o rutas que pudieron haber cambiado de estado durante la ejecución.
+- `2026-09-17T12:46:11` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez del cálculo de puntajes añadiendo una validación de `math.isfinite` en cada `PipelineEntry` y encapsulando la ejecución de los `scorer` en bloques de protección que previenen que un valor atípico o una división por cero en un área específica corrompa la totalidad del `HealthResult`.
+- `2026-09-17T12:47:11` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-17T12:48:14` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-17T12:49:20` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-17T12:50:32` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-17T12:50:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T12:50:32` Corrida terminada. Total usado hoy: 296.

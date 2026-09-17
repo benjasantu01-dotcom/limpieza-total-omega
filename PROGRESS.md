@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 39
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 214
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 95 | 7 | 16 | 8 | 86 |
-| 2026-09-17 | 119 | 9 | 23 | 13 | 128 |
+| 2026-09-16 | 95 | 7 | 16 | 8 | 82 |
+| 2026-09-17 | 121 | 9 | 23 | 14 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
 - legibilidad y documentación: **47**
 - robustez ante casos límite: **46**
-- seguridad defensiva: **37**
+- seguridad defensiva: **39**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **22**
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
+- `healthscore.py`: **20**
 - `assistant.py`: **19**
-- `healthscore.py`: **19**
 - `memory.py`: **19**
 - `duplicates.py`: **18**
 - `safety.py`: **17**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T12:46:11` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del cálculo de puntajes añadiendo una validación de `math.isfinite` en cada `PipelineEntry` y encapsulando la ejecución de los `scorer` en bloques de protección que previenen que un valor atípico o una división por cero en un área específica corrompa la totalidad del `HealthResult`.
+- `2026-09-17T12:45:12` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `largest_folders` agregando una validación estricta de que cada subcarpeta procesada esté contenida dentro de la raíz original, mitigando posibles escapes por manipulaciones de rutas o enlaces simbólicos maliciosos durante la iteración.
 - `2026-09-17T12:42:17` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_process_entry` y `_sum_directory_recursive` validando explícitamente el estado de reparse (`is_symlink`/`is_junction_fn`) antes de cualquier acceso al sistema de archivos, asegurando que ninguna operación de escaneo pueda seguir enlaces hacia afuera del entorno sandbox o hacia estructuras potencialmente cíclicas o bloqueadas.
 - `2026-09-17T12:37:53` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_build_payload` y `_call_gemini` añadiendo una validación de `_is_safe_text_structure` sobre el contenido completo del JSON de transporte, garantizando que ninguna estructura anidada del payload pueda contener caracteres maliciosos o secuencias de escape antes de la salida al socket.
 - `2026-09-17T12:25:32` **safety.py** (robustez ante casos límite): Mejoré la robustez ante archivos inexistentes en `_check_file_integrity`, evitando que una llamada a `path.stat()` sobre un archivo recién borrado o en proceso de cambio interrumpa el flujo del escáner, y añadí una verificación de existencia antes de evaluar `_is_directory_junction`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T11:44:46` **safety.py** (rendimiento): Se ha optimizado la validación de rutas mediante la implementación de un caché para `is_protected_path`, evitando el cálculo repetitivo de normalización y el recorrido de los componentes de la ruta en cada llamada, mejorando sustancialmente el rendimiento en escaneos masivos.
 - `2026-09-17T11:43:50` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` reemplazando iteraciones redundantes y búsquedas lineales con conjuntos (sets) y diccionarios, reduciendo la complejidad algorítmica de O(N*M) a O(N+M) para las operaciones sobre el manifiesto y el sistema de archivos.
 - `2026-09-17T11:37:26` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación de una lista de tuplas intermedia y el ordenamiento posterior por una inserción ordenada usando `bisect.insort`, reduciendo la complejidad temporal de $O(N \log N)$ a $O(N \cdot K)$ donde $K$ es el límite de procesos.
-- `2026-09-17T11:24:27` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `Path.resolve()` y `stat()` sobre el mismo objeto, reemplazando las operaciones repetitivas sobre `Path` por el uso directo de los atributos provistos por `DirEntry`.
-- `2026-09-17T11:24:17` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la sobrecarga de crear objetos `Path` y múltiples llamadas a `relative_to` durante el recorrido, utilizando un método más directo para identificar la carpeta raíz de cada archivo.

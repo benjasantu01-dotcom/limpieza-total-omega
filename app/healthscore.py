@@ -253,8 +253,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
-            # Entrada normalizada en [0.0, 1.0]
+            # Entrada normalizada en [0.0, 1.0] con protección contra retorno no finito
             val = entry.scorer(metrics)
+            if not math.isfinite(val):
+                raise ValueError("Resultado de scorer no es finito")
+                
             area_ratio = _clamp(float(val))
             
             if entry.rules:
