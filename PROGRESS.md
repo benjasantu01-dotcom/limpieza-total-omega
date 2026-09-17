@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 228
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 42 | 2 | 7 | 1 | 54 |
+| 2026-09-15 | 40 | 2 | 7 | 1 | 52 |
 | 2026-09-16 | 147 | 8 | 30 | 15 | 150 |
-| 2026-09-17 | 13 | 1 | 5 | 5 | 24 |
+| 2026-09-17 | 17 | 1 | 5 | 5 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **50**
+- legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **42**
 - seguridad defensiva: **41**
-- rendimiento: **20**
+- robustez ante casos límite: **40**
+- rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **19**
-- `browser.py`: **19**
-- `memory.py`: **18**
+- `browser.py`: **20**
+- `healthscore.py`: **18**
+- `assistant.py`: **18**
 - `quarantine.py`: **17**
 - `diskreport.py`: **17**
 - `duplicates.py`: **17**
-- `assistant.py`: **17**
+- `memory.py`: **17**
 - `settings.py`: **15**
 - `safety.py`: **14**
 - `scanner.py`: **13**
 - `organizer.py`: **12**
-- `branding.py`: **11**
-- `startup.py`: **7**
+- `branding.py`: **12**
+- `startup.py`: **8**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T02:15:02` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` mediante la reutilización del diccionario de memoización `perf_cache` a lo largo de toda la iteración de navegadores, evitando el re-escaneo de subdirectorios compartidos (como `User Data`) y reduciendo significativamente las llamadas al sistema operativo.
+- `2026-09-17T02:14:36` **branding.py** (rendimiento): Optimicé el cálculo de colores del gradiente pre-computando la lógica de interpolación dentro de `gradient_colors` mediante una pre-lista de índices y mejorando el manejo de `_get_grouped_segments` para evitar iteraciones redundantes en el bucle principal de renderizado.
+- `2026-09-17T02:14:03` **assistant.py** (rendimiento): Optimicé el método `get_metric` de `SystemContext` para evitar el uso de `getattr` en cada consulta —que es costoso en términos de performance al ser una llamada al sistema de reflexión de Python— sustituyéndolo por un acceso directo al diccionario `__dict__` del objeto, aprovechando que el estado es una clase simple, mejorando así la eficiencia del bucle de inferencia local.
+- `2026-09-17T02:13:26` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de los métodos de resolución de rutas en la clase `StartupEntry`, clarificando mediante comentarios técnicos el flujo de saneamiento y las razones de las validaciones de seguridad aplicadas.
 - `2026-09-17T02:03:40` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados, type hints precisos y la extracción de una función de chequeo de integridad (`_is_valid_path_structure`) que clarifica las precondiciones de escaneo.
 - `2026-09-17T01:54:14` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings descriptivos en funciones auxiliares y tipado explícito, además de extraer lógica de validación compleja dentro de `_process_directory` hacia una función con nombre semántico para clarificar el flujo de escaneo.
 - `2026-09-17T01:53:42` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de bajo nivel y se han unificado los tipos de los parámetros en `trim_working_set` para prevenir errores de tipado, garantizando que la documentación sea más precisa sobre el comportamiento y las limitaciones de las APIs de Windows.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T01:22:59` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` refactorizando el manejo de errores de validación de unidades (DriveType) para asegurar que cualquier fallo en la API de Windows se capture explícitamente y se trate como una denegación segura, evitando que excepciones inesperadas escapen del control de seguridad.
 - `2026-09-17T01:14:25` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_windows_process_csv` y `_kb_to_bytes` mediante la validación estricta de tipos y la eliminación de posibles `None` o valores no numéricos antes de operar, previniendo errores en tiempo de ejecución.
 - `2026-09-17T01:11:40` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_evaluate_rules` mediante la captura explícita de excepciones y validación de tipos, evitando que errores de ejecución en los factories de mensajes o en el pipeline detengan el proceso de diagnóstico completo.
-- `2026-09-17T01:02:30` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validaciones explícitas para capturar errores de tipo o rutas vacías antes de procesar, asegurando que el bucle de escaneo no falle ante entradas inesperadas.
-- `2026-09-17T00:54:34` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y `SystemContext.ingest` para manejar fuentes de datos malformadas o inesperadas que podrían causar excepciones al intentar acceder a atributos no existentes, asegurando que la app no aborte ante datos corruptos.
-- `2026-09-16T14:09:24` **quarantine.py** (seguridad defensiva): Se reforzó `_safe_unlink` para implementar una verificación de seguridad proactiva mediante `is_protected_path` sobre la ruta resuelta antes de cualquier operación destructiva, asegurando que ni siquiera en el sandbox se pueda manipular una ruta que, por resolución de enlaces o caracteres especiales, termine siendo del sistema.
-- `2026-09-16T14:01:31` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_get_process_path` validando que la ruta del ejecutable no sea una ruta de dispositivo especial o UNC antes de resolverla, y añadiendo una verificación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier operación.

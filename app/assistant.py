@@ -295,8 +295,9 @@ class SystemContext:
     analyzed: bool = False
 
     def get_metric(self, key: str, default: float) -> float:
-        """Accede de forma segura a una métrica numérica por su clave de atributo."""
-        return _safe_float(getattr(self, key, default), default)
+        """Accede de forma eficiente a una métrica numérica usando acceso directo al dict."""
+        val = self.__dict__.get(key, None)
+        return _safe_float(val, default)
 
     @property
     def is_empty(self) -> bool:

@@ -1140,3 +1140,11 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-09-17T02:03:58` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidatorEntry, _Validators._validate_enum_str
 - `2026-09-17T02:03:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T02:03:58` Corrida terminada. Total usado hoy: 48.
+- `2026-09-17T02:12:16` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-09-17T02:12:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-17T02:13:26` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de los métodos de resolución de rutas en la clase `StartupEntry`, clarificando mediante comentarios técnicos el flujo de saneamiento y las razones de las validaciones de seguridad aplicadas.
+- `2026-09-17T02:14:03` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el método `get_metric` de `SystemContext` para evitar el uso de `getattr` en cada consulta —que es costoso en términos de performance al ser una llamada al sistema de reflexión de Python— sustituyéndolo por un acceso directo al diccionario `__dict__` del objeto, aprovechando que el estado es una clase simple, mejorando así la eficiencia del bucle de inferencia local.
+- `2026-09-17T02:14:36` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de colores del gradiente pre-computando la lógica de interpolación dentro de `gradient_colors` mediante una pre-lista de índices y mejorando el manejo de `_get_grouped_segments` para evitar iteraciones redundantes en el bucle principal de renderizado.
+- `2026-09-17T02:15:02` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` mediante la reutilización del diccionario de memoización `perf_cache` a lo largo de toda la iteración de navegadores, evitando el re-escaneo de subdirectorios compartidos (como `User Data`) y reduciendo significativamente las llamadas al sistema operativo.
+- `2026-09-17T02:15:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T02:15:02` Corrida terminada. Total usado hoy: 52.

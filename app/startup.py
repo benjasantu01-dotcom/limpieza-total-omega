@@ -120,7 +120,10 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Extrae rutas encerradas en comillas dobles (formato estándar de registro)."""
+        """
+        Extrae la ruta absoluta desde una cadena entrecomillada.
+        El registro de Windows suele guardar rutas con espacios como '"C:\Ruta\App.exe" /arg'.
+        """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
         
@@ -145,7 +148,10 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Comprueba existencia, acceso de lectura y evita rutas protegidas."""
+        """
+        Validación de seguridad: asegura que el archivo sea accesible, no una carpeta, 
+        no esté en zona protegida y no sea un enlace simbólico (evita inyección).
+        """
         try:
             if not p.exists() or p.is_dir() or is_protected_path(p):
                 return False
@@ -154,7 +160,10 @@ class StartupEntry:
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Normaliza, resuelve y cachea el estado de existencia de una ruta."""
+        """
+        Normaliza una ruta, resuelve enlaces y actualiza el caché de estado del sistema.
+        Devuelve la ruta absoluta si es válida y existe, caso contrario una cadena vacía.
+        """
         if not self.is_valid:
             return ""
         
@@ -176,6 +185,7 @@ class StartupEntry:
                 _EXISTS_CACHE[path_string] = False
                 return ""
                 
+            # strict=False evita excepciones si la ruta no existe, manejamos la lógica abajo
             p = p.resolve(strict=False)
             
             if not self._validate_file_access(p):
@@ -190,7 +200,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Selecciona estrategia de parseo dependiendo del formato de la cadena."""
+        """Estrategia de parseo: diferencia entre rutas con espacios y comandos directos."""
         if not command_line or not isinstance(command_line, str):
             return ""
         

@@ -255,20 +255,23 @@ def _interpolate_rgb(s1: RGBTuple, s2: RGBTuple, delta: float) -> RGBTuple:
         int(s1[2] + (s2[2] - s1[2]) * delta)
     )
 
-@lru_cache(maxsize=16)
+@lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
     """Genera una serie de colores intermedios distribuidos equitativamente entre los stops."""
     n = max(1, int(steps))
     if not stops or len(stops) < 2: 
         return (stops[0] if stops else C_TEXT_MUTED,) * n
-    rgb_stops = tuple(_hex_to_rgb(s) for s in stops)
+    
+    rgb_stops = [_hex_to_rgb(s) for s in stops]
     tramos = len(stops) - 1
-    paso = (n - 1) if n > 1 else 1
-    return tuple(_rgb_to_hex(_interpolate_rgb(
-        rgb_stops[int((i / paso) * tramos)],
-        rgb_stops[min(int((i / paso) * tramos) + 1, tramos)],
-        ((i / paso) * tramos) % 1
-    )) for i in range(n))
+    paso = float(n - 1) if n > 1 else 1.0
+    
+    res = []
+    for i in range(n):
+        pos = (i / paso) * tramos
+        idx = min(int(pos), tramos - 1)
+        res.append(_rgb_to_hex(_interpolate_rgb(rgb_stops[idx], rgb_stops[idx + 1], pos - idx)))
+    return tuple(res)
 
 @lru_cache(maxsize=64)
 def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
@@ -338,10 +341,8 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
         base_y = canvas_y + 18 * scale
         factor_y = 92 * scale / franjas_count
         center_x = canvas_x + 64 * scale
-        max_inv = max(1.0, float(franjas_count - 1))
         for seg in _get_grouped_segments(gradient_colors(franjas_count)):
-            mid = (seg.start_index + seg.end_index) / 2
-            progreso = mid / max_inv
+            progreso = ((seg.start_index + seg.end_index) / 2) / (franjas_count - 1)
             w = 36 * scale * (1.0 if progreso < 0.55 else 1.0 - (progreso - 0.55) * 1.9)
             canvas.create_rectangle(center_x - w, base_y + seg.start_index * factor_y, 
                                     center_x + w, base_y + seg.end_index * factor_y + 1, 

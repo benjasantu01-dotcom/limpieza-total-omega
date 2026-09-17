@@ -338,6 +338,7 @@ def detect_profiles(
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
     k32 = _get_kernel32()
+    # Cache compartido para persistir resultados entre navegadores en una misma ejecución
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     scanned_paths: set[str] = set()
@@ -365,6 +366,7 @@ def detect_profiles(
                 if not _is_path_inside_base(Path(real_candidate), real_base):
                     continue
                 
+                # Pasamos el perf_cache persistente para evitar escaneos redundantes
                 size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, perf_cache, str(real_base))
                 if size > 0:
                     scanned_paths.add(real_candidate)
