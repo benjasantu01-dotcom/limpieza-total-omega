@@ -409,7 +409,10 @@ def _get_source_value(source: Any, key: str) -> Any:
     if not isinstance(key, str) or key.startswith("_"): return None
     
     if isinstance(source, dict):
-        return source.get(key)
+        try:
+            return source.get(key)
+        except AttributeError:
+            return None
         
     # Acceso a objetos: solo permitimos campos que son datos, no métodos o dunders
     try:

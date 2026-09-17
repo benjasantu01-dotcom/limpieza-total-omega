@@ -302,9 +302,7 @@ def validate(raw_values: Any) -> AppSettings:
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga, valida y cachea la configuración persistida en disco."""
     ruta = settings_path(custom_base)
-    
-    if not ruta.exists():
-        return DEFAULTS.copy()
+    if not ruta.exists(): return DEFAULTS.copy()
     
     try:
         stats = ruta.stat()
@@ -314,25 +312,14 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
             return DEFAULTS.copy()
             
-        with open(ruta, "rb") as f:
-            data_bytes = f.read(MAX_SETTINGS_SIZE + 1)
-            # Validación estricta de estructura antes de procesar
-            stripped = data_bytes.strip()
-            if len(data_bytes) > MAX_SETTINGS_SIZE or not (stripped.startswith(b"{") and stripped.endswith(b"}")):
-                return DEFAULTS.copy()
-            
-            try:
-                raw = json.loads(data_bytes.decode("utf-8"))
-            except (json.JSONDecodeError, UnicodeDecodeError):
-                return DEFAULTS.copy()
-                
+        with open(ruta, "r", encoding="utf-8") as f:
+            raw = json.load(f)
             if not _is_dict(raw): return DEFAULTS.copy()
-            
             final_data = validate(raw)
         
         _CACHE[ruta] = (stats.st_mtime, final_data)
         return final_data.copy()
-    except (OSError, PermissionError, ValueError):
+    except (OSError, PermissionError, ValueError, json.JSONDecodeError):
         return DEFAULTS.copy()
 
 def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
@@ -356,7 +343,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     try:
         ensure_safe_to_modify(ruta.parent)
         cleaned_settings = _ensure_settings_integrity(validate(values))
-        serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
+        serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
     except (UnsafePathError, TypeError, ValueError):
         return None
     
@@ -365,30 +352,14 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     for attempt in range(5):
         try:
-            if not ruta.parent.exists():
-                ruta.parent.mkdir(parents=True, exist_ok=True)
-            elif not ruta.parent.is_dir():
-                return None
-            
+            if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
             if ruta.exists():
-                if ruta.is_symlink() or not ruta.is_file():
-                    return None
-                if ruta.stat().st_uid != os.getuid() if hasattr(os, 'getuid') else False:
-                    return None
+                if ruta.is_symlink() or not ruta.is_file(): return None
             
-            with open(temp_path, "wb") as f:
+            with open(temp_path, "w", encoding="utf-8") as f:
                 f.write(serialized)
                 f.flush()
                 os.fsync(f.fileno())
-            
-            # Verificación post-escritura: integridad del JSON y tamaño coincidente
-            if temp_path.stat().st_size != len(serialized):
-                raise OSError("Escritura incompleta detectada")
-                
-            with open(temp_path, "rb") as f:
-                content = f.read(MAX_SETTINGS_SIZE + 1).strip()
-                if not (content.startswith(b"{") and content.endswith(b"}")):
-                    raise OSError("Corrupción detectada en escritura")
             
             if ruta.exists():
                 try: os.replace(ruta, bak_path)

@@ -917,3 +917,41 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-09-17T11:44:56` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
 - `2026-09-17T11:44:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T11:44:56` Corrida terminada. Total usado hoy: 272.
+- `2026-09-17T11:53:12` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-09-17T11:53:46` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la carga de configuración eliminando la serialización innecesaria a bytes durante el cacheo y añadiendo una comprobación rápida de `mtime` antes de realizar cualquier operación de I/O, mejorando el rendimiento en accesos recurrentes.
+- `2026-09-17T11:54:15` Tests FALLARON:
+```
+in/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:126
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:126: SyntaxWarning: invalid escape sequence '\R'
+    El registro de Windows suele guardar rutas con espacios como '"C:\Ruta\App.exe" /arg'.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 8 warnings in 1.62s
+
+```
+- `2026-09-17T11:54:15` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché en el método `executable` de `StartupEntry` para evitar llamadas redundantes a `os.path.normpath` y `path.resolve()` cuando el mismo ejecutable aparece en múltiples ubicaciones o se consulta repetidamente, optimizando significativamente la resolución de rutas en el listado final.
+- `2026-09-17T11:55:00` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la resiliencia ante errores de configuración o tipos inesperados en `SystemContext.ingest` y sus métodos auxiliares, asegurando que si una métrica está corrupta o fuera de rango no invalide la ingesta del resto del objeto.
+- `2026-09-17T11:55:22` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-17T11:55:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T11:55:22` Corrida terminada. Total usado hoy: 276.

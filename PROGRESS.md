@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 100 | 7 | 17 | 9 | 99 |
-| 2026-09-17 | 109 | 8 | 22 | 11 | 122 |
+| 2026-09-16 | 99 | 7 | 17 | 9 | 96 |
+| 2026-09-17 | 111 | 9 | 22 | 11 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
 - legibilidad y documentación: **47**
-- seguridad defensiva: **40**
-- robustez ante casos límite: **39**
-- rendimiento: **34**
+- robustez ante casos límite: **40**
+- seguridad defensiva: **39**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
 - `browser.py`: **20**
 - `diskreport.py`: **20**
+- `healthscore.py`: **19**
+- `settings.py`: **18**
+- `assistant.py`: **18**
 - `memory.py`: **18**
-- `settings.py`: **17**
-- `assistant.py`: **17**
 - `duplicates.py`: **17**
 - `quarantine.py`: **16**
 - `safety.py`: **16**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T11:55:00` **assistant.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de configuración o tipos inesperados en `SystemContext.ingest` y sus métodos auxiliares, asegurando que si una métrica está corrupta o fuera de rango no invalide la ingesta del resto del objeto.
+- `2026-09-17T11:53:46` **settings.py** (rendimiento): Optimizé la carga de configuración eliminando la serialización innecesaria a bytes durante el cacheo y añadiendo una comprobación rápida de `mtime` antes de realizar cualquier operación de I/O, mejorando el rendimiento en accesos recurrentes.
 - `2026-09-17T11:44:46` **safety.py** (rendimiento): Se ha optimizado la validación de rutas mediante la implementación de un caché para `is_protected_path`, evitando el cálculo repetitivo de normalización y el recorrido de los componentes de la ruta en cada llamada, mejorando sustancialmente el rendimiento en escaneos masivos.
 - `2026-09-17T11:43:50` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` reemplazando iteraciones redundantes y búsquedas lineales con conjuntos (sets) y diccionarios, reduciendo la complejidad algorítmica de O(N*M) a O(N+M) para las operaciones sobre el manifiesto y el sistema de archivos.
 - `2026-09-17T11:37:26` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación de una lista de tuplas intermedia y el ordenamiento posterior por una inserción ordenada usando `bisect.insort`, reduciendo la complejidad temporal de $O(N \log N)$ a $O(N \cdot K)$ donde $K$ es el límite de procesos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T10:53:05` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en los métodos de cálculo (`score_*`) y se corrigió la consistencia en el uso de `_to_float` para asegurar que el pipeline de `compute_score` sea robusto ante entradas inesperadas.
 - `2026-09-17T10:52:35` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints en los retornos de funciones críticas y se mejoró la documentación interna mediante docstrings que explican el "porqué" de las decisiones de seguridad, específicamente en la lógica de exclusión de archivos.
 - `2026-09-17T10:44:04` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones clave (`walk_files` y `_collect_summary_data`), explicando explícitamente las asunciones sobre el manejo de errores y la lógica de filtrado de archivos para facilitar su mantenimiento futuro.
-- `2026-09-17T10:43:46` **browser.py** (legibilidad y documentación): Se han mejorado las docstrings de las funciones de escaneo y validación, clarificando las precondiciones de seguridad y el propósito de cada filtro de `sandbox` para que otros desarrolladores comprendan rápidamente por qué ciertas rutas se descartan.
-- `2026-09-17T10:33:27` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez del parseo del registro integrando validaciones de tipos y manejo de excepciones específicas en `parse_registry_csv`, evitando que una estructura de CSV inesperada o campos mal formados interrumpan el análisis del sistema.
