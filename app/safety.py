@@ -290,7 +290,11 @@ def _is_sensitive_extension(path: Path) -> bool:
     """Verifica si la extensión del archivo está listada como crítica/ejecutable."""
     return path.suffix.lower() in SENSITIVE_EXTENSIONS
 
-# Lista de validadores de integridad aplicada secuencialmente
+# Lista de validadores de integridad aplicada secuencialmente:
+# 1. Estructura y enlaces (Symlinks/Reparse Points/Junctions)
+# 2. Bloqueos de SO y estado de hardware (Kernel/Read-only/In-use)
+# 3. Atributos de archivos y metadatos (Hidden/Offline/Size/ADS)
+# 4. Validación de tipo y contenido (Hard links/File types)
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _IntegrityCheck(ProtectionReason.SYMLINK, lambda p, _: p.is_symlink()),
     _IntegrityCheck(ProtectionReason.REPARSE_POINT, lambda p, _: _is_reparse_point(str(p))),

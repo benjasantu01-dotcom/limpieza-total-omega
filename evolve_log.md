@@ -853,3 +853,35 @@ assert not True
 - `2026-09-17T10:56:00` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de la API `EmptyWorkingSet` y se añadieron type hints más precisos a `_get_process_path` y `_is_safe_to_trim` para clarificar el flujo de seguridad, facilitando el mantenimiento y auditoría del código.
 - `2026-09-17T10:56:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T10:56:00` Corrida terminada. Total usado hoy: 252.
+- `2026-09-17T11:02:17` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-09-17T11:02:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: legibilidad y documentación).
+- `2026-09-17T11:03:21` Tests FALLARON:
+```
+ isinstance(d, dict) and (item := QuarantineItem.from_dict(d))]
+>       except (json.DecodeError, FileNotFoundError, OSError, PermissionError):
+                ^^^^^^^^^^^^^^^^
+E       AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+
+app/quarantine.py:413: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:125: SyntaxWarning: invalid escape sequence '\R'
+    El registro de Windows suele guardar rutas con espacios como '"C:\Ruta\App.exe" /arg'.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+1 failed, 298 passed, 7 warnings in 1.54s
+
+```
+- `2026-09-17T11:03:21` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la documentación técnica del módulo `quarantine.py` mediante docstrings detallados en funciones críticas y la adición de Type Hints en retornos de funciones, aclarando las responsabilidades y precondiciones de seguridad de las operaciones de E/S.
+- `2026-09-17T11:03:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 116): unterminated string literal (detected at line 116)
+- `2026-09-17T11:04:06` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha documentado la lógica de `_VALIDATORS` mediante un comentario de bloque que detalla explícitamente el orden de evaluación, mejorando la legibilidad sobre la jerarquía de chequeos de seguridad.
+- `2026-09-17T11:04:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T11:04:06` Corrida terminada. Total usado hoy: 256.
