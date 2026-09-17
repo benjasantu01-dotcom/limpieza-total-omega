@@ -367,6 +367,13 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             elif not ruta.parent.is_dir():
                 return None
             
+            # Si existe, asegurar que es un archivo normal (evitar symlink hijacking)
+            if ruta.exists():
+                if ruta.is_symlink() or not ruta.is_file():
+                    return None
+                if ruta.stat().st_uid != os.getuid() if hasattr(os, 'getuid') else False:
+                    return None
+            
             with open(temp_path, "wb") as f:
                 f.write(serialized)
                 f.flush()
