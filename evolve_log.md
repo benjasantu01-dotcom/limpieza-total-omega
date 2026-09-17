@@ -976,3 +976,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-17T12:24:01` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-17T12:24:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T12:24:01` Corrida terminada. Total usado hoy: 284.
+- `2026-09-17T12:24:19` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-09-17T12:24:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-17T12:25:32` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez ante archivos inexistentes en `_check_file_integrity`, evitando que una llamada a `path.stat()` sobre un archivo recién borrado o en proceso de cambio interrumpa el flujo del escáner, y añadí una verificación de existencia antes de evaluar `_is_directory_junction`.
+- `2026-09-17T12:26:02` ➖ Sin cambios en scanner.py (enfoque: robustez ante casos límite). Motivo: Mejoré `_is_reparse_point` y `_safe_stat` para manejar robustamente errores de acceso y metadatos corruptos, garantizando que el escáner no aborte ante archivos bloqueados o sin permisos, y manteniendo la consistencia con las reglas de seguridad al evitar la resolución de symlinks/junctions.
+- `2026-09-17T12:26:25` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se implementó un mecanismo de protección contra condiciones de carrera y archivos corruptos en `load` mediante el uso de un archivo temporal para verificar la estructura JSON completa antes de actualizar la caché, asegurando que la configuración cargada sea siempre válida y atómica.
+- `2026-09-17T12:26:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T12:26:25` Corrida terminada. Total usado hoy: 288.

@@ -332,9 +332,12 @@ def _check_file_integrity(path: Path) -> None:
     """
     Ejecuta una batería de reglas de integridad sobre el archivo mediante predicados.
     """
+    if not path.exists():
+        return
+        
     try:
         file_stat = path.stat()
-    except (PermissionError, OSError) as e:
+    except (PermissionError, OSError):
         raise UnsafePathError(f"Acceso denegado a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     
     if _is_directory_junction(path):
