@@ -79,6 +79,7 @@ MAX_SCAN_DEPTH: int = 15
 MAX_PATH_LEN: int = 260
 SYSTEM_HIDDEN_FLAGS: int = 0x01 | 0x02 | 0x04 | 0x400
 ERROR_SHARING_VIOLATION: int = 32
+ERROR_ACCESS_DENIED: int = 5
 
 @dataclass
 class BrowserCache:
@@ -235,7 +236,8 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
                 stat_res = entry.stat(follow_symlinks=False)
                 return int(stat_res.st_size) if hasattr(stat_res, 'st_size') else 0
             except OSError as e:
-                if e.winerror == ERROR_SHARING_VIOLATION:
+                # Ignorar errores de acceso y archivos en uso durante el escaneo
+                if getattr(e, 'winerror', 0) in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
                     return 0
                 return 0
     except (OSError, PermissionError):
@@ -257,7 +259,7 @@ def _sum_directory_recursive(
     Aplica 'sandbox' en cada nodo visitado. Solo considera archivos dentro de
     `root_base`. Usa `memo` para evitar ciclos y re-procesamiento innecesario.
     """
-    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or _is_unc_path(root_abs) or any(c in root_abs for c in '\0\r\n'):
+    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN or _is_unc_path(root_abs) or any(c in root_abs for c in '\0\r\n'):
         return 0
     
     try:

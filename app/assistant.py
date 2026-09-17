@@ -619,18 +619,23 @@ def available(base: Union[str, Path, None] = None) -> bool:
 
 def _parse_config(raw_cfg: Any) -> AssistantConfig:
     """Parsea el diccionario de configuración externa, asegurando valores predeterminados seguros."""
+    # Valor por defecto seguro ante cualquier entrada inválida
+    default = AssistantConfig("", "gemini-3.1-flash-lite", True)
+    
     if not isinstance(raw_cfg, dict):
-        return AssistantConfig("", "gemini-3.1-flash-lite", True)
+        return default
     
     try:
+        # Extraer y validar tipos de forma defensiva
         api_key = str(raw_cfg.get("asistente_api_key", ""))
         model = str(raw_cfg.get("asistente_modelo", "gemini-3.1-flash-lite"))
-        metrics_val = raw_cfg.get("asistente_enviar_metricas", True)
-        allow_metrics = bool(metrics_val)
+        metrics_val = raw_cfg.get("asistente_enviar_metricas")
+        
+        allow_metrics = True if metrics_val is None else bool(metrics_val)
         
         return AssistantConfig(api_key, model, allow_metrics)
     except (ValueError, TypeError, AttributeError):
-        return AssistantConfig("", "gemini-3.1-flash-lite", True)
+        return default
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa la pregunta y el contexto en un JSON para la API de Gemini."""
@@ -711,6 +716,7 @@ def ask(question: str, context: Optional[SystemContext] = None,
         
     try:
         settings_data = settings.load(base)
+        # _parse_config siempre retorna un objeto válido, nunca falla
         cfg = _parse_config(settings_data)
         
         texto_contexto = context_as_text(ctx) if cfg.allow_metrics else "El usuario no autorizó enviar métricas."
@@ -722,4 +728,5 @@ def ask(question: str, context: Optional[SystemContext] = None,
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
         
     except Exception:
+        # En caso de error crítico en la lectura de settings, persistir en el motor local
         return respaldo
