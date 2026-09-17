@@ -133,6 +133,7 @@ def safe_ui_operation(func: Callable) -> Callable:
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Optional[Any]:
         try:
+            # Validar existencia del widget raíz o del primer argumento si es instancia
             if args and hasattr(args[0], 'winfo_exists') and not args[0].winfo_exists():
                 return None
             return func(*args, **kwargs)
@@ -148,7 +149,10 @@ def validated_ui_operation(func: Callable) -> Callable:
     """
     @wraps(func)
     def wrapper(self: Any, *args: Any, **kwargs: Any) -> Optional[Any]:
-        if getattr(self, '_closing', False) or not self.winfo_exists():
+        # Si la app se está cerrando, ignorar nuevas peticiones de UI
+        if getattr(self, '_closing', False):
+            return None
+        if hasattr(self, 'winfo_exists') and not self.winfo_exists():
             return None
         try:
             return func(self, *args, **kwargs)
@@ -231,14 +235,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             logging.critical("Error fatal al inicializar la aplicación: %s", e)
             raise
 
-    @validated_ui_operation
     def _on_closing(self) -> None:
         """Finaliza hilos de fondo, libera recursos y destruye la ventana."""
         with self._task_lock:
             self._closing = True
-            if self._executor:
-                self._executor.shutdown(wait=False)
-                self._executor = None
+            executor = self._executor
+            self._executor = None
+        
+        if executor:
+            # Shutdown no bloqueante, no esperamos a los threads para que no colapse la UI
+            executor.shutdown(wait=False)
         
         self.quit()
         self.destroy()

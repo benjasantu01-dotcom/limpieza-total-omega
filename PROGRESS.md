@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 24
 - Sin respuesta de la IA (error o límite): 228
@@ -16,16 +16,16 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-15 | 30 | 2 | 3 | 1 | 48 |
+| 2026-09-15 | 28 | 1 | 3 | 1 | 47 |
 | 2026-09-16 | 147 | 8 | 30 | 15 | 150 |
-| 2026-09-17 | 24 | 2 | 6 | 8 | 30 |
+| 2026-09-17 | 27 | 2 | 6 | 8 | 31 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **39**
-- seguridad defensiva: **34**
+- robustez ante casos límite: **42**
+- seguridad defensiva: **32**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
@@ -33,20 +33,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **20**
 - `healthscore.py`: **19**
 - `assistant.py`: **18**
+- `memory.py`: **17**
 - `diskreport.py`: **16**
 - `duplicates.py`: **16**
-- `memory.py`: **16**
-- `settings.py`: **15**
-- `quarantine.py`: **15**
-- `scanner.py`: **14**
+- `quarantine.py`: **16**
+- `settings.py`: **14**
 - `safety.py`: **13**
+- `scanner.py`: **13**
 - `organizer.py`: **12**
 - `branding.py`: **12**
+- `main.py`: **8**
 - `startup.py`: **8**
-- `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-17T03:17:06` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S y corrupción de metadatos en `list_items` y `load_manifest`, asegurando que el sistema sea resiliente incluso si el archivo de manifiesto contiene datos malformados o si los archivos físicos asociados han sido manipulados por terceros.
+- `2026-09-17T03:16:18` **memory.py** (robustez ante casos límite): Se ha robustecido `parse_windows_process_csv` para prevenir errores ante líneas malformadas o PIDs negativos provenientes de PowerShell, evitando que una entrada corrupta invalide el procesamiento de la lista completa.
+- `2026-09-17T03:15:42` **main.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de concurrencia y estados inconsistentes de la interfaz al cerrar la aplicación, asegurando que `_executor.shutdown` no bloquee el hilo principal y que los callbacks pendientes no intenten interactuar con widgets ya destruidos tras la finalización del proceso.
 - `2026-09-17T03:05:12` **healthscore.py** (robustez ante casos límite): Se introdujo una protección defensiva en `_evaluate_rules` para manejar potenciales errores de ejecución dentro de los `message_factory` (ej. si el objeto `metrics` fuera alterado inesperadamente) y se añadió una validación estricta de `math.isfinite` para asegurar que el `accumulated_score` no se corrompa con valores `NaN` o `Inf` durante el bucle del pipeline.
 - `2026-09-17T03:04:06` **browser.py** (robustez ante casos límite): Se introdujo una validación de concurrencia en `_sum_directory_recursive` para manejar el `ERROR_SHARING_VIOLATION` (código 32) de forma explícita, evitando que el escáner se interrumpa ante archivos bloqueados por el navegador en ejecución.
 - `2026-09-17T02:55:41` **settings.py** (rendimiento): Optimizé la carga de configuración eliminando lecturas redundantes del sistema de archivos al verificar directamente el timestamp del archivo en caché antes de cualquier operación de I/O, reduciendo llamadas innecesarias al sistema operativo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T02:14:03` **assistant.py** (rendimiento): Optimicé el método `get_metric` de `SystemContext` para evitar el uso de `getattr` en cada consulta —que es costoso en términos de performance al ser una llamada al sistema de reflexión de Python— sustituyéndolo por un acceso directo al diccionario `__dict__` del objeto, aprovechando que el estado es una clase simple, mejorando así la eficiencia del bucle de inferencia local.
 - `2026-09-17T02:13:26` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de los métodos de resolución de rutas en la clase `StartupEntry`, clarificando mediante comentarios técnicos el flujo de saneamiento y las razones de las validaciones de seguridad aplicadas.
 - `2026-09-17T02:03:40` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados, type hints precisos y la extracción de una función de chequeo de integridad (`_is_valid_path_structure`) que clarifica las precondiciones de escaneo.
-- `2026-09-17T01:54:14` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings descriptivos en funciones auxiliares y tipado explícito, además de extraer lógica de validación compleja dentro de `_process_directory` hacia una función con nombre semántico para clarificar el flujo de escaneo.
-- `2026-09-17T01:53:42` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de bajo nivel y se han unificado los tipos de los parámetros en `trim_working_set` para prevenir errores de tipado, garantizando que la documentación sea más precisa sobre el comportamiento y las limitaciones de las APIs de Windows.
-- `2026-09-17T01:43:12` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en las funciones de procesamiento de hashes y el orquestador principal, clarificando los criterios de filtrado, el manejo de errores esperado y la lógica de seguridad implementada.

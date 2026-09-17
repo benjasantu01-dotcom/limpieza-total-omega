@@ -384,6 +384,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
             data = json.load(f)
             if not isinstance(data, list):
                 return []
+            # Recuperación resiliente: solo aceptamos lo que parsea correctamente
             return [item for d in data if isinstance(d, dict) and (item := QuarantineItem.from_dict(d))]
     except (json.JSONDecodeError, FileNotFoundError, OSError, PermissionError):
         return []
@@ -446,9 +447,6 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 def _write_temp_to_final(source: Path, destination: Path) -> str:
     """
     Copia física del archivo origen al sandbox mediante descriptores de archivo.
-    
-    Utiliza O_EXCL y fsync para asegurar integridad y evitar condiciones de carrera 
-    al escribir en el directorio de cuarentena.
     """
     _check_path_syntax_integrity(destination)
     if is_protected_path(destination):
@@ -506,8 +504,6 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
     """
     Coordina el aislamiento seguro del archivo hacia el sandbox.
-    
-    Realiza la validación final de la ruta destino y delega la copia a _write_temp_to_final.
     """
     if not source.exists():
         raise FileNotFoundError("Archivo origen inexistente.")
@@ -614,7 +610,13 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
         items = load_manifest(base)
         existing_names = {f.name for f in base_path.iterdir() if f.is_file()}
         
-        valid_items = [i for i in items if i.stored_name in existing_names]
+        # Filtramos ítems que existen y cuya integridad no ha sido violada
+        valid_items = []
+        for i in items:
+            stored = base_path / i.stored_name
+            if i.stored_name in existing_names and i._validate_integrity(stored):
+                valid_items.append(i)
+            
         if len(valid_items) != len(items):
             save_manifest(valid_items, base)
             

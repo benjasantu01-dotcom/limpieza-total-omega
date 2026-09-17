@@ -222,11 +222,11 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     
     processed: List[ProcessMemory] = []
     for line in raw_csv_text.splitlines():
-        if "," in line:
-            parts = [_clean_csv_field(x) for x in line.split(",")]
-            entry = _is_valid_process_entry(parts)
-            if entry:
-                processed.append(entry)
+        # Validar mínima estructura para evitar errores de índice
+        parts = [_clean_csv_field(x) for x in line.split(",")]
+        entry = _is_valid_process_entry(parts)
+        if entry:
+            processed.append(entry)
                 
     processed.sort(key=lambda p: p.working_set, reverse=True)
     return processed[:limit]

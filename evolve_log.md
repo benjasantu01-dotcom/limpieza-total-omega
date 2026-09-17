@@ -1217,3 +1217,11 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-17T03:05:12` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se introdujo una protección defensiva en `_evaluate_rules` para manejar potenciales errores de ejecución dentro de los `message_factory` (ej. si el objeto `metrics` fuera alterado inesperadamente) y se añadió una validación estricta de `math.isfinite` para asegurar que el `accumulated_score` no se corrompa con valores `NaN` o `Inf` durante el bucle del pipeline.
 - `2026-09-17T03:05:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-17T03:05:12` Corrida terminada. Total usado hoy: 70.
+- `2026-09-17T03:13:24` Arrancando corrida. Quedan hoy ~230 peticiones objetivo.
+- `2026-09-17T03:14:25` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-17T03:15:42` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra errores de concurrencia y estados inconsistentes de la interfaz al cerrar la aplicación, asegurando que `_executor.shutdown` no bloquee el hilo principal y que los callbacks pendientes no intenten interactuar con widgets ya destruidos tras la finalización del proceso.
+- `2026-09-17T03:16:18` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha robustecido `parse_windows_process_csv` para prevenir errores ante líneas malformadas o PIDs negativos provenientes de PowerShell, evitando que una entrada corrupta invalide el procesamiento de la lista completa.
+- `2026-09-17T03:16:46` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-17T03:17:06` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores de E/S y corrupción de metadatos en `list_items` y `load_manifest`, asegurando que el sistema sea resiliente incluso si el archivo de manifiesto contiene datos malformados o si los archivos físicos asociados han sido manipulados por terceros.
+- `2026-09-17T03:17:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-17T03:17:06` Corrida terminada. Total usado hoy: 74.
