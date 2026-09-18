@@ -937,7 +937,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Valida si un directorio destino es seguro para procesamientos."""
         try:
             p = Path(path).resolve(strict=True)
-            return p.is_dir() and not p.is_symlink() and not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
+            return p.exists() and p.is_dir() and not p.is_symlink() and not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
         except (OSError, PermissionError, ValueError):
             return False
 
@@ -1313,19 +1313,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             update_label("")
         else:
             try:
-                # Sanitización robusta contra caracteres no imprimibles o malformaciones
+                # Sanitización robusta contra caracteres no imprimibles
                 clean_choice = "".join(c for c in choice if c.isprintable())
-                target_path = Path(clean_choice).resolve(strict=True)
-                if self._is_safe_target_dir(target_path):
+                target_path = Path(clean_choice).resolve()
+                if target_path.exists() and self._is_safe_target_dir(target_path):
                     self.scan_target = str(target_path)
-                    update_label(f"Unidad completa: {choice}")
+                    update_label(f"Unidad: {choice}")
                 else:
-                    self.log(f"Error: La ruta {choice} no es válida o es insegura.", "Limpieza")
-                    self.target_choice.set("Por defecto (Temp + Descargas)")
-                    self.scan_target = None
-                    update_label("")
+                    raise ValueError("Ruta inválida o inaccesible")
             except (OSError, ValueError, RuntimeError):
-                self.log(f"Error: La ruta {choice} no es válida o ya no existe.", "Limpieza")
+                self.log(f"Error: La ruta {choice} no es válida o es insegura.", "Limpieza")
                 self.target_choice.set("Por defecto (Temp + Descargas)")
                 self.scan_target = None
                 update_label("")

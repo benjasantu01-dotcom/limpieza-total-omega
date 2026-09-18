@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 125 | 8 | 21 | 10 | 140 |
-| 2026-09-18 | 83 | 7 | 19 | 8 | 83 |
+| 2026-09-17 | 122 | 8 | 20 | 10 | 140 |
+| 2026-09-18 | 86 | 7 | 19 | 8 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **48**
-- manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **43**
-- rendimiento: **37**
-- legibilidad y documentación: **34**
+- rendimiento: **36**
+- legibilidad y documentación: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **22**
 - `healthscore.py`: **21**
 - `diskreport.py`: **20**
-- `assistant.py`: **18**
 - `settings.py`: **18**
+- `memory.py`: **18**
 - `safety.py`: **17**
-- `memory.py`: **17**
+- `assistant.py`: **17**
+- `quarantine.py`: **16**
 - `duplicates.py`: **16**
-- `quarantine.py`: **15**
-- `scanner.py`: **14**
+- `scanner.py`: **13**
 - `branding.py`: **9**
+- `main.py`: **8**
 - `organizer.py`: **8**
-- `main.py`: **7**
-- `startup.py`: **6**
+- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T08:42:44` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante la captura explícita y el manejo granular de excepciones durante el parseo de JSON, evitando que un archivo malformado detenga la operación de carga y asegurando una degradación elegante ante errores de I/O o corrupción de datos.
+- `2026-09-18T08:41:58` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes validando explícitamente los handles devueltos por `OpenProcess` para evitar excepciones de `ctypes` al trabajar con valores nulos o cerrados, y aseguré que `GetExitCodeProcess` siempre sea llamado con un tipo de dato correcto.
+- `2026-09-18T08:41:29` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_target_choice_changed` encapsulando la validación de la entrada en un bloque `try-except` más específico y añadiendo un chequeo explícito de existencia mediante `path.exists()` antes de proceder, evitando así excepciones innecesarias en el log cuando el usuario interactúa con rutas inexistentes o inválidas.
 - `2026-09-18T08:31:44` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.is_finite` y `compute_score` implementando una validación explícita de `None` y valores extremos para evitar errores en tiempo de ejecución al procesar datos inyectados, alineándome con el enfoque de manejo de errores defensivo.
 - `2026-09-18T08:31:31` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez ante errores de entrada y condiciones de carrera en `_decide_hash_strategy_and_process` mediante la adición de validaciones de integridad en los parámetros y resultados intermedios.
 - `2026-09-18T08:31:02` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_collect_summary_data` y `largest_folders` añadiendo chequeos de integridad frente a `path.suffix` vacíos o fallos en el cálculo de rutas relativas, previniendo errores de ejecución durante el escaneo de volúmenes con archivos sin extensión o estructuras de directorios profundas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T06:49:15` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar una verificación explícita de `is_safe_to_modify` (la función estándar de seguridad) para evitar que archivos protegidos por el sistema sean considerados candidatos a limpieza, fortaleciendo la barrera de seguridad antes de cualquier operación de movimiento.
 - `2026-09-18T06:48:49` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `trim_working_set` implementando el principio de "mínimo privilegio" mediante el uso de una máscara de acceso reducida (`PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA`) al abrir el proceso, asegurando que solo se soliciten los permisos estrictamente necesarios para la operación solicitada.
 - `2026-09-18T06:40:58` **main.py** (seguridad defensiva): Se ha añadido una validación estricta en `on_trim_process` para asegurar que el PID ingresado sea un entero, y se mejoró la sanitización de rutas en `on_target_choice_changed` utilizando la lógica de `is_safe_target_dir` antes de aplicar cambios, fortaleciendo la seguridad frente a entradas malintencionadas del usuario.
-- `2026-09-18T06:40:00` **healthscore.py** (seguridad defensiva): Mejoré la resiliencia y seguridad defensiva del motor de cálculo al implementar validación de tipos estricta y saneamiento de mensajes en el pipeline, evitando que datos malformados o inyectados afecten la integridad del objeto `HealthResult`.
-- `2026-09-18T06:38:59` **duplicates.py** (seguridad defensiva): Reforcé la integridad del escáner en `_collect_candidates` asegurando que el acceso a cada archivo se valide estrictamente mediante `is_safe_to_modify` antes de ser procesado o añadido al mapa de duplicados, evitando posibles condiciones de carrera o acceso a rutas fuera del alcance permitido.
-- `2026-09-18T06:38:34` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_summary_data` y `walk_files` para evitar el procesamiento de archivos cuyo tamaño sea negativo o malformado, añadiendo una validación explícita de integridad de datos antes de incorporarlos a las métricas.
