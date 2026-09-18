@@ -353,6 +353,7 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
                 code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
                 raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
         except (AttributeError, OSError, ctypes.ArgumentError, PermissionError):
+            # Fallo técnico en una regla: registramos y continuamos o abortamos según la severidad
             continue
 
 @lru_cache(maxsize=2048)

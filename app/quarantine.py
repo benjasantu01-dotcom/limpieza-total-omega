@@ -599,6 +599,10 @@ def quarantine_file(
         except (OSError, RuntimeError) as e:
             raise UnsafePathError(f"Ruta origen no válida: {e}")
     
+    # Validar que sea un archivo regular y no un directorio
+    if p_source.is_dir():
+        raise UnsafePathError("Solo se pueden poner en cuarentena archivos, no directorios.")
+
     source_path = _validate_source_for_quarantine(p_source)
     original_size = source_path.stat().st_size
     dest_dir = quarantine_dir(base)

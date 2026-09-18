@@ -267,13 +267,14 @@ def run_windows_defender_quick_scan() -> str:
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],
             capture_output=True, text=True, timeout=10
         )
-        if status.stdout and status.stdout.strip() != "True":
+        if status.returncode == 0 and status.stdout and status.stdout.strip() != "True":
             return "Protección en tiempo real desactivada. Escaneo omitido."
+        
         result = subprocess.run(
             ["powershell", "-Command", "Start-MpScan -ScanType QuickScan"],
             capture_output=True, text=True, timeout=1800,
             check=True
         )
-        return result.stdout or result.stderr
+        return str(result.stdout) if result.stdout else "Escaneo iniciado correctamente."
     except (subprocess.CalledProcessError, FileNotFoundError, OSError, subprocess.TimeoutExpired) as e:
         return f"Error ejecutando Windows Defender: {str(e)}"
