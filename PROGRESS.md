@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 39
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 224
+- Rechazadas por guardia de seguridad: 40
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 122 | 8 | 20 | 10 | 140 |
-| 2026-09-18 | 86 | 7 | 19 | 8 | 84 |
+| 2026-09-17 | 120 | 8 | 20 | 10 | 138 |
+| 2026-09-18 | 87 | 7 | 20 | 9 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **49**
+- manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **48**
 - robustez ante casos límite: **43**
-- rendimiento: **36**
+- rendimiento: **34**
 - legibilidad y documentación: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **22**
 - `healthscore.py`: **21**
+- `browser.py`: **21**
 - `diskreport.py`: **20**
+- `safety.py`: **18**
 - `settings.py`: **18**
 - `memory.py`: **18**
-- `safety.py`: **17**
 - `assistant.py`: **17**
 - `quarantine.py`: **16**
 - `duplicates.py`: **16**
 - `scanner.py`: **13**
-- `branding.py`: **9**
 - `main.py`: **8**
+- `branding.py`: **8**
 - `organizer.py`: **8**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T08:51:27` **safety.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `_validate_ntfs_reparse_redirection` capturando errores específicos de la API de Windows y verificando que el `handle` sea válido antes de realizar operaciones de Buffer, evitando cierres de handle inválidos o excepciones no controladas.
 - `2026-09-18T08:42:44` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante la captura explícita y el manejo granular de excepciones durante el parseo de JSON, evitando que un archivo malformado detenga la operación de carga y asegurando una degradación elegante ante errores de I/O o corrupción de datos.
 - `2026-09-18T08:41:58` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes validando explícitamente los handles devueltos por `OpenProcess` para evitar excepciones de `ctypes` al trabajar con valores nulos o cerrados, y aseguré que `GetExitCodeProcess` siempre sea llamado con un tipo de dato correcto.
 - `2026-09-18T08:41:29` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_target_choice_changed` encapsulando la validación de la entrada en un bloque `try-except` más específico y añadiendo un chequeo explícito de existencia mediante `path.exists()` antes de proceder, evitando así excepciones innecesarias en el log cuando el usuario interactúa con rutas inexistentes o inválidas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T06:49:51` **quarantine.py** (seguridad defensiva): Se introdujo una comprobación explícita de `is_safe_to_modify` en `_atomic_isolate_file` antes de confirmar la escritura, asegurando que la ruta destino en el sandbox no sea un objetivo inválido después de la resolución, reforzando la seguridad defensiva contra posibles manipulaciones del sistema de archivos durante la operación de copia.
 - `2026-09-18T06:49:15` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar una verificación explícita de `is_safe_to_modify` (la función estándar de seguridad) para evitar que archivos protegidos por el sistema sean considerados candidatos a limpieza, fortaleciendo la barrera de seguridad antes de cualquier operación de movimiento.
 - `2026-09-18T06:48:49` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `trim_working_set` implementando el principio de "mínimo privilegio" mediante el uso de una máscara de acceso reducida (`PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA`) al abrir el proceso, asegurando que solo se soliciten los permisos estrictamente necesarios para la operación solicitada.
-- `2026-09-18T06:40:58` **main.py** (seguridad defensiva): Se ha añadido una validación estricta en `on_trim_process` para asegurar que el PID ingresado sea un entero, y se mejoró la sanitización de rutas en `on_target_choice_changed` utilizando la lógica de `is_safe_target_dir` antes de aplicar cambios, fortaleciendo la seguridad frente a entradas malintencionadas del usuario.

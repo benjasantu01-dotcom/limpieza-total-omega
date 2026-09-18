@@ -538,12 +538,15 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
     if handle != -1:
         try:
             buf = ctypes.create_unicode_buffer(1024)
-            if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0):
+            # Retorna el número de caracteres copiados, 0 en error
+            if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0) > 0:
                 final_path = Path(buf.value).resolve()
                 if final_path.drive != path.resolve().drive:
                     raise UnsafePathError("Redirección de unidad detectada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
                 if not str(final_path).startswith(str(path.parent)):
                     raise UnsafePathError("Salida de carpeta permitida vía redirección.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+        except (AttributeError, OSError, TypeError):
+            pass
         finally:
             kernel32.CloseHandle(handle)
 

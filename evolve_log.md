@@ -1028,3 +1028,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-18T08:42:44` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `load_manifest` mediante la captura explícita y el manejo granular de excepciones durante el parseo de JSON, evitando que un archivo malformado detenga la operación de carga y asegurando una degradación elegante ante errores de I/O o corrupción de datos.
 - `2026-09-18T08:42:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T08:42:44` Corrida terminada. Total usado hoy: 204.
+- `2026-09-18T08:50:28` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-09-18T08:50:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-09-18T08:51:27` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de `_validate_ntfs_reparse_redirection` capturando errores específicos de la API de Windows y verificando que el `handle` sea válido antes de realizar operaciones de Buffer, evitando cierres de handle inválidos o excepciones no controladas.
+- `2026-09-18T08:51:53` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-18T08:52:08` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de la carga de configuración añadiendo un manejo explícito para `json.JSONDecodeError` y archivos de tamaño excesivo dentro del bucle de `load`, además de asegurar que `_ensure_settings_integrity` maneje valores `None` inesperados antes de procesar claves numéricas.
+- `2026-09-18T08:52:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T08:52:08` Corrida terminada. Total usado hoy: 208.
