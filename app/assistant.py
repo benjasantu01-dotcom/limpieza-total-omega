@@ -163,6 +163,7 @@ _MAX_TEXT_LENGTH: Final[int] = 1000
 _MAX_RESPONSE_BYTES: Final[int] = 32768
 _MAX_MSG_CHUNK: Final[int] = 200 
 _MAX_PROMPT_LIMIT: Final[int] = 4000 
+_MAX_NESTING_DEPTH: Final[int] = 2
 
 SENSITIVE_KEYS_NEVER_SENT: Final[tuple[str, ...]] = (
     "rutas de archivos", "nombres de archivos", "contenido de archivos",
@@ -264,10 +265,11 @@ def _validate_response_length(text: Any) -> str:
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     """Detecta si una estructura de datos es peligrosamente profunda para el parseo recursivo."""
-    if depth > 3: return True
+    if depth > _MAX_NESTING_DEPTH: return True
     if isinstance(val, (list, tuple, dict, set)):
-        if len(val) > 100: return True
-        return any(_is_input_too_deep_or_complex(item, depth + 1) for item in (val.values() if isinstance(val, dict) else val))
+        if len(val) > 50: return True
+        items = val.values() if isinstance(val, dict) else val
+        return any(_is_input_too_deep_or_complex(item, depth + 1) for item in items)
     return False
 
 def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:

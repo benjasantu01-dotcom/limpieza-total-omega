@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 38
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 227
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 43 | 5 | 7 | 4 | 51 |
+| 2026-09-16 | 43 | 5 | 7 | 4 | 47 |
 | 2026-09-17 | 137 | 9 | 25 | 15 | 164 |
-| 2026-09-18 | 22 | 1 | 6 | 3 | 12 |
+| 2026-09-18 | 24 | 1 | 6 | 4 | 13 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **44**
 - robustez ante casos límite: **43**
-- seguridad defensiva: **36**
+- seguridad defensiva: **38**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
+- `browser.py`: **21**
 - `diskreport.py`: **21**
-- `browser.py`: **20**
 - `healthscore.py`: **20**
-- `assistant.py`: **18**
+- `assistant.py`: **19**
 - `settings.py`: **18**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T02:04:41` **browser.py** (seguridad defensiva): Se ha robustecido el motor de escaneo defensivo añadiendo una validación explícita para evitar ciclos en el sistema de archivos (bloques de recursión profunda mediante `set` de visitados) y un control de integridad adicional al resolver rutas relativas, garantizando que no se escape del directorio base incluso si existen nombres de archivos maliciosos.
+- `2026-09-18T02:01:47` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de un límite estricto de recursión y complejidad estructural en la ingesta de datos, previniendo posibles ataques de denegación de servicio por desbordamiento de pila o agotamiento de memoria mediante estructuras anidadas maliciosas en `SystemContext`.
 - `2026-09-18T01:54:41` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite en la carga de archivos, añadiendo un chequeo explícito de integridad estructural durante la deserialización y evitando que errores de permiso en `ruta.stat()` durante la verificación de caché invaliden erróneamente la configuración, además de asegurar que la serialización final sea siempre un diccionario consistente mediante `_ensure_settings_integrity`.
 - `2026-09-18T01:51:21` **safety.py** (robustez ante casos límite): Se ha implementado una protección proactiva contra el manejo de archivos en dispositivos de solo lectura de bajo nivel (como medios ópticos o volúmenes montados como read-only) dentro de `_validate_boundary_conditions` para evitar excepciones de E/S impredecibles durante operaciones de escritura.
 - `2026-09-18T01:41:29` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos inexistentes o bloqueos por permisos en diversos escenarios de sistema, evitando el uso de `os.open` (que es bloqueante o puede lanzar excepciones no controladas según el OS) y delegando la verificación de forma más segura a `os.access` junto con un manejo explícito de excepciones, alineándose con las prácticas de robustez ante casos límite.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T01:00:52` **memory.py** (rendimiento): Optimicé `parse_windows_process_csv` para evitar el uso de `bisect.insort` en un bucle (que realiza inserciones costosas de O(n) sobre una lista) reemplazándolo por una recolección directa seguida de un `sort` único y eficiente, reduciendo drásticamente la carga de CPU durante el parseo de procesos.
 - `2026-09-18T00:50:32` **healthscore.py** (rendimiento): Optimicé el cálculo del `_PIPELINE` reemplazando los lambdas dinámicos y búsquedas por clave en `_RULES_BY_AREA` por un pre-procesamiento estático durante la definición del pipeline, reduciendo la carga de ejecución en el bucle crítico de `compute_score`.
 - `2026-09-18T00:50:21` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` eliminando la llamada repetida y costosa a `is_safe_to_modify(path)` (que implica resolución de rutas) al reutilizar el resultado de `_is_valid_candidate` dentro del flujo de escaneo, reduciendo drásticamente las operaciones I/O innecesarias.
-- `2026-09-18T00:49:31` **browser.py** (rendimiento): Optimicé el cálculo recursivo de `directory_size` y `detect_profiles` implementando una técnica de "memoización de subárboles" que evita re-escanear y re-calcular el peso de directorios ya procesados, reduciendo significativamente la complejidad en estructuras de archivos anidadas.
-- `2026-09-18T00:40:32` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` y el manejo de tokens mediante la pre-compilación de un diccionario `frozenset` invertido, eliminando la necesidad de iterar sobre todos los tokens en cada consulta y reemplazando la búsqueda lineal por un acceso directo O(1).
