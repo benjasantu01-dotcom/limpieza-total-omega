@@ -337,7 +337,7 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
         
     try:
         current_stat = path.stat()
-    except (PermissionError, OSError):
+    except (PermissionError, OSError, FileNotFoundError):
         raise UnsafePathError(f"Acceso denegado a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     
     # Prevenir TOCTOU: Verificar que el archivo no fue reemplazado entre normalización y validación
@@ -571,7 +571,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if p.exists():
         try:
             initial_stat = p.stat()
-        except OSError:
+        except (OSError, FileNotFoundError):
             raise UnsafePathError(f"No se pueden obtener metadatos: {p.name}", SafetyValidationErrorCode.IO_ERROR)
         
         if not bool(initial_stat.st_mode & stat.S_IWRITE):

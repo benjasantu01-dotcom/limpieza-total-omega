@@ -1109,3 +1109,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-18T10:35:32` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-09-18T10:35:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T10:35:32` Corrida terminada. Total usado hoy: 248.
+- `2026-09-18T10:43:21` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-09-18T10:44:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-18T10:45:11` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejoró `_is_file_locked` para manejar de manera robusta casos donde el archivo es inaccesible o el sistema operativo deniega el acceso, utilizando un bloque `try-except` más granular que evita falsos positivos en permisos denegados y mejora la resiliencia al consultar el estado de bloqueo en sistemas bajo carga.
+- `2026-09-18T10:45:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-18T10:46:16` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-18T10:47:05` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-09-18T10:47:49` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de redundancia para evitar errores de tipo `OSError` cuando se intenta realizar `stat()` sobre rutas que pueden haber cambiado su estado entre `exists()` y la lectura, mejorando la robustez ante condiciones de carrera (Race Conditions) y archivos eliminados durante el escaneo.
+- `2026-09-18T10:48:00` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-18T10:48:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T10:48:00` Corrida terminada. Total usado hoy: 252.

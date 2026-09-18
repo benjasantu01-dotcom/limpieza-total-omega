@@ -195,15 +195,18 @@ def _get_sha256(path: Path) -> str:
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está bloqueado por el S.O.
-    Utiliza un chequeo de acceso de lectura para determinar disponibilidad.
+    Intenta abrir el archivo para lectura exclusiva para validar disponibilidad.
     """
     if not path.exists():
         return False
     try:
-        return not os.access(path, os.R_OK)
-    except (OSError, PermissionError):
+        # Intentar abrir el archivo de forma exclusiva para lectura
+        fd = os.open(path, os.O_RDONLY | os.O_EXCL)
+        os.close(fd)
+        return False
+    except OSError:
+        # En caso de error, asumimos que está bloqueado o inaccesible
         return True
-
 
 def _safe_unlink(path: Path) -> bool:
     """
