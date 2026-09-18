@@ -151,9 +151,7 @@ _PIPELINE: Final[List[PipelineEntry]] = [
 
 @dataclass
 class SystemMetrics:
-    """
-    Contenedor inyectable de estado del sistema.
-    """
+    """Contenedor inyectable de estado del sistema con validación de integridad."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -186,10 +184,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que todos los campos contengan valores numéricos procesables (no NaN/Inf)."""
-        return (math.isfinite(self.junk_mb) and math.isfinite(self.suspicious_count) and 
-                math.isfinite(self.suspicious_warnings) and math.isfinite(self.memory_available_percent) and
-                math.isfinite(self.disk_free_percent) and math.isfinite(self.duplicate_mb) and
-                math.isfinite(self.startup_count) and math.isfinite(self.quarantined_count))
+        return all(math.isfinite(getattr(self, f)) for f in self.__dataclass_fields__ if isinstance(getattr(self, f), (int, float)))
 
 @dataclass
 class HealthResult:
@@ -220,25 +215,25 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Procesa el set de reglas de diagnóstico y acumula mensajes legibles para el usuario."""
+    """
+    Analiza reglas de diagnóstico para una etapa específica del pipeline.
+    Si una regla se dispara, añade su mensaje de recomendación a la lista 'findings'.
+    """
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
-                if isinstance(msg, str):
-                    clean_msg = msg.strip()
-                    if clean_msg and clean_msg.isprintable():
-                        findings.append(clean_msg[:200])
+                if isinstance(msg, str) and msg.strip().isprintable():
+                    findings.append(msg.strip()[:200])
         except Exception:
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
-    Ejecuta el pipeline de evaluación:
-    1. Valida la integridad del objeto de métricas.
-    2. Itera sobre cada etapa configurada en _PIPELINE.
-    3. Normaliza, pondera y acumula los puntos.
-    4. Genera hallazgos basándose en las reglas de recomendación asociadas.
+    Orquestador principal del motor analítico:
+    1. Valida los datos de entrada (SystemMetrics).
+    2. Itera sobre el pipeline definido para calcular el score ponderado.
+    3. Acumula recomendaciones basadas en reglas específicas de cada área.
     """
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])

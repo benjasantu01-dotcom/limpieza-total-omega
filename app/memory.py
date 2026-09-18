@@ -86,7 +86,11 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura Win32 (GlobalMemoryStatusEx) para estadísticas de memoria."""
+    """
+    Estructura Win32 (GlobalMemoryStatusEx) mapeada a tipos ctypes.
+    Los campos ull* representan valores de 64 bits (unsigned long long) 
+    para soportar sistemas con más de 4GB de RAM.
+    """
     _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),
         ("dwMemoryLoad", ctypes.c_ulong),
@@ -145,7 +149,10 @@ def format_bytes(num: Optional[int | float]) -> str:
     return f"{val:.{0 if idx == 0 else 1}f} {BYTE_UNITS[idx]}"
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
-    """Prepara la estructura nativa para la llamada al kernel de Windows."""
+    """
+    Inicializa la estructura MEMORYSTATUSEX necesaria para la API de Windows,
+    asegurando que el campo dwLength (tamaño de la estructura) esté configurado.
+    """
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return stat

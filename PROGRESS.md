@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 38
-- Sin cambios (nada sustancial que mejorar): 22
+- Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 19 | 2 | 3 | 1 | 21 |
+| 2026-09-16 | 18 | 2 | 2 | 0 | 20 |
 | 2026-09-17 | 137 | 9 | 25 | 15 | 164 |
-| 2026-09-18 | 43 | 4 | 10 | 6 | 45 |
+| 2026-09-18 | 45 | 4 | 11 | 6 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **43**
 - seguridad defensiva: **43**
-- legibilidad y documentación: **36**
-- rendimiento: **31**
+- legibilidad y documentación: **38**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **21**
 - `diskreport.py`: **20**
-- `healthscore.py`: **19**
-- `settings.py`: **18**
+- `healthscore.py`: **20**
 - `assistant.py`: **18**
-- `memory.py`: **17**
+- `memory.py`: **18**
 - `safety.py`: **17**
+- `settings.py`: **17**
 - `duplicates.py`: **16**
 - `quarantine.py`: **15**
 - `scanner.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T04:47:30` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas y la clarificación de los tipos de datos en la estructura `MEMORYSTATUSEX` para asegurar que el comportamiento de bajo nivel sea transparente para futuros colaboradores.
+- `2026-09-18T04:46:51` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del pipeline de evaluación mediante la adición de Type Hints explícitos, docstrings detallados en las funciones de cómputo y la encapsulación de la lógica de evaluación en una estructura más auto-documentada.
 - `2026-09-18T04:37:45` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings detallados en las funciones de procesamiento de datos y la definición de estructuras, aclarando el propósito y el flujo de los algoritmos de recolección para facilitar el mantenimiento.
 - `2026-09-18T04:37:33` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad semántica mediante la inclusión de docstrings detallados en las funciones de recorrido de directorios y la estandarización de tipos, facilitando el mantenimiento y la comprensión de las restricciones de seguridad aplicadas.
 - `2026-09-18T04:37:03` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los docstrings al formato Google Style, añadiendo especificaciones de parámetros y valores de retorno para clarificar el contrato de las funciones, facilitando así el mantenimiento y la legibilidad para futuros colaboradores.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T04:06:05` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez de `hash_file` y `partial_hash` al centralizar la validación de entrada con una función auxiliar `_validate_and_resolve_path`, evitando excepciones no capturadas al operar con objetos `Path` potencialmente inválidos o inaccesibles, alineándose con el enfoque de manejo de errores.
 - `2026-09-18T04:05:40` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_get_local_windows_drives` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta, previniendo errores de acceso a unidades virtuales o de sistema que podrían interrumpir el escaneo inicial.
 - `2026-09-18T03:57:36` **browser.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `directory_size` y `_sum_directory_recursive` mediante la validación explícita de `root_abs` y el uso de `OSError` específico para evitar que el escáner aborte ante archivos bloqueados o denegados, alineándolo con el enfoque de validación defensiva.
-- `2026-09-18T03:56:46` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_handler_wrapper` y `handle_score` para manejar de forma explícita situaciones donde los datos pueden ser parciales o malformados, evitando que una métrica faltante o un error de cálculo interrumpan el hilo de ejecución, asegurando que el asistente siempre devuelva una respuesta válida y legible.
-- `2026-09-18T02:34:30` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_Validators._run_safety_checks` para garantizar que la resolución de rutas mediante `resolve(strict=False)` no sea vulnerada por enlaces simbólicos o puntos de unión (*junctions*) que apunten fuera de las áreas permitidas, verificando explícitamente el origen antes de confiar en la ruta resuelta.
