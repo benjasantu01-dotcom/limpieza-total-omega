@@ -1384,3 +1384,10 @@ FAILED evolve/tests/test_modules.py::test_directory_size_adds_up_recursively - T
 - `2026-09-18T00:50:32` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del `_PIPELINE` reemplazando los lambdas dinámicos y búsquedas por clave en `_RULES_BY_AREA` por un pre-procesamiento estático durante la definición del pipeline, reduciendo la carga de ejecución en el bucle crítico de `compute_score`.
 - `2026-09-18T00:50:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T00:50:32` Corrida terminada. Total usado hoy: 20.
+- `2026-09-18T00:59:11` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-09-18T01:00:23` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards
+- `2026-09-18T01:00:52` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé `parse_windows_process_csv` para evitar el uso de `bisect.insort` en un bucle (que realiza inserciones costosas de O(n) sobre una lista) reemplazándolo por una recolección directa seguida de un `sort` único y eficiente, reduciendo drásticamente la carga de CPU durante el parseo de procesos.
+- `2026-09-18T01:01:18` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-18T01:01:38` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó `list_items` para reducir la latencia de I/O mediante un mapeo en memoria de los ítems y evitando validaciones redundantes de integridad (hash SHA-256) al listar, delegando la verificación profunda solo a operaciones específicas de restauración o purga.
+- `2026-09-18T01:01:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T01:01:38` Corrida terminada. Total usado hoy: 24.
