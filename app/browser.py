@@ -222,7 +222,7 @@ def _is_valid_traversal_step(entry: os.DirEntry, root_base: str) -> bool:
     except (OSError, ValueError):
         return False
 
-def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionChecker, kernel32: Optional[ctypes.WinDLL], memo: Dict[str, int], visited: set[str], depth: int) -> int:
+def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionChecker, kernel32: Optional[ctypes.WinDLL], memo: Dict[str, int], depth: int) -> int:
     """
     Analiza una entrada individual: si es directorio, desciende recursivamente;
     si es archivo, retorna su tamaño.
@@ -231,7 +231,7 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
         return 0
     try:
         if _is_valid_traversal_step(entry, root_base):
-            return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, visited, root_base, depth + 1)
+            return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
         
         if entry.is_file(follow_symlinks=False):
             return int(entry.stat(follow_symlinks=False).st_size)
@@ -245,24 +245,19 @@ def _sum_directory_recursive(
     is_junction_fn: JunctionChecker, 
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[str, int],
-    visited: set[str],
     root_base: str,
     depth: int = 0
 ) -> int:
     """
     Calcula el tamaño total de un árbol de directorios de forma recursiva.
-    Implementa memoización para evitar re-escaneo de subdirectorios y 
-    evita ciclos mediante el set 'visited'.
+    Implementa memoización para evitar re-escaneo de subdirectorios.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN or _is_unc_path(root_abs) or any(c in root_abs for c in '\0\r\n'):
         return 0
     
-    if root_abs in visited:
-        return 0
     if root_abs in memo:
         return memo[root_abs]
 
-    visited.add(root_abs)
     try:
         root_path = Path(root_abs).resolve(strict=True)
         if not root_path.is_dir():
@@ -279,12 +274,11 @@ def _sum_directory_recursive(
         total: int = 0
         with os.scandir(root_abs) as it:
             for entry in it:
-                total += _process_entry(entry, root_base, is_junction_fn, kernel32, memo, visited, depth)
+                total += _process_entry(entry, root_base, is_junction_fn, kernel32, memo, depth)
         
         memo[root_abs] = total
         return total
     except (OSError, PermissionError, RuntimeError, ValueError) as e:
-        # Manejo específico: capturamos errores de acceso para permitir continuar el escaneo
         if isinstance(e, OSError) and kernel32:
             err = ctypes.get_last_error()
             if err in (ERROR_ACCESS_DENIED, ERROR_SHARING_VIOLATION):
@@ -301,7 +295,7 @@ def directory_size(path: Optional[OSPath]) -> int:
         if not p.is_absolute() or not _is_safe_to_traverse(p, None):
             return 0
         resolved = p.resolve(strict=True)
-        return _sum_directory_recursive(str(resolved), _IS_JUNCTION_FN, _get_kernel32(), {}, set(), str(resolved))
+        return _sum_directory_recursive(str(resolved), _IS_JUNCTION_FN, _get_kernel32(), {}, str(resolved))
     except (OSError, RuntimeError, PermissionError, ValueError):
         return 0
 
@@ -373,7 +367,7 @@ def detect_profiles(
                 if real_candidate in scanned_paths:
                     continue
                 
-                size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, global_memo, set(), str(real_base))
+                size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, global_memo, str(real_base))
                 if size > 0:
                     scanned_paths.add(real_candidate)
                     found.append(BrowserCache(str(browser_name), res_candidate, size))

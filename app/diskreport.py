@@ -47,10 +47,11 @@ Inode: TypeAlias = Tuple[int, int]
 SizeReport: TypeAlias = Tuple[int, int]
 
 
-class ExtStats(NamedTuple):
-    """Estadísticas acumuladas por extensión de archivo."""
-    total_bytes: int
-    count: int
+class ExtStats:
+    """Estadísticas acumuladas por extensión de archivo (mutable para rendimiento)."""
+    def __init__(self) -> None:
+        self.total_bytes: int = 0
+        self.count: int = 0
 
 
 class SummaryData(NamedTuple):
@@ -274,7 +275,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
     root = _validate_root(directory)
     if not root: return []
     data = _collect_summary_data(root, skip_protected, limit=0)
-    usage_list = [ExtensionUsage(ext, stats.total_bytes, stats.count) for ext, stats in data.ext_stats.items()]
+    usage_list = [ExtensionUsage(ext, s.total_bytes, s.count) for ext, s in data.ext_stats.items()]
     return heapq.nlargest(limit, usage_list, key=lambda u: u.size_bytes)
 
 
@@ -316,15 +317,17 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     - Heap de tamaño fijo (`top_heap`) para encontrar los archivos más grandes de forma eficiente (O(N log L)).
     """
     total_bytes, total_files = 0, 0
-    ext_bytes, ext_counts = defaultdict(int), defaultdict(int)
+    ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
         total_bytes += size
         total_files += 1
         ext = path.suffix.lower() or "(sin extensión)"
-        ext_bytes[ext] += size
-        ext_counts[ext] += 1
+        
+        stat = ext_stats[ext]
+        stat.total_bytes += size
+        stat.count += 1
         
         if limit > 0 and size > 0:
             if len(top_heap) < limit:
@@ -332,7 +335,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             elif size > top_heap[0][0]:
                 heapq.heapreplace(top_heap, (size, path))
     
-    ext_stats = {ext: ExtStats(ext_bytes[ext], ext_counts[ext]) for ext in ext_bytes}
     return SummaryData(total_bytes, total_files, ext_stats, top_heap)
 
 

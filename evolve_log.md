@@ -646,3 +646,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-18T05:07:59` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé `local_answer` para evitar la creación innecesaria de objetos `set` y las iteraciones redundantes en cada pregunta, reemplazando la búsqueda lineal por una lógica de pre-filtrado mediante el diccionario `_TOKEN_TO_HANDLER` que ya existía, logrando una respuesta más directa.
 - `2026-09-18T05:07:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T05:07:59` Corrida terminada. Total usado hoy: 120.
+- `2026-09-18T05:16:29` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-09-18T05:17:07` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-18T05:17:34` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el escaneo de directorios reemplazando la recursión redundante y el paso excesivo de parámetros en `_sum_directory_recursive` por un uso más eficiente del `memo` global, evitando re-procesar subdirectorios ya calculados en estructuras de caché compartidas.
+- `2026-09-18T05:18:02` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `_collect_summary_data` reemplazando los dos diccionarios `defaultdict` por un único diccionario que almacena objetos `ExtStats` mutables, reduciendo las consultas de hashing y mejorando la eficiencia durante el recorrido del disco.
+- `2026-09-18T05:18:10` 🛑 Propuesta bloqueada por la guardia en duplicates.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: group_by_size
+- `2026-09-18T05:18:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T05:18:10` Corrida terminada. Total usado hoy: 124.
