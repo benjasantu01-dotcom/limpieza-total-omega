@@ -462,6 +462,10 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
         raise UnsafePathError("Destino en ruta protegida.")
     if not is_safe_to_modify(destination.parent):
         raise UnsafePathError("Directorio destino no es seguro para escritura.")
+    
+    # Verificación final de seguridad sobre el destino resuelto
+    ensure_safe_to_modify(destination.parent, allow_sensitive=True)
+    
     _check_windows_file_attributes(str(destination))
 
     if not source.is_file():

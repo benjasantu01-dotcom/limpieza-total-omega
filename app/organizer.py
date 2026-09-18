@@ -175,9 +175,9 @@ def _validate_file_attributes(src: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """Validador booleano centralizado para operaciones de lectura/escritura en disco."""
     if not _validate_path_security(src, dest): return False
+    if not is_safe_to_modify(src): return False
     try:
         s_res = src.resolve()
-        # El destino podría no existir aún, usamos el parent para validar la unidad
         parent = dest.parent if not dest.exists() else dest.resolve()
         if not s_res.exists() or _is_recursive_violation(s_res, dest): return False
         if not os.access(parent if parent.is_dir() else parent.parent, os.W_OK): return False
@@ -268,7 +268,6 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Calcula la disponibilidad de espacio y resuelve colisiones para un movimiento seguro."""
     if not _is_safe_to_move(junk_file, dest_base): return None
     try:
-        # Asegurar que el punto de anclaje sea válido para shutil.disk_usage
         anchor = dest_base.anchor
         usage = shutil.disk_usage(anchor)
         if usage.free < (junk_file.size_bytes + 52428800): return None
