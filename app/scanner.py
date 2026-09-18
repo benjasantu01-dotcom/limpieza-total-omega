@@ -70,13 +70,7 @@ WIN_FILE_ATTR_REPARSE_POINT: Final[int] = 0x400
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
-    Intenta obtener metadatos sin seguir enlaces simbólicos.
-    
-    Args:
-        entry: Objeto DirEntry a inspeccionar.
-        
-    Returns:
-        os.stat_result si es accesible, None en caso de bloqueo o error.
+    Intenta obtener metadatos sin seguir enlaces simbólicos mediante la API de bajo nivel.
     """
     try:
         return entry.stat(follow_symlinks=False)
@@ -84,7 +78,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         return None
 
 def _is_valid_path_structure(path_str: str) -> bool:
-    """Verifica si la cadena de ruta cumple con los límites de seguridad básicos."""
+    """Verifica si la cadena de ruta cumple con los límites de longitud y caracteres prohibidos."""
     if not path_str or len(path_str) > MAX_PATH_LENGTH:
         return False
     if UNC_PATH_RE.match(path_str) or RTL_CHAR_RE.search(path_str):
@@ -147,27 +141,29 @@ class Scanner:
         return entry_path.lower().startswith(self.base_root_str)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida restricciones de seguridad evitando resolución innecesaria de rutas."""
+        """
+        Valida que la entrada sea segura: no es reparse point, no está en una ruta protegida
+        a nivel global y se mantiene dentro de la raíz de escaneo definida.
+        """
         if not entry or not entry.path:
             return False
-        try:
-            if not _is_valid_path_structure(entry.path):
-                return False
             
-            if INVALID_TRAILING_CHARS_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name):
-                return False
-            
-            # Verificación doble: estructura base y chequeo estricto del módulo de seguridad
-            if not entry.path.lower().startswith(self.base_root_str.rstrip(os.sep)):
-                return False
-            
-            path_obj = Path(entry.path)
-            if is_protected_path(path_obj):
-                return False
-            
-            return not entry.is_symlink()
-        except (OSError, PermissionError, UnicodeDecodeError):
+        # Validación de estructura básica y caracteres prohibidos
+        if not _is_valid_path_structure(entry.path):
             return False
+        
+        # Validación de nombres reservados o inválidos en Windows
+        if INVALID_TRAILING_CHARS_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name):
+            return False
+        
+        # Validación de alcance: debe estar bajo el directorio base y no ser protegido
+        if not entry.path.lower().startswith(self.base_root_str.rstrip(os.sep)):
+            return False
+            
+        if is_protected_path(Path(entry.path)):
+            return False
+        
+        return not entry.is_symlink()
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Detecta si un directorio es una unión (Reparse Point) para evitar bucles infinitos."""

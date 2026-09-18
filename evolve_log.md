@@ -1363,3 +1363,10 @@ FAILED evolve/tests/test_modules.py::test_directory_size_adds_up_recursively - T
 - `2026-09-18T00:20:36` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: legibilidad y documentación).
 - `2026-09-18T00:20:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T00:20:36` Corrida terminada. Total usado hoy: 8.
+- `2026-09-18T00:28:38` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-09-18T00:29:18` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (usando `pathlib.Path` en lugar de `PathLike` cuando la resolución ya ocurrió), se añadieron docstrings detallados en funciones críticas (como `_atomic_isolate_file` y `_write_temp_to_final`) y se reemplazaron comparaciones ambiguas por llamadas explícitas a métodos de `pathlib`, mejorando la legibilidad y la robustez del código.
+- `2026-09-18T00:29:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 116): unterminated string literal (detected at line 116)
+- `2026-09-18T00:30:16` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _CheckResult, _IntegrityCheck
+- `2026-09-18T00:30:28` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación de los métodos de escaneo y la lógica de validación mediante docstrings descriptivos y la simplificación de `_is_safe_entry` para clarificar la jerarquía de validaciones de seguridad.
+- `2026-09-18T00:30:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T00:30:28` Corrida terminada. Total usado hoy: 12.
