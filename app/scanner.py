@@ -17,11 +17,11 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
-from typing import List, Optional, Union, Final, Callable, TypeAlias
+from typing import List, Optional, Union, Final, Callable, TypeAlias, Dict
 from safety import is_protected_path
 
 # Configuración de logger para el módulo
-logger = logging.getLogger(__name__)
+logger: Final = logging.getLogger(__name__)
 
 @dataclass
 class Suspicion:
@@ -51,7 +51,7 @@ RTL_CHAR_RE: Final[re.Pattern] = re.compile(r"[\u200f\u202e\u202d]")
 RESERVED_NAMES_RE: Final[re.Pattern] = re.compile(r"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$", re.IGNORECASE)
 # Validación de nombres de archivos terminados en espacios o puntos (vulnerabilidad de Windows)
 INVALID_TRAILING_CHARS_RE: Final[re.Pattern] = re.compile(r"[\. ]$")
-# Detección de rutas UNC
+# Detección de rutas UNC (Universal Naming Convention)
 UNC_PATH_RE: Final[re.Pattern] = re.compile(r"^\\\\[^\\\\]+\\")
 
 # Conjuntos de constantes para comparación rápida
@@ -71,6 +71,7 @@ WIN_FILE_ATTR_REPARSE_POINT: Final[int] = 0x400
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
     Intenta obtener metadatos sin seguir enlaces simbólicos mediante la API de bajo nivel.
+    Retorna None si el archivo es inaccesible o no existe.
     """
     if entry is None:
         return None
@@ -80,7 +81,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         return None
 
 def _is_valid_path_structure(path_str: str) -> bool:
-    """Verifica si la cadena de ruta cumple con los límites de longitud y caracteres prohibidos."""
+    """Verifica si la cadena de ruta cumple con los límites de longitud y caracteres prohibidos de Windows."""
     if not path_str or len(path_str) > MAX_PATH_LENGTH:
         return False
     if UNC_PATH_RE.match(path_str) or RTL_CHAR_RE.search(path_str):
@@ -139,26 +140,23 @@ class Scanner:
         self._registry: List[SuspicionCheck] = EXECUTABLE_CHECK_REGISTRY
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Valida recursión lógica dentro del directorio base."""
+        """Valida recursión lógica para asegurar que el escaneo no escape del directorio base."""
         return entry_path.lower().startswith(self.base_root_str)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
         Valida que la entrada sea segura: no es reparse point, no está en una ruta protegida
-        a nivel global y se mantiene dentro de la raíz de escaneo definida.
+        y cumple las reglas de estructura de Windows.
         """
         if not entry or not entry.path:
             return False
             
-        # Validación de estructura básica y caracteres prohibidos
         if not _is_valid_path_structure(entry.path):
             return False
         
-        # Validación de nombres reservados o inválidos en Windows
         if INVALID_TRAILING_CHARS_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name):
             return False
         
-        # Validación de alcance: debe estar bajo el directorio base y no ser protegido
         if not entry.path.lower().startswith(self.base_root_str.rstrip(os.sep)):
             return False
             
@@ -177,7 +175,7 @@ class Scanner:
         return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """Gestiona la pila de directorios pendientes durante el escaneo iterativo."""
+        """Gestiona la pila de directorios pendientes durante el escaneo iterativo LIFO."""
         if entry and entry.path and entry.path.lower() not in self.seen:
             self.seen.add(entry.path.lower())
             directory_stack.append(entry.path)
@@ -190,7 +188,7 @@ class Scanner:
         return ext_low if ext_low in SUSPICIOUS_ALL_EXTS else None
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """Analiza una entrada única y decide si debe procesarse o añadirse a la pila."""
+        """Analiza una entrada única y decide si debe procesarse o añadirse a la pila de directorios."""
         try:
             if not self._is_safe_entry(entry):
                 return
@@ -266,7 +264,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         return []
 
 def run_windows_defender_quick_scan() -> str:
-    """Invoca una consulta externa a Windows Defender para verificar su estado."""
+    """Invoca una consulta externa a Windows Defender para verificar su estado de protección."""
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],

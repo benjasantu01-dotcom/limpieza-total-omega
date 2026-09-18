@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 230
 
@@ -16,30 +16,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 15 | 2 | 2 | 0 | 19 |
+| 2026-09-16 | 12 | 2 | 2 | 0 | 18 |
 | 2026-09-17 | 137 | 9 | 25 | 15 | 164 |
-| 2026-09-18 | 46 | 4 | 13 | 6 | 47 |
+| 2026-09-18 | 48 | 4 | 14 | 6 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - seguridad defensiva: **43**
-- robustez ante casos límite: **40**
-- legibilidad y documentación: **39**
-- rendimiento: **30**
+- legibilidad y documentación: **40**
+- robustez ante casos límite: **37**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
-- `healthscore.py`: **20**
 - `browser.py`: **20**
+- `diskreport.py`: **19**
+- `healthscore.py`: **19**
 - `memory.py`: **18**
+- `assistant.py`: **18**
 - `safety.py`: **17**
 - `settings.py`: **17**
-- `assistant.py`: **17**
-- `duplicates.py`: **16**
 - `quarantine.py`: **15**
-- `scanner.py`: **12**
+- `duplicates.py`: **15**
+- `scanner.py`: **13**
 - `organizer.py`: **8**
 - `branding.py`: **7**
 - `main.py`: **6**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T05:07:59` **assistant.py** (rendimiento): Optimizé `local_answer` para evitar la creación innecesaria de objetos `set` y las iteraciones redundantes en cada pregunta, reemplazando la búsqueda lineal por una lógica de pre-filtrado mediante el diccionario `_TOKEN_TO_HANDLER` que ya existía, logrando una respuesta más directa.
+- `2026-09-18T05:06:46` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes, tipado explícito en colecciones y docstrings detallados que explican el propósito de las constantes y funciones críticas, facilitando el mantenimiento.
 - `2026-09-18T04:56:34` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados y type hints para clarificar las responsabilidades de las funciones de validación de seguridad, facilitando el mantenimiento y la auditoría del código.
 - `2026-09-18T04:47:30` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas y la clarificación de los tipos de datos en la estructura `MEMORYSTATUSEX` para asegurar que el comportamiento de bajo nivel sea transparente para futuros colaboradores.
 - `2026-09-18T04:46:51` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del pipeline de evaluación mediante la adición de Type Hints explícitos, docstrings detallados en las funciones de cómputo y la encapsulación de la lógica de evaluación en una estructura más auto-documentada.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T04:19:37` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al asegurar que las validaciones de seguridad se apliquen sobre rutas resueltas y verificadas, evitando errores silenciosos ante accesos a disco fallidos.
 - `2026-09-18T04:19:10` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` mediante la centralización de la lógica de limpieza de valores y la validación estricta de las métricas clave, asegurando que la función no retorne estados inconsistentes ante entradas malformadas.
 - `2026-09-18T04:06:33` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` al implementar un manejo de errores más específico y defensivo, asegurando que el pipeline no falle ante cálculos internos inesperados, y fortalecí `SystemMetrics.validate` para garantizar que los tipos de datos sean correctos antes de proceder al cálculo.
-- `2026-09-18T04:06:05` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez de `hash_file` y `partial_hash` al centralizar la validación de entrada con una función auxiliar `_validate_and_resolve_path`, evitando excepciones no capturadas al operar con objetos `Path` potencialmente inválidos o inaccesibles, alineándose con el enfoque de manejo de errores.
-- `2026-09-18T04:05:40` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_get_local_windows_drives` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta, previniendo errores de acceso a unidades virtuales o de sistema que podrían interrumpir el escaneo inicial.

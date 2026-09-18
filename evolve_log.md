@@ -639,3 +639,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-18T04:57:57` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult
 - `2026-09-18T04:57:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T04:57:57` Corrida terminada. Total usado hoy: 116.
+- `2026-09-18T05:06:16` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-09-18T05:06:46` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes, tipado explícito en colecciones y docstrings detallados que explican el propósito de las constantes y funciones críticas, facilitando el mantenimiento.
+- `2026-09-18T05:07:11` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._validate_enum_str
+- `2026-09-18T05:07:36` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
+- `2026-09-18T05:07:59` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé `local_answer` para evitar la creación innecesaria de objetos `set` y las iteraciones redundantes en cada pregunta, reemplazando la búsqueda lineal por una lógica de pre-filtrado mediante el diccionario `_TOKEN_TO_HANDLER` que ya existía, logrando una respuesta más directa.
+- `2026-09-18T05:07:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T05:07:59` Corrida terminada. Total usado hoy: 120.

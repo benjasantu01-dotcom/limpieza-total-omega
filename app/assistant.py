@@ -595,9 +595,8 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
     
-    # Búsqueda O(n) sobre los tokens presentes en la consulta
-    tokens = set(_TOKEN_REGEX.findall(q_sanitized.lower()))
-    for token in tokens:
+    # Búsqueda optimizada: iterar sobre tokens identificados en la consulta una sola vez
+    for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
         if token in _TOKEN_TO_HANDLER:
             return _TOKEN_TO_HANDLER[token](context, question)
             
