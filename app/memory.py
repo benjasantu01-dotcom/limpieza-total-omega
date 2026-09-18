@@ -168,7 +168,6 @@ def _kb_to_bytes(kb_str: str) -> BytesValue:
     except (ValueError, OverflowError):
         return BytesValue(0)
 
-_win_mem_buffer: MEMORYSTATUSEX = _create_mem_status_ex()
 _is_windows: bool = os.name == "nt"
 _linux_mem_path: Path = Path("/proc/meminfo")
 _EMPTY_SNAPSHOT: MemorySnapshot = MemorySnapshot(BytesValue(0), BytesValue(0))
@@ -245,10 +244,11 @@ def _read_windows_snapshot() -> MemorySnapshot:
     if not hasattr(kernel32, "GlobalMemoryStatusEx"):
         return _EMPTY_SNAPSHOT
     
+    stat = _create_mem_status_ex()
     try:
-        if kernel32.GlobalMemoryStatusEx(ctypes.byref(_win_mem_buffer)):
-            total = _win_mem_buffer.ullTotalPhys
-            avail = _win_mem_buffer.ullAvailPhys
+        if kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
+            total = stat.ullTotalPhys
+            avail = stat.ullAvailPhys
             if total > 0 and avail <= total:
                 return MemorySnapshot(total=BytesValue(total), available=BytesValue(avail))
     except (AttributeError, OSError, ctypes.ArgumentError):

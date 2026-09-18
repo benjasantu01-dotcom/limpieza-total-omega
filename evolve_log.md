@@ -729,3 +729,14 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-09-18T05:58:50` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `score_security` ante entradas negativas o inesperadas mediante el uso de `_clamp` y `max` explícitos, y añadí una protección contra excepciones durante la ejecución de las factorías de mensajes en `_evaluate_rules` para evitar que un fallo en un mensaje individual bloquee todo el reporte.
 - `2026-09-18T05:58:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T05:58:50` Corrida terminada. Total usado hoy: 140.
+- `2026-09-18T06:07:27` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-09-18T06:08:29` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-18T06:08:50` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-18T06:09:57` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-18T06:10:14` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-18T06:10:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-18T06:11:13` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_read_windows_snapshot` y `read_snapshot` añadiendo validaciones contra estados de memoria imposibles (valores negativos o desbordamientos) y protegiendo la carga inicial del buffer ante posibles fallos de sistema al llamar a `GlobalMemoryStatusEx`.
+- `2026-09-18T06:12:09` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_safe_for_disk_op` y `_can_move_file` mediante la validación explícita del estado de escritura del destino y la detección de posibles errores de volumen cruzado, evitando llamadas a `resolve()` sobre rutas inexistentes y asegurando que `disk_usage` reciba un punto de anclaje válido.
+- `2026-09-18T06:12:35` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-09-18T06:12:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T06:12:35` Corrida terminada. Total usado hoy: 144.
