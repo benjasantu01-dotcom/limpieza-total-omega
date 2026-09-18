@@ -229,7 +229,9 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                     clean_msg = msg.strip()
                     if clean_msg and clean_msg.isprintable():
                         findings.append(clean_msg[:200])
-        except (AttributeError, TypeError, ValueError):
+        except Exception:
+            # Captura cualquier error de ejecución en la regla (excl. sintácticos) 
+            # para no romper el pipeline completo ante datos mal formados.
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

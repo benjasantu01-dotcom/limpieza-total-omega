@@ -1406,3 +1406,13 @@ FAILED evolve/tests/test_modules.py::test_directory_size_adds_up_recursively - T
 - `2026-09-18T01:21:24` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se implementó un mecanismo de detección de errores de acceso (`ERROR_ACCESS_DENIED`, `ERROR_SHARING_VIOLATION`) en el escaneo recursivo mediante `ctypes.get_last_error()` para distinguir entre carpetas vacías legítimas y errores de permisos/bloqueo, mejorando la robustez frente a directorios inaccesibles.
 - `2026-09-18T01:21:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T01:21:24` Corrida terminada. Total usado hoy: 32.
+- `2026-09-18T01:29:43` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-09-18T01:30:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-18T01:31:04` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-18T01:32:11` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-18T01:32:50` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado `walk_files` para manejar de forma robusta los errores de acceso (como `PermissionError` o `FileNotFoundError` durante la iteración) y la posible desaparición de archivos o carpetas mientras el generador está en ejecución, evitando que el escaneo completo se detenga prematuramente ante eventos externos de concurrencia.
+- `2026-09-18T01:33:16` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-18T01:34:13` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor de inferencia contra excepciones en tiempo de ejecución (específicamente errores en `message_factory` o `check` de reglas) envolviendo la evaluación de cada regla en un bloque `try-except` individual dentro de `_evaluate_rules`, evitando que un fallo en una sola métrica invalide el informe completo de salud.
+- `2026-09-18T01:35:14` Gemini no devolvió un bloque de archivo válido para main.py (enfoque: robustez ante casos límite).
+- `2026-09-18T01:35:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T01:35:14` Corrida terminada. Total usado hoy: 36.

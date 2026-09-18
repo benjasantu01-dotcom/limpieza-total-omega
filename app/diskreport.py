@@ -221,8 +221,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as iterator:
-                for entry in iterator:
+                while True:
                     try:
+                        entry = next(iterator, None)
+                        if entry is None: break
+                        
                         if _is_excluded_path(entry): continue
                         
                         path_obj = Path(entry.path).resolve()
@@ -242,7 +245,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             st = entry.stat(follow_symlinks=False)
                             size = int(getattr(st, 'st_size', 0))
                             yield path_obj, max(0, size)
-                    except (PermissionError, OSError, ValueError):
+                            
+                    except (PermissionError, OSError, StopIteration):
                         continue
         except (PermissionError, OSError):
             continue
