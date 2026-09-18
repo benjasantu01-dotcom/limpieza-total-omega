@@ -163,10 +163,12 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=64)
     def _is_reparse_point(path_str: str) -> bool:
-        """Determina si una ruta es un junction o symlink para prevenir bucles de recursión."""
+        """
+        Determina si una ruta es un punto de reanálisis (symlink/junction) en Windows.
+        Previene la recursión infinita en el escaneo de directorios.
+        """
         try:
             path = Path(path_str)
-            # Verificamos componentes para detectar enlaces en la jerarquía
             for parent in path.parents:
                 if parent.is_symlink() or (hasattr(parent, 'is_junction') and parent.is_junction()):
                     return True
@@ -177,13 +179,15 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
-        """Valida una ruta contra `safety.py` resolviendo el destino real para prevenir traversal."""
+        """
+        Ejecuta la validación de seguridad contra `safety.py`. 
+        Resuelve la ruta antes de chequear para neutralizar ataques de path traversal.
+        """
         try:
             path_obj = Path(path_str)
             resolved = path_obj.resolve(strict=False)
             resolved_str = str(resolved)
             
-            # El chequeo defensivo debe rechazar cualquier punto de reparse
             if _Validators._is_reparse_point(resolved_str):
                 return False
                 
@@ -195,7 +199,7 @@ class _Validators:
 
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
-        """Verifica que el string de ruta sea absoluto, saneado, no UNC y seguro para I/O."""
+        """Verifica que el string sea una ruta absoluta válida y no una ruta UNC peligrosa."""
         if not path_str or len(path_str) > 2048 or "\0" in path_str: return False
         if path_str.startswith(("\\\\", "//")): return False
         try:
@@ -207,7 +211,7 @@ class _Validators:
 
     @staticmethod
     def bool(key: ConfigKey, val: Any) -> Optional[bool]:
-        """Normaliza tipos mixtos (str/int/bool) a un valor booleano canónico."""
+        """Normaliza tipos mixtos (string, entero, booleano) a un booleano canónico."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -218,7 +222,7 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
-        """Convierte entrada a entero, aplicando los límites definidos en _NUMERIC_LIMITS."""
+        """Convierte entrada a entero y aplica límites mínimos/máximos del sistema."""
         if val is None: return None
         parsed_value = int(val)
         limit = _NUMERIC_LIMITS.get(key)
@@ -227,7 +231,7 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
-        """Valida que la entrada sea una ruta de sistema segura y accesible."""
+        """Valida que un path sea seguro y cumpla con las restricciones de escritura."""
         if val == "": return ""
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
@@ -236,7 +240,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
-        """Filtra strings contra una lista blanca definida por el contexto del enum."""
+        """Valida strings contra una lista blanca restringida (temas, modelos, etc)."""
         val = text.lower()
         allowed = _ENUM_VALS.get(key)
         if allowed: return val if val in allowed else None
@@ -245,7 +249,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        """Sanitiza strings, previniendo inyecciones, caracteres no imprimibles y path traversal."""
+        """Sanitiza strings de configuración para evitar caracteres maliciosos o traversal."""
         if val is None: return None
         text = str(val).strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
@@ -278,7 +282,7 @@ def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
 _VALIDATOR_MAP: Final = _build_validator_map()
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
-    """Calcula y retorna la ruta absoluta del archivo config.json."""
+    """Calcula la ruta absoluta del archivo de configuración, validando el contenedor."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     base_path = Path(custom_base).expanduser()
     if base_path in _PATH_CACHE: return _PATH_CACHE[base_path]
@@ -307,7 +311,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga, valida y cachea la configuración persistida en disco."""
+    """Carga y valida la configuración desde disco con caché de tiempo de modificación."""
     ruta = settings_path(custom_base)
     if not ruta.exists(): return DEFAULTS.copy()
     
@@ -330,7 +334,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         return DEFAULTS.copy()
 
 def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
-    """Aplica reglas de consistencia de negocio antes de persistir cambios."""
+    """Aplica reglas de negocio obligatorias para mantener la integridad del sistema."""
     if settings.get("asistente_activado"):
         if not (settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
             settings["asistente_activado"] = False
@@ -343,7 +347,7 @@ def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
     return settings
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Persiste la configuración de forma atómica con rotación de backups."""
+    """Persiste la configuración de forma atómica usando un archivo temporal y rotación."""
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     
@@ -389,7 +393,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Aplica actualizaciones parciales y guarda el nuevo estado si hay cambios."""
+    """Aplica actualizaciones parciales a la configuración y persiste si es necesario."""
     current = load(custom_base)
     modified = False
     for k, v in changes.items():
@@ -403,27 +407,27 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
-    """Restaura la configuración a los valores definidos en DEFAULTS."""
+    """Restaura la configuración a los valores de fábrica definidos en DEFAULTS."""
     save(DEFAULTS, custom_base)
     return DEFAULTS.copy()
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
-    """Obtiene un valor individual de la configuración cargada."""
+    """Obtiene un valor específico de la configuración activa."""
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
-    """Recupera la clave API priorizando la variable de entorno sobre el archivo."""
+    """Recupera la clave API priorizando variables de entorno por seguridad."""
     if env_key := os.environ.get(API_KEY_ENV_VAR, "").strip(): return env_key
     return load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
-    """Determina si el asistente está listo para operar según configuración y entorno."""
+    """Determina si el asistente está funcional basado en API keys válidas."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado")) and bool(settings.get("asistente_clave_api", "").strip())
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
-    """Genera una lista de strings detallando el estado actual para reportes."""
+    """Genera un reporte textual descriptivo de la configuración para diagnóstico."""
     current = load(custom_base)
     api_key_env = os.environ.get(API_KEY_ENV_VAR)
     api_key_file = current.get("asistente_clave_api", "").strip()

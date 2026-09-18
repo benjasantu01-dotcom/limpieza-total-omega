@@ -560,8 +560,7 @@ def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     cierre = " La app los lista, pero desactivalos desde el Administrador de tareas de Windows."
     return Answer(_validate_response_length(f"{estado} {valoracion}{cierre}"), notice=OFFLINE_NOTICE)
 
-# CATEGORIES_TO_HANDLERS define qué funciones de diagnóstico responden a qué conceptos.
-# TOKENS_BY_CATEGORY agrupa palabras clave (sinónimos, erratas) que activan dichas funciones.
+# Estructuras optimizadas de búsqueda
 TOKENS_BY_CATEGORY: Final[dict[frozenset[str], Callable[[SystemContext, str], Answer]]] = {
     frozenset(["ram", "memoria", "lenta", "lento", "acelerar"]): handle_ram,
     frozenset(["espacio", "disco", "lleno", "recuperar", "liberar"]): handle_disk,
@@ -570,12 +569,9 @@ TOKENS_BY_CATEGORY: Final[dict[frozenset[str], Callable[[SystemContext, str], An
     frozenset(["inicio", "arranque", "arranca", "encender"]): handle_startup
 }
 
-_KEYWORD_MAP: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
-    token: handler 
-    for key_set, handler in TOKENS_BY_CATEGORY.items() 
-    for token in key_set
+_TOKEN_TO_HANDLER: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
+    token: handler for key_set, handler in TOKENS_BY_CATEGORY.items() for token in key_set
 }
-_KNOWN_TOKENS: Final[set[str]] = set(_KEYWORD_MAP.keys())
 
 def _sanitize_query(question: str) -> str:
     """Limpia el input del usuario eliminando caracteres prohibidos para prevenir inyecciones."""
@@ -596,16 +592,11 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
     
-    # Optimizacion: Evitar parseo complejo si la query es trivialmente corta
-    if len(q_sanitized) < 30:
-        for token in _KNOWN_TOKENS:
-            if token in q_sanitized.lower():
-                return _KEYWORD_MAP[token](context, question)
-    
+    # Búsqueda O(n) sobre los tokens presentes en la consulta
     tokens = set(_TOKEN_REGEX.findall(q_sanitized.lower()))
-    matches = _KNOWN_TOKENS.intersection(tokens)
-    if matches:
-        return _KEYWORD_MAP[next(iter(matches))](context, question)
+    for token in tokens:
+        if token in _TOKEN_TO_HANDLER:
+            return _TOKEN_TO_HANDLER[token](context, question)
             
     cuerpo = _format_problem_message(
         _identify_active_problems(context), 
