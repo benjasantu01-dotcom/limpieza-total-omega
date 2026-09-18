@@ -272,7 +272,7 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
 
 def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
     """Verifica si un valor numérico se encuentra dentro del rango lógico definido por su especificación."""
-    return spec.min_val <= val <= spec.max_val
+    return math.isfinite(val) and spec.min_val <= val <= spec.max_val
 
 @dataclass
 class SystemContext:

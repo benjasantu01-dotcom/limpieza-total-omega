@@ -1399,3 +1399,10 @@ FAILED evolve/tests/test_modules.py::test_directory_size_adds_up_recursively - T
 - `2026-09-18T01:11:59` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de la carga de configuración implementando un caché de `AppSettings` deserializado, evitando así re-validar y re-procesar el diccionario en cada llamada a `load()` cuando el archivo no ha cambiado en disco.
 - `2026-09-18T01:11:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T01:11:59` Corrida terminada. Total usado hoy: 28.
+- `2026-09-18T01:19:30` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-09-18T01:19:58` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-18T01:20:39` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` y `_safe_float` añadiendo manejo específico para valores `inf` (infinitos) y `nan` (not a number), los cuales podían corromper los cálculos de salud si se inyectaban desde un JSON mal formado o un proceso con error de punto flotante.
+- `2026-09-18T01:21:12` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-18T01:21:24` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se implementó un mecanismo de detección de errores de acceso (`ERROR_ACCESS_DENIED`, `ERROR_SHARING_VIOLATION`) en el escaneo recursivo mediante `ctypes.get_last_error()` para distinguir entre carpetas vacías legítimas y errores de permisos/bloqueo, mejorando la robustez frente a directorios inaccesibles.
+- `2026-09-18T01:21:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T01:21:24` Corrida terminada. Total usado hoy: 32.

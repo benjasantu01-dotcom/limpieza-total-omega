@@ -232,10 +232,7 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
             return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
         
         if entry.is_file(follow_symlinks=False):
-            try:
-                return int(entry.stat(follow_symlinks=False).st_size)
-            except (OSError, AttributeError):
-                return 0
+            return int(entry.stat(follow_symlinks=False).st_size)
     except (OSError, PermissionError):
         return 0
     return 0
@@ -279,6 +276,10 @@ def _sum_directory_recursive(
         memo[root_abs] = total
         return total
     except (OSError, PermissionError, RuntimeError, ValueError):
+        if kernel32:
+            err = ctypes.get_last_error()
+            if err in (ERROR_ACCESS_DENIED, ERROR_SHARING_VIOLATION):
+                return 0
         return 0
 
 
