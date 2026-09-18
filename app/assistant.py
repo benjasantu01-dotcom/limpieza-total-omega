@@ -69,14 +69,15 @@ __all__ = [
 ]
 
 def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
-    """Decorador para asegurar que los handlers devuelvan una Answer válida o mensaje de error."""
+    """Decorador para asegurar que los handlers devuelvan una Answer válida o mensaje de error ante fallos internos."""
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
         if ctx.is_empty: return Answer("Primero analizá el sistema.")
         try:
-            return func(ctx, q)
-        except (ValueError, TypeError, AttributeError, KeyError, ZeroDivisionError):
-            return Answer("No pude procesar la información del sistema.")
+            result = func(ctx, q)
+            return result if isinstance(result, Answer) else Answer("Error interno en asistente.")
+        except Exception:
+            return Answer("No pude procesar la información solicitada.")
     return wrapper
 
 class AssistantConfig(NamedTuple):
@@ -487,7 +488,7 @@ def _format_problem_message(problems: tuple[str, ...], score: Union[int, str]) -
         if not problems:
             return f"Tu sistema está en buen estado ({clean_score}/100). No hay nada urgente."
         return f"Con un puntaje de {clean_score}/100, por orden de prioridad: {', '.join(problems)}."
-    except (TypeError, ValueError):
+    except Exception:
         return "Tu sistema tiene problemas detectados."
 
 def _identify_active_problems(ctx: SystemContext) -> tuple[str, ...]:
@@ -715,5 +716,5 @@ def ask(question: str, context: Optional[SystemContext] = None,
             respaldo.notice = "No se pudo consultar al asistente en línea, respondí con el motor local."
             return respaldo
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
-    except (Exception):
+    except Exception:
         return respaldo

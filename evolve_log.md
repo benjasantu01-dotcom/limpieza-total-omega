@@ -537,3 +537,40 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-18T03:49:02` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-18T03:49:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T03:49:02` Corrida terminada. Total usado hoy: 88.
+- `2026-09-18T03:55:01` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-09-18T03:55:03` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-18T03:55:03` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-18T03:55:23` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-18T03:55:23` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-18T03:55:53` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-18T03:55:53` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-18T03:56:46` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_safe_handler_wrapper` y `handle_score` para manejar de forma explícita situaciones donde los datos pueden ser parciales o malformados, evitando que una métrica faltante o un error de cálculo interrumpan el hilo de ejecución, asegurando que el asistente siempre devuelva una respuesta válida y legible.
+- `2026-09-18T03:57:21` Tests FALLARON:
+```
+_x + borde, canvas_y + borde, canvas_x + diam - borde, canvas_y + diam - borde)
+>           canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)
+            ^^^^^^^^^^^^^^^^^
+E           AttributeError: 'NoneType' object has no attribute 'create_arc'
+
+app/branding.py:408: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:125: SyntaxWarning: invalid escape sequence '\R'
+    El registro de Windows suele guardar rutas con espacios como '"C:\Ruta\App.exe" /arg'.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missing_canvas - AttributeError: 'NoneType' object has no attribute 'create_arc'
+1 failed, 298 passed, 7 warnings in 1.06s
+
+```
+- `2026-09-18T03:57:21` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `save_logo_svg` y las funciones de dibujo (`draw_logo`, `draw_ring`) mediante la validación explícita de tipos, el uso de chequeos `is_safe_to_modify` para evitar excepciones innecesarias durante el flujo y la captura de errores específicos para prevenir fallos silenciosos.
+- `2026-09-18T03:57:36` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `directory_size` y `_sum_directory_recursive` mediante la validación explícita de `root_abs` y el uso de `OSError` específico para evitar que el escáner aborte ante archivos bloqueados o denegados, alineándolo con el enfoque de validación defensiva.
+- `2026-09-18T03:57:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T03:57:36` Corrida terminada. Total usado hoy: 92.
