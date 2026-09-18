@@ -100,14 +100,17 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
         return None
     try:
         dll = ctypes.WinDLL('kernel32.dll', use_last_error=True)
+        # Verificamos específicamente el tipo de retorno y la presencia del método
         if hasattr(dll, 'GetFileAttributesW'):
             return dll
-    except (OSError, ValueError, TypeError, AttributeError):
+    except (OSError, ValueError, TypeError, AttributeError, RuntimeError):
         return None
     return None
 
 def _is_unc_path(path_str: str) -> bool:
     """Detecta si la ruta es un recurso de red (UNC) para evitar bloqueos/riesgos."""
+    if not isinstance(path_str, str):
+        return False
     return path_str.startswith(r"\\") or path_str.startswith("//")
 
 def base_directories() -> List[Path]:
@@ -161,11 +164,12 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
+        # Validación estricta de parámetros para la llamada a ctypes
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False 
         return bool(attrs & SYSTEM_HIDDEN_FLAGS)
-    except (AttributeError, TypeError, ctypes.ArgumentError, OSError):
+    except (AttributeError, TypeError, ctypes.ArgumentError, OSError, ValueError):
         return False
 
 

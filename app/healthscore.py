@@ -187,8 +187,12 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Verifica que todos los campos contengan valores numéricos procesables (no NaN/Inf)."""
-        return all(math.isfinite(getattr(self, f)) for f in self.__dataclass_fields__ if isinstance(getattr(self, f), (int, float)))
+        """Verifica que todos los campos sean finitos y no nulos."""
+        for field_name in self.__dataclass_fields__:
+            val = getattr(self, field_name)
+            if val is None or not isinstance(val, (int, float)) or not math.isfinite(float(val)):
+                return False
+        return True
 
 @dataclass
 class HealthResult:
@@ -210,6 +214,7 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
 def _to_float(value: Any, default: float = 0.0) -> float:
     """Filtra y convierte inputs arbitrarios a float, descartando valores no numéricos."""
     try:
+        if value is None: return default
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError, OverflowError): return default

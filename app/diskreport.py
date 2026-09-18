@@ -328,7 +328,10 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         if size < 0: continue
         total_bytes += size
         total_files += 1
-        ext = path.suffix.lower() or "(sin extensión)"
+        
+        # Validación de extensión para evitar claves vacías o inconsistentes
+        ext_raw = path.suffix
+        ext = ext_raw.lower() if ext_raw else "(sin extensión)"
         
         stat = ext_stats[ext]
         stat.total_bytes += size
