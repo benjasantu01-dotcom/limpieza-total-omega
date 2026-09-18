@@ -208,7 +208,7 @@ def _is_system_or_hidden(path_str: str) -> bool:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == 0xFFFFFFFF: return False
         return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_TEMPORARY))
-    except (AttributeError, OSError, FileNotFoundError, ctypes.ArgumentError, Exception):
+    except (AttributeError, OSError, FileNotFoundError, ctypes.ArgumentError):
         return False 
 
 @lru_cache(maxsize=2048)
@@ -221,7 +221,7 @@ def _is_reparse_point(path_str: str) -> bool:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == 0xFFFFFFFF: return False
         return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT)
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError, Exception):
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         return False
 
 @lru_cache(maxsize=2048)
@@ -232,7 +232,7 @@ def _is_encrypted_or_compressed(path_str: str) -> bool:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == 0xFFFFFFFF: return False
         return bool(attrs & (FILE_ATTRIBUTE_COMPRESSED | FILE_ATTRIBUTE_ENCRYPTED))
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError, Exception):
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         return False
 
 @lru_cache(maxsize=2048)
@@ -243,7 +243,7 @@ def _is_offline(path_str: str) -> bool:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == 0xFFFFFFFF: return False
         return bool(attrs & FILE_ATTRIBUTE_OFFLINE)
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError, Exception):
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         return False
 
 @lru_cache(maxsize=1024)
@@ -282,7 +282,7 @@ def _is_directory_junction(path: Path) -> bool:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(str(path)))
         if attrs == 0xFFFFFFFF: return False
         return bool(attrs & FILE_ATTRIBUTE_DIRECTORY and attrs & FILE_ATTRIBUTE_REPARSE_POINT)
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError, Exception): return False
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError): return False
 
 def _is_kernel_managed(path: Path) -> bool:
     """Detecta archivos de paginación o hibernación bloqueados por el sistema operativo."""
@@ -337,6 +337,9 @@ def _check_file_integrity(path: Path) -> None:
     except (PermissionError, OSError):
         raise UnsafePathError(f"Acceso denegado a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     
+    if file_stat is None:
+        return
+    
     if _is_directory_junction(path):
         raise UnsafePathError(f"Junction detectada: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
@@ -345,7 +348,7 @@ def _check_file_integrity(path: Path) -> None:
             if rule.predicate(path, file_stat):
                 code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
                 raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
-        except (AttributeError, OSError, ctypes.ArgumentError, Exception):
+        except (AttributeError, OSError, ctypes.ArgumentError, PermissionError):
             continue
 
 @lru_cache(maxsize=2048)
@@ -511,7 +514,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
                      raise UnsafePathError("Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED)
                 if drive_type == DRIVE_CDROM or _is_volume_readonly(str(target_path)):
                      raise UnsafePathError("Volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
-        except (OSError, AttributeError, ctypes.ArgumentError, Exception) as e:
+        except (OSError, AttributeError, ctypes.ArgumentError) as e:
              raise UnsafePathError(f"Fallo al consultar unidad: {e}", SafetyValidationErrorCode.IO_ERROR)
 
     try:

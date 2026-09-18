@@ -316,7 +316,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         with open(ruta, "r", encoding="utf-8") as f:
             raw = json.load(f)
             if not _is_dict(raw): return DEFAULTS.copy()
-            # Asegurar integridad estructural antes de retornar
             final_data = _ensure_settings_integrity(validate(raw))
         
         _CACHE[ruta] = (stats.st_mtime, final_data)

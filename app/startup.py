@@ -133,7 +133,8 @@ class StartupEntry:
             
         path_str: str = raw_command[1:end_quote].strip()
         
-        if not path_str or self._is_path_suspicious(path_str):
+        # Validación de seguridad reforzada antes de instanciar Path
+        if not path_str or self._is_path_suspicious(path_str) or self._is_reserved_device_name(path_str):
             return ""
         
         if len(path_str) < 3:

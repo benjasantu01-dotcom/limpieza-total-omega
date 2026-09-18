@@ -72,6 +72,8 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
     Intenta obtener metadatos sin seguir enlaces simbólicos mediante la API de bajo nivel.
     """
+    if entry is None:
+        return None
     try:
         return entry.stat(follow_symlinks=False)
     except (OSError, PermissionError, AttributeError, FileNotFoundError):
@@ -167,14 +169,12 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Detecta si un directorio es una unión (Reparse Point) para evitar bucles infinitos."""
-        try:
-            if not entry: return True
-            stats = _safe_stat(entry)
-            if stats and hasattr(stats, 'st_file_attributes'):
-                return bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
-            return False
-        except (OSError, PermissionError, AttributeError):
-            return True 
+        if entry is None:
+            return True
+        stats = _safe_stat(entry)
+        if stats and hasattr(stats, 'st_file_attributes'):
+            return bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
+        return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Gestiona la pila de directorios pendientes durante el escaneo iterativo."""
