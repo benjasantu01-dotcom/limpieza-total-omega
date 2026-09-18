@@ -255,22 +255,24 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Selecciona entre hash completo o parcial dependiendo del tamaño del archivo 
-    para optimizar la velocidad de procesamiento.
+    Selecciona entre hash completo o parcial para identificar duplicados reales.
+    Si el archivo es mayor al umbral, usa hash parcial primero como filtro.
     """
     if not paths or size < 0:
         return []
 
+    # Estrategia: Hash completo directo para archivos pequeños, o filtrado por parcial.
     if size <= PARTIAL_READ_BYTES:
-        results = _group_paths_by_hash(paths, hash_file)
+        final_groups = _group_paths_by_hash(paths, hash_file)
     else:
         partial_groups = _group_paths_by_hash(paths, partial_hash)
-        results: Dict[str, List[Path]] = {}
-        for subset in partial_groups.values():
-            if len(subset) > 1:
-                results.update(_group_paths_by_hash(subset, hash_file))
+        final_groups = {}
+        for candidate_subset in partial_groups.values():
+            # Refinamiento: solo los que pasaron el filtro parcial se procesan con hash completo
+            full_hash_groups = _group_paths_by_hash(candidate_subset, hash_file)
+            final_groups.update(full_hash_groups)
             
-    return [DuplicateGroup(digest, size, sorted(p)) for digest, p in results.items() if len(p) > 1]
+    return [DuplicateGroup(d, size, sorted(p)) for d, p in final_groups.items()]
 
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:

@@ -249,16 +249,16 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             if skip_protected and is_protected_path(path_obj): continue
                             
                             st = entry.stat(follow_symlinks=False)
-                            inode = (st.st_dev, st.st_ino)
+                            inode: Inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)
                                 
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
-                            size = int(getattr(st, 'st_size', 0))
-                            if size >= 0:
-                                yield path_obj, size
+                            size_bytes: int = int(getattr(st, 'st_size', 0))
+                            if size_bytes >= 0:
+                                yield path_obj, size_bytes
                             
                     except (PermissionError, OSError, StopIteration):
                         continue
@@ -290,13 +290,13 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     folder_total_bytes: Dict[Path, int] = defaultdict(int)
     folder_file_counts: Dict[Path, int] = defaultdict(int)
     
-    for path, size in walk_files(root, skip_protected):
+    for path, size_bytes in walk_files(root, skip_protected):
         try:
             relative = path.relative_to(root)
             if not relative.parts: continue
             
             top_level_folder = root / relative.parts[0]
-            folder_total_bytes[top_level_folder] += size
+            folder_total_bytes[top_level_folder] += size_bytes
             folder_file_counts[top_level_folder] += 1
         except (ValueError, IndexError, OSError): 
             continue
@@ -315,33 +315,46 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Función central de agregación de métricas. Consume `walk_files` para calcular:
-    - Tamaño y conteo total.
-    - Agregación por extensión (usando `ExtStats`).
-    - Heap de tamaño fijo (`top_heap`) para encontrar los archivos más grandes de forma eficiente (O(N log L)).
+    Agrega métricas de uso de disco recorriendo el árbol de directorios.
+
+    Procesamiento eficiente:
+    1. Acumula bytes y conteo de archivos global.
+    2. Clasifica estadísticas por extensión mediante `ExtStats`.
+    3. Mantiene un min-heap de tamaño `limit` para obtener los N archivos más grandes
+       en tiempo O(N log L), minimizando el uso de memoria comparado con sort global.
+
+    Args:
+        directory: Ruta raíz a analizar.
+        skip_protected: Si es True, ignora directorios marcados como protegidos.
+        limit: Cantidad de archivos a rastrear en el top.
+
+    Returns:
+        SummaryData con el reporte consolidado.
     """
-    total_bytes, total_files = 0, 0
+    total_bytes: int = 0
+    total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
     top_heap: List[Tuple[int, Path]] = []
     
-    for path, size in walk_files(directory, skip_protected):
-        if size < 0: continue
-        total_bytes += size
+    for path, size_bytes in walk_files(directory, skip_protected):
+        if size_bytes < 0: continue
+        total_bytes += size_bytes
         total_files += 1
         
-        # Validación de extensión para evitar claves vacías o inconsistentes
+        # Agrupación por extensión
         ext_raw = path.suffix
         ext = ext_raw.lower() if ext_raw else "(sin extensión)"
         
         stat = ext_stats[ext]
-        stat.total_bytes += size
+        stat.total_bytes += size_bytes
         stat.count += 1
         
-        if limit > 0 and size > 0:
+        # Lógica de Heap para mantener top N archivos por tamaño
+        if limit > 0 and size_bytes > 0:
             if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size, path))
-            elif size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (size, path))
+                heapq.heappush(top_heap, (size_bytes, path))
+            elif size_bytes > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size_bytes, path))
     
     return SummaryData(total_bytes, total_files, ext_stats, top_heap)
 
