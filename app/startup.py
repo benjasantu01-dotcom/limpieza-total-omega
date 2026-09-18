@@ -154,7 +154,10 @@ class StartupEntry:
         no esté en zona protegida y no sea un enlace simbólico (evita inyección).
         """
         try:
-            # Verificar existencia y metadatos sin abrir el contenido
+            # Verificar existencia previa para evitar excepciones innecesarias en stat()
+            if not os.path.exists(p):
+                return False
+            # Verificar metadatos sin abrir el contenido
             stat = p.stat()
             return (
                 not is_protected_path(p) and 

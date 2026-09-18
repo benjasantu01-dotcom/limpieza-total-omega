@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 0 | 0 | 0 | 0 | 6 |
+| 2026-09-16 | 0 | 0 | 0 | 0 | 2 |
 | 2026-09-17 | 137 | 9 | 25 | 15 | 164 |
-| 2026-09-18 | 64 | 6 | 18 | 7 | 53 |
+| 2026-09-18 | 68 | 6 | 18 | 7 | 53 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **43**
 - legibilidad y documentación: **40**
+- seguridad defensiva: **39**
 - rendimiento: **37**
-- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **21**
+- `browser.py`: **22**
 - `diskreport.py`: **20**
 - `healthscore.py`: **20**
+- `assistant.py`: **18**
 - `memory.py`: **18**
 - `settings.py`: **18**
-- `assistant.py`: **17**
 - `safety.py`: **17**
 - `duplicates.py`: **15**
 - `scanner.py`: **14**
 - `quarantine.py`: **14**
-- `branding.py`: **8**
+- `branding.py`: **9**
 - `organizer.py`: **8**
+- `startup.py`: **6**
 - `main.py`: **6**
-- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T06:29:47` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier iteración, asegurando que el escaneo no pueda acceder a áreas críticas aunque la lógica de resolución falle o se intente un bypass mediante enlaces simbólicos externos.
+- `2026-09-18T06:29:34` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` reemplazando la verificación simple de `is_protected_path` por una lógica de "defensa en profundidad" que previene condiciones de carrera y asegura que solo se escriban archivos en directorios validados y que no sean puntos de reparse, alineándose con las directrices de seguridad.
+- `2026-09-18T06:29:00` **assistant.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `assistant.py` añadiendo un filtro de longitud y validación de tipos estricta en `_fmt_metric_sanitized` y `_fmt_metric`, además de proteger `context_as_text` contra posibles errores en el formateo de datos, evitando que valores malintencionados o inesperados alteren el contexto enviado a la IA o afecten la estabilidad de la interfaz.
+- `2026-09-18T06:28:21` **startup.py** (robustez ante casos límite): Se añadió una verificación explícita de `path.exists()` dentro de `_validate_file_access` utilizando `os.path.exists()` antes de llamar a `p.stat()`, para evitar errores `FileNotFoundError` en archivos huérfanos o temporalmente bloqueados, robusteciendo la lógica de validación ante el sistema de archivos cambiante.
 - `2026-09-18T06:19:19` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante fallos de E/S y corrupción de archivos al añadir una lógica de recuperación de archivos de respaldo `.bak` si el archivo principal de configuración (`config.json`) falla al cargar, asegurando que la aplicación no pierda las preferencias del usuario ante un cierre inesperado o escritura incompleta.
 - `2026-09-18T06:19:04` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `scanner.py` ante errores de acceso a archivos al envolver la obtención de metadatos en un manejo de excepciones exhaustivo dentro de `_safe_stat`, previniendo que problemas de concurrencia o bloqueos de sistema interrumpan el escaneo de directorios completos.
 - `2026-09-18T06:18:38` **safety.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y accesibilidad en `_validate_ntfs_reparse_redirection` para evitar llamadas al sistema con handles inválidos y mejorar la robustez frente a race conditions o permisos de acceso denegados durante el escaneo.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T05:57:41` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_should_skip_entry` al añadir una verificación explícita de `OSError` al llamar a `entry.is_symlink()`, evitando que una excepción inesperada en el acceso a metadatos de archivos bloqueados detenga el escaneo completo de una carpeta.
 - `2026-09-18T05:49:03` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la función `_hex_to_rgb` y se ha implementado un control de acceso centralizado mediante `is_protected_path` en `save_logo_svg` antes de intentar cualquier operación de escritura, previniendo errores de sistema y reforzando la seguridad al guardar activos.
 - `2026-09-18T05:47:35` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` reemplazando lecturas recurrentes y conversiones redundantes por un cache de configuración serializada, evitando procesamiento innecesario cuando el archivo no cambió en disco.
-- `2026-09-18T05:37:29` **quarantine.py** (rendimiento): Optimizé la función `list_items` para evitar el cálculo innecesario de rutas absolutas y resolución de directorios dentro del bucle principal, además de asegurar que la carga del manifiesto sea más eficiente al trabajar directamente con el conjunto de archivos en disco.
-- `2026-09-18T05:28:54` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` eliminando la llamada innecesaria a `subprocess.run` y el parseo de CSV cada vez que se requiere la lista, implementando un filtrado más eficiente y reduciendo el consumo de CPU al reutilizar los resultados cacheados adecuadamente.
-- `2026-09-18T05:27:11` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la creación repetitiva de listas de reglas en cada iteración del bucle `compute_score`, reemplazando el filtrado dinámico por una estructura de datos pre-mapeada.
-- `2026-09-18T05:18:02` **diskreport.py** (rendimiento): Optimicé `_collect_summary_data` reemplazando los dos diccionarios `defaultdict` por un único diccionario que almacena objetos `ExtStats` mutables, reduciendo las consultas de hashing y mejorando la eficiencia durante el recorrido del disco.

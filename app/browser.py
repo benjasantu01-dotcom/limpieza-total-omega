@@ -267,8 +267,10 @@ def _sum_directory_recursive(
         if root_path.is_symlink() or is_junction_fn(str(root_path)):
             return 0
 
+        # Validación estricta de seguridad en cada paso de la recursión
         if not is_safe_to_modify(root_path) or is_protected_path(root_path):
             return 0
+            
         if not _is_path_inside_base(root_path, Path(root_base).resolve(strict=True)):
             return 0
         

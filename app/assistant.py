@@ -438,37 +438,39 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
 def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Formatea una métrica, limpiando caracteres prohibidos para la salida."""
+    if not isinstance(val, (int, float, str)): return "N/A"
     raw = _fmt_metric(val, unit, decimal)
-    return _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))
+    return _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))[:32]
 
 @lru_cache(maxsize=16)
 def _generate_context_cached(ctx: SystemContext) -> str:
     """Genera bloque de resumen del sistema para prompts del asistente, cacheado por contexto."""
-    s_score = _fmt_metric_sanitized(ctx.score) if ctx.score is not None else 'N/A'
-    s_grade = f" nota {str(ctx.grade)[:5]}" if ctx.grade else ''
-    return "\n".join([
-        f"Puntaje de salud: {s_score}{s_grade}",
-        f"Basura: {_fmt_metric_sanitized(ctx.junk_mb, ' MB')}",
-        f"Sospechosos: {_fmt_metric_sanitized(ctx.suspicious_count)}",
-        f"RAM disponible: {_fmt_metric_sanitized(ctx.memory_available_percent, ' percent')}",
-        f"Disco libre: {_fmt_metric_sanitized(ctx.disk_free_percent, ' percent')}",
-        f"Duplicados: {_fmt_metric_sanitized(ctx.duplicate_mb, ' MB')}",
-        f"Inicio: {_fmt_metric_sanitized(ctx.startup_count)} items"
-    ])
+    try:
+        s_score = _fmt_metric_sanitized(ctx.score) if ctx.score is not None else 'N/A'
+        s_grade = f" nota {str(ctx.grade)[:5]}" if ctx.grade else ''
+        return "\n".join([
+            f"Puntaje de salud: {s_score}{s_grade}",
+            f"Basura: {_fmt_metric_sanitized(ctx.junk_mb, ' MB')}",
+            f"Sospechosos: {_fmt_metric_sanitized(ctx.suspicious_count)}",
+            f"RAM disponible: {_fmt_metric_sanitized(ctx.memory_available_percent, ' percent')}",
+            f"Disco libre: {_fmt_metric_sanitized(ctx.disk_free_percent, ' percent')}",
+            f"Duplicados: {_fmt_metric_sanitized(ctx.duplicate_mb, ' MB')}",
+            f"Inicio: {_fmt_metric_sanitized(ctx.startup_count)} items"
+        ])
+    except Exception:
+        return ""
 
 def context_as_text(context: SystemContext) -> str:
     """Serializa las métricas de SystemContext en texto optimizado para la inferencia."""
     if context.is_empty:
         return ""
-    try:
-        return _generate_context_cached(context)
-    except Exception:
-        return ""
+    return _generate_context_cached(context)
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Convierte valores a cadena con precisión definida, manejando casos de error."""
     f = _safe_float(val, -1.0)
-    return f"{f:.{decimal}f}{unit}" if f >= 0 else "N/A"
+    if f < 0: return "N/A"
+    return f"{f:.{decimal}f}{unit}"
 
 def explain_area(area: Any) -> str:
     """Devuelve la definición pedagógica de un área específica mediante el mapa configurado."""
