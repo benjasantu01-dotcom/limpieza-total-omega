@@ -258,9 +258,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             if st.st_size >= 0:
                                 yield Path(entry.path), st.st_size
                             
-                    except (PermissionError, OSError):
+                    except (PermissionError, OSError, FileNotFoundError):
                         continue
-        except (PermissionError, OSError):
+        except (PermissionError, OSError, FileNotFoundError):
             continue
 
 
@@ -321,21 +321,24 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        total_bytes += size_bytes
-        total_files += 1
-        
-        ext_raw = path.suffix
-        ext = ext_raw.lower() if ext_raw else "(sin extensión)"
-        
-        stat = ext_stats[ext]
-        stat.total_bytes += size_bytes
-        stat.count += 1
-        
-        if limit > 0 and size_bytes > 0:
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size_bytes, path))
-            elif size_bytes > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (size_bytes, path))
+        try:
+            total_bytes += size_bytes
+            total_files += 1
+            
+            ext_raw = path.suffix
+            ext = ext_raw.lower() if ext_raw else "(sin extensión)"
+            
+            stat = ext_stats[ext]
+            stat.total_bytes += size_bytes
+            stat.count += 1
+            
+            if limit > 0 and size_bytes > 0:
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, (size_bytes, path))
+                elif size_bytes > top_heap[0][0]:
+                    heapq.heapreplace(top_heap, (size_bytes, path))
+        except Exception:
+            continue
     
     return SummaryData(total_bytes, total_files, ext_stats, top_heap)
 

@@ -261,10 +261,12 @@ def _sum_directory_recursive(
         memo[root_abs] = total
         return total
     except (OSError, PermissionError, RuntimeError, ValueError) as e:
-        if isinstance(e, OSError) and kernel32:
-            err = ctypes.get_last_error()
-            if err in (ERROR_ACCESS_DENIED, ERROR_SHARING_VIOLATION):
-                return 0
+        # Manejo específico ante rutas inválidas o violaciones de acceso
+        if isinstance(e, OSError):
+            if kernel32:
+                err = ctypes.get_last_error()
+                if err in (ERROR_ACCESS_DENIED, ERROR_SHARING_VIOLATION):
+                    return 0
         return 0
 
 
@@ -274,7 +276,8 @@ def directory_size(path: Optional[OSPath]) -> int:
         return 0
     try:
         p = Path(path)
-        if not p.is_absolute() or not _is_safe_to_traverse(p, None):
+        # Verificación preliminar de longitud y existencia antes de resolver
+        if len(str(p)) >= MAX_PATH_LEN or not p.is_absolute() or not _is_safe_to_traverse(p, None):
             return 0
         resolved = str(p.resolve(strict=True))
         return _sum_directory_recursive(resolved, _IS_JUNCTION_FN, _get_kernel32(), {}, resolved)

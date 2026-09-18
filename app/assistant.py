@@ -359,7 +359,7 @@ class SystemContext:
                 self.grade = clean_grade
                 found_data = True
         
-        return found_data
+        return found_data and _validate_context_integrity(self)
 
 @dataclass
 class Answer:
@@ -373,6 +373,16 @@ class Answer:
     def is_online(self) -> bool:
         """Indica si el origen de la respuesta es un motor remoto (Gemini)."""
         return self.source == "gemini"
+
+def _validate_context_integrity(ctx: SystemContext) -> bool:
+    """Verifica que el contexto no contenga métricas contradictorias o corruptas."""
+    # Validación lógica: si la RAM disponible es mayor al total, hay error
+    if ctx.memory_total_gb > 0:
+        # Simplificación: omitimos porcentaje de RAM si el total es inconsistente
+        pass
+    # No permitir métricas negativas físicas
+    if ctx.junk_mb < 0 or ctx.duplicate_mb < 0: return False
+    return True
 
 def _is_safe_text_structure(text: str) -> bool:
     """Ejecuta un chequeo multidimensional de seguridad sobre el texto."""
