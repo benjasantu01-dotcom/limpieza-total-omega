@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 211
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 137 | 9 | 25 | 15 | 158 |
-| 2026-09-18 | 75 | 6 | 19 | 7 | 53 |
+| 2026-09-17 | 137 | 9 | 25 | 15 | 154 |
+| 2026-09-18 | 77 | 7 | 19 | 8 | 53 |
 
 ## Mejoras aceptadas por enfoque
 
+- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **46**
 - robustez ante casos límite: **43**
 - legibilidad y documentación: **40**
 - rendimiento: **37**
@@ -34,11 +34,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **21**
 - `memory.py`: **19**
 - `assistant.py`: **18**
+- `safety.py`: **18**
 - `settings.py`: **18**
-- `safety.py`: **17**
 - `duplicates.py`: **16**
+- `scanner.py`: **15**
 - `quarantine.py`: **15**
-- `scanner.py`: **14**
 - `branding.py`: **9**
 - `organizer.py`: **9**
 - `main.py`: **7**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T06:59:31` **scanner.py** (seguridad defensiva): Se ha añadido una validación explícita mediante `path.is_absolute()` y la resolución de `root_input` en `scan_directory` para prevenir posibles ataques de salto de directorio o rutas relativas ambiguas, asegurando que el motor de escaneo siempre opere dentro de un contexto absoluto y verificado.
+- `2026-09-18T06:59:06` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir ataques de "Time-of-Check to Time-of-Use" (TOCTOU) y corrupción de rutas al verificar que el `st_dev` y `st_ino` (identificador único de archivo) no cambien entre la normalización inicial y la comprobación de integridad.
 - `2026-09-18T06:49:51` **quarantine.py** (seguridad defensiva): Se introdujo una comprobación explícita de `is_safe_to_modify` en `_atomic_isolate_file` antes de confirmar la escritura, asegurando que la ruta destino en el sandbox no sea un objetivo inválido después de la resolución, reforzando la seguridad defensiva contra posibles manipulaciones del sistema de archivos durante la operación de copia.
 - `2026-09-18T06:49:15` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar una verificación explícita de `is_safe_to_modify` (la función estándar de seguridad) para evitar que archivos protegidos por el sistema sean considerados candidatos a limpieza, fortaleciendo la barrera de seguridad antes de cualquier operación de movimiento.
 - `2026-09-18T06:48:49` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `trim_working_set` implementando el principio de "mínimo privilegio" mediante el uso de una máscara de acceso reducida (`PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA`) al abrir el proceso, asegurando que solo se soliciten los permisos estrictamente necesarios para la operación solicitada.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T06:28:21` **startup.py** (robustez ante casos límite): Se añadió una verificación explícita de `path.exists()` dentro de `_validate_file_access` utilizando `os.path.exists()` antes de llamar a `p.stat()`, para evitar errores `FileNotFoundError` en archivos huérfanos o temporalmente bloqueados, robusteciendo la lógica de validación ante el sistema de archivos cambiante.
 - `2026-09-18T06:19:19` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante fallos de E/S y corrupción de archivos al añadir una lógica de recuperación de archivos de respaldo `.bak` si el archivo principal de configuración (`config.json`) falla al cargar, asegurando que la aplicación no pierda las preferencias del usuario ante un cierre inesperado o escritura incompleta.
 - `2026-09-18T06:19:04` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `scanner.py` ante errores de acceso a archivos al envolver la obtención de metadatos en un manejo de excepciones exhaustivo dentro de `_safe_stat`, previniendo que problemas de concurrencia o bloqueos de sistema interrumpan el escaneo de directorios completos.
-- `2026-09-18T06:18:38` **safety.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y accesibilidad en `_validate_ntfs_reparse_redirection` para evitar llamadas al sistema con handles inválidos y mejorar la robustez frente a race conditions o permisos de acceso denegados durante el escaneo.
-- `2026-09-18T06:12:09` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_for_disk_op` y `_can_move_file` mediante la validación explícita del estado de escritura del destino y la detección de posibles errores de volumen cruzado, evitando llamadas a `resolve()` sobre rutas inexistentes y asegurando que `disk_usage` reciba un punto de anclaje válido.

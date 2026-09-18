@@ -769,3 +769,41 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-09-18T06:49:55` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-18T06:49:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T06:49:55` Corrida terminada. Total usado hoy: 160.
+- `2026-09-18T06:58:27` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-09-18T06:59:06` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita para prevenir ataques de "Time-of-Check to Time-of-Use" (TOCTOU) y corrupción de rutas al verificar que el `st_dev` y `st_ino` (identificador único de archivo) no cambien entre la normalización inicial y la comprobación de integridad.
+- `2026-09-18T06:59:31` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita mediante `path.is_absolute()` y la resolución de `root_input` en `scan_directory` para prevenir posibles ataques de salto de directorio o rutas relativas ambiguas, asegurando que el motor de escaneo siempre opere dentro de un contexto absoluto y verificado.
+- `2026-09-18T07:00:00` ➖ Sin cambios en settings.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la seguridad en la escritura del archivo de configuración al añadir `os.replace` para realizar una operación atómica y prevenir la corrupción de datos ante cierres inesperados, además de asegurar que `ruta.parent` sea verificado con `ensure_safe_to_modify` antes de intentar cualquier operación de disco.
+- `2026-09-18T07:00:12` Tests FALLARON:
+```
+ted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:125
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:125: SyntaxWarning: invalid escape sequence '\R'
+    El registro de Windows suele guardar rutas con espacios como '"C:\Ruta\App.exe" /arg'.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 8 warnings in 1.39s
+
+```
+- `2026-09-18T07:00:12` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó `_validate_file_access` y `_resolve_and_cache_path` para prevenir la resolución de rutas mediante puntos de reparse (reparse points/junctions) usando `lstat` en lugar de `stat` al verificar el estado del archivo, evitando así seguir enlaces simbólicos fuera de las rutas de usuario esperadas.
+- `2026-09-18T07:00:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T07:00:12` Corrida terminada. Total usado hoy: 164.

@@ -239,7 +239,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             return []
         
         base_path = Path(path_str)
-        if not base_path.exists() or not base_path.is_dir(): 
+        if not base_path.is_absolute() or not base_path.exists() or not base_path.is_dir(): 
             return []
             
         root_input: Path = base_path.resolve()

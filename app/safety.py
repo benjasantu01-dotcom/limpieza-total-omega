@@ -92,6 +92,7 @@ class SafetyValidationErrorCode(IntEnum):
     KERNEL_LOCKED_FILE = 23
     WRITE_ACCESS_DENIED = 24
     MOUNT_POINT_DETECTED = 25
+    TOCTOU_VIOLATION = 26
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
@@ -121,6 +122,7 @@ class ProtectionReason(Enum):
     REMOVABLE_DRIVE = "unidad extraíble detectada"
     KERNEL_LOCKED = "archivo bloqueado por kernel"
     ACCESS_WRITE = "acceso de escritura denegado"
+    TOCTOU_VIOLATION = "violación de consistencia (TOCTOU)"
 
 class ValidationContext(Enum):
     """Define si la validación es puramente estructural o requiere acceso a disco."""
@@ -327,25 +329,26 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.MOUNT_POINT: SafetyValidationErrorCode.MOUNT_POINT_DETECTED
 }
 
-def _check_file_integrity(path: Path) -> None:
+def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     """Ejecuta una batería de reglas de integridad sobre el archivo mediante predicados."""
     if not path.exists():
         return
         
     try:
-        file_stat = path.stat()
+        current_stat = path.stat()
     except (PermissionError, OSError):
         raise UnsafePathError(f"Acceso denegado a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     
-    if file_stat is None:
-        return
+    # Prevenir TOCTOU: Verificar que el archivo no fue reemplazado entre normalización y validación
+    if current_stat.st_dev != initial_stat.st_dev or current_stat.st_ino != initial_stat.st_ino:
+        raise UnsafePathError(f"Consistencia fallida: {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
     
     if _is_directory_junction(path):
         raise UnsafePathError(f"Junction detectada: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
     for rule in _VALIDATORS:
         try:
-            if rule.predicate(path, file_stat):
+            if rule.predicate(path, current_stat):
                 code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
                 raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
         except (AttributeError, OSError, ctypes.ArgumentError, PermissionError):
@@ -561,29 +564,29 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_boundary_conditions(p, base_dir)
     _validate_access_permissions(p)
     
-    if p.exists() and not os.access(p, os.W_OK):
-        raise UnsafePathError(f"Acceso de escritura denegado: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-    
-    try:
-        if p.exists():
-            if os.name == 'nt':
-                _validate_ntfs_reparse_redirection(p)
-            _check_file_integrity(p)
-        else:
-            parent = p.parent
-            if parent.exists() and is_protected_path(parent):
-                raise UnsafePathError("Directorio contenedor restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+    if p.exists():
+        try:
+            initial_stat = p.stat()
+        except OSError:
+            raise UnsafePathError(f"No se pueden obtener metadatos: {p.name}", SafetyValidationErrorCode.IO_ERROR)
+        
+        if not bool(initial_stat.st_mode & stat.S_IWRITE):
+            raise UnsafePathError(f"Acceso de escritura denegado: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
             
-            if os.name == 'nt':
-                anchor = getattr(p, 'anchor', None)
-                if anchor:
-                    drive_type = ctypes.windll.kernel32.GetDriveTypeW(anchor)
-                    if drive_type in (DRIVE_REMOTE, DRIVE_REMOVABLE):
-                        raise UnsafePathError("Unidad no apta para modificación.", SafetyValidationErrorCode.IO_ERROR)
-    except UnsafePathError:
-        raise
-    except (OSError, PermissionError, AttributeError, ctypes.ArgumentError) as e:
-        raise UnsafePathError(f"Fallo durante validación de integridad: {e}", SafetyValidationErrorCode.IO_ERROR)
+        if os.name == 'nt':
+            _validate_ntfs_reparse_redirection(p)
+        _check_file_integrity(p, initial_stat)
+    else:
+        parent = p.parent
+        if parent.exists() and is_protected_path(parent):
+            raise UnsafePathError("Directorio contenedor restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+        
+        if os.name == 'nt':
+            anchor = getattr(p, 'anchor', None)
+            if anchor:
+                drive_type = ctypes.windll.kernel32.GetDriveTypeW(anchor)
+                if drive_type in (DRIVE_REMOTE, DRIVE_REMOVABLE):
+                    raise UnsafePathError("Unidad no apta para modificación.", SafetyValidationErrorCode.IO_ERROR)
             
     return p
 
