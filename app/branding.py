@@ -313,7 +313,7 @@ def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, .
 
 SHIELD_BASE_COORDS: Final[Tuple[float, ...]] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
 
-@lru_cache(maxsize=8)
+@lru_cache(maxsize=32)
 def _get_scaled_poly(scale: float, canvas_x: float, canvas_y: float) -> Tuple[float, ...]:
     """Escala las coordenadas base del escudo aplicando un factor y un offset."""
     return tuple(canvas_x + c * scale if i % 2 == 0 else canvas_y + c * scale 

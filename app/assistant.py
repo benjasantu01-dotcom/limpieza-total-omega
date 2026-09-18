@@ -425,20 +425,17 @@ def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
 @lru_cache(maxsize=16)
 def _generate_context_cached(ctx: SystemContext) -> str:
     """Genera bloque de resumen del sistema para prompts del asistente, cacheado por contexto."""
-    try:
-        s_score = _fmt_metric_sanitized(ctx.score) if ctx.score is not None else 'N/A'
-        s_grade = f" nota {str(ctx.grade)[:5]}" if ctx.grade else ''
-        return "\n".join([
-            f"Puntaje de salud: {s_score}{s_grade}",
-            f"Basura: {_fmt_metric_sanitized(ctx.junk_mb, ' MB')}",
-            f"Sospechosos: {_fmt_metric_sanitized(ctx.suspicious_count)}",
-            f"RAM disponible: {_fmt_metric_sanitized(ctx.memory_available_percent, ' percent')}",
-            f"Disco libre: {_fmt_metric_sanitized(ctx.disk_free_percent, ' percent')}",
-            f"Duplicados: {_fmt_metric_sanitized(ctx.duplicate_mb, ' MB')}",
-            f"Inicio: {_fmt_metric_sanitized(ctx.startup_count)} items"
-        ])
-    except Exception:
-        return ""
+    s_score = f"{ctx.score}" if ctx.score is not None else 'N/A'
+    s_grade = f" nota {ctx.grade[:5]}" if ctx.grade else ''
+    return (
+        f"Puntaje de salud: {s_score}{s_grade}\n"
+        f"Basura: {_fmt_metric(ctx.junk_mb, ' MB', 0)}\n"
+        f"Sospechosos: {int(ctx.suspicious_count)}\n"
+        f"RAM disponible: {_fmt_metric(ctx.memory_available_percent, '%', 0)}\n"
+        f"Disco libre: {_fmt_metric(ctx.disk_free_percent, '%', 0)}\n"
+        f"Duplicados: {_fmt_metric(ctx.duplicate_mb, ' MB', 0)}\n"
+        f"Inicio: {int(ctx.startup_count)} items"
+    )
 
 def context_as_text(context: SystemContext) -> str:
     """Serializa las métricas de SystemContext en texto optimizado para la inferencia."""

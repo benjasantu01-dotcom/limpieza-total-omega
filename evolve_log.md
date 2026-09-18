@@ -1448,3 +1448,11 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-09-18T13:59:24` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators, _Validators._is_reparse_point, _Validators._is_safe_path, _Validators._run_safety_checks, _Validators._validate_enum_str, _Validators.bool, _Validators.int, _Validators.path, _Validators.str
 - `2026-09-18T13:59:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T13:59:24` Corrida terminada. Total usado hoy: 328.
+- `2026-09-18T14:07:45` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-18T14:08:15` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_path_suspicious, StartupEntry._is_reserved_device_name
+- `2026-09-18T14:08:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-18T14:09:16` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_generate_context_cached` convirtiendo la concatenación de strings con `\n.join` y múltiples llamadas a funciones en una operación única, además de reducir la redundancia en los formateos de métricas, evitando llamadas innecesarias a `_fmt_metric_sanitized` cuando el valor es constante o trivial.
+- `2026-09-18T14:09:50` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se implementó un mecanismo de caché estática para los resultados de `_get_scaled_poly` y `_get_grouped_segments` ajustando sus claves para evitar re-procesamientos innecesarios en el renderizado de cada frame, mejorando la eficiencia del bucle de pintado.
+- `2026-09-18T14:10:06` ➖ Sin cambios en browser.py (enfoque: rendimiento). Motivo: Se introdujo una estrategia de memoización persistente dentro de `_sum_directory_recursive` para evitar recalcular el tamaño de directorios que ya fueron analizados durante la misma iteración, optimizando el rendimiento en estructuras de archivos compartidas o duplicadas.
+- `2026-09-18T14:10:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T14:10:06` Corrida terminada. Total usado hoy: 332.
