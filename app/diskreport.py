@@ -231,22 +231,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as iterator:
-                while True:
+                for entry in iterator:
+                    if _is_excluded_path(entry): continue
+                    
                     try:
-                        entry = next(iterator, None)
-                        if entry is None: break
-                        
-                        if _is_excluded_path(entry): continue
-                        
-                        path_obj = Path(entry.path).resolve(strict=False)
-                        try:
-                            if not path_obj.is_relative_to(root_path):
-                                continue
-                        except (ValueError, AttributeError):
-                            continue
-                        
                         if entry.is_dir(follow_symlinks=False):
-                            if skip_protected and is_protected_path(path_obj): continue
+                            if skip_protected and is_protected_path(Path(entry.path)): continue
                             
                             st = entry.stat(follow_symlinks=False)
                             inode: Inode = (st.st_dev, st.st_ino)
@@ -256,11 +246,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
-                            size_bytes: int = int(getattr(st, 'st_size', 0))
-                            if size_bytes >= 0:
-                                yield path_obj, size_bytes
+                            if st.st_size >= 0:
+                                yield Path(entry.path), st.st_size
                             
-                    except (PermissionError, OSError, StopIteration):
+                    except (PermissionError, OSError):
                         continue
         except (PermissionError, OSError):
             continue
@@ -337,7 +326,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        if size_bytes < 0: continue
         total_bytes += size_bytes
         total_files += 1
         

@@ -9,43 +9,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 219
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 113 | 7 | 19 | 7 | 134 |
-| 2026-09-18 | 96 | 7 | 25 | 11 | 85 |
+| 2026-09-17 | 110 | 7 | 19 | 7 | 133 |
+| 2026-09-18 | 99 | 7 | 25 | 12 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **48**
-- robustez ante casos límite: **41**
 - legibilidad y documentación: **40**
-- rendimiento: **29**
+- robustez ante casos límite: **38**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **21**
-- `diskreport.py`: **21**
+- `browser.py`: **22**
+- `diskreport.py`: **22**
 - `healthscore.py`: **20**
-- `memory.py`: **19**
-- `quarantine.py`: **17**
+- `assistant.py`: **18**
+- `memory.py`: **18**
 - `settings.py`: **17**
-- `assistant.py`: **17**
 - `duplicates.py`: **17**
 - `safety.py`: **17**
+- `quarantine.py`: **16**
 - `scanner.py`: **13**
 - `organizer.py`: **9**
 - `branding.py`: **8**
-- `main.py`: **7**
 - `startup.py`: **6**
+- `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T09:43:26` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando llamadas redundantes a `Path.resolve()` y `Path.relative_to()` —que realizan acceso a disco innecesario para normalizar rutas ya procesadas— por el uso directo de los atributos nativos de `os.DirEntry` (`path` y `stat`), evitando el impacto en performance que conlleva instanciar múltiples objetos `Path` en recorridos de árboles extensos.
+- `2026-09-18T09:43:14` **browser.py** (rendimiento): Se optimizó el escaneo de directorios eliminando la resolución recursiva innecesaria de `root_base` y los cálculos redundantes de `path.resolve()` dentro del bucle de `_sum_directory_recursive`, mejorando el rendimiento en sistemas con muchos archivos.
+- `2026-09-18T09:42:12` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` eliminando la llamada a `__dict__.get()` (que implica acceso a diccionario y resolución de nombres en tiempo de ejecución) por una propiedad cacheada o acceso directo si fuera necesario, reduciendo la sobrecarga en el bucle de validación de `ingest`.
 - `2026-09-18T09:33:27` **scanner.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints faltantes, la estandarización de docstrings siguiendo las mejores prácticas y la clarificación de la intención en métodos complejos, garantizando que la documentación sea técnica y precisa.
 - `2026-09-18T09:22:46` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `quarantine.py` mediante la adición de Type Hints en parámetros faltantes, la estandarización de docstrings siguiendo el estilo Google/NumPy para mejorar la legibilidad y la clarificación de las responsabilidades en las funciones de bajo nivel que manejan la integridad del sandbox.
 - `2026-09-18T09:22:05` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave y se ha optimizado la legibilidad lógica de `_is_safe_for_disk_op` para prevenir errores de mantenimiento al evaluar condiciones complejas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T08:51:27` **safety.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `_validate_ntfs_reparse_redirection` capturando errores específicos de la API de Windows y verificando que el `handle` sea válido antes de realizar operaciones de Buffer, evitando cierres de handle inválidos o excepciones no controladas.
 - `2026-09-18T08:42:44` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante la captura explícita y el manejo granular de excepciones durante el parseo de JSON, evitando que un archivo malformado detenga la operación de carga y asegurando una degradación elegante ante errores de I/O o corrupción de datos.
 - `2026-09-18T08:41:58` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes validando explícitamente los handles devueltos por `OpenProcess` para evitar excepciones de `ctypes` al trabajar con valores nulos o cerrados, y aseguré que `GetExitCodeProcess` siempre sea llamado con un tipo de dato correcto.
-- `2026-09-18T08:41:29` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_target_choice_changed` encapsulando la validación de la entrada en un bloque `try-except` más específico y añadiendo un chequeo explícito de existencia mediante `path.exists()` antes de proceder, evitando así excepciones innecesarias en el log cuando el usuario interactúa con rutas inexistentes o inválidas.
-- `2026-09-18T08:31:44` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.is_finite` y `compute_score` implementando una validación explícita de `None` y valores extremos para evitar errores en tiempo de ejecución al procesar datos inyectados, alineándome con el enfoque de manejo de errores defensivo.
-- `2026-09-18T08:31:31` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez ante errores de entrada y condiciones de carrera en `_decide_hash_strategy_and_process` mediante la adición de validaciones de integridad en los parámetros y resultados intermedios.

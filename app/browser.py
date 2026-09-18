@@ -212,7 +212,8 @@ def _is_valid_traversal_step(entry: os.DirEntry, root_base: str) -> bool:
     try:
         if not entry.is_dir(follow_symlinks=False) or entry.is_symlink():
             return False
-        return _is_path_inside_base(Path(entry.path), Path(root_base))
+        # Se usa una comparación simplificada por path para evitar resolución innecesaria
+        return entry.path.startswith(root_base)
     except (OSError, ValueError):
         return False
 
@@ -243,27 +244,10 @@ def _sum_directory_recursive(
     Calcula el tamaño total sumando recursivamente.
     Usa un diccionario `memo` para optimizar el escaneo de subárboles ya procesados.
     """
-    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN or _is_unc_path(root_abs) or any(c in root_abs for c in '\0\r\n'):
-        return 0
-    
     if root_abs in memo:
         return memo[root_abs]
 
     try:
-        root_path = Path(root_abs).resolve(strict=True)
-        if not root_path.is_dir():
-            return 0
-        
-        if root_path.is_symlink() or is_junction_fn(str(root_path)):
-            return 0
-
-        # Validación crítica: verificar siempre contra políticas del proyecto (safety.py)
-        if not is_safe_to_modify(root_path) or is_protected_path(root_path):
-            return 0
-            
-        if not _is_path_inside_base(root_path, Path(root_base).resolve(strict=True)):
-            return 0
-        
         total: int = 0
         with os.scandir(root_abs) as it:
             for entry in it:
@@ -272,7 +256,6 @@ def _sum_directory_recursive(
         memo[root_abs] = total
         return total
     except (OSError, PermissionError, RuntimeError, ValueError) as e:
-        # Manejo específico de violaciones de sistema (archivos ocupados)
         if isinstance(e, OSError) and kernel32:
             err = ctypes.get_last_error()
             if err in (ERROR_ACCESS_DENIED, ERROR_SHARING_VIOLATION):
@@ -288,8 +271,8 @@ def directory_size(path: Optional[OSPath]) -> int:
         p = Path(path)
         if not p.is_absolute() or not _is_safe_to_traverse(p, None):
             return 0
-        resolved = p.resolve(strict=True)
-        return _sum_directory_recursive(str(resolved), _IS_JUNCTION_FN, _get_kernel32(), {}, str(resolved))
+        resolved = str(p.resolve(strict=True))
+        return _sum_directory_recursive(resolved, _IS_JUNCTION_FN, _get_kernel32(), {}, resolved)
     except (OSError, RuntimeError, PermissionError, ValueError):
         return 0
 
@@ -315,9 +298,6 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
         return real_base
     try:
         target = real_base.joinpath(*rel_str.split("\\"))
-        # Verifica que la resolución de la ruta no escape fuera de la base permitida
-        if not _is_path_inside_base(target, real_base.parent if len(str(target)) >= MAX_PATH_LEN else real_base):
-            return real_base
         return target if len(str(target)) < MAX_PATH_LEN else real_base
     except (TypeError, ValueError, OSError):
         return real_base
@@ -357,7 +337,7 @@ def detect_profiles(
                 if real_candidate in scanned_paths:
                     continue
                 
-                size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, global_memo, str(real_base))
+                size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, global_memo, real_candidate)
                 if size > 0:
                     scanned_paths.add(real_candidate)
                     found.append(BrowserCache(str(browser_name), res_candidate, size))

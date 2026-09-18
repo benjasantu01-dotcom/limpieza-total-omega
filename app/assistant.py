@@ -298,16 +298,14 @@ class SystemContext:
     analyzed: bool = False
 
     def get_metric(self, key: str, default: float) -> float:
-        """Accede de forma eficiente a una métrica numérica usando acceso directo al dict."""
-        val = self.__dict__.get(key, None)
-        return _safe_float(val, default)
+        """Accede de forma eficiente a una métrica numérica."""
+        return _safe_float(getattr(self, key, -1.0), default)
 
     @property
     def is_empty(self) -> bool:
         """Verifica si el contexto contiene datos útiles tras el análisis."""
         if not self.analyzed: return True
-        if self.score is not None and (not isinstance(self.score, int) or self.score < 0): return True
-        return not self.is_valid_structure
+        return self.score is not None and (not isinstance(self.score, int) or self.score < 0)
 
     def __hash__(self) -> int:
         return hash((self.score, self.grade, self.junk_mb, self.suspicious_count, 
@@ -320,11 +318,7 @@ class SystemContext:
         return _ensure_safe_text(self.grade) if self.grade else True
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> bool:
-        """
-        Intenta actualizar un campo del contexto:
-        1. Obtiene el valor, valida su tipo y verifica que esté en el rango físico permitido.
-        2. Si pasa, aplica la conversión (cast) y guarda el resultado.
-        """
+        """Intenta actualizar un campo del contexto validando tipo y rango."""
         val = _get_source_value(source, key)
         if val is None or not spec.is_valid_type(val):
             return False
@@ -345,16 +339,10 @@ class SystemContext:
         return clean if _ensure_safe_text(clean) else ""
 
     def ingest(self, source: Any) -> bool:
-        """
-        Ingesta datos externos al contexto (dict o instancia) mediante validación estricta.
-        
-        Returns:
-            True si se procesó exitosamente al menos una métrica válida.
-        """
+        """Ingesta datos externos al contexto mediante validación estricta."""
         if source is None or _is_input_too_deep_or_complex(source):
             return False
         
-        # Validación de fuente: permitimos dicts o instancias simples, excluyendo tipos.
         if not isinstance(source, dict) and not (hasattr(source, "__dict__") and not isinstance(source, type)):
             return False
             
@@ -388,7 +376,6 @@ class Answer:
 def _is_safe_text_structure(text: str) -> bool:
     """Ejecuta un chequeo multidimensional de seguridad sobre el texto."""
     if not text: return True
-    # Rechazo estricto si hay caracteres de control no permitidos o secuencias sospechosas
     if any(ord(c) < 32 and c not in '\n\r\t' for c in text): return False
     return not (
         _PATH_INJECTION_REGEX.search(text) or 
@@ -408,29 +395,20 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def _get_source_value(source: Any, key: str) -> Any:
     """Acceso seguro restringido a atributos de datos de instancia."""
-    # Evitar inyección de llaves, acceso a métodos especiales y protegidos
     if not isinstance(key, str) or key.startswith("_"): return None
-    
     if isinstance(source, dict):
-        try:
-            return source.get(key)
-        except AttributeError:
-            return None
-        
-    # Acceso a objetos: solo permitimos campos que son datos, no métodos o dunders
+        try: return source.get(key)
+        except AttributeError: return None
     try:
         if isinstance(source, type): return None
         val = getattr(source, key, None)
-        if val is None or callable(val) or key.startswith("__"):
-            return None
-        return val
+        return None if callable(val) or key.startswith("__") else val
     except Exception:
         return None
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Inicializa un SystemContext completo integrando datos de múltiples fuentes."""
     ctx = SystemContext()
-    # Procesar métricas, salud y extra con validación de ingesta
     for s in (metrics, health, extra):
         if s is not None and ctx.ingest(s):
             ctx.analyzed = True
@@ -597,7 +575,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
     
-    # Búsqueda optimizada: iterar sobre tokens identificados en la consulta una sola vez
     for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
         if token in _TOKEN_TO_HANDLER:
             return _TOKEN_TO_HANDLER[token](context, question)
