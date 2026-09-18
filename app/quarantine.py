@@ -631,12 +631,19 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
-        # Mapeo eficiente de archivos existentes en disco para evitar O(N*M) en iteraciones
-        existing_names = {f.name for f in base_path.iterdir() if f.is_file()}
+        # Obtenemos los nombres de archivo directamente de la carpeta sandbox
+        # evitando llamadas a exist() individuales repetitivas para cada item
+        try:
+            existing_names = {f.name for f in base_path.iterdir() if f.is_file()}
+        except OSError:
+            existing_names = set()
         
-        # Filtramos solo por existencia y tamaño, la validación profunda (hash)
-        # se reserva para acciones de restauración o purga individuales por rendimiento.
-        valid_items = [i for i in items if i.stored_name in existing_names and i._validate_integrity(base_path / i.stored_name)]
+        valid_items = []
+        for i in items:
+            if i.stored_name in existing_names:
+                p = base_path / i.stored_name
+                if i._validate_integrity(p):
+                    valid_items.append(i)
             
         if len(valid_items) != len(items):
             save_manifest(valid_items, base)

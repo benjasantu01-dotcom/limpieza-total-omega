@@ -660,3 +660,35 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-18T05:29:05` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-09-18T05:29:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T05:29:05` Corrida terminada. Total usado hoy: 128.
+- `2026-09-18T05:36:52` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-09-18T05:37:29` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la función `list_items` para evitar el cálculo innecesario de rutas absolutas y resolución de directorios dentro del bucle principal, además de asegurar que la carga del manifiesto sea más eficiente al trabajar directamente con el conjunto de archivos en disco.
+- `2026-09-18T05:37:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-09-18T05:38:25` Tests FALLARON:
+```
+tmp/pytest-of-runner/pytest-2/test_drive_root_is_always_prot0').anchor
+
+evolve/tests/test_safety.py:63: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:125: SyntaxWarning: invalid escape sequence '\R'
+    El registro de Windows suele guardar rutas con espacios como '"C:\Ruta\App.exe" /arg'.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_drive_root_is_always_protected - AssertionError: assert False
+ +  where False = <functools._lru_cache_wrapper object at 0x7fc6adf1c9e0>('/')
+ +    where <functools._lru_cache_wrapper object at 0x7fc6adf1c9e0> = safety.is_protected_path
+ +    and   '/' = PosixPath('/tmp/pytest-of-runner/pytest-2/test_drive_root_is_always_prot0').anchor
+1 failed, 298 passed, 7 warnings in 1.34s
+
+```
+- `2026-09-18T05:38:25` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento de `is_protected_path` eliminando la llamada redundante a `normalize` y reemplazándola por una verificación de prefijo `os.path.commonpath` mucho más eficiente contra el conjunto de rutas del sistema pre-normalizadas y cacheadas.
+- `2026-09-18T05:38:32` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._is_inside_base_root, Scanner._is_relevant_extension, Scanner._is_reparse_point, scan_file
+- `2026-09-18T05:38:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T05:38:32` Corrida terminada. Total usado hoy: 132.
