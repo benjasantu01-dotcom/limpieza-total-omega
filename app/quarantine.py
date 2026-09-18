@@ -171,6 +171,11 @@ class QuarantineItem:
 def _get_sha256(path: Path) -> str:
     """
     Calcula el hash SHA-256 de un archivo mediante streaming para optimizar RAM.
+    
+    Args:
+        path: Path del archivo a procesar.
+    Returns:
+        String con el hash hexadecimal o cadena vacía si falla la lectura.
     """
     if not path.is_file():
         return ""
@@ -195,7 +200,6 @@ def _is_file_locked(path: Path) -> bool:
     if not path.exists():
         return False
     try:
-        # Intentamos verificar acceso de lectura sin abrir el handle
         return not os.access(path, os.R_OK)
     except (OSError, PermissionError):
         return True
@@ -243,9 +247,7 @@ def _check_path_syntax_integrity(path: Path) -> None:
 
 
 def _sanitize_filename(filename: str) -> str:
-    """
-    Filtra caracteres no alfanuméricos básicos para nombres de archivo seguros.
-    """
+    """Filtra caracteres no alfanuméricos básicos para nombres de archivo seguros."""
     return "".join(c for c in filename if c.isalnum() or c in "._-")
 
 def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
@@ -465,6 +467,9 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     origen y destino en modo binario exclusivo y verifica la integridad post-copia 
     comparando los hashes SHA-256 calculados antes y después del stream.
 
+    Args:
+        source: Ruta del archivo a aislar.
+        destination: Ruta destino dentro del sandbox.
     Returns:
         El hash SHA-256 del archivo copiado.
     """
@@ -474,9 +479,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     if not is_safe_to_modify(destination.parent):
         raise UnsafePathError("Directorio destino no es seguro para escritura.")
     
-    # Verificación final de seguridad sobre el destino resuelto
     ensure_safe_to_modify(destination.parent, allow_sensitive=True)
-    
     _check_windows_file_attributes(str(destination))
 
     if not source.is_file():
@@ -530,13 +533,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
 
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
-    """
-    Coordina el aislamiento seguro del archivo hacia el sandbox.
-
-    Realiza validaciones finales de ruta y llama al procedimiento de copia
-    protegida. Es la función de bajo nivel para asegurar que el archivo
-    no se corrompa durante el tránsito.
-    """
+    """Coordina el aislamiento seguro del archivo hacia el sandbox."""
     if not source.exists():
         raise FileNotFoundError("Archivo origen inexistente.")
     
@@ -562,9 +559,7 @@ def _register_quarantine_item(
     original_size: int,
     base: PathLike
 ) -> QuarantineItem:
-    """
-    Registra el ítem en el manifiesto JSON tras la confirmación de escritura.
-    """
+    """Registra el ítem en el manifiesto JSON tras la confirmación de escritura."""
     try:
         items_list = load_manifest(base)
         quarantine_item = QuarantineItem(
@@ -646,8 +641,6 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
-        # Obtenemos los nombres de archivo directamente de la carpeta sandbox
-        # evitando llamadas a exist() individuales repetitivas para cada item
         try:
             existing_names = {f.name for f in base_path.iterdir() if f.is_file()}
         except OSError:

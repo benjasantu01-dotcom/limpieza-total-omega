@@ -173,14 +173,25 @@ def _validate_file_attributes(src: Path) -> bool:
         return False
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """Validador booleano centralizado para operaciones de lectura/escritura en disco."""
-    if not _validate_path_security(src, dest): return False
-    if not is_safe_to_modify(src): return False
+    """Validador booleano centralizado para operaciones de lectura/escritura en disco.
+    
+    Verifica seguridad de rutas, permisos, ausencia de recursión y atributos del archivo.
+    """
+    if not _validate_path_security(src, dest): 
+        return False
+    if not is_safe_to_modify(src): 
+        return False
+        
     try:
         s_res = src.resolve()
+        # Determinar directorio contenedor real para validación de permisos
         parent = dest.parent if not dest.exists() else dest.resolve()
-        if not s_res.exists() or _is_recursive_violation(s_res, dest): return False
-        if not os.access(parent if parent.is_dir() else parent.parent, os.W_OK): return False
+        
+        if not s_res.exists() or _is_recursive_violation(s_res, dest): 
+            return False
+        if not os.access(parent if parent.is_dir() else parent.parent, os.W_OK): 
+            return False
+            
         return s_res.drive == parent.drive and _validate_file_attributes(s_res)
     except (OSError, RuntimeError, AttributeError):
         return False
