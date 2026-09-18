@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 78 | 4 | 15 | 6 | 89 |
-| 2026-09-18 | 129 | 8 | 32 | 16 | 127 |
+| 2026-09-17 | 76 | 4 | 15 | 6 | 87 |
+| 2026-09-18 | 131 | 8 | 32 | 16 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **53**
+- manejo de errores y validación de entradas: **54**
 - seguridad defensiva: **45**
 - robustez ante casos límite: **43**
-- rendimiento: **35**
-- legibilidad y documentación: **31**
+- rendimiento: **33**
+- legibilidad y documentación: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **21**
 - `browser.py`: **21**
 - `diskreport.py`: **21**
-- `memory.py`: **19**
+- `healthscore.py`: **20**
 - `safety.py`: **19**
 - `quarantine.py`: **18**
-- `settings.py`: **17**
+- `settings.py`: **18**
+- `memory.py`: **18**
+- `assistant.py`: **17**
 - `duplicates.py`: **17**
-- `assistant.py`: **16**
 - `scanner.py`: **12**
 - `organizer.py`: **9**
 - `branding.py`: **7**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T13:28:10` **assistant.py** (legibilidad y documentación): Mejoré la documentación interna agregando docstrings descriptivos a las constantes de seguridad y las estructuras de datos, y refiné los tipos y nombres de argumentos en `SystemContext` para facilitar la auditoría de seguridad del código.
+- `2026-09-18T13:26:55` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_ensure_settings_integrity` implementando validación de tipos estricta y manejo de errores proactivo, asegurando que cualquier entrada de datos inesperada no comprometa la integridad del archivo de configuración.
 - `2026-09-18T13:18:14` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `run_windows_defender_quick_scan` validando que los comandos devuelvan valores esperados antes de procesarlos, evitando errores por salidas nulas o inesperadas que podrían causar excepciones al ser convertidas a cadena.
 - `2026-09-18T13:18:00` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_check_file_integrity` al reemplazar la captura genérica de excepciones dentro del bucle de validación por una captura específica y un registro preventivo de fallos, asegurando que un fallo inesperado en una regla no invalide silenciosamente la seguridad del resto de la cadena.
 - `2026-09-18T13:16:58` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en `quarantine_file` añadiendo una validación explícita para evitar que `source_path` se resuelva a un directorio, reforzando el cumplimiento de las restricciones de seguridad al prevenir intentos de aislamiento de contenedores (carpetas) que podrían ser críticos o estar protegidos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T11:25:49` **settings.py** (seguridad defensiva): Se endureció la seguridad de `save()` al reemplazar `ruta.exists()` por una validación que utiliza `ensure_safe_to_modify` para el archivo mismo, previniendo así escrituras sobre enlaces simbólicos o rutas protegidas que podrían ser redirigidas maliciosamente.
 - `2026-09-18T11:25:12` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "longitud de ruta" en `ensure_safe_to_modify` para detectar rutas que superen `MAX_PATH_LENGTH` antes de realizar operaciones de disco, evitando errores de WinAPI en sistemas legacy y mejorando la robustez defensiva.
 - `2026-09-18T11:16:31` **quarantine.py** (seguridad defensiva): He mejorado `_check_isolation_safety` para impedir el movimiento de archivos si el sistema de archivos de destino no soporta las mismas operaciones atómicas o si existen bloqueos implícitos, añadiendo una validación explícita mediante `os.access` en el directorio de cuarentena antes de cualquier operación destructiva sobre el original.
-- `2026-09-18T11:15:44` **memory.py** (seguridad defensiva): Mejoré `_get_process_path` para incluir un chequeo de integridad adicional que verifica si el handle del proceso apunta a una ruta real existente y no a un recurso volátil o bloqueado, integrando `is_safe_to_modify` para asegurar que el proceso objetivo reside en una zona permitida antes de cualquier interacción de bajo nivel.
-- `2026-09-18T11:07:13` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del pipeline de cálculo encapsulando la lógica de las reglas dentro de bloques `try-except` más robustos, evitando que errores de ejecución en el motor de recomendaciones (ej. divisiones por cero imprevistas en los `message_factory`) interrumpan el cálculo del puntaje global.

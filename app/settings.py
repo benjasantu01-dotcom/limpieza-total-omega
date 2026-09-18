@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import json
 import os
-import time
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -216,8 +215,8 @@ class _Validators:
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
         if val == "": return ""
-        if not isinstance(val, (str, Path)): return None
-        path_string = str(val).strip()
+        if not isinstance(val, str): return None
+        path_string = val.strip()
         if not path_string or "\0" in path_string or len(path_string) > 2048: return None
         return path_string if _Validators._is_safe_path(path_string) else None
 
@@ -308,13 +307,18 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
-    if settings.get("asistente_activado"):
-        if not (settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
-            settings["asistente_activado"] = False
-    for key in [ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS]:
+    if not isinstance(settings, dict): return DEFAULTS.copy()
+    
+    # Asegurar tipos y rangos para claves críticas
+    for key in ConfigKey:
         val = settings.get(key.value)
-        if not isinstance(val, int) or val <= 0:
+        # Si la clave falta o no es del tipo esperado por DEFAULTS, resetear
+        if key.value not in settings or not isinstance(val, type(DEFAULTS[key.value])):
             settings[key.value] = DEFAULTS[key.value]
+    
+    if settings.get("asistente_activado") and not (settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
+        settings["asistente_activado"] = False
+        
     return settings
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:

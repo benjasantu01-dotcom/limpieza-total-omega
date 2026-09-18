@@ -159,12 +159,12 @@ class AreaExplanation(NamedTuple):
 MetricSource: TypeAlias = Union[dict[str, Any], object]
 ScoreSource: TypeAlias = Union[dict[str, Any], object]
 
-# Constantes de seguridad
-_MAX_TEXT_LENGTH: Final[int] = 1000
-_MAX_RESPONSE_BYTES: Final[int] = 32768
-_MAX_MSG_CHUNK: Final[int] = 200 
-_MAX_PROMPT_LIMIT: Final[int] = 4000 
-_MAX_NESTING_DEPTH: Final[int] = 2
+# Límites de seguridad y tamaño
+_MAX_TEXT_LENGTH: Final[int] = 1000      # Límite global de longitud de cadenas devueltas
+_MAX_RESPONSE_BYTES: Final[int] = 32768  # Máximo de bytes permitidos en la respuesta API
+_MAX_MSG_CHUNK: Final[int] = 200         # Longitud máxima para un fragmento de mensaje técnico
+_MAX_PROMPT_LIMIT: Final[int] = 4000     # Límite de caracteres para el prompt enviado al modelo
+_MAX_NESTING_DEPTH: Final[int] = 2       # Profundidad máxima para estructuras de datos recibidas
 
 SENSITIVE_KEYS_NEVER_SENT: Final[tuple[str, ...]] = (
     "rutas de archivos", "nombres de archivos", "contenido de archivos",
@@ -205,6 +205,7 @@ SYSTEM_PROMPT: Final[str] = (
     "- Máximo 6 líneas."
 )
 
+# Regex de validación de seguridad (Inyección, Control, Rutas, Comandos)
 _ENDPOINT: Final[str] = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 _TIMEOUT_SECONDS: Final[int] = 30
 _PATH_INJECTION_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:[\\/]|/|\\|\.\.|\0|[\u202e\u202d\u200e\u200f])")
@@ -298,7 +299,7 @@ class SystemContext:
     analyzed: bool = False
 
     def get_metric(self, key: str, default: float) -> float:
-        """Accede de forma eficiente a una métrica numérica."""
+        """Accede de forma eficiente a una métrica numérica almacenada en el contexto."""
         return _safe_float(getattr(self, key, -1.0), default)
 
     @property
@@ -544,7 +545,7 @@ def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     cierre = " La app los lista, pero desactivalos desde el Administrador de tareas de Windows."
     return Answer(_validate_response_length(f"{estado} {valoracion}{cierre}"), notice=OFFLINE_NOTICE)
 
-# Estructuras optimizadas de búsqueda
+# Estructuras optimizadas de búsqueda para el motor local
 TOKENS_BY_CATEGORY: Final[dict[frozenset[str], Callable[[SystemContext, str], Answer]]] = {
     frozenset(["ram", "memoria", "lenta", "lento", "acelerar"]): handle_ram,
     frozenset(["espacio", "disco", "lleno", "recuperar", "liberar"]): handle_disk,
