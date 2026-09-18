@@ -171,22 +171,27 @@ def tab_label(section: str) -> str:
 
 @lru_cache(maxsize=16)
 def _get_severity_style(severity: Optional[str]) -> Tuple[ColorHex, str]:
+    """Helper interno para recuperar la tupla (color, label) basada en nivel de severidad."""
     if isinstance(severity, str) and (style := SEVERITY_STYLES.get(severity.lower())):
         return style
     return (C_TEXT_MUTED, "Desconocido")
 
 def severity_color(severity: Optional[str]) -> ColorHex:
+    """Retorna el código de color hexadecimal asociado a una severidad dada."""
     return _get_severity_style(severity)[0]
 
 def severity_label(severity: Optional[str]) -> str:
+    """Retorna la etiqueta descriptiva legible para una severidad dada."""
     if isinstance(severity, str) and severity.lower() in SEVERITY_STYLES:
         return _get_severity_style(severity)[1]
     return severity.capitalize() if isinstance(severity, str) else "Desconocido"
 
 def severity_icon(severity: Optional[str]) -> str:
+    """Retorna el glifo unicode representativo para una severidad dada."""
     return SEVERITY_MAP.get(severity.lower(), "\u2022") if isinstance(severity, str) else "\u2022"
 
 def grade_color(grade: Optional[str]) -> ColorHex:
+    """Resuelve el color del grado de calificación de salud (A-F)."""
     if not isinstance(grade, str) or not grade.strip():
         return C_TEXT_MUTED
     return GRADE_COLORS.get(grade.strip().upper()[0], C_TEXT_MUTED)

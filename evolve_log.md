@@ -1324,3 +1324,35 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-17T23:37:38` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-17T23:47:49` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-17T23:58:04` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-18T00:08:13` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-09-18T00:08:49` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se mejora la legibilidad y mantenibilidad de `branding.py` centralizando la configuración de estilos de severidad y añadiendo documentación técnica (docstrings) en funciones críticas para clarificar el propósito de las transformaciones visuales.
+- `2026-09-18T00:09:15` Tests FALLARON:
+```
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E                   TypeError: _process_entry() takes 6 positional arguments but 7 were given
+
+app/browser.py:280: TypeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:125: SyntaxWarning: invalid escape sequence '\R'
+    El registro de Windows suele guardar rutas con espacios como '"C:\Ruta\App.exe" /arg'.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_directory_size_adds_up_recursively - TypeError: _process_entry() takes 6 positional arguments but 7 were given
+2 failed, 297 passed, 7 warnings in 1.39s
+
+```
+- `2026-09-18T00:09:15` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad del motor de escaneo extrayendo la lógica de validación de rutas y seguridad dentro de `_sum_directory_recursive` a una función auxiliar nombrada, eliminando el anidamiento excesivo y facilitando la comprensión del flujo de control.
+- `2026-09-18T00:09:39` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la adición de Type Hints en las funciones faltantes y docstrings descriptivos, y se extrajo la lógica de formateo de unidades de `summarize` hacia `format_size` de forma consistente para asegurar que la presentación de datos sea uniforme y legible.
+- `2026-09-18T00:09:51` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings precisos en las funciones críticas y se han unificado los nombres de variables (ej: `st_result` vs `st`) para mejorar la legibilidad y mantenibilidad del flujo de procesamiento de archivos.
+- `2026-09-18T00:09:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T00:09:51` Corrida terminada. Total usado hoy: 4.

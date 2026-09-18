@@ -174,6 +174,7 @@ class DriveUsage:
 
 
 def format_size(num: Union[int, float, None]) -> str:
+    """Convierte un tamaño en bytes a una representación legible por humanos."""
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     value = float(num)
@@ -319,6 +320,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
+    """Genera un reporte legible en texto sobre el uso del disco."""
     root = _validate_root(directory)
     if not root: return ["Error: Ruta no válida."]
     data = _collect_summary_data(root, skip_protected, limit=20)
