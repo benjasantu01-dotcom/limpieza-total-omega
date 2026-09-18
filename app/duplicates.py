@@ -104,7 +104,7 @@ def _is_file_locked(path: Path) -> bool:
 
 def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
     """Valida integridad, permisos de seguridad y accesibilidad de bloqueo."""
-    if path is None:
+    if not path:
         return None
     try:
         p = Path(path).resolve(strict=True)
@@ -169,7 +169,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa una lista de rutas basándose únicamente en su tamaño en bytes."""
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
-        if p is None: continue
+        if not p: continue
         try:
             path_obj = Path(p).resolve(strict=True)
             if not is_safe_to_modify(path_obj):
@@ -216,10 +216,11 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             if not is_junction(Path(entry.path)):
                                 _scan_dir(Path(entry.path))
                         else:
-                            # Rendimiento: usamos el stat cacheado en la entrada si es posible
                             st = entry.stat(follow_symlinks=False)
-                            if st.st_size >= min_size and _is_valid_candidate(Path(entry.path), st.st_size):
-                                size_to_paths_map[st.st_size].append(Path(entry.path))
+                            if st.st_size >= min_size:
+                                p_path = Path(entry.path)
+                                if _is_valid_candidate(p_path, st.st_size):
+                                    size_to_paths_map[st.st_size].append(p_path)
                     except (FileNotFoundError, OSError, PermissionError, ValueError):
                         continue
         except (OSError, PermissionError, ValueError):

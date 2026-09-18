@@ -460,3 +460,9 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-09-18T14:50:38` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos que desaparecen durante el escaneo (condición de carrera) o que son inaccesibles, envolviendo las llamadas críticas en un bloque `try-except` más granular para evitar que una excepción en un archivo puntual aborte el reporte completo del usuario.
 - `2026-09-18T14:50:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T14:50:38` Corrida terminada. Total usado hoy: 348.
+- `2026-09-18T14:58:39` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-18T14:59:09` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de la recolección de archivos ante errores de entrada o cambios dinámicos del sistema de archivos al añadir validaciones adicionales contra rutas nulas o inexistentes y asegurar la integridad de `is_safe_to_modify` dentro de los bucles de escaneo, evitando que excepciones de acceso interrumpan procesos de análisis más amplios.
+- `2026-09-18T14:59:39` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `summarize` y `compute_score` ante valores inesperados de `WEIGHTS` o `breakdown`, asegurando que el renderizado de gráficos y el cálculo de puntajes no fallen si los datos de configuración son inconsistentes.
+- `2026-09-18T14:59:39` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-09-18T14:59:39` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T14:59:39` Corrida terminada. Total usado hoy: 350.

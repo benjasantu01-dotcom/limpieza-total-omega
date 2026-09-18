@@ -264,7 +264,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
-            weighted_points = _clamp(round(area_ratio * entry.weight), 0, entry.weight)
+            # Validamos que el peso sea un entero coherente antes de calcular
+            weight = max(0, int(entry.weight))
+            weighted_points = _clamp(round(area_ratio * weight), 0, weight)
             metric_breakdown[entry.area] = int(weighted_points)
             accumulated_score += weighted_points
         except (TypeError, ValueError, ZeroDivisionError, ArithmeticError):
@@ -284,23 +286,18 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
 def _render_bar(points: int, max_val: int) -> str:
     """Crea una representación visual basada en texto para el desglose de puntaje."""
-    if max_val <= 0: return ""
-    puntos_norm = int(_clamp(float(points), 0.0, float(max_val)))
-    return ('#' * puntos_norm) + ('.' * (max_val - puntos_norm))
+    m = max(1, int(max_val))
+    p = max(0, min(int(points), m))
+    return ('#' * p) + ('.' * (m - p))
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera un informe final legible, transformando el objeto HealthResult en lista de texto."""
     if not isinstance(result, HealthResult) or not (0 <= result.score <= 100):
         return ["Error: Informe de salud no disponible."]
     
-    # Pre-cálculo para evitar llamadas constantes a métodos en el loop
-    res_score = result.score
-    res_grade = result.grade
-    
-    lines = [f"Salud del sistema: {res_score}/100  (nota {res_grade})", "", "Desglose por área:"]
+    lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in WEIGHTS.items():
-        # Verificamos existencia y tipo en el desglose para evitar KeyError o errores de renderizado
-        val = result.breakdown.get(area)
+        val = result.breakdown.get(area, 0)
         puntos = int(val) if isinstance(val, (int, float)) else 0
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{_render_bar(puntos, maximo)}]")
     
