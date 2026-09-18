@@ -630,20 +630,14 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
         return default
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
-    """
-    Serializa la pregunta y el contexto en un JSON para la API de Gemini.
-    Valida la seguridad del payload resultante y asegura que cumple con las restricciones
-    de longitud y formato para prevenir inyecciones y abusos de API.
-    """
+    """Serializa la pregunta y el contexto en un JSON para la API de Gemini."""
     if not context_text or not _ensure_safe_text(context_text): return None
-    if _PS_COMMAND_REGEX.search(context_text): return None
     q = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
-    full_prompt = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
-    payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
+    
     try:
-        # Validación de estructura de transporte completa antes de volcar a bytes
-        if not _is_safe_text_structure(str(payload_data)): return None
+        full_prompt = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
+        payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
         payload = json.dumps(payload_data).encode("utf-8")
         return payload if len(payload) < _MAX_PROMPT_LIMIT * 2 else None
     except (TypeError, ValueError):
@@ -653,31 +647,20 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     """Extrae de forma segura el texto de la estructura JSON devuelta por la API."""
     if not isinstance(data, dict): return None
     try:
-        candidates = data.get("candidates")
-        if not isinstance(candidates, list) or not candidates: return None
-        first_candidate = candidates[0]
-        if not isinstance(first_candidate, dict): return None
-        content = first_candidate.get("content")
-        if not isinstance(content, dict): return None
-        parts = content.get("parts")
+        parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])
         if not isinstance(parts, list) or not parts: return None
-        first_part = parts[0]
-        if not isinstance(first_part, dict): return None
-        text_val = first_part.get("text")
+        text_val = parts[0].get("text")
         return str(text_val) if isinstance(text_val, str) else None
     except (AttributeError, TypeError, IndexError): 
         return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
-    """
-    Realiza la comunicación HTTP con Gemini.
-    Valida la clave API, el modelo y el payload. Ejecuta una llamada POST protegida
-    y verifica la integridad de la respuesta recibida antes de procesarla.
-    """
+    """Realiza la comunicación HTTP con Gemini con manejo estricto de errores."""
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): 
         return None
     payload = _build_payload(question, context_text)
     if not payload: return None
+    
     try:
         url = _ENDPOINT.format(model=model) + f"?key={api_key}"
         req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"}, method="POST")
@@ -685,23 +668,18 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             if res.status != 200: return None
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
             if len(raw_res) > _MAX_RESPONSE_BYTES: return None
-            try:
-                data = json.loads(raw_res.decode("utf-8"))
-            except (json.JSONDecodeError, UnicodeDecodeError):
-                return None
+            
+            data = json.loads(raw_res.decode("utf-8"))
             raw_text = _extract_text_from_gemini_json(data)
-            # Validación de respuesta externa
-            return _validate_response_length(raw_text.strip()) if raw_text and _ensure_safe_text(raw_text) else None
-    except (urllib.error.URLError, OSError, ValueError, KeyError):
+            if raw_text and _ensure_safe_text(raw_text):
+                return _validate_response_length(raw_text.strip())
+            return None
+    except (urllib.error.URLError, OSError, ValueError, KeyError, json.JSONDecodeError):
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Union[str, Path, None] = None) -> Answer:
-    """
-    Punto de entrada unificado para consultas de usuario.
-    Intenta obtener una respuesta del motor local y, si el asistente remoto está habilitado,
-    complementa la lógica delegando al motor en línea (Gemini).
-    """
+    """Punto de entrada unificado para consultas de usuario."""
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()

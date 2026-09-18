@@ -368,6 +368,7 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
     """Dibuja franjas decorativas de gradiente sobre el icono del escudo."""
     try:
         if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in (canvas_x, canvas_y, scale)): return
+        scale = max(0.1, min(10.0, scale))
         franjas_count = max(6, int(28 * scale))
         base_y = canvas_y + 18 * scale
         factor_y = 92 * scale / franjas_count
