@@ -239,7 +239,13 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Ejecuta el pipeline de evaluación: normaliza métricas, suma puntos y genera hallazgos."""
+    """
+    Ejecuta el pipeline de evaluación:
+    1. Valida la integridad del objeto de métricas.
+    2. Itera sobre cada etapa configurada en _PIPELINE.
+    3. Normaliza, pondera y acumula los puntos.
+    4. Genera hallazgos basándose en las reglas de recomendación asociadas.
+    """
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     

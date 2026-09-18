@@ -7,34 +7,34 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **205** (40.7% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 20
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 34
+- Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 65 | 7 | 10 | 5 | 63 |
+| 2026-09-16 | 64 | 6 | 9 | 5 | 62 |
 | 2026-09-17 | 137 | 9 | 25 | 15 | 164 |
-| 2026-09-18 | 3 | 1 | 0 | 0 | 0 |
+| 2026-09-18 | 4 | 1 | 0 | 2 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **46**
 - manejo de errores y validación de entradas: **46**
 - seguridad defensiva: **45**
-- legibilidad y documentación: **40**
-- rendimiento: **28**
+- legibilidad y documentación: **41**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `browser.py`: **20**
-- `safety.py`: **18**
+- `healthscore.py`: **19**
 - `assistant.py`: **18**
-- `healthscore.py`: **18**
+- `safety.py`: **17**
 - `settings.py`: **17**
 - `duplicates.py`: **17**
 - `memory.py`: **16**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T00:18:51` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de `score_*` y un docstring estructurado en `compute_score`, facilitando la comprensión del flujo de datos en el pipeline analítico.
 - `2026-09-18T00:09:51` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings precisos en las funciones críticas y se han unificado los nombres de variables (ej: `st_result` vs `st`) para mejorar la legibilidad y mantenibilidad del flujo de procesamiento de archivos.
 - `2026-09-18T00:09:39` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de Type Hints en las funciones faltantes y docstrings descriptivos, y se extrajo la lógica de formateo de unidades de `summarize` hacia `format_size` de forma consistente para asegurar que la presentación de datos sea uniforme y legible.
 - `2026-09-18T00:08:49` **branding.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad de `branding.py` centralizando la configuración de estilos de severidad y añadiendo documentación técnica (docstrings) en funciones críticas para clarificar el propósito de las transformaciones visuales.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-17T14:37:20` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_valid_traversal_step` y `_process_entry` ante posibles errores de resolución de rutas y valores inesperados, centralizando la validación mediante un manejo de excepciones más granular que evita interrupciones prematuras y asegura que solo se procesen rutas que realmente existen y son seguras.
 - `2026-09-17T14:29:36` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingesta de datos en `SystemContext` agregando validaciones explícitas de tipo y manejo de errores mediante `try-except` en la conversión de cada campo, evitando que un dato malformado corrompa la carga completa del contexto.
 - `2026-09-17T13:07:05` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_file_access` reemplazando la apertura del archivo (`open(p, 'rb')`) por una consulta de metadatos mediante `os.stat` para verificar la existencia y el tipo sin intentar acceder al contenido, mitigando riesgos innecesarios de I/O y bloqueos de archivos.
-- `2026-09-17T13:06:52` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_Validators._run_safety_checks` para prevenir ataques de *symlink traversal* durante la validación de rutas, asegurando que la ruta resuelta no sea un punto de reparse antes de permitir la modificación.
