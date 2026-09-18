@@ -98,7 +98,7 @@ def _is_file_locked(path: Path) -> bool:
         with open(path, 'rb') as f:
             f.read(1)
             return False
-    except (OSError, PermissionError, FileNotFoundError, BlockingIOError):
+    except (OSError, PermissionError, FileNotFoundError, BlockingIOError, IsADirectoryError):
         return True
 
 
@@ -170,7 +170,7 @@ def _is_valid_candidate(path: Path, st_result: os.stat_result) -> bool:
             return False
             
         return st_result.st_size > 0 and st_result.st_nlink == 1 and not _is_file_locked(path)
-    except (OSError, ValueError, TypeError, RuntimeError):
+    except (OSError, ValueError, TypeError, RuntimeError, AttributeError):
         return False
 
 
@@ -186,7 +186,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
             st_result = path_obj.stat()
             if _is_valid_candidate(path_obj, st_result):
                 groups[st_result.st_size].append(path_obj)
-        except (OSError, RuntimeError):
+        except (OSError, RuntimeError, ValueError):
             continue
     return groups
 
@@ -210,7 +210,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
     def _scan_dir(current_dir: Path) -> None:
         try:
-            dir_str = str(current_dir.resolve(strict=True))
+            resolved_dir = current_dir.resolve(strict=True)
+            dir_str = str(resolved_dir)
             if dir_str in visited_dirs:
                 return
             visited_dirs.add(dir_str)
@@ -227,9 +228,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                                 path = Path(entry.path)
                                 if _is_valid_candidate(path, st_result):
                                     size_to_paths_map[st_result.st_size].append(path)
-                    except (FileNotFoundError, OSError, PermissionError):
+                    except (FileNotFoundError, OSError, PermissionError, ValueError):
                         continue
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, ValueError):
             return
 
     for item in directories:

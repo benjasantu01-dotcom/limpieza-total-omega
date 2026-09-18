@@ -77,7 +77,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if directory is None:
         return None
     try:
-        raw_path = Path(directory).resolve()
+        raw_path = Path(directory).resolve(strict=False)
         
         if not raw_path.exists() or not raw_path.is_dir():
             return None
@@ -116,7 +116,7 @@ def _get_local_windows_drives() -> List[str]:
     for letter in string.ascii_uppercase:
         drive = f"{letter}:\\"
         try:
-            p = Path(drive).resolve()
+            p = Path(drive).resolve(strict=False)
             if p.exists() and not is_protected_path(p):
                 drives.append(drive)
         except (OSError, PermissionError, RuntimeError):
@@ -201,7 +201,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None:
         return None
     try:
-        p = Path(mount).resolve()
+        p = Path(mount).resolve(strict=False)
         if p.exists() and not is_protected_path(p):
             usage = shutil.disk_usage(p)
             return DriveUsage(str(p), usage.total, usage.used, usage.free)
@@ -238,8 +238,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         
                         if _is_excluded_path(entry): continue
                         
-                        path_obj = Path(entry.path).resolve()
-                        if not path_obj.is_relative_to(root_path):
+                        path_obj = Path(entry.path).resolve(strict=False)
+                        try:
+                            if not path_obj.is_relative_to(root_path):
+                                continue
+                        except (ValueError, AttributeError):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
@@ -294,7 +297,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             top_level_folder = root / relative.parts[0]
             folder_total_bytes[top_level_folder] += size
             folder_file_counts[top_level_folder] += 1
-        except (ValueError, IndexError): 
+        except (ValueError, IndexError, OSError): 
             continue
 
     results = [FolderUsage(p, folder_total_bytes[p], folder_file_counts[p]) for p in folder_total_bytes]

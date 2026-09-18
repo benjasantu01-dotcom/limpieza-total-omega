@@ -185,6 +185,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         if not path or len(path) >= MAX_PATH_LEN or any(c in path for c in '\0\r\n') or _is_unc_path(path):
             return True
         
+        # Uso defensivo de try/except alrededor de operaciones de sistema de archivos
         if entry.is_symlink() or is_junction_fn(path):
             return True
             

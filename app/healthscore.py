@@ -112,7 +112,8 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
     """Calcula salud de 'seguridad': penaliza con 5% por hallazgo y 25% por advertencia."""
-    return _clamp(1.0 - ((_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)))
+    penalization = (_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)
+    return _clamp(1.0 - max(0.0, penalization))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Calcula salud de 'memoria': mayor disponibilidad resulta en mayor ratio hasta saturación."""
