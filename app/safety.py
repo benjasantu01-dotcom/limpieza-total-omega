@@ -39,6 +39,7 @@ __all__ = [
 # Constantes de atributos de archivo Win32
 FILE_ATTRIBUTE_HIDDEN: Final[int] = 0x02
 FILE_ATTRIBUTE_SYSTEM: Final[int] = 0x04
+FILE_ATTRIBUTE_TEMPORARY: Final[int] = 0x100
 FILE_ATTRIBUTE_OFFLINE: Final[int] = 0x1000
 FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x400
 FILE_ATTRIBUTE_DIRECTORY: Final[int] = 0x10
@@ -104,7 +105,7 @@ class ProtectionReason(Enum):
     REPARSE_POINT = "punto de reparse"
     READ_ONLY = "solo lectura"
     IN_USE = "en uso"
-    SYSTEM_HIDDEN = "sistema/oculto/offline"
+    SYSTEM_HIDDEN = "sistema/oculto/offline/temporal"
     HARD_LINK = "hard link detectado"
     SYMLINK = "enlace simbólico detectado"
     ADS = "ADS (flujos alternativos)"
@@ -201,12 +202,12 @@ def _has_alternate_data_stream(path_name: str) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_system_or_hidden(path_str: str) -> bool:
-    """Verifica mediante la estructura de atributos de archivo si es oculto o de sistema."""
+    """Verifica mediante la estructura de atributos de archivo si es oculto, sistema o temporal."""
     if not os.path.isabs(path_str): return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == 0xFFFFFFFF: return False
-        return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
+        return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_TEMPORARY))
     except (AttributeError, OSError, FileNotFoundError, ctypes.ArgumentError, Exception):
         return False 
 
@@ -622,7 +623,7 @@ def describe_protection(path: PathLike) -> str:
             if _is_file_in_use(str(p)): return f"'{p}' en uso."
             if _is_encrypted_or_compressed(str(p)): return f"'{p}' archivo cifrado o comprimido."
             if _is_offline(str(p)): return f"'{p}' archivo offline/nube."
-            if _is_system_or_hidden(str(p)): return f"'{p}' atributo oculto/sistema."
+            if _is_system_or_hidden(str(p)): return f"'{p}' atributo oculto/sistema/temporal."
             if _has_alternate_data_stream(p.name): return f"'{p}' contiene ADS."
             if not (p.is_file() or p.is_dir()): return f"'{p}' tipo de objeto no soportado."
             if p.is_file() and p.stat().st_size == 0: return f"'{p}' archivo vacío."
