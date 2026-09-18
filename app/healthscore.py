@@ -286,7 +286,11 @@ def summarize(result: HealthResult | None) -> List[str]:
     if not isinstance(result, HealthResult):
         return ["Error: Informe de salud no disponible."]
     
-    lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+    # Pre-cálculo para evitar llamadas constantes a métodos en el loop
+    res_score = result.score
+    res_grade = result.grade
+    
+    lines = [f"Salud del sistema: {res_score}/100  (nota {res_grade})", "", "Desglose por área:"]
     for area, maximo in WEIGHTS.items():
         puntos = result.breakdown.get(area, 0)
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{_render_bar(puntos, maximo)}]")

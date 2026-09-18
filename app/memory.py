@@ -245,55 +245,46 @@ def _read_windows_snapshot() -> MemorySnapshot:
         pass
     return _EMPTY_SNAPSHOT
 
-_snap_cache_time: float = 0.0
-_snap_cache_data: Optional[MemorySnapshot] = None
 _linux_available: bool = True
 
-def read_snapshot() -> MemorySnapshot:
-    """Lee estado global con caché temporal de 5s para evitar overhead de syscalls."""
-    global _snap_cache_time, _snap_cache_data, _linux_available
-    now = time.time()
-    if (now - _snap_cache_time) < 5 and _snap_cache_data is not None:
-        return _snap_cache_data
-
-    snapshot = _EMPTY_SNAPSHOT
+@lru_cache(maxsize=1)
+def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
+    """Caché centralizada para evitar lecturas de SO redundantes (cada 5s)."""
     if _is_windows: 
-        snapshot = _read_windows_snapshot()
-    elif _linux_available:
+        return _read_windows_snapshot()
+    
+    global _linux_available
+    if _linux_available:
         try:
             content = _linux_mem_path.read_text(encoding="utf-8")
             snapshot = parse_linux_meminfo(content)
-            if snapshot == _EMPTY_SNAPSHOT:
-                _linux_available = False
+            if snapshot != _EMPTY_SNAPSHOT:
+                return snapshot
+            _linux_available = False
         except (OSError, PermissionError, UnicodeDecodeError, RuntimeError):
             _linux_available = False
-            snapshot = _EMPTY_SNAPSHOT
-    
-    if snapshot != _EMPTY_SNAPSHOT:
-        _snap_cache_data = snapshot
-        _snap_cache_time = now
-    return _snap_cache_data if _snap_cache_data else _EMPTY_SNAPSHOT
+    return _EMPTY_SNAPSHOT
+
+def read_snapshot() -> MemorySnapshot:
+    """Lee estado global con caché temporal de 5s."""
+    return _get_cached_snapshot(int(time.time() / 5))
 
 _proc_cache_time: float = 0.0
 _proc_cache_data: List[ProcessMemory] = []
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Consulta procesos pesados vía PowerShell. Caché extendida a 60s."""
+    """Consulta procesos pesados vía PowerShell. Caché de 60s."""
     global _proc_cache_time, _proc_cache_data
     if not _is_windows: return []
     
-    if (time.time() - _proc_cache_time) < 60:
-        return _proc_cache_data[:limit]
-    
-    try:
-        proc = subprocess.run(PS_QUERY_CMD, capture_output=True, text=True, timeout=3, check=False)
-        if proc.returncode == 0 and proc.stdout:
-            _proc_cache_data = parse_windows_process_csv(proc.stdout, limit=50)
-            _proc_cache_time = time.time()
-        else:
+    if (time.time() - _proc_cache_time) > 60:
+        try:
+            proc = subprocess.run(PS_QUERY_CMD, capture_output=True, text=True, timeout=3, check=False)
+            if proc.returncode == 0 and proc.stdout:
+                _proc_cache_data = parse_windows_process_csv(proc.stdout, limit=50)
+                _proc_cache_time = time.time()
+        except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): 
             _proc_cache_data = []
-    except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): 
-        _proc_cache_data = []
             
     return _proc_cache_data[:limit]
 

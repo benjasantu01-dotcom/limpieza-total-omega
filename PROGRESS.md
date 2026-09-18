@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 110 | 7 | 19 | 7 | 133 |
-| 2026-09-18 | 99 | 7 | 25 | 12 | 85 |
+| 2026-09-17 | 109 | 7 | 18 | 7 | 131 |
+| 2026-09-18 | 102 | 7 | 26 | 12 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **48**
 - legibilidad y documentación: **40**
-- robustez ante casos límite: **38**
-- rendimiento: **32**
+- robustez ante casos límite: **37**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **22**
 - `diskreport.py`: **22**
-- `healthscore.py`: **20**
+- `healthscore.py`: **21**
+- `memory.py`: **19**
 - `assistant.py`: **18**
-- `memory.py`: **18**
-- `settings.py`: **17**
-- `duplicates.py`: **17**
+- `duplicates.py`: **18**
 - `safety.py`: **17**
 - `quarantine.py`: **16**
+- `settings.py`: **16**
 - `scanner.py`: **13**
 - `organizer.py`: **9**
 - `branding.py`: **8**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T09:56:20` **memory.py** (rendimiento): Optimicé el rendimiento de `read_snapshot` y `top_memory_processes` reemplazando la lógica de comparación de marcas de tiempo manual por `functools.lru_cache` (en `read_snapshot`) y un mecanismo de `expiration` simplificado en los procesos, evitando syscalls y subprocesos costosos innecesarios.
+- `2026-09-18T09:52:44` **healthscore.py** (rendimiento): Optimicé el cálculo del `HealthResult` reemplazando la construcción dinámica de strings y accesos repetitivos a campos por una estructura de datos precalculada, reduciendo la carga de CPU y memoria en cada iteración del pipeline.
+- `2026-09-18T09:52:14` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` mediante el reemplazo de `entry.stat()` (llamada costosa por archivo) por la recolección de atributos `st_size` directamente desde los datos disponibles en `os.DirEntry` (`entry.stat().st_size` es redundante si `entry.stat` no es necesario para otra cosa antes del filtrado inicial), y evité llamadas a `stat()` innecesarias para archivos que ya sabemos que no cumplen con `min_size` gracias a `entry.stat().st_size` disponible en el objeto del iterador.
 - `2026-09-18T09:43:26` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando llamadas redundantes a `Path.resolve()` y `Path.relative_to()` —que realizan acceso a disco innecesario para normalizar rutas ya procesadas— por el uso directo de los atributos nativos de `os.DirEntry` (`path` y `stat`), evitando el impacto en performance que conlleva instanciar múltiples objetos `Path` en recorridos de árboles extensos.
 - `2026-09-18T09:43:14` **browser.py** (rendimiento): Se optimizó el escaneo de directorios eliminando la resolución recursiva innecesaria de `root_base` y los cálculos redundantes de `path.resolve()` dentro del bucle de `_sum_directory_recursive`, mejorando el rendimiento en sistemas con muchos archivos.
 - `2026-09-18T09:42:12` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` eliminando la llamada a `__dict__.get()` (que implica acceso a diccionario y resolución de nombres en tiempo de ejecución) por una propiedad cacheada o acceso directo si fuera necesario, reduciendo la sobrecarga en el bucle de validación de `ingest`.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T09:11:56` **diskreport.py** (legibilidad y documentación): Mejore la claridad y mantenibilidad de `diskreport.py` mediante la adición de docstrings técnicos detallados en `_collect_summary_data`, la especificación de tipos en las variables locales de los bucles y la normalización de la nomenclatura de variables (`size_bytes`) para cumplir con los estándares de calidad del proyecto.
 - `2026-09-18T09:02:42` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo PEP 257) y se han añadido comentarios críticos para clarificar las asunciones de seguridad en las funciones de recursión y validación de rutas, facilitando el mantenimiento y la auditoría del código.
 - `2026-09-18T09:01:14` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para evitar errores al intentar convertir `None` o valores vacíos, protegiendo el bucle contra datos malformados que podrían causar excepciones al instanciar `Path` o al realizar comparaciones lógicas.
-- `2026-09-18T08:51:27` **safety.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `_validate_ntfs_reparse_redirection` capturando errores específicos de la API de Windows y verificando que el `handle` sea válido antes de realizar operaciones de Buffer, evitando cierres de handle inválidos o excepciones no controladas.
-- `2026-09-18T08:42:44` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante la captura explícita y el manejo granular de excepciones durante el parseo de JSON, evitando que un archivo malformado detenga la operación de carga y asegurando una degradación elegante ante errores de I/O o corrupción de datos.
-- `2026-09-18T08:41:58` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes validando explícitamente los handles devueltos por `OpenProcess` para evitar excepciones de `ctypes` al trabajar con valores nulos o cerrados, y aseguré que `GetExitCodeProcess` siempre sea llamado con un tipo de dato correcto.

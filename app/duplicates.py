@@ -156,20 +156,17 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
         return None
 
 
-def _is_valid_candidate(path: Path, st_result: os.stat_result) -> bool:
+def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """
-    Filtro de integridad: evalúa atributos de sistema, reparse points y 
+    Filtro de integridad optimizado: evalúa atributos de sistema y 
     restricciones de seguridad antes de incluir un archivo en el escaneo.
     """
     try:
-        if (st_result.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT) if hasattr(st_result, 'st_file_attributes') else path.is_symlink():
-            return False
         if is_protected_path(path) or not is_safe_to_modify(path):
             return False
         if is_system_or_hidden(path):
             return False
-            
-        return st_result.st_size > 0 and st_result.st_nlink == 1 and not _is_file_locked(path)
+        return st_size > 0 and not _is_file_locked(path)
     except (OSError, ValueError, TypeError, RuntimeError, AttributeError):
         return False
 
@@ -183,9 +180,9 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
             path_obj = Path(p).resolve(strict=True)
             if not is_safe_to_modify(path_obj):
                 continue
-            st_result = path_obj.stat()
-            if _is_valid_candidate(path_obj, st_result):
-                groups[st_result.st_size].append(path_obj)
+            st = path_obj.stat()
+            if _is_valid_candidate(path_obj, st.st_size):
+                groups[st.st_size].append(path_obj)
         except (OSError, RuntimeError, ValueError):
             continue
     return groups
@@ -221,17 +218,13 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(dir_str) as iterator:
                 for entry in iterator:
                     try:
-                        entry_path = Path(entry.path)
-                        if not is_safe_to_modify(entry_path):
-                            continue
                         if entry.is_dir(follow_symlinks=False):
-                            if not is_junction(entry_path):
-                                _scan_dir(entry_path)
+                            if not is_junction(Path(entry.path)):
+                                _scan_dir(Path(entry.path))
                         else:
-                            st_result = entry.stat(follow_symlinks=False)
-                            if st_result.st_size >= min_size:
-                                if _is_valid_candidate(entry_path, st_result):
-                                    size_to_paths_map[st_result.st_size].append(entry_path)
+                            st = entry.stat(follow_symlinks=False)
+                            if st.st_size >= min_size and _is_valid_candidate(Path(entry.path), st.st_size):
+                                size_to_paths_map[st.st_size].append(Path(entry.path))
                     except (FileNotFoundError, OSError, PermissionError, ValueError):
                         continue
         except (OSError, PermissionError, ValueError):
@@ -261,14 +254,12 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
     if not paths or size < 0:
         return []
 
-    # Estrategia: Hash completo directo para archivos pequeños, o filtrado por parcial.
     if size <= PARTIAL_READ_BYTES:
         final_groups = _group_paths_by_hash(paths, hash_file)
     else:
         partial_groups = _group_paths_by_hash(paths, partial_hash)
         final_groups = {}
         for candidate_subset in partial_groups.values():
-            # Refinamiento: solo los que pasaron el filtro parcial se procesan con hash completo
             full_hash_groups = _group_paths_by_hash(candidate_subset, hash_file)
             final_groups.update(full_hash_groups)
             
