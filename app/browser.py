@@ -171,7 +171,8 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Filtra entradas del sistema de archivos no seguras o prohibidas.
+    Determina si una entrada de directorio debe ser ignorada por motivos de seguridad
+    o exclusión explícita.
     """
     if entry.name is None:
         return True
@@ -223,7 +224,8 @@ def _is_valid_traversal_step(entry: os.DirEntry, root_base: str) -> bool:
 
 def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionChecker, kernel32: Optional[ctypes.WinDLL], memo: Dict[str, int], visited: set[str], depth: int) -> int:
     """
-    Procesa un elemento del sistema de archivos con validación defensiva.
+    Analiza una entrada individual: si es directorio, desciende recursivamente;
+    si es archivo, retorna su tamaño.
     """
     if depth > MAX_SCAN_DEPTH or _should_skip_entry(entry, kernel32, is_junction_fn):
         return 0
@@ -248,7 +250,9 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Motor recursivo para calcular el peso de un árbol de directorios con memoización.
+    Calcula el tamaño total de un árbol de directorios de forma recursiva.
+    Implementa memoización para evitar re-escaneo de subdirectorios y 
+    evita ciclos mediante el set 'visited'.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN or _is_unc_path(root_abs) or any(c in root_abs for c in '\0\r\n'):
         return 0
