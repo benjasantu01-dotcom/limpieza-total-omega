@@ -162,16 +162,9 @@ class _Validators:
 
     @staticmethod
     @lru_cache(maxsize=64)
-    def _is_reparse_point(path_str: str) -> bool:
-        """
-        Determina si una ruta es un punto de reanálisis (symlink/junction) en Windows.
-        Previene la recursión infinita en el escaneo de directorios.
-        """
+    def _is_reparse_point(path: Path) -> bool:
+        """Determina si una ruta es un punto de reanálisis (symlink/junction)."""
         try:
-            path = Path(path_str)
-            for parent in path.parents:
-                if parent.is_symlink() or (hasattr(parent, 'is_junction') and parent.is_junction()):
-                    return True
             return path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction())
         except (OSError, PermissionError):
             return True
@@ -179,20 +172,17 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
-        """
-        Ejecuta la validación de seguridad contra `safety.py`. 
-        Resuelve la ruta antes de chequear para neutralizar ataques de path traversal.
-        """
+        """Ejecuta la validación de seguridad contra `safety.py` con control de reparse points."""
         try:
-            path_obj = Path(path_str)
-            resolved = path_obj.resolve(strict=False)
-            resolved_str = str(resolved)
+            path_obj = Path(path_str).expanduser()
+            # Validar segmento a segmento contra symlinks para evitar escape
+            for part in path_obj.parts:
+                if _Validators._is_reparse_point(Path(part)):
+                    return False
             
-            if _Validators._is_reparse_point(resolved_str):
-                return False
-                
-            if not is_protected_path(resolved_str):
-                return is_safe_to_modify(resolved_str)
+            resolved = path_obj.resolve(strict=False)
+            if not is_protected_path(str(resolved)):
+                return is_safe_to_modify(str(resolved))
             return False
         except (OSError, PermissionError, RuntimeError, UnsafePathError, IndexError):
             return False

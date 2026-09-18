@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 43 | 5 | 7 | 4 | 39 |
+| 2026-09-16 | 43 | 5 | 7 | 4 | 35 |
 | 2026-09-17 | 137 | 9 | 25 | 15 | 164 |
-| 2026-09-18 | 28 | 1 | 8 | 5 | 14 |
+| 2026-09-18 | 29 | 2 | 8 | 5 | 16 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **44**
 - robustez ante casos límite: **43**
-- seguridad defensiva: **42**
+- seguridad defensiva: **43**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `healthscore.py`: **20**
 - `assistant.py`: **19**
+- `settings.py`: **19**
 - `duplicates.py`: **18**
 - `memory.py`: **18**
-- `settings.py`: **18**
 - `quarantine.py`: **17**
 - `safety.py`: **17**
 - `scanner.py`: **12**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T02:34:30` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_Validators._run_safety_checks` para garantizar que la resolución de rutas mediante `resolve(strict=False)` no sea vulnerada por enlaces simbólicos o puntos de unión (*junctions*) que apunten fuera de las áreas permitidas, verificando explícitamente el origen antes de confiar en la ruta resuelta.
 - `2026-09-18T02:27:58` **safety.py** (seguridad defensiva): Se añadió `FILE_ATTRIBUTE_TEMPORARY` al chequeo `_is_system_or_hidden` para evitar la manipulación de archivos marcados por el SO como temporales, reforzando la seguridad al evitar la edición de archivos transitorios críticos que a menudo son bloqueados o recreados dinámicamente por Windows.
 - `2026-09-18T02:24:36` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `_safe_unlink` y `purge_all` añadiendo una validación explícita mediante `is_protected_path` antes de cualquier operación de borrado, garantizando que incluso dentro de la carpeta de cuarentena, no se puedan borrar archivos que, por una configuración errónea o manipulación del sistema de archivos, resulten ser críticos.
 - `2026-09-18T02:13:36` **memory.py** (seguridad defensiva): Se ha robustecido `_get_process_path` para prevenir la resolución de rutas mediante enlaces simbólicos o puntos de reparse, integrando una validación estricta que asegura que la ruta resuelta sea un archivo real dentro del sistema de archivos local antes de cualquier operación.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T01:34:13` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor de inferencia contra excepciones en tiempo de ejecución (específicamente errores en `message_factory` o `check` de reglas) envolviendo la evaluación de cada regla en un bloque `try-except` individual dentro de `_evaluate_rules`, evitando que un fallo en una sola métrica invalide el informe completo de salud.
 - `2026-09-18T01:32:50` **diskreport.py** (robustez ante casos límite): Se ha mejorado `walk_files` para manejar de forma robusta los errores de acceso (como `PermissionError` o `FileNotFoundError` durante la iteración) y la posible desaparición de archivos o carpetas mientras el generador está en ejecución, evitando que el escaneo completo se detenga prematuramente ante eventos externos de concurrencia.
 - `2026-09-18T01:21:24` **browser.py** (robustez ante casos límite): Se implementó un mecanismo de detección de errores de acceso (`ERROR_ACCESS_DENIED`, `ERROR_SHARING_VIOLATION`) en el escaneo recursivo mediante `ctypes.get_last_error()` para distinguir entre carpetas vacías legítimas y errores de permisos/bloqueo, mejorando la robustez frente a directorios inaccesibles.
-- `2026-09-18T01:20:39` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_safe_float` añadiendo manejo específico para valores `inf` (infinitos) y `nan` (not a number), los cuales podían corromper los cálculos de salud si se inyectaban desde un JSON mal formado o un proceso con error de punto flotante.
