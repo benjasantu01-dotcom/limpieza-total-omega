@@ -1119,3 +1119,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-18T10:48:00` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-09-18T10:48:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T10:48:00` Corrida terminada. Total usado hoy: 252.
+- `2026-09-18T10:53:35` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-09-18T10:54:13` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` implementando una estrategia de "escritura atómica" más segura mediante `os.replace` (que es atómico en sistemas POSIX y Windows) y añadiendo una validación explícita de `ruta.parent` antes de intentar operaciones de archivo para evitar excepciones inesperadas en casos límite de permisos o rutas inexistentes.
+- `2026-09-18T10:54:40` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-18T10:55:23` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la seguridad de `_is_safe_text_structure` añadiendo el chequeo de rutas UNC (formatos `\\servidor\recurso`) y bloqueando explícitamente caracteres de control adicionales que podrían ser usados para manipular la interpretación del prompt en la API de Gemini.
+- `2026-09-18T10:55:42` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-18T10:55:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T10:55:42` Corrida terminada. Total usado hoy: 256.

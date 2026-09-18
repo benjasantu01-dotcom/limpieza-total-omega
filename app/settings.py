@@ -321,37 +321,35 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     try:
+        if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
         ensure_safe_to_modify(ruta.parent)
         cleaned_settings = _ensure_settings_integrity(validate(values))
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
-    except (UnsafePathError, TypeError, ValueError):
+    except (UnsafePathError, TypeError, ValueError, OSError):
         return None
+    
     temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
     bak_path = ruta.with_suffix(".bak")
-    for attempt in range(5):
-        try:
-            if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
-            if ruta.exists() and (ruta.is_symlink() or not ruta.is_file()): return None
-            with open(temp_path, "w", encoding="utf-8") as f:
-                f.write(serialized)
-                f.flush()
-                os.fsync(f.fileno())
-            if ruta.exists():
-                try: os.replace(ruta, bak_path)
-                except OSError: pass
-            os.replace(temp_path, ruta)
-            _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
-            return ruta
-        except (OSError, IOError, PermissionError):
-            if attempt < 4:
-                time.sleep(0.25 * (attempt + 1))
-                continue
-            return None
-        finally:
-            if temp_path.exists():
-                try: os.remove(temp_path)
-                except OSError: pass
-    return None
+    
+    try:
+        if ruta.exists() and (ruta.is_symlink() or not ruta.is_file()): return None
+        with open(temp_path, "w", encoding="utf-8") as f:
+            f.write(serialized)
+            f.flush()
+            os.fsync(f.fileno())
+        
+        if ruta.exists():
+            try: os.replace(ruta, bak_path)
+            except OSError: pass
+            
+        os.replace(temp_path, ruta)
+        _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
+        return ruta
+    except (OSError, IOError, PermissionError):
+        if temp_path.exists():
+            try: os.remove(temp_path)
+            except OSError: pass
+        return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     current = load(custom_base)

@@ -208,7 +208,7 @@ SYSTEM_PROMPT: Final[str] = (
 _ENDPOINT: Final[str] = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 _TIMEOUT_SECONDS: Final[int] = 30
 _PATH_INJECTION_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:[\\/]|/|\\|\.\.|\0|[\u202e\u202d\u200e\u200f])")
-_CONTROL_CHARS_REGEX: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f\u0080-\u009f\u202b-\u202f]")
+_CONTROL_CHARS_REGEX: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f\u0080-\u009f\u202b-\u202f\u200b-\u200d\uFEFF]")
 _ANSI_ESCAPE_REGEX: Final[re.Pattern] = re.compile(r"\x1B\[[0-9;]*[mK]")
 _PS_COMMAND_REGEX: Final[re.Pattern] = re.compile(r"(Get-|Remove-|Set-|Stop-|Start-)[a-zA-Z]+", re.IGNORECASE)
 _RESTRICTED_CONTENT_REGEX: Final[re.Pattern] = re.compile(r"(exec|eval|subprocess|system\s*\(|rm\s+|del\s+|cmd\.exe|powershell|reg\.exe)", re.IGNORECASE)
@@ -382,7 +382,8 @@ def _is_safe_text_structure(text: str) -> bool:
         _RESTRICTED_CONTENT_REGEX.search(text) or 
         _SENSITIVE_STRUCTURE_REGEX.search(text) or
         _ANSI_ESCAPE_REGEX.search(text) or
-        _PS_COMMAND_REGEX.search(text)
+        _PS_COMMAND_REGEX.search(text) or
+        text.startswith(r"\\")
     )
 
 def _ensure_safe_text(text: Any) -> bool:
