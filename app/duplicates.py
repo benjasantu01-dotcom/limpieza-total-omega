@@ -102,46 +102,57 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 
+def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
+    """Helper para validar y resolver rutas de forma segura."""
+    if path is None:
+        return None
+    try:
+        p = Path(path).resolve(strict=True)
+        if p.is_file() and is_safe_to_modify(p) and not _is_file_locked(p):
+            return p
+    except (OSError, RuntimeError, ValueError):
+        pass
+    return None
+
+
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del contenido de un archivo.
-    Aplica chequeos de seguridad y validación de estado de archivo antes de procesar.
     """
-    if path is None or chunk_size <= 0:
+    if chunk_size <= 0:
         return None
         
-    try:
-        p = Path(path).resolve(strict=True)
-        if not p.is_file() or not is_safe_to_modify(p) or _is_file_locked(p):
-            return None
+    p = _validate_and_resolve_path(path)
+    if not p:
+        return None
             
+    try:
         digest = hashlib.sha256()
         with open(p, "rb") as f:
             while (chunk := f.read(chunk_size)):
                 digest.update(chunk)
         return digest.hexdigest()
-    except (OSError, PermissionError, IOError, TypeError, ValueError):
+    except (OSError, PermissionError, IOError):
         return None
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Calcula el hash SHA256 de los primeros N bytes de un archivo para 
-    una comparación rápida de archivos potencialmente idénticos.
+    Calcula el hash SHA256 de los primeros N bytes de un archivo.
     """
-    if path is None or read_bytes <= 0:
+    if read_bytes <= 0:
+        return None
+
+    p = _validate_and_resolve_path(path)
+    if not p:
         return None
 
     try:
-        p = Path(path).resolve(strict=True)
-        if not p.is_file() or not is_safe_to_modify(p) or _is_file_locked(p):
-            return None
-
         with open(p, "rb") as f:
             content = f.read(read_bytes)
             if not content: return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, IOError, TypeError, ValueError):
+    except (OSError, PermissionError, IOError):
         return None
 
 

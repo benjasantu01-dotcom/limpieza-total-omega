@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 39
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 234
+- Rechazadas por guardia de seguridad: 38
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 24 | 4 | 6 | 3 | 25 |
+| 2026-09-16 | 23 | 4 | 5 | 3 | 23 |
 | 2026-09-17 | 137 | 9 | 25 | 15 | 164 |
-| 2026-09-18 | 31 | 3 | 8 | 5 | 45 |
+| 2026-09-18 | 34 | 3 | 8 | 6 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **43**
 - seguridad defensiva: **43**
-- manejo de errores y validación de entradas: **37**
-- legibilidad y documentación: **36**
+- manejo de errores y validación de entradas: **40**
+- legibilidad y documentación: **35**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **20**
 - `browser.py`: **20**
-- `diskreport.py`: **19**
+- `healthscore.py`: **19**
 - `settings.py`: **18**
 - `assistant.py`: **18**
-- `healthscore.py`: **18**
-- `quarantine.py`: **16**
-- `duplicates.py`: **16**
+- `duplicates.py`: **17**
 - `memory.py`: **16**
 - `safety.py`: **16**
+- `quarantine.py`: **15**
 - `scanner.py`: **11**
 - `branding.py`: **7**
 - `organizer.py`: **6**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T04:06:33` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` al implementar un manejo de errores más específico y defensivo, asegurando que el pipeline no falle ante cálculos internos inesperados, y fortalecí `SystemMetrics.validate` para garantizar que los tipos de datos sean correctos antes de proceder al cálculo.
+- `2026-09-18T04:06:05` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez de `hash_file` y `partial_hash` al centralizar la validación de entrada con una función auxiliar `_validate_and_resolve_path`, evitando excepciones no capturadas al operar con objetos `Path` potencialmente inválidos o inaccesibles, alineándose con el enfoque de manejo de errores.
+- `2026-09-18T04:05:40` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_get_local_windows_drives` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta, previniendo errores de acceso a unidades virtuales o de sistema que podrían interrumpir el escaneo inicial.
 - `2026-09-18T03:57:36` **browser.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `directory_size` y `_sum_directory_recursive` mediante la validación explícita de `root_abs` y el uso de `OSError` específico para evitar que el escáner aborte ante archivos bloqueados o denegados, alineándolo con el enfoque de validación defensiva.
 - `2026-09-18T03:56:46` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_handler_wrapper` y `handle_score` para manejar de forma explícita situaciones donde los datos pueden ser parciales o malformados, evitando que una métrica faltante o un error de cálculo interrumpan el hilo de ejecución, asegurando que el asistente siempre devuelva una respuesta válida y legible.
 - `2026-09-18T02:34:30` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_Validators._run_safety_checks` para garantizar que la resolución de rutas mediante `resolve(strict=False)` no sea vulnerada por enlaces simbólicos o puntos de unión (*junctions*) que apunten fuera de las áreas permitidas, verificando explícitamente el origen antes de confiar en la ruta resuelta.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T01:54:41` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite en la carga de archivos, añadiendo un chequeo explícito de integridad estructural durante la deserialización y evitando que errores de permiso en `ruta.stat()` durante la verificación de caché invaliden erróneamente la configuración, además de asegurar que la serialización final sea siempre un diccionario consistente mediante `_ensure_settings_integrity`.
 - `2026-09-18T01:51:21` **safety.py** (robustez ante casos límite): Se ha implementado una protección proactiva contra el manejo de archivos en dispositivos de solo lectura de bajo nivel (como medios ópticos o volúmenes montados como read-only) dentro de `_validate_boundary_conditions` para evitar excepciones de E/S impredecibles durante operaciones de escritura.
 - `2026-09-18T01:41:29` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos inexistentes o bloqueos por permisos en diversos escenarios de sistema, evitando el uso de `os.open` (que es bloqueante o puede lanzar excepciones no controladas según el OS) y delegando la verificación de forma más segura a `os.access` junto con un manejo explícito de excepciones, alineándose con las prácticas de robustez ante casos límite.
-- `2026-09-18T01:40:53` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante fallos de E/S en la función `_is_safe_for_disk_op` al envolver la comparación de unidades en un bloque `try-except` más específico y prevenir errores de `AttributeError` o `ValueError` si las rutas no son válidas tras el `resolve()`, además de asegurar que la comparación de unidades (`drive`) se realice solo si ambas rutas existen, evitando falsos negativos o excepciones al procesar rutas inaccesibles.
-- `2026-09-18T01:40:25` **memory.py** (robustez ante casos límite): Mejoré `_get_process_path` para manejar correctamente rutas con caracteres Unicode, asegurando que el buffer de `ctypes` se interprete como una ruta válida incluso si el proceso tiene un nombre con caracteres especiales, y añadí una validación explícita para evitar que `Path.resolve()` intente procesar rutas inválidas que podrían lanzar excepciones en entornos restringidos.
-- `2026-09-18T01:34:13` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor de inferencia contra excepciones en tiempo de ejecución (específicamente errores en `message_factory` o `check` de reglas) envolviendo la evaluación de cada regla en un bloque `try-except` individual dentro de `_evaluate_rules`, evitando que un fallo en una sola métrica invalide el informe completo de salud.

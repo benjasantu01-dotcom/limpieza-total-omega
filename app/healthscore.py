@@ -169,15 +169,15 @@ class SystemMetrics:
     def validate(self) -> None:
         """Aplica saneamiento de datos y asegura rangos físicos lógicos (ej: % entre 0-100)."""
         try:
-            self.junk_mb = max(0.0, _to_float(self.junk_mb))
-            self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
-            self.suspicious_count = int(max(0, _to_float(self.suspicious_count)))
-            self.suspicious_warnings = int(max(0, _to_float(self.suspicious_warnings)))
-            self.startup_count = int(max(0, _to_float(self.startup_count)))
-            self.quarantined_count = int(max(0, _to_float(self.quarantined_count)))
+            self.junk_mb = float(max(0.0, _to_float(self.junk_mb)))
+            self.duplicate_mb = float(max(0.0, _to_float(self.duplicate_mb)))
+            self.suspicious_count = int(max(0, int(_to_float(self.suspicious_count))))
+            self.suspicious_warnings = int(max(0, int(_to_float(self.suspicious_warnings))))
+            self.startup_count = int(max(0, int(_to_float(self.startup_count))))
+            self.quarantined_count = int(max(0, int(_to_float(self.quarantined_count))))
             self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
             self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, OverflowError):
             self.junk_mb = self.duplicate_mb = 0.0
             self.suspicious_count = self.suspicious_warnings = 0
             self.startup_count = self.quarantined_count = 0
@@ -230,8 +230,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                     if clean_msg and clean_msg.isprintable():
                         findings.append(clean_msg[:200])
         except Exception:
-            # Captura cualquier error de ejecución en la regla (excl. sintácticos) 
-            # para no romper el pipeline completo ante datos mal formados.
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -264,7 +262,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             weighted_points = _clamp(round(area_ratio * entry.weight), 0, entry.weight)
             metric_breakdown[entry.area] = int(weighted_points)
             accumulated_score += weighted_points
-        except (TypeError, ValueError, ZeroDivisionError):
+        except (TypeError, ValueError, ZeroDivisionError, ArithmeticError):
             metric_breakdown[entry.area] = 0
             
     final_score = int(_clamp(round(accumulated_score), 0.0, 100.0))
