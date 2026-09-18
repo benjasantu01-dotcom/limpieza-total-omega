@@ -344,25 +344,22 @@ def _is_system_process(pid: int) -> bool:
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: int) -> Optional[Path]:
-    """
-    Resuelve la ruta absoluta del ejecutable de un proceso mediante PSAPI.
-    """
+    """Resuelve y valida la ruta absoluta del ejecutable de un proceso."""
     if not proc_handle or proc_handle <= 0: return None
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
     
     buf = ctypes.create_unicode_buffer(1024)
     try:
-        # GetModuleFileNameExW rellena el buffer con caracteres wide (UTF-16)
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 1024) > 0:
             path_str = buf.value
             if not path_str or any(path_str.startswith(prefix) for prefix in ("\\\\", "\\??\\", "\\Device\\")):
                 return None
             
-            # Validación de integridad de ruta antes de instanciar Path
             if not os.path.isabs(path_str): return None
             
             p = Path(path_str)
+            # Validación estricta: debe ser archivo, no enlace, y resolverse a una ruta segura
             if not p.is_file() or p.is_symlink(): return None
             
             p_resolved = p.resolve(strict=False)

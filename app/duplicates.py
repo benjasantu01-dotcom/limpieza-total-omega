@@ -290,7 +290,8 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if not isinstance(p, Path):
             continue
         try:
-            if not p.exists() or not is_safe_to_modify(p):
+            # Validamos con is_safe_to_modify en lugar de exists() para mayor seguridad
+            if not is_safe_to_modify(p):
                 continue
             if score := _get_keeper_score(p):
                 candidates.append((score, p))
@@ -314,7 +315,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
             lines.append(f"   [error] ruta inválida")
             continue
         try:
-            if not path.exists() or not is_safe_to_modify(path):
+            if not is_safe_to_modify(path):
                 lines.append(f"   [inaccesible] {path}")
             else:
                 label = 'conservar' if (keeper is not None and path == keeper) else 'duplicado'
