@@ -295,7 +295,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
 
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Resuelve la ruta absoluta de una carpeta de caché a partir de una relativa."""
-    if not isinstance(rel_str, str) or any(c in rel_str for c in '\0\r\n'):
+    if not isinstance(real_base, Path) or not isinstance(rel_str, str) or any(c in rel_str for c in '\0\r\n'):
         return real_base
     try:
         # Validación de caracteres inválidos en componentes de ruta

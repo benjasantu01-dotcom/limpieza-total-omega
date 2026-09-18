@@ -263,7 +263,7 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
     """Retorna los N archivos más pesados encontrados en el directorio."""
     root = _validate_root(directory)
     if not root: return []
-    data = _collect_summary_data(root, skip_protected, limit=limit)
+    data = _collect_summary_data(root, skip_protected, limit=max(0, limit))
     return [FileEntry(p, s) for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True)]
 
 
@@ -273,7 +273,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
     if not root: return []
     data = _collect_summary_data(root, skip_protected, limit=0)
     usage_list = [ExtensionUsage(ext, s.total_bytes, s.count) for ext, s in data.ext_stats.items()]
-    return heapq.nlargest(limit, usage_list, key=lambda u: u.size_bytes)
+    return heapq.nlargest(max(0, limit), usage_list, key=lambda u: u.size_bytes)
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
@@ -295,7 +295,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             continue
 
     results = [FolderUsage(p, folder_total_bytes[p], folder_file_counts[p]) for p in folder_total_bytes]
-    return heapq.nlargest(limit, results, key=lambda f: f.size_bytes)
+    return heapq.nlargest(max(0, limit), results, key=lambda f: f.size_bytes)
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> SizeReport:
@@ -309,20 +309,6 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Agrega métricas de uso de disco recorriendo el árbol de directorios.
-
-    Procesamiento eficiente:
-    1. Acumula bytes y conteo de archivos global.
-    2. Clasifica estadísticas por extensión mediante `ExtStats`.
-    3. Mantiene un min-heap de tamaño `limit` para obtener los N archivos más grandes
-       en tiempo O(N log L), minimizando el uso de memoria comparado con sort global.
-
-    Args:
-        directory: Ruta raíz a analizar.
-        skip_protected: Si es True, ignora directorios marcados como protegidos.
-        limit: Cantidad de archivos a rastrear en el top.
-
-    Returns:
-        SummaryData con el reporte consolidado.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -333,7 +319,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         total_bytes += size_bytes
         total_files += 1
         
-        # Agrupación por extensión
         ext_raw = path.suffix
         ext = ext_raw.lower() if ext_raw else "(sin extensión)"
         
@@ -341,7 +326,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         stat.total_bytes += size_bytes
         stat.count += 1
         
-        # Lógica de Heap para mantener top N archivos por tamaño
         if limit > 0 and size_bytes > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size_bytes, path))
@@ -355,14 +339,19 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     """Genera un reporte legible en texto sobre el uso del disco."""
     root = _validate_root(directory)
     if not root: return ["Error: Ruta no válida."]
+    
     data = _collect_summary_data(root, skip_protected, limit=20)
     
-    if data.total_files == 0: return ["Aviso: No hay archivos accesibles."]
+    if data is None or data.total_files == 0: 
+        return ["Aviso: No hay archivos accesibles para analizar en la ruta indicada."]
 
     lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} en {data.total_files} archivos", "", "Por tipo:"]
     sorted_exts = heapq.nlargest(8, data.ext_stats.items(), key=lambda x: x[1].total_bytes)
     for ext, stats in sorted_exts:
         lines.append(f"  {ext:<18} {format_size(stats.total_bytes):>10}  ({stats.count} archivos)")
-    lines.extend(["", "Mayores archivos:"])
-    lines.extend([f"  {format_size(s):>10}  {p}" for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True)])
+    
+    if data.top_files:
+        lines.extend(["", "Mayores archivos:"])
+        lines.extend([f"  {format_size(s):>10}  {p}" for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True)])
+    
     return lines

@@ -132,7 +132,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
             while (chunk := f.read(chunk_size)):
                 digest.update(chunk)
         return digest.hexdigest()
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError, MemoryError):
         return None
 
 
@@ -150,7 +150,8 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
     try:
         with open(p, "rb") as f:
             content = f.read(read_bytes)
-            if not content: return None
+            if not content: 
+                return None
             return hashlib.sha256(content).hexdigest()
     except (OSError, PermissionError, IOError):
         return None

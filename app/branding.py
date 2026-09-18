@@ -395,7 +395,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
                               fill=C_BACKGROUND, outline="")
         canvas.create_text(c_x + 64 * scale, c_y + 96 * scale, text="\u03a9", 
                            fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(UI_FONT_HEADER_SIZE * scale)), UI_FONT_BOLD))
-    except Exception: pass
+    except (TypeError, ValueError, Exception): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Renderiza el escudo corporativo en el canvas provisto."""
@@ -412,7 +412,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         canvas.create_polygon(*_get_scaled_poly(scale, canvas_x, canvas_y), fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
         _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, scale)
-    except Exception: pass
+    except (TypeError, ValueError, Exception): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
     """Dibuja una línea decorativa con gradiente lineal sobre el canvas."""
@@ -421,7 +421,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
         h_val = max(1, int(height))
         for seg in _get_grouped_segments(gradient_colors(w_val, stops)):
             canvas.create_line(canvas_x + seg.start_index, canvas_y, canvas_x + seg.end_index, canvas_y, fill=seg.hex_color, width=h_val)
-    except Exception: pass
+    except (TypeError, ValueError, Exception): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
     """Renderiza un gráfico de anillo circular para métricas de porcentaje."""
