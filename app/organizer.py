@@ -177,9 +177,11 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     if not _validate_path_security(src, dest): return False
     try:
         s_res = src.resolve()
+        d_res = dest.resolve()
         if not s_res.exists() or _is_recursive_violation(s_res, dest): return False
-        parent = dest if dest.is_dir() else dest.parent
-        return s_res.drive == parent.resolve().drive and _validate_file_attributes(s_res)
+        parent = d_res if d_res.is_dir() else d_res.parent
+        # Verificar que la operación ocurra dentro de la misma unidad física
+        return s_res.drive == parent.drive and _validate_file_attributes(s_res)
     except (OSError, RuntimeError, AttributeError):
         return False
 

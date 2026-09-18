@@ -353,20 +353,24 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     
     buf = ctypes.create_unicode_buffer(1024)
     try:
+        # GetModuleFileNameExW rellena el buffer con caracteres wide (UTF-16)
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 1024) > 0:
-            path_str = str(buf.value)
-            if any(path_str.startswith(prefix) for prefix in ("\\\\", "\\??\\", "\\Device\\")):
+            path_str = buf.value
+            if not path_str or any(path_str.startswith(prefix) for prefix in ("\\\\", "\\??\\", "\\Device\\")):
                 return None
             
+            # Validación de integridad de ruta antes de instanciar Path
+            if not os.path.isabs(path_str): return None
+            
             p = Path(path_str)
-            if not p.exists() or not p.is_file() or p.is_symlink(): return None
+            if not p.is_file() or p.is_symlink(): return None
             
             p_resolved = p.resolve(strict=False)
             if is_protected_path(str(p_resolved)) or not is_safe_to_modify(str(p_resolved)): 
                 return None
             
             return p_resolved
-    except (OSError, ctypes.ArgumentError, ValueError, MemoryError):
+    except (OSError, ctypes.ArgumentError, ValueError, MemoryError, RuntimeError):
         pass
     return None
 

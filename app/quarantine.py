@@ -189,16 +189,15 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado por el S.O. mediante apertura exclusiva.
-    Esta función NO modifica el estado del archivo, solo intenta abrirlo en modo lectura.
+    Verifica si un archivo está bloqueado por el S.O.
+    Utiliza un chequeo de acceso de lectura para determinar disponibilidad.
     """
     if not path.exists():
         return False
     try:
-        fd = os.open(str(path), os.O_RDONLY | getattr(os, 'O_NONBLOCK', 0))
-        os.close(fd)
-        return False
-    except (OSError, PermissionError, FileNotFoundError):
+        # Intentamos verificar acceso de lectura sin abrir el handle
+        return not os.access(path, os.R_OK)
+    except (OSError, PermissionError):
         return True
 
 
