@@ -77,7 +77,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         return None
     try:
         return entry.stat(follow_symlinks=False)
-    except (OSError, PermissionError, AttributeError, FileNotFoundError):
+    except (OSError, PermissionError, AttributeError, FileNotFoundError, RuntimeError):
         return None
 
 def _is_valid_path_structure(path_str: str) -> bool:

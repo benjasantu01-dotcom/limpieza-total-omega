@@ -285,21 +285,26 @@ def validate(raw_values: Any) -> AppSettings:
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
-    if not ruta.exists(): return DEFAULTS.copy()
-    try:
-        stats = ruta.stat()
-        if (cached := _CACHE.get(ruta)) and cached[0] == stats.st_mtime:
-            return cached[1].copy()
-        if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
-            return DEFAULTS.copy()
-        with open(ruta, "r", encoding="utf-8") as f:
-            raw = json.load(f)
-            if not _is_dict(raw): return DEFAULTS.copy()
-            final_data = _ensure_settings_integrity(validate(raw))
-        _CACHE[ruta] = (stats.st_mtime, final_data)
-        return final_data.copy()
-    except (OSError, PermissionError, ValueError, json.JSONDecodeError):
-        return DEFAULTS.copy()
+    candidates = [ruta, ruta.with_suffix(".bak")]
+    
+    for r in candidates:
+        if not r.exists(): continue
+        try:
+            stats = r.stat()
+            if r == ruta and (cached := _CACHE.get(ruta)) and cached[0] == stats.st_mtime:
+                return cached[1].copy()
+            if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
+                continue
+            with open(r, "r", encoding="utf-8") as f:
+                raw = json.load(f)
+                if not _is_dict(raw): continue
+                final_data = _ensure_settings_integrity(validate(raw))
+            _CACHE[ruta] = (ruta.stat().st_mtime, final_data)
+            return final_data.copy()
+        except (OSError, PermissionError, ValueError, json.JSONDecodeError):
+            continue
+            
+    return DEFAULTS.copy()
 
 def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
     if settings.get("asistente_activado"):

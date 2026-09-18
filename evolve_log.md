@@ -740,3 +740,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-09-18T06:12:35` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
 - `2026-09-18T06:12:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T06:12:35` Corrida terminada. Total usado hoy: 144.
+- `2026-09-18T06:17:39` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-09-18T06:18:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-18T06:18:38` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una comprobación de existencia y accesibilidad en `_validate_ntfs_reparse_redirection` para evitar llamadas al sistema con handles inválidos y mejorar la robustez frente a race conditions o permisos de acceso denegados durante el escaneo.
+- `2026-09-18T06:19:04` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `scanner.py` ante errores de acceso a archivos al envolver la obtención de metadatos en un manejo de excepciones exhaustivo dentro de `_safe_stat`, previniendo que problemas de concurrencia o bloqueos de sistema interrumpan el escaneo de directorios completos.
+- `2026-09-18T06:19:19` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante fallos de E/S y corrupción de archivos al añadir una lógica de recuperación de archivos de respaldo `.bak` si el archivo principal de configuración (`config.json`) falla al cargar, asegurando que la aplicación no pierda las preferencias del usuario ante un cierre inesperado o escritura incompleta.
+- `2026-09-18T06:19:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T06:19:19` Corrida terminada. Total usado hoy: 148.

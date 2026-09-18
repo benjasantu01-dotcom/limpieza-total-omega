@@ -529,6 +529,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
 
 def _validate_ntfs_reparse_redirection(path: Path) -> None:
     """Verifica si la ruta real difiere del path esperado tras resolver links/junctions."""
+    if not path.exists(): return
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, 0, None, 3, 0x02000000, None)
     if handle != -1:
