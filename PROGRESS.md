@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 20
+- Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 99 | 7 | 17 | 7 | 130 |
-| 2026-09-18 | 107 | 7 | 28 | 13 | 89 |
+| 2026-09-17 | 98 | 5 | 17 | 7 | 129 |
+| 2026-09-18 | 109 | 7 | 28 | 14 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - legibilidad y documentación: **40**
-- seguridad defensiva: **39**
+- robustez ante casos límite: **40**
 - rendimiento: **38**
-- robustez ante casos límite: **38**
+- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `browser.py`: **22**
-- `healthscore.py`: **20**
-- `safety.py`: **18**
+- `healthscore.py`: **21**
 - `memory.py`: **18**
 - `assistant.py`: **17**
 - `duplicates.py`: **17**
+- `safety.py`: **17**
 - `settings.py`: **17**
 - `quarantine.py`: **16**
 - `scanner.py`: **13**
 - `organizer.py`: **9**
 - `branding.py`: **7**
-- `main.py`: **5**
+- `main.py`: **6**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T10:34:56` **main.py** (robustez ante casos límite): Mejora la robustez ante casos límite (concurrencia y estado de la UI) al integrar `_closing` en el decorador `validated_ui_operation` y refactorizar `_set_busy` para asegurar que el estado de los componentes (`activity`, `buttons`) se sincronice estrictamente con la vida del widget raíz, evitando excepciones de `TclError` si la aplicación se destruye mientras hay hilos intentando actualizar la interfaz.
+- `2026-09-18T10:33:40` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `SystemMetrics.validate` y `compute_score` agregando chequeos explícitos para evitar propagación de valores `NaN` o `Inf` que podrían derivar en estados inconsistentes, reforzando la integridad de los cálculos del pipeline ante entradas de datos no numéricos o fuera de rango.
 - `2026-09-18T10:24:28` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previo dentro de `walk_files` para manejar casos donde el directorio base es eliminado o inaccesible durante el proceso de iteración, mejorando la robustez ante condiciones de carrera o cambios externos en el sistema de archivos.
 - `2026-09-18T10:24:02` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_valid_cache_path` y `_resolve_browser_path` para prevenir excepciones ante rutas inexistentes, caracteres inválidos o intentos de inyección de rutas fuera del directorio base, reforzando la seguridad y evitando fallos durante el escaneo.
 - `2026-09-18T10:13:52` **settings.py** (rendimiento): Optimizé `load()` para eliminar lecturas redundantes del sistema de archivos mediante una verificación de `st_mtime` previa a la carga del JSON, reduciendo el I/O en llamadas repetidas al recuperar configuraciones.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T09:42:12` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` eliminando la llamada a `__dict__.get()` (que implica acceso a diccionario y resolución de nombres en tiempo de ejecución) por una propiedad cacheada o acceso directo si fuera necesario, reduciendo la sobrecarga en el bucle de validación de `ingest`.
 - `2026-09-18T09:33:27` **scanner.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints faltantes, la estandarización de docstrings siguiendo las mejores prácticas y la clarificación de la intención en métodos complejos, garantizando que la documentación sea técnica y precisa.
 - `2026-09-18T09:22:46` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `quarantine.py` mediante la adición de Type Hints en parámetros faltantes, la estandarización de docstrings siguiendo el estilo Google/NumPy para mejorar la legibilidad y la clarificación de las responsabilidades en las funciones de bajo nivel que manejan la integridad del sandbox.
-- `2026-09-18T09:22:05` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave y se ha optimizado la legibilidad lógica de `_is_safe_for_disk_op` para prevenir errores de mantenimiento al evaluar condiciones complejas.
-- `2026-09-18T09:21:37` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código mediante la adición de docstrings técnicos (explicando los contratos de las funciones de bajo nivel), la corrección de type hints en `MEMORYSTATUSEX` para evitar errores de alineación en arquitecturas de 64 bits, y la normalización de la validación de rutas mediante una constante de máscara más explícita.

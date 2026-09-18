@@ -162,7 +162,7 @@ def validated_ui_operation(func: Callable) -> Callable:
         # Si la app se está cerrando, ignorar nuevas peticiones de UI
         if getattr(self, '_closing', False):
             return None
-        if hasattr(self, 'winfo_exists') and not self.winfo_exists():
+        if not hasattr(self, 'winfo_exists') or not self.winfo_exists():
             return None
         try:
             return func(self, *args, **kwargs)

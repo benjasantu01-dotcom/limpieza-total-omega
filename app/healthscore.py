@@ -252,6 +252,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in _PIPELINE:
         try:
             val = entry.scorer(metrics)
+            # Aseguramos que el valor de entrada al pipeline sea finito
             area_ratio = _clamp(float(val)) if math.isfinite(val) else 0.0
             
             if entry.rules:

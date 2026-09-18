@@ -1102,3 +1102,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-18T10:24:37` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-09-18T10:24:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T10:24:37` Corrida terminada. Total usado hoy: 244.
+- `2026-09-18T10:33:11` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-09-18T10:33:40` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en `SystemMetrics.validate` y `compute_score` agregando chequeos explícitos para evitar propagación de valores `NaN` o `Inf` que podrían derivar en estados inconsistentes, reforzando la integridad de los cálculos del pipeline ante entradas de datos no numéricos o fuera de rango.
+- `2026-09-18T10:34:56` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejora la robustez ante casos límite (concurrencia y estado de la UI) al integrar `_closing` en el decorador `validated_ui_operation` y refactorizar `_set_busy` para asegurar que el estado de los componentes (`activity`, `buttons`) se sincronice estrictamente con la vida del widget raíz, evitando excepciones de `TclError` si la aplicación se destruye mientras hay hilos intentando actualizar la interfaz.
+- `2026-09-18T10:35:22` ➖ Sin cambios en memory.py (enfoque: robustez ante casos límite). Motivo: Se mejora la robustez de `trim_working_set` y sus ayudantes para manejar correctamente el acceso a procesos, evitando fugas de recursos ante errores inesperados del sistema y asegurando que las llamadas a la API de Windows se realicen únicamente si el proceso está vivo y es accesible, incluso ante condiciones de carrera (Race Conditions).
+- `2026-09-18T10:35:32` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-18T10:35:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T10:35:32` Corrida terminada. Total usado hoy: 248.
