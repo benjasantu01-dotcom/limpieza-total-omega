@@ -232,12 +232,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     if root_path is None: return
 
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [str(root_path)]
+    stack: List[Path] = [root_path]
     
     while stack:
         current_dir = stack.pop()
-        if not os.path.exists(current_dir):
-            continue
             
         try:
             with os.scandir(current_dir) as iterator:
@@ -246,13 +244,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     
                     try:
                         if entry.is_dir(follow_symlinks=False):
-                            if skip_protected and is_protected_path(Path(entry.path)): continue
+                            path = Path(entry.path)
+                            if skip_protected and is_protected_path(path): continue
                             
                             st = entry.stat(follow_symlinks=False)
                             inode: Inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(entry.path)
+                                stack.append(path)
                                 
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)

@@ -140,17 +140,18 @@ _RULES_LIST: Final[Tuple[RecommendationRule, ...]] = (
     RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),
 )
 
-def _get_rules_for_area(area: MetricKey) -> List[RecommendationRule]:
-    """Helper para filtrar reglas por área de forma segura."""
-    return [r for r in _RULES_LIST if r.area == area]
+# Mapa pre-indexado para acceso O(1) en el pipeline
+_RULES_MAP: Final[Dict[MetricKey, List[RecommendationRule]]] = {
+    area: [r for r in _RULES_LIST if r.area == area] for area in WEIGHTS.keys()
+}
 
 _PIPELINE: Final[List[PipelineEntry]] = [
-    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), _get_rules_for_area("seguridad")),
-    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), _get_rules_for_area("disco")),
-    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), _get_rules_for_area("memoria")),
-    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), _get_rules_for_area("basura")),
-    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), _get_rules_for_area("duplicados")),
-    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), _get_rules_for_area("arranque")),
+    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), _RULES_MAP.get("seguridad", [])),
+    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), _RULES_MAP.get("disco", [])),
+    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), _RULES_MAP.get("memoria", [])),
+    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), _RULES_MAP.get("basura", [])),
+    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), _RULES_MAP.get("duplicados", [])),
+    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), _RULES_MAP.get("arranque", [])),
 ]
 
 @dataclass

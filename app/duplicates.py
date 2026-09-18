@@ -216,6 +216,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             if not is_junction(Path(entry.path)):
                                 _scan_dir(Path(entry.path))
                         else:
+                            # Rendimiento: usamos el stat cacheado en la entrada si es posible
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size >= min_size and _is_valid_candidate(Path(entry.path), st.st_size):
                                 size_to_paths_map[st.st_size].append(Path(entry.path))
