@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 46
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 210
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 98 | 5 | 17 | 7 | 117 |
-| 2026-09-18 | 115 | 8 | 29 | 15 | 93 |
+| 2026-09-17 | 98 | 5 | 17 | 7 | 113 |
+| 2026-09-18 | 117 | 8 | 29 | 16 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - robustez ante casos límite: **43**
-- seguridad defensiva: **41**
+- seguridad defensiva: **43**
 - legibilidad y documentación: **40**
 - rendimiento: **38**
 
@@ -32,12 +32,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **23**
 - `healthscore.py`: **22**
 - `browser.py`: **22**
+- `memory.py`: **19**
 - `assistant.py`: **18**
-- `memory.py`: **18**
 - `safety.py`: **18**
 - `settings.py`: **18**
+- `quarantine.py`: **18**
 - `duplicates.py`: **17**
-- `quarantine.py`: **17**
 - `scanner.py`: **13**
 - `organizer.py`: **9**
 - `branding.py`: **7**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T11:16:31` **quarantine.py** (seguridad defensiva): He mejorado `_check_isolation_safety` para impedir el movimiento de archivos si el sistema de archivos de destino no soporta las mismas operaciones atómicas o si existen bloqueos implícitos, añadiendo una validación explícita mediante `os.access` en el directorio de cuarentena antes de cualquier operación destructiva sobre el original.
+- `2026-09-18T11:15:44` **memory.py** (seguridad defensiva): Mejoré `_get_process_path` para incluir un chequeo de integridad adicional que verifica si el handle del proceso apunta a una ruta real existente y no a un recurso volátil o bloqueado, integrando `is_safe_to_modify` para asegurar que el proceso objetivo reside en una zona permitida antes de cualquier interacción de bajo nivel.
 - `2026-09-18T11:07:13` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del pipeline de cálculo encapsulando la lógica de las reglas dentro de bloques `try-except` más robustos, evitando que errores de ejecución en el motor de recomendaciones (ej. divisiones por cero imprevistas en los `message_factory`) interrumpan el cálculo del puntaje global.
 - `2026-09-18T11:05:22` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_validate_root` y `drive_usage` utilizando `resolve(strict=True)` para asegurar que las rutas operadas son reales y accesibles antes de intentar cualquier acceso a disco, reduciendo ventanas de carrera y mejorando la consistencia con las reglas de seguridad.
 - `2026-09-18T10:55:23` **assistant.py** (seguridad defensiva): Se endureció la seguridad de `_is_safe_text_structure` añadiendo el chequeo de rutas UNC (formatos `\\servidor\recurso`) y bloqueando explícitamente caracteres de control adicionales que podrían ser usados para manipular la interpretación del prompt en la API de Gemini.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T10:13:52` **settings.py** (rendimiento): Optimizé `load()` para eliminar lecturas redundantes del sistema de archivos mediante una verificación de `st_mtime` previa a la carga del JSON, reduciendo el I/O en llamadas repetidas al recuperar configuraciones.
 - `2026-09-18T10:04:27` **safety.py** (rendimiento): Se implementó un `lru_cache` adicional en `_is_directory_junction` para reducir las llamadas repetitivas a la WinAPI `GetFileAttributesW` durante el escaneo recursivo, optimizando significativamente el rendimiento en árboles de directorios profundos.
 - `2026-09-18T10:03:47` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total y la validación de integridad en `list_items` y `total_quarantined_bytes` reemplazando llamadas redundantes a `load_manifest` y `iterdir` por un diccionario de búsqueda eficiente (`map`), reduciendo la complejidad algorítmica y el I/O innecesario.
-- `2026-09-18T09:56:20` **memory.py** (rendimiento): Optimicé el rendimiento de `read_snapshot` y `top_memory_processes` reemplazando la lógica de comparación de marcas de tiempo manual por `functools.lru_cache` (en `read_snapshot`) y un mecanismo de `expiration` simplificado en los procesos, evitando syscalls y subprocesos costosos innecesarios.
-- `2026-09-18T09:52:44` **healthscore.py** (rendimiento): Optimicé el cálculo del `HealthResult` reemplazando la construcción dinámica de strings y accesos repetitivos a campos por una estructura de datos precalculada, reduciendo la carga de CPU y memoria en cada iteración del pipeline.

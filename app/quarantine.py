@@ -200,12 +200,10 @@ def _is_file_locked(path: Path) -> bool:
     if not path.exists():
         return False
     try:
-        # Intentar abrir el archivo de forma exclusiva para lectura
         fd = os.open(path, os.O_RDONLY | os.O_EXCL)
         os.close(fd)
         return False
     except OSError:
-        # En caso de error, asumimos que está bloqueado o inaccesible
         return True
 
 def _safe_unlink(path: Path) -> bool:
@@ -327,7 +325,7 @@ def _check_windows_file_attributes(path_str: str) -> None:
 def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     """
     Verifica condiciones de seguridad origen-destino previo a la operación.
-    Asegura que el origen y destino sean válidos y no se trate de una operación circular.
+    Asegura que el origen y destino sean válidos y que el destino permita escritura.
     """
     resolved_source = source_path.resolve(strict=True)
     resolved_dest_dir = dest_dir.resolve()
@@ -339,8 +337,8 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     if resolved_source.stat().st_size == 0:
         raise UnsafePathError("Archivos vacíos prohibidos.")
     
-    if len(resolved_source.parts) <= 1:
-        raise UnsafePathError("Rutas raíz no pueden ser aisladas.")
+    if not os.access(dest_dir, os.W_OK):
+        raise PermissionError("Directorio de cuarentena sin permisos de escritura.")
 
     try:
         if os.path.samefile(resolved_source, resolved_dest_dir):
@@ -465,16 +463,6 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 def _write_temp_to_final(source: Path, destination: Path) -> str:
     """
     Copia física del archivo origen al sandbox usando descriptores de archivo.
-
-    Realiza validaciones de seguridad adicionales sobre el destino, abre el
-    origen y destino en modo binario exclusivo y verifica la integridad post-copia 
-    comparando los hashes SHA-256 calculados antes y después del stream.
-
-    Args:
-        source: Ruta del archivo a aislar.
-        destination: Ruta destino dentro del sandbox.
-    Returns:
-        El hash SHA-256 del archivo copiado.
     """
     _check_path_syntax_integrity(destination)
     if is_protected_path(destination):
@@ -600,7 +588,6 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Ejecuta el flujo completo de aislamiento, integrando validación y persistencia.
-    Verifica seguridad de rutas, espacio en disco, integridad hash y atomicidad.
     """
     if source is None:
         raise ValueError("Ruta de origen nula o vacía.")
@@ -644,7 +631,6 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
-        # Usamos un conjunto de nombres de archivos presentes para evitar llamadas iterativas pesadas
         try:
             existing = {f.name for f in base_path.iterdir() if f.is_file()}
         except OSError:
@@ -667,7 +653,6 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Restaura un ítem al origen tras validar integridad y permisos de destino.
-    Asegura que no se restaure en rutas de sistema o protegidas.
     """
     if not isinstance(item_id, str) or not item_id.strip():
         raise ValueError("ID de ítem inválido.")
@@ -794,7 +779,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
 
 def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     """Calcula el uso total de espacio ocupado por ítems en cuarentena."""
-    # Lista pre-cargada desde manifest para evitar I/O redundante en loops
     return sum(item.size_bytes for item in load_manifest(base))
 
 

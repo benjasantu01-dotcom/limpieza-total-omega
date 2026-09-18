@@ -344,7 +344,7 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
             if not os.path.isabs(path_str): return None
             
             p = Path(path_str)
-            if not p.is_file() or p.is_symlink(): return None
+            if not p.exists() or not p.is_file() or p.is_symlink(): return None
             
             p_resolved = p.resolve(strict=False)
             if is_protected_path(str(p_resolved)) or not is_safe_to_modify(str(p_resolved)): 
