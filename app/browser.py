@@ -43,7 +43,7 @@ BrowserMap: TypeAlias = Dict[str, str]
 OSPath: TypeAlias = Union[str, Path]
 
 def _is_junction_default(path: str) -> bool:
-    """Fallback si el entorno no soporta la detección de junctions."""
+    """Fallback para entornos donde `os.path.isjunction` no está disponible."""
     return False
 
 # Acceso seguro a la funcionalidad de junctions si existe en el runtime
@@ -90,17 +90,16 @@ class BrowserCache:
 
     @property
     def size_mb(self) -> float:
-        """Retorna el tamaño en MB con precisión de 2 decimales."""
+        """Calcula el tamaño en MB convirtiendo desde bytes."""
         return round(self.size_bytes / (1024 * 1024), 2)
 
 
 def _get_kernel32() -> Optional[ctypes.WinDLL]:
-    """Carga kernel32.dll para validación de atributos Win32 (solo Windows)."""
+    """Carga kernel32.dll bajo demanda para consultar atributos de archivo Win32."""
     if os.name != 'nt':
         return None
     try:
         dll = ctypes.WinDLL('kernel32.dll', use_last_error=True)
-        # Verificamos específicamente el tipo de retorno y la presencia del método
         if hasattr(dll, 'GetFileAttributesW'):
             return dll
     except (OSError, ValueError, TypeError, AttributeError, RuntimeError):
@@ -108,18 +107,13 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
     return None
 
 def _is_unc_path(path_str: str) -> bool:
-    """Detecta si la ruta es un recurso de red (UNC) para evitar bloqueos/riesgos."""
+    """Verifica si la ruta corresponde a un recurso de red (UNC) para abortar acceso."""
     if not isinstance(path_str, str):
         return False
     return path_str.startswith(r"\\") or path_str.startswith("//")
 
 def base_directories() -> List[Path]:
-    """
-    Localiza la ruta raíz de los datos de usuario (%LOCALAPPDATA%).
-    
-    Returns:
-        Lista conteniendo la ruta de perfil local si es segura y existe.
-    """
+    """Localiza la raíz del perfil local del usuario (%LOCALAPPDATA%)."""
     local_env = os.environ.get("LOCALAPPDATA")
     if not isinstance(local_env, str) or not local_env or _is_unc_path(local_env):
         return []
@@ -129,7 +123,7 @@ def base_directories() -> List[Path]:
         if not p.exists():
             return []
         path_local = p.resolve(strict=True)
-        # Validación defensiva contra rutas de sistema protegidas
+        # Validación: evita seguir rutas protegidas o inseguras por política de seguridad
         if path_local.is_dir() and is_safe_to_modify(path_local) and not is_protected_path(path_local):
             return [path_local]
     except (OSError, RuntimeError, PermissionError):
@@ -138,14 +132,14 @@ def base_directories() -> List[Path]:
 
 
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
-    """Verifica que el target resida físicamente dentro de la base (evita escapes)."""
+    """Valida que la ruta objetivo sea hija del directorio base para evitar escapes de directorio."""
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
     try:
         target_abs = str(real_target.resolve(strict=True))
         base_abs = str(real_base.resolve(strict=True))
         
-        # Validación de longitud y caracteres nulos prohibidos
+        # Filtros de sanidad básicos para prevenir desbordamientos o caracteres ilegales
         if len(target_abs) >= MAX_PATH_LEN or len(base_abs) >= MAX_PATH_LEN or any(c in target_abs for c in '\0\r\n'):
             return False
             
@@ -155,16 +149,15 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
 
 
 def _is_excluded_file(name: Optional[str]) -> bool:
-    """Indica si un nombre de archivo está en la lista de bloqueo (`NEVER_TOUCH`)."""
+    """Verifica si el nombre de archivo está en la lista de NO tocar."""
     return name is not None and name.lower() in NEVER_TOUCH
 
 
 def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
-    """Consulta atributos Win32 para detectar archivos ocultos usando kernel32."""
+    """Consulta atributos Win32 para identificar archivos marcados como ocultos."""
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
-        # Validación estricta de parámetros para la llamada a ctypes
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False 
@@ -174,10 +167,7 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
-    """
-    Determina si una entrada de directorio debe ser ignorada por motivos de seguridad
-    o exclusión explícita.
-    """
+    """Filtra entradas basadas en exclusiones, enlaces simbólicos o rutas prohibidas."""
     if entry.name is None:
         return True
     
@@ -189,7 +179,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         if not path or len(path) >= MAX_PATH_LEN or any(c in path for c in '\0\r\n') or _is_unc_path(path):
             return True
         
-        # Uso defensivo de try/except alrededor de operaciones de sistema de archivos
+        # El escaneo ignora junctions y symlinks para prevenir bucles infinitos o fugas
         if entry.is_symlink() or is_junction_fn(path):
             return True
             
@@ -202,13 +192,12 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
-    """
-    Valida si un directorio es transitable dentro del contexto de seguridad.
-    """
+    """Verifica permisos de acceso y confinamiento de la ruta para escaneo profundo."""
     if not isinstance(path_obj, Path):
         return False
     try:
         p_res = path_obj.resolve(strict=True)
+        # Se requiere chequeo de seguridad integral antes de cada inmersión recursiva
         if _is_unc_path(str(p_res)) or not p_res.is_dir() or not is_safe_to_modify(p_res) or is_protected_path(p_res):
             return False
         if base_check_path and not _is_path_inside_base(p_res, base_check_path):
@@ -219,7 +208,7 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
 
 
 def _is_valid_traversal_step(entry: os.DirEntry, root_base: str) -> bool:
-    """Verifica si es seguro descender en una subcarpeta (evita seguir symlinks)."""
+    """Valida la seguridad de seguir una subcarpeta y mantiene el contexto confinado."""
     try:
         if not entry.is_dir(follow_symlinks=False) or entry.is_symlink():
             return False
@@ -228,10 +217,7 @@ def _is_valid_traversal_step(entry: os.DirEntry, root_base: str) -> bool:
         return False
 
 def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionChecker, kernel32: Optional[ctypes.WinDLL], memo: Dict[str, int], depth: int) -> int:
-    """
-    Analiza una entrada individual: si es directorio, desciende recursivamente;
-    si es archivo, retorna su tamaño.
-    """
+    """Procesa una entrada individual (archivo o carpeta) durante el escaneo."""
     if depth > MAX_SCAN_DEPTH or _should_skip_entry(entry, kernel32, is_junction_fn):
         return 0
     try:
@@ -254,8 +240,8 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula el tamaño total de un árbol de directorios de forma recursiva.
-    Implementa memoización para evitar re-escaneo de subdirectorios.
+    Calcula el tamaño total sumando recursivamente.
+    Usa un diccionario `memo` para optimizar el escaneo de subárboles ya procesados.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN or _is_unc_path(root_abs) or any(c in root_abs for c in '\0\r\n'):
         return 0
@@ -271,7 +257,7 @@ def _sum_directory_recursive(
         if root_path.is_symlink() or is_junction_fn(str(root_path)):
             return 0
 
-        # Validación estricta de seguridad en cada paso de la recursión
+        # Validación crítica: verificar siempre contra políticas del proyecto (safety.py)
         if not is_safe_to_modify(root_path) or is_protected_path(root_path):
             return 0
             
@@ -286,6 +272,7 @@ def _sum_directory_recursive(
         memo[root_abs] = total
         return total
     except (OSError, PermissionError, RuntimeError, ValueError) as e:
+        # Manejo específico de violaciones de sistema (archivos ocupados)
         if isinstance(e, OSError) and kernel32:
             err = ctypes.get_last_error()
             if err in (ERROR_ACCESS_DENIED, ERROR_SHARING_VIOLATION):
@@ -294,7 +281,7 @@ def _sum_directory_recursive(
 
 
 def directory_size(path: Optional[OSPath]) -> int:
-    """Interfaz pública para obtener el tamaño seguro de un directorio."""
+    """Interfaz pública para consultar el peso en bytes de una ruta de manera segura."""
     if path is None:
         return 0
     try:
@@ -308,9 +295,7 @@ def directory_size(path: Optional[OSPath]) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
-    """
-    Verifica que la carpeta de caché candidato sea un destino válido.
-    """
+    """Valida si una ruta de caché detectada es apta para ser reportada."""
     try:
         if not isinstance(candidate, Path) or not candidate.is_absolute() or not candidate.exists() or not candidate.is_dir():
             return False
@@ -325,12 +310,12 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
 
 
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
-    """Combina base de usuario con ruta relativa de caché validando longitud."""
+    """Resuelve la ruta absoluta de una carpeta de caché a partir de una relativa."""
     if not isinstance(rel_str, str) or any(c in rel_str for c in '\0\r\n'):
         return real_base
     try:
         target = real_base.joinpath(*rel_str.split("\\"))
-        # Validación extra: asegurarse que el join no rompa el contexto base
+        # Verifica que la resolución de la ruta no escape fuera de la base permitida
         if not _is_path_inside_base(target, real_base.parent if len(str(target)) >= MAX_PATH_LEN else real_base):
             return real_base
         return target if len(str(target)) < MAX_PATH_LEN else real_base
@@ -342,9 +327,7 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[BrowserMap] = None
 ) -> List[BrowserCache]:
-    """
-    Escanea las rutas configuradas en busca de cachés de navegadores.
-    """
+    """Escanea los directorios base en busca de cachés configuradas en BROWSER_CACHE_PATHS."""
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
@@ -386,12 +369,12 @@ def detect_profiles(
 
 
 def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
-    """Calcula el tamaño agregado en bytes de una lista de BrowserCache."""
+    """Retorna la suma total de bytes de una lista de objetos BrowserCache."""
     return sum(c.size_bytes for c in caches) if caches else 0
 
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """Prepara reporte textual del escaneo para la interfaz de usuario."""
+    """Genera un resumen formateado para el reporte de interfaz de usuario."""
     current_caches = caches if caches is not None else detect_profiles()
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]
