@@ -344,8 +344,9 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not isinstance(destination, (str, Path)): return None
     try:
         target = Path(destination).resolve()
-        ensure_safe_to_modify(target)
+        if is_protected_path(target): return None
         
+        ensure_safe_to_modify(target)
         parent = target.parent
         ensure_safe_to_modify(parent)
         parent.mkdir(parents=True, exist_ok=True)

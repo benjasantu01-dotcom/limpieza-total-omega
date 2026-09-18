@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 230
@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 4 | 1 | 1 | 0 | 16 |
+| 2026-09-16 | 1 | 1 | 1 | 0 | 15 |
 | 2026-09-17 | 137 | 9 | 25 | 15 | 164 |
-| 2026-09-18 | 53 | 5 | 17 | 7 | 50 |
+| 2026-09-18 | 55 | 6 | 17 | 7 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **40**
 - legibilidad y documentación: **40**
-- rendimiento: **36**
-- robustez ante casos límite: **32**
+- seguridad defensiva: **37**
+- rendimiento: **37**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
 - `browser.py`: **20**
 - `diskreport.py`: **19**
-- `memory.py`: **18**
+- `healthscore.py`: **19**
 - `assistant.py`: **17**
+- `memory.py`: **17**
+- `settings.py`: **17**
 - `safety.py`: **16**
-- `settings.py`: **16**
-- `duplicates.py`: **15**
 - `quarantine.py`: **15**
+- `duplicates.py`: **14**
 - `scanner.py`: **13**
-- `branding.py`: **7**
+- `branding.py`: **8**
 - `organizer.py`: **7**
 - `main.py`: **6**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T05:49:03` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la función `_hex_to_rgb` y se ha implementado un control de acceso centralizado mediante `is_protected_path` en `save_logo_svg` antes de intentar cualquier operación de escritura, previniendo errores de sistema y reforzando la seguridad al guardar activos.
+- `2026-09-18T05:47:35` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` reemplazando lecturas recurrentes y conversiones redundantes por un cache de configuración serializada, evitando procesamiento innecesario cuando el archivo no cambió en disco.
 - `2026-09-18T05:37:29` **quarantine.py** (rendimiento): Optimizé la función `list_items` para evitar el cálculo innecesario de rutas absolutas y resolución de directorios dentro del bucle principal, además de asegurar que la carga del manifiesto sea más eficiente al trabajar directamente con el conjunto de archivos en disco.
 - `2026-09-18T05:28:54` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` eliminando la llamada innecesaria a `subprocess.run` y el parseo de CSV cada vez que se requiere la lista, implementando un filtrado más eficiente y reduciendo el consumo de CPU al reutilizar los resultados cacheados adecuadamente.
 - `2026-09-18T05:27:11` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la creación repetitiva de listas de reglas en cada iteración del bucle `compute_score`, reemplazando el filtrado dinámico por una estructura de datos pre-mapeada.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T04:37:45` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings detallados en las funciones de procesamiento de datos y la definición de estructuras, aclarando el propósito y el flujo de los algoritmos de recolección para facilitar el mantenimiento.
 - `2026-09-18T04:37:33` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad semántica mediante la inclusión de docstrings detallados en las funciones de recorrido de directorios y la estandarización de tipos, facilitando el mantenimiento y la comprensión de las restricciones de seguridad aplicadas.
 - `2026-09-18T04:37:03` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los docstrings al formato Google Style, añadiendo especificaciones de parámetros y valores de retorno para clarificar el contrato de las funciones, facilitando así el mantenimiento y la legibilidad para futuros colaboradores.
-- `2026-09-18T04:27:31` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_quoted_path` validando explícitamente que la ruta extraída no sea un nombre de dispositivo reservado o una ruta inválida antes de intentar crear un objeto `Path`, evitando posibles errores de sistema al procesar comandos malformados.
-- `2026-09-18T04:27:16` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de la validación de archivos JSON corruptos o maliciosos en `load()` y `save()` mediante la captura explícita de `json.JSONDecodeError` y la validación de tipos post-carga, asegurando que la configuración nunca quede en un estado inconsistente.

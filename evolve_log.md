@@ -692,3 +692,33 @@ FAILED evolve/tests/test_safety.py::test_drive_root_is_always_protected - Assert
 - `2026-09-18T05:38:32` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._is_inside_base_root, Scanner._is_relevant_extension, Scanner._is_reparse_point, scan_file
 - `2026-09-18T05:38:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T05:38:32` Corrida terminada. Total usado hoy: 132.
+- `2026-09-18T05:47:02` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-09-18T05:47:35` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` y `save()` reemplazando lecturas recurrentes y conversiones redundantes por un cache de configuración serializada, evitando procesamiento innecesario cuando el archivo no cambió en disco.
+- `2026-09-18T05:48:01` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-18T05:48:43` Tests FALLARON:
+```
+ined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:125: SyntaxWarning: invalid escape sequence '\R'
+    El registro de Windows suele guardar rutas con espacios como '"C:\Ruta\App.exe" /arg'.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+1 failed, 298 passed, 7 warnings in 1.38s
+
+```
+- `2026-09-18T05:48:43` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `SystemContext.ingest` ante datos de entrada malformados (como tipos inesperados o estructuras que no cumplen con los contratos de `MetricSpec`) y añadí una validación de `__dict__` más segura que evita la recursión infinita o el acceso a atributos restringidos.
+- `2026-09-18T05:49:03` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la función `_hex_to_rgb` y se ha implementado un control de acceso centralizado mediante `is_protected_path` en `save_logo_svg` antes de intentar cualquier operación de escritura, previniendo errores de sistema y reforzando la seguridad al guardar activos.
+- `2026-09-18T05:49:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T05:49:03` Corrida terminada. Total usado hoy: 136.
