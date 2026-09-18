@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 76 | 4 | 15 | 6 | 87 |
-| 2026-09-18 | 131 | 8 | 32 | 16 | 129 |
+| 2026-09-17 | 74 | 4 | 14 | 6 | 86 |
+| 2026-09-18 | 135 | 8 | 32 | 16 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
 - seguridad defensiva: **45**
 - robustez ante casos límite: **43**
-- rendimiento: **33**
-- legibilidad y documentación: **32**
+- legibilidad y documentación: **36**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **21**
-- `diskreport.py`: **21**
-- `healthscore.py`: **20**
-- `safety.py`: **19**
-- `quarantine.py`: **18**
+- `browser.py`: **22**
+- `diskreport.py`: **22**
+- `healthscore.py`: **21**
 - `settings.py`: **18**
+- `duplicates.py`: **18**
 - `memory.py`: **18**
+- `safety.py`: **18**
 - `assistant.py`: **17**
-- `duplicates.py`: **17**
+- `quarantine.py`: **17**
 - `scanner.py`: **12**
 - `organizer.py`: **9**
 - `branding.py`: **7**
@@ -46,6 +46,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T13:39:31` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints explícitos en los métodos de `SystemMetrics` y se documentaron las responsabilidades de los componentes del pipeline mediante docstrings más detallados, mejorando la mantenibilidad y claridad del flujo de cálculo.
+- `2026-09-18T13:39:17` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos (como `Sequence` y `Iterable`) y se documentaron las responsabilidades de las funciones internas y el propósito de los filtros de seguridad, mejorando la legibilidad técnica del código sin alterar su lógica.
+- `2026-09-18T13:38:49` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad del módulo `diskreport.py` mediante docstrings más precisos y descriptivos, y se han añadido *type hints* para especificar la estructura interna de los reportes, facilitando el mantenimiento y la comprensión de las transformaciones de datos en las funciones de agregación.
+- `2026-09-18T13:37:19` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de los métodos de escaneo recursivo, clarificando la separación entre la lógica de filtrado de seguridad (mediante `is_safe_to_modify`) y la lógica de navegación del sistema de archivos, facilitando la auditoría de seguridad del código.
 - `2026-09-18T13:28:10` **assistant.py** (legibilidad y documentación): Mejoré la documentación interna agregando docstrings descriptivos a las constantes de seguridad y las estructuras de datos, y refiné los tipos y nombres de argumentos en `SystemContext` para facilitar la auditoría de seguridad del código.
 - `2026-09-18T13:26:55` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_ensure_settings_integrity` implementando validación de tipos estricta y manejo de errores proactivo, asegurando que cualquier entrada de datos inesperada no comprometa la integridad del archivo de configuración.
 - `2026-09-18T13:18:14` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `run_windows_defender_quick_scan` validando que los comandos devuelvan valores esperados antes de procesarlos, evitando errores por salidas nulas o inesperadas que podrían causar excepciones al ser convertidas a cadena.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T12:57:18` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `_collect_summary_data` validando explícitamente el estado de los datos procesados y asegurando que `_collect_summary_data` maneje correctamente casos de `limit=0` para evitar comparaciones innecesarias con heaps vacíos.
 - `2026-09-18T12:56:52` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_path_inside_base` y `_resolve_browser_path` añadiendo validaciones explícitas contra rutas `None` o malformadas, asegurando que cualquier entrada inesperada sea descartada antes de intentar operaciones de resolución de sistema de archivos.
 - `2026-09-18T12:56:24` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `branding.py` mediante una validación estricta de parámetros en `save_logo_svg` y el uso de `try-except` específicos en las funciones de renderizado, evitando así que una entrada malformada o un error numérico inesperado propaguen excepciones hacia la interfaz principal.
-- `2026-09-18T12:49:19` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` para prevenir `KeyErrors` o `AttributeErrors` mediante el uso de `get` encadenado y validación de tipos, evitando que una respuesta inesperada de la API bloquee el flujo del asistente.
-- `2026-09-18T11:25:49` **settings.py** (seguridad defensiva): Se endureció la seguridad de `save()` al reemplazar `ruta.exists()` por una validación que utiliza `ensure_safe_to_modify` para el archivo mismo, previniendo así escrituras sobre enlaces simbólicos o rutas protegidas que podrían ser redirigidas maliciosamente.
-- `2026-09-18T11:25:12` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "longitud de ruta" en `ensure_safe_to_modify` para detectar rutas que superen `MAX_PATH_LENGTH` antes de realizar operaciones de disco, evitando errores de WinAPI en sistemas legacy y mejorando la robustez defensiva.
-- `2026-09-18T11:16:31` **quarantine.py** (seguridad defensiva): He mejorado `_check_isolation_safety` para impedir el movimiento de archivos si el sistema de archivos de destino no soporta las mismas operaciones atómicas o si existen bloqueos implícitos, añadiendo una validación explícita mediante `os.access` en el directorio de cuarentena antes de cualquier operación destructiva sobre el original.

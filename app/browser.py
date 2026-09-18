@@ -218,13 +218,18 @@ def _is_valid_traversal_step(entry: os.DirEntry, root_base: str) -> bool:
         return False
 
 def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionChecker, kernel32: Optional[ctypes.WinDLL], memo: Dict[str, int], depth: int) -> int:
-    """Procesa una entrada individual (archivo o carpeta) durante el escaneo."""
+    """
+    Procesa un nodo del árbol de archivos.
+    Si es subdirectorio, decide si descender tras validar seguridad; si es archivo, acumula tamaño.
+    """
     if depth > MAX_SCAN_DEPTH or _should_skip_entry(entry, kernel32, is_junction_fn):
         return 0
     try:
+        # Intenta profundizar solo si el paso es un directorio válido y confinado
         if _is_valid_traversal_step(entry, root_base):
             return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
         
+        # Acumula solo si es un archivo de caché (no listado en exclusiones)
         if entry.is_file(follow_symlinks=False):
             return int(entry.stat(follow_symlinks=False).st_size)
     except (OSError, PermissionError):

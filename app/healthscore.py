@@ -166,10 +166,14 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None:
+        """Normaliza los valores tras la inicialización del objeto."""
         self.validate()
 
     def validate(self) -> None:
-        """Aplica saneamiento de datos y asegura rangos físicos lógicos (ej: % entre 0-100)."""
+        """
+        Limpia y asegura que los datos de entrada cumplan los rangos físicos.
+        Resetea a estados seguros ante cualquier error de tipo o valor.
+        """
         try:
             self.junk_mb = float(max(0.0, _to_float(self.junk_mb)))
             self.duplicate_mb = float(max(0.0, _to_float(self.duplicate_mb)))
@@ -187,7 +191,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Verifica que todos los campos sean finitos y no nulos."""
+        """Valida que todos los campos del contenedor sean numéricamente utilizables."""
         for field_name in self.__dataclass_fields__:
             val = getattr(self, field_name)
             if val is None or not isinstance(val, (int, float)) or not math.isfinite(float(val)):
