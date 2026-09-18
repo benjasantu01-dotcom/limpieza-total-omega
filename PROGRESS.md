@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 98 | 5 | 17 | 7 | 113 |
-| 2026-09-18 | 117 | 8 | 29 | 16 | 94 |
+| 2026-09-17 | 98 | 5 | 17 | 7 | 109 |
+| 2026-09-18 | 119 | 8 | 30 | 16 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
+- seguridad defensiva: **45**
 - robustez ante casos límite: **43**
-- seguridad defensiva: **43**
 - legibilidad y documentación: **40**
 - rendimiento: **38**
 
@@ -33,9 +33,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **22**
 - `browser.py`: **22**
 - `memory.py`: **19**
+- `safety.py`: **19**
+- `settings.py`: **19**
 - `assistant.py`: **18**
-- `safety.py`: **18**
-- `settings.py`: **18**
 - `quarantine.py`: **18**
 - `duplicates.py`: **17**
 - `scanner.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T11:25:49` **settings.py** (seguridad defensiva): Se endureció la seguridad de `save()` al reemplazar `ruta.exists()` por una validación que utiliza `ensure_safe_to_modify` para el archivo mismo, previniendo así escrituras sobre enlaces simbólicos o rutas protegidas que podrían ser redirigidas maliciosamente.
+- `2026-09-18T11:25:12` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "longitud de ruta" en `ensure_safe_to_modify` para detectar rutas que superen `MAX_PATH_LENGTH` antes de realizar operaciones de disco, evitando errores de WinAPI en sistemas legacy y mejorando la robustez defensiva.
 - `2026-09-18T11:16:31` **quarantine.py** (seguridad defensiva): He mejorado `_check_isolation_safety` para impedir el movimiento de archivos si el sistema de archivos de destino no soporta las mismas operaciones atómicas o si existen bloqueos implícitos, añadiendo una validación explícita mediante `os.access` en el directorio de cuarentena antes de cualquier operación destructiva sobre el original.
 - `2026-09-18T11:15:44` **memory.py** (seguridad defensiva): Mejoré `_get_process_path` para incluir un chequeo de integridad adicional que verifica si el handle del proceso apunta a una ruta real existente y no a un recurso volátil o bloqueado, integrando `is_safe_to_modify` para asegurar que el proceso objetivo reside en una zona permitida antes de cualquier interacción de bajo nivel.
 - `2026-09-18T11:07:13` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del pipeline de cálculo encapsulando la lógica de las reglas dentro de bloques `try-except` más robustos, evitando que errores de ejecución en el motor de recomendaciones (ej. divisiones por cero imprevistas en los `message_factory`) interrumpan el cálculo del puntaje global.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T10:24:28` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previo dentro de `walk_files` para manejar casos donde el directorio base es eliminado o inaccesible durante el proceso de iteración, mejorando la robustez ante condiciones de carrera o cambios externos en el sistema de archivos.
 - `2026-09-18T10:24:02` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_valid_cache_path` y `_resolve_browser_path` para prevenir excepciones ante rutas inexistentes, caracteres inválidos o intentos de inyección de rutas fuera del directorio base, reforzando la seguridad y evitando fallos durante el escaneo.
 - `2026-09-18T10:13:52` **settings.py** (rendimiento): Optimizé `load()` para eliminar lecturas redundantes del sistema de archivos mediante una verificación de `st_mtime` previa a la carga del JSON, reduciendo el I/O en llamadas repetidas al recuperar configuraciones.
-- `2026-09-18T10:04:27` **safety.py** (rendimiento): Se implementó un `lru_cache` adicional en `_is_directory_junction` para reducir las llamadas repetitivas a la WinAPI `GetFileAttributesW` durante el escaneo recursivo, optimizando significativamente el rendimiento en árboles de directorios profundos.
-- `2026-09-18T10:03:47` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total y la validación de integridad en `list_items` y `total_quarantined_bytes` reemplazando llamadas redundantes a `load_manifest` y `iterdir` por un diccionario de búsqueda eficiente (`map`), reduciendo la complejidad algorítmica y el I/O innecesario.

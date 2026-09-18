@@ -1174,3 +1174,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-09-18T11:16:31` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). He mejorado `_check_isolation_safety` para impedir el movimiento de archivos si el sistema de archivos de destino no soporta las mismas operaciones atómicas o si existen bloqueos implícitos, añadiendo una validación explícita mediante `os.access` en el directorio de cuarentena antes de cualquier operación destructiva sobre el original.
 - `2026-09-18T11:16:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T11:16:31` Corrida terminada. Total usado hoy: 264.
+- `2026-09-18T11:24:13` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-09-18T11:24:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-18T11:25:12` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una verificación de "longitud de ruta" en `ensure_safe_to_modify` para detectar rutas que superen `MAX_PATH_LENGTH` antes de realizar operaciones de disco, evitando errores de WinAPI en sistemas legacy y mejorando la robustez defensiva.
+- `2026-09-18T11:25:36` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-18T11:25:49` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se endureció la seguridad de `save()` al reemplazar `ruta.exists()` por una validación que utiliza `ensure_safe_to_modify` para el archivo mismo, previniendo así escrituras sobre enlaces simbólicos o rutas protegidas que podrían ser redirigidas maliciosamente.
+- `2026-09-18T11:25:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T11:25:49` Corrida terminada. Total usado hoy: 268.

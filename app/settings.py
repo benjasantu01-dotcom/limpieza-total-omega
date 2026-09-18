@@ -332,7 +332,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     bak_path = ruta.with_suffix(".bak")
     
     try:
-        if ruta.exists() and (ruta.is_symlink() or not ruta.is_file()): return None
+        if ruta.exists():
+            ensure_safe_to_modify(ruta)
         with open(temp_path, "w", encoding="utf-8") as f:
             f.write(serialized)
             f.flush()
@@ -345,7 +346,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         os.replace(temp_path, ruta)
         _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
         return ruta
-    except (OSError, IOError, PermissionError):
+    except (OSError, IOError, PermissionError, UnsafePathError):
         if temp_path.exists():
             try: os.remove(temp_path)
             except OSError: pass
