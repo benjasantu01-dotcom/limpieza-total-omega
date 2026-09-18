@@ -181,7 +181,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         if p is None: continue
         try:
             path_obj = Path(p).resolve(strict=True)
-            if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
+            if not is_safe_to_modify(path_obj):
                 continue
             st_result = path_obj.stat()
             if _is_valid_candidate(path_obj, st_result):
@@ -211,6 +211,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     def _scan_dir(current_dir: Path) -> None:
         try:
             resolved_dir = current_dir.resolve(strict=True)
+            if not is_safe_to_modify(resolved_dir):
+                return
             dir_str = str(resolved_dir)
             if dir_str in visited_dirs:
                 return
@@ -219,15 +221,17 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(dir_str) as iterator:
                 for entry in iterator:
                     try:
+                        entry_path = Path(entry.path)
+                        if not is_safe_to_modify(entry_path):
+                            continue
                         if entry.is_dir(follow_symlinks=False):
-                            if not is_junction(Path(entry.path)):
-                                _scan_dir(Path(entry.path))
+                            if not is_junction(entry_path):
+                                _scan_dir(entry_path)
                         else:
                             st_result = entry.stat(follow_symlinks=False)
                             if st_result.st_size >= min_size:
-                                path = Path(entry.path)
-                                if _is_valid_candidate(path, st_result):
-                                    size_to_paths_map[st_result.st_size].append(path)
+                                if _is_valid_candidate(entry_path, st_result):
+                                    size_to_paths_map[st_result.st_size].append(entry_path)
                     except (FileNotFoundError, OSError, PermissionError, ValueError):
                         continue
         except (OSError, PermissionError, ValueError):
@@ -302,7 +306,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if not isinstance(p, Path):
             continue
         try:
-            # Validamos con is_safe_to_modify en lugar de exists() para mayor seguridad
             if not is_safe_to_modify(p):
                 continue
             if score := _get_keeper_score(p):

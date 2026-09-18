@@ -140,12 +140,10 @@ _RULES_LIST: Final[Tuple[RecommendationRule, ...]] = (
     RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),
 )
 
-# Mapeo de reglas indexado por área para evitar filtrado en el bucle principal
 _RULES_MAP: Final[Dict[MetricKey, List[RecommendationRule]]] = {}
 for r in _RULES_LIST:
     _RULES_MAP.setdefault(r.area, []).append(r)
 
-# Pipeline pre-compilado para evitar búsquedas dinámicas en el bucle principal
 _PIPELINE: Final[List[PipelineEntry]] = [
     PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), _RULES_MAP.get("seguridad", [])),
     PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), _RULES_MAP.get("disco", [])),
@@ -221,26 +219,20 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """
-    Analiza reglas de diagnóstico para una etapa específica del pipeline.
-    Si una regla se dispara, añade su mensaje de recomendación a la lista 'findings'.
-    """
+    """Analiza reglas y asegura que solo strings imprimibles y truncados lleguen a la UI."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
-                if isinstance(msg, str) and msg.strip().isprintable():
-                    findings.append(msg.strip()[:200])
+                if isinstance(msg, str):
+                    clean_msg = "".join(char for char in msg if char.isprintable()).strip()
+                    if clean_msg:
+                        findings.append(clean_msg[:200])
         except Exception:
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """
-    Orquestador principal del motor analítico:
-    1. Valida los datos de entrada (SystemMetrics).
-    2. Itera sobre el pipeline definido para calcular el score ponderado.
-    3. Acumula recomendaciones basadas en reglas específicas de cada área.
-    """
+    """Orquestador principal: valida métricas, procesa pipeline y blinda resultados."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     

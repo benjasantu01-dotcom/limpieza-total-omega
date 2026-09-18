@@ -257,7 +257,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             size = int(getattr(st, 'st_size', 0))
-                            yield path_obj, max(0, size)
+                            if size >= 0:
+                                yield path_obj, size
                             
                     except (PermissionError, OSError, StopIteration):
                         continue
@@ -324,6 +325,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
+        if size < 0: continue
         total_bytes += size
         total_files += 1
         ext = path.suffix.lower() or "(sin extensión)"
