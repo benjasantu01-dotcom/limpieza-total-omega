@@ -139,26 +139,20 @@ _RULES_LIST: Final[Tuple[RecommendationRule, ...]] = (
     RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),
 )
 
-_RULES_BY_AREA: Final[Dict[MetricKey, List[RecommendationRule]]] = {}
-for r in _RULES_LIST:
-    _RULES_BY_AREA.setdefault(r.area, []).append(r)
-
+# Pipeline pre-compilado para evitar búsquedas dinámicas en el bucle principal
 _PIPELINE: Final[List[PipelineEntry]] = [
-    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), _RULES_BY_AREA.get("seguridad", [])),
-    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), _RULES_BY_AREA.get("disco", [])),
-    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), _RULES_BY_AREA.get("memoria", [])),
-    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), _RULES_BY_AREA.get("basura", [])),
-    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), _RULES_BY_AREA.get("duplicados", [])),
-    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), _RULES_BY_AREA.get("arranque", [])),
+    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), [r for r in _RULES_LIST if r.area == "seguridad"]),
+    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), [r for r in _RULES_LIST if r.area == "disco"]),
+    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), [r for r in _RULES_LIST if r.area == "memoria"]),
+    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), [r for r in _RULES_LIST if r.area == "basura"]),
+    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), [r for r in _RULES_LIST if r.area == "duplicados"]),
+    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), [r for r in _RULES_LIST if r.area == "arranque"]),
 ]
 
 @dataclass
 class SystemMetrics:
     """
     Contenedor inyectable de estado del sistema.
-    
-    Centraliza las métricas recolectadas por módulos externos. La integridad 
-    de los valores es garantizada por el método `validate()` post-instanciación.
     """
     junk_mb: float = 0.0
     suspicious_count: int = 0

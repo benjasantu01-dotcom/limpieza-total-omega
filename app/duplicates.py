@@ -199,13 +199,12 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
     def _scan_dir(current_dir: Path) -> None:
         try:
-            real_dir = current_dir.resolve(strict=True)
-            dir_str = str(real_dir)
-            if dir_str in visited_dirs or is_protected_path(real_dir) or not is_safe_to_modify(real_dir):
+            dir_str = str(current_dir.resolve(strict=True))
+            if dir_str in visited_dirs:
                 return
             visited_dirs.add(dir_str)
             
-            with os.scandir(real_dir) as iterator:
+            with os.scandir(dir_str) as iterator:
                 for entry in iterator:
                     try:
                         if entry.is_dir(follow_symlinks=False):

@@ -1377,3 +1377,10 @@ FAILED evolve/tests/test_modules.py::test_directory_size_adds_up_recursively - T
 - `2026-09-18T00:40:46` 🛑 Propuesta bloqueada por la guardia en branding.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: FontSizesDict, PaletteDict
 - `2026-09-18T00:40:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T00:40:46` Corrida terminada. Total usado hoy: 16.
+- `2026-09-18T00:49:00` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-09-18T00:49:31` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo recursivo de `directory_size` y `detect_profiles` implementando una técnica de "memoización de subárboles" que evita re-escanear y re-calcular el peso de directorios ya procesados, reduciendo significativamente la complejidad en estructuras de archivos anidadas.
+- `2026-09-18T00:49:56` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-18T00:50:21` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` eliminando la llamada repetida y costosa a `is_safe_to_modify(path)` (que implica resolución de rutas) al reutilizar el resultado de `_is_valid_candidate` dentro del flujo de escaneo, reduciendo drásticamente las operaciones I/O innecesarias.
+- `2026-09-18T00:50:32` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del `_PIPELINE` reemplazando los lambdas dinámicos y búsquedas por clave en `_RULES_BY_AREA` por un pre-procesamiento estático durante la definición del pipeline, reduciendo la carga de ejecución en el bucle crítico de `compute_score`.
+- `2026-09-18T00:50:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T00:50:32` Corrida terminada. Total usado hoy: 20.

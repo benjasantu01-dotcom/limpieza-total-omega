@@ -250,11 +250,14 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Motor recursivo para calcular el peso de un árbol de directorios.
+    Motor recursivo para calcular el peso de un árbol de directorios con memoización.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN or _is_unc_path(root_abs) or any(c in root_abs for c in '\0\r\n'):
         return 0
     
+    if root_abs in memo:
+        return memo[root_abs]
+
     try:
         root_path = Path(root_abs).resolve(strict=True)
         if not root_path.is_dir():
@@ -262,9 +265,6 @@ def _sum_directory_recursive(
         
         if root_path.is_symlink() or is_junction_fn(str(root_path)):
             return 0
-
-        if root_abs in memo:
-            return memo[root_abs]
 
         if not is_safe_to_modify(root_path) or is_protected_path(root_path):
             return 0
