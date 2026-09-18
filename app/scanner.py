@@ -29,7 +29,7 @@ class Suspicion:
     Representa un hallazgo sospechoso detectado durante el escaneo.
 
     Attributes:
-        path: Ruta completa del archivo analizado.
+        path: Objeto Path con la ruta completa del archivo analizado.
         reason: Descripción breve del motivo de sospecha.
         severity: Nivel de criticidad ('info', 'warning', 'critical').
     """
@@ -38,8 +38,8 @@ class Suspicion:
     severity: str
 
 # Alias para funciones de chequeo heurístico.
-# La firma espera la ruta, un objeto DirEntry opcional (disponible durante el escaneo de directorios)
-# y el timestamp actual de la corrida para mediciones de antigüedad.
+# Recibe: Path del archivo, objeto DirEntry opcional (contexto), y timestamp actual.
+# Retorna: Objeto Suspicion si se detecta riesgo, None en caso contrario.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 
 # Lista acumulativa de hallazgos durante el proceso de escaneo.
@@ -49,9 +49,7 @@ ScanResult: TypeAlias = List[Suspicion]
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
 RTL_CHAR_RE: Final[re.Pattern] = re.compile(r"[\u200f\u202e\u202d]")
 RESERVED_NAMES_RE: Final[re.Pattern] = re.compile(r"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$", re.IGNORECASE)
-# Validación de nombres de archivos terminados en espacios o puntos (vulnerabilidad de Windows)
 INVALID_TRAILING_CHARS_RE: Final[re.Pattern] = re.compile(r"[\. ]$")
-# Detección de rutas UNC (Universal Naming Convention)
 UNC_PATH_RE: Final[re.Pattern] = re.compile(r"^\\\\[^\\\\]+\\")
 
 # Conjuntos de constantes para comparación rápida
@@ -65,7 +63,6 @@ WATCHED_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp", "deskto
 SYSTEM32_LOWER: Final[str] = "system32"
 RECENT_FILE_THRESHOLD_HOURS: Final[int] = 24
 MAX_PATH_LENGTH: Final[int] = 260
-# Constante de Windows para FILE_ATTRIBUTE_REPARSE_POINT (0x400)
 WIN_FILE_ATTR_REPARSE_POINT: Final[int] = 0x400
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:

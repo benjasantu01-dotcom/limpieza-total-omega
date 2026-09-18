@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 221
+- Rechazadas por guardia de seguridad: 44
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 115 | 7 | 19 | 7 | 136 |
-| 2026-09-18 | 95 | 7 | 23 | 10 | 85 |
+| 2026-09-17 | 113 | 7 | 19 | 7 | 134 |
+| 2026-09-18 | 96 | 7 | 25 | 11 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **48**
-- robustez ante casos límite: **43**
-- legibilidad y documentación: **39**
+- robustez ante casos límite: **41**
+- legibilidad y documentación: **40**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **22**
-- `healthscore.py`: **21**
+- `browser.py`: **21**
 - `diskreport.py`: **21**
+- `healthscore.py`: **20**
 - `memory.py`: **19**
 - `quarantine.py`: **17**
 - `settings.py`: **17**
 - `assistant.py`: **17**
 - `duplicates.py`: **17**
 - `safety.py`: **17**
-- `scanner.py`: **12**
+- `scanner.py`: **13**
 - `organizer.py`: **9**
 - `branding.py`: **8**
 - `main.py`: **7**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T09:33:27` **scanner.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints faltantes, la estandarización de docstrings siguiendo las mejores prácticas y la clarificación de la intención en métodos complejos, garantizando que la documentación sea técnica y precisa.
 - `2026-09-18T09:22:46` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `quarantine.py` mediante la adición de Type Hints en parámetros faltantes, la estandarización de docstrings siguiendo el estilo Google/NumPy para mejorar la legibilidad y la clarificación de las responsabilidades en las funciones de bajo nivel que manejan la integridad del sandbox.
 - `2026-09-18T09:22:05` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave y se ha optimizado la legibilidad lógica de `_is_safe_for_disk_op` para prevenir errores de mantenimiento al evaluar condiciones complejas.
 - `2026-09-18T09:21:37` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código mediante la adición de docstrings técnicos (explicando los contratos de las funciones de bajo nivel), la corrección de type hints en `MEMORYSTATUSEX` para evitar errores de alineación en arquitecturas de 64 bits, y la normalización de la validación de rutas mediante una constante de máscara más explícita.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T08:41:29` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_target_choice_changed` encapsulando la validación de la entrada en un bloque `try-except` más específico y añadiendo un chequeo explícito de existencia mediante `path.exists()` antes de proceder, evitando así excepciones innecesarias en el log cuando el usuario interactúa con rutas inexistentes o inválidas.
 - `2026-09-18T08:31:44` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.is_finite` y `compute_score` implementando una validación explícita de `None` y valores extremos para evitar errores en tiempo de ejecución al procesar datos inyectados, alineándome con el enfoque de manejo de errores defensivo.
 - `2026-09-18T08:31:31` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez ante errores de entrada y condiciones de carrera en `_decide_hash_strategy_and_process` mediante la adición de validaciones de integridad en los parámetros y resultados intermedios.
-- `2026-09-18T08:31:02` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_collect_summary_data` y `largest_folders` añadiendo chequeos de integridad frente a `path.suffix` vacíos o fallos en el cálculo de rutas relativas, previniendo errores de ejecución durante el escaneo de volúmenes con archivos sin extensión o estructuras de directorios profundas.
