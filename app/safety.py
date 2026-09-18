@@ -277,11 +277,12 @@ def _is_volume_readonly(path_str: str) -> bool:
         return False
     return False
 
-def _is_directory_junction(path: Path) -> bool:
+@lru_cache(maxsize=2048)
+def _is_directory_junction(path_str: str) -> bool:
     """Verifica si el path es un directorio con el flag de reparse point activo."""
     if os.name != 'nt': return False
     try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(str(path)))
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == 0xFFFFFFFF: return False
         return bool(attrs & FILE_ATTRIBUTE_DIRECTORY and attrs & FILE_ATTRIBUTE_REPARSE_POINT)
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError): return False
@@ -343,7 +344,7 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     if current_stat.st_dev != initial_stat.st_dev or current_stat.st_ino != initial_stat.st_ino:
         raise UnsafePathError(f"Consistencia fallida: {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
     
-    if _is_directory_junction(path):
+    if _is_directory_junction(str(path)):
         raise UnsafePathError(f"Junction detectada: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
     for rule in _VALIDATORS:

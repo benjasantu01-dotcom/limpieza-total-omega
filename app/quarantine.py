@@ -641,16 +641,16 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
+        # Usamos un conjunto de nombres de archivos presentes para evitar llamadas iterativas pesadas
         try:
-            existing_names = {f.name for f in base_path.iterdir() if f.is_file()}
+            existing = {f.name for f in base_path.iterdir() if f.is_file()}
         except OSError:
-            existing_names = set()
+            existing = set()
         
         valid_items = []
         for i in items:
-            if i.stored_name in existing_names:
-                p = base_path / i.stored_name
-                if i._validate_integrity(p):
+            if i.stored_name in existing:
+                if i._validate_integrity(base_path / i.stored_name):
                     valid_items.append(i)
             
         if len(valid_items) != len(items):
@@ -791,6 +791,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
 
 def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     """Calcula el uso total de espacio ocupado por ítems en cuarentena."""
+    # Lista pre-cargada desde manifest para evitar I/O redundante en loops
     return sum(item.size_bytes for item in load_manifest(base))
 
 
