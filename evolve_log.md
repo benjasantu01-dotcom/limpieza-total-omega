@@ -653,3 +653,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-18T05:18:10` 🛑 Propuesta bloqueada por la guardia en duplicates.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: group_by_size
 - `2026-09-18T05:18:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T05:18:10` Corrida terminada. Total usado hoy: 124.
+- `2026-09-18T05:26:42` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-09-18T05:27:11` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score evitando la creación repetitiva de listas de reglas en cada iteración del bucle `compute_score`, reemplazando el filtrado dinámico por una estructura de datos pre-mapeada.
+- `2026-09-18T05:28:26` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimicé el sistema de caché implementando una invalidación granular y selectiva basada en claves, evitando el borrado masivo innecesario y reduciendo la carga de CPU al consolidar actualizaciones de UI mediante `debounce` en procesos de redibujo.
+- `2026-09-18T05:28:54` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` eliminando la llamada innecesaria a `subprocess.run` y el parseo de CSV cada vez que se requiere la lista, implementando un filtrado más eficiente y reduciendo el consumo de CPU al reutilizar los resultados cacheados adecuadamente.
+- `2026-09-18T05:29:05` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-18T05:29:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T05:29:05` Corrida terminada. Total usado hoy: 128.

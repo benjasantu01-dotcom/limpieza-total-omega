@@ -298,7 +298,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     try:
         proc = subprocess.run(PS_QUERY_CMD, capture_output=True, text=True, timeout=3, check=False)
         if proc.returncode == 0 and proc.stdout:
-            _proc_cache_data = parse_windows_process_csv(proc.stdout, limit=limit)
+            _proc_cache_data = parse_windows_process_csv(proc.stdout, limit=50)
             _proc_cache_time = time.time()
         else:
             _proc_cache_data = []
