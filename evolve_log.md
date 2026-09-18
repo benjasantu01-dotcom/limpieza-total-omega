@@ -1087,3 +1087,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-18T10:04:27` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un `lru_cache` adicional en `_is_directory_junction` para reducir las llamadas repetitivas a la WinAPI `GetFileAttributesW` durante el escaneo recursivo, optimizando significativamente el rendimiento en árboles de directorios profundos.
 - `2026-09-18T10:04:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T10:04:27` Corrida terminada. Total usado hoy: 236.
+- `2026-09-18T10:12:47` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-09-18T10:13:18` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-09-18T10:13:52` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `load()` para eliminar lecturas redundantes del sistema de archivos mediante una verificación de `st_mtime` previa a la carga del JSON, reduciendo el I/O en llamadas repetidas al recuperar configuraciones.
+- `2026-09-18T10:14:18` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-18T10:14:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-18T10:14:48` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: SystemContext.get_metric
+- `2026-09-18T10:14:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T10:14:48` Corrida terminada. Total usado hoy: 240.

@@ -291,7 +291,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         if not r.exists(): continue
         try:
             stats = r.stat()
-            if r == ruta and (cached := _CACHE.get(ruta)) and cached[0] == stats.st_mtime:
+            cached = _CACHE.get(r)
+            if cached and cached[0] == stats.st_mtime:
                 return cached[1].copy()
             if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
                 continue
@@ -299,7 +300,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 raw = json.load(f)
                 if not _is_dict(raw): continue
                 final_data = _ensure_settings_integrity(validate(raw))
-            _CACHE[ruta] = (ruta.stat().st_mtime, final_data)
+            _CACHE[r] = (stats.st_mtime, final_data)
             return final_data.copy()
         except (OSError, PermissionError, ValueError, json.JSONDecodeError):
             continue
