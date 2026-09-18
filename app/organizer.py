@@ -155,7 +155,11 @@ def _has_forbidden_chars(path: Path) -> bool:
     return any(c in path_str for c in ["<", ">", "|", "\0"])
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
-    """Realiza una auditoría de seguridad previa al movimiento de archivos."""
+    """
+    Realiza una auditoría de seguridad previa al movimiento.
+    Verifica que las rutas no sean UNC (inestables), no excedan MAX_PATH 
+    (260 chars) y que ni origen ni destino estén protegidos por política de app.
+    """
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > 260 or len(str(dest)) > 260: return False
     try:
@@ -164,7 +168,11 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
         return False
 
 def _validate_file_attributes(src: Path) -> bool:
-    """Verifica si el archivo es apto para procesar: existe, no es vacío y no está bloqueado."""
+    """
+    Verifica si el archivo es apto para procesar:
+    Valida existencia, que no sea junction, tamaño acotado (100GB) para 
+    evitar bloqueos de IO, atributos de sistema y accesibilidad de lectura.
+    """
     try:
         st = src.stat()
         if not src.is_file() or _is_junction(src) or st.st_size == 0 or st.st_size > 100_000_000_000: return False
@@ -173,9 +181,11 @@ def _validate_file_attributes(src: Path) -> bool:
         return False
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """Validador booleano centralizado para operaciones de lectura/escritura en disco.
-    
-    Verifica seguridad de rutas, permisos, ausencia de recursión y atributos del archivo.
+    """
+    Validador booleano centralizado para operaciones de lectura/escritura.
+    Garantiza integridad cruzada: valida que el origen no sea relativo al 
+    destino (evita recursión) y que ambos residan en la misma unidad física 
+    para operaciones de 'move' atómicas.
     """
     if not _validate_path_security(src, dest): 
         return False
@@ -184,7 +194,6 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         
     try:
         s_res = src.resolve()
-        # Determinar directorio contenedor real para validación de permisos
         parent = dest.parent if not dest.exists() else dest.resolve()
         
         if not s_res.exists() or _is_recursive_violation(s_res, dest): 
@@ -201,7 +210,11 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     return junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
-    """Filtra directorios durante el escaneo recursivo, evitando rutas protegidas."""
+    """
+    Filtra directorios durante el escaneo recursivo. 
+    Utiliza un caché de rutas protegidas para minimizar las llamadas a 
+    la función pesada 'is_protected_path' y evita seguir puntos de reparse.
+    """
     if not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if entry.path in protected_cache: return False
     if is_protected_path(Path(entry.path)):
@@ -220,7 +233,10 @@ def _is_valid_junk_file(entry: os.DirEntry) -> bool:
         return False
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str]) -> None:
-    """Realiza un recorrido recursivo limitado (hasta 50 niveles) para detección de archivos basura."""
+    """
+    Realiza un recorrido recursivo con limitación de profundidad (50 niveles) 
+    para prevenir desbordamiento de pila en estructuras de archivos profundas.
+    """
     if depth > 50: return
     try:
         with os.scandir(current_dir) as it:
