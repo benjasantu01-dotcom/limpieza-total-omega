@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **206** (40.9% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 71 | 4 | 13 | 6 | 86 |
-| 2026-09-18 | 137 | 8 | 32 | 17 | 130 |
+| 2026-09-17 | 68 | 4 | 13 | 6 | 85 |
+| 2026-09-18 | 138 | 8 | 35 | 17 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
 - seguridad defensiva: **45**
-- robustez ante casos límite: **42**
-- legibilidad y documentación: **38**
+- robustez ante casos límite: **39**
+- legibilidad y documentación: **39**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **22**
-- `diskreport.py`: **22**
 - `healthscore.py`: **21**
+- `browser.py`: **21**
+- `diskreport.py`: **21**
 - `memory.py`: **19**
-- `duplicates.py`: **18**
-- `safety.py`: **18**
+- `safety.py`: **19**
 - `settings.py`: **17**
+- `duplicates.py`: **17**
 - `quarantine.py`: **17**
 - `assistant.py`: **16**
 - `scanner.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T13:58:44` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna del módulo `safety.py` mediante la adición de docstrings técnicos detallados en las funciones de validación, explicando el "porqué" de las verificaciones de bajo nivel (WinAPI) para facilitar su mantenimiento y auditoría por parte del dueño del proyecto.
 - `2026-09-18T13:53:10` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings detallados en las funciones críticas de validación y escaneo, explicando el "porqué" de las restricciones de seguridad para mejorar la mantenibilidad y claridad del código.
 - `2026-09-18T13:52:37` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en las funciones de bajo nivel y completando las docstrings de `MEMORYSTATUSEX` y los métodos de `MemorySnapshot` para cumplir con los estándares de rigor técnico exigidos.
 - `2026-09-18T13:39:31` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints explícitos en los métodos de `SystemMetrics` y se documentaron las responsabilidades de los componentes del pipeline mediante docstrings más detallados, mejorando la mantenibilidad y claridad del flujo de cálculo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T13:10:42` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_process_entry` y `trim_working_set` implementando validaciones de entrada más estrictas y manejando explícitamente posibles errores en la conversión de tipos, siguiendo el enfoque de validación defensiva para evitar excepciones no controladas durante el procesamiento de datos.
 - `2026-09-18T13:06:33` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` implementando chequeos defensivos contra valores numéricos no finitos o nulos que podrían derivar de un estado inconsistente de `SystemMetrics`, asegurando que el pipeline siempre devuelva un resultado seguro.
 - `2026-09-18T12:57:28` **duplicates.py** (manejo de errores y validación de entradas): Reforcé la robustez de `hash_file` y `partial_hash` añadiendo un manejo de excepciones más granular y validaciones preventivas sobre los parámetros de entrada para evitar operaciones sobre archivos que no existen o cuya lectura es imposible antes de intentar el proceso de hash.
-- `2026-09-18T12:57:18` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `_collect_summary_data` validando explícitamente el estado de los datos procesados y asegurando que `_collect_summary_data` maneje correctamente casos de `limit=0` para evitar comparaciones innecesarias con heaps vacíos.
