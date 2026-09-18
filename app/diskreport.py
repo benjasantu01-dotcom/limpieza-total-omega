@@ -229,6 +229,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
+        # Verificar si la ruta sigue existiendo antes de intentar abrirla
+        if not os.path.exists(current_dir):
+            continue
+            
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:

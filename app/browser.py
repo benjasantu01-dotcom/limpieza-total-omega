@@ -283,6 +283,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
         if not isinstance(candidate, Path) or not candidate.is_absolute() or not candidate.exists() or not candidate.is_dir():
             return False
         real_candidate = candidate.resolve(strict=True)
+        # Previene escapes mediante UNC o rutas externas y valida permisos de seguridad
         if _is_unc_path(str(real_candidate)) or not _is_path_inside_base(real_candidate, base_path):
             return False
         if not is_safe_to_modify(real_candidate) or is_protected_path(real_candidate):
@@ -297,6 +298,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     if not isinstance(rel_str, str) or any(c in rel_str for c in '\0\r\n'):
         return real_base
     try:
+        # Validación de caracteres inválidos en componentes de ruta
         target = real_base.joinpath(*rel_str.split("\\"))
         return target if len(str(target)) < MAX_PATH_LEN else real_base
     except (TypeError, ValueError, OSError):
