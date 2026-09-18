@@ -1423,3 +1423,13 @@ FAILED evolve/tests/test_modules.py::test_directory_size_adds_up_recursively - T
 - `2026-09-18T01:41:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-18T01:41:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T01:41:33` Corrida terminada. Total usado hoy: 40.
+- `2026-09-18T01:50:40` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-09-18T01:51:21` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha implementado una protección proactiva contra el manejo de archivos en dispositivos de solo lectura de bajo nivel (como medios ópticos o volúmenes montados como read-only) dentro de `_validate_boundary_conditions` para evitar excepciones de E/S impredecibles durante operaciones de escritura.
+- `2026-09-18T01:52:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-18T01:53:06` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-18T01:53:27` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-18T01:54:10` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-18T01:54:41` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante casos límite en la carga de archivos, añadiendo un chequeo explícito de integridad estructural durante la deserialización y evitando que errores de permiso en `ruta.stat()` durante la verificación de caché invaliden erróneamente la configuración, además de asegurar que la serialización final sea siempre un diccionario consistente mediante `_ensure_settings_integrity`.
+- `2026-09-18T01:55:30` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-18T01:55:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T01:55:30` Corrida terminada. Total usado hoy: 44.
