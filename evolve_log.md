@@ -1126,3 +1126,44 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-18T10:55:42` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-09-18T10:55:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T10:55:42` Corrida terminada. Total usado hoy: 256.
+- `2026-09-18T11:03:53` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-09-18T11:04:21` Tests FALLARON:
+```
+(parents=True)
+        (cache / "dato.bin").write_bytes(b"a" * 500)
+    
+        encontrados = browser.detect_profiles(
+            bases=[tmp_path],
+            cache_paths={"Navegador Falso": r"Navegador\Default\Cache"},
+        )
+>       assert len(encontrados) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:739: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:125: SyntaxWarning: invalid escape sequence '\R'
+    El registro de Windows suele guardar rutas con espacios como '"C:\Ruta\App.exe" /arg'.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+1 failed, 298 passed, 7 warnings in 1.15s
+
+```
+- `2026-09-18T11:04:21` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_is_valid_cache_path` y `_resolve_browser_path` para evitar validaciones "post-facto", asegurando mediante normalización de rutas y validación de prefijos que el escáner nunca escape del directorio base, mitigando ataques de escalada de rutas (path traversal) incluso antes de intentar resolver el sistema de archivos.
+- `2026-09-18T11:04:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-18T11:05:22` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_validate_root` y `drive_usage` utilizando `resolve(strict=True)` para asegurar que las rutas operadas son reales y accesibles antes de intentar cualquier acceso a disco, reduciendo ventanas de carrera y mejorando la consistencia con las reglas de seguridad.
+- `2026-09-18T11:06:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-18T11:06:59` ➖ Sin cambios en duplicates.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la robustez defensiva en la función `_scan_dir` mediante el uso de `os.scandir` de forma que las excepciones al acceder a metadatos individuales no detengan la iteración completa, asegurando que el escaneo sea resiliente ante archivos bloqueados o con permisos denegados.
+- `2026-09-18T11:07:13` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad del pipeline de cálculo encapsulando la lógica de las reglas dentro de bloques `try-except` más robustos, evitando que errores de ejecución en el motor de recomendaciones (ej. divisiones por cero imprevistas en los `message_factory`) interrumpan el cálculo del puntaje global.
+- `2026-09-18T11:07:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T11:07:13` Corrida terminada. Total usado hoy: 260.

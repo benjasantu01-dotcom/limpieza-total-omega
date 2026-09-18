@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 46
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 214
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 98 | 5 | 17 | 7 | 121 |
-| 2026-09-18 | 113 | 7 | 29 | 14 | 93 |
+| 2026-09-17 | 98 | 5 | 17 | 7 | 117 |
+| 2026-09-18 | 115 | 8 | 29 | 15 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - robustez ante casos límite: **43**
+- seguridad defensiva: **41**
 - legibilidad y documentación: **40**
-- seguridad defensiva: **39**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **23**
+- `healthscore.py`: **22**
 - `browser.py`: **22**
-- `healthscore.py`: **21**
 - `assistant.py`: **18**
 - `memory.py`: **18**
 - `safety.py`: **18**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T11:07:13` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del pipeline de cálculo encapsulando la lógica de las reglas dentro de bloques `try-except` más robustos, evitando que errores de ejecución en el motor de recomendaciones (ej. divisiones por cero imprevistas en los `message_factory`) interrumpan el cálculo del puntaje global.
+- `2026-09-18T11:05:22` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_validate_root` y `drive_usage` utilizando `resolve(strict=True)` para asegurar que las rutas operadas son reales y accesibles antes de intentar cualquier acceso a disco, reduciendo ventanas de carrera y mejorando la consistencia con las reglas de seguridad.
 - `2026-09-18T10:55:23` **assistant.py** (seguridad defensiva): Se endureció la seguridad de `_is_safe_text_structure` añadiendo el chequeo de rutas UNC (formatos `\\servidor\recurso`) y bloqueando explícitamente caracteres de control adicionales que podrían ser usados para manipular la interpretación del prompt en la API de Gemini.
 - `2026-09-18T10:54:13` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` implementando una estrategia de "escritura atómica" más segura mediante `os.replace` (que es atómico en sistemas POSIX y Windows) y añadiendo una validación explícita de `ruta.parent` antes de intentar operaciones de archivo para evitar excepciones inesperadas en casos límite de permisos o rutas inexistentes.
 - `2026-09-18T10:47:49` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de redundancia para evitar errores de tipo `OSError` cuando se intenta realizar `stat()` sobre rutas que pueden haber cambiado su estado entre `exists()` y la lectura, mejorando la robustez ante condiciones de carrera (Race Conditions) y archivos eliminados durante el escaneo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T10:03:47` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total y la validación de integridad en `list_items` y `total_quarantined_bytes` reemplazando llamadas redundantes a `load_manifest` y `iterdir` por un diccionario de búsqueda eficiente (`map`), reduciendo la complejidad algorítmica y el I/O innecesario.
 - `2026-09-18T09:56:20` **memory.py** (rendimiento): Optimicé el rendimiento de `read_snapshot` y `top_memory_processes` reemplazando la lógica de comparación de marcas de tiempo manual por `functools.lru_cache` (en `read_snapshot`) y un mecanismo de `expiration` simplificado en los procesos, evitando syscalls y subprocesos costosos innecesarios.
 - `2026-09-18T09:52:44` **healthscore.py** (rendimiento): Optimicé el cálculo del `HealthResult` reemplazando la construcción dinámica de strings y accesos repetitivos a campos por una estructura de datos precalculada, reduciendo la carga de CPU y memoria en cada iteración del pipeline.
-- `2026-09-18T09:52:14` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` mediante el reemplazo de `entry.stat()` (llamada costosa por archivo) por la recolección de atributos `st_size` directamente desde los datos disponibles en `os.DirEntry` (`entry.stat().st_size` es redundante si `entry.stat` no es necesario para otra cosa antes del filtrado inicial), y evité llamadas a `stat()` innecesarias para archivos que ya sabemos que no cumplen con `min_size` gracias a `entry.stat().st_size` disponible en el objeto del iterador.
-- `2026-09-18T09:43:26` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando llamadas redundantes a `Path.resolve()` y `Path.relative_to()` —que realizan acceso a disco innecesario para normalizar rutas ya procesadas— por el uso directo de los atributos nativos de `os.DirEntry` (`path` y `stat`), evitando el impacto en performance que conlleva instanciar múltiples objetos `Path` en recorridos de árboles extensos.

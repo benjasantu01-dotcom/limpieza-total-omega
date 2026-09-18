@@ -234,6 +234,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                     if clean_msg:
                         findings.append(clean_msg[:200])
         except Exception:
+            # Captura cualquier error en las factorías de mensajes para evitar abortar el reporte.
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
