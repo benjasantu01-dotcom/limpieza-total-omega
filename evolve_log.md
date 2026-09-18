@@ -402,3 +402,42 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-09-18T14:21:33` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards
 - `2026-09-18T14:21:33` Rotación — log: 1064 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T14:21:33` Corrida terminada. Total usado hoy: 336.
+- `2026-09-18T14:28:08` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-18T14:28:39` Tests FALLARON:
+```
+sts/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:417: SyntaxWarning: invalid escape sequence '\)'
+    """Determina si una ruta apunta a la raíz de un dispositivo de almacenamiento (ej C:\)."""
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:125: SyntaxWarning: invalid escape sequence '\R'
+    El registro de Windows suele guardar rutas con espacios como '"C:\Ruta\App.exe" /arg'.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert ['chico', 'grande', 'medio'] == ['grande', 'medio', 'chico']
+  
+  At index 0 diff: 'chico' != 'grande'
+  
+  Full diff:
+    [
+  +     'chico',
+        'grande',
+        'medio',
+  -     'chico',
+    ]
+1 failed, 298 passed, 15 warnings in 1.19s
+
+```
+- `2026-09-18T14:28:39` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `top_memory_processes` eliminando la creación repetida de la lista de resultados y el overhead de serialización al usar un filtro eficiente dentro de PowerShell, reduciendo drásticamente la carga de CPU y memoria en cada escaneo.
+- `2026-09-18T14:29:13` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-18T14:29:56` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó la carga y el procesamiento del manifiesto en `list_items` y `purge_all` transformando búsquedas lineales `O(n)` en búsquedas constantes `O(1)` mediante la utilización de diccionarios (`dict`), reduciendo drásticamente el tiempo de ejecución en escenarios con muchos archivos en cuarentena.
+- `2026-09-18T14:30:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-09-18T14:30:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T14:30:01` Corrida terminada. Total usado hoy: 340.

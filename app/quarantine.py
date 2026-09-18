@@ -640,11 +640,7 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
         except OSError:
             existing = set()
         
-        valid_items = []
-        for i in items:
-            if i.stored_name in existing:
-                if i._validate_integrity(base_path / i.stored_name):
-                    valid_items.append(i)
+        valid_items = [i for i in items if i.stored_name in existing and i._validate_integrity(base_path / i.stored_name)]
             
         if len(valid_items) != len(items):
             save_manifest(valid_items, base)

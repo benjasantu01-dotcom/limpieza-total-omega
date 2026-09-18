@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Mejoras aceptadas: **206** (40.9% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 24
 - Sin respuesta de la IA (error o límite): 212
 
@@ -16,16 +16,16 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 64 | 4 | 12 | 6 | 82 |
-| 2026-09-18 | 143 | 8 | 37 | 18 | 130 |
+| 2026-09-17 | 62 | 3 | 12 | 6 | 81 |
+| 2026-09-18 | 144 | 9 | 38 | 18 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
-- seguridad defensiva: **45**
+- seguridad defensiva: **44**
 - legibilidad y documentación: **39**
-- robustez ante casos límite: **35**
-- rendimiento: **34**
+- rendimiento: **35**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,19 +33,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **21**
 - `healthscore.py`: **21**
 - `duplicates.py`: **18**
+- `quarantine.py`: **18**
 - `safety.py`: **18**
 - `memory.py`: **18**
-- `settings.py`: **17**
-- `quarantine.py`: **17**
 - `assistant.py`: **17**
+- `settings.py`: **16**
 - `organizer.py`: **10**
 - `scanner.py`: **10**
-- `branding.py`: **8**
+- `branding.py`: **7**
 - `main.py`: **5**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T14:29:56` **quarantine.py** (rendimiento): Se optimizó la carga y el procesamiento del manifiesto en `list_items` y `purge_all` transformando búsquedas lineales `O(n)` en búsquedas constantes `O(1)` mediante la utilización de diccionarios (`dict`), reduciendo drásticamente el tiempo de ejecución en escenarios con muchos archivos en cuarentena.
 - `2026-09-18T14:19:35` **healthscore.py** (rendimiento): Optimicé el cálculo del pipeline reemplazando el filtrado dinámico mediante list comprehension dentro del bucle principal por un diccionario de reglas pre-mapeado, evitando recorridos innecesarios de `_RULES_LIST` en cada iteración de `compute_score`.
 - `2026-09-18T14:19:00` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` utilizando `os.scandir` para obtener el tamaño (`st_size`) directamente del objeto `DirEntry` durante la iteración, evitando así miles de llamadas innecesarias al sistema de archivos (`os.stat`) que degradaban el rendimiento en discos mecánicos o directorios extensos.
 - `2026-09-18T14:18:31` **diskreport.py** (rendimiento): Optimizé `walk_files` y `_collect_summary_data` reemplazando los chequeos recursivos de `is_protected_path` por un filtro inicial mediante `os.scandir` y `Path.parts` para reducir drásticamente las llamadas al sistema y el uso de CPU durante el escaneo de directorios.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T13:37:19` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de los métodos de escaneo recursivo, clarificando la separación entre la lógica de filtrado de seguridad (mediante `is_safe_to_modify`) y la lógica de navegación del sistema de archivos, facilitando la auditoría de seguridad del código.
 - `2026-09-18T13:28:10` **assistant.py** (legibilidad y documentación): Mejoré la documentación interna agregando docstrings descriptivos a las constantes de seguridad y las estructuras de datos, y refiné los tipos y nombres de argumentos en `SystemContext` para facilitar la auditoría de seguridad del código.
 - `2026-09-18T13:26:55` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_ensure_settings_integrity` implementando validación de tipos estricta y manejo de errores proactivo, asegurando que cualquier entrada de datos inesperada no comprometa la integridad del archivo de configuración.
-- `2026-09-18T13:18:14` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `run_windows_defender_quick_scan` validando que los comandos devuelvan valores esperados antes de procesarlos, evitando errores por salidas nulas o inesperadas que podrían causar excepciones al ser convertidas a cadena.
