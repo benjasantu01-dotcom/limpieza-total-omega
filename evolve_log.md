@@ -581,3 +581,33 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-18T04:07:29` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Se reforzó la robustez y seguridad en la recuperación de datos desde widgets de entrada en `main.py`, centralizando la sanitización mediante `_safe_get_entry_value` y aplicando validaciones de tipo/contenido más estrictas para evitar comportamientos inesperados o inyecciones de datos corruptos antes de procesar configuraciones o rutas.
 - `2026-09-18T04:07:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-18T04:07:29` Corrida terminada. Total usado hoy: 96.
+- `2026-09-18T04:15:26` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-09-18T04:16:28` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-18T04:17:22` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-18T04:18:28` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-18T04:19:10` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_linux_meminfo` mediante la centralización de la lógica de limpieza de valores y la validación estricta de las métricas clave, asegurando que la función no retorne estados inconsistentes ante entradas malformadas.
+- `2026-09-18T04:19:37` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` al asegurar que las validaciones de seguridad se apliquen sobre rutas resueltas y verificadas, evitando errores silenciosos ante accesos a disco fallidos.
+- `2026-09-18T04:20:37` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-18T04:21:41` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-18T04:22:52` Tests FALLARON:
+```
+a\App.exe" /arg'.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - RuntimeError: Error durante aislamiento: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - RuntimeError: Error durante aislamiento: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - RuntimeError: Error durante aislamiento: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: [Errno 9] Bad file descriptor
+8 failed, 291 passed, 7 warnings in 2.04s
+
+```
+- `2026-09-18T04:22:52` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de las operaciones de E/S en `quarantine.py` mediante la implementación de bloques `try-finally` para asegurar el cierre de descriptores de archivos incluso ante excepciones inesperadas, mitigando el riesgo de fugas de recursos o bloqueos persistentes en el sistema.
+- `2026-09-18T04:23:52` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-18T04:24:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-18T04:24:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-18T04:24:18` Corrida terminada. Total usado hoy: 100.

@@ -153,6 +153,7 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
 def _kb_to_bytes(kb_str: str) -> BytesValue:
     """Convierte una cadena de texto representando KB a bytes."""
     if not isinstance(kb_str, str): return BytesValue(0)
+    # Extrae solo números de la cadena (ej: ' 12345 kB' -> 12345)
     val_str = "".join(c for c in kb_str if c.isdigit())
     if not val_str: return BytesValue(0)
     try:
@@ -172,17 +173,13 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         return _EMPTY_SNAPSHOT
     
     metrics: Dict[str, BytesValue] = {}
-    
     for line in meminfo_text.splitlines():
         if ":" not in line: 
             continue
-        try:
-            parts = line.split(":", 1)
-            if len(parts) == 2:
-                key, value_part = parts
-                metrics[key.strip()] = _kb_to_bytes(value_part)
-        except Exception:
-            continue
+        parts = line.split(":", 1)
+        if len(parts) == 2:
+            key, value_part = parts
+            metrics[key.strip()] = _kb_to_bytes(value_part)
             
     total = metrics.get("MemTotal", BytesValue(0))
     if total <= 0: 

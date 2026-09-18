@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-16 | 23 | 4 | 5 | 3 | 23 |
+| 2026-09-16 | 21 | 3 | 4 | 3 | 23 |
 | 2026-09-17 | 137 | 9 | 25 | 15 | 164 |
-| 2026-09-18 | 34 | 3 | 8 | 6 | 45 |
+| 2026-09-18 | 36 | 4 | 9 | 6 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **43**
 - seguridad defensiva: **43**
-- manejo de errores y validación de entradas: **40**
-- legibilidad y documentación: **35**
+- manejo de errores y validación de entradas: **42**
 - rendimiento: **33**
+- legibilidad y documentación: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `browser.py`: **20**
 - `healthscore.py`: **19**
-- `settings.py`: **18**
 - `assistant.py`: **18**
 - `duplicates.py`: **17**
-- `memory.py`: **16**
+- `settings.py`: **17**
+- `memory.py`: **17**
 - `safety.py`: **16**
 - `quarantine.py`: **15**
 - `scanner.py`: **11**
 - `branding.py`: **7**
-- `organizer.py`: **6**
+- `organizer.py`: **7**
 - `main.py`: **6**
-- `startup.py`: **5**
+- `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-18T04:19:37` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al asegurar que las validaciones de seguridad se apliquen sobre rutas resueltas y verificadas, evitando errores silenciosos ante accesos a disco fallidos.
+- `2026-09-18T04:19:10` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` mediante la centralización de la lógica de limpieza de valores y la validación estricta de las métricas clave, asegurando que la función no retorne estados inconsistentes ante entradas malformadas.
 - `2026-09-18T04:06:33` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` al implementar un manejo de errores más específico y defensivo, asegurando que el pipeline no falle ante cálculos internos inesperados, y fortalecí `SystemMetrics.validate` para garantizar que los tipos de datos sean correctos antes de proceder al cálculo.
 - `2026-09-18T04:06:05` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez de `hash_file` y `partial_hash` al centralizar la validación de entrada con una función auxiliar `_validate_and_resolve_path`, evitando excepciones no capturadas al operar con objetos `Path` potencialmente inválidos o inaccesibles, alineándose con el enfoque de manejo de errores.
 - `2026-09-18T04:05:40` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_get_local_windows_drives` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta, previniendo errores de acceso a unidades virtuales o de sistema que podrían interrumpir el escaneo inicial.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T02:04:41` **browser.py** (seguridad defensiva): Se ha robustecido el motor de escaneo defensivo añadiendo una validación explícita para evitar ciclos en el sistema de archivos (bloques de recursión profunda mediante `set` de visitados) y un control de integridad adicional al resolver rutas relativas, garantizando que no se escape del directorio base incluso si existen nombres de archivos maliciosos.
 - `2026-09-18T02:01:47` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de un límite estricto de recursión y complejidad estructural en la ingesta de datos, previniendo posibles ataques de denegación de servicio por desbordamiento de pila o agotamiento de memoria mediante estructuras anidadas maliciosas en `SystemContext`.
 - `2026-09-18T01:54:41` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite en la carga de archivos, añadiendo un chequeo explícito de integridad estructural durante la deserialización y evitando que errores de permiso en `ruta.stat()` durante la verificación de caché invaliden erróneamente la configuración, además de asegurar que la serialización final sea siempre un diccionario consistente mediante `_ensure_settings_integrity`.
-- `2026-09-18T01:51:21` **safety.py** (robustez ante casos límite): Se ha implementado una protección proactiva contra el manejo de archivos en dispositivos de solo lectura de bajo nivel (como medios ópticos o volúmenes montados como read-only) dentro de `_validate_boundary_conditions` para evitar excepciones de E/S impredecibles durante operaciones de escritura.
-- `2026-09-18T01:41:29` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos inexistentes o bloqueos por permisos en diversos escenarios de sistema, evitando el uso de `os.open` (que es bloqueante o puede lanzar excepciones no controladas según el OS) y delegando la verificación de forma más segura a `os.access` junto con un manejo explícito de excepciones, alineándose con las prácticas de robustez ante casos límite.

@@ -180,7 +180,6 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         d_res = dest.resolve()
         if not s_res.exists() or _is_recursive_violation(s_res, dest): return False
         parent = d_res if d_res.is_dir() else d_res.parent
-        # Verificar que la operación ocurra dentro de la misma unidad física
         return s_res.drive == parent.drive and _validate_file_attributes(s_res)
     except (OSError, RuntimeError, AttributeError):
         return False
@@ -278,13 +277,14 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """Ejecuta la eliminación permanente, aplicando verificaciones de seguridad en cada archivo."""
     try:
         dest = Path(review_dir).expanduser().resolve()
-        if not dest.is_dir(): return 0
-        ensure_safe_to_modify(dest)
+        if not dest.is_dir() or not is_safe_to_modify(dest): return 0
+        
         count = 0
         for item in dest.iterdir():
-            if item.is_file() and is_safe_to_modify(item):
-                ensure_safe_to_modify(item)
-                item.unlink()
-                count += 1
+            if item.is_file():
+                if is_safe_to_modify(item):
+                    ensure_safe_to_modify(item)
+                    item.unlink()
+                    count += 1
         return count
     except (OSError, PermissionError): return 0
