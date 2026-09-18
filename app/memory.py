@@ -195,13 +195,19 @@ def _is_valid_process_entry(fields: List[str]) -> Optional[ProcessMemory]:
     if len(fields) < 3:
         return None
     try:
-        name_clean = fields[0].strip()
-        pid_val = int(fields[1])
-        ws_val = int(fields[2])
+        name_raw = fields[0].strip()
+        pid_raw = fields[1].strip()
+        ws_raw = fields[2].strip()
         
-        if not name_clean or pid_val <= 0 or ws_val < 0 or is_protected_path(name_clean):
+        if not name_raw or not pid_raw.isdigit() or not ws_raw.isdigit():
             return None
-        return ProcessMemory(name=name_clean, pid=pid_val, working_set=BytesValue(ws_val))
+            
+        pid_val = int(pid_raw)
+        ws_val = int(ws_raw)
+        
+        if pid_val <= 0 or ws_val < 0 or is_protected_path(name_raw):
+            return None
+        return ProcessMemory(name=name_raw, pid=pid_val, working_set=BytesValue(ws_val))
     except (ValueError, TypeError):
         return None
 
@@ -217,6 +223,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     
     results: List[ProcessMemory] = []
     for line in raw_csv_text.splitlines():
+        if not line.strip(): continue
         try:
             parts = [_clean_csv_field(x) for x in line.split(",")]
             entry = _is_valid_process_entry(parts)

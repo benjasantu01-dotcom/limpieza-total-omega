@@ -285,7 +285,7 @@ def _render_bar(points: int, max_val: int) -> str:
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera un informe final legible, transformando el objeto HealthResult en lista de texto."""
-    if not isinstance(result, HealthResult):
+    if not isinstance(result, HealthResult) or not (0 <= result.score <= 100):
         return ["Error: Informe de salud no disponible."]
     
     # Pre-cálculo para evitar llamadas constantes a métodos en el loop
@@ -294,7 +294,9 @@ def summarize(result: HealthResult | None) -> List[str]:
     
     lines = [f"Salud del sistema: {res_score}/100  (nota {res_grade})", "", "Desglose por área:"]
     for area, maximo in WEIGHTS.items():
-        puntos = result.breakdown.get(area, 0)
+        # Verificamos existencia y tipo en el desglose para evitar KeyError o errores de renderizado
+        val = result.breakdown.get(area)
+        puntos = int(val) if isinstance(val, (int, float)) else 0
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{_render_bar(puntos, maximo)}]")
     
     recs = result.recommendations if result.recommendations else ["Sin recomendaciones."]
