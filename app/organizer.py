@@ -174,8 +174,8 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 
 def _validate_file_attributes(src: Path) -> bool:
     """
-    Valida si el archivo es candidato a procesamiento: verifica que sea un archivo, 
-    no sea un junction, tenga tamaño válido (evita bloqueos de IO) y no esté bloqueado.
+    Valida la integridad del archivo candidato: comprueba que sea un archivo regular, 
+    que no sea una unión de directorios (junction) y que no esté bloqueado para lectura.
     """
     try:
         st = src.stat()
@@ -187,7 +187,8 @@ def _validate_file_attributes(src: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Validador booleano centralizado para asegurar la integridad de I/O.
-    Verifica seguridad de rutas, permisos y atomicidad de unidad física.
+    Verifica que la ruta sea segura, que no existan violaciones recursivas,
+    y que ambos puntos de operación tengan permisos de escritura y pertenezcan a la misma unidad.
     """
     if not _validate_path_security(src, dest): 
         return False
@@ -205,7 +206,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
             
         if _is_recursive_violation(s_res, dest): 
             return False
-        # Verificación explícita de permiso de escritura y consistencia de unidad
+            
         if not os.access(parent, os.W_OK) or not os.access(s_res, os.W_OK): 
             return False
             

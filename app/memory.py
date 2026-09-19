@@ -142,14 +142,18 @@ def format_bytes(num: Optional[int | float]) -> str:
     return f"{val:.{0 if idx == 0 else 1}f} {BYTE_UNITS[idx]}"
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
-    """Prepara estructura Win32 con el tamaño de bytes correcto."""
+    """Inicializa la estructura Win32 necesaria para la llamada GlobalMemoryStatusEx."""
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return stat
 
 def _kb_to_bytes(kb_str: str) -> BytesValue:
-    """Convierte cadena de texto con prefijo de KB (ej: '1024 kB') a BytesValue."""
+    """
+    Convierte cadenas del estilo '1024 kB' a bytes. 
+    Retorna 0 si el formato es inválido o el valor desborda.
+    """
     if not isinstance(kb_str, str): return BytesValue(0)
+    # Extrae solo dígitos para robustez ante etiquetas de unidad variadas
     val_str = "".join(c for c in kb_str if c.isdigit())
     if not val_str: return BytesValue(0)
     try:
@@ -232,13 +236,17 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     return results[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Consulta la API de Win32 para obtener métricas actuales de RAM."""
+    """
+    Consulta la API Win32 GlobalMemoryStatusEx para obtener estadísticas de RAM.
+    Se asegura de verificar la existencia de la función y de la estructura de datos.
+    """
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "GlobalMemoryStatusEx"):
         return _EMPTY_SNAPSHOT
     
     stat = _create_mem_status_ex()
     try:
+        # La función devuelve un valor booleano indicando éxito
         if kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
             total, avail = stat.ullTotalPhys, stat.ullAvailPhys
             if total > 0 and avail <= total:
