@@ -226,6 +226,11 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
     if depth > MAX_SCAN_DEPTH or _should_skip_entry(entry, kernel32, is_junction_fn):
         return 0
     try:
+        # Validación defensiva de la ruta resuelta contra el root_base antes de continuar
+        real_entry_path = Path(entry.path).resolve(strict=True)
+        if not _is_path_inside_base(real_entry_path, Path(root_base)):
+            return 0
+            
         if _is_valid_traversal_step(entry, root_base):
             if not is_safe_to_modify(Path(entry.path)) or is_protected_path(Path(entry.path)):
                 return 0
@@ -234,7 +239,6 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
         if entry.is_file(follow_symlinks=False):
             return int(entry.stat(follow_symlinks=False).st_size)
     except (OSError, PermissionError, RuntimeError) as e:
-        # Manejo específico de errores comunes de acceso en archivos bloqueados (32) o protegidos (5)
         if isinstance(e, OSError) and e.winerror in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
             return 0
         return 0

@@ -121,10 +121,15 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
         True si la entrada debe ser ignorada, False en caso contrario.
     """
     try:
+        # Evitar rutas excesivamente largas que puedan causar excepciones en sistemas heredados
+        if len(entry.path) > 260:
+            return True
+            
         if entry.is_symlink():
             return True
         if os.name == 'nt':
             st = entry.stat(follow_symlinks=False)
+            # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
             if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
                 return True
     except (OSError, PermissionError, AttributeError):

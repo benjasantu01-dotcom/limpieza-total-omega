@@ -197,27 +197,23 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """Recorrido recursivo del disco recolectando archivos aptos para análisis."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
-    visited_directories: set[str] = set()
+    visited_files: List[Path] = []
 
     def _scan_dir(current_dir: Path) -> None:
         try:
-            dir_str = str(current_dir.resolve())
-            if dir_str in visited_directories: return
-            visited_directories.add(dir_str)
-            
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        path = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
-                            path = Path(entry.path)
                             if not is_junction(path) and not is_protected_path(path):
                                 _scan_dir(path)
                         else:
                             st = entry.stat(follow_symlinks=False)
-                            if st.st_size >= min_size:
-                                path = Path(entry.path)
-                                if _is_valid_candidate(path, st.st_size):
+                            if st.st_size >= min_size and _is_valid_candidate(path, st.st_size):
+                                if not any(path.samefile(v) for v in visited_files):
                                     size_to_paths_map[st.st_size].append(path)
+                                    visited_files.append(path)
                     except (FileNotFoundError, OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

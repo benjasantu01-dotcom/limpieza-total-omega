@@ -356,14 +356,17 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if destination is None: return None
     try:
         target = Path(destination).resolve()
-        # Validación defensiva: no escribir en rutas protegidas
+        # Validación defensiva de la ruta destino y sus padres
         if is_protected_path(target):
             return None
-        # Verificación centralizada mediante ensure_safe_to_modify que también
-        # verifica que la ruta no sea un path protegido o reparse point.
+        
+        # ensure_safe_to_modify valida que la ruta sea segura para escritura
         ensure_safe_to_modify(target)
         
+        # Validar también el directorio padre antes de crear
         parent = target.parent
+        ensure_safe_to_modify(parent)
+        
         parent.mkdir(parents=True, exist_ok=True)
         
         # Escritura atómica segura
