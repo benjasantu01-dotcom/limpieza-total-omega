@@ -623,9 +623,10 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     
     try:
         full_prompt = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
+        if len(full_prompt) > _MAX_PROMPT_LIMIT: return None
         payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
         payload = json.dumps(payload_data).encode("utf-8")
-        return payload if len(payload) < _MAX_PROMPT_LIMIT * 2 else None
+        return payload if len(payload) < (_MAX_RESPONSE_BYTES // 2) else None
     except (TypeError, ValueError):
         return None
 

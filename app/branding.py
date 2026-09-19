@@ -344,14 +344,11 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if destination is None: return None
     try:
         target = Path(destination).resolve()
-        # Verificación temprana: evitar reparse points o rutas protegidas
-        if target.is_symlink() or target.is_junction() or is_protected_path(target):
-            return None
-        
-        # Validar escritura y asegurar jerarquía
+        # Verificación centralizada mediante ensure_safe_to_modify que también
+        # verifica que la ruta no sea un path protegido o reparse point.
         ensure_safe_to_modify(target)
+        
         parent = target.parent
-        ensure_safe_to_modify(parent)
         parent.mkdir(parents=True, exist_ok=True)
         
         # Escritura atómica segura

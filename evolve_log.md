@@ -559,3 +559,12 @@ assert not {'replace'}
 - `2026-09-19T00:21:37` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `load` ante posibles errores de E/S o corrupción del archivo `.bak` mediante un manejo de excepciones más granular y un chequeo explícito de legibilidad, asegurando que si el archivo principal es inaccesible, el sistema no colapse.
 - `2026-09-19T00:21:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T00:21:37` Corrida terminada. Total usado hoy: 8.
+- `2026-09-19T00:30:10` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-09-19T00:30:39` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `StartupEntry._validate_file_access` añadiendo una comprobación explícita de `is_file()` para evitar falsos positivos con directorios que coincidan con la extensión `.exe` (junctions/reparse points), cumpliendo con el enfoque de robustez ante casos límite.
+- `2026-09-19T00:31:42` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_build_payload` y `_call_gemini` integrando una validación estricta del tamaño y contenido del `payload` para prevenir inyecciones complejas o desbordamientos de buffer antes de cualquier operación de red.
+- `2026-09-19T00:32:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-19T00:33:02` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-19T00:33:43` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad en `save_logo_svg` consolidando el uso de `ensure_safe_to_modify` para validar la ruta final tras la resolución de enlaces, eliminando la redundancia de validaciones parciales que podían fallar en sistemas con permisos restrictivos.
+- `2026-09-19T00:33:55` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la validación estricta de rutas mediante `is_protected_path` al resolver las rutas de los navegadores, asegurando que ninguna ruta resuelta escape del directorio base o toque componentes restringidos antes de intentar cualquier operación de acceso.
+- `2026-09-19T00:33:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T00:33:55` Corrida terminada. Total usado hoy: 12.

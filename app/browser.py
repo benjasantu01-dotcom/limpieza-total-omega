@@ -294,6 +294,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
         # Previene escapes mediante UNC o rutas externas y valida permisos de seguridad
         if _is_unc_path(str(real_candidate)) or not _is_path_inside_base(real_candidate, base_path):
             return False
+        # Se añade chequeo contra la lista negra protegida centralizada
         if not is_safe_to_modify(real_candidate) or is_protected_path(real_candidate):
             return False
         return not (candidate.is_symlink() or is_junction_fn(str(candidate)) or _is_excluded_file(candidate.name))
