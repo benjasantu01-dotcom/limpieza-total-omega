@@ -592,6 +592,14 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     """
     Validación de alta fidelidad: combina chequeos estructurales, geográficos y de
     integridad para garantizar que la modificación del archivo es segura y autorizada.
+    
+    La cadena de validación es:
+    1. Normalización y limpieza de path.
+    2. Filtrado de extensiones sensibles.
+    3. Validación estructural (inyección, nombres reservados).
+    4. Validación de alcance (geografía del sistema).
+    5. Validación de permisos (acceso OS).
+    6. Verificación de integridad de bajo nivel (TOCTOU, locks, atributos especiales).
     """
     if path is None: 
         raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)

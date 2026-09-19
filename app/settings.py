@@ -313,21 +313,24 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             
     return DEFAULTS.copy()
 
+def _enforce_type_consistency(settings: AppSettings) -> AppSettings:
+    """Valida que cada valor coincida con el tipo esperado en DEFAULTS."""
+    for key in ConfigKey:
+        val = settings.get(key.value)
+        if not isinstance(val, type(DEFAULTS[key.value])):
+            settings[key.value] = DEFAULTS[key.value]
+    return settings
+
 def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
     """Asegura que el diccionario de configuración contenga todas las claves requeridas y con tipos válidos."""
     if not _is_app_settings(settings):
-        # Si la estructura base es inválida (ej. versión muy antigua), reconstruimos desde defaults
         clean_settings = DEFAULTS.copy()
         for key in ConfigKey:
             if key.value in settings:
                 clean_settings[key.value] = settings[key.value]
         settings = clean_settings
 
-    # Refuerzo: validar tipos individuales tras la inyección de datos externos
-    for key in ConfigKey:
-        val = settings.get(key.value)
-        if not isinstance(val, type(DEFAULTS[key.value])):
-            settings[key.value] = DEFAULTS[key.value]
+    settings = _enforce_type_consistency(settings)
     
     # Lógica de seguridad: si no hay clave, el asistente debe estar apagado
     if settings.get("asistente_activado") and not (settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
