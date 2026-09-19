@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 48
-- Sin cambios (nada sustancial que mejorar): 24
+- Sin cambios (nada sustancial que mejorar): 25
 - Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 23 | 0 | 3 | 4 | 40 |
+| 2026-09-17 | 21 | 0 | 3 | 4 | 38 |
 | 2026-09-18 | 150 | 9 | 39 | 18 | 134 |
-| 2026-09-19 | 36 | 3 | 6 | 2 | 37 |
+| 2026-09-19 | 37 | 3 | 6 | 3 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **46**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **41**
-- rendimiento: **28**
+- robustez ante casos límite: **39**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
 - `diskreport.py`: **21**
 - `browser.py`: **20**
-- `memory.py`: **18**
+- `assistant.py`: **19**
 - `safety.py`: **18**
-- `assistant.py`: **18**
 - `quarantine.py`: **17**
+- `memory.py`: **17**
 - `duplicates.py`: **16**
 - `settings.py`: **15**
-- `organizer.py`: **11**
 - `scanner.py`: **11**
+- `organizer.py`: **10**
 - `branding.py`: **10**
 - `startup.py`: **6**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T03:46:46` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la lógica de búsqueda por tokens mediante el uso de un mapa pre-procesado, evitando la re-evaluación innecesaria en cada consulta.
 - `2026-09-19T03:35:37` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica y legibilidad del módulo `StartupEntry` añadiendo docstrings específicos para los métodos privados y clarificando la intención detrás de la validación de rutas, facilitando el mantenimiento y auditoría del código.
 - `2026-09-19T03:35:23` **settings.py** (legibilidad y documentación): Se introdujo un `TypeGuard` personalizado `is_app_settings` y se refactorizó `_ensure_settings_integrity` para documentar explícitamente la lógica de recuperación ante fallos, mejorando la legibilidad y la seguridad de tipos al manipular la configuración.
 - `2026-09-19T03:34:31` **safety.py** (legibilidad y documentación): Se introdujo un `TypeGuard` para la función `is_protected_path` y se estandarizaron los docstrings con las convenciones de Google, añadiendo detalles técnicos específicos sobre el comportamiento de los filtros para mejorar la mantenibilidad y claridad para otros desarrolladores.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T03:04:55` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados (usando formato estilo Google) en funciones clave de manipulación de color y renderizado, facilitando la comprensión de los parámetros y comportamientos esperados sin alterar la funcionalidad.
 - `2026-09-19T02:54:25` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_safe_entry` y `_is_valid_path_structure` mediante validaciones defensivas de tipos y valores nulos para prevenir excepciones inesperadas durante la navegación del sistema de archivos, asegurando que `entry.path` o `entry.name` nunca operen bajo estados inválidos.
 - `2026-09-19T02:53:58` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use` y `_is_reparse_point` incorporando un manejo explícito de `WinError` (código de error de sistema) mediante `ctypes`, permitiendo capturar excepciones de E/S de forma más específica y evitando que fallos transitorios de acceso al kernel (como archivos bloqueados por el sistema) se propaguen como errores genéricos.
-- `2026-09-19T02:44:56` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_safe_for_disk_op` y `stage_for_review` asegurando que la validación de `parent` sea más resiliente ante rutas inválidas o inexistentes y centralizando la comprobación de `ensure_safe_to_modify` para evitar excepciones no controladas durante el movimiento.

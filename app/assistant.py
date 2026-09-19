@@ -590,9 +590,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
     
+    # Búsqueda O(1) usando el mapa pre-procesado
     for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
-        if token in _TOKEN_TO_HANDLER:
-            return _TOKEN_TO_HANDLER[token](context, question)
+        if handler := _TOKEN_TO_HANDLER.get(token):
+            return handler(context, question)
             
     cuerpo = _format_problem_message(
         _identify_active_problems(context), 
