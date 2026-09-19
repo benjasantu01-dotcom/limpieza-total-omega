@@ -552,3 +552,10 @@ assert not {'replace'}
 - `2026-09-19T00:13:25` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_file_locked` para manejar archivos inexistentes de forma explícita y se ha refinado el manejo de `OSError` en `_safe_unlink` para asegurar que el sistema pueda liberar recursos incluso si la validación falla parcialmente, evitando bloqueos en el bucle de limpieza.
 - `2026-09-19T00:13:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T00:13:25` Corrida terminada. Total usado hoy: 4.
+- `2026-09-19T00:20:02` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-09-19T00:20:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-19T00:21:00` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación de `os.access(path, os.W_OK)` dentro de `ensure_safe_to_modify` para verificar efectivamente los permisos de escritura del sistema operativo antes de intentar cualquier operación, evitando fallos en tiempo de ejecución por permisos denegados en archivos de solo lectura a nivel de ACL.
+- `2026-09-19T00:21:24` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-19T00:21:37` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `load` ante posibles errores de E/S o corrupción del archivo `.bak` mediante un manejo de excepciones más granular y un chequeo explícito de legibilidad, asegurando que si el archivo principal es inaccesible, el sistema no colapse.
+- `2026-09-19T00:21:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T00:21:37` Corrida terminada. Total usado hoy: 8.

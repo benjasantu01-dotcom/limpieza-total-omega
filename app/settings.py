@@ -287,7 +287,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     candidates = [ruta, ruta.with_suffix(".bak")]
     
     for r in candidates:
-        if not r.exists(): continue
+        if not r.exists() or not os.access(r, os.R_OK): continue
         try:
             stats = r.stat()
             cached = _CACHE.get(r)
