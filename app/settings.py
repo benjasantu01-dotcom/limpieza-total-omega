@@ -350,8 +350,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     bak_path = ruta.with_suffix(".bak")
     
     try:
-        if ruta.exists():
-            ensure_safe_to_modify(ruta)
+        # Asegurar seguridad de la ruta final antes de tocar el disco
+        ensure_safe_to_modify(ruta)
         with open(temp_path, "w", encoding="utf-8") as f:
             f.write(serialized)
             f.flush()

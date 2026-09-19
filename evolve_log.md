@@ -1028,3 +1028,10 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-09-19T05:18:16` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez defensiva de `_safe_unlink` integrando una verificación de propiedad explícita mediante `_ensure_path_ownership` y reforzando la exclusión de enlaces simbólicos mediante `lstat` para prevenir que `unlink` pueda seguir punteros fuera del sandbox.
 - `2026-09-19T05:18:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T05:18:16` Corrida terminada. Total usado hoy: 124.
+- `2026-09-19T05:26:00` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-09-19T05:26:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-19T05:27:07` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se añadió una validación específica para detectar rutas que intentan escapar de su directorio base mediante manipulaciones de `..` o componentes maliciosos antes de resolver la ruta, fortaleciendo la defensa contra path traversal en el método `_validate_structural_safety`.
+- `2026-09-19T05:27:34` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-19T05:27:50` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se endureció la seguridad en `save()` al verificar que la ruta final (`ruta`) sea segura mediante `ensure_safe_to_modify` ANTES de realizar cualquier operación de escritura, evitando condiciones de carrera o escrituras en rutas que pudieron ser alteradas por symlinks después de la validación inicial del directorio padre.
+- `2026-09-19T05:27:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T05:27:50` Corrida terminada. Total usado hoy: 128.

@@ -487,6 +487,8 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
+    if ".." in path_string.split(os.sep):
+        raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     if len(path_string) > MAX_PATH_LENGTH:
         raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG)
     if "\0" in path_string:
