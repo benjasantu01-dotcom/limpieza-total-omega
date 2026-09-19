@@ -891,6 +891,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             raw = entry_widget.get().strip()
             if not raw:
                 return default
+            # Sanitizar eliminando caracteres no imprimibles antes de cualquier validación
             clean_raw = "".join(c for c in raw if c.isprintable())
             if numeric:
                 try:
@@ -1863,6 +1864,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             
         entry_val = self.question_entry.get()
         texto = (question or entry_val).strip()
+        # Sanitizar entrada del usuario
         texto = "".join(c for c in texto if c.isprintable())[:500]
         
         if not texto:
@@ -1900,6 +1902,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 if hasattr(variable, 'get'):
                     val = variable.get()
                     if isinstance(val, str):
+                        # Sanitizar entrada de texto
                         val = "".join(c for c in val if c.isprintable())
                     valores[clave] = val  # type: ignore
             except (tk.TclError, Exception):
@@ -1919,6 +1922,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
                 clave_raw = self._safe_get_entry_value(self.api_key_entry, "")
                 if clave_raw:
+                    # Sanitizar clave de API
                     valores["asistente_clave_api"] = "".join(c for c in clave_raw if c.isprintable())
         except Exception:
             pass

@@ -345,11 +345,11 @@ def _is_system_process(pid: int) -> bool:
 def _get_process_path(proc_handle: int) -> Optional[Path]:
     """Resuelve la ruta física del ejecutable de un proceso mediante Psapi.GetModuleFileNameExW."""
     if not proc_handle: return None
-    psapi = getattr(ctypes.windll, "psapi", None)
-    if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
-    
-    buf = ctypes.create_unicode_buffer(1024)
     try:
+        psapi = getattr(ctypes.windll, "psapi", None)
+        if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
+        
+        buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(ctypes.c_void_p(proc_handle), None, buf, 1024) > 0:
             path_str = buf.value
             if not path_str or any(path_str.startswith(prefix) for prefix in ("\\\\", "\\??\\", "\\Device\\")):
@@ -361,18 +361,17 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
             if not p.is_file() or p.is_symlink(): return None
             
             p_resolved = p.resolve(strict=False)
-            # Validamos contra is_protected_path y is_safe_to_modify
             if is_protected_path(str(p_resolved)) or not is_safe_to_modify(str(p_resolved)): 
                 return None
             
             return p_resolved
-    except (OSError, ctypes.ArgumentError, ValueError, MemoryError, RuntimeError):
+    except (OSError, ctypes.ArgumentError, ValueError, AttributeError, RuntimeError):
         pass
     return None
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
     """Verifica si un proceso está activo y su ejecutable es una ruta segura para operar."""
-    if not proc_handle: return False, "Handle inválido."
+    if not isinstance(proc_handle, int) or proc_handle == 0: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
     
     try:
@@ -387,7 +386,6 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
         if not exec_path:
             return False, "Acceso denegado o ejecutable no localizable."
         
-        # Validar nuevamente contra reglas de seguridad centralizadas
         if not is_safe_to_modify(str(exec_path)):
             return False, "Operación no autorizada sobre este proceso."
         
@@ -408,14 +406,14 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "No se permite modificar procesos críticos del sistema."
     
     kernel32 = ctypes.windll.kernel32
-    psapi = getattr(ctypes.windll, "psapi", None)
-    if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
-    
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
-        return False, f"Acceso denegado o proceso inexistente (Error {kernel32.GetLastError()})."
+        return False, f"Acceso denegado (Error {kernel32.GetLastError()})."
     
     try:
+        psapi = getattr(ctypes.windll, "psapi", None)
+        if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
+        
         is_safe, error_reason = _is_safe_to_trim(proc_handle)
         if not is_safe: 
             return False, error_reason or "Verificación de seguridad fallida."
@@ -426,6 +424,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, OSError, ValueError, TypeError) as e:
-        return False, f"Error de sistema: {str(e)}"
+        return False, f"Error de ejecución: {str(e)}"
     finally:
         kernel32.CloseHandle(ctypes.c_void_p(proc_handle))

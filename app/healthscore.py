@@ -106,7 +106,6 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    # Aseguramos que la penalización sea un número finito y no negativo
     penalization = (_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)
     return _clamp(1.0 - _clamp(penalization, 0.0, 1.0))
 
@@ -213,12 +212,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str):
-                    # Filtrado defensivo: solo caracteres imprimibles, longitud controlada
                     clean_msg = "".join(char for char in msg if char.isprintable()).strip()
                     if clean_msg:
                         findings.append(clean_msg[:200])
         except Exception:
-            # Silenciar errores en reglas no críticas para mantener el reporte funcional
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -242,7 +239,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             weighted_points = _clamp(round(area_ratio * weight), 0.0, float(weight))
             metric_breakdown[area] = int(weighted_points)
             accumulated_score += weighted_points
-        except (TypeError, ValueError, ZeroDivisionError, ArithmeticError):
+        except Exception:
             continue
             
     final_score = int(_clamp(round(accumulated_score), 0.0, 100.0))
