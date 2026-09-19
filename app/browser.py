@@ -228,6 +228,7 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
         if entry.is_file(follow_symlinks=False):
             return int(entry.stat(follow_symlinks=False).st_size)
     except (OSError, PermissionError, RuntimeError):
+        # Fallo silencioso esperado en archivos de sistema bloqueados o sin permisos
         return 0
     return 0
 
@@ -241,8 +242,8 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """Calcula el tamaño acumulado de archivos bajo un directorio utilizando memoización."""
-    if root_abs in memo:
-        return memo[root_abs]
+    if not root_abs or root_abs in memo:
+        return memo.get(root_abs, 0)
 
     try:
         total: int = 0

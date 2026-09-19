@@ -1241,3 +1241,10 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-09-19T06:51:19` ➖ Sin cambios en assistant.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `_apply_field` y `ingest` en `SystemContext` para asegurar que el sistema no falle silenciosamente ni acepte datos inconsistentes cuando la fuente de datos es maliciosa o está mal formada, evitando que errores de tipo rompan el flujo de ingestión.
 - `2026-09-19T06:51:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T06:51:19` Corrida terminada. Total usado hoy: 160.
+- `2026-09-19T06:57:46` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-09-19T06:58:22` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-19T06:58:50` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `_sum_directory_recursive` mediante una validación explícita de `root_abs` contra valores vacíos o malformados y mejoré el manejo de excepciones en `_process_entry`, asegurando que cualquier entrada de sistema inaccesible no interrumpa el flujo del escaneo ni retorne datos ambiguos.
+- `2026-09-19T06:59:17` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y las funciones auxiliares capturando potenciales errores de `path.relative_to` y `path.suffix` en nombres de archivo con caracteres inválidos o rutas malformadas, evitando que una entrada única dañe el reporte completo.
+- `2026-09-19T06:59:26` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-19T06:59:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T06:59:26` Corrida terminada. Total usado hoy: 164.
