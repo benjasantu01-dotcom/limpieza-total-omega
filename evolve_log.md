@@ -645,3 +645,38 @@ FAILED evolve/tests/test_assistant.py::test_valid_themes_and_accents_are_accepte
 - `2026-09-19T13:01:15` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: rendimiento).
 - `2026-09-19T13:01:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T13:01:15` Corrida terminada. Total usado hoy: 304.
+- `2026-09-19T13:05:21` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-19T13:05:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated f-string literal (detected at line 103)
+- `2026-09-19T13:06:19` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _CheckResult
+- `2026-09-19T13:06:43` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-09-19T13:06:59` Tests FALLARON:
+```
+ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+____________________ test_booleans_accept_the_usual_strings ____________________
+
+    def test_booleans_accept_the_usual_strings():
+>       assert settings.validate({"asistente_activado": "true"})["asistente_activado"] is True
+E       assert False is True
+
+evolve/tests/test_assistant.py:105: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:63: SyntaxWarning: invalid escape sequence '\ '
+    Prefija rutas con el formato \\?\ para evadir la limitación de MAX_PATH (260)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_booleans_accept_the_usual_strings - assert False is True
+1 failed, 298 passed, 4 warnings in 1.34s
+
+```
+- `2026-09-19T13:06:59` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de carga reemplazando `dict.copy()` y validaciones manuales redundantes en el bucle de validación por una construcción directa basada en `dict.fromkeys` y filtrado eficiente, además de consolidar la lógica de `_ensure_settings_integrity` para reducir la recursión innecesaria durante la carga.
+- `2026-09-19T13:06:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T13:06:59` Corrida terminada. Total usado hoy: 308.
