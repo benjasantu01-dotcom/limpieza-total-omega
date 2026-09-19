@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 47
-- Sin cambios (nada sustancial que mejorar): 21
+- Rechazadas por guardia de seguridad: 48
+- Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 134 | 8 | 34 | 15 | 125 |
-| 2026-09-19 | 83 | 5 | 13 | 6 | 81 |
+| 2026-09-18 | 131 | 8 | 34 | 15 | 124 |
+| 2026-09-19 | 84 | 5 | 14 | 7 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - seguridad defensiva: **46**
 - legibilidad y documentación: **45**
-- robustez ante casos límite: **44**
-- rendimiento: **30**
+- robustez ante casos límite: **41**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **23**
-- `memory.py`: **21**
+- `healthscore.py`: **22**
+- `browser.py`: **21**
 - `safety.py`: **20**
-- `browser.py`: **20**
+- `memory.py`: **20**
 - `diskreport.py`: **20**
 - `assistant.py`: **17**
 - `quarantine.py`: **16**
 - `settings.py`: **16**
 - `duplicates.py`: **16**
-- `organizer.py`: **13**
+- `organizer.py`: **12**
 - `branding.py`: **10**
 - `scanner.py`: **9**
 - `main.py`: **9**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T08:10:49` **browser.py** (rendimiento): Se implementó un cache de tamaño a nivel de `directory_size` utilizando un `dict` local para evitar recálculos redundantes en las llamadas múltiples a las funciones de reporte, mejorando el rendimiento en sistemas con múltiples navegadores que comparten estructuras de directorios.
 - `2026-09-19T08:00:31` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de validación extrayendo el chequeo de integridad de tipos a una función con nombre explícito `_enforce_type_consistency`, permitiendo que el flujo de `_ensure_settings_integrity` sea más declarativo y fácil de auditar.
 - `2026-09-19T07:59:51` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la implementación de `Docstrings` estructurados y la clarificación de las responsabilidades de validación en `ensure_safe_to_modify`, asegurando que el flujo de seguridad sea autoexplicativo para futuros desarrolladores del equipo.
 - `2026-09-19T07:51:27` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `memory.py` mediante la adición de Type Hints detallados, la clarificación de las responsabilidades en las funciones de conversión de unidades y la documentación explícita de los filtros de seguridad en el procesamiento CSV de procesos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T07:28:50` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` envolviendo la lógica de persistencia en un bloque `try-finally` para asegurar que el archivo temporal sea limpiado incluso si ocurre una excepción inesperada durante la escritura o el renombrado, cumpliendo con el enfoque de manejo de errores.
 - `2026-09-19T07:19:46` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `ensure_safe_to_modify` para que el manejo de errores sea más granular, capturando específicamente `OSError` durante la validación de integridad para evitar que excepciones de bajo nivel interrumpan el flujo de control del bucle de forma inesperada.
 - `2026-09-19T07:18:47` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez de `save_manifest` mediante la implementación de un manejo de errores más específico y un chequeo de pre-condiciones, evitando que una serialización fallida o un estado inválido del sistema de archivos dejen al sistema en un estado inconsistente o con un archivo de manifiesto truncado.
-- `2026-09-19T07:10:21` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones explícitas de rutas antes de operar y capturando excepciones de sistema de forma más granular para evitar interrupciones silenciosas del flujo.

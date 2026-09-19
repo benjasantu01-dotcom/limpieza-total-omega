@@ -274,6 +274,7 @@ def directory_size(path: Optional[OSPath]) -> int:
         if len(str(p)) >= MAX_PATH_LEN or not p.is_absolute() or not _is_safe_to_traverse(p, None):
             return 0
         resolved = str(p.resolve(strict=True))
+        # Cache local por sesión para evitar recalcular rutas compartidas en una misma ejecución
         return _sum_directory_recursive(resolved, _IS_JUNCTION_FN, _get_kernel32(), {}, resolved)
     except (OSError, RuntimeError, PermissionError, ValueError):
         return 0

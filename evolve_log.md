@@ -1308,3 +1308,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-19T08:00:31` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento de la lógica de validación extrayendo el chequeo de integridad de tipos a una función con nombre explícito `_enforce_type_consistency`, permitiendo que el flujo de `_ensure_settings_integrity` sea más declarativo y fácil de auditar.
 - `2026-09-19T08:00:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T08:00:31` Corrida terminada. Total usado hoy: 188.
+- `2026-09-19T08:09:01` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-09-19T08:09:29` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-19T08:10:06` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Optimizé `_identify_active_problems` eliminando la re-ejecución innecesaria de la lógica de escaneo mediante el uso de `@lru_cache` sobre el contexto completo, aprovechando que `SystemContext` ya implementa `__hash__`.
+- `2026-09-19T08:10:38` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-19T08:10:49` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se implementó un cache de tamaño a nivel de `directory_size` utilizando un `dict` local para evitar recálculos redundantes en las llamadas múltiples a las funciones de reporte, mejorando el rendimiento en sistemas con múltiples navegadores que comparten estructuras de directorios.
+- `2026-09-19T08:10:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T08:10:49` Corrida terminada. Total usado hoy: 192.
