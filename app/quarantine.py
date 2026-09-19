@@ -594,6 +594,9 @@ def _validate_source_for_quarantine(source: Path) -> Path:
         raise UnsafePathError("No se permite aislar enlaces simbólicos.")
     if not source.is_file():
         raise FileNotFoundError("Archivo origen inexistente.")
+    # Validar bloqueo antes de proceder
+    if _is_file_locked(source):
+        raise IOError("Archivo origen bloqueado por el sistema.")
     return source
 
 def quarantine_file(
@@ -603,13 +606,6 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Ejecuta el flujo completo de aislamiento, integrando validación y persistencia.
-    
-    Args:
-        source: Ruta del archivo a mover a cuarentena.
-        reason: Descripción del motivo por el cual se aísla el archivo.
-        base: Directorio base de la cuarentena.
-    Returns:
-        La instancia de QuarantineItem creada.
     """
     if source is None:
         raise ValueError("Ruta de origen nula o vacía.")
@@ -621,9 +617,6 @@ def quarantine_file(
         except (OSError, RuntimeError) as e:
             raise UnsafePathError(f"Ruta origen no válida: {e}")
     
-    if p_source.is_dir():
-        raise UnsafePathError("Solo se pueden poner en cuarentena archivos, no directorios.")
-
     source_path = _validate_source_for_quarantine(p_source)
     original_size = source_path.stat().st_size
     dest_dir = quarantine_dir(base)
@@ -635,8 +628,9 @@ def quarantine_file(
     
     destination = dest_dir / _generate_safe_stored_name(source_path, uuid.uuid4().hex[:12])
     
-    file_hash = _atomic_isolate_file(source_path, destination, original_size)
     try:
+        file_hash = _atomic_isolate_file(source_path, destination, original_size)
+        
         if not source_path.exists():
             raise RuntimeError("El archivo origen ha desaparecido inesperadamente.")
         

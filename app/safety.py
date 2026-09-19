@@ -344,7 +344,7 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     """
     try:
         current_stat = path.stat()
-    except (PermissionError, OSError, FileNotFoundError):
+    except (PermissionError, OSError):
         raise UnsafePathError(f"Acceso denegado a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     
     # Prevenir TOCTOU
@@ -359,7 +359,7 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
             if rule.predicate(path, current_stat):
                 code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
                 raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
-        except (AttributeError, OSError, ctypes.ArgumentError, PermissionError):
+        except (Exception):
             continue
 
 @lru_cache(maxsize=2048)

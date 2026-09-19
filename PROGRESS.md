@@ -8,35 +8,35 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 103 | 5 | 25 | 12 | 87 |
-| 2026-09-19 | 110 | 8 | 17 | 12 | 125 |
+| 2026-09-18 | 101 | 5 | 25 | 12 | 85 |
+| 2026-09-19 | 112 | 8 | 18 | 12 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **46**
 - seguridad defensiva: **46**
-- manejo de errores y validación de entradas: **45**
-- rendimiento: **38**
 - legibilidad y documentación: **38**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **23**
-- `browser.py`: **21**
 - `diskreport.py`: **20**
-- `safety.py`: **19**
+- `browser.py`: **20**
+- `safety.py`: **20**
 - `memory.py`: **18**
-- `assistant.py`: **17**
+- `quarantine.py`: **17**
 - `duplicates.py`: **17**
-- `quarantine.py`: **16**
+- `assistant.py`: **16**
 - `settings.py`: **15**
 - `organizer.py`: **12**
 - `branding.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T11:45:39` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_check_file_integrity` capturando explícitamente excepciones de `Path.stat()` y envolviendo la iteración de validadores en un bloque `try-except` más preciso para evitar interrupciones no deseadas por fallos en llamadas al sistema operativo.
+- `2026-09-19T11:44:54` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita para asegurar que la ruta de origen no esté bloqueada antes de intentar cualquier operación, centralizando el manejo de errores para evitar estados intermedios inconsistentes en el sistema de archivos.
 - `2026-09-19T11:33:52` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` implementando una validación temprana de `SystemMetrics` y `HealthResult` para evitar errores de ejecución ante datos inesperados, asegurando que `_evaluate_rules` sea tolerante a fallos mediante el uso de `getattr` seguro y limpieza de strings.
 - `2026-09-19T11:24:39` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` y `walk_files` ante posibles fallos en la lectura de atributos de archivo, reemplazando el acceso directo a `path.suffix` por un manejo defensivo y asegurando que `_is_excluded_path` no falle ante nombres de archivo inválidos o rutas inexistentes durante la iteración.
 - `2026-09-19T11:24:28` **browser.py** (manejo de errores y validación de entradas): Se reforzó la validación de los parámetros de entrada y el manejo de estados nulos en `total_cache_bytes` y `summarize` para evitar excepciones imprevistas durante la generación de reportes si se procesan listas vacías o valores inesperados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T09:31:14` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` reemplazando la creación de directorios directa por un chequeo exhaustivo mediante `ensure_safe_to_modify`, asegurando que no solo el archivo destino, sino también cualquier estructura de directorios implícita, sea validada antes de intentar cualquier operación de escritura, previniendo así posibles escapes a zonas restringidas del sistema.
 - `2026-09-19T09:12:02` **safety.py** (robustez ante casos límite): Mejoré la robustez ante rutas inexistentes y estados de carrera (TOCTOU) en `ensure_safe_to_modify`, moviendo el chequeo de existencia del parent después de la normalización inicial y asegurando que las validaciones de atributos no fallen si el archivo se elimina justo antes de ser consultado.
 - `2026-09-19T09:11:20` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante casos límite en la manipulación de archivos implementando un manejo explícito de `OSError` durante la creación del directorio de cuarentena y añadiendo una validación de longitud de ruta antes de cualquier operación de movimiento para prevenir errores fatales del sistema operativo por rutas excesivamente largas.
-- `2026-09-19T09:05:47` **memory.py** (robustez ante casos límite): Se mejora la robustez ante errores de permiso y procesos huérfanos en `trim_working_set` y `_get_process_path`, asegurando que el manejo de *handles* de Win32 sea más resiliente y que las validaciones de seguridad ocurran antes de cualquier intento de operación sensible.
-- `2026-09-19T09:00:54` **healthscore.py** (robustez ante casos límite): Mejora la robustez del sistema ante datos de entrada extremos o malformados mediante la adición de una validación explícita de `is_finite` en `SystemMetrics` y un manejo de errores más defensivo en `_evaluate_rules` y `compute_score`.
