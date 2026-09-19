@@ -116,7 +116,7 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
 
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo del contenido de un archivo."""
+    """Calcula el hash SHA256 completo. Retorna None si el archivo es inaccesible o está bloqueado."""
     if chunk_size <= 0:
         return None
         
@@ -135,7 +135,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula el hash SHA256 de los primeros N bytes de un archivo."""
+    """Calcula hash SHA256 de los primeros N bytes. Se usa para pre-filtrar candidatos de forma eficiente."""
     if read_bytes <= 0:
         return None
 
@@ -244,7 +244,11 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Optimiza el cálculo de hash seleccionando entre hash parcial o total."""
+    """
+    Gestiona el refinamiento de duplicados según el tamaño.
+    - Archivos pequeños (<=64KB): Hash directo para evitar overhead de I/O.
+    - Archivos grandes: Hash parcial seguido de confirmación por hash completo.
+    """
     if not paths or size < 0:
         return []
 

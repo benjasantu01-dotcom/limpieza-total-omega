@@ -103,22 +103,28 @@ if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
+    """Calcula el ratio de salud según el volumen de archivos temporales (junk) encontrados."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
+    """Calcula el ratio de seguridad penalizando hallazgos sospechosos y advertencias."""
     penalization = (_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)
     return _clamp(1.0 - _clamp(penalization, 0.0, 1.0))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
+    """Calcula el ratio de salud basado en el porcentaje de memoria RAM disponible."""
     return _clamp(_to_float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
+    """Calcula el ratio de salud según el porcentaje de espacio libre en disco."""
     return _clamp(_to_float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
+    """Calcula el ratio de salud basado en el espacio ocupado por archivos duplicados."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
+    """Calcula el ratio de salud considerando la cantidad de programas que inician con el sistema."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
 _RULES_LIST: Final[Tuple[RecommendationRule, ...]] = (
@@ -219,6 +225,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
+    """Ejecuta el pipeline de evaluación para generar un objeto HealthResult consolidado."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     

@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 138 | 8 | 35 | 16 | 131 |
-| 2026-09-19 | 75 | 4 | 11 | 6 | 80 |
+| 2026-09-18 | 137 | 8 | 34 | 16 | 129 |
+| 2026-09-19 | 79 | 4 | 11 | 6 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - robustez ante casos límite: **47**
 - seguridad defensiva: **46**
-- legibilidad y documentación: **37**
-- rendimiento: **31**
+- legibilidad y documentación: **41**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
-- `browser.py`: **20**
-- `diskreport.py`: **20**
+- `healthscore.py`: **23**
+- `browser.py`: **21**
+- `diskreport.py`: **21**
 - `memory.py`: **20**
 - `safety.py`: **19**
 - `assistant.py`: **18**
-- `quarantine.py`: **17**
+- `quarantine.py`: **16**
+- `duplicates.py`: **16**
 - `settings.py`: **15**
-- `duplicates.py`: **15**
 - `organizer.py`: **13**
 - `branding.py`: **10**
 - `scanner.py`: **9**
@@ -46,6 +46,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T07:40:03` **healthscore.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos en las funciones de cálculo (`score_*`) y se corrigió la visibilidad de los tipos en la firma de `compute_score` para mejorar la legibilidad del pipeline.
+- `2026-09-19T07:39:51` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en las funciones de procesamiento de hash, explicando explícitamente el flujo lógico y los criterios de exclusión de seguridad, garantizando que futuras modificaciones mantengan la integridad del motor de escaneo.
+- `2026-09-19T07:39:26` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de entrada/salida y las estructuras de datos, añadiendo docstrings que explican el propósito de los parámetros y el comportamiento ante errores, facilitando la mantenibilidad del módulo.
+- `2026-09-19T07:38:58` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo un bloque de `TypeDoc` para la estructura de `BrowserCache` y clarificando mediante comentarios funcionales la lógica de recursión y exclusión, facilitando la comprensión del flujo de datos en el análisis de carpetas.
 - `2026-09-19T07:30:13` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados en funciones críticas y la corrección de una inconsistencia semántica en `severity_label`, asegurando que la gestión de tipos sea coherente y robusta siguiendo los principios de legibilidad exigidos.
 - `2026-09-19T07:29:54` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints de retorno explícitos a funciones que carecían de ellos, y se han extraído los valores predeterminados y límites configurables a constantes documentadas para mejorar la claridad sobre las restricciones del sistema.
 - `2026-09-19T07:29:17` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para evitar que filas con campos nulos o malformados interrumpan el parseo, asegurando que solo se procesen registros que contengan pares nombre/comando íntegros.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T07:09:39` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_get_entry_value` y `_collect_settings` agregando validaciones explícitas contra caracteres no imprimibles y errores de conversión, asegurando que el estado interno de la app siempre contenga datos sanitizados y válidos incluso ante entradas malintencionadas o corruptas del usuario.
 - `2026-09-19T07:08:26` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` ante posibles excepciones inesperadas en las funciones `scorer` del pipeline, asegurando que el sistema pueda fallar parcialmente en un área sin invalidar el informe completo de salud.
 - `2026-09-19T06:59:17` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y las funciones auxiliares capturando potenciales errores de `path.relative_to` y `path.suffix` en nombres de archivo con caracteres inválidos o rutas malformadas, evitando que una entrada única dañe el reporte completo.
-- `2026-09-19T06:58:50` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `_sum_directory_recursive` mediante una validación explícita de `root_abs` contra valores vacíos o malformados y mejoré el manejo de excepciones en `_process_entry`, asegurando que cualquier entrada de sistema inaccesible no interrumpa el flujo del escaneo ni retorne datos ambiguos.
-- `2026-09-19T05:27:50` **settings.py** (seguridad defensiva): Se endureció la seguridad en `save()` al verificar que la ruta final (`ruta`) sea segura mediante `ensure_safe_to_modify` ANTES de realizar cualquier operación de escritura, evitando condiciones de carrera o escrituras en rutas que pudieron ser alteradas por symlinks después de la validación inicial del directorio padre.
-- `2026-09-19T05:27:07` **safety.py** (seguridad defensiva): Se añadió una validación específica para detectar rutas que intentan escapar de su directorio base mediante manipulaciones de `..` o componentes maliciosos antes de resolver la ruta, fortaleciendo la defensa contra path traversal en el método `_validate_structural_safety`.
-- `2026-09-19T05:17:56` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar una verificación explícita de `is_protected_path` sobre la ruta de destino, garantizando que el `_Para_Revisar` no pueda ser reubicado en una ruta crítica si el usuario modifica los ajustes de destino, además de asegurar el uso de `ensure_safe_to_modify` para el destino en `stage_for_review`.

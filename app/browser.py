@@ -83,7 +83,14 @@ ERROR_ACCESS_DENIED: int = 5
 
 @dataclass
 class BrowserCache:
-    """Representación de una carpeta de caché detectada y su peso en disco."""
+    """
+    Representación de un nodo de caché detectado.
+    
+    Attributes:
+        browser: Nombre comercial del navegador.
+        path: Ruta absoluta al sistema de archivos.
+        size_bytes: Tamaño en bytes calculado recursivamente.
+    """
     browser: str
     path: Path
     size_bytes: int
@@ -247,6 +254,7 @@ def _sum_directory_recursive(
 
     try:
         total: int = 0
+        # Uso de os.scandir para eficiencia en I/O sobre grandes directorios de caché
         with os.scandir(root_abs) as it:
             for entry in it:
                 total += _process_entry(entry, root_base, is_junction_fn, kernel32, memo, depth)
