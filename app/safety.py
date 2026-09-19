@@ -45,6 +45,7 @@ FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x400
 FILE_ATTRIBUTE_DIRECTORY: Final[int] = 0x10
 FILE_ATTRIBUTE_COMPRESSED: Final[int] = 0x800
 FILE_ATTRIBUTE_ENCRYPTED: Final[int] = 0x4000
+FILE_ATTRIBUTE_SPARSE_FILE: Final[int] = 0x200
 MAX_PATH_LENGTH: Final[int] = 260
 MAX_FILE_SIZE: Final[int] = 2 * 1024 * 1024 * 1024  # 2GB límite de seguridad
 
@@ -96,6 +97,7 @@ class SafetyValidationErrorCode(IntEnum):
     WRITE_ACCESS_DENIED = 24
     MOUNT_POINT_DETECTED = 25
     TOCTOU_VIOLATION = 26
+    SPARSE_FILE_DETECTED = 27
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
@@ -126,6 +128,7 @@ class ProtectionReason(Enum):
     KERNEL_LOCKED = "archivo bloqueado por kernel"
     ACCESS_WRITE = "acceso de escritura denegado"
     TOCTOU_VIOLATION = "violación de consistencia (TOCTOU)"
+    SPARSE_FILE = "archivo disperso (sparse file)"
 
 class ValidationContext(Enum):
     """Define si la validación es puramente estructural o requiere acceso a disco."""
@@ -233,13 +236,13 @@ def _is_reparse_point(path_str: str) -> bool:
         return False
 
 @lru_cache(maxsize=2048)
-def _is_encrypted_or_compressed(path_str: str) -> bool:
-    """Verifica atributos NTFS de cifrado o compresión que podrían impedir el acceso o lectura limpia."""
+def _is_encrypted_or_compressed_or_sparse(path_str: str) -> bool:
+    """Verifica atributos NTFS de cifrado, compresión o archivo disperso."""
     if os.name != 'nt': return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == 0xFFFFFFFF: return False
-        return bool(attrs & (FILE_ATTRIBUTE_COMPRESSED | FILE_ATTRIBUTE_ENCRYPTED))
+        return bool(attrs & (FILE_ATTRIBUTE_COMPRESSED | FILE_ATTRIBUTE_ENCRYPTED | FILE_ATTRIBUTE_SPARSE_FILE))
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         return False
 
@@ -311,7 +314,8 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _IntegrityCheck(ProtectionReason.IN_USE, lambda p, _: _is_file_in_use(str(p))),
     _IntegrityCheck(ProtectionReason.SYSTEM_HIDDEN, lambda p, _: _is_system_or_hidden(str(p))),
     _IntegrityCheck(ProtectionReason.OFFLINE, lambda p, _: _is_offline(str(p))),
-    _IntegrityCheck(ProtectionReason.ENCRYPTED_OR_COMPRESSED, lambda p, _: _is_encrypted_or_compressed(str(p))),
+    _IntegrityCheck(ProtectionReason.ENCRYPTED_OR_COMPRESSED, lambda p, _: _is_encrypted_or_compressed_or_sparse(str(p))),
+    _IntegrityCheck(ProtectionReason.SPARSE_FILE, lambda p, _: _is_encrypted_or_compressed_or_sparse(str(p))),
     _IntegrityCheck(ProtectionReason.HARD_LINK, lambda p, st: p.is_file() and st.st_nlink > 1),
     _IntegrityCheck(ProtectionReason.ADS, lambda p, _: _has_alternate_data_stream(p.name)),
     _IntegrityCheck(ProtectionReason.EMPTY_FILE, lambda p, st: p.is_file() and st.st_size == 0),
@@ -333,7 +337,8 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.REMOVABLE_DRIVE: SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED,
     ProtectionReason.KERNEL_LOCKED: SafetyValidationErrorCode.KERNEL_LOCKED_FILE,
     ProtectionReason.ACCESS_WRITE: SafetyValidationErrorCode.WRITE_ACCESS_DENIED,
-    ProtectionReason.MOUNT_POINT: SafetyValidationErrorCode.MOUNT_POINT_DETECTED
+    ProtectionReason.MOUNT_POINT: SafetyValidationErrorCode.MOUNT_POINT_DETECTED,
+    ProtectionReason.SPARSE_FILE: SafetyValidationErrorCode.SPARSE_FILE_DETECTED
 }
 
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
@@ -362,7 +367,6 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
                 code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
                 raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
         except (AttributeError, OSError, ctypes.ArgumentError, PermissionError):
-            # Fallo técnico en una regla: registramos y continuamos o abortamos según la severidad
             continue
 
 @lru_cache(maxsize=2048)
@@ -659,7 +663,7 @@ def describe_protection(path: PathLike) -> str:
             if _is_readonly(str(p)): return f"'{p}' es solo lectura."
             if _is_volume_readonly(str(p)): return f"'{p}' pertenece a un volumen de solo lectura."
             if _is_file_in_use(str(p)): return f"'{p}' en uso."
-            if _is_encrypted_or_compressed(str(p)): return f"'{p}' archivo cifrado o comprimido."
+            if _is_encrypted_or_compressed_or_sparse(str(p)): return f"'{p}' archivo cifrado, comprimido o disperso."
             if _is_offline(str(p)): return f"'{p}' archivo offline/nube."
             if _is_system_or_hidden(str(p)): return f"'{p}' atributo oculto/sistema/temporal."
             if _has_alternate_data_stream(p.name): return f"'{p}' contiene ADS."

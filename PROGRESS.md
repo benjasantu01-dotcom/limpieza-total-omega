@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
-- Rechazadas por tests: 13
+- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 54 | 2 | 11 | 5 | 62 |
+| 2026-09-17 | 54 | 2 | 11 | 5 | 58 |
 | 2026-09-18 | 150 | 9 | 39 | 18 | 134 |
-| 2026-09-19 | 12 | 2 | 2 | 0 | 4 |
+| 2026-09-19 | 15 | 3 | 2 | 0 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
+- seguridad defensiva: **46**
 - robustez ante casos límite: **45**
-- seguridad defensiva: **43**
 - legibilidad y documentación: **39**
 - rendimiento: **35**
 
@@ -35,18 +35,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **22**
 - `assistant.py`: **19**
 - `memory.py`: **19**
+- `safety.py`: **19**
 - `duplicates.py`: **18**
 - `quarantine.py`: **18**
-- `safety.py`: **18**
-- `settings.py`: **16**
+- `settings.py`: **17**
+- `scanner.py`: **11**
 - `organizer.py`: **10**
-- `scanner.py`: **10**
 - `branding.py`: **9**
 - `main.py`: **6**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T01:02:23` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` reemplazando `os.replace` por un flujo que verifica la integridad de la ruta destino antes de realizar la operación de sobreescritura, evitando condiciones de carrera o manipulación de enlaces simbólicos mediante `ensure_safe_to_modify` aplicado justo antes de la persistencia atómica.
+- `2026-09-19T01:01:55` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo añadiendo una validación explícita para asegurar que los archivos analizados tengan atributos de archivo válidos y no sean puntos de reanálisis (reparse points) antes de procesarlos, evitando así posibles desbordamientos de pila o accesos a rutas fuera del alcance permitido por el usuario.
+- `2026-09-19T01:01:29` **safety.py** (seguridad defensiva): Se ha añadido la detección de archivos dispersos (Sparse Files) en `_VALIDATORS` y su lógica asociada, ya que los archivos dispersos pueden reportar un tamaño lógico engañosamente pequeño mientras ocupan espacio físico no esperado, lo cual representa un riesgo de integridad en operaciones de copia o movimiento.
 - `2026-09-19T00:51:09` **memory.py** (seguridad defensiva): Se ha mejorado la robustez del manejo de procesos en `_get_process_path` integrando validaciones de seguridad adicionales antes de abrir un handle, asegurando que solo se procesen rutas que realmente representan archivos locales validados, evitando dependencias de procesos que no son ejecutables ordinarios y reforzando la integridad al utilizar `is_safe_to_modify` antes de cualquier interacción potencial con la estructura del proceso.
 - `2026-09-19T00:45:43` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `on_stage` y `on_quarantine_duplicates` añadiendo una validación explícita mediante `safety.is_safe_to_modify` dentro de la lógica del hilo asíncrono, asegurando que cada archivo individual sea verificado antes de cualquier operación de movimiento, incluso si ya fueron filtrados previamente.
 - `2026-09-19T00:43:40` **healthscore.py** (seguridad defensiva): Se reforzó la robustez defensiva del pipeline de cálculo mediante la validación estricta de la integridad de los resultados intermedios y la prevención de fallos silenciosos por desbordamiento numérico en `compute_score`, asegurando que `metric_breakdown` siempre tenga claves consistentes.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T00:21:00` **safety.py** (robustez ante casos límite): Se ha añadido una validación de `os.access(path, os.W_OK)` dentro de `ensure_safe_to_modify` para verificar efectivamente los permisos de escritura del sistema operativo antes de intentar cualquier operación, evitando fallos en tiempo de ejecución por permisos denegados en archivos de solo lectura a nivel de ACL.
 - `2026-09-19T00:13:25` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar archivos inexistentes de forma explícita y se ha refinado el manejo de `OSError` en `_safe_unlink` para asegurar que el sistema pueda liberar recursos incluso si la validación falla parcialmente, evitando bloqueos en el bucle de limpieza.
 - `2026-09-19T00:12:07` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante errores inesperados durante el procesamiento asíncrono y la inicialización de la UI, asegurando que las validaciones de seguridad (`ensure_safety`) se apliquen consistentemente antes de cualquier operación potencialmente crítica en los hilos del pool.
-- `2026-09-18T14:59:39` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `summarize` y `compute_score` ante valores inesperados de `WEIGHTS` o `breakdown`, asegurando que el renderizado de gráficos y el cálculo de puntajes no fallen si los datos de configuración son inconsistentes.
-- `2026-09-18T14:59:09` **duplicates.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la recolección de archivos ante errores de entrada o cambios dinámicos del sistema de archivos al añadir validaciones adicionales contra rutas nulas o inexistentes y asegurar la integridad de `is_safe_to_modify` dentro de los bucles de escaneo, evitando que excepciones de acceso interrumpan procesos de análisis más amplios.
-- `2026-09-18T14:50:38` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos que desaparecen durante el escaneo (condición de carrera) o que son inaccesibles, envolviendo las llamadas críticas en un bloque `try-except` más granular para evitar que una excepción en un archivo puntual aborte el reporte completo del usuario.

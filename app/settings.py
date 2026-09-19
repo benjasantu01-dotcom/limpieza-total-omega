@@ -344,6 +344,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             os.fsync(f.fileno())
         
         if ruta.exists():
+            ensure_safe_to_modify(ruta)
             try: os.replace(ruta, bak_path)
             except OSError: pass
             

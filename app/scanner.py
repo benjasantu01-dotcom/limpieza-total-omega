@@ -160,6 +160,12 @@ class Scanner:
         if is_protected_path(Path(entry.path)):
             return False
         
+        # Verificar atributos mediante stat para confirmar que no es un reparse point
+        stats = _safe_stat(entry)
+        if stats and hasattr(stats, 'st_file_attributes'):
+            if bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT):
+                return False
+
         return not entry.is_symlink()
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:

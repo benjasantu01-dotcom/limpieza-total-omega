@@ -610,3 +610,51 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-09-19T00:52:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-19T00:52:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T00:52:22` Corrida terminada. Total usado hoy: 20.
+- `2026-09-19T01:00:49` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-09-19T01:01:29` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido la detección de archivos dispersos (Sparse Files) en `_VALIDATORS` y su lógica asociada, ya que los archivos dispersos pueden reportar un tamaño lógico engañosamente pequeño mientras ocupan espacio físico no esperado, lo cual representa un riesgo de integridad en operaciones de copia o movimiento.
+- `2026-09-19T01:01:55` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del escaneo añadiendo una validación explícita para asegurar que los archivos analizados tengan atributos de archivo válidos y no sean puntos de reanálisis (reparse points) antes de procesarlos, evitando así posibles desbordamientos de pila o accesos a rutas fuera del alcance permitido por el usuario.
+- `2026-09-19T01:02:23` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save` reemplazando `os.replace` por un flujo que verifica la integridad de la ruta destino antes de realizar la operación de sobreescritura, evitando condiciones de carrera o manipulación de enlaces simbólicos mediante `ensure_safe_to_modify` aplicado justo antes de la persistencia atómica.
+- `2026-09-19T01:02:35` Tests FALLARON:
+```
+)
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:424: SyntaxWarning: invalid escape sequence '\)'
+    """Determina si una ruta apunta a la raíz de un dispositivo de almacenamiento (ej C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff:
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff:
+  + []
+  - [
+  -     'Real',
+  - ]
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+4 failed, 295 passed, 16 warnings in 1.44s
+
+```
+- `2026-09-19T01:02:35` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad defensiva en `startup.py` añadiendo una validación explícita para evitar la resolución de rutas relativas peligrosas o malformadas mediante el uso de `pathlib.Path.is_absolute()` antes de cualquier operación de resolución, garantizando que el escáner no intente acceder a contextos fuera del árbol de directorios esperado.
+- `2026-09-19T01:02:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T01:02:35` Corrida terminada. Total usado hoy: 24.
