@@ -544,3 +544,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-09-19T11:24:39` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_collect_summary_data` y `walk_files` ante posibles fallos en la lectura de atributos de archivo, reemplazando el acceso directo a `path.suffix` por un manejo defensivo y asegurando que `_is_excluded_path` no falle ante nombres de archivo inválidos o rutas inexistentes durante la iteración.
 - `2026-09-19T11:24:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T11:24:39` Corrida terminada. Total usado hoy: 268.
+- `2026-09-19T11:33:01` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-09-19T11:33:27` ➖ Sin cambios en duplicates.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré el manejo de errores en `hash_file` y `partial_hash` validando explícitamente los parámetros de entrada y agregando protección contra `MemoryError` o errores de lectura parcial durante el hashing, evitando que el proceso se interrumpa silenciosamente.
+- `2026-09-19T11:33:52` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y `summarize` implementando una validación temprana de `SystemMetrics` y `HealthResult` para evitar errores de ejecución ante datos inesperados, asegurando que `_evaluate_rules` sea tolerante a fallos mediante el uso de `getattr` seguro y limpieza de strings.
+- `2026-09-19T11:34:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-19T11:35:26` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-19T11:36:33` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-19T11:37:45` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-19T11:38:12` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-19T11:38:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T11:38:12` Corrida terminada. Total usado hoy: 272.

@@ -8,28 +8,28 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 210
+- Rechazadas por guardia de seguridad: 42
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 104 | 5 | 28 | 12 | 87 |
-| 2026-09-19 | 109 | 8 | 17 | 11 | 123 |
+| 2026-09-18 | 103 | 5 | 25 | 12 | 87 |
+| 2026-09-19 | 110 | 8 | 17 | 12 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **46**
 - seguridad defensiva: **46**
-- manejo de errores y validación de entradas: **44**
-- legibilidad y documentación: **39**
+- manejo de errores y validación de entradas: **45**
 - rendimiento: **38**
+- legibilidad y documentación: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
+- `healthscore.py`: **23**
 - `browser.py`: **21**
 - `diskreport.py`: **20**
 - `safety.py`: **19**
@@ -41,11 +41,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **12**
 - `branding.py`: **11**
 - `main.py`: **10**
-- `scanner.py`: **9**
+- `scanner.py`: **8**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T11:33:52` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` implementando una validación temprana de `SystemMetrics` y `HealthResult` para evitar errores de ejecución ante datos inesperados, asegurando que `_evaluate_rules` sea tolerante a fallos mediante el uso de `getattr` seguro y limpieza de strings.
 - `2026-09-19T11:24:39` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` y `walk_files` ante posibles fallos en la lectura de atributos de archivo, reemplazando el acceso directo a `path.suffix` por un manejo defensivo y asegurando que `_is_excluded_path` no falle ante nombres de archivo inválidos o rutas inexistentes durante la iteración.
 - `2026-09-19T11:24:28` **browser.py** (manejo de errores y validación de entradas): Se reforzó la validación de los parámetros de entrada y el manejo de estados nulos en `total_cache_bytes` y `summarize` para evitar excepciones imprevistas durante la generación de reportes si se procesan listas vacías o valores inesperados.
 - `2026-09-19T11:23:29` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `ingest` y `_apply_field` dentro de `SystemContext` para evitar que un dato malformado o inesperado en el origen (source) detenga el procesamiento de las demás métricas, asegurando una ingesta parcial exitosa incluso si algún valor individual falla.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T09:11:20` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante casos límite en la manipulación de archivos implementando un manejo explícito de `OSError` durante la creación del directorio de cuarentena y añadiendo una validación de longitud de ruta antes de cualquier operación de movimiento para prevenir errores fatales del sistema operativo por rutas excesivamente largas.
 - `2026-09-19T09:05:47` **memory.py** (robustez ante casos límite): Se mejora la robustez ante errores de permiso y procesos huérfanos en `trim_working_set` y `_get_process_path`, asegurando que el manejo de *handles* de Win32 sea más resiliente y que las validaciones de seguridad ocurran antes de cualquier intento de operación sensible.
 - `2026-09-19T09:00:54` **healthscore.py** (robustez ante casos límite): Mejora la robustez del sistema ante datos de entrada extremos o malformados mediante la adición de una validación explícita de `is_finite` en `SystemMetrics` y un manejo de errores más defensivo en `_evaluate_rules` y `compute_score`.
-- `2026-09-19T09:00:28` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante fallos de E/S en `_is_file_locked` y las funciones de hashing, implementando una gestión de errores más granular y evitando que una excepción inesperada durante la lectura del archivo detenga el procesamiento de todo el grupo de duplicados.
