@@ -78,17 +78,17 @@ def _bytes_to_mb(size_bytes: int | float) -> float:
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
     Valida la ruta de entrada para operaciones de escaneo.
-    Asegura que el directorio exista, sea accesible y no esté en la lista 
-    de rutas protegidas por seguridad.
+    Asegura que el directorio exista, sea accesible y no sea una ruta insegura.
     """
     if directory is None:
         return None
     try:
-        raw_path = Path(directory).resolve(strict=True)
+        raw_path = Path(directory).resolve()
         
-        if not raw_path.is_dir():
+        if not raw_path.exists() or not raw_path.is_dir():
             return None
             
+        # Bloquear rutas UNC o de sistema mediante la lógica de seguridad compartida
         if is_protected_path(raw_path) or not os.access(raw_path, os.R_OK):
             return None
             
@@ -103,13 +103,14 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
     Detecta enlaces simbólicos y puntos de reparse (Windows Junctions) para 
     evitar cruzar volúmenes o entrar en bucles de recursión.
     """
-    REPARSE_POINT_ATTR = 0x400
     try:
+        # Si es un enlace simbólico, es una ruta fuera del árbol físico real
         if entry.is_symlink():
             return True
+        # En Windows, los puntos de reparse (Junctions) deben tratarse como fuera de límites
         if os.name == 'nt':
             st = entry.stat(follow_symlinks=False)
-            if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & REPARSE_POINT_ATTR):
+            if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
                 return True
     except (OSError, PermissionError, AttributeError):
         return True
@@ -123,7 +124,7 @@ def _get_local_windows_drives() -> List[str]:
     for letter in string.ascii_uppercase:
         drive = f"{letter}:\\"
         try:
-            p = Path(drive).resolve(strict=False)
+            p = Path(drive)
             if p.exists() and not is_protected_path(p):
                 drives.append(drive)
         except (OSError, PermissionError, RuntimeError):
@@ -208,7 +209,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None:
         return None
     try:
-        p = Path(mount).resolve(strict=True)
+        p = Path(mount).resolve()
         if not is_protected_path(p):
             usage = shutil.disk_usage(p)
             return DriveUsage(str(p), usage.total, usage.used, usage.free)
@@ -225,8 +226,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador de archivos recursivo. Utiliza un stack y validación de inodos 
-    para evitar redundancias (hard-links) y ciclos (puntos de reparse).
+    Generador de archivos recursivo con validación de inodos y puntos de reparse.
     """
     root_path = _validate_root(directory)
     if root_path is None: return

@@ -252,7 +252,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Inconsistencia numérica detectada."])
     
     recommendations: List[str] = []
-    metric_breakdown: Dict[MetricKey, int] = {}
+    metric_breakdown: Dict[MetricKey, int] = {k: 0 for k in WEIGHTS.keys()}
     accumulated_score: float = 0.0
     
     for entry in _PIPELINE:

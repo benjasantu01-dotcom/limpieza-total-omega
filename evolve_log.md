@@ -568,3 +568,14 @@ assert not {'replace'}
 - `2026-09-19T00:33:55` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la validación estricta de rutas mediante `is_protected_path` al resolver las rutas de los navegadores, asegurando que ninguna ruta resuelta escape del directorio base o toque componentes restringidos antes de intentar cualquier operación de acceso.
 - `2026-09-19T00:33:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T00:33:55` Corrida terminada. Total usado hoy: 12.
+- `2026-09-19T00:40:22` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-09-19T00:40:49` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_validate_root` y `walk_files` para manejar rutas UNC y validar que la ruta resuelta no sea un punto de reparse (Junction/Symlink) externo al sistema de archivos esperado, evitando seguirlos incluso si se intenta acceder a ellos mediante rutas relativas o UNC.
+- `2026-09-19T00:41:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-19T00:41:52` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-19T00:42:10` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-19T00:42:49` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-09-19T00:43:40` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez defensiva del pipeline de cálculo mediante la validación estricta de la integridad de los resultados intermedios y la prevención de fallos silenciosos por desbordamiento numérico en `compute_score`, asegurando que `metric_breakdown` siempre tenga claves consistentes.
+- `2026-09-19T00:44:40` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-19T00:45:43` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `on_stage` y `on_quarantine_duplicates` añadiendo una validación explícita mediante `safety.is_safe_to_modify` dentro de la lógica del hilo asíncrono, asegurando que cada archivo individual sea verificado antes de cualquier operación de movimiento, incluso si ya fueron filtrados previamente.
+- `2026-09-19T00:45:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T00:45:43` Corrida terminada. Total usado hoy: 16.

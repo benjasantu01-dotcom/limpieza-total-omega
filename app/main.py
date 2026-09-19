@@ -1393,8 +1393,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         def task() -> None:
             self.set_status("Moviendo a revisión...")
             try:
-                dest = stage_for_review(aptos)
-                self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")
+                # Verificación final individual en el hilo de fondo por seguridad
+                confirmados = [jf for jf in aptos if self._is_safe_path(jf.path)]
+                dest = stage_for_review(confirmados)
+                self.log(f"Movidos {len(confirmados)} archivos a: {dest}", "Limpieza")
                 self._invalidate_cache("junk")
                 self._safe_run_ui_callback(self.refresh_list)
             except Exception as e:
@@ -1502,6 +1504,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.set_status("Aislando archivos...")
             aislados = 0
             for item_s in suspicions:
+                # Verificación final individual en el hilo de fondo
                 if self._is_safe_path(item_s.path):
                     try:
                         p = Path(item_s.path).resolve()
@@ -1715,7 +1718,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @validated_ui_operation
     @ensure_safety
     def on_find_duplicates(self) -> None:
-        """Inicia búsqueda de duplicados por hash."""
+        """Inicia análisis de duplicados por hash."""
         folder = self._ask_folder()
         if not folder or not self._verify_disk_path(folder):
             return
@@ -1778,6 +1781,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         def task() -> None:
             self.set_status("Aislando copias duplicadas...")
             movidos = 0
+            # Verificación final individual en el hilo de fondo
             for ruta in aptos:
                 if self._is_safe_path(ruta):
                     try:
