@@ -106,8 +106,9 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
+    # Aseguramos que la penalización sea un número finito y no negativo
     penalization = (_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)
-    return _clamp(1.0 - max(0.0, penalization))
+    return _clamp(1.0 - _clamp(penalization, 0.0, 1.0))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     return _clamp(_to_float(available_percent) * _INV_RAM)
@@ -189,7 +190,11 @@ class HealthResult:
         return 80 <= self.score <= 100
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
-    return float(max(min_val, min(max_val, value)))
+    try:
+        if not math.isfinite(value): return min_val
+        return float(max(min_val, min(max_val, value)))
+    except (TypeError, ValueError):
+        return min_val
 
 def _to_float(value: Any, default: float = 0.0) -> float:
     try:
@@ -226,13 +231,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for area, weight, scorer, rules in _PIPELINE:
         try:
-            val = scorer(metrics)
-            area_ratio = _clamp(float(val)) if math.isfinite(val) else 0.0
+            area_ratio = scorer(metrics)
             
             if rules:
                 _evaluate_rules(metrics, rules, area_ratio, recommendations)
             
-            weighted_points = _clamp(round(area_ratio * weight), 0, weight)
+            weighted_points = _clamp(round(area_ratio * weight), 0.0, float(weight))
             metric_breakdown[area] = int(weighted_points)
             accumulated_score += weighted_points
         except (TypeError, ValueError, ZeroDivisionError, ArithmeticError):

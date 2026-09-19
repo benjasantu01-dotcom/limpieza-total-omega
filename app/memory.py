@@ -196,22 +196,24 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     )
 
 def _is_valid_process_entry(fields: List[str]) -> Optional[ProcessMemory]:
-    """Valida integridad de un registro CSV y descarta rutas protegidas por seguridad."""
+    """Valida integridad de un registro CSV y descarta entradas inválidas o protegidas."""
     if fields is None or len(fields) < 3:
         return None
     try:
         name_raw = fields[0].strip()
-        pid_raw = fields[1].strip()
-        ws_raw = fields[2].strip()
+        if not name_raw: return None
         
-        if not name_raw or not pid_raw.isdigit() or not ws_raw.isdigit():
+        # Validar numéricos
+        if not fields[1].isdigit() or not fields[2].isdigit():
             return None
             
-        pid_val = int(pid_raw)
-        ws_val = int(ws_raw)
+        pid_val = int(fields[1])
+        ws_val = int(fields[2])
         
+        # Filtros de seguridad y lógica
         if pid_val <= 0 or ws_val < 0 or is_protected_path(name_raw):
             return None
+            
         return ProcessMemory(name=name_raw, pid=pid_val, working_set=BytesValue(ws_val))
     except (ValueError, TypeError):
         return None
@@ -227,7 +229,6 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         return []
     
     results: List[ProcessMemory] = []
-    # Usamos generador para filtrar en una pasada eficiente
     lines = (line for line in raw_csv_text.splitlines() if line.strip())
     for line in lines:
         try:
@@ -349,7 +350,6 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     
     buf = ctypes.create_unicode_buffer(1024)
     try:
-        # Obtiene el nombre completo del ejecutable asociado al handle del proceso
         if psapi.GetModuleFileNameExW(ctypes.c_void_p(proc_handle), None, buf, 1024) > 0:
             path_str = buf.value
             if not path_str or any(path_str.startswith(prefix) for prefix in ("\\\\", "\\??\\", "\\Device\\")):
@@ -376,7 +376,6 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
     
     try:
         exit_code = ctypes.c_ulong()
-        # Valida que el proceso esté corriendo antes de intentar alterar su gestión de memoria
         if not kernel32.GetExitCodeProcess(ctypes.c_void_p(proc_handle), ctypes.byref(exit_code)):
             return False, f"Imposible verificar estado (Error {kernel32.GetLastError()})."
             
@@ -416,7 +415,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not is_safe: 
             return False, error_reason or "Verificación de seguridad fallida."
         
-        # Operación crítica: reducir la memoria asignada al Working Set del proceso
         if not psapi.EmptyWorkingSet(ctypes.c_void_p(proc_handle)): 
             error_code = kernel32.GetLastError()
             return False, f"Sistema denegó la operación (Error {error_code})."

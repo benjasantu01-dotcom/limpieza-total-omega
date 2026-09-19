@@ -196,9 +196,12 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         
     try:
         s_res = src.resolve()
+        # Verificamos existencia real post-resolución
+        if not s_res.exists(): return False
+        
         parent = (dest.parent if not dest.exists() else dest.resolve().parent)
         
-        if not s_res.exists() or _is_recursive_violation(s_res, dest): 
+        if _is_recursive_violation(s_res, dest): 
             return False
         if not os.access(parent, os.W_OK): 
             return False

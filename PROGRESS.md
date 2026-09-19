@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **210** (41.7% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 14 | 0 | 1 | 1 | 34 |
+| 2026-09-17 | 10 | 0 | 1 | 1 | 34 |
 | 2026-09-18 | 150 | 9 | 39 | 18 | 134 |
-| 2026-09-19 | 47 | 3 | 8 | 4 | 42 |
+| 2026-09-19 | 50 | 3 | 8 | 4 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
+- robustez ante casos límite: **44**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **41**
-- seguridad defensiva: **40**
 - rendimiento: **36**
+- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
+- `healthscore.py`: **23**
 - `browser.py`: **20**
 - `diskreport.py`: **20**
 - `assistant.py`: **19**
-- `safety.py`: **18**
-- `memory.py`: **18**
+- `memory.py`: **19**
 - `duplicates.py`: **17**
 - `quarantine.py`: **17**
-- `settings.py`: **16**
-- `scanner.py`: **11**
+- `safety.py`: **17**
+- `settings.py`: **15**
+- `organizer.py`: **11**
+- `scanner.py`: **10**
 - `branding.py`: **10**
-- `organizer.py`: **10**
-- `startup.py`: **7**
+- `startup.py`: **6**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T04:39:57` **organizer.py** (robustez ante casos límite): Se ha robustecido el proceso de movimiento de archivos incluyendo una verificación de integridad post-resolución de ruta y gestión de excepciones durante la lectura de metadatos, evitando que archivos bloqueados o con cambios de estado durante el escaneo detengan la ejecución.
+- `2026-09-19T04:39:44` **memory.py** (robustez ante casos límite): Mejoré la resiliencia de `_is_valid_process_entry` ante datos de entrada corruptos o incompletos, añadiendo una validación explícita de `working_set` y saneando las rutas de procesos para evitar el manejo de entradas inexistentes o basura que puedan causar excepciones en etapas posteriores.
+- `2026-09-19T04:35:34` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` y `compute_score` ante valores atípicos y fallos en el cálculo de ratios, asegurando que cualquier anomalía aritmética (como resultados no finitos o negativos) sea siempre normalizada mediante `_clamp` o detectada antes de impactar el cálculo del score final.
 - `2026-09-19T04:26:31` **duplicates.py** (robustez ante casos límite): Se ha mejorado la resiliencia en `_collect_candidates` y `_is_file_locked` ante condiciones de carrera y archivos inconsistentes, añadiendo un manejo de excepciones más granular (`OSError` durante la lectura) y verificando la existencia del archivo antes de intentar el hash para evitar errores en archivos que desaparecen durante el proceso.
 - `2026-09-19T04:25:54` **browser.py** (robustez ante casos límite): Se introdujo una comprobación explícita para detectar archivos bloqueados por procesos externos (Sharing Violation) durante la lectura, mejorando la robustez frente a la concurrencia al capturar el error `ERROR_SHARING_VIOLATION` de forma específica en `_process_entry`.
 - `2026-09-19T04:16:34` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar de forma segura entradas donde las métricas podrían ser `None`, tipos no numéricos o valores desbordados, evitando excepciones no controladas durante la ingesta de datos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T03:55:30` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la recreación de listas y la reevaluación de diccionarios dentro del bucle principal, además de asegurar que la validación de `metrics` sea una operación única en la entrada de `compute_score`.
 - `2026-09-19T03:46:46` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la lógica de búsqueda por tokens mediante el uso de un mapa pre-procesado, evitando la re-evaluación innecesaria en cada consulta.
 - `2026-09-19T03:35:37` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica y legibilidad del módulo `StartupEntry` añadiendo docstrings específicos para los métodos privados y clarificando la intención detrás de la validación de rutas, facilitando el mantenimiento y auditoría del código.
-- `2026-09-19T03:35:23` **settings.py** (legibilidad y documentación): Se introdujo un `TypeGuard` personalizado `is_app_settings` y se refactorizó `_ensure_settings_integrity` para documentar explícitamente la lógica de recuperación ante fallos, mejorando la legibilidad y la seguridad de tipos al manipular la configuración.
-- `2026-09-19T03:34:31` **safety.py** (legibilidad y documentación): Se introdujo un `TypeGuard` para la función `is_protected_path` y se estandarizaron los docstrings con las convenciones de Google, añadiendo detalles técnicos específicos sobre el comportamiento de los filtros para mejorar la mantenibilidad y claridad para otros desarrolladores.
-- `2026-09-19T03:25:18` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados en las funciones críticas de E/S y aislamiento, aclarando el propósito y el contrato de cada parámetro para facilitar el mantenimiento.

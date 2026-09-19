@@ -961,3 +961,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-19T04:26:31` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia en `_collect_candidates` y `_is_file_locked` ante condiciones de carrera y archivos inconsistentes, añadiendo un manejo de excepciones más granular (`OSError` durante la lectura) y verificando la existencia del archivo antes de intentar el hash para evitar errores en archivos que desaparecen durante el proceso.
 - `2026-09-19T04:26:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T04:26:31` Corrida terminada. Total usado hoy: 104.
+- `2026-09-19T04:35:06` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-09-19T04:35:34` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `score_security` y `compute_score` ante valores atípicos y fallos en el cálculo de ratios, asegurando que cualquier anomalía aritmética (como resultados no finitos o negativos) sea siempre normalizada mediante `_clamp` o detectada antes de impactar el cálculo del score final.
+- `2026-09-19T04:36:35` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-19T04:37:38` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-19T04:38:07` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-19T04:38:31` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-19T04:39:44` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la resiliencia de `_is_valid_process_entry` ante datos de entrada corruptos o incompletos, añadiendo una validación explícita de `working_set` y saneando las rutas de procesos para evitar el manejo de entradas inexistentes o basura que puedan causar excepciones en etapas posteriores.
+- `2026-09-19T04:39:57` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha robustecido el proceso de movimiento de archivos incluyendo una verificación de integridad post-resolución de ruta y gestión de excepciones durante la lectura de metadatos, evitando que archivos bloqueados o con cambios de estado durante el escaneo detengan la ejecución.
+- `2026-09-19T04:39:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T04:39:57` Corrida terminada. Total usado hoy: 108.
