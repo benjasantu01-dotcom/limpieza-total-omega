@@ -366,10 +366,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
         return ruta
     except (OSError, IOError, PermissionError, UnsafePathError):
+        return None
+    finally:
         if temp_path.exists():
             try: os.remove(temp_path)
             except OSError: pass
-        return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     current = load(custom_base)

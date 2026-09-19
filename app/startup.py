@@ -302,6 +302,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             val_name = row.get(f_name)
             val_cmd = row.get(f_cmd)
             
+            # Validación: asegurar que los valores existan y sean strings procesables
             if val_name is None or val_cmd is None:
                 continue
                 

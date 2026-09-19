@@ -185,9 +185,10 @@ def severity_color(severity: Optional[str]) -> ColorHex:
 
 def severity_label(severity: Optional[str]) -> str:
     """Retorna la etiqueta descriptiva legible para una severidad dada."""
-    if isinstance(severity, str) and severity.lower() in SEVERITY_STYLES:
-        return _get_severity_style(severity)[1]
-    return severity.capitalize() if isinstance(severity, str) else "Desconocido"
+    if isinstance(severity, str):
+        style = SEVERITY_STYLES.get(severity.lower())
+        return style[1] if style else severity.capitalize()
+    return "Desconocido"
 
 def severity_icon(severity: Optional[str]) -> str:
     """Retorna el glifo unicode representativo para una severidad dada."""
