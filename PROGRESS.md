@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 191
+- Sin respuesta de la IA (error o límite): 190
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 121 | 7 | 31 | 13 | 100 |
-| 2026-09-19 | 105 | 8 | 17 | 11 | 91 |
+| 2026-09-18 | 121 | 7 | 31 | 13 | 96 |
+| 2026-09-19 | 106 | 8 | 17 | 11 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - robustez ante casos límite: **46**
+- seguridad defensiva: **46**
 - legibilidad y documentación: **45**
-- seguridad defensiva: **45**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
@@ -36,8 +36,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **20**
 - `duplicates.py`: **18**
 - `assistant.py`: **17**
+- `settings.py`: **16**
 - `quarantine.py`: **16**
-- `settings.py`: **15**
 - `organizer.py`: **14**
 - `branding.py`: **12**
 - `scanner.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T10:01:40` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita de `is_safe_to_modify` sobre el directorio padre antes de intentar cualquier operación de escritura, y aseguré que la creación del archivo temporal no se vea afectada por condiciones de carrera o rutas maliciosas al verificar la integridad de `ruta` inmediatamente antes de cada operación de sistema.
 - `2026-09-19T09:52:38` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para prevenir ataques de "Time-of-Check to Time-of-Use" (TOCTOU) adicionales mediante la validación del estado del padre inmediato antes de cualquier operación, asegurando que el directorio contenedor no haya sido reemplazado por un enlace o punto de reparse después de la normalización.
 - `2026-09-19T09:46:40` **organizer.py** (seguridad defensiva): Se reforzó `_is_safe_for_disk_op` para prevenir la escritura en dispositivos de solo lectura (como unidades de red montadas, medios extraíbles de solo lectura o particiones bloqueadas) mediante la verificación explícita de acceso de escritura antes de intentar cualquier operación de movimiento.
 - `2026-09-19T09:32:18` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `duplicates.py` mediante la implementación de `path.samefile()` en `_collect_candidates`, previniendo que una misma ruta procesada a través de distintos enlaces simbólicos o alias del sistema de archivos sea contada erróneamente como duplicada de sí misma.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T08:51:42` **browser.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores durante el escaneo de directorios dentro de `_sum_directory_recursive` para manejar específicamente las violaciones de acceso (error 32) y denegación de acceso (error 5) de manera silenciosa pero controlada, evitando que una carpeta bloqueada o inaccesible interrumpa el conteo total del árbol de caché.
 - `2026-09-19T08:51:13` **branding.py** (robustez ante casos límite): Se introdujo una validación de seguridad en `save_logo_svg` utilizando `is_protected_path` antes de intentar la escritura en disco, cumpliendo con el enfoque de robustez al evitar operaciones innecesarias en rutas críticas o restringidas.
 - `2026-09-19T08:50:39` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de inferencia local añadiendo validación de `score` (asegurando que sea un entero válido) y manejando explícitamente el caso en que las métricas resulten en valores de punto flotante no finitos (NaN/Inf) mediante una verificación más estricta en el método de ingesta, evitando que datos malformados degraden la lógica de decisión.
-- `2026-09-19T08:41:16` **settings.py** (rendimiento): Optimicé el rendimiento de carga y validación mediante el uso de un diccionario de acceso directo `_KEY_TO_ENUM` y la eliminación de llamadas recursivas/redundantes en `_ensure_settings_integrity`, asegurando que la configuración solo se procese cuando sea estrictamente necesario.
