@@ -1420,3 +1420,10 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-09-19T09:12:02` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez ante rutas inexistentes y estados de carrera (TOCTOU) en `ensure_safe_to_modify`, moviendo el chequeo de existencia del parent después de la normalización inicial y asegurando que las validaciones de atributos no fallen si el archivo se elimina justo antes de ser consultado.
 - `2026-09-19T09:12:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T09:12:02` Corrida terminada. Total usado hoy: 216.
+- `2026-09-19T09:20:27` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-09-19T09:20:55` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-19T09:21:25` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez ante la concurrencia y fallos de escritura mediante el uso de un manejo de excepciones más granular en `save`, asegurando que `temp_path` siempre se libere correctamente sin dejar archivos huérfanos incluso ante errores inesperados durante `os.replace` o `os.fsync`.
+- `2026-09-19T09:21:51` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-19T09:22:17` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Reforcé la seguridad defensiva al inyectar un control explícito en la comunicación HTTP, asegurando que la clave API y el nombre del modelo pasen por una validación estricta de formato (`Regex`) antes de ser utilizados para construir la URL, evitando posibles vulnerabilidades de inyección en la cadena de conexión.
+- `2026-09-19T09:22:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T09:22:17` Corrida terminada. Total usado hoy: 220.
