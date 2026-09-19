@@ -270,7 +270,10 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             try:
                 with os.scandir(current_dir) as it:
                     for entry in it:
-                        scanner.process_entry(entry, directory_stack)
+                        try:
+                            scanner.process_entry(entry, directory_stack)
+                        except FileNotFoundError:
+                            continue
             except (PermissionError, OSError):
                 continue
         return scanner.results

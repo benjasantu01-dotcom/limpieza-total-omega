@@ -306,7 +306,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 final_data = _ensure_settings_integrity(validate(raw))
             _CACHE[r] = (stats.st_mtime, final_data)
             return final_data.copy()
-        except (OSError, PermissionError, ValueError, json.JSONDecodeError):
+        except (OSError, PermissionError, ValueError, json.JSONDecodeError, UnicodeDecodeError):
             continue
             
     return DEFAULTS.copy()

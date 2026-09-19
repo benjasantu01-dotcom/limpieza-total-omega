@@ -747,3 +747,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-19T13:37:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-19T13:37:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T13:37:37` Corrida terminada. Total usado hoy: 320.
+- `2026-09-19T13:46:04` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-19T13:46:43` ➖ Sin cambios en safety.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez ante archivos inexistentes en `_validate_ntfs_reparse_redirection`, evitando intentar abrir un handle sobre una ruta que no existe (lo cual lanzaba errores innecesarios o fallos en la lógica de validación).
+- `2026-09-19T13:47:09` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores de E/S en `_safe_stat` y se añadió una validación defensiva en el bucle principal de `scan_directory` para capturar entradas que pudieran haber sido eliminadas o bloqueadas entre la obtención del iterador y el procesamiento (`FileNotFoundError`), evitando que una condición de carrera sencilla detenga el escaneo completo.
+- `2026-09-19T13:47:39` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejoró `load` para manejar escenarios de archivos dañados o bloqueados durante la lectura mediante un `try-except` más robusto que no solo captura errores de JSON, sino que también gestiona explícitamente archivos con contenido basura o permisos denegados, asegurando que la aplicación siempre retorne una configuración válida en lugar de fallar silenciosamente o truncar estados.
+- `2026-09-19T13:48:39` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-19T13:49:42` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-19T13:50:48` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-19T13:51:56` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-19T13:51:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T13:51:56` Corrida terminada. Total usado hoy: 324.
