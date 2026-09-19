@@ -258,10 +258,14 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula el tamaño acumulado de archivos bajo un directorio usando `os.scandir`
-    y memoización para evitar re-procesar subdirectorios visitados.
+    y memoización, validando que cada paso sea seguro y esté bajo el root_base.
     """
     if root_abs in memo:
         return memo[root_abs]
+
+    # Validación defensiva: asegurar que el nodo actual no haya escapado de root_base
+    if not _is_path_inside_base(Path(root_abs), Path(root_base)):
+        return 0
 
     directory_total_bytes: int = 0
     try:

@@ -5,19 +5,19 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Iteraciones totales: **503**
+- Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 73 | 2 | 20 | 10 | 75 |
-| 2026-09-19 | 140 | 12 | 22 | 14 | 136 |
+| 2026-09-18 | 73 | 2 | 20 | 10 | 71 |
+| 2026-09-19 | 142 | 12 | 22 | 14 | 137 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,14 +25,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **50**
 - robustez ante casos límite: **43**
 - rendimiento: **36**
-- seguridad defensiva: **34**
+- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **23**
-- `browser.py`: **20**
+- `browser.py`: **21**
+- `assistant.py`: **19**
 - `safety.py`: **19**
-- `assistant.py`: **18**
 - `diskreport.py`: **18**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T14:04:19` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de la ruta resuelta contra el directorio base, previniendo que el escaneo pueda escapar del árbol de directorios permitido incluso si ocurren eventos inesperados en el sistema de archivos durante la recursión.
+- `2026-09-19T14:00:42` **assistant.py** (seguridad defensiva): Se endureció la seguridad de `_is_safe_text_structure` añadiendo una comprobación explícita para evitar que se filtren rutas locales (usando `pathlib.Path` para normalizar) y bloqueando el uso de secuencias de escape ANSI o comandos de shell comunes que podrían ser inyectados en las respuestas, garantizando así que incluso el motor local devuelva texto puro.
 - `2026-09-19T13:47:39` **settings.py** (robustez ante casos límite): Se mejoró `load` para manejar escenarios de archivos dañados o bloqueados durante la lectura mediante un `try-except` más robusto que no solo captura errores de JSON, sino que también gestiona explícitamente archivos con contenido basura o permisos denegados, asegurando que la aplicación siempre retorne una configuración válida en lugar de fallar silenciosamente o truncar estados.
 - `2026-09-19T13:47:09` **scanner.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en `_safe_stat` y se añadió una validación defensiva en el bucle principal de `scan_directory` para capturar entradas que pudieran haber sido eliminadas o bloqueadas entre la obtención del iterador y el procesamiento (`FileNotFoundError`), evitando que una condición de carrera sencilla detenga el escaneo completo.
 - `2026-09-19T13:36:53` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_for_disk_op` y `_validate_path_security` para prevenir errores de acceso ante rutas con caracteres inválidos, rutas inexistentes después de validaciones previas (condición de carrera) o problemas de resolución de unidades, asegurando que `ensure_safe_to_modify` nunca se ejecute sobre rutas malformadas o inaccesibles.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T12:45:29` **browser.py** (rendimiento): Se optimizó la eficiencia de `_sum_directory_recursive` implementando un pre-chequeo del caché `memo` al inicio de cada iteración de `_process_entry`, evitando llamadas redundantes a la función recursiva para subdirectorios ya calculados durante el mismo ciclo de escaneo.
 - `2026-09-19T12:36:59` **branding.py** (rendimiento): Se ha optimizado `color()` para evitar el acceso al diccionario mediante `MappingProxyType` en cada llamada, reemplazándolo por una búsqueda directa en `_PALETTE_MAP` para reducir el overhead de las llamadas a `MappingProxyType.__getitem__` en los bucles de renderizado.
 - `2026-09-19T12:36:38` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal por tokens con una búsqueda indexada directa mediante `set` (hashing), eliminando la regeneración innecesaria de objetos en cada iteración.
-- `2026-09-19T12:35:57` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la inclusión de type hints precisos, docstrings detallados en métodos privados y la clarificación de la intención de los filtros de seguridad, facilitando el mantenimiento y la auditoría del código.
-- `2026-09-19T12:26:24` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `scanner.py` mediante la adición de docstrings detallados en métodos críticos y una clarificación explícita de las responsabilidades de cada componente para facilitar el mantenimiento y la comprensión de las heurísticas aplicadas.

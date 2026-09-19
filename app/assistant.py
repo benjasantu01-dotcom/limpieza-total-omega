@@ -375,13 +375,18 @@ def _is_safe_text_structure(text: str) -> bool:
     """
     if not text: return True
     if any(ord(c) < 32 and c not in '\n\r\t' for c in text): return False
+    
+    # Prevenir fugas de rutas locales (revisar si el texto parece una ruta absoluta/relativa)
+    try:
+        if Path(text).is_absolute() or text.startswith(("./", "../", "..\\")): return False
+    except Exception: pass
+    
     return not (
         _PATH_INJECTION_REGEX.search(text) or 
         _RESTRICTED_CONTENT_REGEX.search(text) or 
         _SENSITIVE_STRUCTURE_REGEX.search(text) or
         _ANSI_ESCAPE_REGEX.search(text) or
-        _PS_COMMAND_REGEX.search(text) or
-        text.startswith(r"\\")
+        _PS_COMMAND_REGEX.search(text)
     )
 
 def _ensure_safe_text(text: Any) -> bool:
