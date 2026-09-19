@@ -196,7 +196,8 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         return False
         
     try:
-        s_res = src.resolve()
+        s_res = src.resolve(strict=True)
+        # Asegurar existencia final tras resolución
         if not s_res.exists(): return False
         
         parent = (dest.parent if not dest.exists() else dest.resolve().parent)

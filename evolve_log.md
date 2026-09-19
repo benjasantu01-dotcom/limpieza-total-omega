@@ -727,3 +727,23 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-19T13:29:06` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `on_target_choice_changed` al implementar una validación explícita mediante `is_safe_target_dir` antes de asignar una ruta personalizada, evitando la propagación de estados inválidos a través de `self.scan_target` y añadiendo protección adicional ante excepciones durante el acceso a rutas.
 - `2026-09-19T13:29:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T13:29:06` Corrida terminada. Total usado hoy: 316.
+- `2026-09-19T13:35:54` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-19T13:36:25` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-19T13:36:53` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_safe_for_disk_op` y `_validate_path_security` para prevenir errores de acceso ante rutas con caracteres inválidos, rutas inexistentes después de validaciones previas (condición de carrera) o problemas de resolución de unidades, asegurando que `ensure_safe_to_modify` nunca se ejecute sobre rutas malformadas o inaccesibles.
+- `2026-09-19T13:37:33` Tests FALLARON:
+```
+rantine_moves_the_file_without_deleting_it - RuntimeError: Error durante aislamiento: Error durante aislamiento: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - RuntimeError: Error durante aislamiento: Error durante aislamiento: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - RuntimeError: Error durante aislamiento: Error durante aislamiento: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: [Errno 9] Bad file descriptor
+8 failed, 291 passed, 4 warnings in 1.68s
+
+```
+- `2026-09-19T13:37:33` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez frente a condiciones de carrera y archivos inconsistentes al añadir verificaciones atómicas de estado del sistema de archivos en `quarantine_file` y `_write_temp_to_final`, asegurando que los descriptores de archivo se cierren correctamente ante excepciones inesperadas mediante bloques `finally`.
+- `2026-09-19T13:37:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-19T13:37:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T13:37:37` Corrida terminada. Total usado hoy: 320.
