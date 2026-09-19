@@ -940,3 +940,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-19T03:56:59` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `parse_windows_process_csv` reemplazando los bucles `splitlines()` y el procesamiento línea por línea por un enfoque más eficiente de filtrado, evitando crear listas intermedias innecesarias y reduciendo el overhead en el procesamiento de strings.
 - `2026-09-19T03:56:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T03:56:59` Corrida terminada. Total usado hoy: 92.
+- `2026-09-19T04:04:31` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-09-19T04:05:00` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo mediante el uso de un `frozenset` para `SYSTEM_FOLDER_BLOCKLIST` y la adición de un chequeo de `is_protected_path` centralizado, evitando múltiples llamadas redundantes a `Path.resolve()` y `Path.exists()` dentro del bucle de `os.scandir`.
+- `2026-09-19T04:05:38` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó la carga y validación del manifiesto usando un mapeo (diccionario) por `stored_name` en `list_items` y `purge_all`, reemplazando búsquedas lineales `O(n*m)` por acceso `O(1)`, lo que mejora drásticamente el rendimiento al tener una cuarentena con muchos archivos.
+- `2026-09-19T04:05:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-09-19T04:06:21` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un `lru_cache` adicional en `is_within_directory` para evitar el cálculo repetitivo y costoso de `normalize` sobre rutas comunes, mejorando el rendimiento en los escaneos recursivos de directorios donde se consulta repetidamente la jerarquía.
+- `2026-09-19T04:06:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T04:06:21` Corrida terminada. Total usado hoy: 96.

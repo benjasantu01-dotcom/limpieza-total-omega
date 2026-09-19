@@ -462,6 +462,7 @@ def is_protected_path(path: PathLike) -> TypeGuard[str]:
     except (ValueError, TypeError, OSError, RuntimeError): 
         return True
 
+@lru_cache(maxsize=4096)
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
     """Valida jerarquía: verifica si 'child' es un subdirectorio o archivo contenido en 'parent'."""
     if child is None or parent is None: return False

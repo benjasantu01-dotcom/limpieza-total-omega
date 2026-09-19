@@ -218,6 +218,7 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     """
     if not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if entry.path in protected_cache: return False
+    # Verificación en línea optimizada
     if is_protected_path(Path(entry.path)):
         protected_cache.add(entry.path)
         return False
@@ -257,6 +258,7 @@ def scan_for_junk(directories: Optional[Sequence[str]] = None) -> List[JunkFile]
     for d in (directories or DEFAULT_SCAN_DIRS):
         p = Path(d).expanduser()
         if p.exists() and p.is_dir() and not _is_unc_path(p):
+            # Resolvemos al inicio de cada raíz de escaneo una única vez
             _process_directory(p.resolve(), found, 0, protected_cache)
     return found
 
