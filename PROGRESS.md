@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 204
 
@@ -16,27 +16,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 123 | 8 | 32 | 13 | 120 |
-| 2026-09-19 | 94 | 7 | 15 | 8 | 84 |
+| 2026-09-18 | 121 | 8 | 31 | 13 | 119 |
+| 2026-09-19 | 97 | 7 | 15 | 8 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **45**
-- seguridad defensiva: **41**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **44**
+- seguridad defensiva: **39**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **23**
+- `healthscore.py`: **24**
 - `browser.py`: **21**
 - `diskreport.py`: **20**
-- `safety.py`: **19**
-- `memory.py`: **19**
+- `memory.py`: **20**
+- `safety.py`: **18**
 - `assistant.py`: **17**
-- `settings.py`: **16**
-- `duplicates.py`: **16**
+- `duplicates.py`: **17**
+- `settings.py`: **15**
 - `quarantine.py`: **15**
 - `organizer.py`: **13**
 - `branding.py`: **11**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T09:05:47` **memory.py** (robustez ante casos límite): Se mejora la robustez ante errores de permiso y procesos huérfanos en `trim_working_set` y `_get_process_path`, asegurando que el manejo de *handles* de Win32 sea más resiliente y que las validaciones de seguridad ocurran antes de cualquier intento de operación sensible.
+- `2026-09-19T09:00:54` **healthscore.py** (robustez ante casos límite): Mejora la robustez del sistema ante datos de entrada extremos o malformados mediante la adición de una validación explícita de `is_finite` en `SystemMetrics` y un manejo de errores más defensivo en `_evaluate_rules` y `compute_score`.
+- `2026-09-19T09:00:28` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante fallos de E/S en `_is_file_locked` y las funciones de hashing, implementando una gestión de errores más granular y evitando que una excepción inesperada durante la lectura del archivo detenga el procesamiento de todo el grupo de duplicados.
 - `2026-09-19T08:51:42` **browser.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores durante el escaneo de directorios dentro de `_sum_directory_recursive` para manejar específicamente las violaciones de acceso (error 32) y denegación de acceso (error 5) de manera silenciosa pero controlada, evitando que una carpeta bloqueada o inaccesible interrumpa el conteo total del árbol de caché.
 - `2026-09-19T08:51:13` **branding.py** (robustez ante casos límite): Se introdujo una validación de seguridad en `save_logo_svg` utilizando `is_protected_path` antes de intentar la escritura en disco, cumpliendo con el enfoque de robustez al evitar operaciones innecesarias en rutas críticas o restringidas.
 - `2026-09-19T08:50:39` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de inferencia local añadiendo validación de `score` (asegurando que sea un entero válido) y manejando explícitamente el caso en que las métricas resulten en valores de punto flotante no finitos (NaN/Inf) mediante una verificación más estricta en el método de ingesta, evitando que datos malformados degraden la lógica de decisión.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T08:20:07` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos en `_collect_candidates` integrando el filtrado por tamaño y la validación de seguridad directamente en el `os.scandir` para reducir las llamadas repetitivas a `stat()` y `is_safe_to_modify()`, evitando operaciones I/O redundantes sobre archivos que no cumplen los criterios.
 - `2026-09-19T08:10:49` **browser.py** (rendimiento): Se implementó un cache de tamaño a nivel de `directory_size` utilizando un `dict` local para evitar recálculos redundantes en las llamadas múltiples a las funciones de reporte, mejorando el rendimiento en sistemas con múltiples navegadores que comparten estructuras de directorios.
 - `2026-09-19T08:00:31` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de validación extrayendo el chequeo de integridad de tipos a una función con nombre explícito `_enforce_type_consistency`, permitiendo que el flujo de `_ensure_settings_integrity` sea más declarativo y fácil de auditar.
-- `2026-09-19T07:59:51` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la implementación de `Docstrings` estructurados y la clarificación de las responsabilidades de validación en `ensure_safe_to_modify`, asegurando que el flujo de seguridad sea autoexplicativo para futuros desarrolladores del equipo.
-- `2026-09-19T07:51:27` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `memory.py` mediante la adición de Type Hints detallados, la clarificación de las responsabilidades en las funciones de conversión de unidades y la documentación explícita de los filtros de seguridad en el procesamiento CSV de procesos.
-- `2026-09-19T07:50:57` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de construcción de interfaces al extraer la compleja configuración inicial de `_init_state` y `_init_component_registry` hacia métodos privados mejor documentados, asegurando que el estado de la aplicación sea autodescriptivo.

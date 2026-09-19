@@ -90,7 +90,7 @@ class MEMORYSTATUSEX(ctypes.Structure):
         ("ullTotalPhys", ctypes.c_ulonglong),
         ("ullAvailPhys", ctypes.c_ulonglong),
         ("ullTotalPageFile", ctypes.c_ulonglong),
-        ("ullAvailPageFile", ctypes.c_ulonglong),
+        ("ullAvailAvailPageFile", ctypes.c_ulonglong),
         ("ullTotalVirtual", ctypes.c_ulonglong),
         ("ullAvailVirtual", ctypes.c_ulonglong),
         ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
@@ -348,6 +348,7 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
             p = Path(path_str)
             if not p.is_file() or p.is_symlink(): return None
             
+            # Verificación de seguridad robusta
             p_resolved = p.resolve(strict=False)
             if is_protected_path(str(p_resolved)) or not is_safe_to_modify(str(p_resolved)): 
                 return None

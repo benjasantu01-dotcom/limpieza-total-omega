@@ -168,7 +168,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        return all(isinstance(getattr(self, f), (int, float)) and math.isfinite(float(getattr(self, f))) for f in self.__dataclass_fields__)
+        return all(math.isfinite(float(getattr(self, f.name))) for f in self.__dataclass_fields__.values())
 
 @dataclass
 class HealthResult:

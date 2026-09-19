@@ -1403,3 +1403,13 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-09-19T08:51:52` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más explícito al intentar leer atributos de archivo, evitando que errores de permisos durante el recorrido silencien o interrumpan el escaneo de directorios con estructuras mixtas.
 - `2026-09-19T08:51:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T08:51:52` Corrida terminada. Total usado hoy: 208.
+- `2026-09-19T08:59:59` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-09-19T09:00:28` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante fallos de E/S en `_is_file_locked` y las funciones de hashing, implementando una gestión de errores más granular y evitando que una excepción inesperada durante la lectura del archivo detenga el procesamiento de todo el grupo de duplicados.
+- `2026-09-19T09:00:54` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejora la robustez del sistema ante datos de entrada extremos o malformados mediante la adición de una validación explícita de `is_finite` en `SystemMetrics` y un manejo de errores más defensivo en `_evaluate_rules` y `compute_score`.
+- `2026-09-19T09:01:54` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-19T09:02:57` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-19T09:04:03` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-19T09:05:15` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-19T09:05:47` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez ante errores de permiso y procesos huérfanos en `trim_working_set` y `_get_process_path`, asegurando que el manejo de *handles* de Win32 sea más resiliente y que las validaciones de seguridad ocurran antes de cualquier intento de operación sensible.
+- `2026-09-19T09:05:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T09:05:47` Corrida terminada. Total usado hoy: 212.
