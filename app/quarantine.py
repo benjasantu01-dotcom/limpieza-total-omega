@@ -751,7 +751,14 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
-    """Verifica requisitos de seguridad antes de purgar un ítem del sandbox."""
+    """
+    Verifica requisitos de seguridad antes de purgar un ítem del sandbox.
+    
+    Args:
+        file_path: Ruta del archivo en cuarentena.
+        item: Objeto QuarantineItem con metadatos registrados.
+        base_path: Directorio raíz de la cuarentena.
+    """
     if not file_path.exists() or not file_path.is_file() or file_path.is_symlink() or is_protected_path(file_path):
         return False
     return (

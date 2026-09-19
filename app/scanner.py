@@ -127,7 +127,12 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: fl
     return None
 
 class Scanner:
-    """Clase principal que coordina el recorrido recursivo y aplica las heurísticas."""
+    """
+    Clase principal que coordina el recorrido recursivo del sistema de archivos.
+    
+    Gestiona la pila de directorios (LIFO) y mantiene el estado del escaneo para evitar
+    ciclos (reparse points) y redundancias, aplicando el registro de heurísticas definido.
+    """
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
@@ -142,8 +147,11 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida que la entrada sea segura: no es reparse point, no está en una ruta protegida
-        y cumple las reglas de estructura de Windows.
+        Valida que la entrada sea segura para procesar:
+        1. Filtra caracteres y longitudes inválidas.
+        2. Verifica que la ruta esté contenida en el base_root.
+        3. Descarta reparse points mediante atributos de sistema.
+        4. Consulta is_protected_path para evitar rutas críticas del SO.
         """
         if not entry or not entry.path or not entry.name:
             return False
@@ -183,20 +191,20 @@ class Scanner:
         return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """Gestiona la pila de directorios pendientes durante el escaneo iterativo LIFO."""
+        """Registra directorio en el stack LIFO asegurando no procesar el mismo dos veces."""
         if entry and entry.path and entry.path.lower() not in self.seen:
             self.seen.add(entry.path.lower())
             directory_stack.append(entry.path)
 
     def _is_relevant_extension(self, name: str, is_dir: bool) -> Optional[str]:
-        """Devuelve la extensión minúscula si es relevante para análisis, sino None."""
+        """Filtra extensiones para análisis, ignorando archivos no ejecutables ni sospechosos."""
         if is_dir: return ""
         _, ext = os.path.splitext(name)
         ext_low = ext.lower()
         return ext_low if ext_low in SUSPICIOUS_ALL_EXTS else None
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """Analiza una entrada única y decide si debe procesarse o añadirse a la pila de directorios."""
+        """Analiza una entrada única y decide si debe profundizar en directorio o aplicar heurísticas."""
         try:
             if not self._is_safe_entry(entry):
                 return
