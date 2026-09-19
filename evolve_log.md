@@ -579,3 +579,34 @@ assert not {'replace'}
 - `2026-09-19T00:45:43` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `on_stage` y `on_quarantine_duplicates` añadiendo una validación explícita mediante `safety.is_safe_to_modify` dentro de la lógica del hilo asíncrono, asegurando que cada archivo individual sea verificado antes de cualquier operación de movimiento, incluso si ya fueron filtrados previamente.
 - `2026-09-19T00:45:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T00:45:43` Corrida terminada. Total usado hoy: 16.
+- `2026-09-19T00:50:38` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-09-19T00:51:09` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del manejo de procesos en `_get_process_path` integrando validaciones de seguridad adicionales antes de abrir un handle, asegurando que solo se procesen rutas que realmente representan archivos locales validados, evitando dependencias de procesos que no son ejecutables ordinarios y reforzando la integridad al utilizar `is_safe_to_modify` antes de cualquier interacción potencial con la estructura del proceso.
+- `2026-09-19T00:51:39` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-19T00:52:19` Tests FALLARON:
+```
+integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:420: SyntaxWarning: invalid escape sequence '\)'
+    """Determina si una ruta apunta a la raíz de un dispositivo de almacenamiento (ej C:\)."""
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:125: SyntaxWarning: invalid escape sequence '\R'
+    El registro de Windows suele guardar rutas con espacios como '"C:\Ruta\App.exe" /arg'.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: [GENERIC] Ruta origen no cumple políticas de seguridad.
+1 failed, 298 passed, 15 warnings in 1.38s
+
+```
+- `2026-09-19T00:52:19` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad en el flujo de aislamiento incorporando una verificación explícita de `is_safe_to_modify` antes de intentar el movimiento, asegurando que la operación se bloquee si el archivo origen, por algún cambio de permisos durante la ejecución, deja de ser seguro de manipular.
+- `2026-09-19T00:52:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-19T00:52:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T00:52:22` Corrida terminada. Total usado hoy: 20.

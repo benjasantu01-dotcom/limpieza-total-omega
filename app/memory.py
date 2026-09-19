@@ -350,13 +350,15 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     try:
         if psapi.GetModuleFileNameExW(ctypes.c_void_p(proc_handle), None, buf, 1024) > 0:
             path_str = buf.value
+            # Validar que sea ruta de sistema de archivos local estricta
             if not path_str or any(path_str.startswith(prefix) for prefix in ("\\\\", "\\??\\", "\\Device\\")):
                 return None
             
             if not os.path.isabs(path_str): return None
             
             p = Path(path_str)
-            if not p.exists() or not p.is_file() or p.is_symlink(): return None
+            # Validación de integridad de archivo
+            if not p.is_file() or p.is_symlink(): return None
             
             p_resolved = p.resolve(strict=False)
             if is_protected_path(str(p_resolved)) or not is_safe_to_modify(str(p_resolved)): 
