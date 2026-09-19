@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 90 | 3 | 22 | 11 | 82 |
-| 2026-09-19 | 129 | 9 | 19 | 12 | 127 |
+| 2026-09-18 | 88 | 3 | 21 | 11 | 81 |
+| 2026-09-19 | 131 | 9 | 19 | 12 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **50**
 - seguridad defensiva: **46**
-- robustez ante casos límite: **40**
-- rendimiento: **33**
+- robustez ante casos límite: **38**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
-- `safety.py`: **21**
-- `browser.py`: **20**
+- `healthscore.py`: **23**
+- `browser.py`: **21**
+- `safety.py`: **20**
 - `diskreport.py`: **19**
 - `assistant.py`: **18**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
 - `settings.py`: **15**
-- `organizer.py`: **13**
 - `branding.py`: **12**
+- `organizer.py`: **12**
 - `scanner.py`: **10**
 - `main.py`: **10**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T12:46:32` **healthscore.py** (rendimiento): Optimicé el método `is_finite` en `SystemMetrics` utilizando el acceso directo a `__dict__` y una evaluación generadora con `all()` para evitar la creación de listas intermedias y el costo de inspección de `__dataclass_fields__` en cada ciclo.
+- `2026-09-19T12:45:29` **browser.py** (rendimiento): Se optimizó la eficiencia de `_sum_directory_recursive` implementando un pre-chequeo del caché `memo` al inicio de cada iteración de `_process_entry`, evitando llamadas redundantes a la función recursiva para subdirectorios ya calculados durante el mismo ciclo de escaneo.
 - `2026-09-19T12:36:59` **branding.py** (rendimiento): Se ha optimizado `color()` para evitar el acceso al diccionario mediante `MappingProxyType` en cada llamada, reemplazándolo por una búsqueda directa en `_PALETTE_MAP` para reducir el overhead de las llamadas a `MappingProxyType.__getitem__` en los bucles de renderizado.
 - `2026-09-19T12:36:38` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal por tokens con una búsqueda indexada directa mediante `set` (hashing), eliminando la regeneración innecesaria de objetos en cada iteración.
 - `2026-09-19T12:35:57` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la inclusión de type hints precisos, docstrings detallados en métodos privados y la clarificación de la intención de los filtros de seguridad, facilitando el mantenimiento y la auditoría del código.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T12:05:49` **diskreport.py** (legibilidad y documentación): He mejorado la documentación de los tipos de retorno y parámetros en `walk_files` y `_collect_summary_data` utilizando type hints más precisos y docstrings enriquecidos, para facilitar el mantenimiento y la comprensión de las estructuras de datos que viajan entre los componentes del analizador.
 - `2026-09-19T12:05:19` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del módulo `browser.py` mediante la refactorización de `_sum_directory_recursive` para separar la lógica de acumulación de tamaño de la lógica de recorrido, utilizando nombres de variables explícitos y un docstring más preciso.
 - `2026-09-19T12:04:50` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de manipulación de color y renderizado, especificando los tipos de datos esperados, el propósito de las transformaciones y el manejo de errores implícito para mejorar la mantenibilidad del motor visual.
-- `2026-09-19T11:56:41` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de los decoradores y validadores de `assistant.py` para facilitar el mantenimiento, utilizando docstrings específicos que explican la intención del diseño de seguridad y las restricciones de los tipos de datos.
-- `2026-09-19T11:55:34` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para evitar que filas con `None` o campos vacíos causen errores de tipo en las operaciones de cadena posteriores, asegurando un parseo más resiliente frente a datos del registro malformados.

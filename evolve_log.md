@@ -628,3 +628,10 @@ FAILED evolve/tests/test_assistant.py::test_valid_themes_and_accents_are_accepte
 - `2026-09-19T12:36:59` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado `color()` para evitar el acceso al diccionario mediante `MappingProxyType` en cada llamada, reemplazándolo por una búsqueda directa en `_PALETTE_MAP` para reducir el overhead de las llamadas a `MappingProxyType.__getitem__` en los bucles de renderizado.
 - `2026-09-19T12:36:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T12:36:59` Corrida terminada. Total usado hoy: 296.
+- `2026-09-19T12:45:00` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-09-19T12:45:29` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó la eficiencia de `_sum_directory_recursive` implementando un pre-chequeo del caché `memo` al inicio de cada iteración de `_process_entry`, evitando llamadas redundantes a la función recursiva para subdirectorios ya calculados durante el mismo ciclo de escaneo.
+- `2026-09-19T12:45:57` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-19T12:46:21` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-19T12:46:32` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el método `is_finite` en `SystemMetrics` utilizando el acceso directo a `__dict__` y una evaluación generadora con `all()` para evitar la creación de listas intermedias y el costo de inspección de `__dataclass_fields__` en cada ciclo.
+- `2026-09-19T12:46:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T12:46:32` Corrida terminada. Total usado hoy: 300.

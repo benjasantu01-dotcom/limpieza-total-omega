@@ -234,6 +234,9 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
         if _is_valid_traversal_step(entry, root_base):
             if not is_safe_to_modify(Path(entry.path)) or is_protected_path(Path(entry.path)):
                 return 0
+            # Pre-chequeo de memoización para evitar recursión innecesaria
+            if entry.path in memo:
+                return memo[entry.path]
             return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
         
         if entry.is_file(follow_symlinks=False):
