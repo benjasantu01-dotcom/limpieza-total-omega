@@ -173,7 +173,7 @@ def _get_sha256(path: Path) -> str:
     Calcula el hash SHA-256 de un archivo mediante streaming para optimizar RAM.
     
     Args:
-        path: Path del archivo a procesar.
+        path: Ruta del archivo a procesar.
     Returns:
         String con el hash hexadecimal o cadena vacía si falla la lectura.
     """
@@ -462,7 +462,14 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 
 def _write_temp_to_final(source: Path, destination: Path) -> str:
     """
-    Copia física del archivo origen al sandbox usando descriptores de archivo.
+    Realiza una copia física segura del archivo origen al sandbox usando 
+    descriptores de archivo para evitar condiciones de carrera o bloqueos.
+    
+    Args:
+        source: Ruta del archivo original a aislar.
+        destination: Ruta destino dentro del directorio sandbox.
+    Returns:
+        El hash SHA-256 generado para validar la integridad del archivo copiado.
     """
     _check_path_syntax_integrity(destination)
     if is_protected_path(destination):
@@ -524,7 +531,10 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
 
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
-    """Coordina el aislamiento seguro del archivo hacia el sandbox."""
+    """
+    Coordina el aislamiento seguro del archivo hacia el sandbox mediante 
+    validaciones de ruta previas a la escritura final.
+    """
     if not source.exists():
         raise FileNotFoundError("Archivo origen inexistente.")
     
@@ -588,6 +598,13 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Ejecuta el flujo completo de aislamiento, integrando validación y persistencia.
+    
+    Args:
+        source: Ruta del archivo a mover a cuarentena.
+        reason: Descripción del motivo por el cual se aísla el archivo.
+        base: Directorio base de la cuarentena.
+    Returns:
+        La instancia de QuarantineItem creada.
     """
     if source is None:
         raise ValueError("Ruta de origen nula o vacía.")

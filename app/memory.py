@@ -341,23 +341,22 @@ def _is_system_process(pid: int) -> bool:
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: int) -> Optional[Path]:
-    """Resuelve la ruta física del ejecutable de un proceso mediante Psapi."""
+    """Resuelve la ruta física del ejecutable de un proceso mediante Psapi.GetModuleFileNameExW."""
     if not proc_handle: return None
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
     
     buf = ctypes.create_unicode_buffer(1024)
     try:
+        # Obtiene el nombre completo del ejecutable asociado al handle del proceso
         if psapi.GetModuleFileNameExW(ctypes.c_void_p(proc_handle), None, buf, 1024) > 0:
             path_str = buf.value
-            # Validar que sea ruta de sistema de archivos local estricta
             if not path_str or any(path_str.startswith(prefix) for prefix in ("\\\\", "\\??\\", "\\Device\\")):
                 return None
             
             if not os.path.isabs(path_str): return None
             
             p = Path(path_str)
-            # Validación de integridad de archivo
             if not p.is_file() or p.is_symlink(): return None
             
             p_resolved = p.resolve(strict=False)
@@ -370,12 +369,13 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
-    """Valida la integridad y seguridad de un proceso antes de operar sobre su working set."""
+    """Verifica si un proceso está activo y su ejecutable es una ruta segura para operar."""
     if not proc_handle: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
     
     try:
         exit_code = ctypes.c_ulong()
+        # Valida que el proceso esté corriendo antes de intentar alterar su gestión de memoria
         if not kernel32.GetExitCodeProcess(ctypes.c_void_p(proc_handle), ctypes.byref(exit_code)):
             return False, f"Imposible verificar estado (Error {kernel32.GetLastError()})."
             
@@ -415,6 +415,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not is_safe: 
             return False, error_reason or "Verificación de seguridad fallida."
         
+        # Operación crítica: reducir la memoria asignada al Working Set del proceso
         if not psapi.EmptyWorkingSet(ctypes.c_void_p(proc_handle)): 
             error_code = kernel32.GetLastError()
             return False, f"Sistema denegó la operación (Error {error_code})."
