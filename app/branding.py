@@ -205,7 +205,7 @@ def score_color(score: Union[float, int, None]) -> ColorHex:
     Calcula el color asociado a un puntaje de salud (0-100).
     
     Args:
-        score: Valor numérico del puntaje.
+        score: Valor numérico del puntaje a evaluar.
     Returns:
         Color hexadecimal basado en umbrales predefinidos.
     """
@@ -232,6 +232,8 @@ def bar(percent: Union[float, int, None], width: int = 24,
         width: Número de caracteres de ancho.
         filled: Caracter para el segmento lleno.
         empty: Caracter para el segmento vacío.
+    Returns:
+        Cadena representando la barra de progreso.
     """
     try:
         valor = float(percent) if percent is not None else 0.0
@@ -260,7 +262,16 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
-    """Realiza una interpolación lineal entre dos colores mediante sus valores RGB."""
+    """
+    Realiza una interpolación lineal entre dos colores mediante sus valores RGB.
+    
+    Args:
+        start: Color de inicio (hex).
+        end: Color de fin (hex).
+        ratio: Factor de mezcla (0.0 a 1.0).
+    Returns:
+        Color mezclado resultante (hex).
+    """
     if start == end: return start
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
