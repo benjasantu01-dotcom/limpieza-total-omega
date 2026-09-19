@@ -282,8 +282,7 @@ def validate(raw_values: Any) -> AppSettings:
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_str, raw_val in raw_values.items():
-        key_enum = _KEY_TO_ENUM.get(key_str)
-        if key_enum and key_enum in _VALIDATOR_MAP:
+        if (key_enum := _KEY_TO_ENUM.get(key_str)):
             validator = _VALIDATOR_MAP[key_enum].func
             if (validated_val := validator(key_enum, raw_val)) is not None:
                 config[key_enum.value] = validated_val
@@ -297,8 +296,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         if not r.exists() or not os.access(r, os.R_OK): continue
         try:
             stats = r.stat()
-            cached = _CACHE.get(r)
-            if cached and cached[0] == stats.st_mtime:
+            if (cached := _CACHE.get(r)) and cached[0] == stats.st_mtime:
                 return cached[1].copy()
             if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
                 continue
@@ -324,15 +322,10 @@ def _enforce_type_consistency(settings: AppSettings) -> AppSettings:
 def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
     """Asegura que el diccionario de configuración contenga todas las claves requeridas y con tipos válidos."""
     if not _is_app_settings(settings):
-        clean_settings = DEFAULTS.copy()
-        for key in ConfigKey:
-            if key.value in settings:
-                clean_settings[key.value] = settings[key.value]
-        settings = clean_settings
+        settings = {**DEFAULTS, **{k: v for k, v in settings.items() if k in DEFAULTS}}
 
-    settings = _enforce_type_consistency(settings)
+    _enforce_type_consistency(settings)
     
-    # Lógica de seguridad: si no hay clave, el asistente debe estar apagado
     if settings.get("asistente_activado") and not (settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         settings["asistente_activado"] = False
         
@@ -353,7 +346,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     bak_path = ruta.with_suffix(".bak")
     
     try:
-        # Asegurar seguridad de la ruta final antes de tocar el disco
         ensure_safe_to_modify(ruta)
         with open(temp_path, "w", encoding="utf-8") as f:
             f.write(serialized)
@@ -379,8 +371,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     current = load(custom_base)
     modified = False
     for k, v in changes.items():
-        key_enum = _KEY_TO_ENUM.get(k)
-        if key_enum and key_enum in _VALIDATOR_MAP:
+        if (key_enum := _KEY_TO_ENUM.get(k)) and key_enum in _VALIDATOR_MAP:
             val = _VALIDATOR_MAP[key_enum].func(key_enum, v)
             if val is not None and val != current.get(k):
                 current[k] = val

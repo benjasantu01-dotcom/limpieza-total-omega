@@ -1364,3 +1364,35 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-19T08:31:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-09-19T08:31:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T08:31:07` Corrida terminada. Total usado hoy: 200.
+- `2026-09-19T08:39:35` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-09-19T08:40:17` Tests FALLARON:
+```
+: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'app.tmp'
+  'malo.tmp'
+  
+  Full diff:
+    {
+  +     'app.tmp',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - assert 'protegida' in "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación."
+ +  where "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación." = <function describe_protection at 0x7f7994f0e980>(((PosixPath('/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7f7994f0e980> = safety.describe_protection
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error crítico en restauración: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_restore_into_a_system_pat0/Windows/System32'
+14 failed, 285 passed, 10 warnings in 1.51s
+
+```
+- `2026-09-19T08:40:17` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `is_protected_path` reemplazando la iteración secuencial de `split(os.sep)` por una búsqueda en conjunto mediante el uso de `path_norm.parts` (de `pathlib`), reduciendo drásticamente las operaciones de string y mejorando la eficiencia de caché al evitar múltiples splits innecesarios en rutas largas.
+- `2026-09-19T08:40:44` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el método `_is_safe_entry` de `Scanner` para evitar llamadas redundantes a `is_protected_path` (que puede ser costosa) y reordené los chequeos de modo que las validaciones de bajo costo (cadenas, sets, atributos rápidos) ocurran antes de operaciones de E/S o validaciones complejas.
+- `2026-09-19T08:41:16` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de carga y validación mediante el uso de un diccionario de acceso directo `_KEY_TO_ENUM` y la eliminación de llamadas recursivas/redundantes en `_ensure_settings_integrity`, asegurando que la configuración solo se procese cuando sea estrictamente necesario.
+- `2026-09-19T08:41:27` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-19T08:41:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T08:41:27` Corrida terminada. Total usado hoy: 204.

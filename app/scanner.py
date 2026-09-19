@@ -156,6 +156,7 @@ class Scanner:
         if not entry or not entry.path or not entry.name:
             return False
             
+        # 1. Filtros de bajo costo primero (cadenas y regex)
         if not _is_valid_path_structure(entry.path):
             return False
         
@@ -165,14 +166,15 @@ class Scanner:
         if not entry.path.lower().startswith(self.base_root_str.rstrip(os.sep)):
             return False
             
-        if is_protected_path(Path(entry.path)):
-            return False
-        
-        # Verificar atributos mediante stat para confirmar que no es un reparse point
+        # 2. Verificación de atributos de archivo (E/S rápida)
         stats = _safe_stat(entry)
         if stats and hasattr(stats, 'st_file_attributes'):
             if bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT):
                 return False
+
+        # 3. Validaciones lógicas más pesadas al final
+        if is_protected_path(Path(entry.path)):
+            return False
 
         try:
             return not entry.is_symlink()
