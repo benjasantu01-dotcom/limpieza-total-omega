@@ -209,13 +209,16 @@ def grade_for_score(score: float | int) -> str:
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
     for rule in rules:
         try:
+            if not isinstance(rule, RecommendationRule): continue
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str):
+                    # Filtrado defensivo: solo caracteres imprimibles, longitud controlada
                     clean_msg = "".join(char for char in msg if char.isprintable()).strip()
                     if clean_msg:
                         findings.append(clean_msg[:200])
         except Exception:
+            # Silenciar errores en reglas no críticas para mantener el reporte funcional
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

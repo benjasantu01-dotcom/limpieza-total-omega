@@ -215,24 +215,19 @@ def _is_valid_traversal_step(entry: os.DirEntry, root_base: str) -> bool:
         return False
 
 def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionChecker, kernel32: Optional[ctypes.WinDLL], memo: Dict[str, int], depth: int) -> int:
-    """
-    Decide si descender recursivamente o contabilizar un archivo de caché.
-    :returns: El tamaño en bytes del nodo.
-    """
+    """Decide si descender recursivamente o contabilizar un archivo de caché."""
     if depth > MAX_SCAN_DEPTH or _should_skip_entry(entry, kernel32, is_junction_fn):
         return 0
     try:
         if _is_valid_traversal_step(entry, root_base):
+            # Seguridad: validamos que el subdirectorio sea seguro antes de entrar
+            if not is_safe_to_modify(Path(entry.path)) or is_protected_path(Path(entry.path)):
+                return 0
             return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
         
         if entry.is_file(follow_symlinks=False):
             return int(entry.stat(follow_symlinks=False).st_size)
-    except OSError as e:
-        # Si un archivo está bloqueado por el navegador, es esperado y seguro omitirlo.
-        if e.winerror == ERROR_SHARING_VIOLATION:
-            return 0
-        return 0
-    except (PermissionError, RuntimeError):
+    except (OSError, PermissionError, RuntimeError):
         return 0
     return 0
 
@@ -245,10 +240,7 @@ def _sum_directory_recursive(
     root_base: str,
     depth: int = 0
 ) -> int:
-    """
-    Calcula el tamaño acumulado de archivos bajo un directorio utilizando memoización.
-    :returns: Tamaño total en bytes.
-    """
+    """Calcula el tamaño acumulado de archivos bajo un directorio utilizando memoización."""
     if root_abs in memo:
         return memo[root_abs]
 

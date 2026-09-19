@@ -203,7 +203,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         """Closure recursiva que explora directorios evitando ciclos y puntos de reparse."""
         try:
             resolved_dir = current_dir.resolve(strict=True)
-            if not is_safe_to_modify(resolved_dir):
+            if not is_safe_to_modify(resolved_dir) or (skip_protected and is_protected_path(resolved_dir)):
                 return
             dir_str = str(resolved_dir)
             if dir_str in visited_directories:

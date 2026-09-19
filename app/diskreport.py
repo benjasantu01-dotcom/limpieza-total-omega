@@ -104,10 +104,8 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
     evitar cruzar volúmenes o entrar en bucles de recursión.
     """
     try:
-        # Si es un enlace simbólico, es una ruta fuera del árbol físico real
         if entry.is_symlink():
             return True
-        # En Windows, los puntos de reparse (Junctions) deben tratarse como fuera de límites
         if os.name == 'nt':
             st = entry.stat(follow_symlinks=False)
             if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
