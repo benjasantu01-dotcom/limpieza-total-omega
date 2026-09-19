@@ -534,16 +534,15 @@ def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     cierre = " La app los lista, pero desactivalos desde el Administrador de tareas de Windows."
     return Answer(_validate_response_length(f"{estado} {valoracion}{cierre}"), notice=OFFLINE_NOTICE)
 
-TOKENS_BY_CATEGORY: Final[dict[frozenset[str], Callable[[SystemContext, str], Answer]]] = {
-    frozenset(["ram", "memoria", "lenta", "lento", "acelerar"]): handle_ram,
-    frozenset(["espacio", "disco", "lleno", "recuperar", "liberar"]): handle_disk,
-    frozenset(["seguro", "virus", "sospechos", "borrar", "peligro"]): handle_security,
-    frozenset(["puntaje", "salud", "nota", "score"]): handle_score,
-    frozenset(["inicio", "arranque", "arranca", "encender"]): handle_startup
-}
-
-_TOKEN_TO_HANDLER: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
-    token: handler for key_set, handler in TOKENS_BY_CATEGORY.items() for token in key_set
+TOKENS_BY_CATEGORY: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
+    token: handler 
+    for key_set, handler in {
+        frozenset(["ram", "memoria", "lenta", "lento", "acelerar"]): handle_ram,
+        frozenset(["espacio", "disco", "lleno", "recuperar", "liberar"]): handle_disk,
+        frozenset(["seguro", "virus", "sospechos", "borrar", "peligro"]): handle_security,
+        frozenset(["puntaje", "salud", "nota", "score"]): handle_score,
+        frozenset(["inicio", "arranque", "arranca", "encender"]): handle_startup
+    }.items() for token in key_set
 }
 
 def _sanitize_query(question: str) -> str:
@@ -566,7 +565,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         )
     
     for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
-        if handler := _TOKEN_TO_HANDLER.get(token):
+        if handler := TOKENS_BY_CATEGORY.get(token):
             return handler(context, question)
             
     cuerpo = _format_problem_message(

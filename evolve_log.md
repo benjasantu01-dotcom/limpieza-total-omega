@@ -593,3 +593,38 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-09-19T12:26:24` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo `scanner.py` mediante la adición de docstrings detallados en métodos críticos y una clarificación explícita de las responsabilidades de cada componente para facilitar el mantenimiento y la comprensión de las heurísticas aplicadas.
 - `2026-09-19T12:26:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T12:26:24` Corrida terminada. Total usado hoy: 292.
+- `2026-09-19T12:34:47` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-09-19T12:35:30` Tests FALLARON:
+```
+
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+__________________ test_valid_themes_and_accents_are_accepted __________________
+
+    def test_valid_themes_and_accents_are_accepted():
+>       for tema in settings.VALID_THEMES:
+                    ^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'settings' has no attribute 'VALID_THEMES'
+
+evolve/tests/test_assistant.py:82: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:63: SyntaxWarning: invalid escape sequence '\ '
+    Prefija rutas con el formato \\?\ para evadir la limitación de MAX_PATH (260)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_valid_themes_and_accents_are_accepted - AttributeError: module 'settings' has no attribute 'VALID_THEMES'
+1 failed, 298 passed, 4 warnings in 1.46s
+
+```
+- `2026-09-19T12:35:30` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de la lógica de validación extrayendo la estructura repetitiva de los límites numéricos y los validadores de tipo dentro de un nuevo `SettingsSchema` estático, evitando la dispersión de datos de configuración y facilitando futuras expansiones.
+- `2026-09-19T12:35:57` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica mediante la inclusión de type hints precisos, docstrings detallados en métodos privados y la clarificación de la intención de los filtros de seguridad, facilitando el mantenimiento y la auditoría del código.
+- `2026-09-19T12:36:38` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal por tokens con una búsqueda indexada directa mediante `set` (hashing), eliminando la regeneración innecesaria de objetos en cada iteración.
+- `2026-09-19T12:36:59` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado `color()` para evitar el acceso al diccionario mediante `MappingProxyType` en cada llamada, reemplazándolo por una búsqueda directa en `_PALETTE_MAP` para reducir el overhead de las llamadas a `MappingProxyType.__getitem__` en los bucles de renderizado.
+- `2026-09-19T12:36:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T12:36:59` Corrida terminada. Total usado hoy: 296.

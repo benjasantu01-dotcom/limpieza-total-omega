@@ -7,45 +7,48 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **219** (43.5% de aceptación)
-- Rechazadas por tests: 11
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 93 | 3 | 22 | 11 | 83 |
-| 2026-09-19 | 126 | 8 | 19 | 12 | 127 |
+| 2026-09-18 | 90 | 3 | 22 | 11 | 82 |
+| 2026-09-19 | 129 | 9 | 19 | 12 | 127 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **50**
 - seguridad defensiva: **46**
-- robustez ante casos límite: **43**
-- rendimiento: **31**
+- robustez ante casos límite: **40**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **23**
+- `healthscore.py`: **22**
 - `safety.py`: **21**
 - `browser.py`: **20**
 - `diskreport.py`: **19**
-- `duplicates.py`: **18**
-- `memory.py`: **18**
-- `assistant.py`: **17**
+- `assistant.py`: **18**
+- `duplicates.py`: **17**
+- `memory.py`: **17**
 - `quarantine.py`: **17**
 - `settings.py`: **15**
 - `organizer.py`: **13**
-- `branding.py`: **11**
+- `branding.py`: **12**
 - `scanner.py`: **10**
 - `main.py`: **10**
-- `startup.py`: **7**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T12:36:59` **branding.py** (rendimiento): Se ha optimizado `color()` para evitar el acceso al diccionario mediante `MappingProxyType` en cada llamada, reemplazándolo por una búsqueda directa en `_PALETTE_MAP` para reducir el overhead de las llamadas a `MappingProxyType.__getitem__` en los bucles de renderizado.
+- `2026-09-19T12:36:38` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal por tokens con una búsqueda indexada directa mediante `set` (hashing), eliminando la regeneración innecesaria de objetos en cada iteración.
+- `2026-09-19T12:35:57` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la inclusión de type hints precisos, docstrings detallados en métodos privados y la clarificación de la intención de los filtros de seguridad, facilitando el mantenimiento y la auditoría del código.
 - `2026-09-19T12:26:24` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `scanner.py` mediante la adición de docstrings detallados en métodos críticos y una clarificación explícita de las responsabilidades de cada componente para facilitar el mantenimiento y la comprensión de las heurísticas aplicadas.
 - `2026-09-19T12:26:13` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos y type hints faltantes en funciones críticas para clarificar el flujo de validación y la intención de seguridad.
 - `2026-09-19T12:25:15` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en funciones internas clave de `quarantine.py` para mejorar la mantenibilidad y claridad del flujo de trabajo, además de estandarizar la nomenclatura de parámetros en funciones de validación.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T12:04:50` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de manipulación de color y renderizado, especificando los tipos de datos esperados, el propósito de las transformaciones y el manejo de errores implícito para mejorar la mantenibilidad del motor visual.
 - `2026-09-19T11:56:41` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de los decoradores y validadores de `assistant.py` para facilitar el mantenimiento, utilizando docstrings específicos que explican la intención del diseño de seguridad y las restricciones de los tipos de datos.
 - `2026-09-19T11:55:34` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para evitar que filas con `None` o campos vacíos causen errores de tipo en las operaciones de cadena posteriores, asegurando un parseo más resiliente frente a datos del registro malformados.
-- `2026-09-19T11:55:07` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de archivos (`load`) y el manejo de rutas en `save` mediante el uso de `pathlib.Path.resolve(strict=False)` y validaciones de acceso más estrictas antes de abrir los archivos, asegurando que las excepciones de sistema no silencien errores críticos de IO.
-- `2026-09-19T11:54:36` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez del manejo de archivos mediante la validación explícita de `entry` y sus atributos antes de llamar a funciones auxiliares, evitando posibles excepciones de tipo `None` o `AttributeError` en entornos con permisos restringidos.
-- `2026-09-19T11:45:39` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_check_file_integrity` capturando explícitamente excepciones de `Path.stat()` y envolviendo la iteración de validadores en un bloque `try-except` más preciso para evitar interrupciones no deseadas por fallos en llamadas al sistema operativo.

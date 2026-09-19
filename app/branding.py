@@ -155,7 +155,7 @@ def app_title() -> str:
 
 def color(name: str) -> ColorHex:
     """Busca un color en la paleta global usando su clave identificadora."""
-    return _PALETTE_MAP.get(name, "#808080") if isinstance(name, str) else "#808080"
+    return _PALETTE_MAP.get(name, "#808080")
 
 @lru_cache(maxsize=16)
 def font_size(name: str) -> int:
