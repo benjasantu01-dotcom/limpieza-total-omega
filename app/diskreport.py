@@ -122,7 +122,7 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
     """
     try:
         # Evitar rutas excesivamente largas que puedan causar excepciones en sistemas heredados
-        if len(entry.path) > 260:
+        if not entry.path or len(entry.path) > 260:
             return True
             
         if entry.is_symlink():
@@ -371,10 +371,11 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         total_files += 1
         
         try:
-            ext_raw: str = path.suffix
+            # Uso defensivo de suffix para evitar errores de codificación o rutas corruptas
+            ext_raw = path.suffix
             ext: str = ext_raw.lower() if ext_raw else "(sin extensión)"
-        except Exception:
-            ext = "(error)"
+        except (AttributeError, ValueError, OSError):
+            ext = "(desconocido)"
         
         stat: ExtStats = ext_stats[ext]
         stat.total_bytes += size_bytes

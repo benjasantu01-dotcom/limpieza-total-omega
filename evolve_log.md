@@ -537,3 +537,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-09-19T11:16:48` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-19T11:16:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T11:16:48` Corrida terminada. Total usado hoy: 264.
+- `2026-09-19T11:22:49` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-09-19T11:23:29` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de errores en `ingest` y `_apply_field` dentro de `SystemContext` para evitar que un dato malformado o inesperado en el origen (source) detenga el procesamiento de las demás métricas, asegurando una ingesta parcial exitosa incluso si algún valor individual falla.
+- `2026-09-19T11:24:00` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-19T11:24:28` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de los parámetros de entrada y el manejo de estados nulos en `total_cache_bytes` y `summarize` para evitar excepciones imprevistas durante la generación de reportes si se procesan listas vacías o valores inesperados.
+- `2026-09-19T11:24:39` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_collect_summary_data` y `walk_files` ante posibles fallos en la lectura de atributos de archivo, reemplazando el acceso directo a `path.suffix` por un manejo defensivo y asegurando que `_is_excluded_path` no falle ante nombres de archivo inválidos o rutas inexistentes durante la iteración.
+- `2026-09-19T11:24:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T11:24:39` Corrida terminada. Total usado hoy: 268.

@@ -326,21 +326,18 @@ class SystemContext:
             return False
             
         found_data = False
-        try:
-            for key, spec in _VALIDATORS.items():
-                if self._apply_field(source, key, spec):
-                    found_data = True
-            
-            grade_val = _get_source_value(source, "grade")
-            if isinstance(grade_val, str):
-                clean_grade = self._clean_grade(grade_val)
-                if clean_grade:
-                    self.grade = clean_grade
-                    found_data = True
-            
-            return found_data and _validate_context_integrity(self)
-        except Exception:
-            return False
+        for key, spec in _VALIDATORS.items():
+            if self._apply_field(source, key, spec):
+                found_data = True
+        
+        grade_val = _get_source_value(source, "grade")
+        if isinstance(grade_val, str):
+            clean_grade = self._clean_grade(grade_val)
+            if clean_grade:
+                self.grade = clean_grade
+                found_data = True
+        
+        return found_data and _validate_context_integrity(self)
 
 @dataclass
 class Answer:

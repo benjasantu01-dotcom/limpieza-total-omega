@@ -355,8 +355,10 @@ def detect_profiles(
 
 
 def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
-    """Calcula la sumatoria total de bytes de una colección de cachés."""
-    return sum(c.size_bytes for c in caches) if caches else 0
+    """Calcula la sumatoria total de bytes de una colección de cachés, manejando casos nulos."""
+    if caches is None:
+        return 0
+    return sum(c.size_bytes for c in caches if hasattr(c, 'size_bytes'))
 
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:

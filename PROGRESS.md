@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 210
 
@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 106 | 5 | 29 | 12 | 88 |
-| 2026-09-19 | 106 | 8 | 17 | 11 | 122 |
+| 2026-09-18 | 104 | 5 | 28 | 12 | 87 |
+| 2026-09-19 | 109 | 8 | 17 | 11 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **46**
 - seguridad defensiva: **46**
-- legibilidad y documentación: **41**
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **44**
+- legibilidad y documentación: **39**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
-- `browser.py`: **20**
-- `memory.py`: **19**
-- `diskreport.py`: **19**
+- `browser.py`: **21**
+- `diskreport.py`: **20**
 - `safety.py`: **19**
+- `memory.py`: **18**
+- `assistant.py`: **17**
 - `duplicates.py`: **17**
-- `assistant.py`: **16**
 - `quarantine.py`: **16**
 - `settings.py`: **15**
-- `organizer.py`: **13**
+- `organizer.py`: **12**
 - `branding.py`: **11**
 - `main.py`: **10**
 - `scanner.py`: **9**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T11:24:39` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` y `walk_files` ante posibles fallos en la lectura de atributos de archivo, reemplazando el acceso directo a `path.suffix` por un manejo defensivo y asegurando que `_is_excluded_path` no falle ante nombres de archivo inválidos o rutas inexistentes durante la iteración.
+- `2026-09-19T11:24:28` **browser.py** (manejo de errores y validación de entradas): Se reforzó la validación de los parámetros de entrada y el manejo de estados nulos en `total_cache_bytes` y `summarize` para evitar excepciones imprevistas durante la generación de reportes si se procesan listas vacías o valores inesperados.
+- `2026-09-19T11:23:29` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `ingest` y `_apply_field` dentro de `SystemContext` para evitar que un dato malformado o inesperado en el origen (source) detenga el procesamiento de las demás métricas, asegurando una ingesta parcial exitosa incluso si algún valor individual falla.
 - `2026-09-19T10:01:40` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita de `is_safe_to_modify` sobre el directorio padre antes de intentar cualquier operación de escritura, y aseguré que la creación del archivo temporal no se vea afectada por condiciones de carrera o rutas maliciosas al verificar la integridad de `ruta` inmediatamente antes de cada operación de sistema.
 - `2026-09-19T09:52:38` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para prevenir ataques de "Time-of-Check to Time-of-Use" (TOCTOU) adicionales mediante la validación del estado del padre inmediato antes de cualquier operación, asegurando que el directorio contenedor no haya sido reemplazado por un enlace o punto de reparse después de la normalización.
 - `2026-09-19T09:46:40` **organizer.py** (seguridad defensiva): Se reforzó `_is_safe_for_disk_op` para prevenir la escritura en dispositivos de solo lectura (como unidades de red montadas, medios extraíbles de solo lectura o particiones bloqueadas) mediante la verificación explícita de acceso de escritura antes de intentar cualquier operación de movimiento.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T09:05:47` **memory.py** (robustez ante casos límite): Se mejora la robustez ante errores de permiso y procesos huérfanos en `trim_working_set` y `_get_process_path`, asegurando que el manejo de *handles* de Win32 sea más resiliente y que las validaciones de seguridad ocurran antes de cualquier intento de operación sensible.
 - `2026-09-19T09:00:54` **healthscore.py** (robustez ante casos límite): Mejora la robustez del sistema ante datos de entrada extremos o malformados mediante la adición de una validación explícita de `is_finite` en `SystemMetrics` y un manejo de errores más defensivo en `_evaluate_rules` y `compute_score`.
 - `2026-09-19T09:00:28` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante fallos de E/S en `_is_file_locked` y las funciones de hashing, implementando una gestión de errores más granular y evitando que una excepción inesperada durante la lectura del archivo detenga el procesamiento de todo el grupo de duplicados.
-- `2026-09-19T08:51:42` **browser.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores durante el escaneo de directorios dentro de `_sum_directory_recursive` para manejar específicamente las violaciones de acceso (error 32) y denegación de acceso (error 5) de manera silenciosa pero controlada, evitando que una carpeta bloqueada o inaccesible interrumpa el conteo total del árbol de caché.
-- `2026-09-19T08:51:13` **branding.py** (robustez ante casos límite): Se introdujo una validación de seguridad en `save_logo_svg` utilizando `is_protected_path` antes de intentar la escritura en disco, cumpliendo con el enfoque de robustez al evitar operaciones innecesarias en rutas críticas o restringidas.
-- `2026-09-19T08:50:39` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de inferencia local añadiendo validación de `score` (asegurando que sea un entero válido) y manejando explícitamente el caso en que las métricas resulten en valores de punto flotante no finitos (NaN/Inf) mediante una verificación más estricta en el método de ingesta, evitando que datos malformados degraden la lógica de decisión.
