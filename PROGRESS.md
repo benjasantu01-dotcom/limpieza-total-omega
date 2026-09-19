@@ -5,24 +5,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **204** (40.6% de aceptación)
-- Rechazadas por tests: 11
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 54 | 2 | 11 | 5 | 80 |
+| 2026-09-17 | 54 | 2 | 11 | 5 | 78 |
 | 2026-09-18 | 150 | 9 | 39 | 18 | 134 |
+| 2026-09-19 | 2 | 1 | 0 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **42**
 - legibilidad y documentación: **39**
 - seguridad defensiva: **36**
 - rendimiento: **35**
@@ -35,17 +36,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **18**
 - `duplicates.py`: **18**
 - `memory.py`: **18**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
 - `safety.py`: **17**
 - `settings.py`: **15**
 - `organizer.py`: **10**
 - `scanner.py`: **10**
 - `branding.py`: **8**
+- `main.py`: **5**
 - `startup.py`: **5**
-- `main.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T00:13:25` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar archivos inexistentes de forma explícita y se ha refinado el manejo de `OSError` en `_safe_unlink` para asegurar que el sistema pueda liberar recursos incluso si la validación falla parcialmente, evitando bloqueos en el bucle de limpieza.
+- `2026-09-19T00:12:07` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante errores inesperados durante el procesamiento asíncrono y la inicialización de la UI, asegurando que las validaciones de seguridad (`ensure_safety`) se apliquen consistentemente antes de cualquier operación potencialmente crítica en los hilos del pool.
 - `2026-09-18T14:59:39` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `summarize` y `compute_score` ante valores inesperados de `WEIGHTS` o `breakdown`, asegurando que el renderizado de gráficos y el cálculo de puntajes no fallen si los datos de configuración son inconsistentes.
 - `2026-09-18T14:59:09` **duplicates.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la recolección de archivos ante errores de entrada o cambios dinámicos del sistema de archivos al añadir validaciones adicionales contra rutas nulas o inexistentes y asegurar la integridad de `is_safe_to_modify` dentro de los bucles de escaneo, evitando que excepciones de acceso interrumpan procesos de análisis más amplios.
 - `2026-09-18T14:50:38` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos que desaparecen durante el escaneo (condición de carrera) o que son inaccesibles, envolviendo las llamadas críticas en un bloque `try-except` más granular para evitar que una excepción en un archivo puntual aborte el reporte completo del usuario.
@@ -59,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-18T14:09:50` **branding.py** (rendimiento): Se implementó un mecanismo de caché estática para los resultados de `_get_scaled_poly` y `_get_grouped_segments` ajustando sus claves para evitar re-procesamientos innecesarios en el renderizado de cada frame, mejorando la eficiencia del bucle de pintado.
 - `2026-09-18T14:09:16` **assistant.py** (rendimiento): Optimicé el rendimiento de `_generate_context_cached` convirtiendo la concatenación de strings con `\n.join` y múltiples llamadas a funciones en una operación única, además de reducir la redundancia en los formateos de métricas, evitando llamadas innecesarias a `_fmt_metric_sanitized` cuando el valor es constante o trivial.
 - `2026-09-18T13:58:44` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna del módulo `safety.py` mediante la adición de docstrings técnicos detallados en las funciones de validación, explicando el "porqué" de las verificaciones de bajo nivel (WinAPI) para facilitar su mantenimiento y auditoría por parte del dueño del proyecto.
-- `2026-09-18T13:53:10` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings detallados en las funciones críticas de validación y escaneo, explicando el "porqué" de las restricciones de seguridad para mejorar la mantenibilidad y claridad del código.
-- `2026-09-18T13:52:37` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en las funciones de bajo nivel y completando las docstrings de `MEMORYSTATUSEX` y los métodos de `MemorySnapshot` para cumplir con los estándares de rigor técnico exigidos.

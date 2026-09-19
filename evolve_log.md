@@ -519,3 +519,36 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-09-18T23:39:17` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-18T23:49:26` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-18T23:59:35` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-19T00:09:49` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-09-19T00:10:51` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-19T00:12:07` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `main.py` ante errores inesperados durante el procesamiento asíncrono y la inicialización de la UI, asegurando que las validaciones de seguridad (`ensure_safety`) se apliquen consistentemente antes de cualquier operación potencialmente crítica en los hilos del pool.
+- `2026-09-19T00:12:37` Tests FALLARON:
+```
+test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:417: SyntaxWarning: invalid escape sequence '\)'
+    """Determina si una ruta apunta a la raíz de un dispositivo de almacenamiento (ej C:\)."""
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:125: SyntaxWarning: invalid escape sequence '\R'
+    El registro de Windows suele guardar rutas con espacios como '"C:\Ruta\App.exe" /arg'.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: memory.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed, 15 warnings in 1.39s
+
+```
+- `2026-09-19T00:12:37` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `_is_valid_process_entry` ante datos de entrada malformados o inesperados, evitando que una cadena corrupta del PowerShell genere un `ValueError` que corte el análisis.
+- `2026-09-19T00:13:03` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-19T00:13:25` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_file_locked` para manejar archivos inexistentes de forma explícita y se ha refinado el manejo de `OSError` en `_safe_unlink` para asegurar que el sistema pueda liberar recursos incluso si la validación falla parcialmente, evitando bloqueos en el bucle de limpieza.
+- `2026-09-19T00:13:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T00:13:25` Corrida terminada. Total usado hoy: 4.

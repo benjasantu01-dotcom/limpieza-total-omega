@@ -213,7 +213,7 @@ def _safe_unlink(path: Path) -> bool:
     """
     try:
         resolved = path.resolve()
-        if not resolved.is_file() or resolved.is_symlink() or is_protected_path(resolved):
+        if not resolved.exists() or not resolved.is_file() or resolved.is_symlink() or is_protected_path(resolved):
             return False
             
         if is_safe_to_modify(resolved) and not _is_file_locked(resolved):
@@ -737,10 +737,9 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
     """Verifica requisitos de seguridad antes de purgar un ítem del sandbox."""
-    if not file_path.is_file() or file_path.is_symlink() or is_protected_path(file_path):
+    if not file_path.exists() or not file_path.is_file() or file_path.is_symlink() or is_protected_path(file_path):
         return False
     return (
-        file_path.exists() and
         is_within_directory(file_path, base_path) and
         item.verify_integrity(file_path) and
         _safe_unlink(file_path)

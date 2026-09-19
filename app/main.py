@@ -131,8 +131,12 @@ def ensure_safety(func: Callable) -> Callable:
     """
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
-        safety.ensure_safe_to_modify(Path.home().resolve())
-        return func(*args, **kwargs)
+        try:
+            safety.ensure_safe_to_modify(Path.home().resolve())
+            return func(*args, **kwargs)
+        except Exception as e:
+            logging.error("Violación de seguridad pre-ejecución: %s", e)
+            raise
     return wrapper
 
 def safe_ui_operation(func: Callable) -> Callable:
