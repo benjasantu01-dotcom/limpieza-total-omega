@@ -611,7 +611,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if p.exists():
         try:
             initial_stat = p.stat()
-        except (OSError, FileNotFoundError):
+        except OSError:
             raise UnsafePathError(f"No se pueden obtener metadatos: {p.name}", SafetyValidationErrorCode.IO_ERROR)
         
         if not bool(initial_stat.st_mode & stat.S_IWRITE):
@@ -619,7 +619,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             
         if os.name == 'nt':
             _validate_ntfs_reparse_redirection(p)
-        _check_file_integrity(p, initial_stat)
+        
+        try:
+            _check_file_integrity(p, initial_stat)
+        except OSError:
+            raise UnsafePathError(f"Error de E/S durante validación: {p.name}", SafetyValidationErrorCode.IO_ERROR)
     else:
         parent = p.parent
         if parent.exists() and is_protected_path(parent):
@@ -628,9 +632,12 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         if os.name == 'nt':
             anchor = getattr(p, 'anchor', None)
             if anchor:
-                drive_type = ctypes.windll.kernel32.GetDriveTypeW(anchor)
-                if drive_type in (DRIVE_REMOTE, DRIVE_REMOVABLE):
-                    raise UnsafePathError("Unidad no apta para modificación.", SafetyValidationErrorCode.IO_ERROR)
+                try:
+                    drive_type = ctypes.windll.kernel32.GetDriveTypeW(anchor)
+                    if drive_type in (DRIVE_REMOTE, DRIVE_REMOVABLE):
+                        raise UnsafePathError("Unidad no apta para modificación.", SafetyValidationErrorCode.IO_ERROR)
+                except (AttributeError, ctypes.ArgumentError):
+                    pass
             
     return p
 

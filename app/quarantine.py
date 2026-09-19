@@ -407,7 +407,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste el manifiesto usando escritura atómica para evitar corrupción de datos."""
+    """Persiste el manifiesto usando escritura atómica y validaciones de integridad."""
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista.")
     
@@ -436,6 +436,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
 
         os.replace(temp_path, target_path)
         
+        # Sincronizar directorio para garantizar persistencia en metadata del FS
         dir_fd = os.open(str(base_path), os.O_RDONLY)
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)

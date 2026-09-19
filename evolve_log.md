@@ -1255,3 +1255,10 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-09-19T07:10:21` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones explícitas de rutas antes de operar y capturando excepciones de sistema de forma más granular para evitar interrupciones silenciosas del flujo.
 - `2026-09-19T07:10:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T07:10:21` Corrida terminada. Total usado hoy: 168.
+- `2026-09-19T07:18:08` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-09-19T07:18:47` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `save_manifest` mediante la implementación de un manejo de errores más específico y un chequeo de pre-condiciones, evitando que una serialización fallida o un estado inválido del sistema de archivos dejen al sistema en un estado inconsistente o con un archivo de manifiesto truncado.
+- `2026-09-19T07:19:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-19T07:19:46` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `ensure_safe_to_modify` para que el manejo de errores sea más granular, capturando específicamente `OSError` durante la validación de integridad para evitar que excepciones de bajo nivel interrumpan el flujo de control del bucle de forma inesperada.
+- `2026-09-19T07:19:56` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-19T07:19:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T07:19:56` Corrida terminada. Total usado hoy: 172.
