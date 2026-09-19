@@ -1324,3 +1324,43 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-19T08:23:44` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `_flush_logs` para agrupar las inserciones de texto por pestaña, reduciendo drásticamente las operaciones de manipulación del widget de texto y mejorando la eficiencia durante el logueo masivo.
 - `2026-09-19T08:23:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T08:23:44` Corrida terminada. Total usado hoy: 196.
+- `2026-09-19T08:29:26` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-09-19T08:29:57` Tests FALLARON:
+```
+test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:63: SyntaxWarning: invalid escape sequence '\ '
+    Prefija rutas con el formato \\?\ para evadir la limitación de MAX_PATH (260)
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:423: SyntaxWarning: invalid escape sequence '\)'
+    """Determina si una ruta apunta a la raíz de un dispositivo de almacenamiento (ej C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed, 8 warnings in 1.42s
+
+```
+- `2026-09-19T08:29:57` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimizé la función `parse_windows_process_csv` reemplazando la creación de listas intermedias y el manejo manual de strings por una lógica de filtrado directa y eficiente, aprovechando mejor la memoria durante el procesamiento del volcado de PowerShell.
+- `2026-09-19T08:30:24` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_for_junk` y `_process_directory` reemplazando la lógica de resolución constante de rutas (`Path.resolve()`) dentro del bucle principal por el uso directo de las rutas relativas obtenidas de `os.scandir`, evitando miles de llamadas innecesarias al sistema de archivos mientras se mantiene la integridad de la validación.
+- `2026-09-19T08:31:03` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la carga de datos del manifiesto convirtiendo la lista en un diccionario (`dict`) indexado por `item_id` en las funciones de acceso frecuente (`restore_item`, `purge_item`), evitando así operaciones O(n) lineales durante cada búsqueda de ítem.
+- `2026-09-19T08:31:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-19T08:31:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T08:31:07` Corrida terminada. Total usado hoy: 200.

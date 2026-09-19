@@ -260,7 +260,7 @@ def scan_for_junk(directories: Optional[Sequence[str]] = None) -> List[JunkFile]
     for d in (directories or DEFAULT_SCAN_DIRS):
         p = Path(d).expanduser()
         if p.exists() and p.is_dir() and not _is_unc_path(p):
-            _process_directory(p.resolve(), found, 0, protected_cache)
+            _process_directory(p, found, 0, protected_cache)
     return found
 
 def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:

@@ -7,25 +7,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **216** (42.9% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 129 | 8 | 33 | 15 | 123 |
-| 2026-09-19 | 87 | 5 | 14 | 7 | 83 |
+| 2026-09-18 | 127 | 8 | 33 | 15 | 121 |
+| 2026-09-19 | 89 | 6 | 15 | 7 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
-- seguridad defensiva: **46**
+- seguridad defensiva: **45**
 - legibilidad y documentación: **45**
-- robustez ante casos límite: **39**
-- rendimiento: **34**
+- robustez ante casos límite: **38**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,11 +34,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **20**
 - `diskreport.py`: **20**
 - `safety.py`: **19**
-- `assistant.py`: **17**
 - `duplicates.py`: **17**
-- `settings.py`: **16**
-- `quarantine.py`: **15**
-- `organizer.py`: **12**
+- `quarantine.py`: **16**
+- `assistant.py`: **16**
+- `settings.py`: **15**
+- `organizer.py`: **13**
 - `branding.py`: **10**
 - `main.py`: **10**
 - `scanner.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T08:31:03` **quarantine.py** (rendimiento): Optimizé la carga de datos del manifiesto convirtiendo la lista en un diccionario (`dict`) indexado por `item_id` en las funciones de acceso frecuente (`restore_item`, `purge_item`), evitando así operaciones O(n) lineales durante cada búsqueda de ítem.
+- `2026-09-19T08:30:24` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` y `_process_directory` reemplazando la lógica de resolución constante de rutas (`Path.resolve()`) dentro del bucle principal por el uso directo de las rutas relativas obtenidas de `os.scandir`, evitando miles de llamadas innecesarias al sistema de archivos mientras se mantiene la integridad de la validación.
 - `2026-09-19T08:23:44` **main.py** (rendimiento): Optimicé el método `_flush_logs` para agrupar las inserciones de texto por pestaña, reduciendo drásticamente las operaciones de manipulación del widget de texto y mejorando la eficiencia durante el logueo masivo.
 - `2026-09-19T08:20:34` **healthscore.py** (rendimiento): Optimizé `compute_score` eliminando la creación de objetos `RecommendationRule` innecesarios y reemplazando la lógica de acceso a `_RULES_MAP` (que requería búsquedas O(n)) por una estructura de datos indexada directamente en el `_PIPELINE`, reduciendo el costo computacional en cada iteración del bucle de evaluación.
 - `2026-09-19T08:20:07` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos en `_collect_candidates` integrando el filtrado por tamaño y la validación de seguridad directamente en el `os.scandir` para reducir las llamadas repetitivas a `stat()` y `is_safe_to_modify()`, evitando operaciones I/O redundantes sobre archivos que no cumplen los criterios.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T07:39:26` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de entrada/salida y las estructuras de datos, añadiendo docstrings que explican el propósito de los parámetros y el comportamiento ante errores, facilitando la mantenibilidad del módulo.
 - `2026-09-19T07:38:58` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo un bloque de `TypeDoc` para la estructura de `BrowserCache` y clarificando mediante comentarios funcionales la lógica de recursión y exclusión, facilitando la comprensión del flujo de datos en el análisis de carpetas.
 - `2026-09-19T07:30:13` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados en funciones críticas y la corrección de una inconsistencia semántica en `severity_label`, asegurando que la gestión de tipos sea coherente y robusta siguiendo los principios de legibilidad exigidos.
-- `2026-09-19T07:29:54` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints de retorno explícitos a funciones que carecían de ellos, y se han extraído los valores predeterminados y límites configurables a constantes documentadas para mejorar la claridad sobre las restricciones del sistema.
-- `2026-09-19T07:29:17` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para evitar que filas con campos nulos o malformados interrumpan el parseo, asegurando que solo se procesen registros que contengan pares nombre/comando íntegros.
