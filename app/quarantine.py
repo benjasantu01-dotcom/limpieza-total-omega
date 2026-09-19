@@ -376,6 +376,10 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     except (OSError, RuntimeError) as e:
         raise UnsafePathError(f"Ruta origen inaccesible: {e}")
     
+    # Validar longitud de ruta destino (previene errores de path demasiado largo)
+    if len(str(dest_dir)) > 240:
+        raise UnsafePathError("Ruta de cuarentena demasiado larga.")
+
     _ensure_disk_space(dest_dir, resolved_source.stat().st_size)
     _check_isolation_safety(resolved_source, dest_dir)
 
