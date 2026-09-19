@@ -272,7 +272,7 @@ def _sum_directory_recursive(
 
 def directory_size(path: Optional[OSPath]) -> int:
     """Interfaz pública para consultar el peso en bytes de una ruta de manera segura."""
-    if path is None:
+    if not path:
         return 0
     try:
         p = Path(path)
@@ -322,14 +322,14 @@ def detect_profiles(
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
+    if not isinstance(raw_bases, (list, tuple)):
+        return []
+
     k32 = _get_kernel32()
     global_memo: Dict[str, int] = {}
     found: List[BrowserCache] = []
     scanned_paths: set[str] = set()
     
-    if not isinstance(raw_bases, (list, tuple)):
-        return []
-
     for base in raw_bases:
         if not isinstance(base, Path) or not base.is_dir():
             continue

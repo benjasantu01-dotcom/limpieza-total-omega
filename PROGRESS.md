@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 50
+- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 37 | 2 | 9 | 4 | 46 |
+| 2026-09-17 | 36 | 1 | 8 | 4 | 45 |
 | 2026-09-18 | 150 | 9 | 39 | 18 | 134 |
-| 2026-09-19 | 16 | 3 | 2 | 0 | 35 |
+| 2026-09-19 | 20 | 3 | 2 | 0 | 35 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **46**
 - robustez ante casos límite: **45**
-- manejo de errores y validación de entradas: **43**
 - rendimiento: **35**
-- legibilidad y documentación: **34**
+- legibilidad y documentación: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `browser.py`: **20**
-- `healthscore.py`: **20**
+- `diskreport.py`: **22**
+- `browser.py`: **21**
+- `healthscore.py`: **21**
 - `assistant.py`: **19**
-- `safety.py`: **18**
+- `duplicates.py`: **17**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
+- `safety.py`: **17**
 - `settings.py`: **16**
-- `duplicates.py`: **16**
 - `scanner.py`: **11**
 - `organizer.py`: **9**
 - `branding.py`: **9**
@@ -47,6 +47,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T02:34:43` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` implementando una validación previa de los pesos del pipeline, asegurando que `metric_breakdown` no contenga claves inexistentes y evitando posibles errores en tiempo de ejecución si el diccionario `WEIGHTS` fuera alterado dinámicamente o por una configuración externa.
+- `2026-09-19T02:34:29` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` añadiendo validaciones explícitas de entrada, asegurando que el manejo de `None` o estados inconsistentes no provoque fallos inesperados en la interfaz.
+- `2026-09-19T02:33:25` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_collect_summary_data` y `walk_files` capturando errores específicos al acceder a archivos y atributos, evitando la supresión ciega de excepciones con `except Exception` que podía ocultar problemas de flujo o tipos inesperados.
+- `2026-09-19T02:33:00` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` y `directory_size` validando explícitamente los parámetros de entrada y normalizando el manejo de errores en el bucle principal para evitar la propagación de excepciones inesperadas durante el escaneo de directorios.
 - `2026-09-19T02:25:11` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `ingest` en `SystemContext` para evitar fallos silenciosos al procesar entradas externas malformadas y agregué validación de tipo explícita en `_apply_field` para prevenir errores de casting.
 - `2026-09-19T01:02:23` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` reemplazando `os.replace` por un flujo que verifica la integridad de la ruta destino antes de realizar la operación de sobreescritura, evitando condiciones de carrera o manipulación de enlaces simbólicos mediante `ensure_safe_to_modify` aplicado justo antes de la persistencia atómica.
 - `2026-09-19T01:01:55` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo añadiendo una validación explícita para asegurar que los archivos analizados tengan atributos de archivo válidos y no sean puntos de reanálisis (reparse points) antes de procesarlos, evitando así posibles desbordamientos de pila o accesos a rutas fuera del alcance permitido por el usuario.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T00:33:55` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación estricta de rutas mediante `is_protected_path` al resolver las rutas de los navegadores, asegurando que ninguna ruta resuelta escape del directorio base o toque componentes restringidos antes de intentar cualquier operación de acceso.
 - `2026-09-19T00:33:43` **branding.py** (seguridad defensiva): Mejoré la seguridad en `save_logo_svg` consolidando el uso de `ensure_safe_to_modify` para validar la ruta final tras la resolución de enlaces, eliminando la redundancia de validaciones parciales que podían fallar en sistemas con permisos restrictivos.
 - `2026-09-19T00:31:42` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_build_payload` y `_call_gemini` integrando una validación estricta del tamaño y contenido del `payload` para prevenir inyecciones complejas o desbordamientos de buffer antes de cualquier operación de red.
-- `2026-09-19T00:30:39` **startup.py** (robustez ante casos límite): Se reforzó la robustez de `StartupEntry._validate_file_access` añadiendo una comprobación explícita de `is_file()` para evitar falsos positivos con directorios que coincidan con la extensión `.exe` (junctions/reparse points), cumpliendo con el enfoque de robustez ante casos límite.
-- `2026-09-19T00:21:37` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `load` ante posibles errores de E/S o corrupción del archivo `.bak` mediante un manejo de excepciones más granular y un chequeo explícito de legibilidad, asegurando que si el archivo principal es inaccesible, el sistema no colapse.
-- `2026-09-19T00:21:00` **safety.py** (robustez ante casos límite): Se ha añadido una validación de `os.access(path, os.W_OK)` dentro de `ensure_safe_to_modify` para verificar efectivamente los permisos de escritura del sistema operativo antes de intentar cualquier operación, evitando fallos en tiempo de ejecución por permisos denegados en archivos de solo lectura a nivel de ACL.
-- `2026-09-19T00:13:25` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar archivos inexistentes de forma explícita y se ha refinado el manejo de `OSError` en `_safe_unlink` para asegurar que el sistema pueda liberar recursos incluso si la validación falla parcialmente, evitando bloqueos en el bucle de limpieza.

@@ -864,3 +864,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-19T02:25:25` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-19T02:25:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T02:25:25` Corrida terminada. Total usado hoy: 56.
+- `2026-09-19T02:32:30` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-09-19T02:33:00` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `detect_profiles` y `directory_size` validando explícitamente los parámetros de entrada y normalizando el manejo de errores en el bucle principal para evitar la propagación de excepciones inesperadas durante el escaneo de directorios.
+- `2026-09-19T02:33:25` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_collect_summary_data` y `walk_files` capturando errores específicos al acceder a archivos y atributos, evitando la supresión ciega de excepciones con `except Exception` que podía ocultar problemas de flujo o tipos inesperados.
+- `2026-09-19T02:34:29` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `format_group` añadiendo validaciones explícitas de entrada, asegurando que el manejo de `None` o estados inconsistentes no provoque fallos inesperados en la interfaz.
+- `2026-09-19T02:34:43` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` implementando una validación previa de los pesos del pipeline, asegurando que `metric_breakdown` no contenga claves inexistentes y evitando posibles errores en tiempo de ejecución si el diccionario `WEIGHTS` fuera alterado dinámicamente o por una configuración externa.
+- `2026-09-19T02:34:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T02:34:43` Corrida terminada. Total usado hoy: 60.

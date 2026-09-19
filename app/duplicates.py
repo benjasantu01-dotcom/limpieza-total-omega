@@ -285,12 +285,12 @@ def _get_keeper_score(path: Path) -> Optional[Tuple[float, int]]:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """Sugerencia heurística del mejor archivo para conservar en un grupo."""
-    if not isinstance(group, DuplicateGroup) or not group.paths:
+    if not group or not isinstance(group, DuplicateGroup) or not group.paths:
         return None
     
     candidates = []
     for p in group.paths:
-        if not isinstance(p, Path):
+        if not isinstance(p, Path) or not p.exists():
             continue
         try:
             if not is_safe_to_modify(p):
@@ -305,7 +305,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Formatea un grupo de duplicados para su presentación legible en la interfaz."""
-    if not isinstance(group, DuplicateGroup) or not group.paths:
+    if not group or not isinstance(group, DuplicateGroup) or not group.paths:
         return ["Error: Grupo inválido o vacío"]
         
     keeper = suggest_keeper(group)
@@ -314,7 +314,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
     
     for path in group.paths:
         if not isinstance(path, Path):
-            lines.append(f"   [error] ruta inválida")
+            lines.append(f"   [error] ruta no es objeto Path")
             continue
         try:
             if not is_safe_to_modify(path):

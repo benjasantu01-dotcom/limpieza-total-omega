@@ -252,25 +252,27 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Inconsistencia numérica detectada."])
     
     recommendations: List[str] = []
+    # Asegurar que el desglose contenga exactamente las claves esperadas de WEIGHTS
     metric_breakdown: Dict[MetricKey, int] = {k: 0 for k in WEIGHTS.keys()}
     accumulated_score: float = 0.0
     
     for entry in _PIPELINE:
         try:
             val = entry.scorer(metrics)
-            # Aseguramos que el valor de entrada al pipeline sea finito
             area_ratio = _clamp(float(val)) if math.isfinite(val) else 0.0
             
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
-            # Validamos que el peso sea un entero coherente antes de calcular
             weight = max(0, int(entry.weight))
             weighted_points = _clamp(round(area_ratio * weight), 0, weight)
-            metric_breakdown[entry.area] = int(weighted_points)
-            accumulated_score += weighted_points
+            
+            # Solo asignar si la clave existe para mantener integridad del reporte
+            if entry.area in metric_breakdown:
+                metric_breakdown[entry.area] = int(weighted_points)
+                accumulated_score += weighted_points
         except (TypeError, ValueError, ZeroDivisionError, ArithmeticError):
-            metric_breakdown[entry.area] = 0
+            continue
             
     final_score = int(_clamp(round(accumulated_score), 0.0, 100.0))
     

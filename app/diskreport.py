@@ -258,9 +258,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             if st.st_size >= 0:
                                 yield Path(entry.path), st.st_size
                             
-                    except (PermissionError, OSError, FileNotFoundError):
+                    except (PermissionError, OSError):
                         continue
-        except (PermissionError, OSError, FileNotFoundError):
+        except (PermissionError, OSError):
             continue
 
 
@@ -296,7 +296,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             top_level_folder = root / relative.parts[0]
             folder_total_bytes[top_level_folder] += size_bytes
             folder_file_counts[top_level_folder] += 1
-        except (ValueError, IndexError, OSError): 
+        except (ValueError, OSError): 
             continue
 
     results = [FolderUsage(p, folder_total_bytes[p], folder_file_counts[p]) for p in folder_total_bytes]
@@ -321,24 +321,21 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        try:
-            total_bytes += size_bytes
-            total_files += 1
-            
-            ext_raw = path.suffix
-            ext = ext_raw.lower() if ext_raw else "(sin extensión)"
-            
-            stat = ext_stats[ext]
-            stat.total_bytes += size_bytes
-            stat.count += 1
-            
-            if limit > 0 and size_bytes > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size_bytes, path))
-                elif size_bytes > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (size_bytes, path))
-        except Exception:
-            continue
+        total_bytes += size_bytes
+        total_files += 1
+        
+        ext_raw = path.suffix
+        ext = ext_raw.lower() if ext_raw else "(sin extensión)"
+        
+        stat = ext_stats[ext]
+        stat.total_bytes += size_bytes
+        stat.count += 1
+        
+        if limit > 0 and size_bytes > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size_bytes, path))
+            elif size_bytes > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size_bytes, path))
     
     return SummaryData(total_bytes, total_files, ext_stats, top_heap)
 
@@ -350,7 +347,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     data = _collect_summary_data(root, skip_protected, limit=20)
     
-    if data is None or data.total_files == 0: 
+    if data.total_files == 0: 
         return ["Aviso: No hay archivos accesibles para analizar en la ruta indicada."]
 
     lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} en {data.total_files} archivos", "", "Por tipo:"]
