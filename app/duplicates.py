@@ -156,7 +156,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Filtro de integridad: evalúa atributos de sistema y seguridad de la ruta."""
     try:
-        if not path.exists() or is_protected_path(path) or not is_safe_to_modify(path):
+        if is_protected_path(path) or not is_safe_to_modify(path):
             return False
         if is_system_or_hidden(path):
             return False
@@ -200,31 +200,27 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     visited_directories: set[str] = set()
 
     def _scan_dir(current_dir: Path) -> None:
-        """Closure recursiva que explora directorios evitando ciclos y puntos de reparse."""
         try:
-            resolved_dir = current_dir.resolve(strict=True)
-            if not is_safe_to_modify(resolved_dir) or (skip_protected and is_protected_path(resolved_dir)):
-                return
-            dir_str = str(resolved_dir)
-            if dir_str in visited_directories:
-                return
+            dir_str = str(current_dir.resolve())
+            if dir_str in visited_directories: return
             visited_directories.add(dir_str)
             
-            with os.scandir(dir_str) as iterator:
+            with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
                         if entry.is_dir(follow_symlinks=False):
-                            if not is_junction(Path(entry.path)):
-                                _scan_dir(Path(entry.path))
+                            path = Path(entry.path)
+                            if not is_junction(path) and not is_protected_path(path):
+                                _scan_dir(path)
                         else:
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size >= min_size:
-                                file_path = Path(entry.path)
-                                if _is_valid_candidate(file_path, st.st_size):
-                                    size_to_paths_map[st.st_size].append(file_path)
-                    except (FileNotFoundError, OSError, PermissionError, ValueError):
+                                path = Path(entry.path)
+                                if _is_valid_candidate(path, st.st_size):
+                                    size_to_paths_map[st.st_size].append(path)
+                    except (FileNotFoundError, OSError, PermissionError):
                         continue
-        except (OSError, PermissionError, ValueError):
+        except (OSError, PermissionError):
             return
 
     for item in directories:

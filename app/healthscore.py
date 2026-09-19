@@ -127,26 +127,13 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
     """Calcula el ratio de salud considerando la cantidad de programas que inician con el sistema."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
-_RULES_LIST: Final[Tuple[RecommendationRule, ...]] = (
-    RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),
-    RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW),
-    RecommendationRule("memoria", WARN_THRESHOLD_LOW, lambda m: "Memoria disponible baja: cerrá procesos innecesarios.", lambda m, r: r < WARN_THRESHOLD_LOW),
-    RecommendationRule("basura", WARN_THRESHOLD_MED, lambda m: f"Hay {m.junk_mb:.0f} MB de archivos temporales.", lambda m, r: r < WARN_THRESHOLD_MED),
-    RecommendationRule("duplicados", WARN_THRESHOLD_MED, lambda m: f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados.", lambda m, r: r < WARN_THRESHOLD_MED),
-    RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),
-)
-
-_RULES_MAP: Final[Dict[MetricKey, List[RecommendationRule]]] = {
-    area: [r for r in _RULES_LIST if r.area == area] for area in WEIGHTS.keys()
-}
-
 _PIPELINE: Final[List[PipelineEntry]] = [
-    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), _RULES_MAP.get("seguridad", [])),
-    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), _RULES_MAP.get("disco", [])),
-    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), _RULES_MAP.get("memoria", [])),
-    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), _RULES_MAP.get("basura", [])),
-    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), _RULES_MAP.get("duplicados", [])),
-    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), _RULES_MAP.get("arranque", [])),
+    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), [RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH)]),
+    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), [RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW)]),
+    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), [RecommendationRule("memoria", WARN_THRESHOLD_LOW, lambda m: "Memoria disponible baja: cerrá procesos innecesarios.", lambda m, r: r < WARN_THRESHOLD_LOW)]),
+    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), [RecommendationRule("basura", WARN_THRESHOLD_MED, lambda m: f"Hay {m.junk_mb:.0f} MB de archivos temporales.", lambda m, r: r < WARN_THRESHOLD_MED)]),
+    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), [RecommendationRule("duplicados", WARN_THRESHOLD_MED, lambda m: f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados.", lambda m, r: r < WARN_THRESHOLD_MED)]),
+    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), [RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW)]),
 ]
 
 @dataclass
@@ -214,7 +201,6 @@ def grade_for_score(score: float | int) -> str:
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
     for rule in rules:
         try:
-            if not isinstance(rule, RecommendationRule): continue
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str):
@@ -226,25 +212,21 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Ejecuta el pipeline de evaluación para generar un objeto HealthResult consolidado."""
-    if not isinstance(metrics, SystemMetrics):
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
-    
-    if not metrics.is_finite:
-        return HealthResult(0, "F", {}, ["Error: Inconsistencia numérica detectada."])
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {k: 0 for k in WEIGHTS.keys()}
     accumulated_score: float = 0.0
     
-    for area, weight, scorer, rules in _PIPELINE:
+    for entry in _PIPELINE:
         try:
-            area_ratio = scorer(metrics)
+            area_ratio = entry.scorer(metrics)
+            if entry.rules:
+                _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
-            if rules:
-                _evaluate_rules(metrics, rules, area_ratio, recommendations)
-            
-            weighted_points = _clamp(round(area_ratio * weight), 0.0, float(weight))
-            metric_breakdown[area] = int(weighted_points)
+            weighted_points = _clamp(round(area_ratio * entry.weight), 0.0, float(entry.weight))
+            metric_breakdown[entry.area] = int(weighted_points)
             accumulated_score += weighted_points
         except Exception:
             continue

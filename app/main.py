@@ -50,7 +50,7 @@ import time
 import tkinter as tk
 import threading
 from functools import lru_cache, wraps
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from tkinter import filedialog, messagebox
 from pathlib import Path
 from typing import Optional, List, Dict, Tuple, Any, Callable, Union, TypedDict, TypeAlias
@@ -1013,7 +1013,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     @safe_ui_operation
     def _flush_logs(self) -> None:
-        """Vuelca la cola de mensajes al widget de log correspondiente."""
+        """Vuelca la cola de mensajes al widget de log correspondiente, agrupando por pestaña."""
         self._log_scheduled = False
         
         with self._log_lock:
@@ -1021,9 +1021,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             pendientes = self._log_queue
             self._log_queue = []
         
-        # Agrupamos por pestaña para reducir operaciones de inserción
-        for tab, msgs in {t: [m for tab_name, m in pendientes if tab_name == t] 
-                         for t in {item[0] for item in pendientes}}.items():
+        # Agrupamos por pestaña para reducir operaciones de inserción y redibujo
+        grouped = defaultdict(list)
+        for tab, msg in pendientes:
+            grouped[tab].append(msg)
+            
+        for tab, msgs in grouped.items():
             box = self._box(tab)
             if box and box.winfo_exists():
                 box.insert("end", "\n".join(msgs) + "\n")

@@ -1315,3 +1315,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-19T08:10:49` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se implementó un cache de tamaño a nivel de `directory_size` utilizando un `dict` local para evitar recálculos redundantes en las llamadas múltiples a las funciones de reporte, mejorando el rendimiento en sistemas con múltiples navegadores que comparten estructuras de directorios.
 - `2026-09-19T08:10:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T08:10:49` Corrida terminada. Total usado hoy: 192.
+- `2026-09-19T08:19:13` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-09-19T08:19:41` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-19T08:20:07` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el proceso de recolección de candidatos en `_collect_candidates` integrando el filtrado por tamaño y la validación de seguridad directamente en el `os.scandir` para reducir las llamadas repetitivas a `stat()` y `is_safe_to_modify()`, evitando operaciones I/O redundantes sobre archivos que no cumplen los criterios.
+- `2026-09-19T08:20:34` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimizé `compute_score` eliminando la creación de objetos `RecommendationRule` innecesarios y reemplazando la lógica de acceso a `_RULES_MAP` (que requería búsquedas O(n)) por una estructura de datos indexada directamente en el `_PIPELINE`, reduciendo el costo computacional en cada iteración del bucle de evaluación.
+- `2026-09-19T08:21:34` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-19T08:22:37` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-19T08:23:44` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `_flush_logs` para agrupar las inserciones de texto por pestaña, reduciendo drásticamente las operaciones de manipulación del widget de texto y mejorando la eficiencia durante el logueo masivo.
+- `2026-09-19T08:23:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T08:23:44` Corrida terminada. Total usado hoy: 196.
