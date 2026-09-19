@@ -197,17 +197,18 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """Recorrido recursivo del disco recolectando archivos aptos para análisis."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
-    visited_dirs: set[str] = set()
+    visited_directories: set[str] = set()
 
     def _scan_dir(current_dir: Path) -> None:
+        """Closure recursiva que explora directorios evitando ciclos y puntos de reparse."""
         try:
             resolved_dir = current_dir.resolve(strict=True)
             if not is_safe_to_modify(resolved_dir):
                 return
             dir_str = str(resolved_dir)
-            if dir_str in visited_dirs:
+            if dir_str in visited_directories:
                 return
-            visited_dirs.add(dir_str)
+            visited_directories.add(dir_str)
             
             with os.scandir(dir_str) as iterator:
                 for entry in iterator:
@@ -218,9 +219,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         else:
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size >= min_size:
-                                p_path = Path(entry.path)
-                                if _is_valid_candidate(p_path, st.st_size):
-                                    size_to_paths_map[st.st_size].append(p_path)
+                                file_path = Path(entry.path)
+                                if _is_valid_candidate(file_path, st.st_size):
+                                    size_to_paths_map[st.st_size].append(file_path)
                     except (FileNotFoundError, OSError, PermissionError, ValueError):
                         continue
         except (OSError, PermissionError, ValueError):
@@ -288,7 +289,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     if not group or not isinstance(group, DuplicateGroup) or not group.paths:
         return None
     
-    candidates = []
+    candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
         if not isinstance(p, Path) or not p.exists():
             continue

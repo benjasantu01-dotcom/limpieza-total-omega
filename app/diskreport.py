@@ -313,7 +313,9 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Función interna de agregación que recorre el árbol y consolida métricas.
+    Función de agregación que recorre el árbol de archivos y consolida métricas
+    en un objeto SummaryData. Implementa un heap para el seguimiento de los 
+    archivos más grandes sin necesidad de ordenar toda la estructura.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -324,13 +326,14 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         total_bytes += size_bytes
         total_files += 1
         
-        ext_raw = path.suffix
-        ext = ext_raw.lower() if ext_raw else "(sin extensión)"
+        ext_raw: str = path.suffix
+        ext: str = ext_raw.lower() if ext_raw else "(sin extensión)"
         
-        stat = ext_stats[ext]
+        stat: ExtStats = ext_stats[ext]
         stat.total_bytes += size_bytes
         stat.count += 1
         
+        # Mantenimiento de heap para los 'limit' archivos más pesados
         if limit > 0 and size_bytes > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size_bytes, path))

@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 24
 - Sin respuesta de la IA (error o límite): 213
 
@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 30 | 1 | 5 | 4 | 42 |
+| 2026-09-17 | 28 | 1 | 3 | 4 | 42 |
 | 2026-09-18 | 150 | 9 | 39 | 18 | 134 |
-| 2026-09-19 | 26 | 3 | 4 | 2 | 37 |
+| 2026-09-19 | 30 | 3 | 4 | 2 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **46**
 - robustez ante casos límite: **45**
-- legibilidad y documentación: **33**
-- rendimiento: **31**
+- legibilidad y documentación: **37**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **22**
+- `healthscore.py`: **22**
 - `browser.py`: **21**
-- `diskreport.py`: **21**
-- `healthscore.py`: **21**
 - `assistant.py`: **19**
-- `safety.py`: **18**
-- `quarantine.py`: **17**
+- `duplicates.py`: **17**
 - `memory.py`: **17**
-- `duplicates.py`: **16**
+- `safety.py`: **17**
+- `quarantine.py`: **16**
 - `settings.py`: **15**
 - `scanner.py`: **11**
 - `organizer.py`: **10**
 - `branding.py`: **10**
+- `main.py`: **6**
 - `startup.py`: **5**
-- `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T03:16:46` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo `main.py` mediante la refactorización de `_build_health_metrics_row` y `_metric_card` para eliminar la lógica redundante de creación de tarjetas, y añadí docstrings específicos que clarifican la responsabilidad de cada método dentro de la arquitectura de la aplicación.
+- `2026-09-19T03:14:47` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el contrato de los tipos, la lógica de normalización y la seguridad del pipeline, además de añadir type hints explícitos en el desglose de métricas para garantizar la consistencia en el reporte.
+- `2026-09-19T03:14:19` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y la legibilidad añadiendo type hints en los cierres (closures) y estandarizando los nombres de variables internas en las funciones de escaneo para reflejar mejor su propósito semántico.
+- `2026-09-19T03:13:52` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código añadiendo tipos explícitos en la función `_collect_summary_data` y docstrings detallados que explican el rol de los objetos auxiliares para facilitar el mantenimiento.
 - `2026-09-19T03:05:12` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings descriptivos con sus respectivos parámetros y tipos de retorno, además de refactorizar la función `_is_junction_default` para mejorar la legibilidad y coherencia interna, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
 - `2026-09-19T03:04:55` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados (usando formato estilo Google) en funciones clave de manipulación de color y renderizado, facilitando la comprensión de los parámetros y comportamientos esperados sin alterar la funcionalidad.
 - `2026-09-19T02:54:25` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_safe_entry` y `_is_valid_path_structure` mediante validaciones defensivas de tipos y valores nulos para prevenir excepciones inesperadas durante la navegación del sistema de archivos, asegurando que `entry.path` o `entry.name` nunca operen bajo estados inválidos.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T02:33:25` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_collect_summary_data` y `walk_files` capturando errores específicos al acceder a archivos y atributos, evitando la supresión ciega de excepciones con `except Exception` que podía ocultar problemas de flujo o tipos inesperados.
 - `2026-09-19T02:33:00` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` y `directory_size` validando explícitamente los parámetros de entrada y normalizando el manejo de errores en el bucle principal para evitar la propagación de excepciones inesperadas durante el escaneo de directorios.
 - `2026-09-19T02:25:11` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `ingest` en `SystemContext` para evitar fallos silenciosos al procesar entradas externas malformadas y agregué validación de tipo explícita en `_apply_field` para prevenir errores de casting.
-- `2026-09-19T01:02:23` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` reemplazando `os.replace` por un flujo que verifica la integridad de la ruta destino antes de realizar la operación de sobreescritura, evitando condiciones de carrera o manipulación de enlaces simbólicos mediante `ensure_safe_to_modify` aplicado justo antes de la persistencia atómica.
-- `2026-09-19T01:01:55` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo añadiendo una validación explícita para asegurar que los archivos analizados tengan atributos de archivo válidos y no sean puntos de reanálisis (reparse points) antes de procesarlos, evitando así posibles desbordamientos de pila o accesos a rutas fuera del alcance permitido por el usuario.
-- `2026-09-19T01:01:29` **safety.py** (seguridad defensiva): Se ha añadido la detección de archivos dispersos (Sparse Files) en `_VALIDATORS` y su lógica asociada, ya que los archivos dispersos pueden reportar un tamaño lógico engañosamente pequeño mientras ocupan espacio físico no esperado, lo cual representa un riesgo de integridad en operaciones de copia o movimiento.
-- `2026-09-19T00:51:09` **memory.py** (seguridad defensiva): Se ha mejorado la robustez del manejo de procesos en `_get_process_path` integrando validaciones de seguridad adicionales antes de abrir un handle, asegurando que solo se procesen rutas que realmente representan archivos locales validados, evitando dependencias de procesos que no son ejecutables ordinarios y reforzando la integridad al utilizar `is_safe_to_modify` antes de cualquier interacción potencial con la estructura del proceso.

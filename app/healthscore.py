@@ -140,7 +140,6 @@ _RULES_LIST: Final[Tuple[RecommendationRule, ...]] = (
     RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),
 )
 
-# Mapa pre-indexado para acceso O(1) en el pipeline
 _RULES_MAP: Final[Dict[MetricKey, List[RecommendationRule]]] = {
     area: [r for r in _RULES_LIST if r.area == area] for area in WEIGHTS.keys()
 }
@@ -156,7 +155,7 @@ _PIPELINE: Final[List[PipelineEntry]] = [
 
 @dataclass
 class SystemMetrics:
-    """Contenedor inyectable de estado del sistema con validación de integridad."""
+    """Contenedor de métricas crudas con validación de integridad física."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -167,14 +166,10 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None:
-        """Normaliza los valores tras la inicialización del objeto."""
         self.validate()
 
     def validate(self) -> None:
-        """
-        Limpia y asegura que los datos de entrada cumplan los rangos físicos.
-        Resetea a estados seguros ante cualquier error de tipo o valor.
-        """
+        """Asegura rangos físicos y tipos en los datos de entrada."""
         try:
             self.junk_mb = float(max(0.0, _to_float(self.junk_mb)))
             self.duplicate_mb = float(max(0.0, _to_float(self.duplicate_mb)))
@@ -192,16 +187,16 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Valida que todos los campos del contenedor sean numéricamente utilizables."""
+        """Valida que todos los campos sean numéricamente utilizables."""
         for field_name in self.__dataclass_fields__:
             val = getattr(self, field_name)
-            if val is None or not isinstance(val, (int, float)) or not math.isfinite(float(val)):
+            if not isinstance(val, (int, float)) or not math.isfinite(float(val)):
                 return False
         return True
 
 @dataclass
 class HealthResult:
-    """Objeto inmutable que encapsula el resultado final de la evaluación de salud."""
+    """Resultado inmutable del cálculo de salud."""
     score: int
     grade: str
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
@@ -209,15 +204,12 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
-        """Determina si el sistema opera dentro del rango óptimo (>= 80)."""
         return 80 <= self.score <= 100
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
-    """Asegura que un valor esté contenido estrictamente dentro de un rango [min, max]."""
     return float(max(min_val, min(max_val, value)))
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    """Filtra y convierte inputs arbitrarios a float, descartando valores no numéricos."""
     try:
         if value is None: return default
         val = float(value)
@@ -225,11 +217,10 @@ def _to_float(value: Any, default: float = 0.0) -> float:
     except (TypeError, ValueError, OverflowError): return default
 
 def grade_for_score(score: float | int) -> str:
-    """Interfaz externa para obtener la calificación alfabética de un score."""
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Analiza reglas y asegura que solo strings imprimibles y truncados lleguen a la UI."""
+    """Ejecuta factorías de mensajes asegurando saneamiento de strings."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -239,11 +230,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                     if clean_msg:
                         findings.append(clean_msg[:200])
         except Exception:
-            # Captura cualquier error en las factorías de mensajes para evitar abortar el reporte.
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Orquestador principal: valida métricas, procesa pipeline y blinda resultados."""
+    """Orquestador principal que ejecuta el pipeline de normalización y ponderación."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     
@@ -252,7 +242,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Inconsistencia numérica detectada."])
     
     recommendations: List[str] = []
-    # Asegurar que el desglose contenga exactamente las claves esperadas de WEIGHTS
     metric_breakdown: Dict[MetricKey, int] = {k: 0 for k in WEIGHTS.keys()}
     accumulated_score: float = 0.0
     
@@ -267,7 +256,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             weight = max(0, int(entry.weight))
             weighted_points = _clamp(round(area_ratio * weight), 0, weight)
             
-            # Solo asignar si la clave existe para mantener integridad del reporte
             if entry.area in metric_breakdown:
                 metric_breakdown[entry.area] = int(weighted_points)
                 accumulated_score += weighted_points
@@ -287,21 +275,20 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(points: int, max_val: int) -> str:
-    """Crea una representación visual basada en texto para el desglose de puntaje."""
+    """Genera representación visual (bar chart) de puntos alcanzados."""
     m = max(1, int(max_val))
     p = max(0, min(int(points), m))
     return ('#' * p) + ('.' * (m - p))
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera un informe final legible, transformando el objeto HealthResult en lista de texto."""
+    """Transforma el objeto HealthResult a texto para consumo en UI."""
     if not isinstance(result, HealthResult) or not (0 <= result.score <= 100):
         return ["Error: Informe de salud no disponible."]
     
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in WEIGHTS.items():
-        val = result.breakdown.get(area, 0)
-        puntos = int(val) if isinstance(val, (int, float)) else 0
-        lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{_render_bar(puntos, maximo)}]")
+        val: int = result.breakdown.get(area, 0)
+        lines.append(f"  {area.capitalize():<12} {val:>2}/{maximo:<2} [{_render_bar(val, maximo)}]")
     
     recs = result.recommendations if result.recommendations else ["Sin recomendaciones."]
     lines.extend(["", "Recomendaciones:", *(f"  - {r}" for r in recs)])
