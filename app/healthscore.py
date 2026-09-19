@@ -70,7 +70,6 @@ __all__ = [
     "summarize",
 ]
 
-# Umbrales base utilizados como referencia para convertir valores crudos (ej. MB) a ratios [0, 1].
 _LIMIT_JUNK_MB: Final[float] = 5000.0          
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
 _LIMIT_STARTUP_COUNT: Final[int] = 20          
@@ -81,19 +80,16 @@ def _safe_inv(val: float, fallback: float = 1.0) -> float:
     """Calcula el inverso multiplicativo para normalización, protegiendo contra divisiones por cero."""
     return 1.0 / val if (math.isfinite(val) and val != 0) else fallback
 
-# Factores de escalado precalculados para optimizar el cálculo de ratios en cada iteración
 _INV_JUNK: Final[float] = _safe_inv(_LIMIT_JUNK_MB)
 _INV_DUP: Final[float] = _safe_inv(_LIMIT_DUPLICATE_MB)
 _INV_STARTUP: Final[float] = _safe_inv(float(_LIMIT_STARTUP_COUNT))
 _INV_RAM: Final[float] = _safe_inv(_LIMIT_RAM_PERCENT, 0.01)
 _INV_DISK: Final[float] = _safe_inv(_LIMIT_DISK_PERCENT, 0.01)
 
-# Umbrales de severidad normalizados para disparar recomendaciones en la interfaz
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
-# Pesos relativos por área de sistema. La suma debe totalizar exactamente 100 puntos.
 WEIGHTS: Final[Dict[MetricKey, int]] = {
     "seguridad": 30,
     "disco": 20,
@@ -107,28 +103,22 @@ if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula salud de 'basura': 1.0 es 0MB, decrece linealmente hacia 0.0 según umbral."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula salud de 'seguridad': penaliza con 5% por hallazgo y 25% por advertencia."""
     penalization = (_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)
     return _clamp(1.0 - max(0.0, penalization))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula salud de 'memoria': mayor disponibilidad resulta en mayor ratio hasta saturación."""
     return _clamp(_to_float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula salud de 'disco': escala el porcentaje libre según umbrales de advertencia."""
     return _clamp(_to_float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula salud de 'duplicados': inverso al volumen de redundancia detectado."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
-    """Calcula salud de 'arranque': penalización lineal basada en la cantidad de entradas."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
 _RULES_LIST: Final[Tuple[RecommendationRule, ...]] = (
@@ -155,7 +145,6 @@ _PIPELINE: Final[List[PipelineEntry]] = [
 
 @dataclass
 class SystemMetrics:
-    """Contenedor de métricas crudas con validación de integridad física."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -169,7 +158,6 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        """Asegura rangos físicos y tipos en los datos de entrada."""
         try:
             self.junk_mb = float(max(0.0, _to_float(self.junk_mb)))
             self.duplicate_mb = float(max(0.0, _to_float(self.duplicate_mb)))
@@ -187,16 +175,10 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Valida que todos los campos sean numéricamente utilizables."""
-        for field_name in self.__dataclass_fields__:
-            val = getattr(self, field_name)
-            if not isinstance(val, (int, float)) or not math.isfinite(float(val)):
-                return False
-        return True
+        return all(isinstance(getattr(self, f), (int, float)) and math.isfinite(float(getattr(self, f))) for f in self.__dataclass_fields__)
 
 @dataclass
 class HealthResult:
-    """Resultado inmutable del cálculo de salud."""
     score: int
     grade: str
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
@@ -220,7 +202,6 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Ejecuta factorías de mensajes asegurando saneamiento de strings."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -233,11 +214,9 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Orquestador principal que ejecuta el pipeline de normalización y ponderación."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     
-    metrics.validate()
     if not metrics.is_finite:
         return HealthResult(0, "F", {}, ["Error: Inconsistencia numérica detectada."])
     
@@ -245,20 +224,17 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metric_breakdown: Dict[MetricKey, int] = {k: 0 for k in WEIGHTS.keys()}
     accumulated_score: float = 0.0
     
-    for entry in _PIPELINE:
+    for area, weight, scorer, rules in _PIPELINE:
         try:
-            val = entry.scorer(metrics)
+            val = scorer(metrics)
             area_ratio = _clamp(float(val)) if math.isfinite(val) else 0.0
             
-            if entry.rules:
-                _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
+            if rules:
+                _evaluate_rules(metrics, rules, area_ratio, recommendations)
             
-            weight = max(0, int(entry.weight))
             weighted_points = _clamp(round(area_ratio * weight), 0, weight)
-            
-            if entry.area in metric_breakdown:
-                metric_breakdown[entry.area] = int(weighted_points)
-                accumulated_score += weighted_points
+            metric_breakdown[area] = int(weighted_points)
+            accumulated_score += weighted_points
         except (TypeError, ValueError, ZeroDivisionError, ArithmeticError):
             continue
             
@@ -275,19 +251,17 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(points: int, max_val: int) -> str:
-    """Genera representación visual (bar chart) de puntos alcanzados."""
     m = max(1, int(max_val))
     p = max(0, min(int(points), m))
     return ('#' * p) + ('.' * (m - p))
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Transforma el objeto HealthResult a texto para consumo en UI."""
     if not isinstance(result, HealthResult) or not (0 <= result.score <= 100):
         return ["Error: Informe de salud no disponible."]
     
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in WEIGHTS.items():
-        val: int = result.breakdown.get(area, 0)
+        val = result.breakdown.get(area, 0)
         lines.append(f"  {area.capitalize():<12} {val:>2}/{maximo:<2} [{_render_bar(val, maximo)}]")
     
     recs = result.recommendations if result.recommendations else ["Sin recomendaciones."]

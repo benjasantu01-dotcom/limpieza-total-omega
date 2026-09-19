@@ -227,8 +227,9 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         return []
     
     results: List[ProcessMemory] = []
-    for line in raw_csv_text.splitlines():
-        if not line or not line.strip(): continue
+    # Usamos generador para filtrar en una pasada eficiente
+    lines = (line for line in raw_csv_text.splitlines() if line.strip())
+    for line in lines:
         try:
             parts = [_clean_csv_field(x) for x in line.split(",")]
             entry = _is_valid_process_entry(parts)

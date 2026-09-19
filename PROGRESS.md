@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 48
-- Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 211
+- Rechazadas por guardia de seguridad: 47
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 21 | 0 | 3 | 4 | 38 |
+| 2026-09-17 | 20 | 0 | 2 | 2 | 38 |
 | 2026-09-18 | 150 | 9 | 39 | 18 | 134 |
-| 2026-09-19 | 37 | 3 | 6 | 3 | 39 |
+| 2026-09-19 | 39 | 3 | 6 | 4 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **46**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **39**
-- rendimiento: **29**
+- robustez ante casos límite: **38**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
+- `healthscore.py`: **23**
 - `diskreport.py`: **21**
 - `browser.py`: **20**
 - `assistant.py`: **19**
-- `safety.py`: **18**
+- `memory.py`: **18**
 - `quarantine.py`: **17**
-- `memory.py`: **17**
+- `safety.py`: **17**
 - `duplicates.py`: **16**
 - `settings.py`: **15**
 - `scanner.py`: **11**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T03:56:59` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reemplazando los bucles `splitlines()` y el procesamiento línea por línea por un enfoque más eficiente de filtrado, evitando crear listas intermedias innecesarias y reduciendo el overhead en el procesamiento de strings.
+- `2026-09-19T03:55:30` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la recreación de listas y la reevaluación de diccionarios dentro del bucle principal, además de asegurar que la validación de `metrics` sea una operación única en la entrada de `compute_score`.
 - `2026-09-19T03:46:46` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la lógica de búsqueda por tokens mediante el uso de un mapa pre-procesado, evitando la re-evaluación innecesaria en cada consulta.
 - `2026-09-19T03:35:37` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica y legibilidad del módulo `StartupEntry` añadiendo docstrings específicos para los métodos privados y clarificando la intención detrás de la validación de rutas, facilitando el mantenimiento y auditoría del código.
 - `2026-09-19T03:35:23` **settings.py** (legibilidad y documentación): Se introdujo un `TypeGuard` personalizado `is_app_settings` y se refactorizó `_ensure_settings_integrity` para documentar explícitamente la lógica de recuperación ante fallos, mejorando la legibilidad y la seguridad de tipos al manipular la configuración.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T03:13:52` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código añadiendo tipos explícitos en la función `_collect_summary_data` y docstrings detallados que explican el rol de los objetos auxiliares para facilitar el mantenimiento.
 - `2026-09-19T03:05:12` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings descriptivos con sus respectivos parámetros y tipos de retorno, además de refactorizar la función `_is_junction_default` para mejorar la legibilidad y coherencia interna, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
 - `2026-09-19T03:04:55` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados (usando formato estilo Google) en funciones clave de manipulación de color y renderizado, facilitando la comprensión de los parámetros y comportamientos esperados sin alterar la funcionalidad.
-- `2026-09-19T02:54:25` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_safe_entry` y `_is_valid_path_structure` mediante validaciones defensivas de tipos y valores nulos para prevenir excepciones inesperadas durante la navegación del sistema de archivos, asegurando que `entry.path` o `entry.name` nunca operen bajo estados inválidos.
-- `2026-09-19T02:53:58` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use` y `_is_reparse_point` incorporando un manejo explícito de `WinError` (código de error de sistema) mediante `ctypes`, permitiendo capturar excepciones de E/S de forma más específica y evitando que fallos transitorios de acceso al kernel (como archivos bloqueados por el sistema) se propaguen como errores genéricos.
