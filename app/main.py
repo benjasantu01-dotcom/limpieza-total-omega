@@ -318,7 +318,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.configure(fg_color=bg_color)
 
     def _init_state(self) -> None:
-        """Inicializa cachés, variables de control y carga ajustes de usuario."""
+        """Inicializa los contenedores de datos de estado y el executor de tareas."""
         self._cache: OrderedDict[str, Any] = OrderedDict()
         self._cache_ttl = 300
         self._cache_max_size = 20

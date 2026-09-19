@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 209
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 137 | 8 | 34 | 16 | 129 |
-| 2026-09-19 | 79 | 4 | 11 | 6 | 80 |
+| 2026-09-18 | 136 | 8 | 34 | 15 | 127 |
+| 2026-09-19 | 81 | 5 | 11 | 6 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
-- robustez ante casos límite: **47**
+- robustez ante casos límite: **46**
 - seguridad defensiva: **46**
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **43**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
@@ -32,20 +32,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **23**
 - `browser.py`: **21**
 - `diskreport.py`: **21**
-- `memory.py`: **20**
+- `memory.py`: **21**
 - `safety.py`: **19**
-- `assistant.py`: **18**
+- `assistant.py`: **17**
 - `quarantine.py`: **16**
 - `duplicates.py`: **16**
 - `settings.py`: **15**
 - `organizer.py`: **13**
 - `branding.py`: **10**
 - `scanner.py`: **9**
-- `main.py`: **8**
+- `main.py`: **9**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T07:51:27` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `memory.py` mediante la adición de Type Hints detallados, la clarificación de las responsabilidades en las funciones de conversión de unidades y la documentación explícita de los filtros de seguridad en el procesamiento CSV de procesos.
+- `2026-09-19T07:50:57` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de construcción de interfaces al extraer la compleja configuración inicial de `_init_state` y `_init_component_registry` hacia métodos privados mejor documentados, asegurando que el estado de la aplicación sea autodescriptivo.
 - `2026-09-19T07:40:03` **healthscore.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos en las funciones de cálculo (`score_*`) y se corrigió la visibilidad de los tipos en la firma de `compute_score` para mejorar la legibilidad del pipeline.
 - `2026-09-19T07:39:51` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en las funciones de procesamiento de hash, explicando explícitamente el flujo lógico y los criterios de exclusión de seguridad, garantizando que futuras modificaciones mantengan la integridad del motor de escaneo.
 - `2026-09-19T07:39:26` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de entrada/salida y las estructuras de datos, añadiendo docstrings que explican el propósito de los parámetros y el comportamiento ante errores, facilitando la mantenibilidad del módulo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T07:10:21` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones explícitas de rutas antes de operar y capturando excepciones de sistema de forma más granular para evitar interrupciones silenciosas del flujo.
 - `2026-09-19T07:10:09` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y `_get_process_path` validando explícitamente el tipo de datos, capturando errores de configuración de `ctypes` y asegurando que los handles de procesos se cierren en todos los escenarios mediante un bloque `finally` más estricto, previniendo fugas de recursos o excepciones no controladas.
 - `2026-09-19T07:09:39` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_get_entry_value` y `_collect_settings` agregando validaciones explícitas contra caracteres no imprimibles y errores de conversión, asegurando que el estado interno de la app siempre contenga datos sanitizados y válidos incluso ante entradas malintencionadas o corruptas del usuario.
-- `2026-09-19T07:08:26` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` ante posibles excepciones inesperadas en las funciones `scorer` del pipeline, asegurando que el sistema pueda fallar parcialmente en un área sin invalidar el informe completo de salud.
-- `2026-09-19T06:59:17` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y las funciones auxiliares capturando potenciales errores de `path.relative_to` y `path.suffix` en nombres de archivo con caracteres inválidos o rutas malformadas, evitando que una entrada única dañe el reporte completo.
