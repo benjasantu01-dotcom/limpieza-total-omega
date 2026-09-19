@@ -344,6 +344,7 @@ class SystemContext:
         if source is None or _is_input_too_deep_or_complex(source):
             return False
         
+        # Validación de tipo para evitar inyección de objetos maliciosos
         if not isinstance(source, dict) and not (hasattr(source, "__dict__") and not isinstance(source, type)):
             return False
             
@@ -410,8 +411,10 @@ def _get_source_value(source: Any, key: str) -> Any:
         try: return source.get(key)
         except AttributeError: return None
     try:
+        # Prevenir acceso a metaclases o tipos
         if isinstance(source, type): return None
         val = getattr(source, key, None)
+        # Solo permitir acceso a datos, no a métodos o internos
         return None if callable(val) or key.startswith("__") else val
     except Exception:
         return None

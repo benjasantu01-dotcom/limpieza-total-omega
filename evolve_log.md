@@ -978,3 +978,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-19T04:47:04` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_safe_stat` al añadir un filtro estricto contra `FileNotFoundError` (y otras excepciones de acceso) en el momento exacto de la llamada a `os.scandir`, evitando que el escáner se interrumpa ante archivos efímeros o cambios de permisos durante la ejecución.
 - `2026-09-19T04:47:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T04:47:04` Corrida terminada. Total usado hoy: 112.
+- `2026-09-19T04:55:27` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-09-19T04:55:57` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `save()` ante fallos de escritura en disco añadiendo un manejo explícito de `OSError` al realizar `os.replace`, asegurando que archivos parcialmente escritos o bloqueados no dejen el sistema en un estado inconsistente.
+- `2026-09-19T04:56:23` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-19T04:57:02` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la validación del contexto de entrada en `SystemContext.ingest()` y `SystemContext._apply_field()` para prevenir la inyección de tipos inesperados (como objetos maliciosos que intenten sobreescribir métodos o propiedades del objeto `SystemContext`) mediante una validación de `__dict__` más estricta y el uso explícito de `isinstance` para evitar la manipulación de la clase mediante la inyección de objetos arbitrarios.
+- `2026-09-19T04:57:21` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-19T04:57:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T04:57:21` Corrida terminada. Total usado hoy: 116.

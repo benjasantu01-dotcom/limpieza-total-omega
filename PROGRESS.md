@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 49
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 207
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 10 | 0 | 1 | 1 | 30 |
+| 2026-09-17 | 10 | 0 | 1 | 1 | 26 |
 | 2026-09-18 | 150 | 9 | 39 | 18 | 134 |
-| 2026-09-19 | 53 | 3 | 9 | 4 | 43 |
+| 2026-09-19 | 54 | 3 | 9 | 5 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - robustez ante casos límite: **47**
 - legibilidad y documentación: **43**
+- seguridad defensiva: **37**
 - rendimiento: **36**
-- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **23**
+- `assistant.py`: **20**
 - `browser.py`: **20**
 - `diskreport.py`: **20**
-- `assistant.py`: **19**
 - `memory.py`: **19**
 - `quarantine.py`: **18**
 - `safety.py`: **18**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T04:57:02` **assistant.py** (seguridad defensiva): Se endureció la validación del contexto de entrada en `SystemContext.ingest()` y `SystemContext._apply_field()` para prevenir la inyección de tipos inesperados (como objetos maliciosos que intenten sobreescribir métodos o propiedades del objeto `SystemContext`) mediante una validación de `__dict__` más estricta y el uso explícito de `isinstance` para evitar la manipulación de la clase mediante la inyección de objetos arbitrarios.
 - `2026-09-19T04:47:04` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_safe_stat` al añadir un filtro estricto contra `FileNotFoundError` (y otras excepciones de acceso) en el momento exacto de la llamada a `os.scandir`, evitando que el escáner se interrumpa ante archivos efímeros o cambios de permisos durante la ejecución.
 - `2026-09-19T04:46:51` **safety.py** (robustez ante casos límite): Se mejora la robustez frente a casos límite de concurrencia y acceso bloqueado en `_is_file_in_use` mediante el uso de constantes de WinAPI explícitas y la mejora del manejo de excepciones, evitando errores de tipo al pasar rutas relativas o inválidas.
 - `2026-09-19T04:45:55` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` al introducir una verificación de ocupación de disco previo al inicio de la copia, asegurando que si la operación falla por falta de espacio, el sistema no se encuentre en un estado inconsistente donde el origen ya fue borrado pero el destino no completó la escritura.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T04:06:21` **safety.py** (rendimiento): Se implementó un `lru_cache` adicional en `is_within_directory` para evitar el cálculo repetitivo y costoso de `normalize` sobre rutas comunes, mejorando el rendimiento en los escaneos recursivos de directorios donde se consulta repetidamente la jerarquía.
 - `2026-09-19T04:05:38` **quarantine.py** (rendimiento): Se optimizó la carga y validación del manifiesto usando un mapeo (diccionario) por `stored_name` en `list_items` y `purge_all`, reemplazando búsquedas lineales `O(n*m)` por acceso `O(1)`, lo que mejora drásticamente el rendimiento al tener una cuarentena con muchos archivos.
 - `2026-09-19T04:05:00` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de un `frozenset` para `SYSTEM_FOLDER_BLOCKLIST` y la adición de un chequeo de `is_protected_path` centralizado, evitando múltiples llamadas redundantes a `Path.resolve()` y `Path.exists()` dentro del bucle de `os.scandir`.
-- `2026-09-19T03:56:59` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reemplazando los bucles `splitlines()` y el procesamiento línea por línea por un enfoque más eficiente de filtrado, evitando crear listas intermedias innecesarias y reduciendo el overhead en el procesamiento de strings.
