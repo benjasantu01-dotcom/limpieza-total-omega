@@ -232,7 +232,7 @@ def _is_reparse_point(path_str: str) -> bool:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == 0xFFFFFFFF: return False
         return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT)
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
+    except (AttributeError, OSError, TypeError, ctypes.WinError, ctypes.ArgumentError):
         return False
 
 @lru_cache(maxsize=2048)
@@ -264,10 +264,13 @@ def _is_file_in_use(path_str: str) -> bool:
         return False
     
     kernel32 = ctypes.windll.kernel32
-    handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 0, None, 3, 0x00000080, None)
+    # FILE_SHARE_READ|WRITE|DELETE = 0, para pedir acceso exclusivo denegando todo
+    handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0, None, 3, 0x00000080, None)
     try:
         if handle == -1: 
-            return True 
+            # Si el error es acceso denegado (5) o violación de compartición (32), está en uso
+            err = ctypes.GetLastError()
+            return err in (5, 32)
         return False
     finally:
         if handle != -1:
@@ -294,7 +297,7 @@ def _is_directory_junction(path_str: str) -> bool:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == 0xFFFFFFFF: return False
         return bool(attrs & FILE_ATTRIBUTE_DIRECTORY and attrs & FILE_ATTRIBUTE_REPARSE_POINT)
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError): return False
+    except (AttributeError, OSError, TypeError, ctypes.WinError, ctypes.ArgumentError): return False
 
 def _is_kernel_managed(path: Path) -> bool:
     """Detecta archivos críticos del SO que siempre están bloqueados y son inmodificables."""
@@ -567,7 +570,6 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
     if handle != -1:
         try:
             buf = ctypes.create_unicode_buffer(1024)
-            # Retorna el número de caracteres copiados, 0 en error
             if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0) > 0:
                 final_path = Path(buf.value).resolve()
                 if final_path.drive != path.resolve().drive:

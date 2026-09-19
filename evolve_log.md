@@ -881,3 +881,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-19T02:46:52` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-19T02:46:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T02:46:52` Corrida terminada. Total usado hoy: 64.
+- `2026-09-19T02:52:58` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-09-19T02:53:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-19T02:53:58` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_file_in_use` y `_is_reparse_point` incorporando un manejo explícito de `WinError` (código de error de sistema) mediante `ctypes`, permitiendo capturar excepciones de E/S de forma más específica y evitando que fallos transitorios de acceso al kernel (como archivos bloqueados por el sistema) se propaguen como errores genéricos.
+- `2026-09-19T02:54:25` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_safe_entry` y `_is_valid_path_structure` mediante validaciones defensivas de tipos y valores nulos para prevenir excepciones inesperadas durante la navegación del sistema de archivos, asegurando que `entry.path` o `entry.name` nunca operen bajo estados inválidos.
+- `2026-09-19T02:54:44` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `_ensure_settings_integrity` ante tipos de datos inesperados dentro del diccionario cargado, asegurando que si un valor existe pero es de un tipo erróneo (ej: string en lugar de int), se descarte silenciosamente y se restaure el valor por defecto sin corromper la estructura de datos.
+- `2026-09-19T02:54:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T02:54:44` Corrida terminada. Total usado hoy: 68.

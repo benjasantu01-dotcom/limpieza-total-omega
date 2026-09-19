@@ -77,7 +77,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     except (OSError, PermissionError, AttributeError, FileNotFoundError, RuntimeError):
         return None
 
-def _is_valid_path_structure(path_str: str) -> bool:
+def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """Verifica si la cadena de ruta cumple con los límites de longitud y caracteres prohibidos de Windows."""
     if not path_str or len(path_str) > MAX_PATH_LENGTH:
         return False
@@ -145,7 +145,7 @@ class Scanner:
         Valida que la entrada sea segura: no es reparse point, no está en una ruta protegida
         y cumple las reglas de estructura de Windows.
         """
-        if not entry or not entry.path:
+        if not entry or not entry.path or not entry.name:
             return False
             
         if not _is_valid_path_structure(entry.path):
