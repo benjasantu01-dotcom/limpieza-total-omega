@@ -356,6 +356,9 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if destination is None: return None
     try:
         target = Path(destination).resolve()
+        # Validación defensiva: no escribir en rutas protegidas
+        if is_protected_path(target):
+            return None
         # Verificación centralizada mediante ensure_safe_to_modify que también
         # verifica que la ruta no sea un path protegido o reparse point.
         ensure_safe_to_modify(target)

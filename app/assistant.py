@@ -285,7 +285,7 @@ class SystemContext:
     def is_empty(self) -> bool:
         """Verifica si el contexto contiene datos útiles."""
         if not self.analyzed: return True
-        return self.score is not None and (not isinstance(self.score, int) or self.score < 0)
+        return self.score is None or not isinstance(self.score, int) or self.score < 0
 
     def __hash__(self) -> int:
         return hash((self.score, self.grade, self.junk_mb, self.suspicious_count, 
@@ -392,7 +392,7 @@ def _get_source_value(source: Any, key: str) -> Any:
     except Exception:
         return None
 
-def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
+def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
     """Inicializa un SystemContext completo integrando datos."""
     ctx = SystemContext()
     for s in (metrics, health, extra):

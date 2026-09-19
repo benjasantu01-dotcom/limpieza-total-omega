@@ -227,15 +227,16 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
         return 0
     try:
         if _is_valid_traversal_step(entry, root_base):
-            # Seguridad: validamos que el subdirectorio sea seguro antes de entrar
             if not is_safe_to_modify(Path(entry.path)) or is_protected_path(Path(entry.path)):
                 return 0
             return _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base, depth + 1)
         
         if entry.is_file(follow_symlinks=False):
             return int(entry.stat(follow_symlinks=False).st_size)
-    except (OSError, PermissionError, RuntimeError):
-        # Fallo silencioso esperado en archivos de sistema bloqueados o sin permisos
+    except (OSError, PermissionError, RuntimeError) as e:
+        # Manejo específico de errores comunes de acceso en archivos bloqueados (32) o protegidos (5)
+        if isinstance(e, OSError) and e.winerror in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
+            return 0
         return 0
     return 0
 
@@ -254,7 +255,6 @@ def _sum_directory_recursive(
 
     try:
         total: int = 0
-        # Uso de os.scandir para eficiencia en I/O sobre grandes directorios de caché
         with os.scandir(root_abs) as it:
             for entry in it:
                 total += _process_entry(entry, root_base, is_junction_fn, kernel32, memo, depth)
@@ -274,7 +274,6 @@ def directory_size(path: Optional[OSPath]) -> int:
         if len(str(p)) >= MAX_PATH_LEN or not p.is_absolute() or not _is_safe_to_traverse(p, None):
             return 0
         resolved = str(p.resolve(strict=True))
-        # Cache local por sesión para evitar recalcular rutas compartidas en una misma ejecución
         return _sum_directory_recursive(resolved, _IS_JUNCTION_FN, _get_kernel32(), {}, resolved)
     except (OSError, RuntimeError, PermissionError, ValueError):
         return 0
