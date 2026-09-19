@@ -13,7 +13,7 @@ import re
 import ctypes
 from enum import Enum, auto, IntEnum
 from pathlib import Path
-from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, Optional
+from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, Optional, TypeGuard
 from functools import lru_cache
 import unicodedata
 
@@ -445,8 +445,16 @@ def _is_system_path_cached(path_str: str) -> bool:
     return False
 
 @lru_cache(maxsize=4096)
-def is_protected_path(path: PathLike) -> bool:
-    """Verifica si la ruta se encuentra dentro de carpetas restringidas por el sistema."""
+def is_protected_path(path: PathLike) -> TypeGuard[str]:
+    """
+    Verifica si la ruta se encuentra dentro de carpetas restringidas por el sistema.
+    
+    Args:
+        path: La ruta a evaluar, como string o Path.
+        
+    Returns:
+        True si la ruta está bloqueada por ser directorio de sistema o raíz.
+    """
     if not path: return True
     try:
         p = normalize(path)

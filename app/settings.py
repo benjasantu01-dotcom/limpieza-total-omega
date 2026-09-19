@@ -93,6 +93,11 @@ def _is_dict(val: Any) -> TypeGuard[SettingsDict]:
     """Verifica que el objeto sea un diccionario válido para la configuración."""
     return isinstance(val, dict)
 
+def _is_app_settings(val: Any) -> TypeGuard[AppSettings]:
+    """Verifica que la estructura cumpla con el esquema AppSettings."""
+    if not isinstance(val, dict): return False
+    return all(key.value in val for key in ConfigKey)
+
 __all__ = [
     "DEFAULTS", "SETTINGS_DIR", "SETTINGS_FILE", "API_KEY_ENV_VAR",
     "VALID_THEMES", "VALID_ACCENTS", "settings_path", "load", "save",
@@ -307,15 +312,22 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
-    if not isinstance(settings, dict): return DEFAULTS.copy()
-    
-    # Asegurar tipos y rangos para claves críticas
+    """Asegura que el diccionario de configuración contenga todas las claves requeridas y con tipos válidos."""
+    if not _is_app_settings(settings):
+        # Si la estructura base es inválida (ej. versión muy antigua), reconstruimos desde defaults
+        clean_settings = DEFAULTS.copy()
+        for key in ConfigKey:
+            if key.value in settings:
+                clean_settings[key.value] = settings[key.value]
+        settings = clean_settings
+
+    # Refuerzo: validar tipos individuales tras la inyección de datos externos
     for key in ConfigKey:
         val = settings.get(key.value)
-        # Si la clave falta o no es del tipo esperado por DEFAULTS, resetear
-        if key.value not in settings or not isinstance(val, type(DEFAULTS[key.value])):
+        if not isinstance(val, type(DEFAULTS[key.value])):
             settings[key.value] = DEFAULTS[key.value]
     
+    # Lógica de seguridad: si no hay clave, el asistente debe estar apagado
     if settings.get("asistente_activado") and not (settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         settings["asistente_activado"] = False
         

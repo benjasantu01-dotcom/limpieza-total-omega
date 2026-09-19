@@ -94,7 +94,7 @@ class StartupEntry:
         return True
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
-        """Verifica si el nombre de archivo corresponde a un dispositivo reservado del sistema."""
+        """Comprueba si la ruta hace referencia a nombres reservados de dispositivos heredados de DOS/Windows."""
         try:
             if "\0" in path_str:
                 return True
@@ -103,26 +103,26 @@ class StartupEntry:
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:
-        """Detecta caracteres no permitidos en rutas de Windows o prefijos UNC riesgosos."""
+        """Detecta metacaracteres no permitidos en rutas o prefijos de red (UNC) riesgosos."""
         return any(c in path_string for c in SUSPICIOUS_CHARS) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Valida extensión del archivo y asegura que no sea un enlace simbólico."""
+        """Verifica que el archivo tenga extensión ejecutable y no sea un enlace simbólico (evitar desvíos)."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Elimina caracteres de control y espacios en blanco extremos."""
+        """Limpia caracteres de control (ASCII < 32) de la cadena de comando."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae la ruta absoluta desde una cadena entrecomillada.
-        El registro de Windows suele guardar rutas con espacios como '"C:\Ruta\App.exe" /arg'.
+        Extrae la ruta absoluta cuando viene entrecomillada (formato común en el registro).
+        Valida que el interior de las comillas sea una ruta segura.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -133,7 +133,6 @@ class StartupEntry:
             
         path_str: str = raw_command[1:end_quote].strip()
         
-        # Validación de seguridad reforzada antes de instanciar Path
         if not path_str or self._is_path_suspicious(path_str) or self._is_reserved_device_name(path_str):
             return ""
         
@@ -150,25 +149,22 @@ class StartupEntry:
 
     def _validate_file_access(self, p: Path) -> bool:
         """
-        Validación de seguridad: asegura que el archivo sea accesible, no una carpeta, 
-        no esté en zona protegida y no sea un enlace simbólico (evita inyección).
+        Verificación de seguridad de bajo nivel: confirma que la ruta es un archivo existente,
+        que no es un enlace y que no reside en un directorio protegido.
         """
         try:
-            # Comprobación de existencia y tipo de objeto
             if not p.exists():
                 return False
-            # Debe ser archivo, no directorio ni enlace simbólico
             if not p.is_file() or p.is_symlink():
                 return False
-            # Verificar metadatos sin abrir el contenido
             return not is_protected_path(p)
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
-        Normaliza una ruta, resuelve enlaces y actualiza el caché de estado del sistema.
-        Devuelve la ruta absoluta si es válida y existe, caso contrario una cadena vacía.
+        Normaliza rutas, resuelve enlaces físicos y cachea el resultado. 
+        Evita el re-procesamiento de rutas durante la misma sesión.
         """
         if not self.is_valid:
             return ""
@@ -191,11 +187,9 @@ class StartupEntry:
                 _EXISTS_CACHE[path_string] = False
                 return ""
             
-            # Verificación preventiva: si el drive o directorio base no existe, omitir
             if not p.anchor or not Path(p.anchor).exists():
                 return ""
                 
-            # strict=False evita excepciones si la ruta no existe, manejamos la lógica abajo
             p = p.resolve(strict=False)
             
             if not self._validate_file_access(p):
@@ -210,7 +204,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Estrategia de parseo: diferencia entre rutas con espacios y comandos directos."""
+        """Determina si el comando incluye argumentos o comillas y extrae la ruta base."""
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -307,7 +301,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             val_name = row.get(f_name)
             val_cmd = row.get(f_cmd)
             
-            # Validación estricta de tipos antes de procesar para evitar errores en path/string
             if val_name is None or val_cmd is None:
                 continue
                 
