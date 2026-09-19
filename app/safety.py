@@ -259,22 +259,18 @@ def _is_offline(path_str: str) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
-    """Intenta abrir el archivo con acceso exclusivo (denying all) para detectar bloqueos por otros procesos."""
+    """Intenta abrir el archivo con acceso exclusivo (GENERIC_READ) para detectar bloqueos por otros procesos."""
     if os.name != 'nt' or not os.path.isabs(path_str):
         return False
     
     kernel32 = ctypes.windll.kernel32
-    # FILE_SHARE_READ|WRITE|DELETE = 0, para pedir acceso exclusivo denegando todo
+    # GENERIC_READ = 0x80000000, FILE_SHARE_READ|WRITE|DELETE = 0x7, OPEN_EXISTING = 3
     handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0, None, 3, 0x00000080, None)
-    try:
-        if handle == -1: 
-            # Si el error es acceso denegado (5) o violación de compartición (32), está en uso
-            err = ctypes.GetLastError()
-            return err in (5, 32)
-        return False
-    finally:
-        if handle != -1:
-            kernel32.CloseHandle(handle)
+    if handle == -1: 
+        # Si el error es 32 (ERROR_SHARING_VIOLATION), el archivo está siendo usado por otro proceso
+        return ctypes.GetLastError() == 32
+    kernel32.CloseHandle(handle)
+    return False
 
 @lru_cache(maxsize=128)
 def _is_volume_readonly(path_str: str) -> bool:

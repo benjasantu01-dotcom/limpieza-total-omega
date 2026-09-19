@@ -616,7 +616,6 @@ def quarantine_file(
         except (OSError, RuntimeError) as e:
             raise UnsafePathError(f"Ruta origen no válida: {e}")
     
-    # Validar que sea un archivo regular y no un directorio
     if p_source.is_dir():
         raise UnsafePathError("Solo se pueden poner en cuarentena archivos, no directorios.")
 
@@ -652,13 +651,11 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
-        # O(N) para obtener archivos existentes en el sandbox una vez
         try:
             existing = {f.name for f in base_path.iterdir() if f.is_file()}
         except OSError:
             existing = set()
         
-        # O(N) para filtrar, accediendo al set en O(1)
         valid_items = [i for i in items if i.stored_name in existing and i._validate_integrity(base_path / i.stored_name)]
             
         if len(valid_items) != len(items):
@@ -679,7 +676,6 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
-        # O(N) para buscar ID
         quarantine_item = next((i for i in items if i.item_id == item_id), None)
         
         if quarantine_item is None:
@@ -733,7 +729,6 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         
     base_path = quarantine_dir(base)
     items = load_manifest(base)
-    # O(N) búsqueda simple
     quarantine_item = next((i for i in items if i.item_id == item_id), None)
     
     if quarantine_item is None:
@@ -773,7 +768,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
-    # O(1) acceso mediante dict
     item_map = {item.stored_name: item for item in items}
     purged_ids: Set[str] = set()
     
