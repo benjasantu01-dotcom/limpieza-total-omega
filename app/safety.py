@@ -260,7 +260,7 @@ def _is_offline(path_str: str) -> bool:
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
     """Intenta abrir el archivo con acceso exclusivo (GENERIC_READ) para detectar bloqueos por otros procesos."""
-    if os.name != 'nt' or not os.path.isabs(path_str):
+    if os.name != 'nt' or not os.path.isabs(path_str) or not os.path.isfile(path_str):
         return False
     
     kernel32 = ctypes.windll.kernel32

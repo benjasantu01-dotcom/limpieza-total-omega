@@ -790,3 +790,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-19T14:18:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-19T14:18:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T14:18:23` Corrida terminada. Total usado hoy: 335.
+- `2026-09-19T14:26:52` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-19T14:27:31` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se añadió una validación explícita para evitar que `_is_file_in_use` intente analizar rutas que no sean archivos regulares, protegiendo contra posibles errores de acceso a directorios o dispositivos especiales.
+- `2026-09-19T14:27:58` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-19T14:28:28` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha añadido `os.path.realpath` en la validación de rutas para prevenir ataques de "path traversal" o confusión mediante enlaces simbólicos que apunten fuera de la jerarquía permitida, fortaleciendo la seguridad defensiva al resolver la ruta real antes de cualquier chequeo de seguridad.
+- `2026-09-19T14:28:38` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-09-19T14:28:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T14:28:38` Corrida terminada. Total usado hoy: 339.

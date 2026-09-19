@@ -177,11 +177,11 @@ class _Validators:
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
         try:
-            path_obj = Path(path_str).expanduser()
-            for part in path_obj.parts:
+            # Resolverse a la ruta real previene ataques de path traversal via symlinks
+            resolved = Path(os.path.realpath(os.path.expanduser(path_str)))
+            for part in resolved.parts:
                 if _Validators._is_reparse_point(Path(part)):
                     return False
-            resolved = path_obj.resolve(strict=False)
             if not is_protected_path(str(resolved)):
                 return is_safe_to_modify(str(resolved))
             return False
@@ -270,7 +270,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     base_path = Path(custom_base).expanduser()
     if base_path in _PATH_CACHE: return _PATH_CACHE[base_path]
     try:
-        resolved_parent = base_path.resolve(strict=False)
+        resolved_parent = Path(os.path.realpath(base_path))
         if _Validators._is_safe_path(str(resolved_parent)):
             _PATH_CACHE[base_path] = resolved_parent / SETTINGS_FILE
             return _PATH_CACHE[base_path]
