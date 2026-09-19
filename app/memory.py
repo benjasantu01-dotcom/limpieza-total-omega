@@ -191,31 +191,6 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         cached=BytesValue(max(0, cached))
     )
 
-def _is_valid_process_entry(fields: List[str]) -> Optional[ProcessMemory]:
-    """Valida integridad de registro CSV y filtra procesos según seguridad."""
-    if fields is None or len(fields) < 3:
-        return None
-    try:
-        name_raw = fields[0].strip()
-        if not name_raw: return None
-        
-        if not fields[1].isdigit() or not fields[2].isdigit():
-            return None
-            
-        pid_val, ws_val = int(fields[1]), int(fields[2])
-        
-        # Filtros de seguridad: ignorar procesos inválidos, protegidos o con estado negativo
-        if pid_val <= 0 or ws_val < 0 or is_protected_path(name_raw):
-            return None
-            
-        return ProcessMemory(name=name_raw, pid=pid_val, working_set=BytesValue(ws_val))
-    except (ValueError, TypeError):
-        return None
-
-def _clean_csv_field(field: str) -> str:
-    """Limpia caracteres de escape y espacios en campos de texto CSV."""
-    return field.strip().strip("'\" ") if field else ""
-
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """Convierte volcado PowerShell en lista de procesos, ordenados de mayor a menor uso."""
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
@@ -223,13 +198,21 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     
     results: List[ProcessMemory] = []
     for line in raw_csv_text.splitlines():
-        if not line.strip(): continue
+        line = line.strip()
+        if not line: continue
+        
+        parts = [p.strip().strip("'\" ") for p in line.split(",")]
+        if len(parts) < 3: continue
+        
         try:
-            parts = [_clean_csv_field(x) for x in line.split(",")]
-            entry = _is_valid_process_entry(parts)
-            if entry:
-                results.append(entry)
-        except Exception:
+            name, pid_str, ws_str = parts[0], parts[1], parts[2]
+            if not name or not pid_str.isdigit() or not ws_str.isdigit(): continue
+            
+            pid, ws = int(pid_str), int(ws_str)
+            if pid <= 0 or ws < 0 or is_protected_path(name): continue
+            
+            results.append(ProcessMemory(name=name, pid=pid, working_set=BytesValue(ws)))
+        except (ValueError, TypeError):
             continue
     
     results.sort(key=lambda p: p.working_set, reverse=True)

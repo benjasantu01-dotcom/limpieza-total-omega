@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 88 | 3 | 21 | 11 | 81 |
-| 2026-09-19 | 131 | 9 | 19 | 12 | 129 |
+| 2026-09-18 | 84 | 3 | 21 | 11 | 81 |
+| 2026-09-19 | 132 | 9 | 19 | 12 | 132 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **50**
-- seguridad defensiva: **46**
-- robustez ante casos límite: **38**
-- rendimiento: **35**
+- seguridad defensiva: **45**
+- rendimiento: **36**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,19 +33,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **21**
 - `safety.py`: **20**
 - `diskreport.py`: **19**
-- `assistant.py`: **18**
+- `memory.py`: **18**
 - `duplicates.py`: **17**
-- `memory.py`: **17**
 - `quarantine.py`: **17**
-- `settings.py`: **15**
+- `assistant.py`: **17**
+- `settings.py`: **14**
 - `branding.py`: **12**
 - `organizer.py`: **12**
-- `scanner.py`: **10**
 - `main.py`: **10**
-- `startup.py`: **8**
+- `scanner.py`: **9**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T13:00:19` **memory.py** (rendimiento): Optimizé `parse_windows_process_csv` para reducir las llamadas repetitivas a `strip()` y `isdigit()` dentro del bucle, procesando los datos mediante una sola iteración y validación, evitando overhead innecesario al parsear volcados de PowerShell.
 - `2026-09-19T12:46:32` **healthscore.py** (rendimiento): Optimicé el método `is_finite` en `SystemMetrics` utilizando el acceso directo a `__dict__` y una evaluación generadora con `all()` para evitar la creación de listas intermedias y el costo de inspección de `__dataclass_fields__` en cada ciclo.
 - `2026-09-19T12:45:29` **browser.py** (rendimiento): Se optimizó la eficiencia de `_sum_directory_recursive` implementando un pre-chequeo del caché `memo` al inicio de cada iteración de `_process_entry`, evitando llamadas redundantes a la función recursiva para subdirectorios ya calculados durante el mismo ciclo de escaneo.
 - `2026-09-19T12:36:59` **branding.py** (rendimiento): Se ha optimizado `color()` para evitar el acceso al diccionario mediante `MappingProxyType` en cada llamada, reemplazándolo por una búsqueda directa en `_PALETTE_MAP` para reducir el overhead de las llamadas a `MappingProxyType.__getitem__` en los bucles de renderizado.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T12:06:03` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad del módulo mediante la adición de Type Hints detallados, documentación de parámetros en funciones críticas y la consolidación de la lógica de "Keeper" para evitar errores de referencia si la ruta sugerida se vuelve inaccesible tras el análisis.
 - `2026-09-19T12:05:49` **diskreport.py** (legibilidad y documentación): He mejorado la documentación de los tipos de retorno y parámetros en `walk_files` y `_collect_summary_data` utilizando type hints más precisos y docstrings enriquecidos, para facilitar el mantenimiento y la comprensión de las estructuras de datos que viajan entre los componentes del analizador.
 - `2026-09-19T12:05:19` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del módulo `browser.py` mediante la refactorización de `_sum_directory_recursive` para separar la lógica de acumulación de tamaño de la lógica de recorrido, utilizando nombres de variables explícitos y un docstring más preciso.
-- `2026-09-19T12:04:50` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de manipulación de color y renderizado, especificando los tipos de datos esperados, el propósito de las transformaciones y el manejo de errores implícito para mejorar la mantenibilidad del motor visual.
