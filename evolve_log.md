@@ -954,3 +954,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-19T04:16:34` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar de forma segura entradas donde las métricas podrían ser `None`, tipos no numéricos o valores desbordados, evitando excepciones no controladas durante la ingesta de datos.
 - `2026-09-19T04:16:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T04:16:34` Corrida terminada. Total usado hoy: 100.
+- `2026-09-19T04:24:53` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-09-19T04:25:26` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-19T04:25:54` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para detectar archivos bloqueados por procesos externos (Sharing Violation) durante la lectura, mejorando la robustez frente a la concurrencia al capturar el error `ERROR_SHARING_VIOLATION` de forma específica en `_process_entry`.
+- `2026-09-19T04:26:21` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-09-19T04:26:31` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia en `_collect_candidates` y `_is_file_locked` ante condiciones de carrera y archivos inconsistentes, añadiendo un manejo de excepciones más granular (`OSError` durante la lectura) y verificando la existencia del archivo antes de intentar el hash para evitar errores en archivos que desaparecen durante el proceso.
+- `2026-09-19T04:26:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T04:26:31` Corrida terminada. Total usado hoy: 104.

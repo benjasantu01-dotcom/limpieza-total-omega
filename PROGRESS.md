@@ -8,45 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-17 | 16 | 0 | 2 | 1 | 35 |
+| 2026-09-17 | 14 | 0 | 1 | 1 | 34 |
 | 2026-09-18 | 150 | 9 | 39 | 18 | 134 |
-| 2026-09-19 | 45 | 3 | 8 | 4 | 40 |
+| 2026-09-19 | 47 | 3 | 8 | 4 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - legibilidad y documentación: **43**
-- seguridad defensiva: **42**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **41**
+- seguridad defensiva: **40**
 - rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
+- `browser.py`: **20**
 - `diskreport.py`: **20**
 - `assistant.py`: **19**
-- `browser.py`: **19**
-- `quarantine.py`: **18**
 - `safety.py`: **18**
 - `memory.py`: **18**
+- `duplicates.py`: **17**
+- `quarantine.py`: **17**
 - `settings.py`: **16**
-- `duplicates.py`: **16**
-- `organizer.py`: **11**
 - `scanner.py`: **11**
 - `branding.py`: **10**
+- `organizer.py`: **10**
 - `startup.py`: **7**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T04:26:31` **duplicates.py** (robustez ante casos límite): Se ha mejorado la resiliencia en `_collect_candidates` y `_is_file_locked` ante condiciones de carrera y archivos inconsistentes, añadiendo un manejo de excepciones más granular (`OSError` durante la lectura) y verificando la existencia del archivo antes de intentar el hash para evitar errores en archivos que desaparecen durante el proceso.
+- `2026-09-19T04:25:54` **browser.py** (robustez ante casos límite): Se introdujo una comprobación explícita para detectar archivos bloqueados por procesos externos (Sharing Violation) durante la lectura, mejorando la robustez frente a la concurrencia al capturar el error `ERROR_SHARING_VIOLATION` de forma específica en `_process_entry`.
 - `2026-09-19T04:16:34` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar de forma segura entradas donde las métricas podrían ser `None`, tipos no numéricos o valores desbordados, evitando excepciones no controladas durante la ingesta de datos.
 - `2026-09-19T04:16:08` **startup.py** (rendimiento): Se optimizó el rendimiento del escaneo de carpetas evitando llamadas innecesarias a `is_protected_path` al integrar la validación de seguridad directamente en el flujo de filtrado de `scandir`, reduciendo drásticamente la I/O en directorios con muchos archivos.
 - `2026-09-19T04:15:40` **settings.py** (rendimiento): Optimicé el rendimiento del módulo implementando `lru_cache` en `_build_validator_map` y `_get_validator_for_key` para evitar reconstruir diccionarios de validación en cada acceso a la configuración.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T03:35:23` **settings.py** (legibilidad y documentación): Se introdujo un `TypeGuard` personalizado `is_app_settings` y se refactorizó `_ensure_settings_integrity` para documentar explícitamente la lógica de recuperación ante fallos, mejorando la legibilidad y la seguridad de tipos al manipular la configuración.
 - `2026-09-19T03:34:31` **safety.py** (legibilidad y documentación): Se introdujo un `TypeGuard` para la función `is_protected_path` y se estandarizaron los docstrings con las convenciones de Google, añadiendo detalles técnicos específicos sobre el comportamiento de los filtros para mejorar la mantenibilidad y claridad para otros desarrolladores.
 - `2026-09-19T03:25:18` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados en las funciones críticas de E/S y aislamiento, aclarando el propósito y el contrato de cada parámetro para facilitar el mantenimiento.
-- `2026-09-19T03:24:38` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `organizer.py` mediante la adición de docstrings técnicos detallados en funciones críticas y la clarificación de los tipos de retorno y excepciones, facilitando el mantenimiento futuro y la comprensión de las restricciones de seguridad.
-- `2026-09-19T03:24:09` **memory.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación interna mediante docstrings explicativos en las funciones de bajo nivel de Win32, facilitando la comprensión del flujo de datos sin alterar la lógica de negocio.

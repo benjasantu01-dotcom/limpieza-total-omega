@@ -227,7 +227,12 @@ def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionC
         
         if entry.is_file(follow_symlinks=False):
             return int(entry.stat(follow_symlinks=False).st_size)
-    except (OSError, PermissionError):
+    except OSError as e:
+        # Si un archivo está bloqueado por el navegador, es esperado y seguro omitirlo.
+        if e.winerror == ERROR_SHARING_VIOLATION:
+            return 0
+        return 0
+    except (PermissionError, RuntimeError):
         return 0
     return 0
 
@@ -255,10 +260,7 @@ def _sum_directory_recursive(
         
         memo[root_abs] = total
         return total
-    except (OSError, PermissionError, RuntimeError, ValueError) as e:
-        if isinstance(e, OSError) and kernel32:
-            if ctypes.get_last_error() in (ERROR_ACCESS_DENIED, ERROR_SHARING_VIOLATION):
-                return 0
+    except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
 
 
