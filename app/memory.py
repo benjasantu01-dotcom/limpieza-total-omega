@@ -153,7 +153,6 @@ def _kb_to_bytes(kb_str: str) -> BytesValue:
     Retorna 0 si el formato es inválido o el valor desborda.
     """
     if not isinstance(kb_str, str): return BytesValue(0)
-    # Extrae solo dígitos para robustez ante etiquetas de unidad variadas
     val_str = "".join(c for c in kb_str if c.isdigit())
     if not val_str: return BytesValue(0)
     try:
@@ -219,17 +218,13 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     return results[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """
-    Consulta la API Win32 GlobalMemoryStatusEx para obtener estadísticas de RAM.
-    Se asegura de verificar la existencia de la función y de la estructura de datos.
-    """
+    """Consulta la API Win32 GlobalMemoryStatusEx para obtener estadísticas de RAM."""
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "GlobalMemoryStatusEx"):
         return _EMPTY_SNAPSHOT
     
     stat = _create_mem_status_ex()
     try:
-        # La función devuelve un valor booleano indicando éxito
         if kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
             total, avail = stat.ullTotalPhys, stat.ullAvailPhys
             if total > 0 and avail <= total:
@@ -334,12 +329,11 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
             if not path_str or any(path_str.startswith(prefix) for prefix in ("\\\\", "\\??\\", "\\Device\\")):
                 return None
             
-            if not os.path.isabs(path_str): return None
-            
             p = Path(path_str)
+            # Validar que es un archivo real, no un enlace simbólico o punto de reparse
             if not p.is_file() or p.is_symlink(): return None
+            if os.path.abspath(p) != os.path.realpath(p): return None
             
-            # Verificación de seguridad robusta
             p_resolved = p.resolve(strict=False)
             if is_protected_path(str(p_resolved)) or not is_safe_to_modify(str(p_resolved)): 
                 return None

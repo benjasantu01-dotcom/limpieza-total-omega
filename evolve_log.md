@@ -783,3 +783,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-19T14:14:42` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-19T14:14:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T14:14:42` Corrida terminada. Total usado hoy: 331.
+- `2026-09-19T14:16:39` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-19T14:17:10` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad en `_get_process_path` validando que la ruta resuelta no sea un punto de reparse (junction/symlink) mediante `is_symlink()` y una verificación explícita de `is_junction` (usando `os.path.realpath` vs `os.path.abspath`), asegurando que la operación solo afecte a archivos reales y evitando seguir enlaces hacia fuera de la estructura esperada.
+- `2026-09-19T14:17:37` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado `_validate_path_security` para incluir una verificación de normalización de ruta (via `pathlib.Path.resolve()`) antes de cualquier comparación, mitigando vulnerabilidades por rutas relativas o secuencias de escape (dot-dot) que podrían evadir los filtros de `is_protected_path`.
+- `2026-09-19T14:18:19` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se implementó un bloqueo de seguridad en `_write_temp_to_final` para detectar archivos con atributos `READONLY` y evitar operaciones de I/O sobre ellos que podrían fallar o causar inconsistencias en el sandbox, reforzando la integridad del proceso de aislamiento.
+- `2026-09-19T14:18:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-19T14:18:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T14:18:23` Corrida terminada. Total usado hoy: 335.

@@ -163,12 +163,13 @@ def _has_forbidden_chars(path: Path) -> bool:
 def _validate_path_security(src: Path, dest: Path) -> bool:
     """
     Auditoría previa al movimiento: verifica rutas UNC, límites de longitud (MAX_PATH)
-    y consulta el filtro de seguridad global de la aplicación.
+    y consulta el filtro de seguridad global de la aplicación tras normalizar.
     """
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > 260 or len(str(dest)) > 260: return False
     try:
-        return not (is_protected_path(src.resolve()) or is_protected_path(dest.resolve()))
+        s_res, d_res = src.resolve(), dest.resolve()
+        return not (is_protected_path(s_res) or is_protected_path(d_res))
     except (OSError, RuntimeError):
         return False
 

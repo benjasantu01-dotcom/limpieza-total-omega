@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 73 | 2 | 20 | 10 | 68 |
-| 2026-09-19 | 142 | 12 | 22 | 14 | 141 |
+| 2026-09-18 | 73 | 2 | 20 | 10 | 64 |
+| 2026-09-19 | 145 | 12 | 23 | 14 | 141 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **50**
 - robustez ante casos límite: **43**
+- seguridad defensiva: **39**
 - rendimiento: **36**
-- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,18 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **19**
 - `safety.py`: **19**
 - `diskreport.py`: **18**
+- `memory.py`: **18**
 - `duplicates.py`: **17**
-- `memory.py`: **17**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
 - `settings.py`: **15**
+- `organizer.py`: **13**
 - `branding.py`: **12**
-- `organizer.py`: **12**
 - `main.py`: **10**
 - `scanner.py`: **9**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T14:18:19` **quarantine.py** (seguridad defensiva): Se implementó un bloqueo de seguridad en `_write_temp_to_final` para detectar archivos con atributos `READONLY` y evitar operaciones de I/O sobre ellos que podrían fallar o causar inconsistencias en el sandbox, reforzando la integridad del proceso de aislamiento.
+- `2026-09-19T14:17:37` **organizer.py** (seguridad defensiva): Se ha mejorado `_validate_path_security` para incluir una verificación de normalización de ruta (via `pathlib.Path.resolve()`) antes de cualquier comparación, mitigando vulnerabilidades por rutas relativas o secuencias de escape (dot-dot) que podrían evadir los filtros de `is_protected_path`.
+- `2026-09-19T14:17:10` **memory.py** (seguridad defensiva): Mejoré la seguridad en `_get_process_path` validando que la ruta resuelta no sea un punto de reparse (junction/symlink) mediante `is_symlink()` y una verificación explícita de `is_junction` (usando `os.path.realpath` vs `os.path.abspath`), asegurando que la operación solo afecte a archivos reales y evitando seguir enlaces hacia fuera de la estructura esperada.
 - `2026-09-19T14:04:19` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de la ruta resuelta contra el directorio base, previniendo que el escaneo pueda escapar del árbol de directorios permitido incluso si ocurren eventos inesperados en el sistema de archivos durante la recursión.
 - `2026-09-19T14:00:42` **assistant.py** (seguridad defensiva): Se endureció la seguridad de `_is_safe_text_structure` añadiendo una comprobación explícita para evitar que se filtren rutas locales (usando `pathlib.Path` para normalizar) y bloqueando el uso de secuencias de escape ANSI o comandos de shell comunes que podrían ser inyectados en las respuestas, garantizando así que incluso el motor local devuelva texto puro.
 - `2026-09-19T13:47:39` **settings.py** (robustez ante casos límite): Se mejoró `load` para manejar escenarios de archivos dañados o bloqueados durante la lectura mediante un `try-except` más robusto que no solo captura errores de JSON, sino que también gestiona explícitamente archivos con contenido basura o permisos denegados, asegurando que la aplicación siempre retorne una configuración válida en lugar de fallar silenciosamente o truncar estados.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T13:16:51` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor local frente a valores de configuración corruptos o tipos de datos inesperados en el `SystemContext` mediante la implementación de `get_metric` con manejo de excepciones y validación de tipos durante la ingesta, evitando que fallos parciales en una métrica invaliden todo el contexto.
 - `2026-09-19T13:00:19` **memory.py** (rendimiento): Optimizé `parse_windows_process_csv` para reducir las llamadas repetitivas a `strip()` y `isdigit()` dentro del bucle, procesando los datos mediante una sola iteración y validación, evitando overhead innecesario al parsear volcados de PowerShell.
 - `2026-09-19T12:46:32` **healthscore.py** (rendimiento): Optimicé el método `is_finite` en `SystemMetrics` utilizando el acceso directo a `__dict__` y una evaluación generadora con `all()` para evitar la creación de listas intermedias y el costo de inspección de `__dataclass_fields__` en cada ciclo.
-- `2026-09-19T12:45:29` **browser.py** (rendimiento): Se optimizó la eficiencia de `_sum_directory_recursive` implementando un pre-chequeo del caché `memo` al inicio de cada iteración de `_process_entry`, evitando llamadas redundantes a la función recursiva para subdirectorios ya calculados durante el mismo ciclo de escaneo.
-- `2026-09-19T12:36:59` **branding.py** (rendimiento): Se ha optimizado `color()` para evitar el acceso al diccionario mediante `MappingProxyType` en cada llamada, reemplazándolo por una búsqueda directa en `_PALETTE_MAP` para reducir el overhead de las llamadas a `MappingProxyType.__getitem__` en los bucles de renderizado.
-- `2026-09-19T12:36:38` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal por tokens con una búsqueda indexada directa mediante `set` (hashing), eliminando la regeneración innecesaria de objetos en cada iteración.

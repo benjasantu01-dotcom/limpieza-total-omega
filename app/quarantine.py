@@ -469,12 +469,6 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     """
     Realiza una copia física segura del archivo origen al sandbox usando 
     descriptores de archivo para evitar condiciones de carrera o bloqueos.
-    
-    Args:
-        source: Ruta del archivo original a aislar.
-        destination: Ruta destino dentro del directorio sandbox.
-    Returns:
-        El hash SHA-256 generado para validar la integridad del archivo copiado.
     """
     _check_path_syntax_integrity(destination)
     if is_protected_path(destination):
@@ -488,6 +482,12 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     if not source.is_file():
         raise OSError("Archivo origen inaccesible para copia.")
     
+    # Bloqueo adicional: detectar si el origen es de solo lectura (Windows)
+    if os.name == 'nt':
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(source))
+        if attrs != -1 and (attrs & 0x01):
+            raise PermissionError("Archivo origen marcado como solo lectura.")
+
     if destination.exists():
         raise FileExistsError(f"El destino ya existe: {destination}")
 
