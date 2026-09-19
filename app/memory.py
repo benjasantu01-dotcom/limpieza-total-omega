@@ -197,7 +197,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 def _is_valid_process_entry(fields: List[str]) -> Optional[ProcessMemory]:
     """Valida integridad de un registro CSV y descarta rutas protegidas por seguridad."""
-    if len(fields) < 3:
+    if fields is None or len(fields) < 3:
         return None
     try:
         name_raw = fields[0].strip()
@@ -228,13 +228,13 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     
     results: List[ProcessMemory] = []
     for line in raw_csv_text.splitlines():
-        if not line.strip(): continue
+        if not line or not line.strip(): continue
         try:
             parts = [_clean_csv_field(x) for x in line.split(",")]
             entry = _is_valid_process_entry(parts)
             if entry:
                 results.append(entry)
-        except (AttributeError, IndexError, ValueError):
+        except Exception:
             continue
     
     results.sort(key=lambda p: p.working_set, reverse=True)

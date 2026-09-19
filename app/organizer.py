@@ -194,11 +194,11 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         
     try:
         s_res = src.resolve()
-        parent = dest.parent if not dest.exists() else dest.resolve()
+        parent = (dest.parent if not dest.exists() else dest.resolve().parent)
         
         if not s_res.exists() or _is_recursive_violation(s_res, dest): 
             return False
-        if not os.access(parent if parent.is_dir() else parent.parent, os.W_OK): 
+        if not os.access(parent, os.W_OK): 
             return False
             
         return s_res.drive == parent.drive and _validate_file_attributes(s_res)

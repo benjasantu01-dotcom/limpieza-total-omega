@@ -871,3 +871,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-19T02:34:43` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` implementando una validación previa de los pesos del pipeline, asegurando que `metric_breakdown` no contenga claves inexistentes y evitando posibles errores en tiempo de ejecución si el diccionario `WEIGHTS` fuera alterado dinámicamente o por una configuración externa.
 - `2026-09-19T02:34:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T02:34:43` Corrida terminada. Total usado hoy: 60.
+- `2026-09-19T02:42:47` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-09-19T02:44:02` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de `_safe_get_entry_value` y `_collect_settings` mediante la implementación de validación de tipo y limpieza de caracteres no imprimibles, previniendo errores de conversión y posibles inyecciones de datos corruptos desde la interfaz hacia la lógica de negocio.
+- `2026-09-19T02:44:30` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_valid_process_entry` y `parse_windows_process_csv` añadiendo validaciones explícitas contra tipos `None` o entradas vacías y usando `try-except` más granulares para evitar que datos malformados de PowerShell detengan el escaneo completo de procesos.
+- `2026-09-19T02:44:56` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_safe_for_disk_op` y `stage_for_review` asegurando que la validación de `parent` sea más resiliente ante rutas inválidas o inexistentes y centralizando la comprobación de `ensure_safe_to_modify` para evitar excepciones no controladas durante el movimiento.
+- `2026-09-19T02:45:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-19T02:45:32` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-19T02:46:38` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-19T02:46:52` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-19T02:46:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T02:46:52` Corrida terminada. Total usado hoy: 64.
