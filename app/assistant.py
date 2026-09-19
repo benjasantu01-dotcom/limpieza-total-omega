@@ -284,8 +284,12 @@ class SystemContext:
     analyzed: bool = False
 
     def get_metric(self, key: str, default: float) -> float:
-        """Accede de forma eficiente a una métrica numérica almacenada."""
-        return _safe_float(getattr(self, key, DEFAULT_METRIC_VAL), default)
+        """Accede de forma eficiente a una métrica numérica almacenada con validación."""
+        try:
+            val = getattr(self, key, default)
+            return float(val) if isinstance(val, (int, float)) else default
+        except (TypeError, ValueError):
+            return default
 
     @property
     def is_empty(self) -> bool:

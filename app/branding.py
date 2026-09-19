@@ -168,8 +168,9 @@ def icon(section: Optional[str]) -> str:
     return ICONS.get(section.strip(), "\u2022") if isinstance(section, str) else "\u2022"
 
 @lru_cache(maxsize=32)
-def tab_label(section: str) -> str:
+def tab_label(section: Optional[str]) -> str:
     """Genera una etiqueta para pestañas combinando icono y texto."""
+    if not isinstance(section, str): return f"\u2022  Desconocido"
     return f"{icon(section)}  {section}"
 
 @lru_cache(maxsize=16)
@@ -204,11 +205,6 @@ def grade_color(grade: Optional[str]) -> ColorHex:
 def score_color(score: Union[float, int, None]) -> ColorHex:
     """
     Calcula el color asociado a un puntaje de salud (0-100).
-    
-    Args:
-        score: Valor numérico (0.0-100.0) del puntaje.
-    Returns:
-        Color hexadecimal según umbrales o gris si es inválido.
     """
     if score is None: 
         return C_TEXT_MUTED
@@ -227,12 +223,6 @@ def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
     """
     Genera una representación visual de texto de una barra de progreso.
-    
-    Args:
-        percent: Valor 0-100 para calcular el llenado.
-        width: Cantidad total de caracteres de la barra.
-    Returns:
-        Cadena compuesta de glifos representando el progreso.
     """
     try:
         valor = float(percent) if percent is not None else 0.0
@@ -263,24 +253,19 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     """
     Mezcla linealmente dos colores RGB según un ratio (0.0 a 1.0).
-    
-    Args:
-        start: Hex inicial.
-        end: Hex final.
-        ratio: Factor de interpolación.
-    Returns:
-        Hex resultante de la mezcla.
     """
-    if start == end: return start
-    r1, g1, b1 = _hex_to_rgb(start)
-    r2, g2, b2 = _hex_to_rgb(end)
-    ratio = max(0.0, min(1.0, float(ratio)))
-    
-    return _rgb_to_hex((
-        int(r1 + (r2 - r1) * ratio),
-        int(g1 + (g2 - g1) * ratio),
-        int(b1 + (b2 - b1) * ratio)
-    ))
+    try:
+        if start == end: return start
+        r1, g1, b1 = _hex_to_rgb(start)
+        r2, g2, b2 = _hex_to_rgb(end)
+        ratio = max(0.0, min(1.0, float(ratio)))
+        
+        return _rgb_to_hex((
+            int(r1 + (r2 - r1) * ratio),
+            int(g1 + (g2 - g1) * ratio),
+            int(b1 + (b2 - b1) * ratio)
+        ))
+    except (TypeError, ValueError): return start
 
 def _interpolate_rgb(s1: RGBTuple, s2: RGBTuple, delta: float) -> RGBTuple:
     """Calcula un punto intermedio entre dos colores RGB."""
@@ -293,20 +278,22 @@ def _interpolate_rgb(s1: RGBTuple, s2: RGBTuple, delta: float) -> RGBTuple:
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
     """Genera secuencia de colores intermedios entre puntos de gradiente."""
-    n = max(1, int(steps))
-    if not stops or len(stops) < 2: 
-        return (stops[0] if stops else C_TEXT_MUTED,) * n
-    
-    rgb_stops = [_hex_to_rgb(s) for s in stops]
-    tramos = len(stops) - 1
-    paso = float(n - 1) if n > 1 else 1.0
-    
-    res = []
-    for i in range(n):
-        pos = (i / paso) * tramos
-        idx = min(int(pos), tramos - 1)
-        res.append(_rgb_to_hex(_interpolate_rgb(rgb_stops[idx], rgb_stops[idx + 1], pos - idx)))
-    return tuple(res)
+    try:
+        n = max(1, int(steps))
+        if not stops or len(stops) < 2: 
+            return (stops[0] if stops else C_TEXT_MUTED,) * n
+        
+        rgb_stops = [_hex_to_rgb(s) for s in stops]
+        tramos = len(stops) - 1
+        paso = float(n - 1) if n > 1 else 1.0
+        
+        res = []
+        for i in range(n):
+            pos = (i / paso) * tramos
+            idx = min(int(pos), tramos - 1)
+            res.append(_rgb_to_hex(_interpolate_rgb(rgb_stops[idx], rgb_stops[idx + 1], pos - idx)))
+        return tuple(res)
+    except (ValueError, TypeError, ZeroDivisionError): return (C_TEXT_MUTED,) * max(1, steps)
 
 @lru_cache(maxsize=64)
 def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
@@ -354,20 +341,11 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if destination is None: return None
     try:
         target = Path(destination).resolve()
-        # Validación defensiva de la ruta destino y sus padres
-        if is_protected_path(target):
-            return None
-        
-        # ensure_safe_to_modify valida que la ruta sea segura para escritura
+        if is_protected_path(target): return None
         ensure_safe_to_modify(target)
-        
-        # Validar también el directorio padre antes de crear
         parent = target.parent
         ensure_safe_to_modify(parent)
-        
         parent.mkdir(parents=True, exist_ok=True)
-        
-        # Escritura atómica segura
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError): 

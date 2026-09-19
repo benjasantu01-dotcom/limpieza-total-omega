@@ -680,3 +680,42 @@ FAILED evolve/tests/test_assistant.py::test_booleans_accept_the_usual_strings - 
 - `2026-09-19T13:06:59` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de carga reemplazando `dict.copy()` y validaciones manuales redundantes en el bucle de validación por una construcción directa basada en `dict.fromkeys` y filtrado eficiente, además de consolidar la lógica de `_ensure_settings_integrity` para reducir la recursión innecesaria durante la carga.
 - `2026-09-19T13:06:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T13:06:59` Corrida terminada. Total usado hoy: 308.
+- `2026-09-19T13:15:33` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-19T13:16:04` Tests FALLARON:
+```
+les.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:63: SyntaxWarning: invalid escape sequence '\ '
+    Prefija rutas con el formato \\?\ para evadir la limitación de MAX_PATH (260)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 4 warnings in 1.38s
+
+```
+- `2026-09-19T13:16:04` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó `lru_cache` manual en `_resolve_and_cache_path` mediante una estructura de acceso directo (`_EXISTS_CACHE`), evitando realizar llamadas repetitivas y costosas a `path.resolve()` y `path.exists()` sobre los mismos ejecutables durante la misma sesión.
+- `2026-09-19T13:16:51` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez del motor local frente a valores de configuración corruptos o tipos de datos inesperados en el `SystemContext` mediante la implementación de `get_metric` con manejo de excepciones y validación de tipos durante la ingesta, evitando que fallos parciales en una métrica invaliden todo el contexto.
+- `2026-09-19T13:17:27` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra valores `None` o mal formados en `tab_label` y se consolidó el manejo de excepciones en las funciones de renderizado de `branding.py` para evitar que un input inesperado (típico en la carga inicial de la UI) provoque paradas en el bucle principal.
+- `2026-09-19T13:17:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-19T13:18:18` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-19T13:18:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T13:18:18` Corrida terminada. Total usado hoy: 312.
