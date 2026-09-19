@@ -116,7 +116,7 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
 
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo. Retorna None si el archivo es inaccesible o está bloqueado."""
+    """Calcula el hash SHA256 completo. Retorna None si el archivo es inaccesible."""
     if chunk_size <= 0:
         return None
         
@@ -135,7 +135,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula hash SHA256 de los primeros N bytes. Se usa para pre-filtrar candidatos de forma eficiente."""
+    """Calcula hash SHA256 de los primeros N bytes para pre-filtrar candidatos."""
     if read_bytes <= 0:
         return None
 
@@ -238,8 +238,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
     Gestiona el refinamiento de duplicados según el tamaño.
-    - Archivos pequeños (<=64KB): Hash directo para evitar overhead de I/O.
-    - Archivos grandes: Hash parcial seguido de confirmación por hash completo.
+    - Archivos pequeños (<=64KB): Hash directo.
+    - Archivos grandes: Hash parcial seguido de confirmación completa.
     """
     if not paths or size < 0:
         return []
@@ -272,7 +272,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def _get_keeper_score(path: Path) -> Optional[Tuple[float, int]]:
-    """Calcula una puntuación (basada en tiempo y profundidad) para elegir el keeper."""
+    """Calcula una puntuación (st_mtime y longitud de ruta) para elegir el keeper."""
     try:
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
@@ -281,21 +281,20 @@ def _get_keeper_score(path: Path) -> Optional[Tuple[float, int]]:
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
-    """Sugerencia heurística del mejor archivo para conservar en un grupo."""
+    """
+    Sugerencia heurística: elige la ruta más antigua (menor st_mtime) 
+    y, en caso de empate, la de ruta más corta.
+    """
     if not group or not isinstance(group, DuplicateGroup) or not group.paths:
         return None
     
+    # Validar existencia y permisos antes de puntuar
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path) or not p.exists():
+        if not p.exists() or not is_safe_to_modify(p):
             continue
-        try:
-            if not is_safe_to_modify(p):
-                continue
-            if score := _get_keeper_score(p):
-                candidates.append((score, p))
-        except (OSError, PermissionError):
-            continue
+        if score := _get_keeper_score(p):
+            candidates.append((score, p))
             
     return min(candidates, key=lambda x: x[0])[1] if candidates else None
 

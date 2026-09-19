@@ -206,9 +206,9 @@ def score_color(score: Union[float, int, None]) -> ColorHex:
     Calcula el color asociado a un puntaje de salud (0-100).
     
     Args:
-        score: Valor numérico del puntaje a evaluar.
+        score: Valor numérico (0.0-100.0) del puntaje.
     Returns:
-        Color hexadecimal basado en umbrales predefinidos.
+        Color hexadecimal según umbrales o gris si es inválido.
     """
     if score is None: 
         return C_TEXT_MUTED
@@ -229,12 +229,10 @@ def bar(percent: Union[float, int, None], width: int = 24,
     Genera una representación visual de texto de una barra de progreso.
     
     Args:
-        percent: Porcentaje actual (0-100).
-        width: Número de caracteres de ancho.
-        filled: Caracter para el segmento lleno.
-        empty: Caracter para el segmento vacío.
+        percent: Valor 0-100 para calcular el llenado.
+        width: Cantidad total de caracteres de la barra.
     Returns:
-        Cadena representando la barra de progreso.
+        Cadena compuesta de glifos representando el progreso.
     """
     try:
         valor = float(percent) if percent is not None else 0.0
@@ -247,7 +245,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=256)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
-    """Convierte un color hexadecimal '#RRGGBB' a una tupla de enteros (R, G, B)."""
+    """Convierte hex '#RRGGBB' a tupla (R, G, B) de 8 bits."""
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"): 
         return (0, 0, 0)
     try:
@@ -257,21 +255,21 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
 
 @lru_cache(maxsize=256)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
-    """Convierte una tupla RGB a cadena hexadecimal normalizada."""
+    """Convierte tupla (R, G, B) a string hex '#RRGGBB'."""
     def _clamp(c: int) -> int: return max(0, min(255, c))
     return "#{:02x}{:02x}{:02x}".format(_clamp(rgb[0]), _clamp(rgb[1]), _clamp(rgb[2]))
 
 @lru_cache(maxsize=128)
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     """
-    Realiza una interpolación lineal entre dos colores mediante sus valores RGB.
+    Mezcla linealmente dos colores RGB según un ratio (0.0 a 1.0).
     
     Args:
-        start: Color de inicio (hex).
-        end: Color de fin (hex).
-        ratio: Factor de mezcla (0.0 a 1.0).
+        start: Hex inicial.
+        end: Hex final.
+        ratio: Factor de interpolación.
     Returns:
-        Color mezclado resultante (hex).
+        Hex resultante de la mezcla.
     """
     if start == end: return start
     r1, g1, b1 = _hex_to_rgb(start)
@@ -285,7 +283,7 @@ def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     ))
 
 def _interpolate_rgb(s1: RGBTuple, s2: RGBTuple, delta: float) -> RGBTuple:
-    """Calcula un punto intermedio entre dos colores RGB para suavizar transiciones."""
+    """Calcula un punto intermedio entre dos colores RGB."""
     return (
         int(s1[0] + (s2[0] - s1[0]) * delta),
         int(s1[1] + (s2[1] - s1[1]) * delta),
@@ -294,7 +292,7 @@ def _interpolate_rgb(s1: RGBTuple, s2: RGBTuple, delta: float) -> RGBTuple:
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
-    """Genera una secuencia de colores intermedios distribuidos equitativamente entre los 'stops'."""
+    """Genera secuencia de colores intermedios entre puntos de gradiente."""
     n = max(1, int(steps))
     if not stops or len(stops) < 2: 
         return (stops[0] if stops else C_TEXT_MUTED,) * n
@@ -312,7 +310,7 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=64)
 def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
-    """Agrupa colores consecutivos idénticos en segmentos para optimizar renderizado."""
+    """Agrupa colores consecutivos idénticos para reducir llamadas al canvas."""
     if not colors: return ()
     segments = []
     current_color, start = colors[0], 0

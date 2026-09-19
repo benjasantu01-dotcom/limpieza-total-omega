@@ -253,18 +253,23 @@ def _sum_directory_recursive(
     root_base: str,
     depth: int = 0
 ) -> int:
-    """Calcula el tamaño acumulado de archivos bajo un directorio utilizando memoización."""
-    if not root_abs or root_abs in memo:
-        return memo.get(root_abs, 0)
+    """
+    Calcula el tamaño acumulado de archivos bajo un directorio usando `os.scandir`
+    y memoización para evitar re-procesar subdirectorios visitados.
+    """
+    if root_abs in memo:
+        return memo[root_abs]
 
+    directory_total_bytes: int = 0
     try:
-        total: int = 0
         with os.scandir(root_abs) as it:
             for entry in it:
-                total += _process_entry(entry, root_base, is_junction_fn, kernel32, memo, depth)
+                directory_total_bytes += _process_entry(
+                    entry, root_base, is_junction_fn, kernel32, memo, depth
+                )
         
-        memo[root_abs] = total
-        return total
+        memo[root_abs] = directory_total_bytes
+        return directory_total_bytes
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
 

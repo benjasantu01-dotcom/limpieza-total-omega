@@ -264,10 +264,14 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador de archivos recursivo con validación de inodos y puntos de reparse.
+    Generador de archivos recursivo.
     
+    Args:
+        directory: Ruta raíz a recorrer.
+        skip_protected: Si es True, ignora directorios marcados como protegidos.
+        
     Yields:
-        Tuplas conteniendo el objeto Path del archivo y su tamaño en bytes.
+        Tuplas (Path, int) donde Path es la ruta del archivo y int es su tamaño en bytes.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -354,12 +358,16 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Agrega métricas recorriendo el árbol de archivos.
+    Realiza un recorrido del árbol de archivos y agrega métricas globales.
     
-    Usa un heap para rastrear archivos más grandes eficientemente.
-    
+    Args:
+        directory: Directorio raíz donde iniciar el escaneo.
+        skip_protected: Si se deben omitir rutas bloqueadas por seguridad.
+        limit: Si es > 0, mantiene un heap con los archivos más grandes.
+        
     Returns:
-        Objeto SummaryData con el reporte consolidado del recorrido.
+        SummaryData conteniendo el total de bytes, conteo de archivos, 
+        estadísticas por extensión y los N archivos más grandes.
     """
     total_bytes: int = 0
     total_files: int = 0
