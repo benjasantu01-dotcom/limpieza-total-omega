@@ -291,7 +291,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             (home.exists(), "Directorio home del usuario inaccesible."),
             (home.resolve().is_absolute(), "La ruta home no es absoluta."),
             (safety.is_safe_to_modify(cwd), "Directorio de trabajo inseguro."),
-            (not safety.is_protected_path(app_root), "Directorio de aplicación protegido.")
+            (not safety.is_protected_path(app_root), "Directorio de aplicación protegido."),
+            (not str(cwd).lower().startswith(tuple(["c:\\windows", "c:\\program files"])), "Ejecución desde ruta de sistema restringida.")
         ]
         
         for condition, error_msg in validations:

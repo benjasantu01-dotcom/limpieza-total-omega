@@ -361,6 +361,7 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
             if not p.is_file() or p.is_symlink(): return None
             
             p_resolved = p.resolve(strict=False)
+            # Validamos contra is_protected_path y is_safe_to_modify
             if is_protected_path(str(p_resolved)) or not is_safe_to_modify(str(p_resolved)): 
                 return None
             
@@ -385,6 +386,10 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
         exec_path = _get_process_path(proc_handle)
         if not exec_path:
             return False, "Acceso denegado o ejecutable no localizable."
+        
+        # Validar nuevamente contra reglas de seguridad centralizadas
+        if not is_safe_to_modify(str(exec_path)):
+            return False, "Operación no autorizada sobre este proceso."
         
         return True, None
     except (AttributeError, ValueError, ctypes.ArgumentError, OSError):

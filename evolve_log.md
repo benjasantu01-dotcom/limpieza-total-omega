@@ -992,3 +992,39 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-19T05:07:11` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez del pipeline de puntuación aplicando un filtrado de tipos y validación de integridad en `_evaluate_rules` para prevenir que mensajes malformados o excepciones inyectadas en las métricas puedan corromper la generación del reporte.
 - `2026-09-19T05:07:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T05:07:11` Corrida terminada. Total usado hoy: 120.
+- `2026-09-19T05:15:48` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-09-19T05:17:00` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se introdujo una capa de validación en `_validate_environment` para detectar si el directorio actual de trabajo es una ruta de sistema crítica, evitando que la aplicación realice operaciones desde contextos potencialmente peligrosos o volátiles.
+- `2026-09-19T05:17:28` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `trim_working_set` añadiendo una validación explícita mediante `is_safe_to_modify` sobre el ejecutable del proceso antes de intentar cualquier operación, asegurando que el proceso objetivo sea seguro incluso si el handle fue abierto con éxito.
+- `2026-09-19T05:17:56` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar una verificación explícita de `is_protected_path` sobre la ruta de destino, garantizando que el `_Para_Revisar` no pueda ser reubicado en una ruta crítica si el usuario modifica los ajustes de destino, además de asegurar el uso de `ensure_safe_to_modify` para el destino en `stage_for_review`.
+- `2026-09-19T05:18:16` Tests FALLARON:
+```
+ine.purge_all(base=cuarentena)
+    
+>       assert borrados == 2
+E       assert 0 == 2
+
+evolve/tests/test_safety.py:272: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:63: SyntaxWarning: invalid escape sequence '\ '
+    Prefija rutas con el formato \\?\ para evadir la limitación de MAX_PATH (260)
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:423: SyntaxWarning: invalid escape sequence '\)'
+    """Determina si una ruta apunta a la raíz de un dispositivo de almacenamiento (ej C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - assert 0 == 2
+1 failed, 298 passed, 8 warnings in 0.92s
+
+```
+- `2026-09-19T05:18:16` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez defensiva de `_safe_unlink` integrando una verificación de propiedad explícita mediante `_ensure_path_ownership` y reforzando la exclusión de enlaces simbólicos mediante `lstat` para prevenir que `unlink` pueda seguir punteros fuera del sandbox.
+- `2026-09-19T05:18:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T05:18:16` Corrida terminada. Total usado hoy: 124.

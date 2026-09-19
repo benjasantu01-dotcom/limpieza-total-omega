@@ -201,6 +201,10 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         
         parent = (dest.parent if not dest.exists() else dest.resolve().parent)
         
+        # Validación extra: el destino no puede ser una ruta protegida
+        if is_protected_path(parent):
+            return False
+            
         if _is_recursive_violation(s_res, dest): 
             return False
         if not os.access(parent, os.W_OK): 
@@ -287,6 +291,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     try:
         dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
+        # Aseguramos que la carpeta de destino misma sea segura
         ensure_safe_to_modify(dest_base)
     except (OSError, RuntimeError): return None
     
