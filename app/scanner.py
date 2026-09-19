@@ -103,14 +103,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not path or not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     
-    if entry:
-        try:
-            if entry.is_file(follow_symlinks=False):
-                stats = _safe_stat(entry)
-                if stats and hasattr(stats, 'st_mtime') and (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
-                    return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
-        except OSError:
-            return None
+    if entry and entry.is_file(follow_symlinks=False):
+        stats = _safe_stat(entry)
+        if stats and hasattr(stats, 'st_mtime') and (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
+            return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
@@ -124,14 +120,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta archivos ejecutables de tamaño cero, técnica común de ofuscación o errores de descarga."""
-    if entry:
-        try:
-            if entry.is_file(follow_symlinks=False):
-                stats = _safe_stat(entry)
-                if stats and stats.st_size == 0:
-                    return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
-        except OSError:
-            return None
+    if entry and entry.is_file(follow_symlinks=False):
+        stats = _safe_stat(entry)
+        if stats and stats.st_size == 0:
+            return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
     return None
 
 class Scanner:

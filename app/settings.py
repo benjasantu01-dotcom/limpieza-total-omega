@@ -270,7 +270,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     base_path = Path(custom_base).expanduser()
     if base_path in _PATH_CACHE: return _PATH_CACHE[base_path]
     try:
-        resolved_parent = base_path.resolve()
+        resolved_parent = base_path.resolve(strict=False)
         if _Validators._is_safe_path(str(resolved_parent)):
             _PATH_CACHE[base_path] = resolved_parent / SETTINGS_FILE
             return _PATH_CACHE[base_path]
@@ -293,8 +293,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     candidates = [ruta, ruta.with_suffix(".bak")]
     
     for r in candidates:
-        if not r.exists() or not os.access(r, os.R_OK): continue
         try:
+            if not r.exists() or not os.access(r, os.R_OK): continue
             stats = r.stat()
             if (cached := _CACHE.get(r)) and cached[0] == stats.st_mtime:
                 return cached[1].copy()
