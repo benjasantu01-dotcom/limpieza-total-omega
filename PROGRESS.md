@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 47
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 196
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 121 | 7 | 31 | 13 | 108 |
-| 2026-09-19 | 103 | 7 | 16 | 10 | 88 |
+| 2026-09-18 | 121 | 7 | 31 | 13 | 104 |
+| 2026-09-19 | 104 | 7 | 16 | 11 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - robustez ante casos límite: **46**
 - legibilidad y documentación: **45**
-- seguridad defensiva: **43**
+- seguridad defensiva: **44**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
@@ -38,7 +38,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **17**
 - `quarantine.py`: **16**
 - `settings.py`: **15**
-- `organizer.py`: **13**
+- `organizer.py`: **14**
 - `branding.py`: **12**
 - `scanner.py`: **10**
 - `main.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T09:46:40` **organizer.py** (seguridad defensiva): Se reforzó `_is_safe_for_disk_op` para prevenir la escritura en dispositivos de solo lectura (como unidades de red montadas, medios extraíbles de solo lectura o particiones bloqueadas) mediante la verificación explícita de acceso de escritura antes de intentar cualquier operación de movimiento.
 - `2026-09-19T09:32:18` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `duplicates.py` mediante la implementación de `path.samefile()` en `_collect_candidates`, previniendo que una misma ruta procesada a través de distintos enlaces simbólicos o alias del sistema de archivos sea contada erróneamente como duplicada de sí misma.
 - `2026-09-19T09:32:08` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez en `_is_excluded_path` añadiendo una comprobación explícita para evitar procesar rutas que excedan `MAX_PATH` en Windows (cuando se use en versiones anteriores a las que soportan rutas largas) y reforzando la seguridad al evitar el seguimiento de puntos de reparse (Junctions/Mount Points) mediante un chequeo de atributos más estricto.
 - `2026-09-19T09:31:42` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de la ruta resuelta (`real_candidate`) contra la `root_base` antes de cada descenso, evitando así posibles ataques de "jailbreak" o navegación fuera de la carpeta autorizada cuando se encuentran enlaces simbólicos o jerarquías complejas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T08:50:39` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de inferencia local añadiendo validación de `score` (asegurando que sea un entero válido) y manejando explícitamente el caso en que las métricas resulten en valores de punto flotante no finitos (NaN/Inf) mediante una verificación más estricta en el método de ingesta, evitando que datos malformados degraden la lógica de decisión.
 - `2026-09-19T08:41:16` **settings.py** (rendimiento): Optimicé el rendimiento de carga y validación mediante el uso de un diccionario de acceso directo `_KEY_TO_ENUM` y la eliminación de llamadas recursivas/redundantes en `_ensure_settings_integrity`, asegurando que la configuración solo se procese cuando sea estrictamente necesario.
 - `2026-09-19T08:40:44` **scanner.py** (rendimiento): Optimicé el método `_is_safe_entry` de `Scanner` para evitar llamadas redundantes a `is_protected_path` (que puede ser costosa) y reordené los chequeos de modo que las validaciones de bajo costo (cadenas, sets, atributos rápidos) ocurran antes de operaciones de E/S o validaciones complejas.
-- `2026-09-19T08:31:03` **quarantine.py** (rendimiento): Optimizé la carga de datos del manifiesto convirtiendo la lista en un diccionario (`dict`) indexado por `item_id` en las funciones de acceso frecuente (`restore_item`, `purge_item`), evitando así operaciones O(n) lineales durante cada búsqueda de ítem.

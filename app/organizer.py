@@ -205,7 +205,8 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
             
         if _is_recursive_violation(s_res, dest): 
             return False
-        if not os.access(parent, os.W_OK): 
+        # Verificación explícita de permiso de escritura y consistencia de unidad
+        if not os.access(parent, os.W_OK) or not os.access(s_res, os.W_OK): 
             return False
             
         return s_res.drive == parent.drive and _validate_file_attributes(s_res)
