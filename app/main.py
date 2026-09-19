@@ -1324,8 +1324,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             try:
                 # Sanitización robusta contra caracteres no imprimibles
                 clean_choice = "".join(c for c in choice if c.isprintable())
-                target_path = Path(clean_choice).resolve()
-                if target_path.exists() and self._is_safe_target_dir(target_path):
+                target_path = Path(clean_choice).resolve(strict=True)
+                if self._is_safe_target_dir(target_path):
                     self.scan_target = str(target_path)
                     update_label(f"Unidad: {choice}")
                 else:

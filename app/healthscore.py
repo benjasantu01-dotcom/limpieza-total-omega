@@ -221,7 +221,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Ejecuta el pipeline de evaluación para generar un objeto HealthResult consolidado."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
-        return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
+        return HealthResult(0, "F", {k: 0 for k in WEIGHTS.keys()}, ["Error: Instancia de métricas no válida."])
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {k: 0 for k in WEIGHTS.keys()}

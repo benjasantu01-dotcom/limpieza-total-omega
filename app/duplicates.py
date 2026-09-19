@@ -204,14 +204,15 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        path = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
+                            path = Path(entry.path)
                             if not is_junction(path) and not is_protected_path(path):
                                 _scan_dir(path)
                         else:
+                            path = Path(entry.path)
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size >= min_size and _is_valid_candidate(path, st.st_size):
-                                if not any(path.samefile(v) for v in visited_files):
+                                if not any(path.exists() and path.samefile(v) for v in visited_files):
                                     size_to_paths_map[st.st_size].append(path)
                                     visited_files.append(path)
                     except (FileNotFoundError, OSError, PermissionError):

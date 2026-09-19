@@ -719,3 +719,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-19T13:18:18` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
 - `2026-09-19T13:18:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T13:18:18` Corrida terminada. Total usado hoy: 312.
+- `2026-09-19T13:25:44` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-19T13:26:11` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Se mejora la robustez de `walk_files` y `largest_folders` ante posibles errores de acceso durante la iteración, envolviendo el acceso a los atributos `path` y `stat` en bloques try-except adicionales para evitar que un solo archivo con permisos denegados o un descriptor de archivo corrupto interrumpa un análisis de disco completo.
+- `2026-09-19T13:26:37` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_collect_candidates` ante archivos que se eliminan o cambian de permiso durante la iteración (concurrencia) y corregí una posible excepción fatal al usar `samefile` sobre rutas que podrían haberse vuelto inválidas, añadiendo un chequeo preventivo de existencia.
+- `2026-09-19T13:27:02` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del cálculo de `compute_score` asegurando que si las métricas contienen valores `NaN` o `Inf` (no finitos), la función devuelva un estado de error manejable en lugar de propagar valores numéricos erróneos a los componentes de UI.
+- `2026-09-19T13:28:02` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-19T13:29:06` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `on_target_choice_changed` al implementar una validación explícita mediante `is_safe_target_dir` antes de asignar una ruta personalizada, evitando la propagación de estados inválidos a través de `self.scan_target` y añadiendo protección adicional ante excepciones durante el acceso a rutas.
+- `2026-09-19T13:29:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T13:29:06` Corrida terminada. Total usado hoy: 316.
