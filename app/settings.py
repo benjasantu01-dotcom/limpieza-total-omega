@@ -255,9 +255,11 @@ _KEY_VALIDATOR_MAP: Final = MappingProxyType({
     ConfigKey.ULTIMA_CARPETA: _Validators.path,
 })
 
+@lru_cache(maxsize=1)
 def _get_validator_for_key(key: ConfigKey) -> _ValidatorEntry:
     return _ValidatorEntry(_KEY_VALIDATOR_MAP.get(key, _Validators.str))
 
+@lru_cache(maxsize=1)
 def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
     return MappingProxyType({k: _get_validator_for_key(k) for k in ConfigKey})
 

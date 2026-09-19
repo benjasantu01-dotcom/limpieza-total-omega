@@ -264,7 +264,8 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
                     if entry.is_file(follow_symlinks=False):
                         _, ext = os.path.splitext(entry.name)
                         if ext.lower() in EXECUTABLE_EXTS:
-                            if not is_protected_path(Path(entry.path)):
+                            p = Path(entry.path)
+                            if not is_protected_path(p):
                                 name = os.path.splitext(entry.name)[0]
                                 clean_name = "".join(c for c in name if ord(c) >= 32)
                                 found_entries.append(StartupEntry(

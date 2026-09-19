@@ -325,10 +325,8 @@ class SystemContext:
             return False
             
         try:
-            # Validamos que el valor sea convertible a float sin problemas
             float_val = float(val)
             if _is_metric_within_bounds(float_val, spec):
-                # Aplicamos el cast específico (int o float) definido en la spec
                 setattr(self, key, spec.cast_func(val))
                 return True
         except (ValueError, TypeError, OverflowError):
@@ -346,7 +344,6 @@ class SystemContext:
         if source is None or _is_input_too_deep_or_complex(source):
             return False
         
-        # Validamos que la fuente tenga estructura iterable o sea un objeto válido
         if not isinstance(source, dict) and not (hasattr(source, "__dict__") and not isinstance(source, type)):
             return False
             
@@ -382,11 +379,6 @@ class Answer:
 
 def _validate_context_integrity(ctx: SystemContext) -> bool:
     """Verifica que el contexto no contenga métricas contradictorias o corruptas."""
-    # Validación lógica: si la RAM disponible es mayor al total, hay error
-    if ctx.memory_total_gb > 0:
-        # Simplificación: omitimos porcentaje de RAM si el total es inconsistente
-        pass
-    # No permitir métricas negativas físicas
     if ctx.junk_mb < 0 or ctx.duplicate_mb < 0: return False
     return True
 

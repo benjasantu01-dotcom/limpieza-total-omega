@@ -947,3 +947,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-19T04:06:21` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un `lru_cache` adicional en `is_within_directory` para evitar el cálculo repetitivo y costoso de `normalize` sobre rutas comunes, mejorando el rendimiento en los escaneos recursivos de directorios donde se consulta repetidamente la jerarquía.
 - `2026-09-19T04:06:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T04:06:21` Corrida terminada. Total usado hoy: 96.
+- `2026-09-19T04:14:43` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-09-19T04:15:09` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._is_inside_base_root, Scanner._is_relevant_extension, Scanner._is_reparse_point
+- `2026-09-19T04:15:40` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento del módulo implementando `lru_cache` en `_build_validator_map` y `_get_validator_for_key` para evitar reconstruir diccionarios de validación en cada acceso a la configuración.
+- `2026-09-19T04:16:08` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo de carpetas evitando llamadas innecesarias a `is_protected_path` al integrar la validación de seguridad directamente en el flujo de filtrado de `scandir`, reduciendo drásticamente la I/O en directorios con muchos archivos.
+- `2026-09-19T04:16:34` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar de forma segura entradas donde las métricas podrían ser `None`, tipos no numéricos o valores desbordados, evitando excepciones no controladas durante la ingesta de datos.
+- `2026-09-19T04:16:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T04:16:34` Corrida terminada. Total usado hoy: 100.
