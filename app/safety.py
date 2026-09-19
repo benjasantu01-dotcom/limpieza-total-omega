@@ -507,7 +507,13 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
         raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS)
 
 def _validate_ntfs_reparse_redirection(path: Path) -> None:
+    """Valida que el archivo y su directorio padre no sean puntos de reparse o junctions."""
     if not path.exists(): return
+    
+    # Validar el directorio padre primero
+    if _is_reparse_point(str(path.parent)):
+        raise UnsafePathError("Directorio padre es un punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, 0, None, 3, 0x02000000, None)
     if handle != -1:

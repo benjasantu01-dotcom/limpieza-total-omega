@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 47
+- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 194
+- Sin respuesta de la IA (error o límite): 191
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 121 | 7 | 31 | 13 | 104 |
-| 2026-09-19 | 104 | 7 | 16 | 11 | 90 |
+| 2026-09-18 | 121 | 7 | 31 | 13 | 100 |
+| 2026-09-19 | 105 | 8 | 17 | 11 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - robustez ante casos límite: **46**
 - legibilidad y documentación: **45**
-- seguridad defensiva: **44**
+- seguridad defensiva: **45**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
@@ -33,7 +33,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **22**
 - `diskreport.py`: **21**
 - `memory.py`: **20**
-- `safety.py`: **19**
+- `safety.py`: **20**
 - `duplicates.py`: **18**
 - `assistant.py`: **17**
 - `quarantine.py`: **16**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-19T09:52:38` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para prevenir ataques de "Time-of-Check to Time-of-Use" (TOCTOU) adicionales mediante la validación del estado del padre inmediato antes de cualquier operación, asegurando que el directorio contenedor no haya sido reemplazado por un enlace o punto de reparse después de la normalización.
 - `2026-09-19T09:46:40` **organizer.py** (seguridad defensiva): Se reforzó `_is_safe_for_disk_op` para prevenir la escritura en dispositivos de solo lectura (como unidades de red montadas, medios extraíbles de solo lectura o particiones bloqueadas) mediante la verificación explícita de acceso de escritura antes de intentar cualquier operación de movimiento.
 - `2026-09-19T09:32:18` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `duplicates.py` mediante la implementación de `path.samefile()` en `_collect_candidates`, previniendo que una misma ruta procesada a través de distintos enlaces simbólicos o alias del sistema de archivos sea contada erróneamente como duplicada de sí misma.
 - `2026-09-19T09:32:08` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez en `_is_excluded_path` añadiendo una comprobación explícita para evitar procesar rutas que excedan `MAX_PATH` en Windows (cuando se use en versiones anteriores a las que soportan rutas largas) y reforzando la seguridad al evitar el seguimiento de puntos de reparse (Junctions/Mount Points) mediante un chequeo de atributos más estricto.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T08:51:13` **branding.py** (robustez ante casos límite): Se introdujo una validación de seguridad en `save_logo_svg` utilizando `is_protected_path` antes de intentar la escritura en disco, cumpliendo con el enfoque de robustez al evitar operaciones innecesarias en rutas críticas o restringidas.
 - `2026-09-19T08:50:39` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de inferencia local añadiendo validación de `score` (asegurando que sea un entero válido) y manejando explícitamente el caso en que las métricas resulten en valores de punto flotante no finitos (NaN/Inf) mediante una verificación más estricta en el método de ingesta, evitando que datos malformados degraden la lógica de decisión.
 - `2026-09-19T08:41:16` **settings.py** (rendimiento): Optimicé el rendimiento de carga y validación mediante el uso de un diccionario de acceso directo `_KEY_TO_ENUM` y la eliminación de llamadas recursivas/redundantes en `_ensure_settings_integrity`, asegurando que la configuración solo se procese cuando sea estrictamente necesario.
-- `2026-09-19T08:40:44` **scanner.py** (rendimiento): Optimicé el método `_is_safe_entry` de `Scanner` para evitar llamadas redundantes a `is_protected_path` (que puede ser costosa) y reordené los chequeos de modo que las validaciones de bajo costo (cadenas, sets, atributos rápidos) ocurran antes de operaciones de E/S o validaciones complejas.

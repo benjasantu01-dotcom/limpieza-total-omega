@@ -1444,3 +1444,37 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-09-19T09:46:40` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó `_is_safe_for_disk_op` para prevenir la escritura en dispositivos de solo lectura (como unidades de red montadas, medios extraíbles de solo lectura o particiones bloqueadas) mediante la verificación explícita de acceso de escritura antes de intentar cualquier operación de movimiento.
 - `2026-09-19T09:46:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-19T09:46:40` Corrida terminada. Total usado hoy: 228.
+- `2026-09-19T09:50:58` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-09-19T09:51:41` Tests FALLARON:
+```
+ror, RuntimeError) as e:
+                raise UnsafePathError(f"Ruta origen no válida: {e}")
+    
+        if p_source.is_dir():
+            raise UnsafePathError("Solo se pueden poner en cuarentena archivos, no directorios.")
+    
+        if not is_safe_to_modify(p_source):
+>           raise UnsafePathError("Archivo origen no permitido para aislamiento por política de seguridad.")
+E           safety.UnsafePathError: [GENERIC] Archivo origen no permitido para aislamiento por política de seguridad.
+
+app/quarantine.py:628: UnsafePathError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:63: SyntaxWarning: invalid escape sequence '\ '
+    Prefija rutas con el formato \\?\ para evadir la limitación de MAX_PATH (260)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: [GENERIC] Archivo origen no permitido para aislamiento por política de seguridad.
+1 failed, 298 passed, 4 warnings in 1.35s
+
+```
+- `2026-09-19T09:51:41` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad en `quarantine_file` añadiendo una comprobación explícita mediante `is_safe_to_modify` antes de intentar el movimiento, asegurando que el archivo origen no sea alterado ni movido si viola las políticas de seguridad actuales, evitando el uso de `ensure_safe_to_modify` como una condición lógica directa.
+- `2026-09-19T09:51:59` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-19T09:52:38` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se reforzó `ensure_safe_to_modify` para prevenir ataques de "Time-of-Check to Time-of-Use" (TOCTOU) adicionales mediante la validación del estado del padre inmediato antes de cualquier operación, asegurando que el directorio contenedor no haya sido reemplazado por un enlace o punto de reparse después de la normalización.
+- `2026-09-19T09:52:47` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-19T09:52:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-19T09:52:47` Corrida terminada. Total usado hoy: 232.
