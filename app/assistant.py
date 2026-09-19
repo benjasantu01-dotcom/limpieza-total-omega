@@ -325,8 +325,10 @@ class SystemContext:
             return False
             
         try:
+            # Validamos que el valor sea convertible a float sin problemas
             float_val = float(val)
             if _is_metric_within_bounds(float_val, spec):
+                # Aplicamos el cast específico (int o float) definido en la spec
                 setattr(self, key, spec.cast_func(val))
                 return True
         except (ValueError, TypeError, OverflowError):
@@ -344,22 +346,26 @@ class SystemContext:
         if source is None or _is_input_too_deep_or_complex(source):
             return False
         
+        # Validamos que la fuente tenga estructura iterable o sea un objeto válido
         if not isinstance(source, dict) and not (hasattr(source, "__dict__") and not isinstance(source, type)):
             return False
             
         found_data = False
-        for key, spec in _VALIDATORS.items():
-            if self._apply_field(source, key, spec):
-                found_data = True
-        
-        grade_val = _get_source_value(source, "grade")
-        if isinstance(grade_val, str):
-            clean_grade = self._clean_grade(grade_val)
-            if clean_grade:
-                self.grade = clean_grade
-                found_data = True
-        
-        return found_data and _validate_context_integrity(self)
+        try:
+            for key, spec in _VALIDATORS.items():
+                if self._apply_field(source, key, spec):
+                    found_data = True
+            
+            grade_val = _get_source_value(source, "grade")
+            if isinstance(grade_val, str):
+                clean_grade = self._clean_grade(grade_val)
+                if clean_grade:
+                    self.grade = clean_grade
+                    found_data = True
+            
+            return found_data and _validate_context_integrity(self)
+        except Exception:
+            return False
 
 @dataclass
 class Answer:
