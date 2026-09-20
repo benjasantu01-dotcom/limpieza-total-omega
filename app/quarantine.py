@@ -498,11 +498,21 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     if destination.exists():
         raise FileExistsError(f"El destino ya existe: {destination}")
 
+    # Capturar estado inicial para detectar cambios en vuelo
+    try:
+        st_initial = source.stat()
+    except OSError:
+        raise OSError("No se pudo obtener estado del archivo origen.")
+
     source_hash = _get_sha256(source)
 
     fd_src: int = os.open(str(source), os.O_RDONLY)
     try:
         stat_src = os.fstat(fd_src)
+        # Redundancia: asegurar que no cambió desde la última validación
+        if stat_src.st_size != st_initial.st_size or stat_src.st_mtime != st_initial.st_mtime:
+            raise OSError("El archivo cambió durante el proceso de aislamiento.")
+
         if not (stat_src.st_mode & 0o100000): 
             raise OSError("El archivo origen no es un archivo regular.")
             

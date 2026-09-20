@@ -548,7 +548,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         except OSError: raise UnsafePathError(f"No se pueden obtener metadatos: {p.name}", SafetyValidationErrorCode.IO_ERROR)
         if not bool(initial_stat.st_mode & stat.S_IWRITE):
             raise UnsafePathError(f"Acceso de escritura denegado: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-        if os.name == 'nt': _validate_ntfs_reparse_redirection(p)
+        if os.name == 'nt': 
+            _validate_ntfs_reparse_redirection(p)
+            if not os.access(p.parent, os.W_OK):
+                 raise UnsafePathError("Directorio contenedor marcado como solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
         try: _check_file_integrity(p, initial_stat)
         except OSError: raise UnsafePathError(f"Error de E/S durante validación: {p.name}", SafetyValidationErrorCode.IO_ERROR)
     else:

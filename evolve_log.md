@@ -1204,3 +1204,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-20T03:05:02` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `trim_working_set` y sus ayudantes asegurando que el cierre del `proc_handle` mediante `CloseHandle` sea incondicional y resistente a errores de tipo, además de añadir validaciones preventivas contra entradas nulas o malformadas que podrían disparar excepciones en las llamadas a la API de Win32.
 - `2026-09-20T03:05:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T03:05:02` Corrida terminada. Total usado hoy: 72.
+- `2026-09-20T03:11:45` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-09-20T03:12:14` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-20T03:12:51` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de redundancia en la función `_atomic_isolate_file` para evitar condiciones de carrera donde un archivo pueda ser movido, renombrado o alterado entre la verificación de seguridad y la apertura del descriptor, garantizando que el archivo final en el sandbox sea idéntico al verificado.
+- `2026-09-20T03:13:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-20T03:13:32` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación adicional en `ensure_safe_to_modify` para detectar si el sistema de archivos actual admite la operación, verificando si el path es de solo lectura a nivel de sistema antes de intentar cualquier interacción, previniendo excepciones innecesarias en dispositivos bloqueados o con fallos de hardware.
+- `2026-09-20T03:13:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T03:13:32` Corrida terminada. Total usado hoy: 76.

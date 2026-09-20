@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 31 | 1 | 9 | 2 | 39 |
+| 2026-09-18 | 31 | 1 | 8 | 2 | 36 |
 | 2026-09-19 | 147 | 12 | 23 | 14 | 154 |
-| 2026-09-20 | 28 | 2 | 7 | 6 | 29 |
+| 2026-09-20 | 30 | 2 | 8 | 6 | 30 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **43**
 - rendimiento: **35**
 - seguridad defensiva: **34**
 
@@ -33,12 +33,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **21**
 - `browser.py`: **20**
 - `assistant.py`: **19**
-- `safety.py`: **18**
+- `safety.py`: **19**
 - `memory.py`: **17**
 - `diskreport.py`: **16**
 - `duplicates.py`: **16**
 - `settings.py`: **16**
-- `quarantine.py`: **14**
+- `quarantine.py`: **15**
 - `organizer.py`: **13**
 - `branding.py`: **12**
 - `scanner.py`: **9**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T03:13:32` **safety.py** (robustez ante casos límite): Se ha añadido una validación adicional en `ensure_safe_to_modify` para detectar si el sistema de archivos actual admite la operación, verificando si el path es de solo lectura a nivel de sistema antes de intentar cualquier interacción, previniendo excepciones innecesarias en dispositivos bloqueados o con fallos de hardware.
+- `2026-09-20T03:12:51` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de redundancia en la función `_atomic_isolate_file` para evitar condiciones de carrera donde un archivo pueda ser movido, renombrado o alterado entre la verificación de seguridad y la apertura del descriptor, garantizando que el archivo final en el sandbox sea idéntico al verificado.
 - `2026-09-20T03:05:02` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` y sus ayudantes asegurando que el cierre del `proc_handle` mediante `CloseHandle` sea incondicional y resistente a errores de tipo, además de añadir validaciones preventivas contra entradas nulas o malformadas que podrían disparar excepciones en las llamadas a la API de Win32.
 - `2026-09-20T03:02:30` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del `_evaluate_rules` añadiendo un manejo de excepciones exhaustivo para evitar que un error en una factoría de mensajes mal construida bloquee el cálculo completo del puntaje de salud del sistema.
 - `2026-09-20T02:53:15` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `PermissionError` y `OSError` al intentar resolver la ruta de entrada en `_validate_root`, evitando que el programa se bloquee al acceder a rutas con permisos restringidos o sistemas de archivos inaccesibles.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-20T02:21:24` **diskreport.py** (rendimiento): Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y `lower()` dentro del bucle, procesando la extensión una sola vez por archivo y usando `dict.get` para reducir la sobrecarga de consultas en `ext_stats`.
 - `2026-09-20T02:12:28` **browser.py** (rendimiento): Se ha optimizado el rendimiento de `detect_profiles` y `_sum_directory_recursive` mediante la implementación de una estrategia de "memoización de resultados de sub-directorios" más coherente, evitando llamadas redundantes a `Path.resolve()` dentro de los bucles críticos y reduciendo la creación innecesaria de objetos `Path` durante el escaneo recursivo.
 - `2026-09-20T02:12:16` **branding.py** (rendimiento): Se introdujo un `lru_cache` en la función `_get_scaled_poly` (que ya existía pero no estaba cacheada) y se optimizó el cálculo de la escala en `draw_logo` para minimizar operaciones en el renderizado de frames, además de prevenir recalcular constantemente el factor de escala en funciones de dibujo.
-- `2026-09-20T02:01:32` **settings.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo `settings.py` al reemplazar el diccionario de configuración global `_KEY_VALIDATOR_MAP` por una estructura autodescriptiva, eliminando la ambigüedad en la asignación de validadores y facilitando la depuración.
-- `2026-09-20T02:01:17` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `scanner.py` documentando los contratos de las funciones de heurística y normalizando el manejo de `os.DirEntry` mediante type hints explícitos, facilitando la comprensión del flujo de datos en el análisis estático.
