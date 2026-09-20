@@ -294,9 +294,7 @@ def validate(raw_values: Any) -> AppSettings:
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
-    candidates = [ruta, ruta.with_suffix(".bak")]
-    
-    for r in candidates:
+    for r in [ruta, ruta.with_suffix(".bak")]:
         try:
             if not r.exists() or not os.access(r, os.R_OK): continue
             stats = r.stat()
@@ -305,28 +303,21 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
                 continue
             with open(r, "r", encoding="utf-8") as f:
-                raw = json.load(f)
-                final_data = _coerce_and_verify(validate(raw))
+                final_data = _coerce_and_verify(validate(json.load(f)))
             _CACHE[r] = (stats.st_mtime, final_data)
             return final_data.copy()
         except (OSError, PermissionError, ValueError, json.JSONDecodeError, UnicodeDecodeError):
             continue
-            
     return DEFAULTS.copy()
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Aplica consistencia de tipos y reglas de negocio obligatorias post-validación."""
-    # 1. Asegurar tipos consistentes con DEFAULTS
     for key in ConfigKey:
         val = settings.get(key.value)
         if not isinstance(val, type(DEFAULTS[key.value])):
             settings[key.value] = DEFAULTS[key.value]
-    
-    # 2. Integridad del esquema
     if not _is_app_settings(settings):
         settings = {**DEFAULTS, **{k: v for k, v in settings.items() if k in DEFAULTS}}
-    
-    # 3. Lógica de negocio de seguridad: desactivar asistente si falta clave
     if settings.get("asistente_activado") and not (
         settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
     ):
@@ -338,18 +329,15 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     ruta = settings_path(custom_base)
     parent = ruta.parent
     try:
-        if not parent.exists():
-            parent.mkdir(parents=True, exist_ok=True)
+        if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         if not os.access(parent, os.W_OK): return None
         ensure_safe_to_modify(parent)
         cleaned_settings = _coerce_and_verify(validate(values))
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
-    except (UnsafePathError, TypeError, ValueError, OSError):
-        return None
+    except (UnsafePathError, TypeError, ValueError, OSError): return None
     
     temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
     bak_path = ruta.with_suffix(".bak")
-    
     try:
         with open(temp_path, "w", encoding="utf-8") as f:
             f.write(serialized)
@@ -363,8 +351,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         os.replace(temp_path, ruta)
         _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
         return ruta
-    except (OSError, IOError, PermissionError, UnsafePathError):
-        return None
+    except (OSError, IOError, PermissionError, UnsafePathError): return None
     finally:
         if temp_path.exists():
             try:
