@@ -1243,3 +1243,10 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-20T14:38:09` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de errores en `save_manifest` y `load_manifest` añadiendo validaciones de tipo y estructura más estrictas ante el acceso a archivos, evitando que condiciones de carrera o corrupción menor detengan el flujo de la aplicación.
 - `2026-09-20T14:38:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T14:38:09` Corrida terminada. Total usado hoy: 344.
+- `2026-09-20T14:45:49` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-20T14:46:12` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-20T14:46:52` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del manejo de errores en `is_file_in_use` y `_is_volume_readonly` al asegurar que los handles y buffers se gestionen de forma segura, además de añadir un filtro de seguridad adicional en `_validate_boundary_conditions` para evitar el acceso a directorios del sistema durante la creación de nuevas rutas.
+- `2026-09-20T14:47:17` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-20T14:47:33` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del sistema de validación de `settings.py` al reemplazar accesos directos al diccionario (`settings[k_val]`) por `settings.get()` con valores de respaldo, evitando `KeyError` ante archivos de configuración parcialmente corruptos o mal formados, y eliminé la mutabilidad directa en `validate` para asegurar un retorno seguro.
+- `2026-09-20T14:47:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T14:47:33` Corrida terminada. Total usado hoy: 348.

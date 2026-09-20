@@ -247,19 +247,14 @@ def _is_offline(path_str: str) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
-    """
-    Verifica bloqueos mediante intento de apertura con acceso exclusivo al handle.
-    Si el sistema deniega el acceso con error 32, el archivo está bloqueado.
-    """
+    """Verifica bloqueos mediante intento de apertura con acceso exclusivo al handle."""
     if os.name != 'nt' or not os.path.isabs(path_str) or not os.path.isfile(path_str):
         return False
     kernel32 = ctypes.windll.kernel32
-    try:
-        handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0, None, 3, 0x00000080, None)
-        if handle == -1: return ctypes.GetLastError() == 32
-        kernel32.CloseHandle(handle)
-    except (OSError, PermissionError, ctypes.ArgumentError):
-        return True
+    handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0, None, 3, 0x00000080, None)
+    if handle == -1: 
+        return ctypes.GetLastError() == 32
+    kernel32.CloseHandle(handle)
     return False
 
 @lru_cache(maxsize=128)
@@ -347,12 +342,9 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
         raise UnsafePathError(f"Junction detectada: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
     for rule in _VALIDATORS:
-        try:
-            if rule.predicate(path, current_stat):
-                code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
-                raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
-        except (OSError, PermissionError, AttributeError):
-            raise UnsafePathError(f"Error al evaluar integridad: {rule.reason.name}", SafetyValidationErrorCode.IO_ERROR)
+        if rule.predicate(path, current_stat):
+            code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
+            raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
 
 @lru_cache(maxsize=2048)
 def _is_readonly(path_str: str) -> bool:
@@ -503,6 +495,9 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
     except (OSError, RuntimeError, ValueError): pass
     if is_drive_root(target_path):
         raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS)
+    # Nueva validación de seguridad: impedir creación dentro de directorios de sistema
+    if not target_path.exists() and is_protected_path(target_path.parent):
+        raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
 
 def _get_final_path_normalized(path: Path) -> Optional[Path]:
     """Resuelve la ruta física real en disco mediante Win32 Handles para evitar redirecciones."""

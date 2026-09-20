@@ -310,16 +310,19 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Aplica consistencia forzada de tipos y reglas de negocio obligatorias."""
     for key in ConfigKey:
         k_val = key.value
+        default_val = DEFAULTS.get(k_val)
+        current_val = settings.get(k_val)
+        
         # Asegurar tipo estricto contra DEFAULTS
-        if k_val not in settings or not isinstance(settings[k_val], type(DEFAULTS[k_val])):
-            settings[k_val] = DEFAULTS[k_val]
+        if current_val is None or not isinstance(current_val, type(default_val)):
+            settings[k_val] = default_val
         # Limpieza de strings
-        if isinstance(settings[k_val], str):
-            settings[k_val] = settings[k_val].strip()
+        elif isinstance(settings[k_val], str):
+            settings[k_val] = str(settings[k_val]).strip()
             
     # Validación lógica de dependencias: Asistente requiere clave
-    if settings["asistente_activado"] and not (
-        settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)
+    if settings.get("asistente_activado") and not (
+        settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
     ):
         settings["asistente_activado"] = False
         
@@ -386,28 +389,28 @@ def get(key: str, custom_base: PathLike | None = None) -> Any:
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
     """Obtiene la clave de API priorizando la variable de entorno."""
     if env_key := os.environ.get(API_KEY_ENV_VAR, "").strip(): return env_key
-    return load(custom_base).get("asistente_clave_api", "").strip()
+    return str(load(custom_base).get("asistente_clave_api", "")).strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
     """Verifica si el asistente puede operar (necesita estar activado y tener clave)."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
-    return bool(settings.get("asistente_activado")) and bool(settings.get("asistente_clave_api", "").strip())
+    return bool(settings.get("asistente_activado")) and bool(str(settings.get("asistente_clave_api", "")).strip())
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
     """Genera un reporte legible de la configuración actual."""
     current = load(custom_base)
     api_key_env = os.environ.get(API_KEY_ENV_VAR)
-    api_key_file = current.get("asistente_clave_api", "").strip()
+    api_key_file = str(current.get("asistente_clave_api", "")).strip()
     origin = f"variable de entorno {API_KEY_ENV_VAR}" if api_key_env else ("archivo de configuración" if api_key_file else "no configurada")
     return [
         "Configuración actual", "", f"  Archivo: {settings_path(custom_base)}", "",
-        "  Apariencia", f"    Tema: {current['tema']}", f"    Acento: {current['acento']}",
-        f"    Barras visuales: {'sí' if current['mostrar_barras'] else 'no'}", "",
-        "  Comportamiento", f"    Confirmar siempre: {'sí' if current['confirmar_siempre'] else 'no'}",
-        f"    Pestaña inicial: {current['abrir_en']}", f"    Recordar carpeta: {'sí' if current['recordar_ultima_carpeta'] else 'no'}", "",
-        "  Rendimiento", f"    Duplicados desde: {current['duplicados_tamano_minimo_kb']} KB",
-        f"    Top de archivos: {current['top_archivos']}", f"    Análisis en paralelo: {'sí' if current['analisis_en_paralelo'] else 'no'}", "",
-        "  Asistente IA", f"    Activado: {'sí' if current['asistente_activado'] else 'no'}",
-        f"    Clave: {origin}", f"    Modelo: {current['asistente_modelo']}", ""
+        "  Apariencia", f"    Tema: {current.get('tema')}", f"    Acento: {current.get('acento')}",
+        f"    Barras visuales: {'sí' if current.get('mostrar_barras') else 'no'}", "",
+        "  Comportamiento", f"    Confirmar siempre: {'sí' if current.get('confirmar_siempre') else 'no'}",
+        f"    Pestaña inicial: {current.get('abrir_en')}", f"    Recordar carpeta: {'sí' if current.get('recordar_ultima_carpeta') else 'no'}", "",
+        "  Rendimiento", f"    Duplicados desde: {current.get('duplicados_tamano_minimo_kb')} KB",
+        f"    Top de archivos: {current.get('top_archivos')}", f"    Análisis en paralelo: {'sí' if current.get('analisis_en_paralelo') else 'no'}", "",
+        "  Asistente IA", f"    Activado: {'sí' if current.get('asistente_activado') else 'no'}",
+        f"    Clave: {origin}", f"    Modelo: {current.get('asistente_modelo')}", ""
     ]
