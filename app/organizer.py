@@ -130,20 +130,14 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
-    """
-    Comprueba si el archivo está en uso verificando el acceso de lectura (R_OK).
-    Devuelve True si el archivo no puede leerse, asumiendo que está bloqueado.
-    """
+    """Comprueba si el archivo está en uso verificando el acceso de lectura (R_OK)."""
     try:
         return not os.access(path, os.R_OK)
     except (OSError, PermissionError):
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """
-    Verifica si el destino está contenido dentro del origen para evitar 
-    que el proceso de limpieza intente borrar su propio directorio de trabajo.
-    """
+    """Verifica si el destino está contenido dentro del origen."""
     try:
         s, d = src.resolve(), dest.resolve()
         return s == d or d.is_relative_to(s)
@@ -176,7 +170,7 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 def _validate_file_attributes(src: Path) -> bool:
     """
     Valida la integridad del archivo candidato: comprueba que sea un archivo regular, 
-    que no sea una unión de directorios (junction) y que no esté bloqueado para lectura.
+    que no sea una unión de directorios y que no esté bloqueado.
     """
     try:
         st = src.stat()
@@ -188,30 +182,17 @@ def _validate_file_attributes(src: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Validador booleano centralizado para asegurar la integridad de I/O.
-    Verifica que la ruta sea segura, que no existan violaciones recursivas,
-    y que ambos puntos de operación tengan permisos de escritura y pertenezcan a la misma unidad.
+    Verifica que la ruta sea segura, sin violaciones recursivas, y con permisos de escritura.
     """
-    if not _validate_path_security(src, dest): 
-        return False
-    if not is_safe_to_modify(src): 
-        return False
+    if not _validate_path_security(src, dest): return False
+    if not is_safe_to_modify(src): return False
         
     try:
         s_res = src.resolve(strict=True)
-        # Asegurar existencia final tras resolución
         if not s_res.exists(): return False
-        
         parent = (dest.parent if not dest.exists() else dest.resolve().parent)
-        
-        if is_protected_path(parent):
-            return False
-            
-        if _is_recursive_violation(s_res, dest): 
-            return False
-            
-        if not os.access(parent, os.W_OK) or not os.access(s_res, os.W_OK): 
-            return False
-            
+        if is_protected_path(parent) or _is_recursive_violation(s_res, dest): return False
+        if not os.access(parent, os.W_OK) or not os.access(s_res, os.W_OK): return False
         return s_res.drive == parent.drive and _validate_file_attributes(s_res)
     except (OSError, RuntimeError, AttributeError):
         return False
@@ -221,10 +202,7 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     return junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
-    """
-    Decide si un directorio debe ser explorado. Usa caché para evitar consultas redundantes 
-    a `is_protected_path` y omite puntos de reparse.
-    """
+    """Decide si un directorio debe ser explorado usando una caché de protección."""
     if not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if entry.path in protected_cache: return False
     if is_protected_path(Path(entry.path)):
@@ -232,18 +210,22 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
         return False
     return True
 
+def _is_size_within_limits(size: int) -> bool:
+    """Comprueba que el archivo no esté vacío ni exceda el límite de 100GB."""
+    return 0 < size < 100_000_000_000
+
 def _is_valid_junk_file(entry: os.DirEntry) -> bool:
     """Determina si una entrada es un candidato legítimo basándose en tamaño y extensión."""
     try:
         st = entry.stat(follow_symlinks=False)
-        return (0 < st.st_size < 100_000_000_000 and 
+        return (_is_size_within_limits(st.st_size) and 
                 not (_get_win_attributes(entry) & WIN_ATTR_MASK) and
                 is_valid_junk_extension(entry.name))
     except (OSError, PermissionError):
         return False
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str]) -> None:
-    """Recorrido recursivo del sistema de archivos limitado a 50 niveles para prevenir desbordamiento."""
+    """Recorrido recursivo del sistema de archivos limitado a 50 niveles."""
     if depth > 50: return
     try:
         with os.scandir(current_dir) as it:
@@ -281,9 +263,7 @@ def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = Tru
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """
-    Mueve los archivos candidatos a una carpeta de cuarentena tras asegurar la ruta destino.
-    """
+    """Mueve los archivos candidatos a una carpeta de cuarentena."""
     if not files: return None
     try:
         dest_base = Path(review_dir).expanduser().resolve()
@@ -301,7 +281,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     return dest_base
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Calcula disponibilidad de espacio y resuelve colisiones de nombre antes de mover."""
+    """Calcula disponibilidad de espacio y resuelve colisiones antes de mover."""
     if not _is_safe_to_move(junk_file, dest_base): return None
     try:
         usage = shutil.disk_usage(dest_base.anchor)
@@ -311,7 +291,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     return _generate_unique_target(dest_base / safe_name)
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Borra permanentemente los archivos en cuarentena tras validar que es seguro hacerlo."""
+    """Borra permanentemente los archivos en cuarentena tras validar seguridad."""
     try:
         dest = Path(review_dir).expanduser().resolve()
         if not dest.is_dir() or not is_safe_to_modify(dest): return 0

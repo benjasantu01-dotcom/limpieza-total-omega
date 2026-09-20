@@ -218,7 +218,10 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     return results[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Consulta la API Win32 GlobalMemoryStatusEx para obtener estadísticas de RAM."""
+    """
+    Realiza llamada a la API Win32 'GlobalMemoryStatusEx' mediante ctypes.
+    No requiere privilegios de administrador, pero puede fallar en entornos restringidos.
+    """
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "GlobalMemoryStatusEx"):
         return _EMPTY_SNAPSHOT
@@ -317,7 +320,10 @@ def _is_system_process(pid: int) -> bool:
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: int) -> Optional[Path]:
-    """Resuelve la ruta física de un proceso mediante Psapi.GetModuleFileNameExW."""
+    """
+    Intenta resolver la ruta absoluta de un ejecutable mediante 'Psapi.GetModuleFileNameExW'.
+    Aplica filtros de seguridad contra enlaces simbólicos, puntos de reparse y rutas no locales.
+    """
     if not proc_handle: return None
     try:
         psapi = getattr(ctypes.windll, "psapi", None)
@@ -344,7 +350,10 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
-    """Verifica permisos y estado de un proceso antes de intentar liberar su RAM."""
+    """
+    Verifica si es seguro operar sobre un handle de proceso.
+    Valida: proceso activo, acceso al ejecutable, y protección mediante 'is_safe_to_modify'.
+    """
     if not isinstance(proc_handle, int) or proc_handle == 0: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
     
@@ -368,7 +377,10 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
         return False, "Error interno durante la verificación de integridad."
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Ejecuta EmptyWorkingSet con validaciones de seguridad exhaustivas."""
+    """
+    Ejecuta 'EmptyWorkingSet' tras realizar validaciones de seguridad exhaustivas.
+    Esta acción libera memoria activa del proceso hacia la lista de espera del SO.
+    """
     if not _is_windows: return False, "Operación solo soportada en Windows."
     
     try:

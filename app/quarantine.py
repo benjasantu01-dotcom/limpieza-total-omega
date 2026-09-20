@@ -275,7 +275,14 @@ def _ensure_path_ownership(path: Path) -> None:
             raise UnsafePathError("Propiedad de directorio no coincide con usuario.")
 
 def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Resuelve la ruta absoluta del sandbox y asegura las políticas de seguridad mínimas."""
+    """
+    Resuelve la ruta absoluta del sandbox y asegura las políticas de seguridad mínimas.
+    
+    Args:
+        base: Ruta base donde se alojará el directorio de cuarentena.
+    Returns:
+        Objeto Path absoluto y validado del sandbox.
+    """
     if not base:
         raise ValueError("El directorio base no puede estar vacío.")
     try:
@@ -758,6 +765,8 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
         file_path: Ruta del archivo en cuarentena.
         item: Objeto QuarantineItem con metadatos registrados.
         base_path: Directorio raíz de la cuarentena.
+    Returns:
+        True si es seguro eliminar el ítem del disco.
     """
     if not file_path.exists() or not file_path.is_file() or file_path.is_symlink() or is_protected_path(file_path):
         return False
