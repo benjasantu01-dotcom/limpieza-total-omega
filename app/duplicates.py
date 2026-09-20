@@ -192,7 +192,10 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Realiza un recorrido recursivo por los directorios recolectando archivos candidatos válidos."""
+    """
+    Realiza un recorrido recursivo por los directorios recolectando archivos válidos.
+    Utiliza un conjunto (visited_files) para evitar procesar la misma ruta dos veces.
+    """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     visited_files: set[Path] = set()
 
@@ -201,7 +204,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Respetar restricciones de seguridad antes de procesar la entrada
                         path = Path(entry.path).resolve()
                         if not is_safe_to_modify(path) or is_protected_path(path):
                             continue
@@ -228,7 +230,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Clasifica una lista de archivos en subgrupos usando el resultado de una función de hash."""
+    """Clasifica archivos en subgrupos basados en un hash específico."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if (digest := hash_func(path)):
@@ -237,7 +239,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Determina si aplicar hash completo directamente o primero parcial basado en el tamaño."""
+    """Aplica hashing parcial y completo jerárquicamente según el tamaño del archivo."""
     if not paths or size < 0:
         return []
 
@@ -254,7 +256,7 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
 
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
-    """Orquestador principal que recolecta, filtra y agrupa archivos duplicados."""
+    """Orquestador: inicia la recolección, filtra por tamaño y ejecuta el proceso de hashing."""
     size_map = _collect_candidates(directories, min_size, skip_protected)
     groups: List[DuplicateGroup] = []
     for size, paths in size_map.items():
@@ -269,7 +271,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def _get_keeper_score(path: Path) -> Optional[Tuple[float, int]]:
-    """Calcula una puntuación de prioridad basada en fecha de modificación y longitud de ruta."""
+    """Genera una tupla de score (mtime, len_path) para determinar la preferencia de conservación."""
     try:
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
@@ -278,7 +280,7 @@ def _get_keeper_score(path: Path) -> Optional[Tuple[float, int]]:
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
-    """Selecciona el mejor archivo para conservar (más antiguo, menor longitud de ruta)."""
+    """Selecciona el mejor archivo para conservar: el más antiguo y con ruta más corta."""
     if not group or not isinstance(group, DuplicateGroup) or not group.paths:
         return None
     
@@ -293,7 +295,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Genera una representación textual legible de un grupo de duplicados."""
+    """Convierte un objeto DuplicateGroup en líneas de texto para la UI."""
     if not group or not isinstance(group, DuplicateGroup) or not group.paths:
         return ["Error: Grupo inválido o vacío"]
         

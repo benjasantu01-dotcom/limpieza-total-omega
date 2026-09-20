@@ -8,12 +8,12 @@ hacerte perder sesiones, contraseñas guardadas o marcadores, así que acá
 solo se reportan las carpetas y su tamaño; la limpieza pasa por la carpeta
 de revisión de `organizer.py`, con confirmación del usuario.
 
-A propósito se listan solo carpetas de CACHÉ (datos regenerables) y nunca
-las de credenciales o marcadores, ni siquiera para reportar su tamaño.
-La exclusión se gestiona mediante la constante `NEVER_TOUCH`.
-
-Diseño testeable: `detect_profiles` recibe la carpeta base por parámetro,
-así en CI se puede simular una instalación con carpetas temporales.
+GARANTÍAS DE OPERACIÓN:
+- El módulo nunca escala privilegios ni intenta modificar el disco.
+- Las excepciones en el acceso a archivos (archivos bloqueados, permisos) 
+  se capturan silenciosamente para evitar abortos en escaneos masivos.
+- Solo se procesan rutas contenidas en el perfil de usuario (LOCALAPPDATA) 
+  para prevenir la navegación fuera del scope permitido.
 """
 
 from __future__ import annotations

@@ -203,9 +203,7 @@ def grade_color(grade: Optional[str]) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> ColorHex:
-    """
-    Calcula el color asociado a un puntaje de salud (0-100).
-    """
+    """Calcula el color asociado a un puntaje de salud (0-100)."""
     if score is None: 
         return C_TEXT_MUTED
     try:
@@ -221,9 +219,7 @@ def score_color(score: Union[float, int, None]) -> ColorHex:
 @lru_cache(maxsize=64)
 def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
-    """
-    Genera una representación visual de texto de una barra de progreso.
-    """
+    """Genera una representación visual de texto de una barra de progreso."""
     try:
         valor = float(percent) if percent is not None else 0.0
         if not math.isfinite(valor): valor = 0.0
@@ -251,9 +247,7 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
-    """
-    Mezcla linealmente dos colores RGB según un ratio (0.0 a 1.0).
-    """
+    """Mezcla linealmente dos colores RGB según un ratio (0.0 a 1.0)."""
     try:
         if start == end: return start
         r1, g1, b1 = _hex_to_rgb(start)
@@ -411,8 +405,10 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
             canvas.create_line(canvas_x + seg.start_index, canvas_y, canvas_x + seg.end_index, canvas_y, fill=seg.hex_color, width=h_val)
     except (TypeError, ValueError, Exception): pass
 
-def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Renderiza un gráfico de anillo circular para métricas de porcentaje."""
+def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, 
+              canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, 
+              track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
+    """Renderiza un gráfico de anillo circular; si percent es None, no renderiza."""
     if percent is None: return
     try:
         val = max(0.0, min(100.0, float(percent)))
@@ -420,6 +416,7 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         thick = max(2, min(int(thickness), (diam // 2) - 1))
         borde: float = float(thick) / 2.0
         caja = (canvas_x + borde, canvas_y + borde, canvas_x + diam - borde, canvas_y + diam - borde)
+        # track es el color de fondo del anillo (usualmente un gris neutro o superficie)
         canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)
         if val > 0: 
             fill_color = fill or score_color(val)

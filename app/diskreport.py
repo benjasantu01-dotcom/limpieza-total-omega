@@ -227,8 +227,17 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador recursivo que recorre directorios ignorando rutas protegidas.
-    Yields (ruta_archivo, tamaño_bytes).
+    Generador recursivo de archivos mediante un stack LIFO.
+    
+    Implementa prevención de ciclos mediante `visited_inodes` (dev, ino) para evitar
+    recorrer en bucle enlaces simbólicos o puntos de reparse mal configurados.
+    
+    Args:
+        directory: Ruta base para comenzar.
+        skip_protected: Si es True, omite rutas protegidas vía `safety.is_protected_path`.
+        
+    Yields:
+        Tupla (ruta_archivo: Path, tamaño_bytes: int).
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -314,7 +323,11 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Ejecuta un recorrido único por el árbol para calcular métricas globales.
+    Realiza una pasada única sobre el árbol de archivos.
+    
+    Agrega estadísticamente el tamaño de los archivos, agrupa por extensión
+    en `ext_stats` y mantiene un min-heap de tamaño fijo `limit` para
+    identificar los archivos más pesados eficientemente en O(N log K).
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -322,7 +335,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        # La existencia ya es validada internamente por walk_files/os.scandir
         total_bytes += size_bytes
         total_files += 1
         
@@ -331,6 +343,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         stat.total_bytes += size_bytes
         stat.count += 1
         
+        # Mantenimiento de Min-Heap para los archivos más grandes encontrados
         if limit > 0 and size_bytes > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size_bytes, path))
@@ -358,7 +371,6 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if data.top_files:
         lines.extend(["", "Mayores archivos:"])
         for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
-            # Valida que el path sea seguro y exista antes de mostrarlo en reporte
             try:
                 if p and p.exists():
                     lines.append(f"  {format_size(s):>10}  {p}")
