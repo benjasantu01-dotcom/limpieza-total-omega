@@ -231,7 +231,9 @@ def _sum_directory_recursive(
                 
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        if not is_safe_to_modify(Path(entry.path)) or is_protected_path(Path(entry.path)):
+                        p_entry = Path(entry.path)
+                        # Chequeo de seguridad explícito antes de entrar en la subcarpeta
+                        if not is_safe_to_modify(p_entry) or is_protected_path(p_entry):
                             continue
                         directory_total_bytes += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base_abs, depth + 1)
                     elif entry.is_file(follow_symlinks=False):

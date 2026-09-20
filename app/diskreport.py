@@ -85,9 +85,9 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if directory is None:
         return None
     try:
-        raw_path = Path(directory).resolve(strict=True)
+        raw_path = Path(directory).resolve()
         
-        if not raw_path.is_dir():
+        if not raw_path.exists() or not raw_path.is_dir():
             return None
             
         if is_protected_path(raw_path) or not os.access(raw_path, os.R_OK):
