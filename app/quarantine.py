@@ -348,6 +348,10 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
         raise PermissionError("Directorio de cuarentena sin permisos de escritura.")
 
     try:
+        # Prevenir movimientos entre diferentes sistemas de archivos (Device ID check)
+        if resolved_source.stat().st_dev != resolved_dest_dir.stat().st_dev:
+            raise UnsafePathError("Operación entre dispositivos no permitida.")
+            
         if os.path.samefile(resolved_source, resolved_dest_dir):
             raise UnsafePathError("Operación circular detectada.")
     except OSError:
@@ -362,9 +366,6 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     if _is_within_quarantine_sandbox(resolved_source, resolved_dest_dir):
         raise UnsafePathError("Archivo ya se encuentra en sandbox.")
         
-    if resolved_source.stat().st_dev != resolved_dest_dir.stat().st_dev:
-        raise UnsafePathError("Dispositivos incompatibles.")
-    
     ensure_safe_to_modify(resolved_source, allow_sensitive=True)
     if _is_file_locked(resolved_source):
         raise IOError("Archivo en uso.")
@@ -715,6 +716,7 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         if destination.exists():
             raise FileExistsError("El destino ya existe.")
         
+        # Validación de dispositivos para evitar cruce de FS
         if stored_file.stat().st_dev != destination.parent.resolve().stat().st_dev:
             raise UnsafePathError("Dispositivos incompatibles.")
         

@@ -501,11 +501,14 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
                      raise UnsafePathError("Volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
         except (OSError, AttributeError, ctypes.ArgumentError) as e:
              raise UnsafePathError(f"Fallo al consultar unidad: {e}", SafetyValidationErrorCode.IO_ERROR)
+    
+    # Prevenir modificación del entorno de la propia aplicación
     try:
         app_root = Path(os.getcwd()).resolve()
         if target_path == app_root or app_root in target_path.parents:
             raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     except (OSError, RuntimeError, ValueError): pass
+    
     if is_drive_root(target_path):
         raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS)
 

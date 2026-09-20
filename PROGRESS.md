@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 31 | 1 | 8 | 2 | 24 |
+| 2026-09-18 | 31 | 1 | 8 | 2 | 20 |
 | 2026-09-19 | 147 | 12 | 23 | 14 | 154 |
-| 2026-09-20 | 38 | 3 | 8 | 6 | 33 |
+| 2026-09-20 | 40 | 3 | 9 | 6 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - robustez ante casos límite: **45**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **40**
+- seguridad defensiva: **42**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
@@ -33,12 +33,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **22**
 - `assistant.py`: **20**
 - `browser.py`: **20**
-- `safety.py`: **19**
+- `safety.py`: **20**
 - `memory.py`: **18**
 - `diskreport.py`: **17**
 - `duplicates.py`: **17**
 - `settings.py`: **17**
-- `quarantine.py`: **15**
+- `quarantine.py`: **16**
 - `organizer.py`: **14**
 - `branding.py`: **12**
 - `scanner.py`: **10**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T03:54:10` **safety.py** (seguridad defensiva): Se añadió una validación específica en `_validate_boundary_conditions` para detectar si el usuario intenta operar dentro del directorio de trabajo de la aplicación (`os.getcwd()`), previniendo que la herramienta modifique su propio entorno de ejecución o sus scripts de configuración, fortaleciendo la seguridad defensiva.
+- `2026-09-20T03:53:10` **quarantine.py** (seguridad defensiva): Se implementó un chequeo de 'Device ID' mediante `os.stat().st_dev` en `_check_isolation_safety` para prevenir ataques de secuestro de enlace o movimiento de archivos entre diferentes sistemas de archivos, reforzando la integridad del sandbox y evitando posibles desbordamientos de permisos o comportamientos inesperados del sistema operativo.
 - `2026-09-20T03:48:31` **organizer.py** (seguridad defensiva): Se ha robustecido `_is_safe_for_disk_op` añadiendo una comprobación explícita para evitar que `shutil.move` cruce límites de unidades de disco (cross-device move), lo cual puede fallar silenciosamente o dejar archivos en estados intermedios inconsistentes.
 - `2026-09-20T03:48:17` **memory.py** (seguridad defensiva): Se ha mejorado la robustez del manejo de procesos en `_get_process_path` mediante la validación explícita de la existencia del ejecutable y la restricción adicional de rutas mediante `is_protected_path`, asegurando que ninguna operación de trim pueda afectar involuntariamente a procesos con privilegios elevados o bloqueados por política de seguridad, manteniendo la consistencia con las reglas del proyecto.
 - `2026-09-20T03:42:44` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de cómputo ante entradas maliciosas o corruptas mediante una validación explícita en `_evaluate_rules` y `compute_score`, asegurando que las factorías de mensajes y el procesamiento de métricas no propaguen excepciones inesperadas o datos no imprimibles.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-20T03:05:02` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` y sus ayudantes asegurando que el cierre del `proc_handle` mediante `CloseHandle` sea incondicional y resistente a errores de tipo, además de añadir validaciones preventivas contra entradas nulas o malformadas que podrían disparar excepciones en las llamadas a la API de Win32.
 - `2026-09-20T03:02:30` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del `_evaluate_rules` añadiendo un manejo de excepciones exhaustivo para evitar que un error en una factoría de mensajes mal construida bloquee el cálculo completo del puntaje de salud del sistema.
 - `2026-09-20T02:53:15` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `PermissionError` y `OSError` al intentar resolver la ruta de entrada en `_validate_root`, evitando que el programa se bloquee al acceder a rutas con permisos restringidos o sistemas de archivos inaccesibles.
-- `2026-09-20T02:53:05` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `_sum_directory_recursive` ante archivos bloqueados o en uso (típicos al escanear cachés de navegadores activos) mediante la captura explícita de `PermissionError` y `OSError` durante la lectura de atributos con `entry.stat()`, evitando que el escaneo completo aborte por una sola falla de acceso.
-- `2026-09-20T02:52:08` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` mediante la validación estricta de tipos en los datos de entrada (evitando que listas o diccionarios anidados pasen como métricas válidas), protegiendo al sistema ante entradas inesperadas o malformadas provenientes de fuentes externas.

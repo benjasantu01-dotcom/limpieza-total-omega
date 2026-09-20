@@ -1267,3 +1267,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-20T03:48:31` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha robustecido `_is_safe_for_disk_op` añadiendo una comprobación explícita para evitar que `shutil.move` cruce límites de unidades de disco (cross-device move), lo cual puede fallar silenciosamente o dejar archivos en estados intermedios inconsistentes.
 - `2026-09-20T03:48:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T03:48:31` Corrida terminada. Total usado hoy: 88.
+- `2026-09-20T03:52:26` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-09-20T03:53:10` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se implementó un chequeo de 'Device ID' mediante `os.stat().st_dev` en `_check_isolation_safety` para prevenir ataques de secuestro de enlace o movimiento de archivos entre diferentes sistemas de archivos, reforzando la integridad del sandbox y evitando posibles desbordamientos de permisos o comportamientos inesperados del sistema operativo.
+- `2026-09-20T03:53:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-20T03:54:10` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se añadió una validación específica en `_validate_boundary_conditions` para detectar si el usuario intenta operar dentro del directorio de trabajo de la aplicación (`os.getcwd()`), previniendo que la herramienta modifique su propio entorno de ejecución o sus scripts de configuración, fortaleciendo la seguridad defensiva.
+- `2026-09-20T03:54:20` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-20T03:54:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T03:54:20` Corrida terminada. Total usado hoy: 92.
