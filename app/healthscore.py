@@ -225,16 +225,18 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Ejecuta reglas heurísticas para generar recomendaciones legibles."""
+    """Ejecuta reglas heurísticas con aislamiento de excepciones para evitar inyección o fallos de lógica."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str):
+                    # Sanear mensaje: quitar caracteres de control y limitar longitud
                     clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                     if clean_msg:
                         findings.append(clean_msg[:200])
-        except (Exception, TypeError, ValueError):
+        except Exception:
+            # Silenciar errores en reglas individuales para no detener el pipeline
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 38
+- Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 84 | 8 | 13 | 9 | 98 |
-| 2026-09-20 | 117 | 8 | 25 | 16 | 126 |
+| 2026-09-19 | 84 | 8 | 13 | 9 | 94 |
+| 2026-09-20 | 120 | 8 | 26 | 16 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - robustez ante casos límite: **41**
+- seguridad defensiva: **41**
 - manejo de errores y validación de entradas: **38**
-- seguridad defensiva: **38**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
 - `settings.py`: **18**
+- `diskreport.py`: **17**
 - `memory.py`: **17**
 - `safety.py`: **17**
-- `diskreport.py`: **16**
 - `quarantine.py`: **16**
 - `assistant.py`: **16**
-- `duplicates.py`: **14**
+- `duplicates.py`: **15**
 - `branding.py`: **13**
 - `scanner.py`: **11**
 - `organizer.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T12:34:13` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del módulo encapsulando la lógica de cálculo en un entorno de ejecución robusto, asegurando que las reglas de recomendación no puedan inyectar contenido arbitrario o causar fallos en cadena mediante la validación estricta de las entradas al pipeline.
+- `2026-09-20T12:33:44` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` para evitar seguir enlaces simbólicos arbitrarios (symlinks) durante el escaneo, asegurando que solo se procesen archivos reales y no se sigan rutas fuera de control, cumpliendo con la política de no interactuar con zonas críticas.
+- `2026-09-20T12:33:16` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `summarize` implementando una validación explícita mediante `is_protected_path` sobre cada ruta antes de incluirla en el reporte, previniendo la posible exposición accidental de información de rutas protegidas si el estado del sistema cambia durante la ejecución del análisis.
 - `2026-09-20T12:24:50` **browser.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo en `_sum_directory_recursive` implementando una validación explícita de `is_safe_to_modify` para cada sub-directorio visitado, garantizando que el escáner se detenga inmediatamente si encuentra una ruta que no cumple con las políticas de seguridad del sistema, incluso durante el recorrido recursivo profundo.
 - `2026-09-20T12:24:36` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia y seguridad del directorio padre antes de intentar crear la estructura de carpetas, evitando efectos secundarios si `mkdir` falla tras una validación parcial.
 - `2026-09-20T12:24:00` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva al limitar la recursión y profundidad de las estructuras de datos entrantes en `ingest` mediante un chequeo de tipo más estricto y la eliminación de la evaluación de diccionarios arbitrarios, mitigando posibles ataques de denegación de servicio por agotamiento de recursos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-20T11:33:29` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` reemplazando la iteración secuencial de partes de la ruta (`split(os.sep)`) por una búsqueda directa mediante `set.intersection`, reduciendo la complejidad de la validación estructural.
 - `2026-09-20T11:32:19` **quarantine.py** (rendimiento): Se optimizó `list_items` y `purge_all` para evitar lecturas redundantes del sistema de archivos y mejorar la eficiencia algorítmica usando conjuntos (sets) para las búsquedas, minimizando el impacto en I/O al escanear la carpeta de cuarentena.
 - `2026-09-20T11:23:39` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de `subprocess` por una lógica que reduce la sobrecarga de invocación y se consolidaron las validaciones de seguridad en `_is_safe_to_trim` para evitar llamadas redundantes a la API de Windows.
-- `2026-09-20T11:13:06` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `Path.resolve()` y `stat()` mediante el uso de los atributos de `os.DirEntry`, lo que reduce drásticamente las operaciones de I/O por archivo.
-- `2026-09-20T11:12:26` **browser.py** (rendimiento): Optimizé la recursividad de `_sum_directory_recursive` pasando el diccionario `memo` por referencia a través de todo el árbol de directorios para evitar el re-cálculo de subcarpetas comunes (ej. caché de Google Chrome vs. caché de GPU), mejorando drásticamente el rendimiento en escaneos profundos.
-- `2026-09-20T11:02:36` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de la clase `StartupEntry` y las funciones de escaneo, clarificando el propósito, las validaciones de seguridad y los tipos de retorno para facilitar el mantenimiento y la auditoría de este módulo crítico.

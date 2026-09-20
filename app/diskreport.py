@@ -370,11 +370,10 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     if data.top_files:
         lines.extend(["", "Mayores archivos:"])
-        # Ordenamos descendente para visualización
         for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
             try:
-                # Verificación estricta antes de reportar, por si el archivo fue eliminado recientemente
-                if p.exists():
+                # Verificación estricta de seguridad y existencia antes de reportar
+                if not is_protected_path(p) and p.exists():
                     lines.append(f"  {format_size(s):>10}  {str(p)}")
             except (OSError, PermissionError):
                 continue
