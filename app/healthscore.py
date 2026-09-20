@@ -143,6 +143,7 @@ _RULES_MAP: Final[List[PipelineEntry]] = [
 ]
 
 _PIPELINE: Final[List[PipelineEntry]] = _RULES_MAP
+_INITIAL_BREAKDOWN: Final[Dict[MetricKey, int]] = {k: 0 for k in WEIGHTS.keys()}
 
 @dataclass
 class SystemMetrics:
@@ -235,10 +236,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Pipeline de evaluación: mapea SystemMetrics -> HealthResult."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
-        return HealthResult(0, "F", {k: 0 for k in WEIGHTS.keys()}, ["Error: Instancia de métricas no válida."])
+        return HealthResult(0, "F", _INITIAL_BREAKDOWN.copy(), ["Error: Instancia de métricas no válida."])
     
     recommendations: List[str] = []
-    metric_breakdown: Dict[MetricKey, int] = {k: 0 for k in WEIGHTS.keys()}
+    metric_breakdown = _INITIAL_BREAKDOWN.copy()
     accumulated_score: float = 0.0
     
     for entry in _PIPELINE:

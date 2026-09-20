@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 146 | 11 | 23 | 14 | 154 |
-| 2026-09-20 | 58 | 3 | 11 | 8 | 76 |
+| 2026-09-19 | 144 | 11 | 22 | 14 | 153 |
+| 2026-09-20 | 59 | 3 | 11 | 8 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - seguridad defensiva: **43**
-- robustez ante casos límite: **38**
 - manejo de errores y validación de entradas: **38**
-- rendimiento: **30**
+- robustez ante casos límite: **36**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **20**
+- `healthscore.py`: **20**
 - `settings.py`: **19**
-- `healthscore.py`: **19**
+- `safety.py`: **19**
 - `browser.py`: **18**
 - `memory.py`: **18**
 - `assistant.py`: **16**
-- `quarantine.py`: **15**
 - `diskreport.py`: **15**
 - `duplicates.py`: **14**
 - `organizer.py`: **14**
+- `quarantine.py`: **14**
 - `branding.py`: **11**
 - `scanner.py`: **10**
 - `startup.py`: **8**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T06:47:03` **healthscore.py** (rendimiento): Optimizé `compute_score` cacheando las claves de `_PIPELINE` y reutilizando el diccionario de pesos, evitando la recreación constante de estructuras y búsquedas de claves en cada iteración del bucle principal.
 - `2026-09-20T06:37:25` **branding.py** (rendimiento): Optimicé el renderizado de gráficos vectoriales mediante la pre-calculación y cacheo de las tuplas de coordenadas (escaladas y desplazadas) y la reutilización eficiente de segmentos de color, evitando cálculos en tiempo de ejecución durante la animación del canvas.
 - `2026-09-20T06:35:58` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de validación extrayendo el bloque complejo de `_ensure_settings_integrity` y `validate` hacia una estructura de "coerción de tipos" más robusta, utilizando type hints y documentación para clarificar el flujo de datos.
 - `2026-09-20T06:27:13` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de heurística y métodos de clase, clarificando los parámetros, las precondiciones y el propósito de cada validación.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-20T05:56:06` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` añadiendo una validación explícita de `fieldnames` y un manejo de errores más específico, evitando que el bucle se rompa ante entradas malformadas que no contienen los campos esperados del registro, asegurando que solo se procesen datos íntegros.
 - `2026-09-20T05:55:40` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save()` reemplazando un `os.remove` potencialmente peligroso por una verificación explícita mediante `ensure_safe_to_modify`, garantizando que el cleanup de archivos temporales mantenga las mismas garantías de seguridad que el resto del módulo.
 - `2026-09-20T05:46:11` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` capturando específicamente `PermissionError` y `OSError` al intentar obtener el handle, y aseguré que `ensure_safe_to_modify` capture fallos en `_validate_ntfs_reparse_redirection` para evitar que una excepción no controlada interrumpa el flujo del bucle principal.
-- `2026-09-20T05:45:32` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` añadiendo una validación temprana de tipos para el parámetro `source` y verificaciones de integridad críticas tras el movimiento, además de refinar los bloques `try-except` para asegurar que el estado del sistema no quede inconsistente ante fallos inesperados de E/S.
