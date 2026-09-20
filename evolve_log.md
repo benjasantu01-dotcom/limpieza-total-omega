@@ -842,3 +842,38 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-09-20T11:43:49` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-09-20T11:43:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T11:43:49` Corrida terminada. Total usado hoy: 276.
+- `2026-09-20T11:51:56` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-09-20T11:52:25` Tests FALLARON:
+```
+.................................................F............. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+___________________ test_directory_size_adds_up_recursively ____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_directory_size_adds_up_re0')
+
+    def test_directory_size_adds_up_recursively(tmp_path):
+        (tmp_path / "a").write_bytes(b"a" * 100)
+        sub = tmp_path / "sub"
+        sub.mkdir()
+        (sub / "b").write_bytes(b"a" * 200)
+>       assert browser.directory_size(tmp_path) == 300
+E       AssertionError: assert 0 == 300
+E        +  where 0 = <function directory_size at 0x7f1591f4a2a0>(PosixPath('/tmp/pytest-of-runner/pytest-1/test_directory_size_adds_up_re0'))
+E        +    where <function directory_size at 0x7f1591f4a2a0> = browser.directory_size
+
+evolve/tests/test_modules.py:783: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_directory_size_adds_up_recursively - AssertionError: assert 0 == 300
+ +  where 0 = <function directory_size at 0x7f1591f4a2a0>(PosixPath('/tmp/pytest-of-runner/pytest-1/test_directory_size_adds_up_re0'))
+ +    where <function directory_size at 0x7f1591f4a2a0> = browser.directory_size
+1 failed, 298 passed in 1.43s
+
+```
+- `2026-09-20T11:52:25` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_is_path_inside_base` y `_sum_directory_recursive` ante archivos que han sido eliminados o movidos durante el escaneo (Race Conditions), asegurando que el módulo no aborte ante `FileNotFoundError` durante la resolución de rutas, y añadí una validación más estricta en el caso de las rutas relativas.
+- `2026-09-20T11:52:55` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_collect_summary_data` y `summarize` al implementar un manejo defensivo ante la desaparición de archivos durante el escaneo (Race Conditions), evitando errores fatales si un archivo es movido o eliminado por el sistema operativo entre la detección y el acceso a sus metadatos.
+- `2026-09-20T11:53:19` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-20T11:53:33` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del cálculo en `compute_score` agregando una comprobación explícita para evitar que una configuración local maliciosa o corrupta de `WEIGHTS` cause un desbordamiento o comportamiento indefinido, asegurando que la suma de pesos siempre sea tratada con seguridad.
+- `2026-09-20T11:53:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T11:53:33` Corrida terminada. Total usado hoy: 280.

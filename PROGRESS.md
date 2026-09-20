@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 38
+- Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 231
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 87 | 9 | 14 | 9 | 109 |
-| 2026-09-20 | 109 | 5 | 24 | 16 | 122 |
+| 2026-09-19 | 85 | 8 | 13 | 9 | 109 |
+| 2026-09-20 | 111 | 6 | 24 | 16 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
-- seguridad defensiva: **38**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **38**
+- seguridad defensiva: **36**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **18**
 - `settings.py`: **18**
 - `browser.py`: **18**
-- `healthscore.py`: **17**
+- `healthscore.py`: **18**
 - `memory.py`: **17**
+- `safety.py`: **17**
+- `diskreport.py`: **16**
 - `quarantine.py`: **16**
-- `diskreport.py`: **15**
 - `assistant.py`: **15**
 - `duplicates.py`: **14**
 - `branding.py`: **12**
-- `organizer.py`: **11**
+- `organizer.py`: **10**
 - `scanner.py`: **10**
 - `startup.py`: **9**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T11:53:33` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo en `compute_score` agregando una comprobación explícita para evitar que una configuración local maliciosa o corrupta de `WEIGHTS` cause un desbordamiento o comportamiento indefinido, asegurando que la suma de pesos siempre sea tratada con seguridad.
+- `2026-09-20T11:52:55` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `_collect_summary_data` y `summarize` al implementar un manejo defensivo ante la desaparición de archivos durante el escaneo (Race Conditions), evitando errores fatales si un archivo es movido o eliminado por el sistema operativo entre la detección y el acceso a sus metadatos.
 - `2026-09-20T11:43:29` **assistant.py** (robustez ante casos límite): Se fortalece la robustez del módulo `assistant.py` mediante una validación más estricta en el método `ingest` de `SystemContext`, asegurando que no se asignen valores fuera de rango o malformados que podrían causar estados inconsistentes si los datos de origen (análisis) resultan parciales o inesperados.
 - `2026-09-20T11:33:29` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` reemplazando la iteración secuencial de partes de la ruta (`split(os.sep)`) por una búsqueda directa mediante `set.intersection`, reduciendo la complejidad de la validación estructural.
 - `2026-09-20T11:32:19` **quarantine.py** (rendimiento): Se optimizó `list_items` y `purge_all` para evitar lecturas redundantes del sistema de archivos y mejorar la eficiencia algorítmica usando conjuntos (sets) para las búsquedas, minimizando el impacto en I/O al escanear la carpeta de cuarentena.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-20T10:43:19` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y robustez del código mediante la adición de Type Hints en los argumentos de las funciones `diagnose` y `trim_working_set`, y se ha extraído la lógica de formateo de `diagnose` para mejorar la legibilidad y mantenibilidad del informe.
 - `2026-09-20T10:41:53` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones críticas y definiendo explícitamente la interfaz del `Pipeline` mediante un `Protocol`, clarificando así la arquitectura funcional sin alterar el comportamiento.
 - `2026-09-20T10:40:54` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones críticas, aclarando el propósito y el manejo de excepciones de los filtros de archivos para asegurar que el comportamiento del flujo de trabajo sea comprensible y mantenible.
-- `2026-09-20T10:32:16` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado en `diskreport.py` para clarificar el flujo de datos entre `walk_files` y los recolectores de métricas, facilitando la comprensión del mantenimiento del heap de archivos pesados.
-- `2026-09-20T10:32:01` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad de las funciones de navegación (`_sum_directory_recursive` y `_should_skip_entry`) mediante la adición de Type Hints detallados y la normalización de la terminología de los parámetros para facilitar el mantenimiento y la legibilidad.

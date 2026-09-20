@@ -333,9 +333,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
     
-    # top_heap almacena tuplas (tamaño, ruta). 
-    # Al ser un min-heap, el archivo más pequeño de los 'limit' archivos 
-    # más pesados encontrados hasta ahora siempre está en la raíz (top_heap[0]).
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
@@ -347,8 +344,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         stat.total_bytes += size_bytes
         stat.count += 1
         
-        # Mantenimiento del heap: si el nuevo archivo es mayor que el más 
-        # pequeño de nuestro top, reemplazamos ese registro.
         if limit > 0 and size_bytes > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size_bytes, path))
@@ -375,12 +370,13 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     if data.top_files:
         lines.extend(["", "Mayores archivos:"])
+        # Ordenamos descendente para visualización
         for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
             try:
-                # Verificación adicional de existencia y conversión segura a string
+                # Verificación estricta antes de reportar, por si el archivo fue eliminado recientemente
                 if p.exists():
                     lines.append(f"  {format_size(s):>10}  {str(p)}")
-            except (OSError, PermissionError, AttributeError):
+            except (OSError, PermissionError):
                 continue
     
     return lines

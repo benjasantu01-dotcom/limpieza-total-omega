@@ -239,8 +239,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Pipeline de evaluación: mapea SystemMetrics -> HealthResult, validando integridad absoluta."""
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
-        return HealthResult(0, "F", _INITIAL_BREAKDOWN.copy(), ["Error: Instancia de métricas no válida."])
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite or sum(WEIGHTS.values()) != 100:
+        return HealthResult(0, "F", _INITIAL_BREAKDOWN.copy(), ["Error: Configuración o métricas no válidas."])
     
     recommendations: List[str] = []
     metric_breakdown = _INITIAL_BREAKDOWN.copy()
