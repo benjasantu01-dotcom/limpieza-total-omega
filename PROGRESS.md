@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 51 | 2 | 14 | 6 | 49 |
+| 2026-09-18 | 48 | 2 | 13 | 6 | 49 |
 | 2026-09-19 | 147 | 12 | 23 | 14 | 154 |
-| 2026-09-20 | 2 | 0 | 1 | 3 | 26 |
+| 2026-09-20 | 5 | 0 | 2 | 3 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **43**
-- legibilidad y documentación: **42**
+- manejo de errores y validación de entradas: **43**
+- legibilidad y documentación: **43**
 - seguridad defensiva: **41**
-- manejo de errores y validación de entradas: **41**
-- rendimiento: **33**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **21**
 - `safety.py`: **20**
+- `healthscore.py`: **20**
+- `assistant.py`: **19**
 - `browser.py`: **18**
-- `assistant.py`: **18**
-- `memory.py`: **16**
-- `settings.py`: **16**
-- `duplicates.py`: **15**
+- `settings.py`: **17**
 - `quarantine.py`: **15**
 - `diskreport.py`: **15**
+- `memory.py`: **15**
+- `duplicates.py`: **14**
 - `organizer.py`: **12**
 - `branding.py`: **11**
 - `main.py`: **9**
 - `scanner.py`: **8**
-- `startup.py`: **6**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T01:31:00` **assistant.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los métodos clave de `SystemContext` y `ProblemCriterion` para aclarar el propósito de la validación y evitar que futuros cambios comprometan la integridad de los datos de entrada.
+- `2026-09-20T01:30:20` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validaciones granulares contra valores `None` y tipos inesperados al iterar el `csv.DictReader`, evitando que errores en una fila aislada corten el procesamiento de todo el registro.
+- `2026-09-20T01:29:52` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save` y `load` mediante la validación explícita de `ruta.parent` antes de cualquier operación de I/O, previniendo errores silenciosos de `permission` o `os.replace` al manejar configuraciones en rutas no estándar, cumpliendo con el enfoque de manejo de errores.
 - `2026-09-20T01:20:55` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_check_file_integrity` al reemplazar el bloque `try-except` genérico (que silenciaba errores de validación) por un manejo específico que preserva las excepciones de seguridad, asegurando que cualquier violación de integridad detenga la operación correctamente.
 - `2026-09-20T00:52:14` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar fallos en la conversión de datos externos, garantizando que un valor numérico mal formateado no interrumpa el proceso de ingesta y que el contexto mantenga un estado consistente incluso ante datos parciales.
 - `2026-09-19T14:28:28` **settings.py** (seguridad defensiva): Se ha añadido `os.path.realpath` en la validación de rutas para prevenir ataques de "path traversal" o confusión mediante enlaces simbólicos que apunten fuera de la jerarquía permitida, fortaleciendo la seguridad defensiva al resolver la ruta real antes de cualquier chequeo de seguridad.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T13:47:39` **settings.py** (robustez ante casos límite): Se mejoró `load` para manejar escenarios de archivos dañados o bloqueados durante la lectura mediante un `try-except` más robusto que no solo captura errores de JSON, sino que también gestiona explícitamente archivos con contenido basura o permisos denegados, asegurando que la aplicación siempre retorne una configuración válida en lugar de fallar silenciosamente o truncar estados.
 - `2026-09-19T13:47:09` **scanner.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en `_safe_stat` y se añadió una validación defensiva en el bucle principal de `scan_directory` para capturar entradas que pudieran haber sido eliminadas o bloqueadas entre la obtención del iterador y el procesamiento (`FileNotFoundError`), evitando que una condición de carrera sencilla detenga el escaneo completo.
 - `2026-09-19T13:36:53` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_for_disk_op` y `_validate_path_security` para prevenir errores de acceso ante rutas con caracteres inválidos, rutas inexistentes después de validaciones previas (condición de carrera) o problemas de resolución de unidades, asegurando que `ensure_safe_to_modify` nunca se ejecute sobre rutas malformadas o inaccesibles.
-- `2026-09-19T13:29:06` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_target_choice_changed` al implementar una validación explícita mediante `is_safe_target_dir` antes de asignar una ruta personalizada, evitando la propagación de estados inválidos a través de `self.scan_target` y añadiendo protección adicional ante excepciones durante el acceso a rutas.
-- `2026-09-19T13:27:02` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de `compute_score` asegurando que si las métricas contienen valores `NaN` o `Inf` (no finitos), la función devuelva un estado de error manejable en lugar de propagar valores numéricos erróneos a los componentes de UI.
-- `2026-09-19T13:26:37` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante archivos que se eliminan o cambian de permiso durante la iteración (concurrencia) y corregí una posible excepción fatal al usar `samefile` sobre rutas que podrían haberse vuelto inválidas, añadiendo un chequeo preventivo de existencia.

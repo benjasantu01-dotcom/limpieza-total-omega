@@ -1077,3 +1077,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-20T01:21:09` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-20T01:21:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T01:21:09` Corrida terminada. Total usado hoy: 32.
+- `2026-09-20T01:29:20` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-09-20T01:29:52` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `save` y `load` mediante la validación explícita de `ruta.parent` antes de cualquier operación de I/O, previniendo errores silenciosos de `permission` o `os.replace` al manejar configuraciones en rutas no estándar, cumpliendo con el enfoque de manejo de errores.
+- `2026-09-20T01:30:20` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo validaciones granulares contra valores `None` y tipos inesperados al iterar el `csv.DictReader`, evitando que errores en una fila aislada corten el procesamiento de todo el registro.
+- `2026-09-20T01:31:00` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Documenté con docstrings claros y tipado los métodos clave de `SystemContext` y `ProblemCriterion` para aclarar el propósito de la validación y evitar que futuros cambios comprometan la integridad de los datos de entrada.
+- `2026-09-20T01:31:17` 🛑 Propuesta bloqueada por la guardia en branding.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: FontSizesDict, PaletteDict
+- `2026-09-20T01:31:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T01:31:17` Corrida terminada. Total usado hoy: 36.

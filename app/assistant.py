@@ -267,7 +267,7 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
 class SystemContext:
     """
     Agregador de estado del sistema utilizado para diagnósticos.
-    Implementa validación de integridad en el ingreso de métricas.
+    Implementa validación de integridad para evitar métricas malformadas o peligrosas.
     """
     score: Optional[int] = None
     grade: str = ""
@@ -284,7 +284,7 @@ class SystemContext:
     analyzed: bool = False
 
     def get_metric(self, key: str, default: float) -> float:
-        """Accede de forma eficiente a una métrica numérica almacenada con validación."""
+        """Obtiene una métrica del contexto, aplicando un valor por defecto si no existe o es inválida."""
         try:
             val = getattr(self, key, default)
             return float(val) if isinstance(val, (int, float)) else default
@@ -293,7 +293,7 @@ class SystemContext:
 
     @property
     def is_empty(self) -> bool:
-        """Verifica si el contexto contiene datos útiles."""
+        """Verifica si el contexto contiene datos útiles tras el análisis."""
         if not self.analyzed: return True
         return self.score is None or not isinstance(self.score, int) or self.score < 0
 
@@ -304,11 +304,11 @@ class SystemContext:
 
     @property
     def is_valid_structure(self) -> bool:
-        """Valida que el grado de salud sea un texto seguro."""
+        """Valida que el grado de salud (string) no contenga inyecciones o caracteres prohibidos."""
         return _ensure_safe_text(self.grade) if self.grade else True
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> bool:
-        """Intenta actualizar un campo del contexto validando tipo y rango."""
+        """Valida y asigna un valor individual al campo correspondiente si cumple el contrato MetricSpec."""
         val = _get_source_value(source, key)
         if val is None or not spec.is_valid_type(val):
             return False
@@ -323,15 +323,15 @@ class SystemContext:
         return False
 
     def _clean_grade(self, val: Any) -> str:
-        """Limpia caracteres de control y valida seguridad en el string del grado."""
+        """Limpia el string del grado de salud eliminando caracteres no alfanuméricos."""
         if not isinstance(val, str): return ""
         clean = _CONTROL_CHARS_REGEX.sub(" ", val)[:10].strip()
         return clean if _ensure_safe_text(clean) else ""
 
     def ingest(self, source: Any) -> bool:
         """
-        Ingesta datos externos al contexto mediante validación estricta,
-        asegurando que solo se importen valores numéricos o strings seguros.
+        Carga datos externos hacia el contexto tras validar la integridad de cada campo.
+        Retorna True solo si al menos una métrica fue importada exitosamente.
         """
         if source is None or _is_input_too_deep_or_complex(source):
             return False
@@ -365,13 +365,13 @@ class Answer:
         return self.source == "gemini"
 
 def _validate_context_integrity(ctx: SystemContext) -> bool:
-    """Verifica que el contexto no contenga métricas físicamente imposibles."""
+    """Verifica que las métricas del contexto se encuentren dentro de rangos físicamente posibles."""
     return ctx.junk_mb >= 0 and ctx.duplicate_mb >= 0
 
 def _is_safe_text_structure(text: str) -> bool:
     """
-    Ejecuta un chequeo multidimensional de seguridad sobre el texto para detectar
-    posibles inyecciones o caracteres de control malintencionados.
+    Chequeo profundo de seguridad: busca patrones de inyección de rutas, 
+    comandos de PowerShell o caracteres de control en textos recibidos.
     """
     if not text: return True
     if any(ord(c) < 32 and c not in '\n\r\t' for c in text): return False
@@ -390,7 +390,7 @@ def _is_safe_text_structure(text: str) -> bool:
     )
 
 def _ensure_safe_text(text: Any) -> bool:
-    """Wrapper de seguridad para validar el tipo y contenido de strings externos."""
+    """Wrapper final para validar que cualquier texto sea seguro, corto y libre de caracteres de control."""
     if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
         return False
     if _CONTROL_CHARS_REGEX.search(text):
@@ -398,7 +398,7 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _get_source_value(source: Any, key: str) -> Any:
-    """Acceso seguro restringido a atributos de datos (evita acceso a métodos)."""
+    """Acceso seguro a atributos: previene la ejecución de métodos o acceso a dunders."""
     if not isinstance(key, str) or key.startswith("_"): return None
     if isinstance(source, dict):
         try: return source.get(key)

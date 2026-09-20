@@ -334,9 +334,14 @@ def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
+    parent = ruta.parent
     try:
-        if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
-        ensure_safe_to_modify(ruta.parent)
+        if not parent.exists():
+            parent.mkdir(parents=True, exist_ok=True)
+        # Validar permisos de escritura en el contenedor antes de intentar salvar
+        if not os.access(parent, os.W_OK):
+            return None
+        ensure_safe_to_modify(parent)
         cleaned_settings = _ensure_settings_integrity(validate(values))
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
     except (UnsafePathError, TypeError, ValueError, OSError):
@@ -346,7 +351,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     bak_path = ruta.with_suffix(".bak")
     
     try:
-        ensure_safe_to_modify(ruta.parent)
         with open(temp_path, "w", encoding="utf-8") as f:
             f.write(serialized)
             f.flush()
