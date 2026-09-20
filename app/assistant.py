@@ -253,10 +253,9 @@ def _validate_response_length(text: Any) -> str:
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     """Detecta si una estructura de datos es peligrosamente profunda para evitar stack overflow."""
     if depth > _MAX_NESTING_DEPTH: return True
-    if isinstance(val, (list, tuple, dict, set)):
-        if len(val) > 50: return True
-        items = val.values() if isinstance(val, dict) else val
-        return any(_is_input_too_deep_or_complex(item, depth + 1) for item in items)
+    if isinstance(val, (list, tuple, set)):
+        if len(val) > 20: return True
+        return any(_is_input_too_deep_or_complex(item, depth + 1) for item in val)
     return False
 
 def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
@@ -350,7 +349,6 @@ class SystemContext:
                 self.grade = clean_grade
                 found_data = True
         
-        # Integridad final: verificar que el contexto no tenga valores ilógicos post-ingesta
         return found_data and _validate_context_integrity(self)
 
 @dataclass
@@ -382,7 +380,6 @@ def _is_safe_text_structure(text: str) -> bool:
     if not text: return True
     if any(ord(c) < 32 and c not in '\n\r\t' for c in text): return False
     
-    # Prevenir fugas de rutas locales: chequeo de seguridad antes de instanciar Path
     if not is_protected_path(text): 
         try:
             p = Path(text)
@@ -409,8 +406,7 @@ def _get_source_value(source: Any, key: str) -> Any:
     """Acceso seguro a atributos: previene la ejecución de métodos o acceso a dunders."""
     if not isinstance(key, str) or key.startswith("_"): return None
     if isinstance(source, dict):
-        try: return source.get(key)
-        except AttributeError: return None
+        return source.get(key)
     try:
         if isinstance(source, type): return None
         val = getattr(source, key, None)

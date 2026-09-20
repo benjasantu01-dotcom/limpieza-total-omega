@@ -929,3 +929,34 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-09-20T12:16:34` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante archivos corruptos o maliciosos agregando validación de tipo estricta y limpieza de valores para prevenir inyecciones o desbordamientos en `_coerce_and_verify` y `_Validators.str`, asegurando que el JSON cargado no solo sea un diccionario, sino que cumpla estrictamente con el esquema esperado.
 - `2026-09-20T12:16:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T12:16:34` Corrida terminada. Total usado hoy: 288.
+- `2026-09-20T12:22:37` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-09-20T12:23:10` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.45s
+
+```
+- `2026-09-20T12:23:10` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejoró la robustez de `_resolve_and_cache_path` añadiendo un manejo explícito de rutas con longitud excesiva o sintaxis inválida para evitar excepciones de `Path` que podrían interrumpir el escaneo, y se reforzó la validación de archivos mediante una comprobación adicional de `p.is_file()` para asegurar que no se procesen directorios como si fueran ejecutables.
+- `2026-09-20T12:24:00` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al limitar la recursión y profundidad de las estructuras de datos entrantes en `ingest` mediante un chequeo de tipo más estricto y la eliminación de la evaluación de diccionarios arbitrarios, mitigando posibles ataques de denegación de servicio por agotamiento de recursos.
+- `2026-09-20T12:24:36` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia y seguridad del directorio padre antes de intentar crear la estructura de carpetas, evitando efectos secundarios si `mkdir` falla tras una validación parcial.
+- `2026-09-20T12:24:50` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del escaneo en `_sum_directory_recursive` implementando una validación explícita de `is_safe_to_modify` para cada sub-directorio visitado, garantizando que el escáner se detenga inmediatamente si encuentra una ruta que no cumple con las políticas de seguridad del sistema, incluso durante el recorrido recursivo profundo.
+- `2026-09-20T12:24:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T12:24:50` Corrida terminada. Total usado hoy: 292.

@@ -223,6 +223,10 @@ def _sum_directory_recursive(
     if root_abs in memo:
         return memo[root_abs]
 
+    # Seguridad defensiva adicional: verificar si la ruta actual es segura de visitar
+    if not is_safe_to_modify(Path(root_abs)) or is_protected_path(Path(root_abs)):
+        return 0
+
     if depth > MAX_SCAN_DEPTH or not _is_path_inside_base(root_abs, root_base_abs):
         return 0
 
@@ -235,7 +239,6 @@ def _sum_directory_recursive(
                 
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        # La recursión usa el mismo diccionario memo para optimizar accesos repetidos
                         directory_total_bytes += _sum_directory_recursive(
                             entry.path, is_junction_fn, kernel32, memo, root_base_abs, depth + 1
                         )
