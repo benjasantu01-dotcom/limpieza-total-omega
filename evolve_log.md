@@ -1063,3 +1063,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-20T01:00:22` ➖ Sin cambios en duplicates.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `_collect_candidates` y `group_by_size` encapsulando la verificación de `is_safe_to_modify` y bloqueos de archivo dentro de un bloque `try-except` más específico y preventivo, evitando que errores de acceso en tiempo de escaneo detengan la ejecución del proceso.
 - `2026-09-20T01:00:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T01:00:22` Corrida terminada. Total usado hoy: 24.
+- `2026-09-20T01:08:56` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-09-20T01:09:22` ➖ Sin cambios en healthscore.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `compute_score` al implementar un chequeo de integridad previo para cada métrica, evitando que valores inesperados en el pipeline rompan el flujo de cálculo mediante una validación explícita de `SystemMetrics` antes de procesar el resumen.
+- `2026-09-20T01:10:33` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: He mejorado la robustez de `_safe_get_entry_value` y `_collect_settings` agregando una validación estricta contra caracteres no imprimibles y manejo de excepciones ante widgets destruidos, previniendo errores de concurrencia y corrupción de datos al guardar preferencias.
+- `2026-09-20T01:11:00` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-20T01:11:11` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-20T01:11:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T01:11:11` Corrida terminada. Total usado hoy: 28.
