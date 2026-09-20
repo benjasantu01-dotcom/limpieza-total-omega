@@ -336,7 +336,6 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
                 return None
             
             p = Path(path_str)
-            # Validar que es un archivo real, no un enlace simbólico o punto de reparse
             if not p.is_file() or p.is_symlink(): return None
             if os.path.abspath(p) != os.path.realpath(p): return None
             
@@ -350,10 +349,7 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
-    """
-    Verifica si es seguro operar sobre un handle de proceso.
-    Valida: proceso activo, acceso al ejecutable, y protección mediante 'is_safe_to_modify'.
-    """
+    """Verifica si es seguro operar sobre un handle de proceso."""
     if not isinstance(proc_handle, int) or proc_handle == 0: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
     
@@ -377,10 +373,7 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
         return False, "Error interno durante la verificación de integridad."
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Ejecuta 'EmptyWorkingSet' tras realizar validaciones de seguridad exhaustivas.
-    Esta acción libera memoria activa del proceso hacia la lista de espera del SO.
-    """
+    """Ejecuta 'EmptyWorkingSet' tras realizar validaciones de seguridad exhaustivas."""
     if not _is_windows: return False, "Operación solo soportada en Windows."
     
     try:
@@ -412,4 +405,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, OSError, ValueError, TypeError) as e:
         return False, f"Error de ejecución: {str(e)}"
     finally:
-        kernel32.CloseHandle(ctypes.c_void_p(proc_handle))
+        if isinstance(proc_handle, int) and proc_handle != 0:
+            kernel32.CloseHandle(ctypes.c_void_p(proc_handle))

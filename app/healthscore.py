@@ -247,7 +247,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             weighted_points = _clamp(round(area_ratio * entry.weight), 0.0, float(entry.weight))
             metric_breakdown[entry.area] = int(weighted_points)
             accumulated_score += weighted_points
-        except (TypeError, ValueError, ZeroDivisionError, AttributeError):
+        except Exception:
             continue
             
     final_score = int(_clamp(round(accumulated_score), 0.0, 100.0))

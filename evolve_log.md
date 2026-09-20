@@ -1196,3 +1196,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-20T02:53:15` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de `PermissionError` y `OSError` al intentar resolver la ruta de entrada en `_validate_root`, evitando que el programa se bloquee al acceder a rutas con permisos restringidos o sistemas de archivos inaccesibles.
 - `2026-09-20T02:53:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T02:53:15` Corrida terminada. Total usado hoy: 68.
+- `2026-09-20T03:01:36` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-09-20T03:02:03` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-20T03:02:30` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del `_evaluate_rules` añadiendo un manejo de excepciones exhaustivo para evitar que un error en una factoría de mensajes mal construida bloquee el cálculo completo del puntaje de salud del sistema.
+- `2026-09-20T03:03:30` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-20T03:04:48` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se implementó un mecanismo de control de estado en `_validate_environment` para garantizar que la aplicación valide recursivamente la seguridad de las rutas críticas en tiempo de ejecución, previniendo fallos por permisos denegados o rutas bloqueadas antes de que el usuario inicie cualquier tarea de E/S.
+- `2026-09-20T03:05:02` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `trim_working_set` y sus ayudantes asegurando que el cierre del `proc_handle` mediante `CloseHandle` sea incondicional y resistente a errores de tipo, además de añadir validaciones preventivas contra entradas nulas o malformadas que podrían disparar excepciones en las llamadas a la API de Win32.
+- `2026-09-20T03:05:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T03:05:02` Corrida terminada. Total usado hoy: 72.
