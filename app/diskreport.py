@@ -322,9 +322,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        if not path.exists():
-            continue
-            
+        # La existencia ya es validada internamente por walk_files/os.scandir
         total_bytes += size_bytes
         total_files += 1
         
@@ -360,9 +358,11 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if data.top_files:
         lines.extend(["", "Mayores archivos:"])
         for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
+            # Valida que el path sea seguro y exista antes de mostrarlo en reporte
             try:
-                lines.append(f"  {format_size(s):>10}  {p}")
-            except Exception:
+                if p and p.exists():
+                    lines.append(f"  {format_size(s):>10}  {p}")
+            except (OSError, PermissionError):
                 continue
     
     return lines
