@@ -280,7 +280,6 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
 def validate(raw_values: Any) -> AppSettings:
     if not _is_dict(raw_values): return DEFAULTS.copy()
     
-    # Uso de caché de integridad por hash del dict para evitar re-validaciones pesadas
     raw_hash = hash(frozenset(raw_values.items()))
     if raw_hash in _INTEGRITY_CACHE: return _INTEGRITY_CACHE[raw_hash].copy()
     
@@ -288,7 +287,8 @@ def validate(raw_values: Any) -> AppSettings:
     for key_str, raw_val in raw_values.items():
         if (key_enum := _KEY_TO_ENUM.get(key_str)):
             validator = _VALIDATOR_MAP[key_enum].func
-            if (validated_val := validator(key_enum, raw_val)) is not None:
+            validated_val = validator(key_enum, raw_val)
+            if validated_val is not None and isinstance(validated_val, type(DEFAULTS[key_enum.value])):
                 config[key_enum.value] = validated_val
     
     _INTEGRITY_CACHE[raw_hash] = config

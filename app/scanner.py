@@ -106,6 +106,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not path or not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     
+    # Verificación de existencia del archivo previo al stat para evitar race conditions
+    if not path.exists():
+        return None
+
     if entry and entry.is_file(follow_symlinks=False):
         stats = _safe_stat(entry)
         if stats and hasattr(stats, 'st_mtime') and (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
@@ -237,7 +241,8 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """Realiza un escaneo granular de un archivo específico aplicando heurísticas."""
-    if not path or is_protected_path(path): return []
+    if not path or not path.exists() or is_protected_path(path): 
+        return []
     
     findings: ScanResult = []
     if (double_ext := check_double_extension(path, entry, now_ts)):

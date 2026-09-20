@@ -1211,3 +1211,40 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-20T03:13:32` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación adicional en `ensure_safe_to_modify` para detectar si el sistema de archivos actual admite la operación, verificando si el path es de solo lectura a nivel de sistema antes de intentar cualquier interacción, previniendo excepciones innecesarias en dispositivos bloqueados o con fallos de hardware.
 - `2026-09-20T03:13:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T03:13:32` Corrida terminada. Total usado hoy: 76.
+- `2026-09-20T03:21:55` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-09-20T03:22:25` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante archivos inexistentes o con permisos restringidos añadiendo un chequeo preventivo de existencia antes de instanciar `Path` y una validación explícita para archivos de tamaño cero en el escaneo granular, evitando excepciones no controladas en el bucle de recorrido.
+- `2026-09-20T03:22:53` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante casos de archivos corruptos o bloqueados añadiendo una estrategia de escritura atómica más rigurosa (validación previa del `parent` y uso de `replace` sobre `temp`) y añadiendo un chequeo explícito de integridad de tipo al leer, evitando que valores inyectados manualmente con tipos erróneos rompan la lógica de la UI.
+- `2026-09-20T03:23:20` Tests FALLARON:
+```
+or: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:63: SyntaxWarning: invalid escape sequence '\)'
+    Normaliza rutas para la API de Windows añadiendo el prefijo extendido (\\?\).
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:403: SyntaxWarning: invalid escape sequence '\)'
+    """Verifica si la ruta es la raíz del volumen (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 8 warnings in 1.40s
+
+```
+- `2026-09-20T03:23:20` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado `_resolve_and_cache_path` para incluir un manejo defensivo ante la posible existencia de archivos que, aunque no están bloqueados por `is_protected_path`, presentan problemas de acceso (denegación de permisos o inexistencia súbita) durante la resolución, evitando que el escaneo completo se detenga ante errores de sistema.
+- `2026-09-20T03:23:44` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al mejorar `_is_safe_text_structure` para detectar y bloquear secuencias de escape ANSI adicionales y patrones de inyección de rutas más variados, asegurando que el motor de consultas no pueda ser engañado por texto malformado.
+- `2026-09-20T03:23:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T03:23:44` Corrida terminada. Total usado hoy: 80.

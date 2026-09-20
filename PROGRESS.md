@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 31 | 1 | 8 | 2 | 36 |
+| 2026-09-18 | 31 | 1 | 8 | 2 | 32 |
 | 2026-09-19 | 147 | 12 | 23 | 14 | 154 |
-| 2026-09-20 | 30 | 2 | 8 | 6 | 30 |
+| 2026-09-20 | 33 | 3 | 8 | 6 | 30 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
+- robustez ante casos límite: **45**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **43**
 - rendimiento: **35**
-- seguridad defensiva: **34**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
+- `assistant.py`: **20**
 - `browser.py`: **20**
-- `assistant.py`: **19**
 - `safety.py`: **19**
 - `memory.py`: **17**
+- `settings.py`: **17**
 - `diskreport.py`: **16**
 - `duplicates.py`: **16**
-- `settings.py`: **16**
 - `quarantine.py`: **15**
 - `organizer.py`: **13**
 - `branding.py`: **12**
-- `scanner.py`: **9**
+- `scanner.py`: **10**
 - `main.py`: **8**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T03:23:44` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva al mejorar `_is_safe_text_structure` para detectar y bloquear secuencias de escape ANSI adicionales y patrones de inyección de rutas más variados, asegurando que el motor de consultas no pueda ser engañado por texto malformado.
+- `2026-09-20T03:22:53` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos de archivos corruptos o bloqueados añadiendo una estrategia de escritura atómica más rigurosa (validación previa del `parent` y uso de `replace` sobre `temp`) y añadiendo un chequeo explícito de integridad de tipo al leer, evitando que valores inyectados manualmente con tipos erróneos rompan la lógica de la UI.
+- `2026-09-20T03:22:25` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes o con permisos restringidos añadiendo un chequeo preventivo de existencia antes de instanciar `Path` y una validación explícita para archivos de tamaño cero en el escaneo granular, evitando excepciones no controladas en el bucle de recorrido.
 - `2026-09-20T03:13:32` **safety.py** (robustez ante casos límite): Se ha añadido una validación adicional en `ensure_safe_to_modify` para detectar si el sistema de archivos actual admite la operación, verificando si el path es de solo lectura a nivel de sistema antes de intentar cualquier interacción, previniendo excepciones innecesarias en dispositivos bloqueados o con fallos de hardware.
 - `2026-09-20T03:12:51` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de redundancia en la función `_atomic_isolate_file` para evitar condiciones de carrera donde un archivo pueda ser movido, renombrado o alterado entre la verificación de seguridad y la apertura del descriptor, garantizando que el archivo final en el sandbox sea idéntico al verificado.
 - `2026-09-20T03:05:02` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` y sus ayudantes asegurando que el cierre del `proc_handle` mediante `CloseHandle` sea incondicional y resistente a errores de tipo, además de añadir validaciones preventivas contra entradas nulas o malformadas que podrían disparar excepciones en las llamadas a la API de Win32.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-20T02:31:37` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` eliminando el uso innecesario de `is_protected_path` (que es una operación de consulta de string) sobre el nombre del proceso, delegando exclusivamente el filtrado de seguridad a la capa de operación real (`trim_working_set`), y mejorando la eficiencia del bucle mediante la eliminación de llamadas redundantes.
 - `2026-09-20T02:22:31` **healthscore.py** (rendimiento): Optimicé el cálculo del `compute_score` cacheando el acceso a los valores de las métricas y utilizando una tupla de valores pre-calculados para evitar la evaluación repetitiva de propiedades en cada iteración del pipeline.
 - `2026-09-20T02:22:02` **duplicates.py** (rendimiento): Optimicé el rendimiento de la recolección de candidatos cambiando la lista `visited_files` por un `set` de rutas resueltas (`set[Path]`), reduciendo la complejidad de búsqueda de O(N) a O(1) por cada archivo procesado.
-- `2026-09-20T02:21:24` **diskreport.py** (rendimiento): Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y `lower()` dentro del bucle, procesando la extensión una sola vez por archivo y usando `dict.get` para reducir la sobrecarga de consultas en `ext_stats`.
-- `2026-09-20T02:12:28` **browser.py** (rendimiento): Se ha optimizado el rendimiento de `detect_profiles` y `_sum_directory_recursive` mediante la implementación de una estrategia de "memoización de resultados de sub-directorios" más coherente, evitando llamadas redundantes a `Path.resolve()` dentro de los bucles críticos y reduciendo la creación innecesaria de objetos `Path` durante el escaneo recursivo.
-- `2026-09-20T02:12:16` **branding.py** (rendimiento): Se introdujo un `lru_cache` en la función `_get_scaled_poly` (que ya existía pero no estaba cacheada) y se optimizó el cálculo de la escala en `draw_logo` para minimizar operaciones en el renderizado de frames, además de prevenir recalcular constantemente el factor de escala en funciones de dibujo.

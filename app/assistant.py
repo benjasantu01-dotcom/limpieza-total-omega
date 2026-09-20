@@ -195,10 +195,10 @@ _ENDPOINT: Final[str] = "https://generativelanguage.googleapis.com/v1beta/models
 _TIMEOUT_SECONDS: Final[int] = 30
 _PATH_INJECTION_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:[\\/]|/|\\|\.\.|\0|[\u202e\u202d\u200e\u200f])")
 _CONTROL_CHARS_REGEX: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f\u0080-\u009f\u202b-\u202f\u200b-\u200d\uFEFF]")
-_ANSI_ESCAPE_REGEX: Final[re.Pattern] = re.compile(r"\x1B\[[0-9;]*[mK]")
+_ANSI_ESCAPE_REGEX: Final[re.Pattern] = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 _PS_COMMAND_REGEX: Final[re.Pattern] = re.compile(r"(Get-|Remove-|Set-|Stop-|Start-)[a-zA-Z]+", re.IGNORECASE)
 _RESTRICTED_CONTENT_REGEX: Final[re.Pattern] = re.compile(r"(exec|eval|subprocess|system\s*\(|rm\s+|del\s+|cmd\.exe|powershell|reg\.exe)", re.IGNORECASE)
-_SENSITIVE_STRUCTURE_REGEX: Final[re.Pattern] = re.compile(r"(\\\\|[a-z]:\\|/etc/|\\\\UNC|C:\\Windows|System32)", re.IGNORECASE)
+_SENSITIVE_STRUCTURE_REGEX: Final[re.Pattern] = re.compile(r"(\\\\|[a-z]:\\|/etc/|\\\\UNC|C:\\Windows|System32|/proc/|/dev/)", re.IGNORECASE)
 _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
 _MODEL_NAME_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9\.\-_]{1,64}$")
 _API_KEY_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9_\-\.]{1,128}$")
@@ -377,7 +377,7 @@ def _is_safe_text_structure(text: str) -> bool:
     if not text: return True
     if any(ord(c) < 32 and c not in '\n\r\t' for c in text): return False
     
-    # Prevenir fugas de rutas locales (revisar si el texto parece una ruta absoluta/relativa)
+    # Prevenir fugas de rutas locales
     try:
         if Path(text).is_absolute() or text.startswith(("./", "../", "..\\")): return False
     except Exception: pass
