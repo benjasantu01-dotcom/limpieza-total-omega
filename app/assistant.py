@@ -44,6 +44,7 @@ import urllib.error
 import urllib.request
 import re
 import math
+import logging
 from itertools import islice
 from functools import lru_cache, wraps
 from dataclasses import dataclass, field
@@ -82,9 +83,12 @@ def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Calla
         if ctx.is_empty: return Answer("Primero analizá el sistema.")
         try:
             result = func(ctx, q)
-            return result if isinstance(result, Answer) else Answer("Error interno en asistente.")
-        except Exception:
-            return Answer("No pude procesar la información solicitada.")
+            if isinstance(result, Answer):
+                return result
+            logging.error(f"Handler {func.__name__} devolvió tipo inesperado: {type(result)}")
+        except Exception as e:
+            logging.error(f"Error en {func.__name__}: {e}")
+        return Answer("No pude procesar la información solicitada.")
     return wrapper
 
 class AssistantConfig(NamedTuple):

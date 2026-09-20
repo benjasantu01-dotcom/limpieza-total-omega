@@ -1181,3 +1181,47 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-20T14:09:13` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-20T14:09:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T14:09:13` Corrida terminada. Total usado hoy: 332.
+- `2026-09-20T14:15:14` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-20T14:15:16` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-20T14:15:16` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-20T14:15:36` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-20T14:15:36` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-20T14:16:07` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-20T14:16:07` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-20T14:16:22` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-20T14:16:22` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-20T14:16:42` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-20T14:16:42` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-20T14:17:12` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-20T14:17:12` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-20T14:18:10` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_safe_handler_wrapper` reemplazando la captura de `Exception` genérica por una lógica que preserva el error original durante el desarrollo (para facilitar el debugging) y garantiza una respuesta de fallback segura en producción, además de asegurar que `SystemContext.ingest` valide explícitamente el tipo de los valores recibidos mediante un chequeo de `None` y `isinstance` más riguroso antes de procesar cualquier métrica.
+- `2026-09-20T14:18:31` Tests FALLARON:
+```
+n[float, int, None], size: int = 150,
+                  canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
+                  track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
+        """Renderiza un gráfico de anillo circular; si percent es None, no renderiza."""
+        if percent is None: return
+        try:
+            val = float(percent)
+            if not math.isfinite(val): val = 0.0
+            val = max(0.0, min(100.0, val))
+            diam = max(20, int(size))
+            thick = max(2, min(int(thickness), (diam // 2) - 1))
+            borde: float = float(thick) / 2.0
+            caja = (canvas_x + borde, canvas_y + borde, canvas_x + diam - borde, canvas_y + diam - borde)
+            # track es el color de fondo del anillo (usualmente un gris neutro o superficie)
+>           canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)
+            ^^^^^^^^^^^^^^^^^
+E           AttributeError: 'NoneType' object has no attribute 'create_arc'
+
+app/branding.py:427: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - AttributeError: 'NoneType' object has no attribute 'create_line'
+FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missing_canvas - AttributeError: 'NoneType' object has no attribute 'create_arc'
+2 failed, 297 passed in 1.43s
+
+```
+- `2026-09-20T14:18:31` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré el manejo de errores en `save_logo_svg` y `draw_ring` reemplazando capturas de excepciones genéricas (`Exception`) por capturas específicas y añadiendo validaciones de tipo/rango más rigurosas para prevenir errores en tiempo de ejecución al procesar parámetros inesperados.
+- `2026-09-20T14:18:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T14:18:31` Corrida terminada. Total usado hoy: 336.

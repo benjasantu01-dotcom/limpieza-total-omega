@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 235
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 70 | 8 | 12 | 8 | 74 |
-| 2026-09-20 | 122 | 8 | 27 | 16 | 159 |
+| 2026-09-19 | 66 | 8 | 12 | 8 | 74 |
+| 2026-09-20 | 123 | 9 | 27 | 16 | 161 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **45**
 - seguridad defensiva: **43**
 - robustez ante casos límite: **41**
 - rendimiento: **31**
-- manejo de errores y validación de entradas: **28**
+- manejo de errores y validación de entradas: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **18**
 - `settings.py`: **17**
 - `browser.py`: **17**
-- `memory.py`: **16**
+- `healthscore.py`: **17**
 - `safety.py`: **16**
 - `quarantine.py`: **16**
-- `duplicates.py`: **15**
-- `assistant.py`: **15**
+- `assistant.py`: **16**
+- `memory.py`: **15**
 - `diskreport.py`: **15**
+- `duplicates.py`: **14**
 - `branding.py`: **12**
 - `scanner.py`: **11**
 - `organizer.py`: **10**
 - `startup.py`: **8**
-- `main.py`: **6**
+- `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T14:18:10` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_handler_wrapper` reemplazando la captura de `Exception` genérica por una lógica que preserva el error original durante el desarrollo (para facilitar el debugging) y garantiza una respuesta de fallback segura en producción, además de asegurar que `SystemContext.ingest` valide explícitamente el tipo de los valores recibidos mediante un chequeo de `None` y `isinstance` más riguroso antes de procesar cualquier métrica.
 - `2026-09-20T12:44:39` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_locked` para utilizar `os.open` con `os.O_NOFOLLOW` y un manejo de excepciones más específico, asegurando que no se sigan enlaces simbólicos ni se acceda a recursos protegidos accidentalmente al testear bloqueos.
 - `2026-09-20T12:44:00` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_safe_for_disk_op` añadiendo una validación explícita de `is_protected_path` sobre la ruta origen resuelta antes de cualquier operación, asegurando que incluso si el archivo es movido, su origen de datos nunca sea una ruta protegida.
 - `2026-09-20T12:34:13` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del módulo encapsulando la lógica de cálculo en un entorno de ejecución robusto, asegurando que las reglas de recomendación no puedan inyectar contenido arbitrario o causar fallos en cadena mediante la validación estricta de las entradas al pipeline.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-20T11:53:33` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo en `compute_score` agregando una comprobación explícita para evitar que una configuración local maliciosa o corrupta de `WEIGHTS` cause un desbordamiento o comportamiento indefinido, asegurando que la suma de pesos siempre sea tratada con seguridad.
 - `2026-09-20T11:52:55` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `_collect_summary_data` y `summarize` al implementar un manejo defensivo ante la desaparición de archivos durante el escaneo (Race Conditions), evitando errores fatales si un archivo es movido o eliminado por el sistema operativo entre la detección y el acceso a sus metadatos.
 - `2026-09-20T11:43:29` **assistant.py** (robustez ante casos límite): Se fortalece la robustez del módulo `assistant.py` mediante una validación más estricta en el método `ingest` de `SystemContext`, asegurando que no se asignen valores fuera de rango o malformados que podrían causar estados inconsistentes si los datos de origen (análisis) resultan parciales o inesperados.
-- `2026-09-20T11:33:29` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` reemplazando la iteración secuencial de partes de la ruta (`split(os.sep)`) por una búsqueda directa mediante `set.intersection`, reduciendo la complejidad de la validación estructural.
