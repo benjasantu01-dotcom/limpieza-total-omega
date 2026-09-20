@@ -919,3 +919,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-09-20T12:06:51` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `quarantine_file` ante condiciones de carrera y fallos parciales al añadir una verificación explícita de `is_safe_to_modify` justo antes de realizar la operación crítica de `unlink` en el origen, garantizando que el archivo sea aún legítimamente modificable tras la copia.
 - `2026-09-20T12:06:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T12:06:51` Corrida terminada. Total usado hoy: 284.
+- `2026-09-20T12:12:25` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-09-20T12:13:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-20T12:14:04` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-20T12:14:34` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-20T12:15:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-09-20T12:15:49` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-09-20T12:16:19` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de las heurísticas ante archivos inexistentes o bloqueados durante el recorrido, añadiendo validaciones `exists()` explícitas en `_run_file_heuristics` y un filtrado más seguro en `_is_safe_entry` para manejar correctamente rutas con nombres Unicode o caracteres especiales que pueden causar excepciones al instanciar objetos `Path`.
+- `2026-09-20T12:16:34` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante archivos corruptos o maliciosos agregando validación de tipo estricta y limpieza de valores para prevenir inyecciones o desbordamientos en `_coerce_and_verify` y `_Validators.str`, asegurando que el JSON cargado no solo sea un diccionario, sino que cumpla estrictamente con el esquema esperado.
+- `2026-09-20T12:16:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T12:16:34` Corrida terminada. Total usado hoy: 288.

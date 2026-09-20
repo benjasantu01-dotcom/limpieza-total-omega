@@ -93,11 +93,6 @@ def _is_dict(val: Any) -> TypeGuard[SettingsDict]:
     """Verifica que el objeto sea un diccionario válido para la configuración."""
     return isinstance(val, dict)
 
-def _is_app_settings(val: Any) -> TypeGuard[AppSettings]:
-    """Verifica que la estructura cumpla con el esquema AppSettings."""
-    if not isinstance(val, dict): return False
-    return all(key.value in val for key in ConfigKey)
-
 __all__ = [
     "DEFAULTS", "SETTINGS_DIR", "SETTINGS_FILE", "API_KEY_ENV_VAR",
     "VALID_THEMES", "VALID_ACCENTS", "settings_path", "load", "save",
@@ -286,7 +281,7 @@ def validate(raw_values: Any) -> AppSettings:
         if (key_enum := _KEY_TO_ENUM.get(key_str)):
             validator = _VALIDATOR_MAP[key_enum].func
             validated_val = validator(key_enum, raw_val)
-            if validated_val is not None and isinstance(validated_val, type(DEFAULTS[key_enum.value])):
+            if validated_val is not None:
                 config[key_enum.value] = validated_val
     
     _INTEGRITY_CACHE[raw_hash] = config
@@ -313,11 +308,14 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Aplica consistencia forzada de tipos y reglas de negocio obligatorias."""
-    # Asegurar que todas las llaves existan y sean del tipo correcto
     for key in ConfigKey:
         k_val = key.value
+        # Asegurar tipo estricto contra DEFAULTS
         if k_val not in settings or not isinstance(settings[k_val], type(DEFAULTS[k_val])):
             settings[k_val] = DEFAULTS[k_val]
+        # Limpieza de strings
+        if isinstance(settings[k_val], str):
+            settings[k_val] = settings[k_val].strip()
             
     # Validación lógica de dependencias: Asistente requiere clave
     if settings["asistente_activado"] and not (

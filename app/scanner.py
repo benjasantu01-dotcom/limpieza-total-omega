@@ -112,9 +112,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not path or not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     
-    if not path.exists():
-        return None
-
     if entry and entry.is_file(follow_symlinks=False):
         stats = _safe_stat(entry)
         if stats and hasattr(stats, 'st_mtime') and (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
@@ -223,7 +220,9 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
-        """Ejecuta las heurísticas registradas sobre un archivo identificado."""
+        """Ejecuta las heurísticas registradas sobre un archivo identificado verificando su existencia."""
+        if not path.exists():
+            return
         if (double_ext := check_double_extension(path, entry, self.now_ts)):
             self.results.append(double_ext)
         if ext in SUSPICIOUS_EXECUTABLE_EXT:
