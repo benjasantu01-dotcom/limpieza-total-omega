@@ -38,7 +38,10 @@ class Suspicion:
     severity: str
 
 # Alias para funciones de chequeo heurístico.
-# Recibe: Path del archivo, objeto DirEntry opcional (contexto), y timestamp actual.
+# Argumentos: 
+#   path: Ruta del archivo.
+#   entry: Objeto DirEntry opcional (contexto de escaneo).
+#   now_ts: Timestamp actual para cálculos de antigüedad.
 # Retorna: Objeto Suspicion si se detecta riesgo, None en caso contrario.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 

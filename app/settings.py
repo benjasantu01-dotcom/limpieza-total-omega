@@ -241,23 +241,26 @@ class _Validators:
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(key, text)
         return _Validators._validate_enum_str(text, key)
 
-_KEY_VALIDATOR_MAP: Final = MappingProxyType({
-    ConfigKey.MOSTRAR_BARRAS: _Validators.bool,
-    ConfigKey.ANIMACIONES: _Validators.bool,
-    ConfigKey.CONFIRMAR_SIEMPRE: _Validators.bool,
-    ConfigKey.RECORDAR_ULTIMA_CARPETA: _Validators.bool,
-    ConfigKey.ANALISIS_EN_PARALELO: _Validators.bool,
-    ConfigKey.ASISTENTE_ACTIVADO: _Validators.bool,
-    ConfigKey.ASISTENTE_ENVIAR_METRICAS: _Validators.bool,
-    ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: _Validators.int,
-    ConfigKey.TOP_ARCHIVOS: _Validators.int,
-    ConfigKey.TOP_PROCESOS: _Validators.int,
-    ConfigKey.ULTIMA_CARPETA: _Validators.path,
-})
+def _get_validator_entry(key: ConfigKey) -> _ValidatorEntry:
+    """Retorna el validador específico o el genérico para una clave dada."""
+    mapa: dict[ConfigKey, Callable[[ConfigKey, Any], Any]] = {
+        ConfigKey.MOSTRAR_BARRAS: _Validators.bool,
+        ConfigKey.ANIMACIONES: _Validators.bool,
+        ConfigKey.CONFIRMAR_SIEMPRE: _Validators.bool,
+        ConfigKey.RECORDAR_ULTIMA_CARPETA: _Validators.bool,
+        ConfigKey.ANALISIS_EN_PARALELO: _Validators.bool,
+        ConfigKey.ASISTENTE_ACTIVADO: _Validators.bool,
+        ConfigKey.ASISTENTE_ENVIAR_METRICAS: _Validators.bool,
+        ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: _Validators.int,
+        ConfigKey.TOP_ARCHIVOS: _Validators.int,
+        ConfigKey.TOP_PROCESOS: _Validators.int,
+        ConfigKey.ULTIMA_CARPETA: _Validators.path,
+    }
+    return _ValidatorEntry(mapa.get(key, _Validators.str))
 
-@lru_cache(maxsize=1)
+@lru_cache(maxsize=len(ConfigKey))
 def _get_validator_for_key(key: ConfigKey) -> _ValidatorEntry:
-    return _ValidatorEntry(_KEY_VALIDATOR_MAP.get(key, _Validators.str))
+    return _get_validator_entry(key)
 
 @lru_cache(maxsize=1)
 def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
