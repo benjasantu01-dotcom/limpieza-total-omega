@@ -909,7 +909,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _is_safe_disk_operation(self, path: Union[str, Path]) -> bool:
         """Valida que una operación de disco sea segura y permitida."""
         try:
-            p = Path(path).resolve(strict=True)
+            path_str = str(path)
+            if any(ord(c) < 32 for c in path_str): return False
+            p = Path(path_str).resolve(strict=True)
             return not p.is_symlink() and not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
         except (OSError, RuntimeError, PermissionError, ValueError):
             return False
@@ -917,7 +919,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _is_safe_file_access(self, path: Union[str, Path]) -> bool:
         """Valida que el acceso a un archivo específico sea seguro."""
         try:
-            p = Path(path).resolve(strict=True)
+            path_str = str(path)
+            if any(ord(c) < 32 for c in path_str): return False
+            p = Path(path_str).resolve(strict=True)
             return p.exists() and not p.is_symlink() and not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
         except (OSError, RuntimeError, PermissionError, ValueError):
             return False
@@ -926,7 +930,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Valida si la ruta es apta para procesamiento general."""
         if not path: return False
         try:
-            p = Path(path).resolve(strict=True)
+            path_str = str(path)
+            if any(ord(c) < 32 for c in path_str): return False
+            p = Path(path_str).resolve(strict=True)
             if p.is_symlink():
                 return False
             return not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
@@ -936,6 +942,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _verify_disk_path(self, path: str) -> bool:
         """Verifica que una ruta sea apta para análisis recursivo."""
         try:
+            if any(ord(c) < 32 for c in path): return False
             p = Path(path).resolve(strict=True)
             if p.is_symlink() or safety.is_protected_path(p): return False
             safety.ensure_safe_to_modify(p)
@@ -946,7 +953,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _is_safe_target_dir(self, path: Union[str, Path]) -> bool:
         """Valida si un directorio destino es seguro para procesamientos."""
         try:
-            p = Path(path).resolve(strict=True)
+            path_str = str(path)
+            if any(ord(c) < 32 for c in path_str): return False
+            p = Path(path_str).resolve(strict=True)
             return p.exists() and p.is_dir() and not p.is_symlink() and not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
         except (OSError, PermissionError, ValueError):
             return False

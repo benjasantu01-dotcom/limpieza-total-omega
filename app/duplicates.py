@@ -205,7 +205,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 for entry in iterator:
                     try:
                         path = Path(entry.path).resolve()
-                        if not is_safe_to_modify(path) or is_protected_path(path):
+                        if is_protected_path(path) or not is_safe_to_modify(path):
                             continue
                             
                         if entry.is_dir(follow_symlinks=False):

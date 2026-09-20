@@ -234,7 +234,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Pipeline de evaluación: mapea SystemMetrics -> HealthResult."""
+    """Pipeline de evaluación: mapea SystemMetrics -> HealthResult, validando integridad absoluta."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", _INITIAL_BREAKDOWN.copy(), ["Error: Instancia de métricas no válida."])
     
@@ -245,10 +245,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in _PIPELINE:
         try:
             area_ratio = entry.scorer(metrics)
+            if not math.isfinite(area_ratio):
+                continue
+                
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
-            # Protección contra posibles errores en el cálculo o pesos
             if entry.weight <= 0:
                 continue
                 
