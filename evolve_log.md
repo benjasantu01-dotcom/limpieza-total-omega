@@ -1056,3 +1056,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-20T00:52:14` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar fallos en la conversión de datos externos, garantizando que un valor numérico mal formateado no interrumpa el proceso de ingesta y que el contexto mantenga un estado consistente incluso ante datos parciales.
 - `2026-09-20T00:52:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T00:52:14` Corrida terminada. Total usado hoy: 20.
+- `2026-09-20T00:58:47` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-09-20T00:59:20` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-20T00:59:47` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-20T01:00:13` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-20T01:00:22` ➖ Sin cambios en duplicates.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `_collect_candidates` y `group_by_size` encapsulando la verificación de `is_safe_to_modify` y bloqueos de archivo dentro de un bloque `try-except` más específico y preventivo, evitando que errores de acceso en tiempo de escaneo detengan la ejecución del proceso.
+- `2026-09-20T01:00:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T01:00:22` Corrida terminada. Total usado hoy: 24.
