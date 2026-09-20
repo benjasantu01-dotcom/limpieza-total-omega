@@ -287,6 +287,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f = io.StringIO(csv_text.strip())
         reader = csv.DictReader(f)
         
+        # Validar campos mínimos antes de iterar
         if not reader.fieldnames or len(reader.fieldnames) < 2:
             return []
             
@@ -299,6 +300,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             val_name = row.get(f_name)
             val_cmd = row.get(f_cmd)
             
+            # Asegurar que ambos campos existan y sean strings validables
             if val_name is None or val_cmd is None:
                 continue
             

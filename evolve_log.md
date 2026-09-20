@@ -1504,3 +1504,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-20T05:46:11` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_in_use` capturando específicamente `PermissionError` y `OSError` al intentar obtener el handle, y aseguré que `ensure_safe_to_modify` capture fallos en `_validate_ntfs_reparse_redirection` para evitar que una excepción no controlada interrumpa el flujo del bucle principal.
 - `2026-09-20T05:46:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T05:46:11` Corrida terminada. Total usado hoy: 136.
+- `2026-09-20T05:54:40` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-09-20T05:55:09` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-20T05:55:40` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `save()` reemplazando un `os.remove` potencialmente peligroso por una verificación explícita mediante `ensure_safe_to_modify`, garantizando que el cleanup de archivos temporales mantenga las mismas garantías de seguridad que el resto del módulo.
+- `2026-09-20T05:56:06` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `parse_registry_csv` añadiendo una validación explícita de `fieldnames` y un manejo de errores más específico, evitando que el bucle se rompa ante entradas malformadas que no contienen los campos esperados del registro, asegurando que solo se procesen datos íntegros.
+- `2026-09-20T05:56:28` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: legibilidad y documentación).
+- `2026-09-20T05:56:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T05:56:28` Corrida terminada. Total usado hoy: 140.
