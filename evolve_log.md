@@ -877,3 +877,45 @@ FAILED evolve/tests/test_modules.py::test_directory_size_adds_up_recursively - A
 - `2026-09-20T11:53:33` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del cálculo en `compute_score` agregando una comprobación explícita para evitar que una configuración local maliciosa o corrupta de `WEIGHTS` cause un desbordamiento o comportamiento indefinido, asegurando que la suma de pesos siempre sea tratada con seguridad.
 - `2026-09-20T11:53:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T11:53:33` Corrida terminada. Total usado hoy: 280.
+- `2026-09-20T12:02:10` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-09-20T12:03:12` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-20T12:04:15` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-20T12:05:36` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `on_target_choice_changed` al implementar una validación de ruta estrictamente controlada que previene el uso de entradas mal formadas, rutas relativas riesgosas o caracteres no imprimibles, asegurando que la aplicación no intente operar sobre directorios inseguros incluso ante intentos de inyección a través del menú de selección.
+- `2026-09-20T12:06:03` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-20T12:06:28` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-20T12:06:51` Tests FALLARON:
+```
+_hash = _atomic_isolate_file(source_path, destination, original_size)
+    
+            if not source_path.exists():
+                raise RuntimeError("El archivo origen ha desaparecido inesperadamente.")
+    
+            item = _register_quarantine_item(destination, source_path, file_hash, reason, original_size, base)
+            if not item.verify_integrity(destination):
+                raise RuntimeError("Integridad post-registro fallida.")
+    
+            # Verificación final de seguridad antes del borrado del origen
+            if not is_safe_to_modify(source_path):
+                raise UnsafePathError("El origen ya no es seguro para ser eliminado.")
+    
+            try:
+                source_path.unlink()
+            except OSError as e:
+                raise RuntimeError(f"Archivo aislado, pero falló el borrado del origen: {e}")
+    
+            return item
+        except Exception as e:
+            if destination.exists():
+                _safe_unlink(destination)
+>           raise RuntimeError(f"Error durante aislamiento: {e}")
+E           RuntimeError: Error durante aislamiento: [GENERIC] El origen ya no es seguro para ser eliminado.
+
+app/quarantine.py:680: RuntimeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - RuntimeError: Error durante aislamiento: [GENERIC] El origen ya no es seguro para ser eliminado.
+1 failed, 298 passed in 1.40s
+
+```
+- `2026-09-20T12:06:51` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `quarantine_file` ante condiciones de carrera y fallos parciales al añadir una verificación explícita de `is_safe_to_modify` justo antes de realizar la operación crítica de `unlink` en el origen, garantizando que el archivo sea aún legítimamente modificable tras la copia.
+- `2026-09-20T12:06:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T12:06:51` Corrida terminada. Total usado hoy: 284.

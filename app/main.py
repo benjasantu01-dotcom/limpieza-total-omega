@@ -1334,9 +1334,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.scan_target = None
             update_label("")
         else:
+            # Sanitización robusta contra caracteres no imprimibles y validación de seguridad
+            clean_choice = "".join(c for c in choice if c.isprintable())
             try:
-                # Sanitización robusta contra caracteres no imprimibles
-                clean_choice = "".join(c for c in choice if c.isprintable())
                 target_path = Path(clean_choice).resolve(strict=True)
                 if self._is_safe_target_dir(target_path):
                     self.scan_target = str(target_path)
@@ -1344,7 +1344,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 else:
                     raise ValueError("Ruta inválida o inaccesible")
             except (OSError, ValueError, RuntimeError):
-                self.log(f"Error: La ruta {choice} no es válida o es insegura.", "Limpieza")
+                self.log(f"Error: La ruta seleccionada no es válida o es insegura.", "Limpieza")
                 self.target_choice.set("Por defecto (Temp + Descargas)")
                 self.scan_target = None
                 update_label("")
