@@ -293,6 +293,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
+    """Carga y normaliza los ajustes desde disco, usando respaldo .bak si es necesario."""
     ruta = settings_path(custom_base)
     for r in [ruta, ruta.with_suffix(".bak")]:
         try:
@@ -311,20 +312,23 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
-    """Aplica consistencia de tipos y reglas de negocio obligatorias post-validación."""
+    """Aplica consistencia forzada de tipos y reglas de negocio obligatorias."""
+    # Asegurar que todas las llaves existan y sean del tipo correcto
     for key in ConfigKey:
-        val = settings.get(key.value)
-        if not isinstance(val, type(DEFAULTS[key.value])):
-            settings[key.value] = DEFAULTS[key.value]
-    if not _is_app_settings(settings):
-        settings = {**DEFAULTS, **{k: v for k, v in settings.items() if k in DEFAULTS}}
-    if settings.get("asistente_activado") and not (
-        settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
+        k_val = key.value
+        if k_val not in settings or not isinstance(settings[k_val], type(DEFAULTS[k_val])):
+            settings[k_val] = DEFAULTS[k_val]
+            
+    # Validación lógica de dependencias: Asistente requiere clave
+    if settings["asistente_activado"] and not (
+        settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)
     ):
         settings["asistente_activado"] = False
+        
     return settings
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
+    """Serializa y guarda los ajustes a disco usando una escritura atómica (tmp + replace)."""
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     parent = ruta.parent
@@ -360,6 +364,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             except (OSError, UnsafePathError): pass
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
+    """Actualiza selectivamente las preferencias del usuario."""
     current = load(custom_base)
     modified = False
     for k, v in changes.items():
@@ -372,22 +377,27 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
+    """Restaura la configuración a los valores de fábrica."""
     save(DEFAULTS, custom_base)
     return DEFAULTS.copy()
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
+    """Obtiene un valor específico de la configuración."""
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
+    """Obtiene la clave de API priorizando la variable de entorno."""
     if env_key := os.environ.get(API_KEY_ENV_VAR, "").strip(): return env_key
     return load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
+    """Verifica si el asistente puede operar (necesita estar activado y tener clave)."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado")) and bool(settings.get("asistente_clave_api", "").strip())
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
+    """Genera un reporte legible de la configuración actual."""
     current = load(custom_base)
     api_key_env = os.environ.get(API_KEY_ENV_VAR)
     api_key_file = current.get("asistente_clave_api", "").strip()

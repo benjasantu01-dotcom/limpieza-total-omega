@@ -162,51 +162,37 @@ class Scanner:
         """Valida recursión lógica para asegurar que el escaneo no escape del directorio base."""
         return entry_path.lower().startswith(self.base_root_str)
 
-    def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """
-        Valida que la entrada sea segura para procesar:
-        1. Filtra caracteres y longitudes inválidas.
-        2. Verifica que la ruta esté contenida en el base_root.
-        3. Descarta reparse points mediante atributos de sistema.
-        4. Consulta is_protected_path para evitar rutas críticas del SO.
-        """
-        if not entry or not entry.path or not entry.name:
-            return False
-            
-        if not _is_valid_path_structure(entry.path):
-            return False
-        
-        if INVALID_TRAILING_CHARS_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name):
-            return False
-        
-        if not entry.path.lower().startswith(self.base_root_str.rstrip(os.sep)):
-            return False
-            
-        stats = _safe_stat(entry)
-        if stats and hasattr(stats, 'st_file_attributes'):
-            if bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT):
-                return False
-
-        if is_protected_path(Path(entry.path)):
-            return False
-
-        try:
-            return not entry.is_symlink()
-        except OSError:
-            return False
+    def _has_invalid_name(self, name: str) -> bool:
+        """Verifica restricciones de nombres reservados o caracteres no permitidos."""
+        return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Detecta si un directorio es una unión (Reparse Point) para evitar bucles infinitos."""
-        if entry is None:
-            return True
         stats = _safe_stat(entry)
         if stats and hasattr(stats, 'st_file_attributes'):
             return bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         return False
 
+    def _is_safe_entry(self, entry: os.DirEntry) -> bool:
+        """
+        Valida que la entrada sea segura para procesar mediante una serie de chequeos lógicos.
+        """
+        if not entry or not entry.path or not entry.name:
+            return False
+        if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
+            return False
+        if not entry.path.lower().startswith(self.base_root_str.rstrip(os.sep)):
+            return False
+        if self._is_reparse_point(entry) or is_protected_path(Path(entry.path)):
+            return False
+        try:
+            return not entry.is_symlink()
+        except OSError:
+            return False
+
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Registra directorio en el stack LIFO asegurando no procesar el mismo dos veces."""
-        if entry and entry.path and entry.path.lower() not in self.seen:
+        if entry.path.lower() not in self.seen:
             self.seen.add(entry.path.lower())
             directory_stack.append(entry.path)
 
@@ -230,8 +216,7 @@ class Scanner:
                 return
 
             if is_dir:
-                if not self._is_reparse_point(entry):
-                    self._handle_directory(entry, directory_stack)
+                self._handle_directory(entry, directory_stack)
             else:
                 self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError):
