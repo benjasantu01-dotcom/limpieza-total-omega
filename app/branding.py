@@ -56,6 +56,7 @@ class ColorSegment(NamedTuple):
     end_index: int
 
 class PaletteDict(TypedDict):
+    """Mapa de colores clave para la identidad visual de la aplicación."""
     background: ColorHex
     surface: ColorHex
     surface_alt: ColorHex
@@ -79,6 +80,7 @@ class PaletteDict(TypedDict):
     glow: ColorHex
 
 class FontSizesDict(TypedDict):
+    """Definición jerárquica de tamaños de fuente para consistencia en UI."""
     display: int
     title: int
     subtitle: int

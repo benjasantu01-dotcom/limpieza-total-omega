@@ -332,6 +332,10 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
+    
+    # top_heap almacena tuplas (tamaño, ruta). 
+    # Al ser un min-heap, el archivo más pequeño de los 'limit' archivos 
+    # más pesados encontrados hasta ahora siempre está en la raíz (top_heap[0]).
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
@@ -343,7 +347,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         stat.total_bytes += size_bytes
         stat.count += 1
         
-        # Mantenimiento de Min-Heap para los archivos más grandes encontrados
+        # Mantenimiento del heap: si el nuevo archivo es mayor que el más 
+        # pequeño de nuestro top, reemplazamos ese registro.
         if limit > 0 and size_bytes > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size_bytes, path))

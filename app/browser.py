@@ -168,10 +168,14 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
         return False
 
 
-def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
+def _should_skip_entry(
+    entry: os.DirEntry, 
+    kernel32: Optional[ctypes.WinDLL], 
+    is_junction_fn: JunctionChecker
+) -> bool:
     """
-    Determina si un nodo del sistema de archivos debe ser ignorado.
-    Realiza chequeos de exclusión, longitud de ruta, rutas UNC, junctions y atributos ocultos.
+    Determina si una entrada del sistema de archivos debe ser omitida del escaneo.
+    Aplica filtros de seguridad: exclusiones, rutas UNC, junctions y archivos ocultos.
     """
     if entry.name is None or _is_excluded_file(entry.name):
         return True
@@ -214,9 +218,15 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula el tamaño acumulado de archivos bajo un directorio usando `os.scandir`.
-    Aplica memoización para optimizar el rendimiento y valida recursivamente 
-    la contención dentro de 'root_base' y la seguridad mediante `is_safe_to_modify`.
+    Calcula el peso total de una estructura de directorios de manera recursiva.
+    
+    Args:
+        root_abs: Ruta absoluta donde comenzar el conteo.
+        is_junction_fn: Callback para verificar si una ruta es un punto de reparse.
+        kernel32: Instancia de WinDLL para chequeos de atributos de bajo nivel.
+        memo: Diccionario para cachear resultados por ruta y evitar re-procesamiento.
+        root_base_abs: Ruta raíz original para asegurar que no hay escape de scope.
+        depth: Nivel actual de profundidad para evitar recursión infinita.
     """
     if root_abs in memo:
         return memo[root_abs]
@@ -237,7 +247,9 @@ def _sum_directory_recursive(
                         # Chequeo de seguridad explícito antes de entrar en la subcarpeta
                         if not is_safe_to_modify(p_entry) or is_protected_path(p_entry):
                             continue
-                        directory_total_bytes += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base_abs, depth + 1)
+                        directory_total_bytes += _sum_directory_recursive(
+                            entry.path, is_junction_fn, kernel32, memo, root_base_abs, depth + 1
+                        )
                     elif entry.is_file(follow_symlinks=False):
                         try:
                             directory_total_bytes += int(entry.stat(follow_symlinks=False).st_size)
