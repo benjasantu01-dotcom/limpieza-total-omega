@@ -330,8 +330,9 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     
     buf = ctypes.create_unicode_buffer(1024)
     try:
+        # Se requiere un manejo seguro del puntero al handle del proceso
         chars_written = psapi.GetModuleFileNameExW(ctypes.c_void_p(proc_handle), None, buf, 1024)
-    except Exception:
+    except (ValueError, TypeError, ctypes.ArgumentError):
         return None
     
     if 0 < chars_written < 1024:
@@ -341,7 +342,7 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
         p = Path(path_str)
         try:
             return p.resolve(strict=False)
-        except Exception:
+        except (OSError, RuntimeError):
             return None
     return None
 
@@ -349,8 +350,11 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
     """Valida estado y seguridad del proceso antes de operaciones de trim."""
     kernel32 = ctypes.windll.kernel32
     exit_code = ctypes.c_ulong()
-    if not kernel32.GetExitCodeProcess(ctypes.c_void_p(proc_handle), ctypes.byref(exit_code)):
-        return False, "Imposible verificar estado."
+    try:
+        if not kernel32.GetExitCodeProcess(ctypes.c_void_p(proc_handle), ctypes.byref(exit_code)):
+            return False, "Imposible verificar estado."
+    except (ctypes.ArgumentError, OSError):
+        return False, "Error de sistema al verificar estado."
         
     if exit_code.value != STILL_ACTIVE_EXIT_CODE:
         return False, "El proceso no está activo."
@@ -379,6 +383,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         psapi = getattr(ctypes.windll, "psapi", None)
+        if not psapi or not hasattr(psapi, "EmptyWorkingSet"):
+            return False, "Función no disponible."
+
         is_safe, err = _is_safe_to_trim(proc_handle)
         if not is_safe: return False, err or "Verificación fallida."
         

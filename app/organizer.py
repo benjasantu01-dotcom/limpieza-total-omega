@@ -189,6 +189,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     Combina validaciones de seguridad de ruta, permisos de escritura y 
     prevención de errores lógicos como ciclos recursivos.
     """
+    if src is None or dest is None: return False
     if not _validate_path_security(src, dest): return False
     if not is_safe_to_modify(src): return False
         
@@ -205,6 +206,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """Wrapper para validar que el origen exista antes de proceder a la comprobación de seguridad."""
+    if junk_file is None or junk_file.path is None: return False
     return junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:

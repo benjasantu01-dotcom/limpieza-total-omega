@@ -118,7 +118,7 @@ class QuarantineItem:
         if not isinstance(data, dict):
             return None
         required: Tuple[str, ...] = ("item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at")
-        if not all(key in data for key in required):
+        if not all(key in data and data[key] is not None for key in required):
             return None
         try:
             orig_p = str(data["original_path"])
@@ -406,11 +406,13 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
         m_path = _manifest_path(quarantine_dir(base))
         if not m_path.is_file():
             return []
-        with open(m_path, "r", encoding="utf-8") as f:
-            try:
+        
+        # Lectura con manejo de errores para archivos vacíos o bloqueados
+        try:
+            with open(m_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            except json.JSONDecodeError:
-                return []
+        except (json.JSONDecodeError, OSError):
+            return []
                 
         if not isinstance(data, list):
             return []
@@ -422,7 +424,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
                 if item:
                     results.append(item)
         return results
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, UnsafePathError):
         return []
 
 
