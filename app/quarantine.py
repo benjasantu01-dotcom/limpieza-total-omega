@@ -294,7 +294,11 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         if not is_safe_to_modify(path):
             raise UnsafePathError("Directorio no cumple políticas de seguridad.")
         
-        path.mkdir(parents=True, exist_ok=True)
+        try:
+            path.mkdir(parents=True, exist_ok=True)
+        except OSError as e:
+            raise OSError(f"No se pudo crear el directorio de cuarentena: {e}")
+            
         _ensure_path_ownership(path)
         return path
     except (OSError, RuntimeError) as e:

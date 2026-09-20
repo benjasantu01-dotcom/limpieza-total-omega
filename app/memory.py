@@ -328,8 +328,11 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
     
-    buf = ctypes.create_unicode_buffer(1024)
-    if psapi.GetModuleFileNameExW(ctypes.c_void_p(proc_handle), None, buf, 1024) > 0:
+    buf_size = 1024
+    buf = ctypes.create_unicode_buffer(buf_size)
+    chars_written = psapi.GetModuleFileNameExW(ctypes.c_void_p(proc_handle), None, buf, buf_size)
+    
+    if 0 < chars_written < buf_size:
         path_str = buf.value
         # Filtro: evitar rutas UNC o dispositivos de sistema no locales
         if not path_str or any(path_str.startswith(prefix) for prefix in ("\\\\", "\\??\\", "\\Device\\")):

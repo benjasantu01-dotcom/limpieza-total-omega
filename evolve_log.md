@@ -501,3 +501,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-09-20T07:32:14` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-09-20T07:32:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T07:32:14` Corrida terminada. Total usado hoy: 176.
+- `2026-09-20T07:36:28` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-09-20T07:36:59` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_get_process_path` validando explícitamente el tamaño del búfer de caracteres para evitar lecturas parciales o truncamientos en rutas largas, asegurando que el string de la ruta sea completo antes de intentar cualquier operación de resolución.
+- `2026-09-20T07:37:24` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-20T07:38:03` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra errores de E/S durante la creación del directorio de cuarentena, añadiendo un `try-except` específico para manejar casos donde `mkdir` falle debido a permisos de solo lectura o estructuras de disco inconsistentes, mejorando la resiliencia en entornos con restricciones de seguridad extremas.
+- `2026-09-20T07:38:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-20T07:38:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T07:38:07` Corrida terminada. Total usado hoy: 180.
