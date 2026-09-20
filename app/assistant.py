@@ -331,7 +331,7 @@ class SystemContext:
     def ingest(self, source: Any) -> bool:
         """
         Carga datos externos hacia el contexto tras validar la integridad de cada campo.
-        Retorna True solo si al menos una métrica fue importada exitosamente.
+        Retorna True solo si al menos una métrica fue importada exitosamente y el contexto es íntegro.
         """
         if source is None or _is_input_too_deep_or_complex(source):
             return False
@@ -350,6 +350,7 @@ class SystemContext:
                 self.grade = clean_grade
                 found_data = True
         
+        # Integridad final: verificar que el contexto no tenga valores ilógicos post-ingesta
         return found_data and _validate_context_integrity(self)
 
 @dataclass
@@ -366,7 +367,12 @@ class Answer:
 
 def _validate_context_integrity(ctx: SystemContext) -> bool:
     """Verifica que las métricas del contexto se encuentren dentro de rangos físicamente posibles."""
-    return ctx.junk_mb >= 0 and ctx.duplicate_mb >= 0
+    return (
+        ctx.junk_mb >= 0 and 
+        ctx.duplicate_mb >= 0 and 
+        0 <= ctx.get_metric("disk_free_percent", 0.0) <= 100 and
+        0 <= ctx.get_metric("memory_available_percent", 0.0) <= 100
+    )
 
 def _is_safe_text_structure(text: str) -> bool:
     """

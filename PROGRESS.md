@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 36
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 231
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 91 | 9 | 14 | 9 | 109 |
-| 2026-09-20 | 108 | 5 | 22 | 16 | 121 |
+| 2026-09-19 | 87 | 9 | 14 | 9 | 109 |
+| 2026-09-20 | 109 | 5 | 24 | 16 | 122 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
-- seguridad defensiva: **42**
+- seguridad defensiva: **38**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **36**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **18**
-- `memory.py`: **18**
 - `safety.py`: **18**
 - `settings.py`: **18**
 - `browser.py`: **18**
+- `healthscore.py`: **17**
+- `memory.py`: **17**
 - `quarantine.py`: **16**
-- `duplicates.py`: **15**
 - `diskreport.py`: **15**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
+- `duplicates.py`: **14**
 - `branding.py`: **12**
 - `organizer.py`: **11**
 - `scanner.py`: **10**
 - `startup.py`: **9**
-- `main.py`: **7**
+- `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T11:43:29` **assistant.py** (robustez ante casos límite): Se fortalece la robustez del módulo `assistant.py` mediante una validación más estricta en el método `ingest` de `SystemContext`, asegurando que no se asignen valores fuera de rango o malformados que podrían causar estados inconsistentes si los datos de origen (análisis) resultan parciales o inesperados.
 - `2026-09-20T11:33:29` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` reemplazando la iteración secuencial de partes de la ruta (`split(os.sep)`) por una búsqueda directa mediante `set.intersection`, reduciendo la complejidad de la validación estructural.
 - `2026-09-20T11:32:19` **quarantine.py** (rendimiento): Se optimizó `list_items` y `purge_all` para evitar lecturas redundantes del sistema de archivos y mejorar la eficiencia algorítmica usando conjuntos (sets) para las búsquedas, minimizando el impacto en I/O al escanear la carpeta de cuarentena.
 - `2026-09-20T11:23:39` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de `subprocess` por una lógica que reduce la sobrecarga de invocación y se consolidaron las validaciones de seguridad en `_is_safe_to_trim` para evitar llamadas redundantes a la API de Windows.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-20T10:40:54` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones críticas, aclarando el propósito y el manejo de excepciones de los filtros de archivos para asegurar que el comportamiento del flujo de trabajo sea comprensible y mantenible.
 - `2026-09-20T10:32:16` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado en `diskreport.py` para clarificar el flujo de datos entre `walk_files` y los recolectores de métricas, facilitando la comprensión del mantenimiento del heap de archivos pesados.
 - `2026-09-20T10:32:01` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad de las funciones de navegación (`_sum_directory_recursive` y `_should_skip_entry`) mediante la adición de Type Hints detallados y la normalización de la terminología de los parámetros para facilitar el mantenimiento y la legibilidad.
-- `2026-09-20T10:31:29` **branding.py** (legibilidad y documentación): Documenté con docstrings claros y tipado estricto los diccionarios de configuración (`PaletteDict`, `FontSizesDict`) y las constantes visuales, facilitando la comprensión del contrato de diseño de la interfaz para futuros colaboradores.
