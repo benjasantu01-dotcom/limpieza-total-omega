@@ -286,10 +286,13 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        if not p.exists() or not is_safe_to_modify(p):
+        try:
+            if not p.exists() or not is_safe_to_modify(p):
+                continue
+            if score := _get_keeper_score(p):
+                candidates.append((score, p))
+        except OSError:
             continue
-        if score := _get_keeper_score(p):
-            candidates.append((score, p))
             
     return min(candidates, key=lambda x: x[0])[1] if candidates else None
 
@@ -311,7 +314,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
             if not is_safe_to_modify(path):
                 lines.append(f"   [inaccesible] {path}")
             else:
-                label = 'conservar' if (keeper is not None and path == keeper) else 'duplicado'
+                label = 'conservar' if (keeper is not None and path.resolve() == keeper.resolve()) else 'duplicado'
                 lines.append(f"   [{label}] {path}")
         except (OSError, PermissionError):
             lines.append(f"   [error de acceso] {path}")
