@@ -229,19 +229,16 @@ def _sum_directory_recursive(
                 if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue
                 
-                # Validación de seguridad de la ruta antes de procesar
                 try:
-                    entry_path = entry.path
                     if entry.is_dir(follow_symlinks=False):
-                        if not is_safe_to_modify(Path(entry_path)) or is_protected_path(Path(entry_path)):
+                        if not is_safe_to_modify(Path(entry.path)) or is_protected_path(Path(entry.path)):
                             continue
-                        directory_total_bytes += _sum_directory_recursive(entry_path, is_junction_fn, kernel32, memo, root_base_abs, depth + 1)
-                    else:
-                        # Se capturan excepciones de acceso al obtener metadatos de archivos en uso
+                        directory_total_bytes += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, root_base_abs, depth + 1)
+                    elif entry.is_file(follow_symlinks=False):
                         try:
                             directory_total_bytes += int(entry.stat(follow_symlinks=False).st_size)
                         except (OSError, PermissionError):
-                            continue
+                            pass
                 except (OSError, PermissionError):
                     continue
         

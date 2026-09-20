@@ -249,10 +249,10 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     """Mezcla linealmente dos colores RGB según un ratio (0.0 a 1.0)."""
     try:
-        if start == end: return start
         r1, g1, b1 = _hex_to_rgb(start)
         r2, g2, b2 = _hex_to_rgb(end)
         ratio = max(0.0, min(1.0, float(ratio)))
+        if not math.isfinite(ratio): ratio = 0.0
         
         return _rgb_to_hex((
             int(r1 + (r2 - r1) * ratio),
@@ -411,7 +411,9 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
     """Renderiza un gráfico de anillo circular; si percent es None, no renderiza."""
     if percent is None: return
     try:
-        val = max(0.0, min(100.0, float(percent)))
+        val = float(percent)
+        if not math.isfinite(val): val = 0.0
+        val = max(0.0, min(100.0, val))
         diam = max(20, int(size))
         thick = max(2, min(int(thickness), (diam // 2) - 1))
         borde: float = float(thick) / 2.0

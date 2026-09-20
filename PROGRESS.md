@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 138 | 11 | 22 | 14 | 151 |
-| 2026-09-20 | 62 | 4 | 13 | 9 | 80 |
+| 2026-09-19 | 135 | 11 | 22 | 14 | 150 |
+| 2026-09-20 | 65 | 4 | 13 | 9 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
-- seguridad defensiva: **39**
 - manejo de errores y validación de entradas: **38**
+- robustez ante casos límite: **37**
+- seguridad defensiva: **36**
 - rendimiento: **34**
-- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
 - `safety.py`: **19**
 - `settings.py`: **19**
-- `memory.py`: **18**
-- `browser.py`: **17**
-- `assistant.py`: **15**
+- `healthscore.py`: **19**
+- `browser.py`: **18**
+- `memory.py`: **17**
+- `assistant.py`: **16**
 - `quarantine.py`: **15**
 - `diskreport.py`: **14**
 - `duplicates.py`: **14**
 - `organizer.py`: **14**
+- `branding.py`: **11**
 - `scanner.py`: **10**
-- `branding.py`: **10**
-- `main.py`: **8**
+- `main.py`: **7**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T07:19:47` **browser.py** (robustez ante casos límite): Se mejora la robustez frente a casos límite en el escaneo de directorios, añadiendo una verificación explícita de `is_file()` antes de intentar leer su tamaño y asegurando que las excepciones en `entry.stat()` no interrumpan la agregación de tamaños de otras carpetas.
+- `2026-09-20T07:19:35` **branding.py** (robustez ante casos límite): Se reforzó la robustez de las funciones de dibujo ante valores de entrada maliciosos o corruptos (NaN, infinito, tipos inesperados) añadiendo validación explícita mediante `math.isfinite` y chequeos de rango en todas las funciones del módulo, evitando que excepciones inesperadas detengan el renderizado de la UI.
+- `2026-09-20T07:18:57` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` ante datos de entrada malformados, asegurando que el proceso de ingesta no falle silenciosamente ni acepte tipos de datos incompatibles en los campos de métricas, protegiendo la integridad del contexto ante valores `NaN` o `inf`.
 - `2026-09-20T07:07:32` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` reemplazando la lectura repetida de disco por una caché de estado consistente, utilizando el hash de la ruta y el `mtime` del archivo para evitar deserializaciones JSON innecesarias.
 - `2026-09-20T06:58:13` **quarantine.py** (rendimiento): Optimicé `list_items` y `purge_all` para evitar lecturas de disco redundantes y transformé búsquedas lineales `O(N)` en búsquedas mediante diccionarios `O(1)` utilizando el hash del nombre del archivo, mejorando significativamente el rendimiento al manejar múltiples archivos.
 - `2026-09-20T06:56:57` **main.py** (rendimiento): Se implementó un mecanismo de caché con invalidación selectiva en la actualización de las tarjetas de salud y el renderizado del indicador circular, evitando redibujados costosos e innecesarios de la interfaz cuando los valores del sistema no han cambiado.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-20T06:21:16` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de las funciones de bajo nivel en `memory.py` mediante type hints más precisos, docstrings explicativos sobre el propósito de las operaciones de sistema y la extracción del acceso a `kernel32` a una propiedad local para mejorar la claridad.
 - `2026-09-20T06:16:08` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings de nivel de módulo y función que explicitan el contrato de datos (especificando rangos y tipos esperados) y refinando los tipos de `SystemMetrics` para asegurar que el pipeline de cálculo sea autodocumentado y resiliente a cambios futuros.
 - `2026-09-20T06:06:38` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones críticas y normalicé el uso de anotaciones de tipo para mejorar la legibilidad y mantenibilidad del flujo lógico, sin alterar la funcionalidad.
-- `2026-09-20T06:06:26` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `_collect_summary_data` y `walk_files` con type hints detallados y comentarios explicativos sobre el manejo de estados, asegurando que el código sea autodocumentado para el mantenimiento a largo plazo.
-- `2026-09-20T06:05:59` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en los parámetros de las funciones, clarificando la intención de los chequeos de seguridad y añadiendo una sección de "Garantías de Operación" en el docstring principal para explicitar el comportamiento frente a errores de acceso.
-- `2026-09-20T06:05:27` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings más precisos, añadí type hints en funciones críticas (`_draw_shield_stripes` y `_draw_shield_icon_decorations`) y clarifiqué la semántica de los parámetros en `draw_ring` para asegurar que el comportamiento del renderizado sea predecible.
