@@ -195,15 +195,19 @@ def _get_sha256(path: Path) -> str:
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está bloqueado por el S.O.
-    Intenta abrir el archivo para lectura exclusiva para validar disponibilidad.
+    Intenta abrir el archivo para lectura exclusiva evitando seguir symlinks.
     """
     if not path.exists():
         return False
     try:
-        fd = os.open(path, os.O_RDONLY | os.O_EXCL)
+        # Usamos flags de bajo nivel para asegurar comportamiento predecible
+        flags = os.O_RDONLY | os.O_EXCL
+        if hasattr(os, 'O_NOFOLLOW'):
+            flags |= os.O_NOFOLLOW
+        fd = os.open(path, flags)
         os.close(fd)
         return False
-    except OSError:
+    except (OSError, PermissionError):
         return True
 
 def _safe_unlink(path: Path) -> bool:
