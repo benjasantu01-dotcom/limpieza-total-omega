@@ -330,19 +330,22 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
         raise UnsafePathError(f"Archivo ya no existe: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     try:
         current_stat = path.stat()
-    except (PermissionError, OSError):
-        raise UnsafePathError(f"Acceso denegado a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+    except (PermissionError, OSError) as e:
+        raise UnsafePathError(f"Acceso denegado a metadatos ({e}): {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     
     if getattr(current_stat, 'st_dev', 0) != initial_stat.st_dev or getattr(current_stat, 'st_ino', 0) != initial_stat.st_ino:
-        raise UnsafePathError(f"Consistencia fallida: {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
+        raise UnsafePathError(f"Consistencia fallida (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
     
     if _is_directory_junction(str(path)):
         raise UnsafePathError(f"Junction detectada: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
     for rule in _VALIDATORS:
-        if rule.predicate(path, current_stat):
-            code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
-            raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
+        try:
+            if rule.predicate(path, current_stat):
+                code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
+                raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
+        except (OSError, PermissionError, AttributeError):
+            raise UnsafePathError(f"Error al evaluar integridad: {rule.reason.name}", SafetyValidationErrorCode.IO_ERROR)
 
 @lru_cache(maxsize=2048)
 def _is_readonly(path_str: str) -> bool:

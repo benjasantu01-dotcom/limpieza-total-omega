@@ -126,11 +126,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     Verifica si un ejecutable intenta suplantar procesos críticos del sistema (ej. svchost.exe)
     al estar alojado fuera de la carpeta 'System32'.
     """
-    if path and path.name:
-        if path.name.lower() in SYSTEM_LOOKALIKES:
-            path_str = str(path).lower()
-            if SYSTEM32_LOWER not in path_str:
-                return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+        path_str = str(path).lower()
+        if SYSTEM32_LOWER not in path_str:
+            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:

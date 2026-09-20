@@ -163,7 +163,7 @@ class StartupEntry:
         """
         Normaliza y resuelve rutas físicas, utilizando caché de sesión para optimizar I/O.
         """
-        if not self.is_valid:
+        if not isinstance(path_string, str) or not self.is_valid:
             return ""
         
         try:
@@ -177,8 +177,6 @@ class StartupEntry:
             return path_string if _EXISTS_CACHE[path_string] else path_string
         
         try:
-            if any(c in norm for c in r'<>:"|?*'):
-                return ""
             p: Path = Path(norm)
             if not p.is_absolute():
                 _EXISTS_CACHE[path_string] = False
@@ -196,7 +194,7 @@ class StartupEntry:
             p_str: str = str(p)
             _EXISTS_CACHE[p_str] = True
             return p_str
-        except (OSError, ValueError, RuntimeError, TypeError, PermissionError, OSError):
+        except (OSError, ValueError, RuntimeError, TypeError, PermissionError):
             _EXISTS_CACHE[path_string] = False
             return ""
 
