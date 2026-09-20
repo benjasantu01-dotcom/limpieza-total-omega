@@ -45,6 +45,7 @@ import urllib.request
 import re
 import math
 import logging
+import operator
 from itertools import islice
 from functools import lru_cache, wraps
 from dataclasses import dataclass, field
@@ -122,8 +123,10 @@ class ProblemCriterion(NamedTuple):
     message_format: str
 
     def _evaluate_metric(self, val: float) -> bool:
-        """Ejecuta la comparación lógica entre la métrica actual y el umbral."""
-        return val < self.threshold if self.operator == "<" else val > self.threshold
+        """Ejecuta la comparación lógica entre la métrica actual y el umbral usando el operador definido."""
+        ops = {"<": operator.lt, ">": operator.gt}
+        op_func = ops.get(self.operator)
+        return op_func(val, self.threshold) if op_func else False
 
     def is_triggered_by(self, ctx: SystemContext) -> bool:
         """Determina si el contexto del sistema viola el umbral establecido."""

@@ -1250,3 +1250,9 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-20T14:47:33` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del sistema de validación de `settings.py` al reemplazar accesos directos al diccionario (`settings[k_val]`) por `settings.get()` con valores de respaldo, evitando `KeyError` ante archivos de configuración parcialmente corruptos o mal formados, y eliminé la mutabilidad directa en `validate` para asegurar un retorno seguro.
 - `2026-09-20T14:47:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T14:47:33` Corrida terminada. Total usado hoy: 348.
+- `2026-09-20T14:55:59` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-20T14:56:27` ➖ Sin cambios en startup.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `parse_registry_csv` al reemplazar el acceso por índice basado en el supuesto de que el CSV siempre tiene 2 columnas, por una validación explícita de `reader.fieldnames`, evitando `IndexError` y mejorando el manejo de datos de entrada mal formados o inesperados.
+- `2026-09-20T14:57:12` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de la lógica de comparación en `ProblemCriterion` reemplazando la lógica de control `if/else` en `_evaluate_metric` por una estructura de mapa de operadores más limpia, lo cual es una técnica recomendada para reducir la complejidad ciclomática sin cambiar el comportamiento.
+- `2026-09-20T14:57:12` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-09-20T14:57:12` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T14:57:12` Corrida terminada. Total usado hoy: 350.
