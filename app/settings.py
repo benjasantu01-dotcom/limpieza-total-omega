@@ -353,6 +353,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.write(serialized)
             f.flush()
             os.fsync(f.fileno())
+        ensure_safe_to_modify(temp_path)
         if ruta.exists():
             ensure_safe_to_modify(ruta)
             try: os.replace(ruta, bak_path)
