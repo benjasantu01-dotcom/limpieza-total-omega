@@ -1070,3 +1070,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-20T01:11:11` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-20T01:11:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T01:11:11` Corrida terminada. Total usado hoy: 28.
+- `2026-09-20T01:19:16` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-09-20T01:19:57` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-20T01:20:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-20T01:20:55` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_check_file_integrity` al reemplazar el bloque `try-except` genérico (que silenciaba errores de validación) por un manejo específico que preserva las excepciones de seguridad, asegurando que cualquier violación de integridad detenga la operación correctamente.
+- `2026-09-20T01:21:09` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-20T01:21:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T01:21:09` Corrida terminada. Total usado hoy: 32.

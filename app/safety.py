@@ -356,12 +356,9 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
         raise UnsafePathError(f"Junction detectada: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
     for rule in _VALIDATORS:
-        try:
-            if rule.predicate(path, current_stat):
-                code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
-                raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
-        except (Exception):
-            continue
+        if rule.predicate(path, current_stat):
+            code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
+            raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
 
 @lru_cache(maxsize=2048)
 def _is_readonly(path_str: str) -> bool:
