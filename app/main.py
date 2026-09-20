@@ -237,6 +237,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         # Caché y persistencia
         self._last_card_values: Dict[str, str] = {}
+        self._last_gauge_state: Tuple[int, str] = (-1, "")
         self.settings: AppSettings = {}
         self.setting_vars: Dict[str, Any] = {}
         
@@ -626,6 +627,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _draw_gauge(self, score: int, grade: str) -> None:
         """Debounce de la solicitud de redibujo del indicador circular."""
+        if (score, grade) == self._last_gauge_state:
+            return
+        self._last_gauge_state = (score, grade)
         self._debounce_action("gauge", 50, lambda: self._safe_run_ui_callback(lambda: self._render_gauge(score, grade)))
 
     @safe_ui_operation
@@ -1249,7 +1253,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._last_health_state = state_key
 
         self._safe_run_ui_callback(lambda: (
-            self._render_gauge(resultado.score, resultado.grade),
+            self._draw_gauge(resultado.score, resultado.grade),
             self._apply_card_updates(junk_mb, sospechosos, ram_libre, disco_libre),
             self._update_health_bars(resultado)
         ))

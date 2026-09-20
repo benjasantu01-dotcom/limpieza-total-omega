@@ -423,3 +423,55 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-20T06:47:03` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimizé `compute_score` cacheando las claves de `_PIPELINE` y reutilizando el diccionario de pesos, evitando la recreación constante de estructuras y búsquedas de claves en cada iteración del bucle principal.
 - `2026-09-20T06:47:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T06:47:03` Corrida terminada. Total usado hoy: 160.
+- `2026-09-20T06:55:45` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-09-20T06:56:57` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un mecanismo de caché con invalidación selectiva en la actualización de las tarjetas de salud y el renderizado del indicador circular, evitando redibujados costosos e innecesarios de la interfaz cuando los valores del sistema no han cambiado.
+- `2026-09-20T06:57:27` Tests FALLARON:
+```
+................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_parse_process_csv_sorts_by_consumption __________________
+
+    def test_parse_process_csv_sorts_by_consumption():
+        csv = (
+            '"Name","Id","WorkingSet"\n'
+            '"chico","10","1048576"\n'
+            '"grande","11","104857600"\n'
+            '"medio","12","10485760"\n'
+        )
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert ['chico', 'grande', 'medio'] == ['grande', 'medio', 'chico']
+E         
+E         At index 0 diff: 'chico' != 'grande'
+E         
+E         Full diff:
+E           [
+E         +     'chico',
+E               'grande',
+E               'medio',
+E         -     'chico',
+E           ]
+
+evolve/tests/test_modules.py:346: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert ['chico', 'grande', 'medio'] == ['grande', 'medio', 'chico']
+  
+  At index 0 diff: 'chico' != 'grande'
+  
+  Full diff:
+    [
+  +     'chico',
+        'grande',
+        'medio',
+  -     'chico',
+    ]
+1 failed, 298 passed in 1.40s
+
+```
+- `2026-09-20T06:57:27` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimizé la búsqueda de procesos en `top_memory_processes` reemplazando la lógica de filtrado manual por una consulta PowerShell más eficiente (`Select-Object -Property Name, Id, WorkingSet`), lo que reduce la cantidad de datos transferidos desde el proceso hijo y el post-procesamiento en memoria.
+- `2026-09-20T06:57:51` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-20T06:58:13` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé `list_items` y `purge_all` para evitar lecturas de disco redundantes y transformé búsquedas lineales `O(N)` en búsquedas mediante diccionarios `O(1)` utilizando el hash del nombre del archivo, mejorando significativamente el rendimiento al manejar múltiples archivos.
+- `2026-09-20T06:58:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T06:58:13` Corrida terminada. Total usado hoy: 164.

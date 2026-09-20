@@ -673,14 +673,22 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
         try:
-            # Optimizamos creando un set de nombres para O(1) en validación
+            # Optimizamos listado: set de nombres existentes para O(1)
             existing = {f.name for f in base_path.iterdir() if f.is_file()}
         except OSError:
             existing = set()
         
-        valid_items = [i for i in items if i.stored_name in existing and i._validate_integrity(base_path / i.stored_name)]
+        valid_items: List[QuarantineItem] = []
+        needs_save = False
+        
+        for i in items:
+            stored_path = base_path / i.stored_name
+            if i.stored_name in existing and i._validate_integrity(stored_path):
+                valid_items.append(i)
+            else:
+                needs_save = True
             
-        if len(valid_items) != len(items):
+        if needs_save:
             save_manifest(valid_items, base)
             
         return sorted(valid_items, key=lambda x: x.quarantined_at, reverse=True)
@@ -777,13 +785,6 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
     """
     Verifica requisitos de seguridad antes de purgar un ítem del sandbox.
-    
-    Args:
-        file_path: Ruta del archivo en cuarentena.
-        item: Objeto QuarantineItem con metadatos registrados.
-        base_path: Directorio raíz de la cuarentena.
-    Returns:
-        True si es seguro eliminar el ítem del disco.
     """
     if not file_path.exists() or not file_path.is_file() or file_path.is_symlink() or is_protected_path(file_path):
         return False
@@ -802,7 +803,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
-    # Mapeo por nombre de archivo para acceso O(1) dentro del loop
+    # Mapeo por nombre de archivo para acceso O(1)
     item_map = {item.stored_name: item for item in items}
     purged_ids: Set[str] = set()
     

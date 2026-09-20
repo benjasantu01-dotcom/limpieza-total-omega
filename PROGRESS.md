@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 232
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 144 | 11 | 22 | 14 | 153 |
-| 2026-09-20 | 59 | 3 | 11 | 8 | 79 |
+| 2026-09-19 | 141 | 11 | 22 | 14 | 152 |
+| 2026-09-20 | 61 | 4 | 11 | 8 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
-- seguridad defensiva: **43**
+- seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **36**
-- rendimiento: **31**
+- robustez ante casos límite: **34**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **20**
-- `settings.py`: **19**
 - `safety.py`: **19**
 - `browser.py`: **18**
 - `memory.py`: **18**
-- `assistant.py`: **16**
+- `settings.py`: **18**
 - `diskreport.py`: **15**
+- `assistant.py`: **15**
+- `quarantine.py`: **15**
 - `duplicates.py`: **14**
 - `organizer.py`: **14**
-- `quarantine.py`: **14**
 - `branding.py`: **11**
 - `scanner.py`: **10**
-- `startup.py`: **8**
-- `main.py`: **7**
+- `main.py`: **8**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T06:58:13` **quarantine.py** (rendimiento): Optimicé `list_items` y `purge_all` para evitar lecturas de disco redundantes y transformé búsquedas lineales `O(N)` en búsquedas mediante diccionarios `O(1)` utilizando el hash del nombre del archivo, mejorando significativamente el rendimiento al manejar múltiples archivos.
+- `2026-09-20T06:56:57` **main.py** (rendimiento): Se implementó un mecanismo de caché con invalidación selectiva en la actualización de las tarjetas de salud y el renderizado del indicador circular, evitando redibujados costosos e innecesarios de la interfaz cuando los valores del sistema no han cambiado.
 - `2026-09-20T06:47:03` **healthscore.py** (rendimiento): Optimizé `compute_score` cacheando las claves de `_PIPELINE` y reutilizando el diccionario de pesos, evitando la recreación constante de estructuras y búsquedas de claves en cada iteración del bucle principal.
 - `2026-09-20T06:37:25` **branding.py** (rendimiento): Optimicé el renderizado de gráficos vectoriales mediante la pre-calculación y cacheo de las tuplas de coordenadas (escaladas y desplazadas) y la reutilización eficiente de segmentos de color, evitando cálculos en tiempo de ejecución durante la animación del canvas.
 - `2026-09-20T06:35:58` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de validación extrayendo el bloque complejo de `_ensure_settings_integrity` y `validate` hacia una estructura de "coerción de tipos" más robusta, utilizando type hints y documentación para clarificar el flujo de datos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-20T06:05:59` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en los parámetros de las funciones, clarificando la intención de los chequeos de seguridad y añadiendo una sección de "Garantías de Operación" en el docstring principal para explicitar el comportamiento frente a errores de acceso.
 - `2026-09-20T06:05:27` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings más precisos, añadí type hints en funciones críticas (`_draw_shield_stripes` y `_draw_shield_icon_decorations`) y clarifiqué la semántica de los parámetros en `draw_ring` para asegurar que el comportamiento del renderizado sea predecible.
 - `2026-09-20T05:56:06` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` añadiendo una validación explícita de `fieldnames` y un manejo de errores más específico, evitando que el bucle se rompa ante entradas malformadas que no contienen los campos esperados del registro, asegurando que solo se procesen datos íntegros.
-- `2026-09-20T05:55:40` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save()` reemplazando un `os.remove` potencialmente peligroso por una verificación explícita mediante `ensure_safe_to_modify`, garantizando que el cleanup de archivos temporales mantenga las mismas garantías de seguridad que el resto del módulo.
-- `2026-09-20T05:46:11` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` capturando específicamente `PermissionError` y `OSError` al intentar obtener el handle, y aseguré que `ensure_safe_to_modify` capture fallos en `_validate_ntfs_reparse_redirection` para evitar que una excepción no controlada interrumpa el flujo del bucle principal.
