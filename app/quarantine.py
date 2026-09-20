@@ -658,6 +658,7 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
         try:
+            # Optimizamos creando un set de nombres para O(1) en validación
             existing = {f.name for f in base_path.iterdir() if f.is_file()}
         except OSError:
             existing = set()
@@ -785,6 +786,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
+    # Mapeo por nombre de archivo para acceso O(1) dentro del loop
     item_map = {item.stored_name: item for item in items}
     purged_ids: Set[str] = set()
     

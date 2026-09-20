@@ -208,7 +208,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             if not name or not pid_str.isdigit() or not ws_str.isdigit(): continue
             
             pid, ws = int(pid_str), int(ws_str)
-            if pid <= 0 or ws < 0 or is_protected_path(name): continue
+            if pid <= 0 or ws < 0: continue
             
             results.append(ProcessMemory(name=name, pid=pid, working_set=BytesValue(ws)))
         except (ValueError, TypeError):
