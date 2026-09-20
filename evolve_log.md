@@ -1257,3 +1257,4 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-20T14:57:12` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T14:57:12` Corrida terminada. Total usado hoy: 350.
 - `2026-09-20T15:06:15` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-20T15:16:24` Presupuesto diario agotado (350 usados). Corte hasta mañana.
