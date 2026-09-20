@@ -408,9 +408,7 @@ def _is_system_path_cached(path_str: str) -> bool:
     """Verifica si la ruta está dentro de directorios de sistema mediante comparación normalizada."""
     path_norm = os.path.normpath(path_str).lower()
     if any(path_norm.startswith(root) for root in _SYSTEM_ROOT_PATHS_SET): return True
-    for part in path_norm.split(os.sep):
-        if part in PROTECTED_DIR_NAMES: return True
-    return False
+    return bool(PROTECTED_DIR_NAMES.intersection(path_norm.split(os.sep)))
 
 @lru_cache(maxsize=4096)
 def is_protected_path(path: PathLike) -> TypeGuard[str]:

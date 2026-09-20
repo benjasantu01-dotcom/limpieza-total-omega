@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 231
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 94 | 9 | 14 | 9 | 110 |
-| 2026-09-20 | 106 | 5 | 20 | 16 | 121 |
+| 2026-09-19 | 91 | 9 | 14 | 9 | 109 |
+| 2026-09-20 | 108 | 5 | 22 | 16 | 121 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
-- seguridad defensiva: **45**
+- seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **35**
-- rendimiento: **29**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **19**
 - `healthscore.py`: **18**
 - `memory.py`: **18**
+- `safety.py`: **18**
 - `settings.py`: **18**
-- `safety.py`: **17**
-- `diskreport.py`: **16**
-- `assistant.py`: **15**
+- `browser.py`: **18**
+- `quarantine.py`: **16**
 - `duplicates.py`: **15**
-- `quarantine.py`: **15**
+- `diskreport.py`: **15**
+- `assistant.py`: **14**
 - `branding.py`: **12**
 - `organizer.py`: **11**
 - `scanner.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T11:33:29` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` reemplazando la iteración secuencial de partes de la ruta (`split(os.sep)`) por una búsqueda directa mediante `set.intersection`, reduciendo la complejidad de la validación estructural.
+- `2026-09-20T11:32:19` **quarantine.py** (rendimiento): Se optimizó `list_items` y `purge_all` para evitar lecturas redundantes del sistema de archivos y mejorar la eficiencia algorítmica usando conjuntos (sets) para las búsquedas, minimizando el impacto en I/O al escanear la carpeta de cuarentena.
 - `2026-09-20T11:23:39` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de `subprocess` por una lógica que reduce la sobrecarga de invocación y se consolidaron las validaciones de seguridad en `_is_safe_to_trim` para evitar llamadas redundantes a la API de Windows.
 - `2026-09-20T11:13:06` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `Path.resolve()` y `stat()` mediante el uso de los atributos de `os.DirEntry`, lo que reduce drásticamente las operaciones de I/O por archivo.
 - `2026-09-20T11:12:26` **browser.py** (rendimiento): Optimizé la recursividad de `_sum_directory_recursive` pasando el diccionario `memo` por referencia a través de todo el árbol de directorios para evitar el re-cálculo de subcarpetas comunes (ej. caché de Google Chrome vs. caché de GPU), mejorando drásticamente el rendimiento en escaneos profundos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-20T10:32:16` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado en `diskreport.py` para clarificar el flujo de datos entre `walk_files` y los recolectores de métricas, facilitando la comprensión del mantenimiento del heap de archivos pesados.
 - `2026-09-20T10:32:01` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad de las funciones de navegación (`_sum_directory_recursive` y `_should_skip_entry`) mediante la adición de Type Hints detallados y la normalización de la terminología de los parámetros para facilitar el mantenimiento y la legibilidad.
 - `2026-09-20T10:31:29` **branding.py** (legibilidad y documentación): Documenté con docstrings claros y tipado estricto los diccionarios de configuración (`PaletteDict`, `FontSizesDict`) y las constantes visuales, facilitando la comprensión del contrato de diseño de la interfaz para futuros colaboradores.
-- `2026-09-20T10:21:52` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_resolve_and_cache_path` añadiendo validaciones de tipo explícitas para prevenir errores de ejecución ante entradas malformadas, asegurando que `Path` siempre reciba strings válidos antes de procesar la resolución de rutas.
-- `2026-09-20T10:21:10` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las heurísticas de archivos integrando validaciones de tipo `None` y verificaciones de existencia previas para evitar excepciones innecesarias en `check_system_lookalike` y `check_double_extension`, asegurando además que las comparaciones de extensiones sean siempre consistentes mediante `lower()`.
