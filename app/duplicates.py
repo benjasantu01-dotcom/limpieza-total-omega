@@ -201,12 +201,15 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Respetar restricciones de seguridad antes de procesar la entrada
+                        path = Path(entry.path).resolve()
+                        if not is_safe_to_modify(path) or is_protected_path(path):
+                            continue
+                            
                         if entry.is_dir(follow_symlinks=False):
-                            path = Path(entry.path)
-                            if not is_junction(path) and not is_protected_path(path):
+                            if not is_junction(path):
                                 _scan_dir(path)
                         else:
-                            path = Path(entry.path).resolve()
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size >= min_size and _is_valid_candidate(path, st.st_size):
                                 if path not in visited_files:

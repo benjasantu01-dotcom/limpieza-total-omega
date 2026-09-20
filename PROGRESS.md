@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 31 | 1 | 8 | 2 | 32 |
+| 2026-09-18 | 31 | 1 | 8 | 2 | 28 |
 | 2026-09-19 | 147 | 12 | 23 | 14 | 154 |
-| 2026-09-20 | 33 | 3 | 8 | 6 | 30 |
+| 2026-09-20 | 35 | 3 | 8 | 6 | 32 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - robustez ante casos límite: **45**
 - manejo de errores y validación de entradas: **43**
+- seguridad defensiva: **37**
 - rendimiento: **35**
-- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,10 +34,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **20**
 - `browser.py`: **20**
 - `safety.py`: **19**
+- `diskreport.py`: **17**
+- `duplicates.py`: **17**
 - `memory.py`: **17**
 - `settings.py`: **17**
-- `diskreport.py`: **16**
-- `duplicates.py`: **16**
 - `quarantine.py`: **15**
 - `organizer.py`: **13**
 - `branding.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T03:34:50` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez en la detección de archivos en `_collect_candidates` asegurando que las rutas se resuelvan antes de verificar su existencia y aplicando el chequeo de seguridad antes de cualquier acceso de I/O, evitando procesar enlaces simbólicos o rutas malformadas que podrían evadir las restricciones de `safety.py`.
+- `2026-09-20T03:34:38` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_collect_summary_data` y las funciones que lo consumen, añadiendo una validación de `path.exists()` dentro del bucle de recorrido para prevenir errores ante archivos que son eliminados o bloqueados por el sistema durante la ejecución del escaneo, manteniendo la integridad del proceso de reporte sin detenerse inesperadamente.
 - `2026-09-20T03:23:44` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva al mejorar `_is_safe_text_structure` para detectar y bloquear secuencias de escape ANSI adicionales y patrones de inyección de rutas más variados, asegurando que el motor de consultas no pueda ser engañado por texto malformado.
 - `2026-09-20T03:22:53` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos de archivos corruptos o bloqueados añadiendo una estrategia de escritura atómica más rigurosa (validación previa del `parent` y uso de `replace` sobre `temp`) y añadiendo un chequeo explícito de integridad de tipo al leer, evitando que valores inyectados manualmente con tipos erróneos rompan la lógica de la UI.
 - `2026-09-20T03:22:25` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes o con permisos restringidos añadiendo un chequeo preventivo de existencia antes de instanciar `Path` y una validación explícita para archivos de tamaño cero en el escaneo granular, evitando excepciones no controladas en el bucle de recorrido.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-20T02:42:59` **settings.py** (rendimiento): Optimicé el rendimiento de carga y validación mediante la implementación de una caché de integridad (`_INTEGRITY_CACHE`) y la eliminación de llamadas redundantes a `is_safe_to_modify` dentro de los validadores, consolidando las verificaciones de rutas bajo el cacheo de `_Validators._run_safety_checks`.
 - `2026-09-20T02:32:38` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando las búsquedas en el manifiesto de listas a diccionarios (`dict`), reduciendo la complejidad algorítmica de O(N²) a O(N) al realizar validaciones masivas.
 - `2026-09-20T02:31:37` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` eliminando el uso innecesario de `is_protected_path` (que es una operación de consulta de string) sobre el nombre del proceso, delegando exclusivamente el filtrado de seguridad a la capa de operación real (`trim_working_set`), y mejorando la eficiencia del bucle mediante la eliminación de llamadas redundantes.
-- `2026-09-20T02:22:31` **healthscore.py** (rendimiento): Optimicé el cálculo del `compute_score` cacheando el acceso a los valores de las métricas y utilizando una tupla de valores pre-calculados para evitar la evaluación repetitiva de propiedades en cada iteración del pipeline.
-- `2026-09-20T02:22:02` **duplicates.py** (rendimiento): Optimicé el rendimiento de la recolección de candidatos cambiando la lista `visited_files` por un `set` de rutas resueltas (`set[Path]`), reduciendo la complejidad de búsqueda de O(N) a O(1) por cada archivo procesado.

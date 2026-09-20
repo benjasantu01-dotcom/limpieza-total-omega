@@ -322,6 +322,9 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
+        if not path.exists():
+            continue
+            
         total_bytes += size_bytes
         total_files += 1
         
