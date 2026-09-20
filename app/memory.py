@@ -268,12 +268,13 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     global _proc_cache_time, _proc_cache_data
     if not _is_windows: return []
     
-    if (time.time() - _proc_cache_time) > 60:
+    now = time.time()
+    if (now - _proc_cache_time) > 60:
         try:
             proc = subprocess.run(PS_QUERY_CMD, capture_output=True, text=True, timeout=3, check=False)
             if proc.returncode == 0 and proc.stdout:
                 _proc_cache_data = parse_windows_process_csv(proc.stdout, limit=50)
-                _proc_cache_time = time.time()
+                _proc_cache_time = now
         except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): 
             _proc_cache_data = []
             
@@ -322,90 +323,68 @@ def _is_system_process(pid: int) -> bool:
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: int) -> Optional[Path]:
-    """
-    Resuelve la ruta absoluta del ejecutable mediante Psapi.GetModuleFileNameExW.
-    Valida contra enlaces simbólicos, puntos de reparse y rutas no locales.
-    """
+    """Resuelve la ruta absoluta del ejecutable mediante Psapi.GetModuleFileNameExW."""
     if not proc_handle or proc_handle == -1: return None
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
     
-    buf_size = 1024
-    buf = ctypes.create_unicode_buffer(buf_size)
+    buf = ctypes.create_unicode_buffer(1024)
     try:
-        chars_written = psapi.GetModuleFileNameExW(ctypes.c_void_p(proc_handle), None, buf, buf_size)
+        chars_written = psapi.GetModuleFileNameExW(ctypes.c_void_p(proc_handle), None, buf, 1024)
     except Exception:
         return None
     
-    if 0 < chars_written < buf_size:
+    if 0 < chars_written < 1024:
         path_str = buf.value
-        if not path_str or any(path_str.startswith(prefix) for prefix in ("\\\\", "\\??\\", "\\Device\\")):
+        if not path_str or any(path_str.startswith(p) for p in ("\\\\", "\\??\\", "\\Device\\")):
             return None
-        
         p = Path(path_str)
-        if not p.exists() or p.is_symlink(): return None
-        
         try:
-            p_resolved = p.resolve(strict=False)
-            if is_protected_path(str(p_resolved)) or not is_safe_to_modify(str(p_resolved)):
-                return None
-            return p_resolved
+            return p.resolve(strict=False)
         except Exception:
             return None
     return None
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
-    """Verifica si el proceso está activo y su ruta es segura para la operación."""
-    if not isinstance(proc_handle, int) or proc_handle <= 0: return False, "Handle inválido."
+    """Valida estado y seguridad del proceso antes de operaciones de trim."""
     kernel32 = ctypes.windll.kernel32
-    
     exit_code = ctypes.c_ulong()
     if not kernel32.GetExitCodeProcess(ctypes.c_void_p(proc_handle), ctypes.byref(exit_code)):
-        return False, f"Imposible verificar estado (Error {kernel32.GetLastError()})."
+        return False, "Imposible verificar estado."
         
     if exit_code.value != STILL_ACTIVE_EXIT_CODE:
         return False, "El proceso no está activo."
         
     exec_path = _get_process_path(proc_handle)
-    if not exec_path:
-        return False, "Acceso denegado o ejecutable no localizable."
-    
-    if not is_safe_to_modify(str(exec_path)):
-        return False, "Operación no autorizada sobre este proceso."
+    if not exec_path or not is_safe_to_modify(str(exec_path)):
+        return False, "Acceso no autorizado o ejecutable inseguro."
     
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Ejecuta 'EmptyWorkingSet' tras realizar validaciones de seguridad exhaustivas."""
+    """Ejecuta 'EmptyWorkingSet' tras realizar validaciones de seguridad."""
     if not _is_windows: return False, "Operación solo soportada en Windows."
-    
     try:
         target_pid = int(pid)
     except (ValueError, TypeError):
-        return False, "PID proporcionado no es un número válido."
+        return False, "PID no válido."
 
     if _is_system_process(target_pid): 
-        return False, "No se permite modificar procesos críticos del sistema."
+        return False, "Proceso crítico protegido."
     
     kernel32 = ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
-        return False, f"Acceso denegado (Error {kernel32.GetLastError()})."
+        return False, "Acceso denegado."
     
     try:
         psapi = getattr(ctypes.windll, "psapi", None)
-        if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
-        
-        is_safe, error_reason = _is_safe_to_trim(proc_handle)
-        if not is_safe: 
-            return False, error_reason or "Verificación de seguridad fallida."
+        is_safe, err = _is_safe_to_trim(proc_handle)
+        if not is_safe: return False, err or "Verificación fallida."
         
         if not psapi.EmptyWorkingSet(ctypes.c_void_p(proc_handle)): 
-            return False, f"Sistema denegó la operación (Error {kernel32.GetLastError()})."
+            return False, "Sistema denegó la operación."
             
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except (ctypes.ArgumentError, OSError, ValueError, TypeError) as e:
-        return False, f"Error de ejecución: {str(e)}"
     finally:
-        if proc_handle:
-            kernel32.CloseHandle(ctypes.c_void_p(proc_handle))
+        kernel32.CloseHandle(ctypes.c_void_p(proc_handle))

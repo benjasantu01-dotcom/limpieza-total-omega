@@ -805,3 +805,26 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-09-20T11:13:06` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `Path.resolve()` y `stat()` mediante el uso de los atributos de `os.DirEntry`, lo que reduce drásticamente las operaciones de I/O por archivo.
 - `2026-09-20T11:13:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T11:13:06` Corrida terminada. Total usado hoy: 264.
+- `2026-09-20T11:21:27` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-09-20T11:21:57` Tests FALLARON:
+```
+rgente para hacer.'] = HealthResult(score=100, grade='A', breakdown={'seguridad': 30, 'disco': 20, 'memoria': 18, 'basura': 14, 'duplicados': 10, 'arranque': 8}, recommendations=['No hay nada urgente para hacer.']).recommendations
+
+evolve/tests/test_modules.py:899: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_memory_score_does_not_reward_excess_free_ram - AttributeError: 'int' object has no attribute 'memory_available_percent'
+FAILED evolve/tests/test_modules.py::test_individual_scores_stay_between_zero_and_one - AttributeError: 'int' object has no attribute 'junk_mb'
+FAILED evolve/tests/test_modules.py::test_warnings_hurt_more_than_informational_findings - TypeError: score_security() got an unexpected keyword argument 'warnings'
+FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommendation - AssertionError: assert 'buen estado' in 'No hay nada urgente para hacer.'
+ +  where 'No hay nada urgente para hacer.' = <built-in method join of str object at 0x7f035562bb40>(['No hay nada urgente para hacer.'])
+ +    where <built-in method join of str object at 0x7f035562bb40> = ' '.join
+ +    and   ['No hay nada urgente para hacer.'] = HealthResult(score=100, grade='A', breakdown={'seguridad': 30, 'disco': 20, 'memoria': 18, 'basura': 14, 'duplicados': 10, 'arranque': 8}, recommendations=['No hay nada urgente para hacer.']).recommendations
+4 failed, 295 passed in 1.27s
+
+```
+- `2026-09-20T11:21:57` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento del pipeline de evaluación pre-calculando los pesos y ratios dentro de `_PIPELINE` mediante una estructura de datos más eficiente, eliminando el uso de `lambda` y llamadas repetitivas a `_clamp` en tiempo de ejecución.
+- `2026-09-20T11:23:10` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de caché `LRU` nativo y eficiente dentro de `LimpiezaTotalOmegaApp` para los resultados de análisis pesados, reduciendo drásticamente la redundancia de procesamiento en disco al evitar re-ejecuciones innecesarias durante la navegación entre pestañas.
+- `2026-09-20T11:23:39` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de `subprocess` por una lógica que reduce la sobrecarga de invocación y se consolidaron las validaciones de seguridad en `_is_safe_to_trim` para evitar llamadas redundantes a la API de Windows.
+- `2026-09-20T11:23:52` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-20T11:23:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T11:23:52` Corrida terminada. Total usado hoy: 268.
