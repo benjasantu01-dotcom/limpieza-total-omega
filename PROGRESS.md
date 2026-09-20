@@ -8,35 +8,35 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 13 | 1 | 7 | 1 | 4 |
+| 2026-09-18 | 12 | 1 | 4 | 1 | 4 |
 | 2026-09-19 | 147 | 12 | 23 | 14 | 154 |
-| 2026-09-20 | 42 | 3 | 9 | 6 | 68 |
+| 2026-09-20 | 43 | 3 | 9 | 6 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
 - robustez ante casos límite: **45**
+- legibilidad y documentación: **45**
 - seguridad defensiva: **43**
 - rendimiento: **35**
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **20**
-- `safety.py`: **19**
 - `assistant.py`: **18**
 - `browser.py`: **18**
+- `safety.py`: **18**
 - `settings.py`: **17**
+- `memory.py`: **17**
 - `diskreport.py`: **16**
-- `memory.py`: **16**
 - `duplicates.py`: **15**
 - `quarantine.py`: **15**
 - `organizer.py`: **13**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T05:39:12` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `trim_working_set` y `_get_process_path` validando explícitamente los handles devueltos por `OpenProcess` antes de usarlos, capturando fallos de tipo en `target_pid` y asegurando la liberación de recursos mediante `CloseHandle` en caso de excepciones durante la ejecución, evitando así fugas de handles.
 - `2026-09-20T05:26:12` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `walk_files` y `summarize` capturando excepciones específicas durante la iteración y el acceso a rutas, evitando fallos silenciosos por archivos bloqueados o inaccesibles y validando entradas críticas.
 - `2026-09-20T04:03:10` **settings.py** (seguridad defensiva): Reforcé la seguridad en `save` añadiendo una comprobación explícita de `is_safe_to_modify` para el archivo temporal antes de sobrescribir, garantizando que el proceso de escritura no pueda ser redirigido mediante un enlace simbólico o una ruta manipulada hacia una ubicación no autorizada.
 - `2026-09-20T03:54:10` **safety.py** (seguridad defensiva): Se añadió una validación específica en `_validate_boundary_conditions` para detectar si el usuario intenta operar dentro del directorio de trabajo de la aplicación (`os.getcwd()`), previniendo que la herramienta modifique su propio entorno de ejecución o sus scripts de configuración, fortaleciendo la seguridad defensiva.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-20T03:22:25` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes o con permisos restringidos añadiendo un chequeo preventivo de existencia antes de instanciar `Path` y una validación explícita para archivos de tamaño cero en el escaneo granular, evitando excepciones no controladas en el bucle de recorrido.
 - `2026-09-20T03:13:32` **safety.py** (robustez ante casos límite): Se ha añadido una validación adicional en `ensure_safe_to_modify` para detectar si el sistema de archivos actual admite la operación, verificando si el path es de solo lectura a nivel de sistema antes de intentar cualquier interacción, previniendo excepciones innecesarias en dispositivos bloqueados o con fallos de hardware.
 - `2026-09-20T03:12:51` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de redundancia en la función `_atomic_isolate_file` para evitar condiciones de carrera donde un archivo pueda ser movido, renombrado o alterado entre la verificación de seguridad y la apertura del descriptor, garantizando que el archivo final en el sandbox sea idéntico al verificado.
-- `2026-09-20T03:05:02` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` y sus ayudantes asegurando que el cierre del `proc_handle` mediante `CloseHandle` sea incondicional y resistente a errores de tipo, además de añadir validaciones preventivas contra entradas nulas o malformadas que podrían disparar excepciones en las llamadas a la API de Win32.

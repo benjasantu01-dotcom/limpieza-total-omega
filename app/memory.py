@@ -324,7 +324,7 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     Intenta resolver la ruta absoluta de un ejecutable mediante 'Psapi.GetModuleFileNameExW'.
     Aplica filtros de seguridad contra enlaces simbólicos, puntos de reparse y rutas no locales.
     """
-    if not proc_handle: return None
+    if not proc_handle or proc_handle == -1: return None
     try:
         psapi = getattr(ctypes.windll, "psapi", None)
         if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
@@ -352,7 +352,7 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
     """Verifica si es seguro operar sobre un handle de proceso."""
-    if not isinstance(proc_handle, int) or proc_handle == 0: return False, "Handle inválido."
+    if not isinstance(proc_handle, int) or proc_handle <= 0: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
     
     try:
@@ -407,5 +407,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, OSError, ValueError, TypeError) as e:
         return False, f"Error de ejecución: {str(e)}"
     finally:
-        if isinstance(proc_handle, int) and proc_handle != 0:
+        if proc_handle:
             kernel32.CloseHandle(ctypes.c_void_p(proc_handle))
