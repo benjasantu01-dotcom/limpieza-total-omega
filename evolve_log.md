@@ -1112,3 +1112,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-20T02:12:28` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se ha optimizado el rendimiento de `detect_profiles` y `_sum_directory_recursive` mediante la implementación de una estrategia de "memoización de resultados de sub-directorios" más coherente, evitando llamadas redundantes a `Path.resolve()` dentro de los bucles críticos y reduciendo la creación innecesaria de objetos `Path` durante el escaneo recursivo.
 - `2026-09-20T02:12:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T02:12:28` Corrida terminada. Total usado hoy: 52.
+- `2026-09-20T02:20:52` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-09-20T02:21:24` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y `lower()` dentro del bucle, procesando la extensión una sola vez por archivo y usando `dict.get` para reducir la sobrecarga de consultas en `ext_stats`.
+- `2026-09-20T02:22:02` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de la recolección de candidatos cambiando la lista `visited_files` por un `set` de rutas resueltas (`set[Path]`), reduciendo la complejidad de búsqueda de O(N) a O(1) por cada archivo procesado.
+- `2026-09-20T02:22:31` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del `compute_score` cacheando el acceso a los valores de las métricas y utilizando una tupla de valores pre-calculados para evitar la evaluación repetitiva de propiedades en cada iteración del pipeline.
+- `2026-09-20T02:23:31` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-20T02:24:34` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-20T02:25:40` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-20T02:26:52` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards
+- `2026-09-20T02:26:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T02:26:52` Corrida terminada. Total usado hoy: 56.

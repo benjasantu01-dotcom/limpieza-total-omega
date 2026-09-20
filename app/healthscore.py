@@ -179,7 +179,9 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que todos los valores numéricos sean finitos para evitar errores de cálculo."""
-        return all(math.isfinite(v) for v in self.__dict__.values() if isinstance(v, (int, float)))
+        return all(math.isfinite(v) for v in (self.junk_mb, self.suspicious_count, self.suspicious_warnings, 
+                                            self.memory_available_percent, self.disk_free_percent, 
+                                            self.duplicate_mb, self.startup_count, self.quarantined_count))
 
 @dataclass
 class HealthResult:

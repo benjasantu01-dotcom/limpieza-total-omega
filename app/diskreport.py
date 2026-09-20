@@ -315,11 +315,6 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Ejecuta un recorrido único por el árbol para calcular métricas globales.
-    
-    Args:
-        directory: Ruta raíz de inicio.
-        skip_protected: Filtra directorios de sistema.
-        limit: Tamaño del heap para almacenar archivos grandes (si > 0).
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -330,13 +325,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         total_bytes += size_bytes
         total_files += 1
         
-        try:
-            ext_raw = path.suffix
-            ext: str = ext_raw.lower() if ext_raw else "(sin extensión)"
-        except (AttributeError, ValueError, OSError):
-            ext = "(desconocido)"
-        
-        stat: ExtStats = ext_stats[ext]
+        ext = path.suffix.lower() if path.suffix else "(sin extensión)"
+        stat = ext_stats[ext]
         stat.total_bytes += size_bytes
         stat.count += 1
         

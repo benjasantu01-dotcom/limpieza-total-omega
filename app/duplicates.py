@@ -194,7 +194,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """Realiza un recorrido recursivo por los directorios recolectando archivos candidatos válidos."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
-    visited_files: List[Path] = []
+    visited_files: set[Path] = set()
 
     def _scan_dir(current_dir: Path) -> None:
         try:
@@ -206,12 +206,12 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             if not is_junction(path) and not is_protected_path(path):
                                 _scan_dir(path)
                         else:
-                            path = Path(entry.path)
+                            path = Path(entry.path).resolve()
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size >= min_size and _is_valid_candidate(path, st.st_size):
-                                if not any(path.exists() and path.samefile(v) for v in visited_files):
+                                if path not in visited_files:
                                     size_to_paths_map[st.st_size].append(path)
-                                    visited_files.append(path)
+                                    visited_files.add(path)
                     except (FileNotFoundError, OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
