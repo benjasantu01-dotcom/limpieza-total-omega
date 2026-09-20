@@ -105,14 +105,11 @@ __all__ = [
     "assistant_enabled", "describe",
 ]
 
-# Ubicación base donde se almacena el estado persistente del usuario
 SETTINGS_DIR: Final = Path("~/LimpiezaTotalOmega").expanduser()
 SETTINGS_FILE: Final = "config.json"
-# Límite de seguridad: archivos demasiado grandes podrían indicar corrupción o ataques
 MAX_SETTINGS_SIZE: Final = 1024 * 64
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
-# Caches en memoria para reducir operaciones de IO y validaciones pesadas
 _CACHE: dict[Path, tuple[float, AppSettings]] = {}
 _PATH_CACHE: dict[Path, Path] = {}
 _INTEGRITY_CACHE: dict[int, AppSettings] = {}
@@ -278,6 +275,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
+    """Valida y normaliza un diccionario crudo contra los tipos definidos en DEFAULTS."""
     if not _is_dict(raw_values): return DEFAULTS.copy()
     
     raw_hash = hash(frozenset(raw_values.items()))
@@ -308,7 +306,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 continue
             with open(r, "r", encoding="utf-8") as f:
                 raw = json.load(f)
-                final_data = _ensure_settings_integrity(validate(raw))
+                final_data = _coerce_and_verify(validate(raw))
             _CACHE[r] = (stats.st_mtime, final_data)
             return final_data.copy()
         except (OSError, PermissionError, ValueError, json.JSONDecodeError, UnicodeDecodeError):
@@ -316,18 +314,22 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             
     return DEFAULTS.copy()
 
-def _enforce_type_consistency(settings: AppSettings) -> AppSettings:
+def _coerce_and_verify(settings: AppSettings) -> AppSettings:
+    """Aplica consistencia de tipos y reglas de negocio obligatorias post-validación."""
+    # 1. Asegurar tipos consistentes con DEFAULTS
     for key in ConfigKey:
         val = settings.get(key.value)
         if not isinstance(val, type(DEFAULTS[key.value])):
             settings[key.value] = DEFAULTS[key.value]
-    return settings
-
-def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
+    
+    # 2. Integridad del esquema
     if not _is_app_settings(settings):
         settings = {**DEFAULTS, **{k: v for k, v in settings.items() if k in DEFAULTS}}
-    _enforce_type_consistency(settings)
-    if settings.get("asistente_activado") and not (settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
+    
+    # 3. Lógica de negocio de seguridad: desactivar asistente si falta clave
+    if settings.get("asistente_activado") and not (
+        settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
+    ):
         settings["asistente_activado"] = False
     return settings
 
@@ -340,7 +342,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             parent.mkdir(parents=True, exist_ok=True)
         if not os.access(parent, os.W_OK): return None
         ensure_safe_to_modify(parent)
-        cleaned_settings = _ensure_settings_integrity(validate(values))
+        cleaned_settings = _coerce_and_verify(validate(values))
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
     except (UnsafePathError, TypeError, ValueError, OSError):
         return None
