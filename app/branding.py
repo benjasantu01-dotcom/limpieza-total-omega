@@ -359,7 +359,6 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
     """Dibuja franjas decorativas de gradiente sobre el icono del escudo."""
     try:
         if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in (canvas_x, canvas_y, scale)): return
-        scale = max(0.1, min(10.0, scale))
         franjas_count = max(6, int(28 * scale))
         base_y = canvas_y + 18 * scale
         factor_y = 92 * scale / franjas_count
@@ -376,15 +375,14 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     """Renderiza símbolos internos (Omega y corte) sobre el escudo base."""
     try:
         if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in (canvas_x, canvas_y, scale)): return
-        c_x, c_y = canvas_x, canvas_y
-        canvas.create_line(c_x + 41 * scale, c_y + 75 * scale, 
-                           c_x + 75 * scale, c_y + 41 * scale, 
+        canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, 
+                           canvas_x + 75 * scale, canvas_y + 41 * scale, 
                            fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
-        canvas.create_polygon(c_x + 75 * scale, c_y + 41 * scale, 
-                              c_x + 89 * scale, c_y + 38 * scale, 
-                              c_x + 92 * scale, c_y + 52 * scale, 
+        canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, 
+                              canvas_x + 89 * scale, canvas_y + 38 * scale, 
+                              canvas_x + 92 * scale, canvas_y + 52 * scale, 
                               fill=C_BACKGROUND, outline="")
-        canvas.create_text(c_x + 64 * scale, c_y + 96 * scale, text="\u03a9", 
+        canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", 
                            fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(UI_FONT_HEADER_SIZE * scale)), UI_FONT_BOLD))
     except (TypeError, ValueError, Exception): pass
 
@@ -394,10 +392,9 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         s = float(size)
         if not math.isfinite(s) or s <= 0: return
         scale = max(0.1, min(10.0, s / 128.0))
-        offset = 64 * scale
         canvas.create_oval(
-            canvas_x + offset - 75 * scale, canvas_y + (58 * scale) - 75 * scale, 
-            canvas_x + offset + 75 * scale, canvas_y + (58 * scale) + 75 * scale, 
+            canvas_x + (64 * scale) - 75 * scale, canvas_y + (58 * scale) - 75 * scale, 
+            canvas_x + (64 * scale) + 75 * scale, canvas_y + (58 * scale) + 75 * scale, 
             fill=blend(C_SURFACE, C_GLOW, 0.15), outline=""
         )
         canvas.create_polygon(*_get_scaled_poly(scale, canvas_x, canvas_y), fill=GRADIENT_STOPS[1], outline="")
