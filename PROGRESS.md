@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 22
+- Rechazadas por guardia de seguridad: 35
+- Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 104 | 9 | 15 | 10 | 114 |
-| 2026-09-20 | 99 | 4 | 19 | 12 | 118 |
+| 2026-09-19 | 101 | 9 | 15 | 10 | 113 |
+| 2026-09-20 | 100 | 4 | 20 | 13 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **50**
 - seguridad defensiva: **45**
-- robustez ante casos límite: **44**
+- robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **38**
-- rendimiento: **27**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **19**
 - `healthscore.py`: **19**
 - `memory.py`: **18**
-- `safety.py`: **17**
+- `safety.py`: **18**
+- `browser.py`: **18**
 - `settings.py`: **17**
-- `assistant.py`: **16**
 - `quarantine.py`: **16**
 - `diskreport.py`: **16**
 - `duplicates.py`: **15**
+- `assistant.py`: **15**
 - `organizer.py`: **12**
 - `branding.py`: **12**
 - `scanner.py`: **10**
-- `startup.py`: **9**
+- `startup.py`: **8**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T10:52:54` **safety.py** (legibilidad y documentación): Se introdujeron type hints más específicos (`Path` en lugar de `PathLike` donde ya están normalizados) y se añadieron docstrings explicativos a las funciones internas clave para documentar el "porqué" de las verificaciones de seguridad, mejorando la mantenibilidad sin alterar la lógica de ejecución.
 - `2026-09-20T10:43:19` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y robustez del código mediante la adición de Type Hints en los argumentos de las funciones `diagnose` y `trim_working_set`, y se ha extraído la lógica de formateo de `diagnose` para mejorar la legibilidad y mantenibilidad del informe.
 - `2026-09-20T10:41:53` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones críticas y definiendo explícitamente la interfaz del `Pipeline` mediante un `Protocol`, clarificando así la arquitectura funcional sin alterar el comportamiento.
 - `2026-09-20T10:40:54` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones críticas, aclarando el propósito y el manejo de excepciones de los filtros de archivos para asegurar que el comportamiento del flujo de trabajo sea comprensible y mantenible.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-20T10:00:28` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `suggest_keeper` y `format_group` eliminando suposiciones sobre la validez de los objetos y asegurando que las comparaciones de `Path` no fallen por rutas inconsistentes o accesos denegados durante el procesamiento.
 - `2026-09-20T10:00:00` **diskreport.py** (manejo de errores y validación de entradas): Mejore la robustez en `summarize` al capturar posibles excepciones durante la conversión a cadena de rutas que podrían haber cambiado de estado o estar bloqueadas, asegurando que el reporte no falle ante condiciones de carrera en el sistema de archivos.
 - `2026-09-20T09:51:19` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_path_inside_base` y `_resolve_browser_path` añadiendo validaciones estrictas de tipos y manejo de excepciones ante rutas malformadas, evitando que entradas vacías o None causen errores inesperados durante el procesamiento.
-- `2026-09-20T09:50:30` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar excepciones de conversión de tipos de forma más granular, evitando que datos malformados en `source` aborten el procesamiento completo del contexto.
