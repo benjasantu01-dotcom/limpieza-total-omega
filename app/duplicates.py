@@ -90,7 +90,10 @@ class DuplicateGroup:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Verifica si un archivo está bloqueado intentando abrirlo en modo lectura exclusiva."""
+    """
+    Verifica si un archivo está bloqueado intentando abrirlo en modo lectura exclusiva.
+    Retorna True si el acceso es denegado o el archivo está siendo usado por otro proceso.
+    """
     try:
         with open(path, 'rb') as f:
             f.read(1)
@@ -100,7 +103,10 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
-    """Valida integridad, permisos de seguridad y accesibilidad de bloqueo."""
+    """
+    Normaliza una ruta, resuelve sus enlaces simbólicos y valida que sea un archivo
+    accesible, seguro para interactuar según `safety.py` y no bloqueado por otros procesos.
+    """
     if not path:
         return None
     try:
@@ -151,7 +157,10 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
-    """Verifica si un archivo debe ser incluido en el análisis basándose en seguridad y atributos."""
+    """
+    Filtro de seguridad para archivos: verifica que la ruta no esté protegida,
+    que no tenga atributos de sistema/oculto y que no sea un archivo en uso.
+    """
     try:
         if is_protected_path(path) or not is_safe_to_modify(path):
             return False
@@ -194,7 +203,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo por los directorios recolectando archivos válidos.
-    Utiliza un conjunto (visited_files) para evitar procesar la misma ruta dos veces.
+    Evita procesar puntos de unión (junctions) y rutas protegidas por sistema.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     visited_files: set[Path] = set()
@@ -230,7 +239,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Clasifica archivos en subgrupos basados en un hash específico."""
+    """Clasifica archivos en subgrupos basados en el resultado de una función de hashing."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if (digest := hash_func(path)):
@@ -239,7 +248,10 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Aplica hashing parcial y completo jerárquicamente según el tamaño del archivo."""
+    """
+    Aplica una estrategia jerárquica de hashing: utiliza un hash parcial para 
+    archivos grandes y un hash completo para archivos pequeños o confirmaciones finales.
+    """
     if not paths or size < 0:
         return []
 

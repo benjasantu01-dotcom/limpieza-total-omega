@@ -289,25 +289,27 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
     if available >= 10: return "warning"
     return "danger"
 
-def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Crea un informe textual legible para el usuario final."""
-    if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
-        return ["No se pudo leer el estado de la memoria en este sistema."]
-    
-    report: List[str] = [
-        f"Memoria total: {format_bytes(snapshot.total)}",
-        f"En uso: {format_bytes(snapshot.used)} ({snapshot.used_percent}%)",
-        f"Disponible: {format_bytes(snapshot.available)} ({snapshot.available_percent}%)",
-    ]
-    
+def _generate_diagnostics_lines(snapshot: MemorySnapshot) -> List[str]:
+    """Genera líneas base de informe de estado de memoria."""
     diagnostics: Dict[str, str] = {
         "ok": "Estado: holgado. La memoria ocupada por caché mejora la velocidad.",
         "info": "Estado: normal. Windows gestiona la memoria de forma eficiente.",
         "warning": "Estado: ajustado. Conviene cerrar aplicaciones innecesarias.",
         "danger": "Estado: crítico. El sistema recurre al archivo de paginación."
     }
+    return [
+        f"Memoria total: {format_bytes(snapshot.total)}",
+        f"En uso: {format_bytes(snapshot.used)} ({snapshot.used_percent}%)",
+        f"Disponible: {format_bytes(snapshot.available)} ({snapshot.available_percent}%)",
+        diagnostics.get(pressure_level(snapshot), "")
+    ]
+
+def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
+    """Crea un informe textual legible para el usuario final."""
+    if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
+        return ["No se pudo leer el estado de la memoria en este sistema."]
     
-    report.append(diagnostics.get(pressure_level(snapshot), ""))
+    report = _generate_diagnostics_lines(snapshot)
     
     if processes:
         for proc in processes[:3]:

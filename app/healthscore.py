@@ -15,13 +15,17 @@ DISEÑO DEL PIPELINE:
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Final, NamedTuple, Annotated, Callable, TypeAlias
+from typing import Dict, List, Any, Final, NamedTuple, Annotated, Callable, TypeAlias, Protocol
 from enum import Enum
 import math
 
 ScoreMap: TypeAlias = Dict[str, float]
 NormalizedRatio: TypeAlias = Annotated[float, "Valor de salud normalizado entre 0.0 (crítico) y 1.0 (óptimo)"]
 MetricKey: TypeAlias = str
+
+class Scorer(Protocol):
+    """Interfaz para las funciones que normalizan métricas crudas a ratios [0.0, 1.0]."""
+    def __call__(self, metrics: SystemMetrics) -> NormalizedRatio: ...
 
 class Grade(Enum):
     """Calificaciones alfabéticas basadas en rangos de puntaje (0-100)."""
@@ -52,7 +56,7 @@ class PipelineEntry(NamedTuple):
     """Configuración operativa de una etapa del cálculo: qué medir y cómo reportar."""
     area: MetricKey
     weight: int
-    scorer: Callable[[SystemMetrics], NormalizedRatio]
+    scorer: Scorer
     rules: List[RecommendationRule]
 
 __all__ = [
