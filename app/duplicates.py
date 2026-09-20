@@ -124,7 +124,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         return None
         
     p = _validate_and_resolve_path(path)
-    if not p or not p.exists():
+    if not p:
         return None
             
     try:
@@ -143,7 +143,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
         return None
 
     p = _validate_and_resolve_path(path)
-    if not p or not p.exists():
+    if not p:
         return None
 
     try:
@@ -161,6 +161,8 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
     Filtro de seguridad para archivos: verifica que la ruta no esté protegida,
     que no tenga atributos de sistema/oculto y que no sea un archivo en uso.
     """
+    if not isinstance(path, Path):
+        return False
     try:
         if is_protected_path(path) or not is_safe_to_modify(path):
             return False

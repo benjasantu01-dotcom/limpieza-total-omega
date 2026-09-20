@@ -102,20 +102,21 @@ class BrowserCache:
 
 
 def _get_kernel32() -> Optional[ctypes.WinDLL]:
-    """Carga kernel32.dll para consultar atributos de archivo Win32; retorna None si no es Windows."""
+    """Carga kernel32.dll para consultar atributos de archivo Win32; retorna None si no es Windows o falla."""
     if os.name != 'nt':
         return None
     try:
         dll = ctypes.WinDLL('kernel32.dll', use_last_error=True)
-        if hasattr(dll, 'GetFileAttributesW'):
-            return dll
+        # Validación de integridad de la carga del DLL
+        if not hasattr(dll, 'GetFileAttributesW'):
+            return None
+        return dll
     except (OSError, ValueError, TypeError, AttributeError, RuntimeError):
         return None
-    return None
 
-def _is_unc_path(path_str: str) -> bool:
+def _is_unc_path(path_str: Optional[str]) -> bool:
     """Verifica si la cadena de ruta corresponde a un recurso de red (UNC)."""
-    if not isinstance(path_str, str):
+    if not isinstance(path_str, str) or not path_str:
         return False
     return path_str.startswith(r"\\") or path_str.startswith("//")
 
@@ -127,11 +128,12 @@ def base_directories() -> List[Path]:
     
     try:
         p = Path(local_env)
-        if not p.exists():
+        # Verificación explícita de existencia y acceso
+        if not p.exists() or not p.is_dir():
             return []
         path_local = p.resolve(strict=True)
         # Validación: evita seguir rutas protegidas o inseguras por política de seguridad
-        if path_local.is_dir() and is_safe_to_modify(path_local) and not is_protected_path(path_local):
+        if is_safe_to_modify(path_local) and not is_protected_path(path_local):
             return [path_local]
     except (OSError, RuntimeError, PermissionError):
         pass

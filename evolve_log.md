@@ -1225,3 +1225,14 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-20T14:18:31` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré el manejo de errores en `save_logo_svg` y `draw_ring` reemplazando capturas de excepciones genéricas (`Exception`) por capturas específicas y añadiendo validaciones de tipo/rango más rigurosas para prevenir errores en tiempo de ejecución al procesar parámetros inesperados.
 - `2026-09-20T14:18:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T14:18:31` Corrida terminada. Total usado hoy: 336.
+- `2026-09-20T14:25:27` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-20T14:25:58` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_kernel32` y `base_directories` ante entornos con configuraciones de entorno malformadas o permisos restringidos, asegurando que el módulo maneje entradas `None` o rutas inválidas sin levantar excepciones imprevistas.
+- `2026-09-20T14:26:58` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-20T14:28:01` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-20T14:28:38` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-20T14:29:19` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de errores en `summarize` y `_collect_summary_data`, evitando que el reporte falle por condiciones de carrera o archivos inexistentes, y reemplazando validaciones implícitas por chequeos explícitos para asegurar la integridad de los resultados.
+- `2026-09-20T14:29:45` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `hash_file` y `partial_hash` para evitar el uso de `p.exists()` (que puede fallar por condiciones de carrera) delegando la validación robusta al bloque `try-except` existente, y añadí validación de tipos estricta para evitar excepciones innecesarias en el procesamiento de rutas.
+- `2026-09-20T14:30:45` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-20T14:31:02` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_evaluate_rules` mediante la validación del resultado de las factorías de mensajes antes de procesarlos, asegurando que cualquier error inesperado en la generación de texto no comprometa la integridad de la lista de recomendaciones.
+- `2026-09-20T14:31:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T14:31:02` Corrida terminada. Total usado hoy: 340.

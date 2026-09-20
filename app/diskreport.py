@@ -336,6 +336,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
+        if not path.is_file(): continue
+        
         total_bytes += size_bytes
         total_files += 1
         
@@ -356,7 +358,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
     """Genera una vista textual del reporte de uso para la interfaz de usuario."""
     root = _validate_root(directory)
-    if not root: return ["Error: Ruta no válida."]
+    if root is None: return ["Error: Ruta no válida."]
     
     data = _collect_summary_data(root, skip_protected, limit=20)
     
@@ -371,11 +373,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if data.top_files:
         lines.extend(["", "Mayores archivos:"])
         for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
-            try:
-                # Verificación estricta de seguridad y existencia antes de reportar
-                if not is_protected_path(p) and p.exists():
-                    lines.append(f"  {format_size(s):>10}  {str(p)}")
-            except (OSError, PermissionError):
-                continue
+            if isinstance(p, Path) and p.exists() and not is_protected_path(p):
+                lines.append(f"  {format_size(s):>10}  {str(p)}")
     
     return lines
