@@ -237,7 +237,11 @@ def _sum_directory_recursive(
                             continue
                         directory_total_bytes += _sum_directory_recursive(entry_path, is_junction_fn, kernel32, memo, root_base_abs, depth + 1)
                     else:
-                        directory_total_bytes += int(entry.stat(follow_symlinks=False).st_size)
+                        # Se capturan excepciones de acceso al obtener metadatos de archivos en uso
+                        try:
+                            directory_total_bytes += int(entry.stat(follow_symlinks=False).st_size)
+                        except (OSError, PermissionError):
+                            continue
                 except (OSError, PermissionError):
                     continue
         

@@ -310,7 +310,8 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> bool:
         """Valida y asigna un valor individual al campo correspondiente si cumple el contrato MetricSpec."""
         val = _get_source_value(source, key)
-        if val is None or not spec.is_valid_type(val):
+        # Refuerzo: solo admitimos tipos básicos para métricas numéricas
+        if val is None or not spec.is_valid_type(val) or isinstance(val, (dict, list, tuple)):
             return False
             
         try:

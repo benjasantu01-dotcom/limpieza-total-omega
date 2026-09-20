@@ -1189,3 +1189,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-20T02:43:16` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché en `StartupEntry.executable` para evitar la resolución repetitiva y costosa de rutas mediante `path.resolve()` y `exists()` dentro de los bucles de `summarize`, optimizando el rendimiento de la interfaz gráfica.
 - `2026-09-20T02:43:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T02:43:16` Corrida terminada. Total usado hoy: 64.
+- `2026-09-20T02:51:27` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-09-20T02:52:08` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del método `ingest` mediante la validación estricta de tipos en los datos de entrada (evitando que listas o diccionarios anidados pasen como métricas válidas), protegiendo al sistema ante entradas inesperadas o malformadas provenientes de fuentes externas.
+- `2026-09-20T02:52:38` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-20T02:53:05` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_sum_directory_recursive` ante archivos bloqueados o en uso (típicos al escanear cachés de navegadores activos) mediante la captura explícita de `PermissionError` y `OSError` durante la lectura de atributos con `entry.stat()`, evitando que el escaneo completo aborte por una sola falla de acceso.
+- `2026-09-20T02:53:15` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de `PermissionError` y `OSError` al intentar resolver la ruta de entrada en `_validate_root`, evitando que el programa se bloquee al acceder a rutas con permisos restringidos o sistemas de archivos inaccesibles.
+- `2026-09-20T02:53:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T02:53:15` Corrida terminada. Total usado hoy: 68.
