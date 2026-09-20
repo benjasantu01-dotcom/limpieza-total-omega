@@ -490,3 +490,14 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-09-20T07:19:47` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se mejora la robustez frente a casos límite en el escaneo de directorios, añadiendo una verificación explícita de `is_file()` antes de intentar leer su tamaño y asegurando que las excepciones en `entry.stat()` no interrumpan la agregación de tamaños de otras carpetas.
 - `2026-09-20T07:19:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T07:19:47` Corrida terminada. Total usado hoy: 172.
+- `2026-09-20T07:26:16` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-09-20T07:26:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-20T07:26:53` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `walk_files` y `summarize` para manejar casos donde el acceso al sistema de archivos falla de forma intermitente (por ejemplo, archivos bloqueados o permisos denegados durante el proceso) mediante el uso de bloques `try-except` más granulares y validaciones de existencia antes de reportar.
+- `2026-09-20T07:27:21` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-20T07:27:52` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra `ZeroDivisionError` en el cálculo del score (`compute_score`) para asegurar que el pipeline no colapse si un divisor en `_PIPELINE` llegara a ser cero por un estado inconsistente de las constantes, añadiendo manejo de excepciones explícito para proteger la ejecución ante datos inesperados.
+- `2026-09-20T07:28:53` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-20T07:29:56` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-20T07:31:02` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-20T07:32:14` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-20T07:32:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T07:32:14` Corrida terminada. Total usado hoy: 176.

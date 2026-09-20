@@ -248,10 +248,14 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
+            # Protección contra posibles errores en el cálculo o pesos
+            if entry.weight <= 0:
+                continue
+                
             weighted_points = _clamp(round(area_ratio * entry.weight), 0.0, float(entry.weight))
             metric_breakdown[entry.area] = int(weighted_points)
             accumulated_score += weighted_points
-        except (Exception, TypeError, ValueError):
+        except (Exception, TypeError, ValueError, ZeroDivisionError):
             continue
             
     final_score = int(_clamp(round(accumulated_score), 0.0, 100.0))
