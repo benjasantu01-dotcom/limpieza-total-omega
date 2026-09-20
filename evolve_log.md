@@ -798,3 +798,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-09-20T11:03:00` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Optimicé el acceso a los criterios de salud utilizando un `frozendict`-like approach (tuplas de tuplas pre-filtradas) y reemplacé el loop lineal de `_identify_active_problems` por una operación más eficiente que evita re-evaluar criterios innecesariamente durante consultas repetidas.
 - `2026-09-20T11:03:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T11:03:00` Corrida terminada. Total usado hoy: 260.
+- `2026-09-20T11:11:18` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-09-20T11:11:56` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Optimicé el cálculo del gradiente en `gradient_colors` eliminando la recreación de tuplas RGB dentro del loop principal al mover la conversión `_hex_to_rgb` fuera del ámbito de iteración, y reduje la carga de trabajo en `_get_grouped_segments` al simplificar el acceso a los datos de los segmentos.
+- `2026-09-20T11:12:26` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé la recursividad de `_sum_directory_recursive` pasando el diccionario `memo` por referencia a través de todo el árbol de directorios para evitar el re-cálculo de subcarpetas comunes (ej. caché de Google Chrome vs. caché de GPU), mejorando drásticamente el rendimiento en escaneos profundos.
+- `2026-09-20T11:12:53` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-20T11:13:06` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `Path.resolve()` y `stat()` mediante el uso de los atributos de `os.DirEntry`, lo que reduce drásticamente las operaciones de I/O por archivo.
+- `2026-09-20T11:13:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T11:13:06` Corrida terminada. Total usado hoy: 264.

@@ -202,30 +202,31 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido recursivo por los directorios recolectando archivos válidos.
-    Evita procesar puntos de unión (junctions) y rutas protegidas por sistema.
+    Realiza un recorrido recursivo eficiente por los directorios usando DirEntry 
+    para minimizar llamadas al sistema operativo al obtener metadatos.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
-    visited_files: set[Path] = set()
+    visited_files: set[str] = set()
 
     def _scan_dir(current_dir: Path) -> None:
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        path = Path(entry.path).resolve()
-                        if is_protected_path(path) or not is_safe_to_modify(path):
-                            continue
-                            
                         if entry.is_dir(follow_symlinks=False):
-                            if not is_junction(path):
-                                _scan_dir(path)
-                        else:
-                            st = entry.stat(follow_symlinks=False)
-                            if st.st_size >= min_size and _is_valid_candidate(path, st.st_size):
-                                if path not in visited_files:
-                                    size_to_paths_map[st.st_size].append(path)
-                                    visited_files.add(path)
+                            p = Path(entry.path)
+                            if not is_junction(p):
+                                _scan_dir(p)
+                            continue
+                        
+                        st = entry.stat(follow_symlinks=False)
+                        if st.st_size >= min_size:
+                            path_str = entry.path
+                            if path_str not in visited_files:
+                                p = Path(path_str)
+                                if _is_valid_candidate(p, st.st_size):
+                                    size_to_paths_map[st.st_size].append(p)
+                                    visited_files.add(path_str)
                     except (FileNotFoundError, OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

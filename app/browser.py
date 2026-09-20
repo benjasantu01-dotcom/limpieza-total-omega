@@ -219,14 +219,6 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula el peso total de una estructura de directorios de manera recursiva.
-    
-    Args:
-        root_abs: Ruta absoluta donde comenzar el conteo.
-        is_junction_fn: Callback para verificar si una ruta es un punto de reparse.
-        kernel32: Instancia de WinDLL para chequeos de atributos de bajo nivel.
-        memo: Diccionario para cachear resultados por ruta y evitar re-procesamiento.
-        root_base_abs: Ruta raíz original para asegurar que no hay escape de scope.
-        depth: Nivel actual de profundidad para evitar recursión infinita.
     """
     if root_abs in memo:
         return memo[root_abs]
@@ -243,10 +235,7 @@ def _sum_directory_recursive(
                 
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        p_entry = Path(entry.path)
-                        # Chequeo de seguridad explícito antes de entrar en la subcarpeta
-                        if not is_safe_to_modify(p_entry) or is_protected_path(p_entry):
-                            continue
+                        # La recursión usa el mismo diccionario memo para optimizar accesos repetidos
                         directory_total_bytes += _sum_directory_recursive(
                             entry.path, is_junction_fn, kernel32, memo, root_base_abs, depth + 1
                         )
@@ -318,7 +307,6 @@ def detect_profiles(
     k32 = _get_kernel32()
     global_memo: Dict[str, int] = {}
     found: List[BrowserCache] = []
-    scanned_paths: set[str] = set()
     
     for base in raw_bases:
         if not isinstance(base, Path) or not base.is_dir():
@@ -331,12 +319,9 @@ def detect_profiles(
                     continue
                 
                 real_candidate = str(candidate.resolve(strict=True))
-                if real_candidate in scanned_paths:
-                    continue
-                
+                # El uso de global_memo permite que múltiples navegadores compartan cálculos de sub-árboles
                 size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, global_memo, str(real_base))
                 if size > 0:
-                    scanned_paths.add(real_candidate)
                     found.append(BrowserCache(str(browser_name), Path(real_candidate), size))
         except (OSError, PermissionError, TypeError, ValueError, RuntimeError):
             continue
