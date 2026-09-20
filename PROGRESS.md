@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 132 | 9 | 21 | 14 | 132 |
-| 2026-09-20 | 82 | 4 | 16 | 9 | 85 |
+| 2026-09-19 | 132 | 9 | 21 | 14 | 128 |
+| 2026-09-20 | 84 | 4 | 17 | 9 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
+- seguridad defensiva: **45**
 - robustez ante casos límite: **44**
-- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **34**
 
@@ -33,7 +33,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **19**
 - `memory.py`: **19**
 - `safety.py`: **19**
-- `settings.py`: **18**
+- `settings.py`: **19**
 - `assistant.py`: **17**
 - `quarantine.py`: **17**
 - `diskreport.py`: **16**
@@ -41,11 +41,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **15**
 - `branding.py`: **12**
 - `scanner.py`: **10**
+- `startup.py`: **9**
 - `main.py`: **8**
-- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T08:28:44` **startup.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `parse_registry_csv` añadiendo una validación explícita mediante `is_protected_path` al procesar cada entrada del registro, asegurando que no se expongan rutas críticas del sistema en la UI, incluso si el comando en el registro fuera técnicamente ejecutable.
+- `2026-09-20T08:28:16` **settings.py** (seguridad defensiva): Se ha restringido el acceso de escritura en `save` verificando que el directorio destino no sea un punto de reparse mediante `_is_reparse_point`, añadiendo una capa de defensa proactiva antes de realizar operaciones de archivo en la configuración.
 - `2026-09-20T08:18:17` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine.py` implementando una validación estricta de "Device ID" en la función `_atomic_isolate_file`, garantizando que el archivo origen y el destino de cuarentena residan en la misma unidad física, previniendo así comportamientos indefinidos al mover archivos entre sistemas de archivos distintos durante el proceso de aislamiento.
 - `2026-09-20T08:17:40` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` añadiendo un chequeo explícito de longitud de ruta para el destino y verificando que la unidad del destino no sea una unidad de red (UNC) antes de cualquier operación, mitigando riesgos de errores en tiempo de ejecución al interactuar con sistemas de archivos remotos.
 - `2026-09-20T08:09:18` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de `_get_process_path` integrando explícitamente `is_protected_path` sobre la ruta resuelta antes de cualquier evaluación, consolidando la seguridad defensiva contra posibles escapes de directorio o acceso a rutas sensibles del sistema.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-20T07:48:29` **startup.py** (robustez ante casos límite): Mejoré la robustez de `_resolve_and_cache_path` añadiendo un manejo de excepciones más granular y específico, evitando que el proceso de resolución falle silenciosamente ante rutas con caracteres inválidos (por ejemplo, rutas que exceden MAX_PATH o contienen caracteres prohibidos por el SO) que no habían sido capturadas completamente por los chequeos preliminares.
 - `2026-09-20T07:47:47` **scanner.py** (robustez ante casos límite): Se ha mejorado `process_entry` para capturar explícitamente excepciones de `OSError` (como `PermissionError` o `FileNotFoundError`) al interactuar con `entry.is_dir()` o `entry.is_file()`, evitando que el bucle de escaneo se interrumpa prematuramente ante archivos bloqueados por el sistema o eliminados durante la ejecución.
 - `2026-09-20T07:47:20` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes del sistema de archivos agregando un chequeo de `path.exists()` al inicio de `_check_file_integrity`, evitando excepciones innecesarias si un archivo es eliminado por un proceso externo justo después de la validación inicial, y optimizando la validación de `st_ino` para incluir el manejo de errores ante cambios de estado concurrentes.
-- `2026-09-20T07:38:03` **quarantine.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de E/S durante la creación del directorio de cuarentena, añadiendo un `try-except` específico para manejar casos donde `mkdir` falle debido a permisos de solo lectura o estructuras de disco inconsistentes, mejorando la resiliencia en entornos con restricciones de seguridad extremas.
-- `2026-09-20T07:36:59` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_get_process_path` validando explícitamente el tamaño del búfer de caracteres para evitar lecturas parciales o truncamientos en rutas largas, asegurando que el string de la ruta sea completo antes de intentar cualquier operación de resolución.

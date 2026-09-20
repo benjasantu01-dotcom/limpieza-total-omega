@@ -313,6 +313,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             
             try:
                 p_cmd = Path(cmd)
+                # Validación defensiva extra: descartar si la ruta está protegida
                 if not p_cmd.parts or is_protected_path(p_cmd):
                     continue
             except (ValueError, TypeError):

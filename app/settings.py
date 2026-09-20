@@ -330,7 +330,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     parent = ruta.parent
     try:
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
-        if not os.access(parent, os.W_OK): return None
+        if not os.access(parent, os.W_OK) or _Validators._is_reparse_point(parent): return None
         ensure_safe_to_modify(parent)
         cleaned_settings = _coerce_and_verify(validate(values))
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
