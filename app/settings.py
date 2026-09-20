@@ -112,9 +112,10 @@ SETTINGS_FILE: Final = "config.json"
 MAX_SETTINGS_SIZE: Final = 1024 * 64
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
-# Cache de configuración en memoria: evita parseo de JSON redundante
+# Caches en memoria para reducir operaciones de IO y validaciones pesadas
 _CACHE: dict[Path, tuple[float, AppSettings]] = {}
 _PATH_CACHE: dict[Path, Path] = {}
+_INTEGRITY_CACHE: dict[int, AppSettings] = {}
 
 VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
 VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))
@@ -177,14 +178,11 @@ class _Validators:
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
         try:
-            # Resolverse a la ruta real previene ataques de path traversal via symlinks
             resolved = Path(os.path.realpath(os.path.expanduser(path_str)))
             for part in resolved.parts:
                 if _Validators._is_reparse_point(Path(part)):
                     return False
-            if not is_protected_path(str(resolved)):
-                return is_safe_to_modify(str(resolved))
-            return False
+            return not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
         except (OSError, PermissionError, RuntimeError, UnsafePathError, IndexError):
             return False
 
@@ -194,8 +192,7 @@ class _Validators:
         if path_str.startswith(("\\\\", "//")): return False
         try:
             p = Path(path_str).expanduser()
-            if not p.is_absolute(): return False
-            return _Validators._run_safety_checks(str(p))
+            return p.is_absolute() and _Validators._run_safety_checks(str(p))
         except (OSError, RuntimeError, PermissionError, AttributeError, ValueError):
             return False
 
@@ -242,7 +239,6 @@ class _Validators:
         return _Validators._validate_enum_str(text, key)
 
 def _get_validator_entry(key: ConfigKey) -> _ValidatorEntry:
-    """Retorna el validador específico o el genérico para una clave dada."""
     mapa: dict[ConfigKey, Callable[[ConfigKey, Any], Any]] = {
         ConfigKey.MOSTRAR_BARRAS: _Validators.bool,
         ConfigKey.ANIMACIONES: _Validators.bool,
@@ -282,13 +278,20 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
+    if not _is_dict(raw_values): return DEFAULTS.copy()
+    
+    # Uso de caché de integridad por hash del dict para evitar re-validaciones pesadas
+    raw_hash = hash(frozenset(raw_values.items()))
+    if raw_hash in _INTEGRITY_CACHE: return _INTEGRITY_CACHE[raw_hash].copy()
+    
     config = DEFAULTS.copy()
-    if not _is_dict(raw_values): return config
     for key_str, raw_val in raw_values.items():
         if (key_enum := _KEY_TO_ENUM.get(key_str)):
             validator = _VALIDATOR_MAP[key_enum].func
             if (validated_val := validator(key_enum, raw_val)) is not None:
                 config[key_enum.value] = validated_val
+    
+    _INTEGRITY_CACHE[raw_hash] = config
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
@@ -305,7 +308,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 continue
             with open(r, "r", encoding="utf-8") as f:
                 raw = json.load(f)
-                if not _is_dict(raw): continue
                 final_data = _ensure_settings_integrity(validate(raw))
             _CACHE[r] = (stats.st_mtime, final_data)
             return final_data.copy()
@@ -315,7 +317,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def _enforce_type_consistency(settings: AppSettings) -> AppSettings:
-    """Valida que cada valor coincida con el tipo esperado en DEFAULTS."""
     for key in ConfigKey:
         val = settings.get(key.value)
         if not isinstance(val, type(DEFAULTS[key.value])):
@@ -323,15 +324,11 @@ def _enforce_type_consistency(settings: AppSettings) -> AppSettings:
     return settings
 
 def _ensure_settings_integrity(settings: AppSettings) -> AppSettings:
-    """Asegura que el diccionario de configuración contenga todas las claves requeridas y con tipos válidos."""
     if not _is_app_settings(settings):
         settings = {**DEFAULTS, **{k: v for k, v in settings.items() if k in DEFAULTS}}
-
     _enforce_type_consistency(settings)
-    
     if settings.get("asistente_activado") and not (settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         settings["asistente_activado"] = False
-        
     return settings
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
@@ -341,9 +338,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     try:
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
-        # Validar permisos de escritura en el contenedor antes de intentar salvar
-        if not os.access(parent, os.W_OK):
-            return None
+        if not os.access(parent, os.W_OK): return None
         ensure_safe_to_modify(parent)
         cleaned_settings = _ensure_settings_integrity(validate(values))
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
@@ -358,12 +353,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.write(serialized)
             f.flush()
             os.fsync(f.fileno())
-        
         if ruta.exists():
             ensure_safe_to_modify(ruta)
             try: os.replace(ruta, bak_path)
             except OSError: pass
-            
         os.replace(temp_path, ruta)
         _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
         return ruta

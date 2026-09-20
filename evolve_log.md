@@ -1129,3 +1129,63 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-20T02:32:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
 - `2026-09-20T02:32:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T02:32:44` Corrida terminada. Total usado hoy: 60.
+- `2026-09-20T02:41:17` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-09-20T02:42:01` Tests FALLARON:
+```
+: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'malo.tmp'
+  'app.tmp'
+  
+  Full diff:
+    {
+  +     'app.tmp',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - assert 'protegida' in "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación."
+ +  where "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación." = <function describe_protection at 0x7fc1dc30a700>(((PosixPath('/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7fc1dc30a700> = safety.describe_protection
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error crítico en restauración: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_restore_into_a_system_pat0/Windows/System32'
+14 failed, 285 passed, 10 warnings in 1.53s
+
+```
+- `2026-09-20T02:42:01` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento de `is_protected_path` al convertir `PROTECTED_DIR_NAMES` y `_SYSTEM_ROOT_PATHS_SET` en estructuras que permiten búsquedas directas en tiempo constante, eliminando el loop de validación de partes de ruta por cada llamada.
+- `2026-09-20T02:42:28` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root
+- `2026-09-20T02:42:59` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de carga y validación mediante la implementación de una caché de integridad (`_INTEGRITY_CACHE`) y la eliminación de llamadas redundantes a `is_safe_to_modify` dentro de los validadores, consolidando las verificaciones de rutas bajo el cacheo de `_Validators._run_safety_checks`.
+- `2026-09-20T02:43:16` Tests FALLARON:
+```
+=================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:63: SyntaxWarning: invalid escape sequence '\)'
+    Normaliza rutas para la API de Windows añadiendo el prefijo extendido (\\?\).
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:403: SyntaxWarning: invalid escape sequence '\)'
+    """Verifica si la ruta es la raíz del volumen (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 8 warnings in 1.39s
+
+```
+- `2026-09-20T02:43:16` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché en `StartupEntry.executable` para evitar la resolución repetitiva y costosa de rutas mediante `path.resolve()` y `exists()` dentro de los bucles de `summarize`, optimizando el rendimiento de la interfaz gráfica.
+- `2026-09-20T02:43:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T02:43:16` Corrida terminada. Total usado hoy: 64.
