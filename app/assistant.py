@@ -316,7 +316,7 @@ class SystemContext:
         try:
             float_val = float(val)
             if _is_metric_within_bounds(float_val, spec):
-                setattr(self, key, spec.cast_func(val))
+                setattr(self, key, spec.cast_func(float_val))
                 return True
         except (ValueError, TypeError, OverflowError):
             pass

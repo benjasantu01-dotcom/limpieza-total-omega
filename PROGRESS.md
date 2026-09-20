@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **206** (40.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 61 | 2 | 18 | 8 | 49 |
+| 2026-09-18 | 58 | 2 | 17 | 8 | 49 |
 | 2026-09-19 | 147 | 12 | 23 | 14 | 154 |
-| 2026-09-20 | 0 | 0 | 0 | 0 | 16 |
+| 2026-09-20 | 1 | 0 | 0 | 0 | 19 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **46**
 - robustez ante casos límite: **43**
 - seguridad defensiva: **41**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **40**
 - rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
+- `healthscore.py`: **21**
+- `assistant.py`: **19**
 - `browser.py`: **19**
 - `safety.py`: **19**
-- `assistant.py`: **18**
-- `diskreport.py`: **17**
 - `memory.py`: **17**
-- `duplicates.py`: **16**
 - `quarantine.py`: **16**
+- `diskreport.py`: **16**
 - `settings.py`: **16**
+- `duplicates.py`: **15**
 - `organizer.py`: **13**
 - `branding.py`: **11**
 - `scanner.py`: **9**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T00:52:14` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar fallos en la conversión de datos externos, garantizando que un valor numérico mal formateado no interrumpa el proceso de ingesta y que el contexto mantenga un estado consistente incluso ante datos parciales.
 - `2026-09-19T14:28:28` **settings.py** (seguridad defensiva): Se ha añadido `os.path.realpath` en la validación de rutas para prevenir ataques de "path traversal" o confusión mediante enlaces simbólicos que apunten fuera de la jerarquía permitida, fortaleciendo la seguridad defensiva al resolver la ruta real antes de cualquier chequeo de seguridad.
 - `2026-09-19T14:27:31` **safety.py** (seguridad defensiva): Se añadió una validación explícita para evitar que `_is_file_in_use` intente analizar rutas que no sean archivos regulares, protegiendo contra posibles errores de acceso a directorios o dispositivos especiales.
 - `2026-09-19T14:18:19` **quarantine.py** (seguridad defensiva): Se implementó un bloqueo de seguridad en `_write_temp_to_final` para detectar archivos con atributos `READONLY` y evitar operaciones de I/O sobre ellos que podrían fallar o causar inconsistencias en el sandbox, reforzando la integridad del proceso de aislamiento.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-19T13:27:02` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de `compute_score` asegurando que si las métricas contienen valores `NaN` o `Inf` (no finitos), la función devuelva un estado de error manejable en lugar de propagar valores numéricos erróneos a los componentes de UI.
 - `2026-09-19T13:26:37` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante archivos que se eliminan o cambian de permiso durante la iteración (concurrencia) y corregí una posible excepción fatal al usar `samefile` sobre rutas que podrían haberse vuelto inválidas, añadiendo un chequeo preventivo de existencia.
 - `2026-09-19T13:17:27` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta contra valores `None` o mal formados en `tab_label` y se consolidó el manejo de excepciones en las funciones de renderizado de `branding.py` para evitar que un input inesperado (típico en la carga inicial de la UI) provoque paradas en el bucle principal.
-- `2026-09-19T13:16:51` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor local frente a valores de configuración corruptos o tipos de datos inesperados en el `SystemContext` mediante la implementación de `get_metric` con manejo de excepciones y validación de tipos durante la ingesta, evitando que fallos parciales en una métrica invaliden todo el contexto.
