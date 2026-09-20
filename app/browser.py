@@ -173,7 +173,10 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
-    """Determina si un nodo del sistema de archivos debe ser ignorado por seguridad o exclusión."""
+    """
+    Determina si un nodo del sistema de archivos debe ser ignorado.
+    Realiza chequeos de exclusión, longitud de ruta, rutas UNC, junctions y atributos ocultos.
+    """
     if entry.name is None:
         return True
     
@@ -222,7 +225,10 @@ def _is_valid_traversal_step(entry: os.DirEntry, root_base: str) -> bool:
         return False
 
 def _process_entry(entry: os.DirEntry, root_base: str, is_junction_fn: JunctionChecker, kernel32: Optional[ctypes.WinDLL], memo: Dict[str, int], depth: int) -> int:
-    """Decide si descender recursivamente o contabilizar un archivo de caché."""
+    """
+    Decide si descender recursivamente o contabilizar un archivo de caché.
+    Verifica seguridad de la ruta, profundidad máxima y existencia en el caché de memoización.
+    """
     if depth > MAX_SCAN_DEPTH or _should_skip_entry(entry, kernel32, is_junction_fn):
         return 0
     try:
@@ -257,8 +263,9 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula el tamaño acumulado de archivos bajo un directorio usando `os.scandir`
-    y memoización, validando que cada paso sea seguro y esté bajo el root_base.
+    Calcula el tamaño acumulado de archivos bajo un directorio usando `os.scandir`.
+    Aplica memoización para optimizar el rendimiento y valida recursivamente 
+    la contención dentro de 'root_base' y la seguridad mediante `is_safe_to_modify`.
     """
     if root_abs in memo:
         return memo[root_abs]

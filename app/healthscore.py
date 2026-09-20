@@ -146,6 +146,7 @@ _PIPELINE: Final[List[PipelineEntry]] = _RULES_MAP
 
 @dataclass
 class SystemMetrics:
+    """Contenedor de datos crudos sobre el estado del sistema para el motor de salud."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -159,6 +160,7 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
+        """Asegura que los valores de las métricas estén dentro de rangos lógicos y tipos correctos."""
         try:
             self.junk_mb = float(max(0.0, _to_float(self.junk_mb)))
             self.duplicate_mb = float(max(0.0, _to_float(self.duplicate_mb)))
@@ -176,10 +178,12 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
+        """Verifica que todos los valores numéricos sean finitos para evitar errores de cálculo."""
         return all(math.isfinite(v) for v in self.__dict__.values() if isinstance(v, (int, float)))
 
 @dataclass
 class HealthResult:
+    """Representación consolidada del estado de salud tras procesar las métricas."""
     score: int
     grade: str
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
@@ -187,9 +191,11 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
+        """Retorna True si el puntaje indica un estado óptimo del sistema."""
         return 80 <= self.score <= 100
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
+    """Restringe un valor numérico dentro de un rango definido."""
     try:
         if not math.isfinite(value): return min_val
         return float(max(min_val, min(max_val, value)))
@@ -197,6 +203,7 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
         return min_val
 
 def _to_float(value: Any, default: float = 0.0) -> float:
+    """Intenta convertir cualquier entrada a float, retornando un valor por defecto si falla."""
     try:
         if value is None: return default
         val = float(value)
@@ -204,9 +211,11 @@ def _to_float(value: Any, default: float = 0.0) -> float:
     except (TypeError, ValueError, OverflowError): return default
 
 def grade_for_score(score: float | int) -> str:
+    """Wrapper para la lógica de asignación de grado basada en el score final."""
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
+    """Ejecuta una lista de reglas de recomendación sobre una métrica normalizada específica."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -252,11 +261,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(points: int, max_val: int) -> str:
+    """Genera una representación visual de barra simple para el desglose de métricas."""
     m = max(1, int(max_val))
     p = max(0, min(int(points), m))
     return ('#' * p) + ('.' * (m - p))
 
 def summarize(result: HealthResult | None) -> List[str]:
+    """Crea una representación textual legible del reporte de salud."""
     if not isinstance(result, HealthResult) or not (0 <= result.score <= 100):
         return ["Error: Informe de salud no disponible."]
     
