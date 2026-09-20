@@ -96,17 +96,22 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 ]
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Evalúa si el nombre del archivo contiene una doble extensión que intenta engañar al usuario final."""
+    """
+    Detecta archivos con extensiones dobles (ej. documento.pdf.exe) que intentan 
+    engañar al usuario sobre el tipo real del archivo mediante ofuscación de nombres.
+    """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Identifica ejecutables descargados recientemente (24h) en carpetas de usuario monitoreadas."""
+    """
+    Analiza ejecutables en directorios de alto riesgo (descargas, temp, escritorio).
+    Marca como 'info' si el archivo fue creado en las últimas 24 horas.
+    """
     if not path or not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     
-    # Verificación de existencia del archivo previo al stat para evitar race conditions
     if not path.exists():
         return None
 
@@ -117,7 +122,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta binarios con nombres de procesos de sistema ubicados fuera de System32 para prevenir suplantación."""
+    """
+    Verifica si un ejecutable intenta suplantar procesos críticos del sistema (ej. svchost.exe)
+    al estar alojado fuera de la carpeta 'System32'.
+    """
     if path and path.name:
         if path.name.lower() in SYSTEM_LOOKALIKES:
             path_str = str(path).lower()
@@ -126,7 +134,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta archivos ejecutables de tamaño cero, técnica común de ofuscación o errores de descarga."""
+    """
+    Detecta ejecutables con tamaño de 0 bytes, lo cual es una anomalía frecuente en
+    descargas interrumpidas o técnicas de evasión que usan archivos vacíos.
+    """
     if entry and entry.is_file(follow_symlinks=False):
         stats = _safe_stat(entry)
         if stats and stats.st_size == 0:
@@ -163,7 +174,6 @@ class Scanner:
         if not entry or not entry.path or not entry.name:
             return False
             
-        # 1. Filtros de bajo costo primero (cadenas y regex)
         if not _is_valid_path_structure(entry.path):
             return False
         
@@ -173,13 +183,11 @@ class Scanner:
         if not entry.path.lower().startswith(self.base_root_str.rstrip(os.sep)):
             return False
             
-        # 2. Verificación de atributos de archivo (E/S rápida)
         stats = _safe_stat(entry)
         if stats and hasattr(stats, 'st_file_attributes'):
             if bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT):
                 return False
 
-        # 3. Validaciones lógicas más pesadas al final
         if is_protected_path(Path(entry.path)):
             return False
 
