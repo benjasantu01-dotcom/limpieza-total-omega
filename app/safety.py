@@ -261,10 +261,13 @@ def _is_file_in_use(path_str: str) -> bool:
         return False
     
     kernel32 = ctypes.windll.kernel32
-    handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0, None, 3, 0x00000080, None)
-    if handle == -1: 
-        return ctypes.GetLastError() == 32
-    kernel32.CloseHandle(handle)
+    try:
+        handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0, None, 3, 0x00000080, None)
+        if handle == -1: 
+            return ctypes.GetLastError() == 32
+        kernel32.CloseHandle(handle)
+    except (OSError, PermissionError, ctypes.ArgumentError):
+        return True
     return False
 
 @lru_cache(maxsize=128)
@@ -530,7 +533,8 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
                     raise UnsafePathError("Redirección de unidad detectada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
                 if not str(final_path).startswith(str(path.parent)):
                     raise UnsafePathError("Salida de carpeta permitida vía redirección.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
-        except (AttributeError, OSError, TypeError): pass
+        except (AttributeError, OSError, TypeError) as e:
+            raise UnsafePathError(f"Fallo en validación de redirección: {e}", SafetyValidationErrorCode.IO_ERROR)
         finally: kernel32.CloseHandle(handle)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:

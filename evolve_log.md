@@ -1497,3 +1497,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-20T05:39:12` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `trim_working_set` y `_get_process_path` validando explícitamente los handles devueltos por `OpenProcess` antes de usarlos, capturando fallos de tipo en `target_pid` y asegurando la liberación de recursos mediante `CloseHandle` en caso de excepciones durante la ejecución, evitando así fugas de handles.
 - `2026-09-20T05:39:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T05:39:12` Corrida terminada. Total usado hoy: 132.
+- `2026-09-20T05:44:30` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-09-20T05:44:55` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-20T05:45:32` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` añadiendo una validación temprana de tipos para el parámetro `source` y verificaciones de integridad críticas tras el movimiento, además de refinar los bloques `try-except` para asegurar que el estado del sistema no quede inconsistente ante fallos inesperados de E/S.
+- `2026-09-20T05:45:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-20T05:46:11` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_in_use` capturando específicamente `PermissionError` y `OSError` al intentar obtener el handle, y aseguré que `ensure_safe_to_modify` capture fallos en `_validate_ntfs_reparse_redirection` para evitar que una excepción no controlada interrumpa el flujo del bucle principal.
+- `2026-09-20T05:46:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T05:46:11` Corrida terminada. Total usado hoy: 136.

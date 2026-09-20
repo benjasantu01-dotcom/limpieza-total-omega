@@ -656,7 +656,11 @@ def quarantine_file(
         if not item.verify_integrity(destination):
             raise RuntimeError("Integridad post-registro fallida.")
         
-        source_path.unlink()
+        try:
+            source_path.unlink()
+        except OSError as e:
+            raise RuntimeError(f"Archivo aislado, pero falló el borrado del origen: {e}")
+            
         return item
     except Exception as e:
         if destination.exists():
