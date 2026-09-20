@@ -488,6 +488,10 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     if not is_safe_to_modify(destination.parent):
         raise UnsafePathError("Directorio destino no es seguro para escritura.")
     
+    # Validar que origen y destino estén en el mismo dispositivo físico
+    if source.stat().st_dev != destination.parent.stat().st_dev:
+        raise UnsafePathError("Operación entre dispositivos no permitida.")
+    
     ensure_safe_to_modify(destination.parent, allow_sensitive=True)
     _check_windows_file_attributes(str(destination))
 

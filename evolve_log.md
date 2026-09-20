@@ -529,3 +529,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-09-20T08:09:18` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_get_process_path` integrando explícitamente `is_protected_path` sobre la ruta resuelta antes de cualquier evaluación, consolidando la seguridad defensiva contra posibles escapes de directorio o acceso a rutas sensibles del sistema.
 - `2026-09-20T08:09:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T08:09:18` Corrida terminada. Total usado hoy: 192.
+- `2026-09-20T08:17:11` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-09-20T08:17:40` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_safe_for_disk_op` añadiendo un chequeo explícito de longitud de ruta para el destino y verificando que la unidad del destino no sea una unidad de red (UNC) antes de cualquier operación, mitigando riesgos de errores en tiempo de ejecución al interactuar con sistemas de archivos remotos.
+- `2026-09-20T08:18:17` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `quarantine.py` implementando una validación estricta de "Device ID" en la función `_atomic_isolate_file`, garantizando que el archivo origen y el destino de cuarentena residan en la misma unidad física, previniendo así comportamientos indefinidos al mover archivos entre sistemas de archivos distintos durante el proceso de aislamiento.
+- `2026-09-20T08:18:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-20T08:18:58` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 456): unterminated string literal (detected at line 456)
+- `2026-09-20T08:18:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T08:18:58` Corrida terminada. Total usado hoy: 196.

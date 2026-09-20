@@ -196,6 +196,8 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         s_res = src.resolve(strict=True)
         if not s_res.exists(): return False
         parent = (dest.parent if not dest.exists() else dest.resolve().parent)
+        # Seguridad adicional: verificar que el destino no sea UNC y longitud de ruta
+        if _is_unc_path(parent) or len(str(dest)) > 260: return False
         if is_protected_path(parent) or _is_recursive_violation(s_res, dest): return False
         if not os.access(parent, os.W_OK) or not os.access(s_res, os.W_OK): return False
         # Prevenir movimientos entre diferentes volúmenes para mantener integridad de metadatos
