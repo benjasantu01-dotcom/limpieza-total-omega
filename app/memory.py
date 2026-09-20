@@ -321,58 +321,53 @@ def _is_system_process(pid: int) -> bool:
 
 def _get_process_path(proc_handle: int) -> Optional[Path]:
     """
-    Intenta resolver la ruta absoluta de un ejecutable mediante 'Psapi.GetModuleFileNameExW'.
-    Aplica filtros de seguridad contra enlaces simbólicos, puntos de reparse y rutas no locales.
+    Resuelve la ruta absoluta del ejecutable mediante Psapi.GetModuleFileNameExW.
+    Valida contra enlaces simbólicos, puntos de reparse y rutas no locales.
     """
     if not proc_handle or proc_handle == -1: return None
-    try:
-        psapi = getattr(ctypes.windll, "psapi", None)
-        if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
+    psapi = getattr(ctypes.windll, "psapi", None)
+    if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
+    
+    buf = ctypes.create_unicode_buffer(1024)
+    if psapi.GetModuleFileNameExW(ctypes.c_void_p(proc_handle), None, buf, 1024) > 0:
+        path_str = buf.value
+        # Filtro: evitar rutas UNC o dispositivos de sistema no locales
+        if not path_str or any(path_str.startswith(prefix) for prefix in ("\\\\", "\\??\\", "\\Device\\")):
+            return None
         
-        buf = ctypes.create_unicode_buffer(1024)
-        if psapi.GetModuleFileNameExW(ctypes.c_void_p(proc_handle), None, buf, 1024) > 0:
-            path_str = buf.value
-            if not path_str or any(path_str.startswith(prefix) for prefix in ("\\\\", "\\??\\", "\\Device\\")):
-                return None
-            
-            p = Path(path_str)
-            if not p.is_file() or p.is_symlink(): return None
-            if os.path.abspath(p) != os.path.realpath(p): return None
-            
-            p_resolved = p.resolve(strict=False)
-            if is_protected_path(str(p_resolved)) or not p_resolved.exists(): 
-                return None
-            if not is_safe_to_modify(str(p_resolved)): 
-                return None
-            
-            return p_resolved
-    except (OSError, ctypes.ArgumentError, ValueError, AttributeError, RuntimeError):
-        pass
+        p = Path(path_str)
+        if not p.is_file() or p.is_symlink(): return None
+        if os.path.abspath(p) != os.path.realpath(p): return None
+        
+        p_resolved = p.resolve(strict=False)
+        if is_protected_path(str(p_resolved)) or not p_resolved.exists(): 
+            return None
+        if not is_safe_to_modify(str(p_resolved)): 
+            return None
+        
+        return p_resolved
     return None
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
-    """Verifica si es seguro operar sobre un handle de proceso."""
+    """Verifica si el proceso está activo y su ruta es segura para la operación."""
     if not isinstance(proc_handle, int) or proc_handle <= 0: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
     
-    try:
-        exit_code = ctypes.c_ulong()
-        if not kernel32.GetExitCodeProcess(ctypes.c_void_p(proc_handle), ctypes.byref(exit_code)):
-            return False, f"Imposible verificar estado (Error {kernel32.GetLastError()})."
-            
-        if exit_code.value != STILL_ACTIVE_EXIT_CODE:
-            return False, "El proceso no está activo."
-            
-        exec_path = _get_process_path(proc_handle)
-        if not exec_path:
-            return False, "Acceso denegado o ejecutable no localizable."
+    exit_code = ctypes.c_ulong()
+    if not kernel32.GetExitCodeProcess(ctypes.c_void_p(proc_handle), ctypes.byref(exit_code)):
+        return False, f"Imposible verificar estado (Error {kernel32.GetLastError()})."
         
-        if not is_safe_to_modify(str(exec_path)):
-            return False, "Operación no autorizada sobre este proceso."
+    if exit_code.value != STILL_ACTIVE_EXIT_CODE:
+        return False, "El proceso no está activo."
         
-        return True, None
-    except (AttributeError, ValueError, ctypes.ArgumentError, OSError):
-        return False, "Error interno durante la verificación de integridad."
+    exec_path = _get_process_path(proc_handle)
+    if not exec_path:
+        return False, "Acceso denegado o ejecutable no localizable."
+    
+    if not is_safe_to_modify(str(exec_path)):
+        return False, "Operación no autorizada sobre este proceso."
+    
+    return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Ejecuta 'EmptyWorkingSet' tras realizar validaciones de seguridad exhaustivas."""

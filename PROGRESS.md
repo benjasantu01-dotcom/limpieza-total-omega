@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 231
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 6 | 0 | 1 | 0 | 3 |
+| 2026-09-18 | 6 | 0 | 0 | 0 | 0 |
 | 2026-09-19 | 147 | 12 | 23 | 14 | 154 |
-| 2026-09-20 | 51 | 3 | 10 | 6 | 74 |
+| 2026-09-20 | 54 | 3 | 10 | 6 | 75 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **52**
 - robustez ante casos límite: **45**
 - seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **38**
@@ -30,16 +30,16 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **20**
 - `browser.py`: **19**
-- `healthscore.py`: **19**
 - `safety.py`: **19**
 - `settings.py`: **18**
+- `memory.py`: **18**
 - `assistant.py`: **17**
-- `memory.py`: **17**
 - `diskreport.py`: **16**
 - `duplicates.py`: **15**
 - `quarantine.py`: **15**
-- `organizer.py`: **13**
+- `organizer.py`: **14**
 - `branding.py`: **11**
 - `scanner.py`: **9**
 - `main.py`: **8**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T06:21:30` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas (siguiendo estándares tipo Google/NumPy) y la clarificación de las responsabilidades de las funciones de validación, garantizando que el propósito y las restricciones de seguridad sean evidentes para futuras auditorías.
+- `2026-09-20T06:21:16` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de las funciones de bajo nivel en `memory.py` mediante type hints más precisos, docstrings explicativos sobre el propósito de las operaciones de sistema y la extracción del acceso a `kernel32` a una propiedad local para mejorar la claridad.
+- `2026-09-20T06:16:08` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings de nivel de módulo y función que explicitan el contrato de datos (especificando rangos y tipos esperados) y refinando los tipos de `SystemMetrics` para asegurar que el pipeline de cálculo sea autodocumentado y resiliente a cambios futuros.
 - `2026-09-20T06:06:38` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones críticas y normalicé el uso de anotaciones de tipo para mejorar la legibilidad y mantenibilidad del flujo lógico, sin alterar la funcionalidad.
 - `2026-09-20T06:06:26` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `_collect_summary_data` y `walk_files` con type hints detallados y comentarios explicativos sobre el manejo de estados, asegurando que el código sea autodocumentado para el mantenimiento a largo plazo.
 - `2026-09-20T06:05:59` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en los parámetros de las funciones, clarificando la intención de los chequeos de seguridad y añadiendo una sección de "Garantías de Operación" en el docstring principal para explicitar el comportamiento frente a errores de acceso.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-20T05:26:12` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `walk_files` y `summarize` capturando excepciones específicas durante la iteración y el acceso a rutas, evitando fallos silenciosos por archivos bloqueados o inaccesibles y validando entradas críticas.
 - `2026-09-20T04:03:10` **settings.py** (seguridad defensiva): Reforcé la seguridad en `save` añadiendo una comprobación explícita de `is_safe_to_modify` para el archivo temporal antes de sobrescribir, garantizando que el proceso de escritura no pueda ser redirigido mediante un enlace simbólico o una ruta manipulada hacia una ubicación no autorizada.
 - `2026-09-20T03:54:10` **safety.py** (seguridad defensiva): Se añadió una validación específica en `_validate_boundary_conditions` para detectar si el usuario intenta operar dentro del directorio de trabajo de la aplicación (`os.getcwd()`), previniendo que la herramienta modifique su propio entorno de ejecución o sus scripts de configuración, fortaleciendo la seguridad defensiva.
-- `2026-09-20T03:53:10` **quarantine.py** (seguridad defensiva): Se implementó un chequeo de 'Device ID' mediante `os.stat().st_dev` en `_check_isolation_safety` para prevenir ataques de secuestro de enlace o movimiento de archivos entre diferentes sistemas de archivos, reforzando la integridad del sandbox y evitando posibles desbordamientos de permisos o comportamientos inesperados del sistema operativo.
-- `2026-09-20T03:48:31` **organizer.py** (seguridad defensiva): Se ha robustecido `_is_safe_for_disk_op` añadiendo una comprobación explícita para evitar que `shutil.move` cruce límites de unidades de disco (cross-device move), lo cual puede fallar silenciosamente o dejar archivos en estados intermedios inconsistentes.
-- `2026-09-20T03:48:17` **memory.py** (seguridad defensiva): Se ha mejorado la robustez del manejo de procesos en `_get_process_path` mediante la validación explícita de la existencia del ejecutable y la restricción adicional de rutas mediante `is_protected_path`, asegurando que ninguna operación de trim pueda afectar involuntariamente a procesos con privilegios elevados o bloqueados por política de seguridad, manteniendo la consistencia con las reglas del proyecto.

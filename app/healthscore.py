@@ -15,7 +15,7 @@ DISEÑO DEL PIPELINE:
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Final, Tuple, TypeAlias, NamedTuple, Annotated, Callable
+from typing import Dict, List, Any, Final, NamedTuple, Annotated, Callable, TypeAlias
 from enum import Enum
 import math
 
@@ -33,7 +33,7 @@ class Grade(Enum):
 
     @classmethod
     def from_score(cls, score: float | int) -> str:
-        """Determina la letra de calificación para un puntaje dado."""
+        """Determina la letra de calificación para un puntaje dado [0-100]."""
         s = float(score)
         if s >= 90: return cls.A.value
         if s >= 80: return cls.B.value
@@ -103,28 +103,28 @@ if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Mapea MB de basura a un score [0,1]. A mayor cantidad, menor puntaje."""
+    """Normaliza MB de basura a [0,1]. Mayor basura = menor puntaje."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula el ratio de seguridad penalizando hallazgos sospechosos y advertencias."""
+    """Calcula ratio [0,1] penalizando hallazgos sospechosos y advertencias de Defender."""
     penalization = (_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)
     return _clamp(1.0 - _clamp(penalization, 0.0, 1.0))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Normaliza el % de RAM libre según el umbral crítico definido."""
+    """Normaliza % de RAM libre: mapea el umbral crítico definido a 0."""
     return _clamp(_to_float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Normaliza el % de disco libre según el umbral crítico definido."""
+    """Normaliza % de disco libre: mapea el umbral crítico definido a 0."""
     return _clamp(_to_float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Mapea MB de duplicados a un score [0,1]."""
+    """Normaliza MB de duplicados a [0,1]."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
-    """Mapea cantidad de items en inicio a un score [0,1]."""
+    """Normaliza items en inicio a [0,1]."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
 _RULES_MAP: Final[List[PipelineEntry]] = [
@@ -146,7 +146,10 @@ _PIPELINE: Final[List[PipelineEntry]] = _RULES_MAP
 
 @dataclass
 class SystemMetrics:
-    """Contenedor de datos crudos sobre el estado del sistema para el motor de salud."""
+    """
+    Contenedor de datos crudos (inputs) para el motor de salud.
+    Todos los valores numéricos deben ser validados como finitos post-inicialización.
+    """
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -160,7 +163,7 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        """Asegura que los valores de las métricas estén dentro de rangos lógicos y tipos correctos."""
+        """Asegura la integridad de los datos, forzando rangos positivos y limpieza de NaNs."""
         try:
             self.junk_mb = float(max(0.0, _to_float(self.junk_mb)))
             self.duplicate_mb = float(max(0.0, _to_float(self.duplicate_mb)))
@@ -178,14 +181,14 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Verifica que todos los valores numéricos sean finitos para evitar errores de cálculo."""
+        """Verifica que no existan valores infinitos o corruptos en las métricas."""
         return all(math.isfinite(v) for v in (self.junk_mb, self.suspicious_count, self.suspicious_warnings, 
                                             self.memory_available_percent, self.disk_free_percent, 
                                             self.duplicate_mb, self.startup_count, self.quarantined_count))
 
 @dataclass
 class HealthResult:
-    """Representación consolidada del estado de salud tras procesar las métricas."""
+    """Resultado final del motor de evaluación: puntaje, grado y recomendaciones."""
     score: int
     grade: str
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
@@ -193,11 +196,11 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
-        """Retorna True si el puntaje indica un estado óptimo del sistema."""
+        """Indica si el sistema está en un estado óptimo (Score >= 80)."""
         return 80 <= self.score <= 100
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
-    """Restringe un valor numérico dentro de un rango definido."""
+    """Fuerza un valor numérico a estar dentro de [min_val, max_val]."""
     try:
         if not math.isfinite(value): return min_val
         return float(max(min_val, min(max_val, value)))
@@ -205,7 +208,7 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
         return min_val
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    """Intenta convertir cualquier entrada a float, retornando un valor por defecto si falla."""
+    """Conversión segura a float manejando valores nulos o tipos no numéricos."""
     try:
         if value is None: return default
         val = float(value)
@@ -213,11 +216,11 @@ def _to_float(value: Any, default: float = 0.0) -> float:
     except (TypeError, ValueError, OverflowError): return default
 
 def grade_for_score(score: float | int) -> str:
-    """Wrapper para la lógica de asignación de grado basada en el score final."""
+    """Convierte un puntaje numérico a una calificación (A-F)."""
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Ejecuta una lista de reglas de recomendación, filtrando mensajes inválidos o no seguros."""
+    """Ejecuta reglas heurísticas para generar recomendaciones legibles."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -230,7 +233,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Ejecuta el pipeline de evaluación para generar un objeto HealthResult consolidado."""
+    """Pipeline de evaluación: mapea SystemMetrics -> HealthResult."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS.keys()}, ["Error: Instancia de métricas no válida."])
     
@@ -263,13 +266,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(points: int, max_val: int) -> str:
-    """Genera una representación visual de barra simple para el desglose de métricas."""
+    """Visualización en texto de una barra de progreso de caracteres ASCII."""
     m = max(1, int(max_val))
     p = max(0, min(int(points), m))
     return ('#' * p) + ('.' * (m - p))
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Crea una representación textual legible del reporte de salud."""
+    """Genera una representación en formato lista (texto) del HealthResult."""
     if not isinstance(result, HealthResult) or not (0 <= result.score <= 100):
         return ["Error: Informe de salud no disponible."]
     
