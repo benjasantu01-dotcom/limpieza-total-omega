@@ -288,7 +288,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                     for entry in it:
                         try:
                             scanner.process_entry(entry, directory_stack)
-                        except FileNotFoundError:
+                        except (OSError, PermissionError):
                             continue
             except (PermissionError, OSError):
                 continue

@@ -196,7 +196,7 @@ class StartupEntry:
             p_str: str = str(p)
             _EXISTS_CACHE[p_str] = True
             return p_str
-        except (OSError, ValueError, RuntimeError, TypeError, PermissionError):
+        except (OSError, ValueError, RuntimeError, TypeError, PermissionError, OSError):
             _EXISTS_CACHE[path_string] = False
             return ""
 
