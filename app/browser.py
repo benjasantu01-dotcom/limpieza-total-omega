@@ -140,6 +140,8 @@ def base_directories() -> List[Path]:
 
 def _is_path_inside_base(target_abs: str, base_abs: str) -> bool:
     """Confirma que 'target_abs' esté contenido bajo 'base_abs' para prevenir ataques de Directory Traversal."""
+    if not isinstance(target_abs, str) or not isinstance(base_abs, str):
+        return False
     if len(target_abs) >= MAX_PATH_LEN or len(base_abs) >= MAX_PATH_LEN or any(c in target_abs for c in '\0\r\n'):
         return False
     try:
