@@ -447,10 +447,10 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             tf.flush()
             os.fsync(tf.fileno())
             
-        if temp_path.stat().st_size != len(encoded_content):
-             raise OSError("Integridad del archivo temporal fallida.")
-
-        os.replace(temp_path, target_path)
+        if temp_path and temp_path.exists() and temp_path.stat().st_size == len(encoded_content):
+            os.replace(temp_path, target_path)
+        else:
+            raise OSError("Integridad del archivo temporal fallida.")
         
         # Sincronizar directorio para garantizar persistencia en metadata del FS
         dir_fd = os.open(str(base_path), os.O_RDONLY)

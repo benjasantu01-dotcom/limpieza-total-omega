@@ -330,24 +330,26 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     
     buf_size = 1024
     buf = ctypes.create_unicode_buffer(buf_size)
-    chars_written = psapi.GetModuleFileNameExW(ctypes.c_void_p(proc_handle), None, buf, buf_size)
+    try:
+        chars_written = psapi.GetModuleFileNameExW(ctypes.c_void_p(proc_handle), None, buf, buf_size)
+    except Exception:
+        return None
     
     if 0 < chars_written < buf_size:
         path_str = buf.value
-        # Filtro: evitar rutas UNC o dispositivos de sistema no locales
         if not path_str or any(path_str.startswith(prefix) for prefix in ("\\\\", "\\??\\", "\\Device\\")):
             return None
         
         p = Path(path_str)
-        # Validación de integridad y seguridad sobre la ruta encontrada
         if not p.exists() or p.is_symlink(): return None
         
-        p_resolved = p.resolve(strict=False)
-        # Verificación contra el registro central de rutas protegidas
-        if is_protected_path(str(p_resolved)) or not is_safe_to_modify(str(p_resolved)):
+        try:
+            p_resolved = p.resolve(strict=False)
+            if is_protected_path(str(p_resolved)) or not is_safe_to_modify(str(p_resolved)):
+                return None
+            return p_resolved
+        except Exception:
             return None
-        
-        return p_resolved
     return None
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
@@ -397,8 +399,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, error_reason or "Verificación de seguridad fallida."
         
         if not psapi.EmptyWorkingSet(ctypes.c_void_p(proc_handle)): 
-            error_code = kernel32.GetLastError()
-            return False, f"Sistema denegó la operación (Error {error_code})."
+            return False, f"Sistema denegó la operación (Error {kernel32.GetLastError()})."
             
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, OSError, ValueError, TypeError) as e:
