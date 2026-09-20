@@ -193,6 +193,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         parent = (dest.parent if not dest.exists() else dest.resolve().parent)
         if is_protected_path(parent) or _is_recursive_violation(s_res, dest): return False
         if not os.access(parent, os.W_OK) or not os.access(s_res, os.W_OK): return False
+        # Prevenir cross-device moves que puedan causar fallos de I/O o pérdida de metadatos
         return s_res.drive == parent.drive and _validate_file_attributes(s_res)
     except (OSError, RuntimeError, AttributeError):
         return False

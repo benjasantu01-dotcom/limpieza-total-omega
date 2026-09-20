@@ -1257,3 +1257,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-20T03:34:50` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez en la detección de archivos en `_collect_candidates` asegurando que las rutas se resuelvan antes de verificar su existencia y aplicando el chequeo de seguridad antes de cualquier acceso de I/O, evitando procesar enlaces simbólicos o rutas malformadas que podrían evadir las restricciones de `safety.py`.
 - `2026-09-20T03:34:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-20T03:34:50` Corrida terminada. Total usado hoy: 84.
+- `2026-09-20T03:42:14` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-09-20T03:42:44` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez del motor de cómputo ante entradas maliciosas o corruptas mediante una validación explícita en `_evaluate_rules` y `compute_score`, asegurando que las factorías de mensajes y el procesamiento de métricas no propaguen excepciones inesperadas o datos no imprimibles.
+- `2026-09-20T03:43:44` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-20T03:44:47` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-20T03:45:53` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-20T03:47:05` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-20T03:48:17` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del manejo de procesos en `_get_process_path` mediante la validación explícita de la existencia del ejecutable y la restricción adicional de rutas mediante `is_protected_path`, asegurando que ninguna operación de trim pueda afectar involuntariamente a procesos con privilegios elevados o bloqueados por política de seguridad, manteniendo la consistencia con las reglas del proyecto.
+- `2026-09-20T03:48:31` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha robustecido `_is_safe_for_disk_op` añadiendo una comprobación explícita para evitar que `shutil.move` cruce límites de unidades de disco (cross-device move), lo cual puede fallar silenciosamente o dejar archivos en estados intermedios inconsistentes.
+- `2026-09-20T03:48:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-20T03:48:31` Corrida terminada. Total usado hoy: 88.

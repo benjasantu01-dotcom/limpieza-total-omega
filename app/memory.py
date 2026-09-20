@@ -340,7 +340,9 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
             if os.path.abspath(p) != os.path.realpath(p): return None
             
             p_resolved = p.resolve(strict=False)
-            if is_protected_path(str(p_resolved)) or not is_safe_to_modify(str(p_resolved)): 
+            if is_protected_path(str(p_resolved)) or not p_resolved.exists(): 
+                return None
+            if not is_safe_to_modify(str(p_resolved)): 
                 return None
             
             return p_resolved

@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-18 | 31 | 1 | 8 | 2 | 28 |
+| 2026-09-18 | 31 | 1 | 8 | 2 | 24 |
 | 2026-09-19 | 147 | 12 | 23 | 14 | 154 |
-| 2026-09-20 | 35 | 3 | 8 | 6 | 32 |
+| 2026-09-20 | 38 | 3 | 8 | 6 | 33 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - robustez ante casos límite: **45**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **37**
+- seguridad defensiva: **40**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **21**
+- `healthscore.py`: **22**
 - `assistant.py`: **20**
 - `browser.py`: **20**
 - `safety.py`: **19**
+- `memory.py`: **18**
 - `diskreport.py`: **17**
 - `duplicates.py`: **17**
-- `memory.py`: **17**
 - `settings.py`: **17**
 - `quarantine.py`: **15**
-- `organizer.py`: **13**
+- `organizer.py`: **14**
 - `branding.py`: **12**
 - `scanner.py`: **10**
 - `main.py`: **8**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-20T03:48:31` **organizer.py** (seguridad defensiva): Se ha robustecido `_is_safe_for_disk_op` añadiendo una comprobación explícita para evitar que `shutil.move` cruce límites de unidades de disco (cross-device move), lo cual puede fallar silenciosamente o dejar archivos en estados intermedios inconsistentes.
+- `2026-09-20T03:48:17` **memory.py** (seguridad defensiva): Se ha mejorado la robustez del manejo de procesos en `_get_process_path` mediante la validación explícita de la existencia del ejecutable y la restricción adicional de rutas mediante `is_protected_path`, asegurando que ninguna operación de trim pueda afectar involuntariamente a procesos con privilegios elevados o bloqueados por política de seguridad, manteniendo la consistencia con las reglas del proyecto.
+- `2026-09-20T03:42:44` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de cómputo ante entradas maliciosas o corruptas mediante una validación explícita en `_evaluate_rules` y `compute_score`, asegurando que las factorías de mensajes y el procesamiento de métricas no propaguen excepciones inesperadas o datos no imprimibles.
 - `2026-09-20T03:34:50` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez en la detección de archivos en `_collect_candidates` asegurando que las rutas se resuelvan antes de verificar su existencia y aplicando el chequeo de seguridad antes de cualquier acceso de I/O, evitando procesar enlaces simbólicos o rutas malformadas que podrían evadir las restricciones de `safety.py`.
 - `2026-09-20T03:34:38` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_collect_summary_data` y las funciones que lo consumen, añadiendo una validación de `path.exists()` dentro del bucle de recorrido para prevenir errores ante archivos que son eliminados o bloqueados por el sistema durante la ejecución del escaneo, manteniendo la integridad del proceso de reporte sin detenerse inesperadamente.
 - `2026-09-20T03:23:44` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva al mejorar `_is_safe_text_structure` para detectar y bloquear secuencias de escape ANSI adicionales y patrones de inyección de rutas más variados, asegurando que el motor de consultas no pueda ser engañado por texto malformado.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-20T02:53:15` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `PermissionError` y `OSError` al intentar resolver la ruta de entrada en `_validate_root`, evitando que el programa se bloquee al acceder a rutas con permisos restringidos o sistemas de archivos inaccesibles.
 - `2026-09-20T02:53:05` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `_sum_directory_recursive` ante archivos bloqueados o en uso (típicos al escanear cachés de navegadores activos) mediante la captura explícita de `PermissionError` y `OSError` durante la lectura de atributos con `entry.stat()`, evitando que el escaneo completo aborte por una sola falla de acceso.
 - `2026-09-20T02:52:08` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` mediante la validación estricta de tipos en los datos de entrada (evitando que listas o diccionarios anidados pasen como métricas válidas), protegiendo al sistema ante entradas inesperadas o malformadas provenientes de fuentes externas.
-- `2026-09-20T02:42:59` **settings.py** (rendimiento): Optimicé el rendimiento de carga y validación mediante la implementación de una caché de integridad (`_INTEGRITY_CACHE`) y la eliminación de llamadas redundantes a `is_safe_to_modify` dentro de los validadores, consolidando las verificaciones de rutas bajo el cacheo de `_Validators._run_safety_checks`.
-- `2026-09-20T02:32:38` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando las búsquedas en el manifiesto de listas a diccionarios (`dict`), reduciendo la complejidad algorítmica de O(N²) a O(N) al realizar validaciones masivas.
-- `2026-09-20T02:31:37` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` eliminando el uso innecesario de `is_protected_path` (que es una operación de consulta de string) sobre el nombre del proceso, delegando exclusivamente el filtrado de seguridad a la capa de operación real (`trim_working_set`), y mejorando la eficiencia del bucle mediante la eliminación de llamadas redundantes.

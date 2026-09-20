@@ -217,16 +217,16 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Ejecuta una lista de reglas de recomendación sobre una métrica normalizada específica."""
+    """Ejecuta una lista de reglas de recomendación, filtrando mensajes inválidos o no seguros."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str):
-                    clean_msg = "".join(char for char in msg if char.isprintable()).strip()
+                    clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                     if clean_msg:
                         findings.append(clean_msg[:200])
-        except Exception:
+        except (Exception, TypeError, ValueError):
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -247,7 +247,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             weighted_points = _clamp(round(area_ratio * entry.weight), 0.0, float(entry.weight))
             metric_breakdown[entry.area] = int(weighted_points)
             accumulated_score += weighted_points
-        except Exception:
+        except (Exception, TypeError, ValueError):
             continue
             
     final_score = int(_clamp(round(accumulated_score), 0.0, 100.0))
