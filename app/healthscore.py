@@ -224,23 +224,23 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
     
+    # Validar integridad nuevamente para prevenir inyecciones de datos corruptos antes de procesar
+    metrics.validate()
+    
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: float = 0.0
     
     for entry in _PIPELINE:
         try:
-            area_ratio = entry.scorer(metrics)
-            if not math.isfinite(area_ratio):
-                metric_breakdown[entry.area] = 0
-                continue
-                
+            area_ratio = _clamp(entry.scorer(metrics), 0.0, 1.0)
+            
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
             weighted_points = int(_clamp(round(area_ratio * entry.weight), 0.0, float(entry.weight)))
             metric_breakdown[entry.area] = weighted_points
-            accumulated_score += weighted_points
+            accumulated_score += float(weighted_points)
         except (Exception, TypeError, ValueError, ZeroDivisionError):
             metric_breakdown[entry.area] = 0
             continue

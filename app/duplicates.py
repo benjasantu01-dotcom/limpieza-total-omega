@@ -229,20 +229,21 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if entry.is_symlink() or (entry.is_dir() and is_junction(Path(entry.path))):
+                        p = Path(entry.path)
+                        if skip_protected and is_protected_path(p):
+                            continue
+                        if entry.is_symlink() or (entry.is_dir() and is_junction(p)):
                             continue
                         
                         if entry.is_dir():
-                            _scan_dir(Path(entry.path))
+                            _scan_dir(p)
                             continue
                         
-                        # Stat una única vez por entrada para obtener tamaño y evitar bloqueos iniciales
                         st = entry.stat(follow_symlinks=False)
-                        path_p = Path(entry.path)
                         
                         if st.st_size >= min_size and entry.path not in visited_files:
-                            if _is_valid_candidate(path_p, st.st_size):
-                                size_to_paths_map[st.st_size].append(path_p)
+                            if _is_valid_candidate(p, st.st_size):
+                                size_to_paths_map[st.st_size].append(p)
                                 visited_files.add(entry.path)
                     except (FileNotFoundError, OSError, PermissionError):
                         continue

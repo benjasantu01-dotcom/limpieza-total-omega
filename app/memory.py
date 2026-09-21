@@ -330,8 +330,11 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     
     if 0 < chars_written < 1024:
         path_str = buf.value
-        # Filtra rutas de dispositivo poco fiables
-        if not path_str or any(path_str.startswith(p) for p in ("\\\\", "\\??\\", "\\Device\\")):
+        # Filtra rutas de dispositivo, secuencias de escape y reparse points sospechosos
+        if not path_str or any(path_str.startswith(p) for p in ("\\\\", "\\??\\", "\\Device\\", "\\\\?\\")):
+            return None
+        # Validación extra contra caracteres de control
+        if any(ord(c) < 32 for c in path_str):
             return None
         p = Path(path_str)
         try:

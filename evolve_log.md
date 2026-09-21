@@ -1494,3 +1494,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T02:00:36` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
 - `2026-09-21T02:00:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T02:00:36` Corrida terminada. Total usado hoy: 48.
+- `2026-09-21T02:09:00` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-09-21T02:09:27` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del escaneo de duplicados añadiendo una validación explícita mediante `is_protected_path` dentro de `_scan_dir`, garantizando que el recolector de candidatos no acceda ni procese rutas protegidas desde el inicio, reforzando la seguridad defensiva.
+- `2026-09-21T02:09:54` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva del pipeline `compute_score` validando explícitamente el estado interno de las métricas antes y después del procesamiento, asegurando que cualquier entrada corrupta o inesperada sea neutralizada mediante el uso de `_to_float` y `_clamp` en cada punto crítico de acceso, evitando errores de ejecución y garantizando que siempre se devuelva un resultado válido.
+- `2026-09-21T02:10:54` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-21T02:11:57` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-21T02:13:18` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._ensure_path_writable_and_clean
+- `2026-09-21T02:13:33` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha implementado un chequeo adicional en `_get_process_path` para ignorar explícitamente rutas que contengan caracteres sospechosos o secuencias de escape de dispositivo/reparse, reforzando la seguridad defensiva antes de cualquier operación de validación de rutas en el módulo `memory.py`.
+- `2026-09-21T02:13:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T02:13:33` Corrida terminada. Total usado hoy: 52.
