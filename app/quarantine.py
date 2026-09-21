@@ -803,12 +803,12 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     purged_ids: Set[str] = set()
     
     try:
-        for stored_path in quarantine_root.iterdir():
-            if stored_path.name == MANIFEST_NAME or not stored_path.is_file() or stored_path.is_symlink():
-                continue
-            
-            item = item_map.get(stored_path.name)
-            if item and _is_item_purgable(stored_path, item, quarantine_root):
+        # Pre-filtrado de archivos físicos existentes
+        existing_files = {f.name for f in quarantine_root.iterdir() if f.is_file() and f.name != MANIFEST_NAME}
+        
+        for name in existing_files:
+            item = item_map.get(name)
+            if item and _is_item_purgable(quarantine_root / name, item, quarantine_root):
                 purged_ids.add(item.item_id)
                 
         if purged_ids:

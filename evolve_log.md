@@ -1521,3 +1521,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T14:22:48` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-21T14:22:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T14:22:48` Corrida terminada. Total usado hoy: 335.
+- `2026-09-21T14:25:09` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-21T14:26:24` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards
+- `2026-09-21T14:27:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-21T14:27:49` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de un subproceso pesado (`subprocess.run`) con un acceso directo y eficiente a la información mediante un cache más inteligente y validaciones previas, evitando el costo de inicializar el entorno de PowerShell en cada llamada.
+- `2026-09-21T14:28:15` 🛑 Propuesta bloqueada por la guardia en organizer.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: JunkFile.is_junk_extension
+- `2026-09-21T14:29:15` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-21T14:29:20` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-21T14:30:08` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé `list_items` y `purge_all` para evitar lecturas de disco innecesarias y el uso de listas temporales redundantes mediante el uso de conjuntos (`set`) para las búsquedas de metadatos, reduciendo la complejidad algorítmica de O(N*M) a O(N+M).
+- `2026-09-21T14:30:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T14:30:08` Corrida terminada. Total usado hoy: 339.
