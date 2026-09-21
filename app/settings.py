@@ -306,9 +306,16 @@ def _load_impl(ruta: Path) -> AppSettings:
             return DEFAULTS.copy()
             
         with open(ruta, "r", encoding="utf-8") as f:
-            data = json.load(f)
+            try:
+                data = json.load(f)
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                return DEFAULTS.copy()
+                
+            if not _is_dict(data):
+                return DEFAULTS.copy()
+                
             return _coerce_and_verify(validate(data))
-    except (OSError, IOError, json.JSONDecodeError, UnicodeDecodeError, UnsafePathError, PermissionError):
+    except (OSError, IOError, UnsafePathError, PermissionError):
         return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:

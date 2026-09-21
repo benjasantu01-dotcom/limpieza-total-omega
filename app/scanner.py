@@ -216,8 +216,10 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """Ejecuta en cascada las heurísticas registradas sobre el archivo objetivo."""
-        if not path.exists() or is_protected_path(path):
+        # El archivo pudo haber sido borrado o bloqueado en milisegundos previos
+        if not path.exists():
             return
+            
         if (double_ext := check_double_extension(path, entry, self.now_ts)):
             self.results.append(double_ext)
         if ext in SUSPICIOUS_EXECUTABLE_EXT:
@@ -265,8 +267,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 with os.scandir(current_dir) as it:
                     for entry in it:
                         try:
-                            if not is_protected_path(Path(entry.path)):
-                                scanner.process_entry(entry, directory_stack)
+                            # Se delega el chequeo de protección a _is_safe_entry para consistencia
+                            scanner.process_entry(entry, directory_stack)
                         except (OSError, PermissionError, AttributeError):
                             continue
             except (PermissionError, OSError, AttributeError):

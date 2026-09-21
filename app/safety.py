@@ -37,7 +37,6 @@ __all__ = [
 ]
 
 # Constantes de atributos de archivo Win32 obtenidas de WinBase.h
-# Se utilizan para filtrar archivos que el SO bloquea o gestiona de forma especial.
 FILE_ATTRIBUTE_HIDDEN: Final[int] = 0x02
 FILE_ATTRIBUTE_SYSTEM: Final[int] = 0x04
 FILE_ATTRIBUTE_TEMPORARY: Final[int] = 0x100
@@ -184,10 +183,7 @@ def is_running_as_admin() -> bool:
         return False
 
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
-    """
-    Detecta caracteres prohibidos en rutas Windows, secuencias de control RTL
-    o caracteres nulos que facilitan ataques de inyección.
-    """
+    """Detecta caracteres prohibidos en rutas Windows, secuencias de control RTL o nulos."""
     if not isinstance(path_str, str) or not path_str: return True
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]|[\x00-\x1f\x7f]', path_str))
 
@@ -237,7 +233,7 @@ def _is_encrypted_or_compressed_or_sparse(path_str: str) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_offline(path_str: str) -> bool:
-    """Detecta si un archivo es gestionado por proveedores en la nube (ej. OneDrive placeholders)."""
+    """Detecta si un archivo es gestionado por proveedores en la nube."""
     if os.name != 'nt': return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
@@ -252,7 +248,6 @@ def _is_file_in_use(path_str: str) -> bool:
     if os.name != 'nt' or not os.path.isabs(path_str) or not os.path.isfile(path_str):
         return False
     kernel32 = ctypes.windll.kernel32
-    # GENERIC_READ (0x80000000), FILE_SHARE_READ (0x00000001)
     handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0x00000001, None, 3, 0x00000080, None)
     if handle == -1: 
         return ctypes.GetLastError() == 32
@@ -269,7 +264,7 @@ def _is_volume_readonly(path_str: str) -> bool:
         if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0):
             return bool(flags.value & 0x80000)
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
-        return False
+        return True
     return False
 
 @lru_cache(maxsize=2048)
@@ -291,7 +286,6 @@ def _is_sensitive_extension(path: Path) -> bool:
     return path.suffix.lower() in SENSITIVE_EXTENSIONS
 
 # Lista de validadores de integridad aplicada secuencialmente
-# Cada regla es un predicado booleano que determina si una ruta es insegura.
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _IntegrityCheck(ProtectionReason.SYMLINK, lambda p, _: p.is_symlink()),
     _IntegrityCheck(ProtectionReason.REPARSE_POINT, lambda p, _: _is_reparse_point(str(p))),
@@ -371,7 +365,7 @@ def _validate_access_permissions(path: Path) -> None:
 
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
-    """Estandariza ruta, resuelve relativos y normaliza Unicode (NFKC) para evitar ataques de ofuscación."""
+    """Estandariza ruta, resuelve relativos y normaliza Unicode (NFKC)."""
     if path is None: raise ValueError("Ruta nula recibida.")
     path_str = str(path).strip()
     if not path_str: raise ValueError("Entrada de ruta vacía.")
@@ -386,12 +380,12 @@ def normalize(path: PathLike) -> Path:
         raise ValueError(f"Error irrecuperable al normalizar {path_str}: {e}")
 
 def is_absolute_path_allowed(path: PathLike) -> bool:
-    """Verifica que la ruta sea absoluta para evitar dependencia del contexto actual."""
+    """Verifica que la ruta sea absoluta."""
     try: return Path(path).is_absolute()
     except (TypeError, ValueError): return False
 
 def is_drive_root(path: PathLike) -> bool:
-    """Verifica si la ruta es la raíz del volumen (ej. C:\\), la cual nunca debe borrarse."""
+    """Verifica si la ruta es la raíz del volumen (ej. C:\\)."""
     try:
         p = normalize(path)
         return p == Path(p.anchor)
@@ -399,7 +393,7 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=4096)
 def _is_system_path_cached(path_str: str) -> bool:
-    """Verifica si la ruta está dentro de directorios de sistema mediante búsqueda eficiente."""
+    """Verifica si la ruta está dentro de directorios de sistema."""
     path_norm = os.path.normpath(path_str).lower()
     if any(path_norm.startswith(root) for root in _SYSTEM_ROOT_PATHS_SET): return True
     parts = path_norm.split(os.sep)
@@ -416,7 +410,7 @@ def is_protected_path(path: PathLike) -> TypeGuard[str]:
 
 @lru_cache(maxsize=4096)
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
-    """Verifica si 'child' reside debajo de 'parent' evitando el escape de carpeta."""
+    """Verifica si 'child' reside debajo de 'parent'."""
     if child is None or parent is None: return False
     try:
         c_path = normalize(child)
@@ -427,7 +421,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
 
 @lru_cache(maxsize=2048)
 def is_sensitive_file(path: PathLike) -> bool:
-    """Verifica si la extensión del archivo está bloqueada por ser componente crítico del sistema."""
+    """Verifica si la extensión del archivo está bloqueada."""
     if not path: return True
     try: return _is_sensitive_extension(Path(str(path)))
     except (TypeError, ValueError, OSError): return True 
