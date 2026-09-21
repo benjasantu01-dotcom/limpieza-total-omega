@@ -245,7 +245,7 @@ def _is_offline(path_str: str) -> bool:
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
     """Verifica bloqueos mediante intento de apertura con acceso exclusivo al handle."""
-    if os.name != 'nt' or not os.path.isabs(path_str) or not os.path.isfile(path_str):
+    if os.name != 'nt' or not isinstance(path_str, str) or not os.path.isabs(path_str) or not os.path.isfile(path_str):
         return False
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0x00000001, None, 3, 0x00000080, None)
@@ -257,14 +257,14 @@ def _is_file_in_use(path_str: str) -> bool:
 @lru_cache(maxsize=128)
 def _is_volume_readonly(path_str: str) -> bool:
     """Consulta el flag de solo lectura del volumen montado mediante GetVolumeInformationW."""
-    if os.name != 'nt': return False
-    root = os.path.splitdrive(path_str)[0] + "\\"
-    flags = ctypes.c_ulong()
+    if os.name != 'nt' or not isinstance(path_str, str): return False
     try:
+        root = os.path.splitdrive(path_str)[0] + "\\"
+        flags = ctypes.c_ulong()
         if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0):
             return bool(flags.value & 0x80000)
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
-        return True
+        pass
     return False
 
 @lru_cache(maxsize=2048)

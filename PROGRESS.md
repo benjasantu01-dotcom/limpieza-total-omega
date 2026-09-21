@@ -5,27 +5,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **503**
-- Mejoras aceptadas: **208** (41.4% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 48
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 215
+- Rechazadas por guardia de seguridad: 49
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 77 | 6 | 17 | 10 | 86 |
-| 2026-09-21 | 131 | 9 | 31 | 7 | 129 |
+| 2026-09-20 | 76 | 6 | 17 | 9 | 85 |
+| 2026-09-21 | 132 | 9 | 32 | 7 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **47**
-- manejo de errores y validación de entradas: **46**
+- manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **42**
 - robustez ante casos límite: **41**
-- rendimiento: **32**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,10 +35,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **17**
 - `memory.py`: **17**
 - `duplicates.py`: **17**
+- `safety.py`: **16**
 - `healthscore.py`: **15**
 - `settings.py`: **15**
-- `safety.py`: **15**
-- `branding.py`: **14**
+- `branding.py`: **13**
 - `scanner.py`: **12**
 - `organizer.py`: **12**
 - `main.py`: **9**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T13:21:04` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_volume_readonly` para manejar correctamente errores de bajo nivel en llamadas a `ctypes` y se añadió una validación defensiva en `_is_file_in_use` para prevenir errores de tipo cuando se manejan rutas problemáticas, asegurando que `safety.py` no colapse ante entradas inesperadas.
 - `2026-09-21T12:54:16` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `format_size` y `_bytes_to_mb` mediante una validación de tipo más estricta y el manejo explícito de valores negativos, evitando divisiones por cero o cálculos erróneos que podrían romper la UI en reportes malformados.
 - `2026-09-21T12:53:50` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `__is_system_hidden` y `_should_skip_entry` al manejar explícitamente posibles errores de llamada al sistema mediante `ctypes` y validación de tipos, evitando que excepciones inesperadas interrumpan el escaneo de directorios.
 - `2026-09-21T12:53:20` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_ring` validando explícitamente los parámetros de entrada y asegurando que las operaciones críticas de `Path` no lancen excepciones inesperadas, reemplazando chequeos genéricos por validaciones más estrictas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T10:40:47` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine.py` ante casos de concurrencia y corrupción de archivos mediante la implementación de `os.fsync` y validaciones de estado post-operación más estrictas en `_safe_unlink`, evitando dejar manifiestos desincronizados cuando el sistema de archivos falla o bloquea el acceso.
 - `2026-09-21T10:34:51` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_safe_for_disk_op` añadiendo una verificación de existencia real mediante `path.exists()` antes de realizar chequeos de estado, evitando excepciones innecesarias en condiciones de carrera (Race Conditions) donde un archivo es borrado por el sistema entre la detección y la manipulación.
 - `2026-09-21T10:34:39` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` al implementar una validación estricta contra entradas malformadas o PIDs negativos, evitando errores de casting durante el procesamiento de datos asíncronos y garantizando que el bucle de diagnóstico no se rompa ante texto inesperado de PowerShell.
-- `2026-09-21T10:20:49` **browser.py** (robustez ante casos límite): Se mejora la robustez frente a errores de I/O en `_sum_directory_recursive` asegurando que la llamada a `os.scandir` gestione el contexto de forma segura ante carpetas con permisos restringidos, evitando propagar excepciones de acceso a niveles superiores.
