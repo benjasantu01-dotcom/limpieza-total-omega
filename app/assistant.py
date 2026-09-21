@@ -47,7 +47,7 @@ import math
 import logging
 import operator
 from itertools import islice
-from functools import lru_cache, wraps
+from functools import lru_cache, wraps, cached_property
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, Optional, Union, NamedTuple, Iterator
@@ -297,6 +297,12 @@ class SystemContext:
         except (TypeError, ValueError):
             return default
 
+    @cached_property
+    def active_problems(self) -> tuple[str, ...]:
+        """Retorna problemas activos identificados, cacheados por instancia."""
+        if not self.analyzed: return ()
+        return tuple(msg for crit in _CRITERIOS_SALUD if (msg := crit.format_if_triggered(self)))
+
     @property
     def is_empty(self) -> bool:
         """Verifica si el contexto contiene datos útiles tras el análisis."""
@@ -467,11 +473,6 @@ def explain_area(area: Any) -> str:
         return "No tengo una explicación para esa área."
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
-@lru_cache(maxsize=16)
-def _get_active_problems(ctx: SystemContext) -> tuple[str, ...]:
-    """Identifica problemas activos comparando contra criterios de salud."""
-    return tuple(msg for crit in _CRITERIOS_SALUD if (msg := crit.format_if_triggered(ctx)))
-
 def _format_problem_message(problems: tuple[str, ...], score: Union[int, str]) -> str:
     """Crea una oración descriptiva con los problemas encontrados."""
     try:
@@ -481,10 +482,6 @@ def _format_problem_message(problems: tuple[str, ...], score: Union[int, str]) -
         return f"Con un puntaje de {clean_score}/100, por orden de prioridad: {', '.join(problems)}."
     except Exception:
         return "Tu sistema tiene problemas detectados."
-
-def _identify_active_problems(ctx: SystemContext) -> tuple[str, ...]:
-    """Valida la integridad del escaneo y retorna los problemas identificados."""
-    return _get_active_problems(ctx) if ctx.analyzed else ()
 
 @_safe_handler_wrapper
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
@@ -540,7 +537,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     grade_str = ctx.grade if ctx.grade else ""
     score_display = f"Tu puntaje es {score_val}/100{f' (nota {grade_str})' if grade_str else ''}."
     
-    problemas = _identify_active_problems(ctx)
+    problemas = ctx.active_problems
     resumen = ("Lo que más te está restando: " + ", ".join(problemas[:3]) + ".") if problemas else "No hay nada urgente."
     explicacion = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio."
     return Answer(_validate_response_length(f"{score_display} {resumen}{explicacion}"), notice=OFFLINE_NOTICE)
@@ -556,13 +553,13 @@ def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
 
 TOKENS_BY_CATEGORY: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
     token: handler 
-    for key_set, handler in {
-        frozenset(["ram", "memoria", "lenta", "lento", "acelerar"]): handle_ram,
-        frozenset(["espacio", "disco", "lleno", "recuperar", "liberar"]): handle_disk,
-        frozenset(["seguro", "virus", "sospechos", "borrar", "peligro"]): handle_security,
-        frozenset(["puntaje", "salud", "nota", "score"]): handle_score,
-        frozenset(["inicio", "arranque", "arranca", "encender"]): handle_startup
-    }.items() for token in key_set
+    for key_set, handler in (
+        (frozenset(["ram", "memoria", "lenta", "lento", "acelerar"]), handle_ram),
+        (frozenset(["espacio", "disco", "lleno", "recuperar", "liberar"]), handle_disk),
+        (frozenset(["seguro", "virus", "sospechos", "borrar", "peligro"]), handle_security),
+        (frozenset(["puntaje", "salud", "nota", "score"]), handle_score),
+        (frozenset(["inicio", "arranque", "arranca", "encender"]), handle_startup)
+    ) for token in key_set
 }
 
 def _sanitize_query(question: str) -> str:
@@ -589,7 +586,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             return handler(context, question)
             
     cuerpo = _format_problem_message(
-        _identify_active_problems(context), 
+        context.active_problems, 
         context.score if context.score is not None else "N/A"
     )
     return Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
