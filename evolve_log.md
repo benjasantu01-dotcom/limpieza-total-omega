@@ -1123,3 +1123,41 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-21T11:16:43` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se implementó un bloqueo preventivo contra el uso de flujos de datos alternos (ADS) en Windows durante la creación del nombre almacenado, fortaleciendo la defensa contra la ejecución de código oculto mediante `stream` y asegurando que las rutas de los archivos aislados sean estrictamente simples y seguras.
 - `2026-09-21T11:16:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T11:16:43` Corrida terminada. Total usado hoy: 264.
+- `2026-09-21T11:20:51` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-09-21T11:21:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-21T11:22:42` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-21T11:23:28` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una verificación explícita en `_validate_boundary_conditions` para evitar el acceso a archivos de sistema mediante el uso de nombres de dispositivo reservados en cualquier parte de la ruta, previniendo bypasses por `path traversal` hacia dispositivos como `CON` o `NUL` que pueden causar comportamientos inesperados o cuelgues del proceso.
+- `2026-09-21T11:24:29` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 84): unexpected character after line continuation character
+- `2026-09-21T11:24:46` Tests FALLARON:
+```
+    +  where False = is_file()
+E        +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+E        +      where 'config.json' = settings.SETTINGS_FILE
+
+evolve/tests/test_assistant.py:61: AssertionError
+______________________ test_a_normal_folder_is_remembered ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0')
+
+    def test_a_normal_folder_is_remembered(tmp_path):
+        segura = str(tmp_path / "Descargas")
+>       assert settings.validate({"ultima_carpeta": segura})["ultima_carpeta"] == segura
+E       AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+E         
+E         - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+
+evolve/tests/test_assistant.py:124: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert False
+ +  where False = is_file()
+ +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+ +      where 'config.json' = settings.SETTINGS_FILE
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+2 failed, 297 passed in 1.69s
+
+```
+- `2026-09-21T11:24:46` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_Validators.path` y `_Validators._run_safety_checks` para prevenir el uso de rutas con enlaces simbólicos o puntos de reparse, asegurando que la validación sea estrictamente sobre rutas reales resueltas, evitando así el "path traversal" o la ejecución involuntaria fuera del sandbox.
+- `2026-09-21T11:24:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T11:24:46` Corrida terminada. Total usado hoy: 268.

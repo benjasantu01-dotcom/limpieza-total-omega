@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 47
+- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 93 | 6 | 19 | 11 | 111 |
-| 2026-09-21 | 127 | 7 | 28 | 7 | 95 |
+| 2026-09-20 | 93 | 6 | 19 | 11 | 107 |
+| 2026-09-21 | 128 | 8 | 30 | 7 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **46**
+- seguridad defensiva: **47**
 - robustez ante casos límite: **41**
 - rendimiento: **32**
 
@@ -35,8 +35,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **19**
 - `diskreport.py`: **18**
 - `duplicates.py`: **18**
+- `safety.py`: **17**
 - `settings.py`: **17**
-- `safety.py`: **16**
 - `healthscore.py`: **16**
 - `branding.py`: **14**
 - `organizer.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T11:23:28` **safety.py** (seguridad defensiva): Se ha añadido una verificación explícita en `_validate_boundary_conditions` para evitar el acceso a archivos de sistema mediante el uso de nombres de dispositivo reservados en cualquier parte de la ruta, previniendo bypasses por `path traversal` hacia dispositivos como `CON` o `NUL` que pueden causar comportamientos inesperados o cuelgues del proceso.
 - `2026-09-21T11:16:43` **quarantine.py** (seguridad defensiva): Se implementó un bloqueo preventivo contra el uso de flujos de datos alternos (ADS) en Windows durante la creación del nombre almacenado, fortaleciendo la defensa contra la ejecución de código oculto mediante `stream` y asegurando que las rutas de los archivos aislados sean estrictamente simples y seguras.
 - `2026-09-21T11:15:50` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `_get_process_path` validando que la ruta resultante sea una ruta absoluta y esté normalizada antes de ser comparada con los filtros de seguridad, previniendo posibles escapes por resolución de rutas relativas o inconsistencias en el formato de caracteres.
 - `2026-09-21T11:04:49` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `is_junction` y `is_system_or_hidden` añadiendo una validación explícita mediante `is_safe_to_modify` antes de interactuar con el sistema de archivos, asegurando que ninguna ruta bloqueada sea procesada ni siquiera por consultas de metadatos de bajo nivel.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T10:20:17` **branding.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `save_logo_svg` utilizando `try-except` específico para operaciones de sistema de archivos, asegurando que cualquier fallo en la resolución de rutas, creación de directorios o escritura sea capturado sin detener la ejecución de la UI, respetando los protocolos de seguridad existentes.
 - `2026-09-21T10:11:28` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` ante entradas malformadas o tipos inesperados, añadiendo un chequeo de tipo más estricto y un manejo de errores más defensivo al procesar el `source` para evitar excepciones no controladas durante la ingesta de datos.
 - `2026-09-21T10:00:25` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando las búsquedas en el sistema de archivos de una lista a un `set` de nombres, evitando así iteraciones anidadas de complejidad O(N*M) y reduciendo las llamadas a `stat` mediante la validación previa del nombre existente.
-- `2026-09-21T09:59:45` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la lógica de resolución repetida de rutas y validaciones redundantes dentro de `_process_directory` y `_is_safe_for_disk_op`, utilizando un conjunto de caché para evitar procesar subdirectorios ya validados y consolidando los chequeos de permisos antes de realizar operaciones costosas de I/O.

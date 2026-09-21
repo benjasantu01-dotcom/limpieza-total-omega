@@ -474,6 +474,10 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
         raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     if is_protected_path(target_path):
         raise UnsafePathError("Ruta en directorio del sistema bloqueada.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+    # Verificación adicional de nombres de dispositivo en cualquier parte de la ruta
+    for part in target_path.parts:
+        if _is_reserved_device_name(part.split('.')[0]):
+            raise UnsafePathError(f"Acceso a dispositivo reservado '{part}' bloqueado.", SafetyValidationErrorCode.RESERVED_NAME)
     if os.name == 'nt':
         try:
             root = target_path.anchor
