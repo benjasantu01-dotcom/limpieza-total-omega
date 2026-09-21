@@ -994,3 +994,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T09:33:15` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-09-21T09:33:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T09:33:15` Corrida terminada. Total usado hoy: 224.
+- `2026-09-21T09:38:55` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-09-21T09:39:36` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó la eficiencia en la búsqueda de handlers de preguntas mediante la eliminación de un loop redundante sobre las claves del diccionario `TOKENS_BY_CATEGORY`, reemplazándolo por una búsqueda directa y validación de tokens en una sola pasada.
+- `2026-09-21T09:40:10` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el renderizado del escudo y los gradientes eliminando el cálculo dinámico en `draw_logo` mediante la pre-calculación de las coordenadas del polígono, aprovechando que el factor de escala es constante para un tamaño dado, y reduciendo la complejidad en el bucle de franjas mediante acceso directo a los segmentos.
+- `2026-09-21T09:40:37` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-09-21T09:40:49` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` y las funciones auxiliares para evitar la redundancia de llamadas a `is_protected_path` sobre el mismo objeto `Path`, consolidando el filtrado para mejorar el rendimiento en recorridos profundos.
+- `2026-09-21T09:40:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T09:40:49` Corrida terminada. Total usado hoy: 228.

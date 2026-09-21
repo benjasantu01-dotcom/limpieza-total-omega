@@ -582,8 +582,8 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         )
     
     for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
-        if handler := TOKENS_BY_CATEGORY.get(token):
-            return handler(context, question)
+        if token in TOKENS_BY_CATEGORY:
+            return TOKENS_BY_CATEGORY[token](context, question)
             
     cuerpo = _format_problem_message(
         context.active_problems, 

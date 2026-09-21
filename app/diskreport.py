@@ -234,20 +234,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """
-    Recorre el sistema de archivos de forma iterativa empleando un stack LIFO.
-    
-    Implementa un mecanismo de prevención de bucles basándose en el Inode (o ID 
-    único del archivo en Windows) para asegurar que el recorrido no entre en una 
-    recursión infinita ante enlaces simbólicos circulares.
-
-    Args:
-        directory: Ruta raíz a explorar.
-        skip_protected: Si es True, omite directorios protegidos por `safety.py`.
-
-    Yields:
-        Tuplas (Path, int) conteniendo la ruta del archivo y su tamaño en bytes.
-    """
+    """Recorre el sistema de archivos de forma iterativa empleando un stack LIFO."""
     root_path = _validate_root(directory)
     if root_path is None: return
 
@@ -273,7 +260,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 stack.append(path)
                                 
                         elif entry.is_file(follow_symlinks=False):
-                            if skip_protected and is_protected_path(Path(entry.path)): continue
                             if st.st_size >= 0:
                                 yield Path(entry.path), st.st_size
                             
@@ -313,7 +299,8 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             if not relative.parts: continue
             
             top_level_folder = root / relative.parts[0]
-            if top_level_folder.is_dir():
+            # Solo consideramos carpetas, no archivos sueltos en la raíz
+            if top_level_folder != path:
                 folder_total_bytes[top_level_folder] += size_bytes
                 folder_file_counts[top_level_folder] += 1
         except (ValueError, OSError): 

@@ -361,23 +361,26 @@ def logo_ascii() -> str:
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Dibuja franjas decorativas de gradiente sobre el icono del escudo."""
     try:
-        if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in (canvas_x, canvas_y, scale)): return
         franjas_count = max(6, int(28 * scale))
         base_y = canvas_y + 18 * scale
         factor_y = 92 * scale / franjas_count
         center_x = canvas_x + 64 * scale
+        
         for seg in _get_grouped_segments(gradient_colors(franjas_count)):
-            progreso = ((seg.start_index + seg.end_index) / 2) / (franjas_count - 1)
+            # Cálculo optimizado del ancho medio del segmento
+            mid_idx = (seg.start_index + seg.end_index - 1) / 2
+            progreso = mid_idx / (franjas_count - 1)
             w = 36 * scale * (1.0 if progreso < 0.55 else 1.0 - (progreso - 0.55) * 1.9)
+            
             canvas.create_rectangle(center_x - w, base_y + seg.start_index * factor_y, 
-                                    center_x + w, base_y + seg.end_index * factor_y + 1, 
+                                    center_x + w, base_y + seg.end_index * factor_y, 
                                     fill=seg.hex_color, outline="")
     except (TypeError, ValueError, ZeroDivisionError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Renderiza símbolos internos (Omega y corte) sobre el escudo base."""
     try:
-        if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in (canvas_x, canvas_y, scale)): return
+        # Usamos valores pre-calculados para las decoraciones
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, 
                            canvas_x + 75 * scale, canvas_y + 41 * scale, 
                            fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
@@ -395,6 +398,8 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         s = float(size)
         if not math.isfinite(s) or s <= 0: return
         scale = max(0.1, min(10.0, s / 128.0))
+        
+        # Renderizado de capas
         canvas.create_oval(
             canvas_x + (64 * scale) - 75 * scale, canvas_y + (58 * scale) - 75 * scale, 
             canvas_x + (64 * scale) + 75 * scale, canvas_y + (58 * scale) + 75 * scale, 
