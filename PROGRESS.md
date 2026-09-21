@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 93 | 6 | 19 | 11 | 115 |
-| 2026-09-21 | 125 | 7 | 28 | 7 | 93 |
+| 2026-09-20 | 93 | 6 | 19 | 11 | 111 |
+| 2026-09-21 | 127 | 7 | 28 | 7 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **44**
+- seguridad defensiva: **46**
 - robustez ante casos límite: **41**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
+- `memory.py`: **19**
 - `browser.py`: **19**
 - `assistant.py`: **19**
 - `diskreport.py`: **18**
-- `memory.py`: **18**
 - `duplicates.py`: **18**
 - `settings.py`: **17**
 - `safety.py`: **16**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T11:16:43` **quarantine.py** (seguridad defensiva): Se implementó un bloqueo preventivo contra el uso de flujos de datos alternos (ADS) en Windows durante la creación del nombre almacenado, fortaleciendo la defensa contra la ejecución de código oculto mediante `stream` y asegurando que las rutas de los archivos aislados sean estrictamente simples y seguras.
+- `2026-09-21T11:15:50` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `_get_process_path` validando que la ruta resultante sea una ruta absoluta y esté normalizada antes de ser comparada con los filtros de seguridad, previniendo posibles escapes por resolución de rutas relativas o inconsistencias en el formato de caracteres.
 - `2026-09-21T11:04:49` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `is_junction` y `is_system_or_hidden` añadiendo una validación explícita mediante `is_safe_to_modify` antes de interactuar con el sistema de archivos, asegurando que ninguna ruta bloqueada sea procesada ni siquiera por consultas de metadatos de bajo nivel.
 - `2026-09-21T11:04:16` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez del escáner en `_is_excluded_path` añadiendo una comprobación explícita para evitar seguir rutas que contengan caracteres de control RTL (Right-to-Left) o caracteres de espacio inusuales que suelen usarse para ocultar extensiones o suplantar la identidad de archivos, reforzando la seguridad defensiva contra la manipulación de nombres de archivos.
 - `2026-09-21T11:00:58` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva añadiendo una validación explícita mediante `is_safe_to_modify` en la función `_sum_directory_recursive` antes de proceder con el escaneo, asegurando que cualquier entrada que pueda haber sido alterada o que resulte ser un punto de reparse/enlace sea rechazada antes de intentar operar sobre ella.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T10:11:28` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` ante entradas malformadas o tipos inesperados, añadiendo un chequeo de tipo más estricto y un manejo de errores más defensivo al procesar el `source` para evitar excepciones no controladas durante la ingesta de datos.
 - `2026-09-21T10:00:25` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando las búsquedas en el sistema de archivos de una lista a un `set` de nombres, evitando así iteraciones anidadas de complejidad O(N*M) y reduciendo las llamadas a `stat` mediante la validación previa del nombre existente.
 - `2026-09-21T09:59:45` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la lógica de resolución repetida de rutas y validaciones redundantes dentro de `_process_directory` y `_is_safe_for_disk_op`, utilizando un conjunto de caché para evitar procesar subdirectorios ya validados y consolidando los chequeos de permisos antes de realizar operaciones costosas de I/O.
-- `2026-09-21T09:54:49` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reduciendo las operaciones de string y evitando el uso de una lista intermedia con `split()`, además de delegar la conversión de tipos directamente en el bucle para mejorar la velocidad al procesar los 50 procesos del snapshot.
-- `2026-09-21T09:49:33` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `_is_file_locked` (que realizaban operaciones de entrada/salida costosas) al centralizar la validación de seguridad una sola vez por entrada durante el escaneo inicial.

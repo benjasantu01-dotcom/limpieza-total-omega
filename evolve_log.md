@@ -1113,3 +1113,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-21T11:05:01` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
 - `2026-09-21T11:05:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T11:05:01` Corrida terminada. Total usado hoy: 260.
+- `2026-09-21T11:10:41` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-09-21T11:11:43` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-21T11:12:46` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-21T11:13:52` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-21T11:15:04` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-21T11:15:50` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `_get_process_path` validando que la ruta resultante sea una ruta absoluta y esté normalizada antes de ser comparada con los filtros de seguridad, previniendo posibles escapes por resolución de rutas relativas o inconsistencias en el formato de caracteres.
+- `2026-09-21T11:16:15` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-21T11:16:43` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se implementó un bloqueo preventivo contra el uso de flujos de datos alternos (ADS) en Windows durante la creación del nombre almacenado, fortaleciendo la defensa contra la ejecución de código oculto mediante `stream` y asegurando que las rutas de los archivos aislados sean estrictamente simples y seguras.
+- `2026-09-21T11:16:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T11:16:43` Corrida terminada. Total usado hoy: 264.

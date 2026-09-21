@@ -241,8 +241,9 @@ def _check_path_syntax_integrity(path: Path) -> None:
     if len(path.parts) > 32:
         raise UnsafePathError("Profundidad de ruta excesiva.")
     
-    if ":" in path.name.replace(path.drive, "") or any(c in path_str for c in ("\0", "\x00")):
-        raise UnsafePathError("Ruta con flujos de datos alternos (ADS) o caracteres prohibidos.")
+    # Previene ADS en Windows: nombre de archivo no debe contener ':' fuera del drive
+    if ":" in path.name:
+        raise UnsafePathError("Ruta con flujos de datos alternos (ADS) prohibidos.")
     
     try:
         resolved = path.resolve(strict=True)
@@ -272,7 +273,8 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
     name_base = "".join(c for c in name_base if ord(c) >= 32)
     
     extension = f".{parts[-1]}" if len(parts) > 1 else ""
-    candidate = f"{item_id}__{name_base[:64]}{extension}"[:128]
+    # Evitar que el nombre contenga ':' accidentalmente tras el filtrado
+    candidate = f"{item_id}__{name_base[:64]}{extension}".replace(":", "_")[:128]
     return candidate
 
 def _ensure_path_ownership(path: Path) -> None:

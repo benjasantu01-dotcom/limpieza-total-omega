@@ -339,9 +339,13 @@ def _get_process_path(proc_handle: ctypes.c_void_p) -> Optional[Path]:
             return None
         if any(ord(c) < 32 for c in path_str):
             return None
-        p = Path(path_str)
+        
         try:
-            return p.resolve(strict=False)
+            # Asegurar que es una ruta absoluta y normalizada antes de validar
+            p = Path(path_str).resolve(strict=False)
+            if not p.is_absolute():
+                return None
+            return p
         except (OSError, RuntimeError):
             return None
     return None
