@@ -558,3 +558,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T04:03:36` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en el método `on_trim_process` para asegurar que el PID sea validado como un entero positivo y existente antes de intentar cualquier operación, evitando excepciones no capturadas al interactuar con el sistema de procesos.
 - `2026-09-21T04:03:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T04:03:36` Corrida terminada. Total usado hoy: 96.
+- `2026-09-21T04:11:17` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-09-21T04:11:47` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez en la lectura de métricas de memoria al encapsular la conversión de datos en una función con manejo estricto de excepciones, evitando errores de desbordamiento o valores corruptos que podrían invalidar los cálculos de `MemorySnapshot`.
+- `2026-09-21T04:12:14` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-21T04:12:56` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `purge_all` y `list_items` reemplazando bloques `except` genéricos que silenciaban fallos operativos por capturas de excepciones específicas (`OSError`, `PermissionError`), y añadí una validación explícita para evitar que `purge_all` intente operar sobre el archivo de manifiesto si no es un archivo regular o está bloqueado.
+- `2026-09-21T04:13:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-21T04:13:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T04:13:42` Corrida terminada. Total usado hoy: 100.

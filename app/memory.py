@@ -147,13 +147,12 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return stat
 
-def _kb_to_bytes(kb_str: str) -> BytesValue:
-    """Extrae valor numérico de string tipo '1024 kB' y lo convierte a bytes."""
-    if not isinstance(kb_str, str): return BytesValue(0)
-    val_str = "".join(c for c in kb_str if c.isdigit())
-    if not val_str: return BytesValue(0)
+def _safe_int_conversion(value: str, multiplier: int = 1) -> BytesValue:
+    """Intenta convertir un string a entero con validación de seguridad."""
     try:
-        return BytesValue(int(val_str) * 1024)
+        clean_val = "".join(c for c in value if c.isdigit())
+        if not clean_val: return BytesValue(0)
+        return BytesValue(int(clean_val) * multiplier)
     except (ValueError, OverflowError):
         return BytesValue(0)
 
@@ -173,7 +172,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         parts = line.split(":", 1)
         if len(parts) == 2:
             key, value_part = parts
-            metrics[key.strip()] = _kb_to_bytes(value_part)
+            metrics[key.strip()] = _safe_int_conversion(value_part, 1024)
             
     total = metrics.get("MemTotal", BytesValue(0))
     if total <= 0: return _EMPTY_SNAPSHOT
@@ -200,16 +199,12 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         parts = [p.strip().strip("'\" ") for p in line.split(",")]
         if len(parts) < 3: continue
         
-        try:
-            name, pid_str, ws_str = parts[0], parts[1], parts[2]
-            if not name or not pid_str.isdigit() or not ws_str.isdigit(): continue
-            
-            pid, ws = int(pid_str), int(ws_str)
-            if pid <= 0 or ws < 0: continue
-            
-            results.append(ProcessMemory(name=name, pid=pid, working_set=BytesValue(ws)))
-        except (ValueError, TypeError):
-            continue
+        name, pid_raw, ws_raw = parts[0], parts[1], parts[2]
+        pid = _safe_int_conversion(pid_raw)
+        ws = _safe_int_conversion(ws_raw)
+        
+        if pid > 0 and ws >= 0:
+            results.append(ProcessMemory(name=name, pid=pid, working_set=ws))
     
     results.sort(key=lambda p: p.working_set, reverse=True)
     return results[:limit]

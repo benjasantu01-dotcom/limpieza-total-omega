@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 40
+- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 21 | 4 | 4 | 2 | 27 |
+| 2026-09-19 | 18 | 3 | 4 | 2 | 27 |
 | 2026-09-20 | 134 | 9 | 28 | 17 | 162 |
-| 2026-09-21 | 47 | 3 | 8 | 1 | 37 |
+| 2026-09-21 | 49 | 3 | 9 | 1 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **45**
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **37**
-- rendimiento: **30**
+- manejo de errores y validación de entradas: **39**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **19**
+- `memory.py`: **18**
 - `settings.py`: **18**
-- `assistant.py`: **17**
+- `quarantine.py`: **18**
 - `browser.py`: **17**
-- `memory.py`: **17**
-- `quarantine.py`: **17**
+- `assistant.py`: **16**
 - `diskreport.py`: **16**
 - `duplicates.py`: **15**
 - `safety.py`: **15**
-- `branding.py`: **13**
+- `branding.py`: **12**
 - `scanner.py`: **11**
 - `organizer.py`: **10**
-- `startup.py`: **9**
 - `main.py`: **8**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T04:12:56` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `purge_all` y `list_items` reemplazando bloques `except` genéricos que silenciaban fallos operativos por capturas de excepciones específicas (`OSError`, `PermissionError`), y añadí una validación explícita para evitar que `purge_all` intente operar sobre el archivo de manifiesto si no es un archivo regular o está bloqueado.
+- `2026-09-21T04:11:47` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la lectura de métricas de memoria al encapsular la conversión de datos en una función con manejo estricto de excepciones, evitando errores de desbordamiento o valores corruptos que podrían invalidar los cálculos de `MemorySnapshot`.
 - `2026-09-21T04:03:36` **main.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en el método `on_trim_process` para asegurar que el PID sea validado como un entero positivo y existente antes de intentar cualquier operación, evitando excepciones no capturadas al interactuar con el sistema de procesos.
 - `2026-09-21T04:02:36` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del motor de cómputo validando la estructura de las métricas entrantes antes de procesar el pipeline y eliminé la duplicidad de `_clamp` en la lógica de cálculo de puntos ponderados para asegurar coherencia y evitar desbordamientos numéricos.
 - `2026-09-21T04:02:03` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez de las funciones de hash al validar explícitamente los parámetros de entrada y normalizar rutas antes de cualquier operación de I/O, evitando el uso de llamadas a `stat` sobre objetos inválidos o parcialmente inicializados.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T02:20:58` **safety.py** (seguridad defensiva): He mejorado `_validate_boundary_conditions` para fortalecer la prevención de ataques de "Path Traversal" y "Privilege Escalation" mediante la validación estricta de la resolución de rutas relativas al directorio de la aplicación, evitando que el proceso pueda manipular archivos dentro de su propio árbol de directorios o ejecutables.
 - `2026-09-21T02:20:13` **quarantine.py** (seguridad defensiva): Se introdujo una validación explícita para prevenir ataques de "Time-of-check to time-of-use" (TOCTOU) durante el proceso de aislamiento, asegurando que la ruta destino no haya sido alterada o sustituida por un enlace simbólico entre el momento de la validación inicial y la apertura del descriptor de archivo.
 - `2026-09-21T02:19:35` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` añadiendo una comprobación explícita mediante `is_protected_path` al directorio destino final antes de cualquier operación, asegurando que el movimiento no ocurra hacia un directorio que, aunque no haya sido bloqueado inicialmente, contenga componentes de sistema o rutas protegidas.
-- `2026-09-21T02:13:33` **memory.py** (seguridad defensiva): Se ha implementado un chequeo adicional en `_get_process_path` para ignorar explícitamente rutas que contengan caracteres sospechosos o secuencias de escape de dispositivo/reparse, reforzando la seguridad defensiva antes de cualquier operación de validación de rutas en el módulo `memory.py`.
-- `2026-09-21T02:09:54` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del pipeline `compute_score` validando explícitamente el estado interno de las métricas antes y después del procesamiento, asegurando que cualquier entrada corrupta o inesperada sea neutralizada mediante el uso de `_to_float` y `_clamp` en cada punto crítico de acceso, evitando errores de ejecución y garantizando que siempre se devuelva un resultado válido.
