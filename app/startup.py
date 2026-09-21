@@ -114,13 +114,13 @@ class StartupEntry:
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Elimina caracteres de control ASCII (0-31) que podrían romper el parser de comandos."""
+        """Limpia caracteres de control (0-31) de una línea de comando cruda."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Extrae la ruta contenida entre comillas y valida su integridad tras la separación."""
+        """Busca y extrae una ruta encerrada entre comillas dentro de una cadena de comando."""
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
         
@@ -145,7 +145,7 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Realiza una validación de seguridad mediante 'is_protected_path' antes de reportar la ruta."""
+        """Verifica existencia, tipo de archivo y protección de ruta antes de reportar."""
         try:
             if not p.exists():
                 return False
@@ -156,7 +156,7 @@ class StartupEntry:
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Resuelve una ruta relativa/absoluta a su forma física canónica, cacheando el resultado."""
+        """Resuelve una ruta a su forma canónica absoluta y aplica caché para optimizar I/O."""
         if not isinstance(path_string, str) or not self.is_valid:
             return ""
         
@@ -193,7 +193,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Analiza la línea completa de comando para aislar el ejecutable del sistema."""
+        """Segmenta la línea de comando para identificar la ruta ejecutable principal."""
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -210,7 +210,7 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Obtiene la ruta absoluta y validada del ejecutable principal, usando caché interno."""
+        """Retorna la ruta absoluta del ejecutable, usando memoización interna."""
         if self._checked_exists:
             return self._exec_cache or ""
             

@@ -161,6 +161,7 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=64)
     def _is_reparse_point(path: Path) -> bool:
+        """Determina si una ruta es un enlace simbólico o un junction (evitar recursión infinita)."""
         try:
             return path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction())
         except (OSError, PermissionError):
@@ -169,6 +170,7 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
+        """Verifica recursivamente que la cadena de subdirectorios sea segura para la app."""
         try:
             resolved = Path(os.path.realpath(os.path.expanduser(path_str)))
             for part in resolved.parts:
@@ -180,6 +182,7 @@ class _Validators:
 
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
+        """Valida sintaxis básica y seguridad de una ruta antes de considerarla para el JSON."""
         if not path_str or len(path_str) > 2048 or "\0" in path_str: return False
         if path_str.startswith(("\\\\", "//")): return False
         try:
@@ -190,6 +193,7 @@ class _Validators:
 
     @staticmethod
     def bool(key: ConfigKey, val: Any) -> Optional[bool]:
+        """Normaliza valores de entrada hacia booleano estricto."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -200,6 +204,7 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
+        """Convierte a entero y asegura que esté dentro de los rangos definidos."""
         if val is None: return None
         parsed_value = int(val)
         limit = _NUMERIC_LIMITS.get(key)
@@ -208,6 +213,7 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
+        """Valida que la cadena represente una ruta de sistema segura."""
         if val == "": return ""
         if not isinstance(val, str): return None
         path_string = val.strip()
@@ -216,6 +222,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
+        """Valida strings contra una lista predefinida de valores permitidos."""
         val = text.lower()
         allowed = _ENUM_VALS.get(key)
         if allowed: return val if val in allowed else None
@@ -224,6 +231,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
+        """Limpieza básica de strings y desvío a validadores específicos si aplica."""
         if val is None: return None
         text = str(val).strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
@@ -231,6 +239,7 @@ class _Validators:
         return _Validators._validate_enum_str(text, key)
 
 def _get_validator_entry(key: ConfigKey) -> _ValidatorEntry:
+    """Selecciona el validador estático adecuado según la clave de configuración."""
     mapa: dict[ConfigKey, Callable[[ConfigKey, Any], Any]] = {
         ConfigKey.MOSTRAR_BARRAS: _Validators.bool,
         ConfigKey.ANIMACIONES: _Validators.bool,
@@ -257,6 +266,7 @@ def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
 _VALIDATOR_MAP: Final = _build_validator_map()
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
+    """Calcula la ruta absoluta del archivo de configuración, asegurando seguridad."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     base_path = Path(custom_base).expanduser()
     if base_path in _PATH_CACHE: return _PATH_CACHE[base_path]
