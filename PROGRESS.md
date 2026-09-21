@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 68 | 5 | 15 | 8 | 81 |
-| 2026-09-21 | 141 | 10 | 34 | 7 | 135 |
+| 2026-09-20 | 66 | 5 | 15 | 8 | 79 |
+| 2026-09-21 | 142 | 10 | 37 | 7 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **47**
-- robustez ante casos límite: **37**
-- rendimiento: **27**
+- robustez ante casos límite: **35**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
 - `assistant.py`: **19**
-- `memory.py`: **18**
 - `browser.py`: **18**
 - `duplicates.py`: **18**
 - `diskreport.py`: **17**
+- `memory.py`: **17**
 - `safety.py`: **16**
-- `healthscore.py`: **15**
 - `settings.py`: **15**
+- `branding.py`: **14**
+- `healthscore.py`: **14**
 - `scanner.py`: **13**
-- `branding.py`: **13**
 - `organizer.py`: **12**
 - `startup.py`: **8**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T14:08:58` **branding.py** (rendimiento): Optimicé el cálculo de `_get_scaled_poly` reemplazando la lógica de comprensión de listas con una tupla precalculada y escalado matemático directo, reduciendo la carga de procesamiento en cada frame de dibujo.
 - `2026-09-21T13:56:30` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de heurística añadiendo docstrings que explican el contexto de seguridad (el "porqué" de cada chequeo) y se han estandarizado los type hints para mejorar la legibilidad y mantenibilidad del registro de reglas.
 - `2026-09-21T13:55:09` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_write_temp_to_final` para reducir la complejidad ciclomática y mejorar el manejo de errores mediante el uso de bloques `with` anidados y lógica de limpieza más clara.
 - `2026-09-21T13:49:12` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las estructuras críticas y funciones de bajo nivel en `memory.py` mediante type hints más precisos, docstrings explicativos sobre las intenciones de las APIs de Win32, y la estandarización de la nomenclatura interna para facilitar el mantenimiento del código.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T12:53:50` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `__is_system_hidden` y `_should_skip_entry` al manejar explícitamente posibles errores de llamada al sistema mediante `ctypes` y validación de tipos, evitando que excepciones inesperadas interrumpan el escaneo de directorios.
 - `2026-09-21T12:53:20` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_ring` validando explícitamente los parámetros de entrada y asegurando que las operaciones críticas de `Path` no lancen excepciones inesperadas, reemplazando chequeos genéricos por validaciones más estrictas.
 - `2026-09-21T11:23:28` **safety.py** (seguridad defensiva): Se ha añadido una verificación explícita en `_validate_boundary_conditions` para evitar el acceso a archivos de sistema mediante el uso de nombres de dispositivo reservados en cualquier parte de la ruta, previniendo bypasses por `path traversal` hacia dispositivos como `CON` o `NUL` que pueden causar comportamientos inesperados o cuelgues del proceso.
-- `2026-09-21T11:16:43` **quarantine.py** (seguridad defensiva): Se implementó un bloqueo preventivo contra el uso de flujos de datos alternos (ADS) en Windows durante la creación del nombre almacenado, fortaleciendo la defensa contra la ejecución de código oculto mediante `stream` y asegurando que las rutas de los archivos aislados sean estrictamente simples y seguras.

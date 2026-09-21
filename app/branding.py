@@ -315,7 +315,7 @@ SHIELD_BASE_COORDS: Final[Tuple[float, ...]] = (64, 18, 100, 31, 100, 67, 90, 90
 @lru_cache(maxsize=128)
 def _get_scaled_poly(scale: float, canvas_x: float, canvas_y: float) -> Tuple[float, ...]:
     """Escala las coordenadas base del escudo aplicando un factor y un offset."""
-    return tuple(canvas_x + c * scale if i % 2 == 0 else canvas_y + c * scale 
+    return tuple(canvas_x + (c * scale) if i % 2 == 0 else canvas_y + (c * scale) 
                  for i, c in enumerate(SHIELD_BASE_COORDS))
 
 @lru_cache(maxsize=8)

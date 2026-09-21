@@ -1497,3 +1497,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T13:56:30` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de las funciones de heurística añadiendo docstrings que explican el contexto de seguridad (el "porqué" de cada chequeo) y se han estandarizado los type hints para mejorar la legibilidad y mantenibilidad del registro de reglas.
 - `2026-09-21T13:56:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T13:56:30` Corrida terminada. Total usado hoy: 327.
+- `2026-09-21T14:04:45` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-21T14:05:18` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators.bool, _Validators.int, _Validators.path, _Validators.str
+- `2026-09-21T14:05:44` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-21T14:06:44` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-21T14:07:23` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-21T14:07:40` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-21T14:08:32` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: ProblemCriterion.format_if_triggered, ProblemCriterion.is_triggered_by
+- `2026-09-21T14:08:58` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de `_get_scaled_poly` reemplazando la lógica de comprensión de listas con una tupla precalculada y escalado matemático directo, reduciendo la carga de procesamiento en cada frame de dibujo.
+- `2026-09-21T14:08:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T14:08:58` Corrida terminada. Total usado hoy: 331.
