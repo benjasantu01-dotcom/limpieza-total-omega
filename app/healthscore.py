@@ -233,7 +233,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metrics.validate()
     
     recommendations: List[str] = []
-    metric_breakdown: Dict[MetricKey, int] = {}
+    metric_breakdown: Dict[MetricKey, int] = {k: 0 for k in WEIGHTS}
     accumulated_score: int = 0
     
     for entry in _PIPELINE:
@@ -247,7 +247,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             metric_breakdown[entry.area] = bounded_points
             accumulated_score += bounded_points
         except (Exception, TypeError, ValueError, ZeroDivisionError):
-            metric_breakdown[entry.area] = 0
             continue
             
     final_score = max(0, min(accumulated_score, 100))

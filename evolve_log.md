@@ -635,3 +635,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T05:45:06` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-09-21T05:45:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T05:45:06` Corrida terminada. Total usado hoy: 136.
+- `2026-09-21T05:53:23` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-09-21T05:53:55` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha robustecido el escaneo de directorios frente a posibles errores de entrada mediante una mejora en la validación de la existencia de rutas `Path` y el manejo de excepciones al intentar resolver rutas absolutas, evitando que entradas de configuración malformadas interrumpan el proceso.
+- `2026-09-21T05:54:22` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de `is_protected_path` en el bucle principal de `walk_files` para manejar casos límite donde el usuario intenta escanear una carpeta que podría haberse vuelto protegida dinámicamente durante el recorrido, evitando errores de acceso o procesamiento no autorizado.
+- `2026-09-21T05:54:46` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-21T05:54:59` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor frente a posibles fallos de ejecución en el pipeline y métricas inconsistentes, añadiendo protección contra divisiones por cero en `score_security` y garantizando que el `HealthResult` devuelva una estructura completa incluso si el cálculo falla parcialmente.
+- `2026-09-21T05:54:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T05:54:59` Corrida terminada. Total usado hoy: 140.

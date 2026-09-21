@@ -213,11 +213,18 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
     if not isinstance(path_obj, Path):
         return False
     try:
+        if not path_obj.exists():
+            return False
         p_res = path_obj.resolve(strict=True)
         if _is_unc_path(str(p_res)) or not p_res.is_dir() or not is_safe_to_modify(p_res) or is_protected_path(p_res):
             return False
-        if base_check_path and not _is_path_inside_base(str(p_res), str(base_check_path.resolve(strict=True))):
-            return False
+        if base_check_path:
+            try:
+                base_res = base_check_path.resolve(strict=True)
+                if not _is_path_inside_base(str(p_res), str(base_res)):
+                    return False
+            except (OSError, RuntimeError):
+                return False
         return True
     except (OSError, RuntimeError, PermissionError, ValueError):
         return False

@@ -270,6 +270,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 stack.append(path)
                                 
                         elif entry.is_file(follow_symlinks=False):
+                            # Chequeo defensivo adicional antes de emitir un archivo
+                            if skip_protected and is_protected_path(Path(entry.path)): continue
                             if st.st_size >= 0:
                                 yield Path(entry.path), st.st_size
                             
