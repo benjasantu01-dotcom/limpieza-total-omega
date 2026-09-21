@@ -977,3 +977,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T09:09:55` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 10% del original (posible pérdida de código)
 - `2026-09-21T09:09:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T09:09:55` Corrida terminada. Total usado hoy: 216.
+- `2026-09-21T09:18:30` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-09-21T09:19:02` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, documentación explícita de parámetros en funciones críticas y la sustitución de constantes mágicas por nombres descriptivos, facilitando el mantenimiento para otros desarrolladores.
+- `2026-09-21T09:19:32` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints consistentes en las funciones clave de validación y escaneo para mejorar la legibilidad y facilitar el mantenimiento del flujo lógico complejo.
+- `2026-09-21T09:20:13` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). He mejorado la documentación y legibilidad interna añadiendo docstrings descriptivos con las causas de las excepciones en las funciones críticas de validación y persistencia (`_check_isolation_safety`, `_validate_isolation_request`, `_write_temp_to_final`), facilitando la depuración y auditoría del comportamiento ante fallos de seguridad.
+- `2026-09-21T09:20:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-21T09:20:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T09:20:18` Corrida terminada. Total usado hoy: 220.

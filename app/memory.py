@@ -148,7 +148,7 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     return stat
 
 def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValue:
-    """Intenta convertir un string a entero con validación robusta ante errores de lectura."""
+    """Convierte string a BytesValue ignorando caracteres no numéricos."""
     if value is None:
         return BytesValue(0)
     try:
@@ -212,7 +212,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     return results[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Invoca GlobalMemoryStatusEx de kernel32.dll para obtener métricas físicas."""
+    """Invoca la API de Kernel32 para obtener métricas físicas del sistema."""
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "GlobalMemoryStatusEx"):
         return _EMPTY_SNAPSHOT
@@ -231,7 +231,7 @@ _linux_available: bool = True
 
 @lru_cache(maxsize=1)
 def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
-    """Obtiene el estado de RAM con caché por tiempo (bucket de 5 seg)."""
+    """Obtiene snapshot global optimizando llamadas mediante caché temporal."""
     if _is_windows: 
         return _read_windows_snapshot()
     
@@ -248,7 +248,7 @@ def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
     return _EMPTY_SNAPSHOT
 
 def read_snapshot() -> MemorySnapshot:
-    """Punto de entrada público para obtener el estado actual de la memoria."""
+    """Punto de entrada para el estado actual de la memoria."""
     return _get_cached_snapshot(int(time.time() / 5))
 
 _proc_cache_time: float = 0.0
@@ -273,7 +273,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 @lru_cache(maxsize=8)
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """Clasifica severidad de uso según porcentaje disponible."""
+    """Clasifica severidad de uso según disponibilidad porcentual."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0: return "info"
     available = snapshot.available_percent
     if available >= 35: return "ok"
@@ -297,7 +297,7 @@ def _generate_diagnostics_lines(snapshot: MemorySnapshot) -> List[str]:
     ]
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Genera informe textual de salud de memoria para el usuario."""
+    """Genera informe textual de salud para el usuario."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
     
@@ -310,14 +310,11 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def _is_system_process(pid: int) -> bool:
-    """Verifica si el PID es crítico para el sistema operativo o el proceso actual."""
+    """Verifica si el PID es crítico para el SO o la instancia actual."""
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: ctypes.c_void_p) -> Optional[Path]:
-    """
-    Recupera mediante la API Win32 PSAPI la ruta del ejecutable para validar 
-    que no sea una ruta protegida del sistema antes de cualquier operación.
-    """
+    """Recupera ruta del ejecutable mediante API PSAPI Win32."""
     if not proc_handle: return None
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
@@ -330,10 +327,9 @@ def _get_process_path(proc_handle: ctypes.c_void_p) -> Optional[Path]:
     
     if 0 < chars_written < 1024:
         path_str = buf.value
-        # Filtra rutas de dispositivo, secuencias de escape y reparse points sospechosos
+        # Filtra rutas de dispositivo y posibles caracteres de control
         if not path_str or any(path_str.startswith(p) for p in ("\\\\", "\\??\\", "\\Device\\", "\\\\?\\")):
             return None
-        # Validación extra contra caracteres de control
         if any(ord(c) < 32 for c in path_str):
             return None
         p = Path(path_str)
@@ -344,11 +340,7 @@ def _get_process_path(proc_handle: ctypes.c_void_p) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(proc_handle: ctypes.c_void_p) -> Tuple[bool, Optional[str]]:
-    """
-    Validación de seguridad en múltiples capas antes de permitir la liberación:
-    comprueba el estado del proceso, verifica su ruta contra la política de 
-    protección y confirma que no sea un componente crítico del sistema.
-    """
+    """Valida seguridad antes de permitir liberación de memoria."""
     kernel32 = ctypes.windll.kernel32
     exit_code = ctypes.c_ulong()
     try:
@@ -361,17 +353,13 @@ def _is_safe_to_trim(proc_handle: ctypes.c_void_p) -> Tuple[bool, Optional[str]]
         return False, "El proceso no está activo."
         
     exec_path = _get_process_path(proc_handle)
-    # Validar contra sistema de seguridad central:
     if not exec_path or is_protected_path(str(exec_path)) or not is_safe_to_modify(str(exec_path)):
         return False, "Acceso no autorizado o ruta protegida del sistema."
     
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Intenta liberar el working set de un proceso tras validaciones de seguridad.
-    Esta acción debe ser iniciada manualmente por el usuario.
-    """
+    """Ejecuta EmptyWorkingSet con validación estricta de seguridad."""
     if not _is_windows: return False, "Operación solo soportada en Windows."
     try:
         target_pid = int(pid)

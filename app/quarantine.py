@@ -340,7 +340,8 @@ def _check_windows_file_attributes(path_str: str) -> None:
 def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     """
     Verifica condiciones de seguridad origen-destino previo a la operación.
-    Asegura que el origen y destino sean válidos y que el destino permita escritura.
+    Valida tipos de archivo, symlinks, espacio de dispositivos y accesos de escritura.
+    Lanza UnsafePathError o PermissionError ante inconsistencias detectadas.
     """
     resolved_source = source_path.resolve(strict=True)
     resolved_dest_dir = dest_dir.resolve()
@@ -380,7 +381,9 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
 
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
-    """Orquesta las verificaciones de integridad antes del movimiento."""
+    """Orquesta las verificaciones de integridad antes del movimiento.
+    Valida sintaxis del path, atributos de sistema y disponibilidad de espacio.
+    """
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
     
@@ -514,6 +517,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     """
     Realiza una copia física segura del archivo origen al sandbox usando 
     descriptores de archivo para evitar condiciones de carrera o bloqueos.
+    Valida integridad por hash pre/post copia.
     """
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
