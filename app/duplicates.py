@@ -193,7 +193,10 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Recorre recursivamente buscando candidatos, optimizando las llamadas a sistema."""
+    """
+    Recorre recursivamente directorios para recolectar candidatos de duplicados.
+    Evita redundancia verificando atributos antes de realizar la lectura de stat.
+    """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     visited_files: set[str] = set()
 
@@ -244,13 +247,17 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Aplica jerarquía de hashing: parcial para archivos grandes, completo para pequeños."""
+    """
+    Implementa optimización de rendimiento: usa hash parcial (64KB) para descartar 
+    candidatos rápidamente antes de calcular el hash SHA256 completo.
+    """
     if not paths or size < 0:
         return []
 
     if size <= PARTIAL_READ_BYTES:
         final_groups = _group_paths_by_hash(paths, hash_file)
     else:
+        # Pre-filtro con hash parcial para evitar lecturas de disco pesadas innecesarias
         partial_groups = _group_paths_by_hash(paths, partial_hash)
         final_groups = {}
         for candidate_subset in partial_groups.values():

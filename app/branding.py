@@ -56,7 +56,7 @@ class ColorSegment(NamedTuple):
     end_index: int
 
 class PaletteDict(TypedDict):
-    """Mapa de colores clave para la identidad visual de la aplicación."""
+    """Esquema de colores centralizado para mantener consistencia en toda la UI."""
     background: ColorHex
     surface: ColorHex
     surface_alt: ColorHex
@@ -80,7 +80,7 @@ class PaletteDict(TypedDict):
     glow: ColorHex
 
 class FontSizesDict(TypedDict):
-    """Definición jerárquica de tamaños de fuente para consistencia en UI."""
+    """Escalado de fuentes: desde títulos destacados (display) hasta notas (caption)."""
     display: int
     title: int
     subtitle: int
@@ -89,11 +89,13 @@ class FontSizesDict(TypedDict):
     mono: int
     caption: int
 
+# Constantes de identidad corporativa
 APP_NAME: Final[str] = "Limpieza Total Omega"
 APP_SHORT_NAME: Final[str] = "Omega"
 APP_TAGLINE: Final[str] = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final[str] = "2.1.0"
 
+# Estilos tipográficos base para componentes de UI
 UI_FONT_FAMILY: Final[str] = "Segoe UI"
 UI_FONT_BOLD: Final[str] = "bold"
 UI_FONT_HEADER_SIZE: Final[int] = 23
@@ -137,6 +139,7 @@ GRADE_COLORS: Final[Mapping[str, ColorHex]] = MappingProxyType({
     "A": C_SUCCESS, "B": C_INFO, "C": C_WARNING, "D": "#ff7b39", "F": C_DANGER,
 })
 
+# Glifos Unicode representativos para secciones del sistema
 ICONS: Final[Mapping[str, str]] = MappingProxyType({
     "Salud": "\u25c9", "Limpieza": "\u2726", "Seguridad": "\u26ca",
     "Cuarentena": "\u2297", "Memoria": "\u25a4", "Disco": "\u25f4",
@@ -144,8 +147,10 @@ ICONS: Final[Mapping[str, str]] = MappingProxyType({
     "Informe": "\u2263", "Asistente": "\u273b", "Ajustes": "\u2699",
 })
 
+# Gradiente de marca: Verde -> Violeta -> Rosa
 GRADIENT_STOPS: Final[Tuple[ColorHex, ...]] = ("#00f0c0", "#7c5cff", "#ff2d78")
 
+# Umbrales para feedback visual del score de salud
 SCORE_THRESHOLDS: Final[Tuple[Tuple[float, ColorHex], ...]] = (
     (90.0, C_SUCCESS), (80.0, C_INFO), (65.0, C_WARNING), (50.0, "#ff7b39")
 )
@@ -304,6 +309,7 @@ def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, .
     segments.append(ColorSegment(current_color, start, len(colors)))
     return tuple(segments)
 
+# Coordenadas relativas del icono principal (Escudo)
 SHIELD_BASE_COORDS: Final[Tuple[float, ...]] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
 
 @lru_cache(maxsize=128)

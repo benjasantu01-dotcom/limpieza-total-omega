@@ -241,7 +241,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Recorre el sistema de archivos de forma iterativa empleando un stack LIFO."""
+    """
+    Recorre el sistema de archivos de forma iterativa empleando un stack LIFO.
+    Evita ciclos de directorios rastreando inodos (dev, ino).
+    """
     root_path = _validate_root(directory)
     if root_path is None: return
 
@@ -326,7 +329,10 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Agrega estadísticas globales de un árbol de directorios en una pasada única."""
+    """
+    Agrega estadísticas globales de un árbol de directorios en una pasada única (O(n)).
+    Usa un Min-Heap para mantener los N archivos más grandes con eficiencia O(n log limit).
+    """
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
