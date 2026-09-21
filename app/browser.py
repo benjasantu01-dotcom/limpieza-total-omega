@@ -260,11 +260,14 @@ def _sum_directory_recursive(
     directory_total_bytes: int = 0
     try:
         with os.scandir(root_abs) as it:
-            for entry in it:
-                if _should_skip_entry(entry, kernel32, is_junction_fn):
-                    continue
-                
+            while True:
                 try:
+                    entry = next(it, None)
+                    if entry is None:
+                        break
+                    if _should_skip_entry(entry, kernel32, is_junction_fn):
+                        continue
+                    
                     if entry.is_dir(follow_symlinks=False):
                         if depth < MAX_SCAN_DEPTH:
                             directory_total_bytes += _sum_directory_recursive(
@@ -275,8 +278,8 @@ def _sum_directory_recursive(
                             directory_total_bytes += int(entry.stat(follow_symlinks=False).st_size)
                         except (OSError, PermissionError):
                             pass
-                except (OSError, PermissionError):
-                    continue
+                except (StopIteration, OSError, PermissionError):
+                    break
         
         memo[root_abs] = directory_total_bytes
         return directory_total_bytes

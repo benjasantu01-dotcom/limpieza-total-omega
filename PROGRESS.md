@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **212** (42.1% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 98 | 6 | 20 | 11 | 129 |
-| 2026-09-21 | 115 | 6 | 27 | 6 | 86 |
+| 2026-09-20 | 95 | 6 | 19 | 11 | 129 |
+| 2026-09-21 | 117 | 6 | 27 | 6 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **45**
-- robustez ante casos límite: **35**
+- seguridad defensiva: **42**
+- robustez ante casos límite: **37**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
-- `memory.py`: **18**
+- `quarantine.py`: **18**
+- `browser.py`: **18**
 - `assistant.py`: **18**
 - `safety.py`: **17**
 - `settings.py`: **17**
 - `diskreport.py`: **17**
-- `browser.py`: **17**
+- `memory.py`: **17**
 - `duplicates.py`: **17**
 - `healthscore.py`: **16**
-- `organizer.py`: **13**
-- `branding.py`: **13**
+- `branding.py`: **14**
 - `scanner.py`: **13**
+- `organizer.py`: **12**
 - `startup.py`: **9**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T10:20:49` **browser.py** (robustez ante casos límite): Se mejora la robustez frente a errores de I/O en `_sum_directory_recursive` asegurando que la llamada a `os.scandir` gestione el contexto de forma segura ante carpetas con permisos restringidos, evitando propagar excepciones de acceso a niveles superiores.
+- `2026-09-21T10:20:17` **branding.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `save_logo_svg` utilizando `try-except` específico para operaciones de sistema de archivos, asegurando que cualquier fallo en la resolución de rutas, creación de directorios o escritura sea capturado sin detener la ejecución de la UI, respetando los protocolos de seguridad existentes.
 - `2026-09-21T10:11:28` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` ante entradas malformadas o tipos inesperados, añadiendo un chequeo de tipo más estricto y un manejo de errores más defensivo al procesar el `source` para evitar excepciones no controladas durante la ingesta de datos.
 - `2026-09-21T10:00:25` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando las búsquedas en el sistema de archivos de una lista a un `set` de nombres, evitando así iteraciones anidadas de complejidad O(N*M) y reduciendo las llamadas a `stat` mediante la validación previa del nombre existente.
 - `2026-09-21T09:59:45` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la lógica de resolución repetida de rutas y validaciones redundantes dentro de `_process_directory` y `_is_safe_for_disk_op`, utilizando un conjunto de caché para evitar procesar subdirectorios ya validados y consolidando los chequeos de permisos antes de realizar operaciones costosas de I/O.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T09:19:32` **organizer.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones clave de validación y escaneo para mejorar la legibilidad y facilitar el mantenimiento del flujo lógico complejo.
 - `2026-09-21T09:19:02` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, documentación explícita de parámetros en funciones críticas y la sustitución de constantes mágicas por nombres descriptivos, facilitando el mantenimiento para otros desarrolladores.
 - `2026-09-21T09:09:20` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `duplicates.py` añadiendo type hints más precisos, unificando la documentación mediante docstrings claros y estandarizando el manejo de errores en funciones críticas para evitar la propagación de excepciones silenciosas.
-- `2026-09-21T09:08:46` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` y `_is_excluded_path` mediante docstrings detallados que explican el "porqué" técnico de las exclusiones (evitar bucles de recursión y el manejo de rutas largas), cumpliendo con el enfoque de legibilidad.
-- `2026-09-21T09:00:58` **browser.py** (legibilidad y documentación): Se introdujo un `NamedTuple` para los tipos de archivos detectados por el sistema y se refinaron los comentarios críticos en el escáner de atributos de Windows para documentar la lógica de los flags, mejorando la legibilidad técnica y el mantenimiento del código bajo el enfoque de documentación solicitado.
