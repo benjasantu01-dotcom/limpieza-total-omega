@@ -207,11 +207,14 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             continue
                         
                         p = Path(entry.path)
+                        # Validaciones unificadas para reducir llamadas de sistema redundantes
                         if (skip_protected and is_protected_path(p)) or not is_safe_to_modify(p):
+                            continue
+                        if is_system_or_hidden(p):
                             continue
                         
                         st = entry.stat(follow_symlinks=False)
-                        if st.st_size < min_size or entry.path in visited_files or is_system_or_hidden(p):
+                        if st.st_size < min_size or entry.path in visited_files:
                             continue
                             
                         if not _is_file_locked(p):

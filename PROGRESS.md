@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 44
+- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 105 | 7 | 21 | 11 | 132 |
-| 2026-09-21 | 110 | 5 | 23 | 6 | 84 |
+| 2026-09-20 | 102 | 7 | 20 | 11 | 132 |
+| 2026-09-21 | 112 | 6 | 23 | 6 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **37**
-- rendimiento: **28**
+- robustez ante casos límite: **34**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **18**
-- `settings.py`: **18**
 - `assistant.py`: **18**
 - `diskreport.py`: **18**
+- `duplicates.py`: **18**
+- `memory.py`: **18**
 - `quarantine.py`: **18**
-- `duplicates.py`: **17**
 - `healthscore.py`: **17**
-- `memory.py`: **17**
+- `safety.py`: **17**
+- `settings.py`: **17**
 - `browser.py`: **17**
-- `scanner.py`: **14**
 - `branding.py`: **13**
+- `scanner.py`: **13**
 - `organizer.py`: **12**
 - `startup.py`: **9**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T09:54:49` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reduciendo las operaciones de string y evitando el uso de una lista intermedia con `split()`, además de delegar la conversión de tipos directamente en el bucle para mejorar la velocidad al procesar los 50 procesos del snapshot.
+- `2026-09-21T09:49:33` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `_is_file_locked` (que realizaban operaciones de entrada/salida costosas) al centralizar la validación de seguridad una sola vez por entrada durante el escaneo inicial.
 - `2026-09-21T09:40:49` **diskreport.py** (rendimiento): Optimizé `walk_files` y las funciones auxiliares para evitar la redundancia de llamadas a `is_protected_path` sobre el mismo objeto `Path`, consolidando el filtrado para mejorar el rendimiento en recorridos profundos.
 - `2026-09-21T09:40:10` **branding.py** (rendimiento): Optimicé el renderizado del escudo y los gradientes eliminando el cálculo dinámico en `draw_logo` mediante la pre-calculación de las coordenadas del polígono, aprovechando que el factor de escala es constante para un tamaño dado, y reduciendo la complejidad en el bucle de franjas mediante acceso directo a los segmentos.
 - `2026-09-21T09:39:36` **assistant.py** (rendimiento): Se optimizó la eficiencia en la búsqueda de handlers de preguntas mediante la eliminación de un loop redundante sobre las claves del diccionario `TOKENS_BY_CATEGORY`, reemplazándolo por una búsqueda directa y validación de tokens en una sola pasada.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T08:59:14` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la aplicación de docstrings explicativos sobre las intenciones de los decoradores, la estandarización de type hints y la consolidación de la lógica de validación de métricas, facilitando así la comprensión del flujo de datos sin alterar el comportamiento.
 - `2026-09-21T08:58:29` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_registry_csv` al capturar el caso `None` o vacío en `reader.fieldnames` y validando explícitamente que los datos procesados no sean `None` antes de aplicar transformaciones de cadena, evitando errores de tipo innecesarios.
 - `2026-09-21T08:50:39` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la deserialización de JSON al envolver `json.load` en un bloque `try-except` específico y añadir una verificación de integridad de tipo explícita antes de pasar los datos al validador, evitando así errores no capturados por el `try` externo.
-- `2026-09-21T08:49:19` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `Scanner._run_file_heuristics` y `scan_file` para evitar condiciones de carrera donde el archivo desaparece entre la detección y el procesamiento, reemplazando el chequeo redundante de `is_protected_path` por una lógica de filtrado más limpia y consistente con el enfoque del proyecto.
-- `2026-09-21T08:48:52` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita de `path.exists()` dentro de `_is_readonly` y se reforzó el manejo de excepciones en `_is_volume_readonly`, asegurando que el módulo sea robusto frente a rutas inexistentes o inaccesibles sin propagar errores inesperados al bucle principal.

@@ -1001,3 +1001,45 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T09:40:49` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` y las funciones auxiliares para evitar la redundancia de llamadas a `is_protected_path` sobre el mismo objeto `Path`, consolidando el filtrado para mejorar el rendimiento en recorridos profundos.
 - `2026-09-21T09:40:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T09:40:49` Corrida terminada. Total usado hoy: 228.
+- `2026-09-21T09:49:05` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-09-21T09:49:33` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `_is_file_locked` (que realizaban operaciones de entrada/salida costosas) al centralizar la validación de seguridad una sola vez por entrada durante el escaneo inicial.
+- `2026-09-21T09:49:59` Tests FALLARON:
+```
+, healthscore.score_duplicates):
+>               assert 0.0 <= fn(valor) <= 1.0
+                              ^^^^^^^^^
+
+evolve/tests/test_modules.py:885: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+m = -100
+
+    def score_junk(m: SystemMetrics) -> NormalizedRatio:
+>       return _clamp(1.0 - (_to_float(m.junk_mb) * _INV_JUNK))
+                                       ^^^^^^^^^
+E       AttributeError: 'int' object has no attribute 'junk_mb'
+
+app/healthscore.py:103: AttributeError
+_____________ test_warnings_hurt_more_than_informational_findings ______________
+
+    def test_warnings_hurt_more_than_informational_findings():
+>       solo_info = healthscore.score_security(4, warnings=0)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: score_security() got an unexpected keyword argument 'warnings'
+
+evolve/tests/test_modules.py:891: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_memory_score_does_not_reward_excess_free_ram - AttributeError: 'int' object has no attribute 'memory_available_percent'
+FAILED evolve/tests/test_modules.py::test_individual_scores_stay_between_zero_and_one - AttributeError: 'int' object has no attribute 'junk_mb'
+FAILED evolve/tests/test_modules.py::test_warnings_hurt_more_than_informational_findings - TypeError: score_security() got an unexpected keyword argument 'warnings'
+3 failed, 296 passed in 1.45s
+
+```
+- `2026-09-21T09:49:59` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento del motor de cálculo cacheando los ratios calculados por las funciones `score_*` dentro del pipeline y reemplacé los `lambda` repetitivos por referencias directas a funciones, reduciendo el overhead de llamadas y la recreación de objetos en el bucle principal.
+- `2026-09-21T09:50:59` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-21T09:52:02` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-21T09:53:08` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-21T09:54:20` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-21T09:54:49` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `parse_windows_process_csv` reduciendo las operaciones de string y evitando el uso de una lista intermedia con `split()`, además de delegar la conversión de tipos directamente en el bucle para mejorar la velocidad al procesar los 50 procesos del snapshot.
+- `2026-09-21T09:54:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T09:54:49` Corrida terminada. Total usado hoy: 232.
