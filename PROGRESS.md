@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 61 | 5 | 14 | 8 | 77 |
-| 2026-09-21 | 143 | 10 | 39 | 8 | 139 |
+| 2026-09-20 | 57 | 5 | 14 | 8 | 77 |
+| 2026-09-21 | 144 | 10 | 39 | 8 | 142 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **46**
+- seguridad defensiva: **42**
 - robustez ante casos límite: **31**
-- rendimiento: **29**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
-- `browser.py`: **18**
-- `duplicates.py`: **18**
 - `assistant.py`: **18**
-- `diskreport.py`: **17**
 - `memory.py`: **17**
+- `browser.py`: **17**
+- `duplicates.py`: **17**
+- `diskreport.py`: **16**
+- `safety.py`: **16**
 - `settings.py`: **15**
-- `safety.py`: **15**
-- `branding.py`: **14**
 - `healthscore.py`: **14**
+- `branding.py`: **13**
 - `organizer.py`: **12**
 - `scanner.py`: **12**
 - `main.py`: **8**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T14:40:44` **safety.py** (rendimiento): Se implementó un decorador `lru_cache` con un `maxsize` ajustado para la función `_is_sensitive_extension` y se optimizó `is_sensitive_file` para evitar la creación de objetos `Path` innecesarios en cada llamada, mejorando significativamente el rendimiento al escanear grandes volúmenes de archivos.
 - `2026-09-21T14:30:08` **quarantine.py** (rendimiento): Optimizé `list_items` y `purge_all` para evitar lecturas de disco innecesarias y el uso de listas temporales redundantes mediante el uso de conjuntos (`set`) para las búsquedas de metadatos, reduciendo la complejidad algorítmica de O(N*M) a O(N+M).
 - `2026-09-21T14:08:58` **branding.py** (rendimiento): Optimicé el cálculo de `_get_scaled_poly` reemplazando la lógica de comprensión de listas con una tupla precalculada y escalado matemático directo, reduciendo la carga de procesamiento en cada frame de dibujo.
 - `2026-09-21T13:56:30` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de heurística añadiendo docstrings que explican el contexto de seguridad (el "porqué" de cada chequeo) y se han estandarizado los type hints para mejorar la legibilidad y mantenibilidad del registro de reglas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T13:21:04` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_volume_readonly` para manejar correctamente errores de bajo nivel en llamadas a `ctypes` y se añadió una validación defensiva en `_is_file_in_use` para prevenir errores de tipo cuando se manejan rutas problemáticas, asegurando que `safety.py` no colapse ante entradas inesperadas.
 - `2026-09-21T12:54:16` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `format_size` y `_bytes_to_mb` mediante una validación de tipo más estricta y el manejo explícito de valores negativos, evitando divisiones por cero o cálculos erróneos que podrían romper la UI en reportes malformados.
 - `2026-09-21T12:53:50` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `__is_system_hidden` y `_should_skip_entry` al manejar explícitamente posibles errores de llamada al sistema mediante `ctypes` y validación de tipos, evitando que excepciones inesperadas interrumpan el escaneo de directorios.
-- `2026-09-21T12:53:20` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_ring` validando explícitamente los parámetros de entrada y asegurando que las operaciones críticas de `Path` no lancen excepciones inesperadas, reemplazando chequeos genéricos por validaciones más estrictas.

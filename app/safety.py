@@ -281,9 +281,10 @@ def _is_kernel_managed(path: Path) -> bool:
     """Previene manipulación de archivos esenciales que el kernel mantiene bloqueados."""
     return path.name.lower() in ("pagefile.sys", "hiberfil.sys", "swapfile.sys")
 
-def _is_sensitive_extension(path: Path) -> bool:
-    """Valida si el archivo tiene una extensión crítica del sistema."""
-    return path.suffix.lower() in SENSITIVE_EXTENSIONS
+@lru_cache(maxsize=1024)
+def _is_sensitive_extension(ext: str) -> bool:
+    """Valida si la extensión es crítica del sistema."""
+    return ext.lower() in SENSITIVE_EXTENSIONS
 
 # Lista de validadores de integridad aplicada secuencialmente
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
@@ -427,7 +428,9 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
 def is_sensitive_file(path: PathLike) -> bool:
     """Verifica si la extensión del archivo está bloqueada."""
     if not path: return True
-    try: return _is_sensitive_extension(Path(str(path)))
+    try: 
+        p_str = str(path)
+        return _is_sensitive_extension(os.path.splitext(p_str)[1])
     except (TypeError, ValueError, OSError): return True 
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
