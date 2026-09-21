@@ -128,6 +128,7 @@ def ensure_safety(func: Callable) -> Callable:
     """
     Decorador preventivo: invoca `safety.ensure_safe_to_modify` antes de delegar
     ejecución a cualquier método que realice escrituras o modificaciones en el disco.
+    Asegura que el contexto global del usuario sea inmutable para procesos críticos.
     """
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -141,8 +142,9 @@ def ensure_safety(func: Callable) -> Callable:
 
 def safe_ui_operation(func: Callable) -> Callable:
     """
-    Decorador protector: intercepta excepciones de ciclo de vida de widgets (ej.
-    widget destruido durante callback asíncrono) para evitar cierres inesperados.
+    Decorador protector: intercepta excepciones de ciclo de vida de widgets 
+    (ej. widget destruido durante callback asíncrono) para evitar cierres 
+    inesperados del hilo principal por errores de interfaz gráfica.
     """
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Optional[Any]:
@@ -158,8 +160,9 @@ def safe_ui_operation(func: Callable) -> Callable:
 
 def validated_ui_operation(func: Callable) -> Callable:
     """
-    Decorador de validación: asegura que el componente de la app esté activo y no 
-    en proceso de cierre antes de proceder con la lógica del callback.
+    Decorador de validación: asegura que el componente de la app esté activo 
+    y no en proceso de cierre antes de proceder con la lógica del callback, 
+    protegiendo la integridad de la cola de eventos.
     """
     @wraps(func)
     def wrapper(self: Any, *args: Any, **kwargs: Any) -> Optional[Any]:
@@ -210,6 +213,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     
     Gestiona el ciclo de vida de los hilos de E/S, la caché de resultados de
     análisis, la configuración del usuario y la respuesta de eventos UI.
+    Implementa un patrón de carga perezosa para el registro de pestañas.
     """
 
     def __init__(self) -> None:
@@ -219,7 +223,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._setup_application()
 
     def _init_component_registry(self) -> None:
-        """Reserva las estructuras de datos, estados iniciales y registros de UI."""
+        """
+        Reserva estructuras de datos para caché, colas de logging, 
+        referencias a widgets y control de hilos de ejecución.
+        """
         self._initialized_tabs: Dict[str, bool] = {name: False for name in TABS}
         self._health_bars_initialized = False
         
@@ -450,6 +457,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _tab_factory(self, name: str) -> None:
         """
         Inicialización perezosa (lazy loading) para construir pestañas bajo demanda.
+        Optimiza el tiempo de arranque de la aplicación al no renderizar todo al inicio.
         """
         if self._initialized_tabs.get(name):
             return

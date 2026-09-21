@@ -4,13 +4,6 @@ healthscore.py — El motor analítico de salud del sistema.
 Este módulo implementa un motor de puntuación (scoring) de arquitectura funcional.
 Toma un objeto 'SystemMetrics' y, mediante un pipeline de normalización y 
 ponderación, lo transforma en un 'HealthResult' comprensible para el usuario.
-
-DISEÑO DEL PIPELINE:
-- `compute_score`: Función central que procesa las métricas a través de `_PIPELINE`.
-- Cada entrada del pipeline (`PipelineEntry`) define:
-    1. Un área de evaluación (ej. 'seguridad').
-    2. Un peso relativo (influencia en el score total de 0 a 100).
-    3. Un conjunto de reglas que generan recomendaciones si el ratio es bajo.
 """
 
 from __future__ import annotations
@@ -107,31 +100,31 @@ if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Normaliza MB de basura a [0,1]. Mayor basura = menor puntaje."""
+    """Calcula ratio [0,1] donde el máximo deseable es _LIMIT_JUNK_MB."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula ratio [0,1] penalizando hallazgos sospechosos y advertencias de Defender."""
+    """Calcula ratio [0,1] penalizando hallazgos de seguridad encontrados por el escáner."""
     penalization = (_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)
     return _clamp(1.0 - _clamp(penalization, 0.0, 1.0))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Normaliza % de RAM libre: mapea el umbral crítico definido a 0."""
+    """Calcula ratio [0,1] usando el porcentaje de RAM disponible frente al umbral crítico."""
     return _clamp(_to_float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Normaliza % de disco libre: mapea el umbral crítico definido a 0."""
+    """Calcula ratio [0,1] usando el porcentaje de disco libre frente al umbral crítico."""
     return _clamp(_to_float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Normaliza MB de duplicados a [0,1]."""
+    """Calcula ratio [0,1] comparando MB de duplicados detectados vs _LIMIT_DUPLICATE_MB."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
-    """Normaliza items en inicio a [0,1]."""
+    """Calcula ratio [0,1] comparando cantidad de programas en inicio vs _LIMIT_STARTUP_COUNT."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
-_RULES_MAP: Final[List[PipelineEntry]] = [
+_PIPELINE: Final[List[PipelineEntry]] = [
     PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), 
                   [RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH)]),
     PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), 
@@ -146,15 +139,11 @@ _RULES_MAP: Final[List[PipelineEntry]] = [
                   [RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW)]),
 ]
 
-_PIPELINE: Final[List[PipelineEntry]] = _RULES_MAP
 _INITIAL_BREAKDOWN: Final[Dict[MetricKey, int]] = {k: 0 for k in WEIGHTS.keys()}
 
 @dataclass
 class SystemMetrics:
-    """
-    Contenedor de datos crudos (inputs) para el motor de salud.
-    Todos los valores numéricos deben ser validados como finitos post-inicialización.
-    """
+    """Contenedor de datos crudos (inputs) para el motor de salud."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -225,22 +214,20 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Ejecuta reglas heurísticas con aislamiento de excepciones para evitar inyección o fallos de lógica."""
+    """Ejecuta reglas heurísticas con aislamiento de excepciones."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str) and msg:
-                    # Sanear mensaje: quitar caracteres de control y limitar longitud
                     clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                     if clean_msg:
                         findings.append(clean_msg[:200])
         except Exception:
-            # Silenciar errores en reglas individuales para no detener el pipeline
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Pipeline de evaluación: mapea SystemMetrics -> HealthResult, validando integridad absoluta."""
+    """Pipeline de evaluación: mapea SystemMetrics -> HealthResult."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite or sum(WEIGHTS.values()) != 100:
         return HealthResult(0, "F", _INITIAL_BREAKDOWN.copy(), ["Error: Configuración o métricas no válidas."])
     

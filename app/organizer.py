@@ -157,9 +157,9 @@ def _has_forbidden_chars(path: Path) -> bool:
 def _validate_path_security(src: Path, dest: Path) -> bool:
     """
     Realiza una auditoría previa a la manipulación:
-    - Verifica rutas UNC y caracteres ilegales.
-    - Valida límites de longitud de ruta (MAX_PATH = 260).
-    - Consulta la base de datos de rutas protegidas global.
+    - Comprueba si alguna ruta es UNC o contiene caracteres ilegales para evitar errores de API.
+    - Asegura que las rutas no excedan el límite MAX_PATH (260 caracteres).
+    - Valida contra `is_protected_path` para prevenir la manipulación de directorios críticos.
     """
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > 260 or len(str(dest)) > 260: return False
@@ -172,9 +172,9 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 def _validate_file_attributes(src: Path) -> bool:
     """
     Confirma la validez de un archivo candidato:
-    - Comprueba que es un archivo regular y no un punto de reparse.
-    - Verifica que el archivo no esté vacío y cumpla límites de tamaño (100GB).
-    - Verifica que el archivo no esté bloqueado por otro proceso.
+    - Verifica si es un archivo regular (no directorio ni junction).
+    - Valida que el tamaño sea no nulo y menor al límite operativo de 100GB.
+    - Asegura que el archivo no esté oculto, marcado como sistema ni bloqueado por otro proceso.
     """
     try:
         st = src.stat()
@@ -186,8 +186,8 @@ def _validate_file_attributes(src: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Validador de alto nivel para operaciones de E/S.
-    Combina validaciones de seguridad de ruta, permisos de escritura y 
-    prevención de errores lógicos como ciclos recursivos.
+    Verifica seguridad de rutas, consistencia lógica (evitar recursión), permisos de escritura
+    en el directorio padre y atributos del archivo fuente antes de cualquier movimiento.
     """
     if src is None or dest is None: return False
     if not _validate_path_security(src, dest): return False
@@ -205,7 +205,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         return False
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
-    """Wrapper para validar que el origen exista antes de proceder a la comprobación de seguridad."""
+    """Valida la integridad del objeto `JunkFile` y la seguridad de su ruta de destino."""
     if junk_file is None or junk_file.path is None: return False
     return junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
 
