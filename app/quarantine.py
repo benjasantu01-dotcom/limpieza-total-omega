@@ -491,7 +491,7 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
         raise UnsafePathError("Directorio destino no es seguro para escritura.")
     
     # Validar que origen y destino estén en el mismo dispositivo físico
-    if source.stat().st_dev != destination.parent.stat().st_dev:
+    if source.stat().st_dev != destination.parent.resolve().stat().st_dev:
         raise UnsafePathError("Operación entre dispositivos no permitida.")
     
     ensure_safe_to_modify(destination.parent, allow_sensitive=True)
@@ -545,8 +545,9 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
                 dst_file.flush()
                 os.fsync(dst_file.fileno())
             
+            # Post-escritura: asegurar que el tamaño en disco es consistente
             if destination.stat().st_size != stat_src.st_size:
-                raise OSError("Error de integridad post-escritura (tamaño).")
+                raise OSError("Error de integridad post-escritura (tamaño mismatch).")
         except Exception as e:
             if destination.exists():
                 try: os.remove(destination)
@@ -563,8 +564,8 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
             _safe_unlink(destination)
         raise OSError("Falla crítica: el hash del archivo copiado no coincide con el original.")
     
+    # Finalizar: asegurar que el directorio padre reconoce la creación
     ensure_safe_to_modify(destination, allow_sensitive=True)
-    
     dir_fd: int = os.open(str(destination.parent), os.O_RDONLY)
     try: os.fsync(dir_fd)
     finally: os.close(dir_fd)

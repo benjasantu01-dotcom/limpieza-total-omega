@@ -1446,3 +1446,12 @@ FAILED evolve/tests/test_modules.py::test_never_scans_system_folders - Attribute
 - `2026-09-21T01:31:44` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta de existencia y accesibilidad en el método `_validate_environment` para detectar rutas de sistema o estados inválidos (como `Path.home()` inaccesible) antes de instanciar la interfaz, evitando que el bucle de eventos (`mainloop`) intente operar sobre estados nulos o bloqueados.
 - `2026-09-21T01:31:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T01:31:44` Corrida terminada. Total usado hoy: 36.
+- `2026-09-21T01:38:21` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-09-21T01:38:52` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable antes de intentar cualquier operación de memoria, asegurando que procesos del sistema operativo incluso con PID no crítico no sean modificados.
+- `2026-09-21T01:39:17` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-21T01:40:17` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-21T01:41:20` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-21T01:42:06` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejora la robustez ante condiciones de carrera en `quarantine_file` añadiendo una verificación post-escritura más estricta que asegura la persistencia física del archivo en el sandbox mediante `os.fsync` y una re-validación de integridad completa antes de marcar el archivo como aislado, previniendo estados inconsistentes si el sistema operativo interrumpe la operación.
+- `2026-09-21T01:42:12` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-21T01:42:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T01:42:12` Corrida terminada. Total usado hoy: 40.

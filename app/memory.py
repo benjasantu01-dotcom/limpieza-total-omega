@@ -354,8 +354,9 @@ def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
         return False, "El proceso no está activo."
         
     exec_path = _get_process_path(proc_handle)
-    if not exec_path or not is_safe_to_modify(str(exec_path)):
-        return False, "Acceso no autorizado o ejecutable inseguro."
+    # Validar contra sistema de seguridad central:
+    if not exec_path or is_protected_path(str(exec_path)) or not is_safe_to_modify(str(exec_path)):
+        return False, "Acceso no autorizado o ruta protegida del sistema."
     
     return True, None
 
