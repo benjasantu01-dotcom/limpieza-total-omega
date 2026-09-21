@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 134 | 9 | 28 | 17 | 160 |
-| 2026-09-21 | 85 | 4 | 17 | 5 | 45 |
+| 2026-09-20 | 134 | 9 | 28 | 17 | 156 |
+| 2026-09-21 | 87 | 4 | 18 | 5 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
-- seguridad defensiva: **45**
+- seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **43**
 - rendimiento: **33**
@@ -32,20 +32,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **20**
 - `settings.py`: **19**
 - `browser.py`: **19**
+- `quarantine.py`: **19**
 - `assistant.py`: **18**
 - `diskreport.py`: **18**
 - `memory.py`: **18**
-- `quarantine.py`: **18**
 - `safety.py`: **17**
 - `duplicates.py`: **17**
 - `scanner.py`: **14**
 - `branding.py`: **13**
-- `organizer.py`: **10**
+- `organizer.py`: **11**
 - `startup.py`: **9**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T06:45:53` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad del proceso de restauración de archivos agregando una validación explícita mediante `is_safe_to_modify` sobre el `Path` destino antes de realizar la operación `os.replace`, evitando cualquier intento de manipulación del manifiesto para sobreescribir archivos críticos del sistema.
+- `2026-09-21T06:45:09` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` añadiendo una comprobación explícita para evitar que `shutil.move` intente realizar operaciones entre sistemas de archivos incompatibles (cruce de unidades), lo cual es una fuente común de errores de permisos y fallos de I/O en Windows.
 - `2026-09-21T06:34:59` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` para asegurar que el recorrido recursivo verifique explícitamente el estado de los enlaces simbólicos y puntos de reparse antes de procesar cualquier entrada, previniendo errores de recursión infinita o acceso no autorizado a rutas fuera de los directorios raíz definidos.
 - `2026-09-21T06:25:56` **browser.py** (seguridad defensiva): Se introdujo la verificación `is_safe_to_modify` dentro del bucle de `_sum_directory_recursive` para asegurar que, ante cualquier cambio inesperado en el sistema de archivos durante el escaneo, la función mantenga el cumplimiento de las políticas de seguridad de la aplicación antes de procesar cada subdirectorio.
 - `2026-09-21T06:25:42` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la validación manual por `is_protected_path` antes de cualquier operación, asegurando que el directorio destino no sea una ruta sensible y centralizando la protección mediante los guards del sistema.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T05:54:59` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor frente a posibles fallos de ejecución en el pipeline y métricas inconsistentes, añadiendo protección contra divisiones por cero en `score_security` y garantizando que el `HealthResult` devuelva una estructura completa incluso si el cálculo falla parcialmente.
 - `2026-09-21T05:54:22` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_protected_path` en el bucle principal de `walk_files` para manejar casos límite donde el usuario intenta escanear una carpeta que podría haberse vuelto protegida dinámicamente durante el recorrido, evitando errores de acceso o procesamiento no autorizado.
 - `2026-09-21T05:53:55` **browser.py** (robustez ante casos límite): Se ha robustecido el escaneo de directorios frente a posibles errores de entrada mediante una mejora en la validación de la existencia de rutas `Path` y el manejo de excepciones al intentar resolver rutas absolutas, evitando que entradas de configuración malformadas interrumpan el proceso.
-- `2026-09-21T05:44:46` **assistant.py** (robustez ante casos límite): Se introdujo una validación defensiva en `_extract_text_from_gemini_json` para manejar estructuras JSON anidadas potencialmente maliciosas o malformadas, previniendo errores de acceso a atributos y asegurando que la respuesta siempre sea un string limpio, fortaleciendo la robustez ante datos externos inesperados.
-- `2026-09-21T05:36:29` **scanner.py** (rendimiento): Optimizé `_is_relevant_extension` reemplazando la creación dinámica de `splitext` y llamadas a `os.path.splitext` en cada iteración del bucle, utilizando en su lugar una verificación directa de sufijos con el `frozenset` `SUSPICIOUS_ALL_EXTS` para reducir la sobrecarga de CPU durante el recorrido de grandes directorios.

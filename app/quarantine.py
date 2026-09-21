@@ -774,6 +774,7 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
             except OSError as e:
                 raise RuntimeError(f"Falla al crear destino: {e}")
                 
+        # Validación crítica: asegurar que el destino final sea seguro antes de la operación
         if not is_safe_to_modify(destination):
             raise UnsafePathError("Destino no seguro.")
             
