@@ -43,7 +43,7 @@ class RecommendationRule(NamedTuple):
     area: MetricKey
     threshold: float
     message_factory: Callable[[SystemMetrics], str]
-    check: Callable[[SystemMetrics, float], bool]
+    check: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
     """Configuración operativa de una etapa del cálculo: qué medir y cómo reportar."""
@@ -100,28 +100,28 @@ if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula ratio [0,1] donde el máximo deseable es _LIMIT_JUNK_MB."""
+    """Normaliza la acumulación de basura: a mayor MB, menor ratio (lineal hasta el límite)."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula ratio [0,1] penalizando hallazgos de seguridad encontrados por el escáner."""
+    """Normaliza el riesgo de seguridad: penalización acumulativa por hallazgos y advertencias."""
     penalization = (_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)
     return _clamp(1.0 - _clamp(penalization, 0.0, 1.0))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula ratio [0,1] usando el porcentaje de RAM disponible frente al umbral crítico."""
+    """Normaliza la RAM disponible: escala el porcentaje actual respecto al umbral crítico."""
     return _clamp(_to_float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula ratio [0,1] usando el porcentaje de disco libre frente al umbral crítico."""
+    """Normaliza el espacio en disco: escala el porcentaje libre respecto al umbral crítico."""
     return _clamp(_to_float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula ratio [0,1] comparando MB de duplicados detectados vs _LIMIT_DUPLICATE_MB."""
+    """Normaliza la redundancia de datos comparando MB duplicados contra el límite definido."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
-    """Calcula ratio [0,1] comparando cantidad de programas en inicio vs _LIMIT_STARTUP_COUNT."""
+    """Normaliza la carga de inicio: inversamente proporcional al conteo de programas."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
 _PIPELINE: Final[List[PipelineEntry]] = [
@@ -238,7 +238,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
-            area_ratio = entry.scorer(metrics)
+            area_ratio: NormalizedRatio = entry.scorer(metrics)
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             

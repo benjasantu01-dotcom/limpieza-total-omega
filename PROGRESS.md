@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 48
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 215
+- Rechazadas por guardia de seguridad: 47
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 73 | 5 | 16 | 9 | 82 |
-| 2026-09-21 | 137 | 10 | 32 | 7 | 133 |
+| 2026-09-20 | 72 | 5 | 15 | 8 | 81 |
+| 2026-09-21 | 139 | 10 | 32 | 7 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **48**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **47**
-- legibilidad y documentación: **46**
 - robustez ante casos límite: **41**
-- rendimiento: **28**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **20**
 - `browser.py`: **19**
 - `diskreport.py`: **18**
+- `memory.py`: **18**
 - `quarantine.py`: **18**
 - `duplicates.py`: **18**
-- `memory.py`: **17**
-- `settings.py`: **16**
 - `safety.py`: **16**
+- `healthscore.py`: **15**
+- `settings.py`: **15**
 - `branding.py`: **14**
-- `healthscore.py`: **14**
 - `scanner.py`: **12**
 - `organizer.py`: **12**
 - `startup.py`: **8**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T13:49:12` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las estructuras críticas y funciones de bajo nivel en `memory.py` mediante type hints más precisos, docstrings explicativos sobre las intenciones de las APIs de Win32, y la estandarización de la nomenclatura interna para facilitar el mantenimiento del código.
+- `2026-09-21T13:44:42` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints más específicos en el pipeline de evaluación y se añadió documentación técnica (docstrings) detallada a los métodos de normalización para clarificar el flujo de datos y los umbrales de riesgo.
 - `2026-09-21T13:39:15` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de procesamiento de hashing y filtrado, mejorando la legibilidad técnica y facilitando el mantenimiento sin alterar la lógica de detección.
 - `2026-09-21T13:38:19` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` y `_collect_summary_data` para clarificar la complejidad algorítmica y el uso del heap, y añadí type hints explícitos para mejorar la legibilidad técnica sin alterar la funcionalidad.
 - `2026-09-21T13:34:37` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a las constantes globales y a las estructuras de datos complejas (`PaletteDict`, `FontSizesDict`), facilitando la comprensión de la jerarquía visual del proyecto.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T11:16:43` **quarantine.py** (seguridad defensiva): Se implementó un bloqueo preventivo contra el uso de flujos de datos alternos (ADS) en Windows durante la creación del nombre almacenado, fortaleciendo la defensa contra la ejecución de código oculto mediante `stream` y asegurando que las rutas de los archivos aislados sean estrictamente simples y seguras.
 - `2026-09-21T11:15:50` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `_get_process_path` validando que la ruta resultante sea una ruta absoluta y esté normalizada antes de ser comparada con los filtros de seguridad, previniendo posibles escapes por resolución de rutas relativas o inconsistencias en el formato de caracteres.
 - `2026-09-21T11:04:49` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `is_junction` y `is_system_or_hidden` añadiendo una validación explícita mediante `is_safe_to_modify` antes de interactuar con el sistema de archivos, asegurando que ninguna ruta bloqueada sea procesada ni siquiera por consultas de metadatos de bajo nivel.
-- `2026-09-21T11:04:16` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez del escáner en `_is_excluded_path` añadiendo una comprobación explícita para evitar seguir rutas que contengan caracteres de control RTL (Right-to-Left) o caracteres de espacio inusuales que suelen usarse para ocultar extensiones o suplantar la identidad de archivos, reforzando la seguridad defensiva contra la manipulación de nombres de archivos.
-- `2026-09-21T11:00:58` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva añadiendo una validación explícita mediante `is_safe_to_modify` en la función `_sum_directory_recursive` antes de proceder con el escaneo, asegurando que cualquier entrada que pueda haber sido alterada o que resulte ser un punto de reparse/enlace sea rechazada antes de intentar operar sobre ella.
