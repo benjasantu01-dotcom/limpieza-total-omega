@@ -103,8 +103,8 @@ class BrowserCache:
 
 def _get_kernel32() -> Optional[ctypes.WinDLL]:
     """
-    Intenta cargar kernel32.dll para operaciones Win32 nativas.
-    Retorna la instancia de WinDLL si es Windows y está disponible, None de lo contrario.
+    Carga kernel32.dll para interactuar con atributos de archivos en Windows.
+    Retorna None en plataformas no Windows o si el acceso es denegado.
     """
     if os.name != 'nt':
         return None
@@ -118,15 +118,18 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
 
 def _is_unc_path(path_str: Optional[str]) -> bool:
     """
-    Verifica si una ruta es un recurso de red (UNC) basándose en el prefijo '\\'.
-    Las rutas UNC se omiten para evitar bloqueos por latencia de red.
+    Valida si una cadena representa una ruta de red UNC (ej. \\servidor\recurso).
+    Previene intentos de escaneo en recursos que podrían degradar el rendimiento.
     """
     if not isinstance(path_str, str) or not path_str:
         return False
     return path_str.startswith(r"\\") or path_str.startswith("//")
 
 def base_directories() -> List[Path]:
-    """Localiza y valida la ruta %LOCALAPPDATA% para escaneo inicial."""
+    """
+    Localiza la ruta %LOCALAPPDATA% y verifica su validez operativa.
+    Asegura que el punto de inicio de escaneo sea una ruta local segura.
+    """
     local_env = os.environ.get("LOCALAPPDATA")
     if not isinstance(local_env, str) or not local_env or _is_unc_path(local_env):
         return []
@@ -144,7 +147,10 @@ def base_directories() -> List[Path]:
 
 
 def _is_path_inside_base(target_abs: str, base_abs: str) -> bool:
-    """Confirma que 'target_abs' esté contenido bajo 'base_abs' para prevenir ataques de Directory Traversal."""
+    """
+    Confirma que 'target_abs' sea subdirectorio o hijo de 'base_abs'.
+    Implementa un mecanismo de defensa contra Path Traversal.
+    """
     if not isinstance(target_abs, str) or not isinstance(base_abs, str):
         return False
     if len(target_abs) >= MAX_PATH_LEN or len(base_abs) >= MAX_PATH_LEN or any(c in target_abs for c in '\0\r\n'):
@@ -157,12 +163,12 @@ def _is_path_inside_base(target_abs: str, base_abs: str) -> bool:
 
 
 def _is_excluded_file(name: Optional[str]) -> bool:
-    """Comprueba si el nombre del archivo está en la lista de elementos protegidos (NEVER_TOUCH)."""
+    """Comprueba si un nombre de archivo corresponde a un elemento crítico protegido (NEVER_TOUCH)."""
     return name is not None and name.lower() in NEVER_TOUCH
 
 
 def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
-    """Consulta atributos del sistema de archivos de Windows para detectar ocultamiento."""
+    """Consulta atributos Win32 para identificar archivos marcados como ocultos o sistema."""
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
@@ -180,8 +186,8 @@ def _should_skip_entry(
     is_junction_fn: JunctionChecker
 ) -> bool:
     """
-    Determina si una entrada del sistema de archivos debe ser omitida del escaneo.
-    Aplica filtros de seguridad: exclusiones, rutas UNC, junctions y archivos ocultos.
+    Filtra entradas del sistema de archivos según políticas de seguridad.
+    Omite junctions, rutas UNC, archivos protegidos y elementos de sistema.
     """
     if entry.name is None or _is_excluded_file(entry.name):
         return True
@@ -200,7 +206,10 @@ def _should_skip_entry(
 
 
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
-    """Valida permisos y contención de seguridad antes de navegar una jerarquía de directorios."""
+    """
+    Valida permisos y contención lógica antes de recursar una jerarquía.
+    Garantiza que la ruta sea local y esté dentro de los límites del perfil.
+    """
     if not isinstance(path_obj, Path):
         return False
     try:
@@ -223,7 +232,8 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula el peso total de una estructura de directorios de manera recursiva usando memoización.
+    Calcula recursivamente el peso de una carpeta utilizando memoización para eficiencia.
+    Limpia resultados mediante exclusión selectiva de entradas bloqueadas o protegidas.
     """
     if root_abs in memo:
         return memo[root_abs]
@@ -256,7 +266,10 @@ def _sum_directory_recursive(
 
 
 def directory_size(path: Optional[OSPath]) -> int:
-    """Interfaz pública para consultar peso de una ruta; pre-valida riesgos antes de escanear."""
+    """
+    Interfaz pública para medir el peso de una ruta; realiza validaciones
+    de seguridad previas para prevenir accesos indebidos o recursión insegura.
+    """
     if not path:
         return 0
     try:
@@ -270,7 +283,10 @@ def directory_size(path: Optional[OSPath]) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
-    """Valida integridad de la ruta candidata antes de intentar el escaneo de caché."""
+    """
+    Verifica que la carpeta candidata sea un directorio válido dentro del scope,
+    asegurando que no sea un enlace simbólico o una ruta protegida.
+    """
     try:
         if not candidate.is_absolute() or not candidate.exists() or not candidate.is_dir():
             return False
@@ -286,7 +302,10 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
 
 
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
-    """Combina base de usuario y ruta relativa protegiendo contra caracteres malformados."""
+    """
+    Resuelve una ruta relativa desde la base del perfil.
+    Implementa validación estricta de formato de caracteres prohibidos.
+    """
     if not isinstance(real_base, Path) or not isinstance(rel_str, str) or any(c in rel_str for c in '\0\r\n'):
         return Path()
     try:
@@ -303,7 +322,10 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[BrowserMap] = None
 ) -> List[BrowserCache]:
-    """Escanea directorios base detectando cachés según el mapa de configuración de navegadores."""
+    """
+    Orquestador principal que escanea las rutas definidas por BROWSER_CACHE_PATHS.
+    Retorna una lista de objetos BrowserCache ordenados por uso de disco.
+    """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     

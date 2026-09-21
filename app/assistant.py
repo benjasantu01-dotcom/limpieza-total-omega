@@ -123,18 +123,18 @@ class ProblemCriterion(NamedTuple):
     message_format: str
 
     def _evaluate_metric(self, val: float) -> bool:
-        """Ejecuta la comparación lógica entre la métrica actual y el umbral usando el operador definido."""
+        """Compara el valor de la métrica contra el umbral usando el operador definido ('>' o '<')."""
         ops = {"<": operator.lt, ">": operator.gt}
         op_func = ops.get(self.operator)
         return op_func(val, self.threshold) if op_func else False
 
     def is_triggered_by(self, ctx: SystemContext) -> bool:
-        """Determina si el contexto del sistema viola el umbral establecido."""
+        """Evalúa si una métrica específica en el contexto excede el umbral de riesgo definido."""
         val = ctx.get_metric(self.metric_key, DEFAULT_METRIC_VAL)
         return val >= 0 and self._evaluate_metric(val)
 
     def format_if_triggered(self, ctx: SystemContext) -> Optional[str]:
-        """Genera un mensaje de advertencia formateado si el criterio de problema es superado."""
+        """Formatea el mensaje de advertencia si la métrica supera el umbral, validando la integridad del texto."""
         val: float = ctx.get_metric(self.metric_key, DEFAULT_METRIC_VAL)
         
         if val < 0 or not self._evaluate_metric(val):

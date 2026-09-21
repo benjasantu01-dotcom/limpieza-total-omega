@@ -231,11 +231,19 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre el árbol de directorios de forma iterativa (stack LIFO) para evitar recursión.
-    
-    Implementa un mecanismo de prevención de ciclos mediante `visited_inodes` (dev, ino),
-    garantizando que no se procesen directorios ya visitados, previniendo errores por
-    enlaces simbólicos circulares o junctions en sistemas Windows.
+    Recorre el sistema de archivos de forma iterativa mediante un stack LIFO.
+
+    Args:
+        directory: Ruta raíz a explorar.
+        skip_protected: Si es True, omite directorios protegidos por `safety.py`.
+
+    Yields:
+        Tuplas (Path, int) conteniendo la ruta del archivo y su tamaño en bytes.
+
+    Technical Details:
+        - Evita recursión para prevenir stack overflow en árboles profundos.
+        - Implementa `visited_inodes` para detectar ciclos en enlaces simbólicos y junctions.
+        - Complejidad temporal O(N) donde N es el número total de archivos/carpetas.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -325,10 +333,14 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Realiza una pasada única (O(N)) sobre el árbol de archivos.
+    Agrega estadísticas globales de un árbol de directorios en una pasada única.
+
+    Realiza el cálculo de uso por extensión y mantiene un Min-Heap de tamaño `limit`
+    para gestionar la lista de archivos más grandes.
     
-    Agrega estadísticas por extensión y mantiene un Min-Heap de tamaño `limit` para
-    gestionar la lista de los archivos más grandes de forma eficiente (O(N log K)).
+    Complexity:
+        - Tiempo: O(N log K), donde N es el total de archivos y K es el `limit` del heap.
+        - Espacio: O(E + K), siendo E la cantidad de extensiones únicas encontradas.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -337,7 +349,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        # Validar existencias antes de operar, walk_files ya valida lecturabilidad
         total_bytes += size_bytes
         total_files += 1
         
