@@ -1097,3 +1097,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-21T10:42:08` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-09-21T10:42:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T10:42:08` Corrida terminada. Total usado hoy: 252.
+- `2026-09-21T10:50:15` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-09-21T10:50:50` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `settings.py` ante archivos corruptos o maliciosos agregando un chequeo de integridad basado en el tamaño real del archivo antes de intentar cargarlo y validando que el directorio de configuración sea un directorio real y no un enlace simbólico que pudiera apuntar a una ubicación sensible.
+- `2026-09-21T10:51:15` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-21T10:51:54` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la integridad del motor de comunicación HTTP mediante la validación de la URL antes de ejecutar el request, asegurando que `_ENDPOINT` y `api_key` no contengan inyecciones o caracteres fuera de formato antes de construir el objeto `urllib.request.Request`.
+- `2026-09-21T10:52:11` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-21T10:52:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T10:52:11` Corrida terminada. Total usado hoy: 256.

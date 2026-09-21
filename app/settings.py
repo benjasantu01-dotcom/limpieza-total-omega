@@ -273,7 +273,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     if base_path in _PATH_CACHE: return _PATH_CACHE[base_path]
     try:
         resolved_parent = Path(os.path.realpath(base_path))
-        if _Validators._is_safe_path(str(resolved_parent)):
+        if _Validators._is_safe_path(str(resolved_parent)) and not _Validators._is_reparse_point(resolved_parent):
             _PATH_CACHE[base_path] = resolved_parent / SETTINGS_FILE
             return _PATH_CACHE[base_path]
     except (OSError, RuntimeError, PermissionError):
@@ -301,8 +301,9 @@ def _load_impl(ruta: Path) -> AppSettings:
             return DEFAULTS.copy()
             
         ensure_safe_to_modify(ruta)
-        stats = ruta.stat()
-        if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
+        
+        # Validar integridad básica de tamaño antes de parsear
+        if ruta.stat().st_size == 0 or ruta.stat().st_size > MAX_SETTINGS_SIZE:
             return DEFAULTS.copy()
             
         with open(ruta, "r", encoding="utf-8") as f:

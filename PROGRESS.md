@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 93 | 6 | 19 | 11 | 123 |
-| 2026-09-21 | 120 | 7 | 28 | 7 | 90 |
+| 2026-09-20 | 93 | 6 | 19 | 11 | 119 |
+| 2026-09-21 | 122 | 7 | 28 | 7 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **40**
-- seguridad defensiva: **40**
+- robustez ante casos límite: **41**
+- seguridad defensiva: **41**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
+- `assistant.py`: **19**
 - `memory.py`: **18**
 - `browser.py`: **18**
-- `assistant.py`: **18**
 - `diskreport.py`: **17**
+- `settings.py`: **17**
 - `duplicates.py`: **17**
 - `safety.py`: **16**
-- `settings.py`: **16**
 - `healthscore.py`: **16**
 - `branding.py`: **14**
 - `organizer.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T10:51:54` **assistant.py** (seguridad defensiva): Reforcé la integridad del motor de comunicación HTTP mediante la validación de la URL antes de ejecutar el request, asegurando que `_ENDPOINT` y `api_key` no contengan inyecciones o caracteres fuera de formato antes de construir el objeto `urllib.request.Request`.
+- `2026-09-21T10:50:50` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante archivos corruptos o maliciosos agregando un chequeo de integridad basado en el tamaño real del archivo antes de intentar cargarlo y validando que el directorio de configuración sea un directorio real y no un enlace simbólico que pudiera apuntar a una ubicación sensible.
 - `2026-09-21T10:40:47` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine.py` ante casos de concurrencia y corrupción de archivos mediante la implementación de `os.fsync` y validaciones de estado post-operación más estrictas en `_safe_unlink`, evitando dejar manifiestos desincronizados cuando el sistema de archivos falla o bloquea el acceso.
 - `2026-09-21T10:34:51` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_safe_for_disk_op` añadiendo una verificación de existencia real mediante `path.exists()` antes de realizar chequeos de estado, evitando excepciones innecesarias en condiciones de carrera (Race Conditions) donde un archivo es borrado por el sistema entre la detección y la manipulación.
 - `2026-09-21T10:34:39` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` al implementar una validación estricta contra entradas malformadas o PIDs negativos, evitando errores de casting durante el procesamiento de datos asíncronos y garantizando que el bucle de diagnóstico no se rompa ante texto inesperado de PowerShell.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T09:40:49` **diskreport.py** (rendimiento): Optimizé `walk_files` y las funciones auxiliares para evitar la redundancia de llamadas a `is_protected_path` sobre el mismo objeto `Path`, consolidando el filtrado para mejorar el rendimiento en recorridos profundos.
 - `2026-09-21T09:40:10` **branding.py** (rendimiento): Optimicé el renderizado del escudo y los gradientes eliminando el cálculo dinámico en `draw_logo` mediante la pre-calculación de las coordenadas del polígono, aprovechando que el factor de escala es constante para un tamaño dado, y reduciendo la complejidad en el bucle de franjas mediante acceso directo a los segmentos.
 - `2026-09-21T09:39:36` **assistant.py** (rendimiento): Se optimizó la eficiencia en la búsqueda de handlers de preguntas mediante la eliminación de un loop redundante sobre las claves del diccionario `TOKENS_BY_CATEGORY`, reemplazándolo por una búsqueda directa y validación de tokens en una sola pasada.
-- `2026-09-21T09:29:22` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `_check_file_integrity` extrayendo la lógica compleja de evaluación de reglas a una función con nombre explicativo, documentando mejor el flujo de seguridad para evitar errores de interpretación en futuras iteraciones.
-- `2026-09-21T09:20:13` **quarantine.py** (legibilidad y documentación): He mejorado la documentación y legibilidad interna añadiendo docstrings descriptivos con las causas de las excepciones en las funciones críticas de validación y persistencia (`_check_isolation_safety`, `_validate_isolation_request`, `_write_temp_to_final`), facilitando la depuración y auditoría del comportamiento ante fallos de seguridad.

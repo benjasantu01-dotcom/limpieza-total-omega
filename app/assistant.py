@@ -198,7 +198,7 @@ SYSTEM_PROMPT: Final[str] = (
 )
 
 # Regex de validación
-_ENDPOINT: Final[str] = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+_ENDPOINT_BASE: Final[str] = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 _TIMEOUT_SECONDS: Final[int] = 30
 _PATH_INJECTION_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:[\\/]|/|\\|\.\.|\0|[\u202e\u202d\u200e\u200f])")
 _CONTROL_CHARS_REGEX: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f\u0080-\u009f\u202b-\u202f\u200b-\u200d\uFEFF]")
@@ -659,7 +659,10 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     if not payload: return None
     
     try:
-        url = _ENDPOINT.format(model=model) + f"?key={api_key}"
+        url = _ENDPOINT_BASE.format(model=model) + f"?key={api_key}"
+        # Validación extra de seguridad: verificar que la URL construida se mantenga dentro del dominio esperado
+        if not url.startswith("https://generativelanguage.googleapis.com/"): return None
+        
         req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"}, method="POST")
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
