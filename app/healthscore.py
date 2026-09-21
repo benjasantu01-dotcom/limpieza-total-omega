@@ -139,8 +139,6 @@ _PIPELINE: Final[List[PipelineEntry]] = [
                   [RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW)]),
 ]
 
-_INITIAL_BREAKDOWN: Final[Dict[MetricKey, int]] = {k: 0 for k in WEIGHTS.keys()}
-
 @dataclass
 class SystemMetrics:
     """Contenedor de datos crudos (inputs) para el motor de salud."""
@@ -158,20 +156,14 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura la integridad de los datos, forzando rangos positivos y limpieza de NaNs."""
-        try:
-            self.junk_mb = float(max(0.0, _to_float(self.junk_mb)))
-            self.duplicate_mb = float(max(0.0, _to_float(self.duplicate_mb)))
-            self.suspicious_count = int(max(0, int(_to_float(self.suspicious_count))))
-            self.suspicious_warnings = int(max(0, int(_to_float(self.suspicious_warnings))))
-            self.startup_count = int(max(0, int(_to_float(self.startup_count))))
-            self.quarantined_count = int(max(0, int(_to_float(self.quarantined_count))))
-            self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
-            self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
-        except (TypeError, ValueError, OverflowError):
-            self.junk_mb = self.duplicate_mb = 0.0
-            self.suspicious_count = self.suspicious_warnings = 0
-            self.startup_count = self.quarantined_count = 0
-            self.memory_available_percent = self.disk_free_percent = 100.0
+        self.junk_mb = float(max(0.0, _to_float(self.junk_mb)))
+        self.duplicate_mb = float(max(0.0, _to_float(self.duplicate_mb)))
+        self.suspicious_count = int(max(0, int(_to_float(self.suspicious_count))))
+        self.suspicious_warnings = int(max(0, int(_to_float(self.suspicious_warnings))))
+        self.startup_count = int(max(0, int(_to_float(self.startup_count))))
+        self.quarantined_count = int(max(0, int(_to_float(self.quarantined_count))))
+        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
+        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
 
     @property
     def is_finite(self) -> bool:
@@ -197,7 +189,9 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     """Fuerza un valor numérico a estar dentro de [min_val, max_val]."""
     try:
         if not math.isfinite(value): return min_val
-        return float(max(min_val, min(max_val, value)))
+        if value < min_val: return min_val
+        if value > max_val: return max_val
+        return float(value)
     except (TypeError, ValueError):
         return min_val
 
@@ -228,29 +222,28 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Pipeline de evaluación: mapea SystemMetrics -> HealthResult."""
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite or sum(WEIGHTS.values()) != 100:
-        return HealthResult(0, "F", _INITIAL_BREAKDOWN.copy(), ["Error: Configuración o métricas no válidas."])
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+        return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
     
     recommendations: List[str] = []
-    metric_breakdown = _INITIAL_BREAKDOWN.copy()
+    metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: float = 0.0
     
     for entry in _PIPELINE:
         try:
             area_ratio = entry.scorer(metrics)
             if not math.isfinite(area_ratio):
+                metric_breakdown[entry.area] = 0
                 continue
                 
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
-            if entry.weight <= 0:
-                continue
-                
-            weighted_points = _clamp(round(area_ratio * entry.weight), 0.0, float(entry.weight))
-            metric_breakdown[entry.area] = int(weighted_points)
+            weighted_points = int(_clamp(round(area_ratio * entry.weight), 0.0, float(entry.weight)))
+            metric_breakdown[entry.area] = weighted_points
             accumulated_score += weighted_points
         except (Exception, TypeError, ValueError, ZeroDivisionError):
+            metric_breakdown[entry.area] = 0
             continue
             
     final_score = int(_clamp(round(accumulated_score), 0.0, 100.0))

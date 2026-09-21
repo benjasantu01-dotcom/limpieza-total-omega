@@ -177,8 +177,6 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
     Filtro de seguridad para archivos: verifica que la ruta no esté protegida,
     que no tenga atributos de sistema/oculto y que no sea un archivo en uso.
     """
-    if not isinstance(path, Path):
-        return False
     try:
         if is_protected_path(path) or not is_safe_to_modify(path):
             return False
@@ -231,7 +229,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Seguridad: no seguir symlinks ni junctions para evitar escapes
                         if entry.is_symlink() or (entry.is_dir() and is_junction(Path(entry.path))):
                             continue
                         
@@ -239,14 +236,14 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             _scan_dir(Path(entry.path))
                             continue
                         
+                        # Stat una única vez por entrada para obtener tamaño y evitar bloqueos iniciales
                         st = entry.stat(follow_symlinks=False)
-                        if st.st_size >= min_size:
-                            path_str = entry.path
-                            if path_str not in visited_files:
-                                p = Path(path_str)
-                                if _is_valid_candidate(p, st.st_size):
-                                    size_to_paths_map[st.st_size].append(p)
-                                    visited_files.add(path_str)
+                        path_p = Path(entry.path)
+                        
+                        if st.st_size >= min_size and entry.path not in visited_files:
+                            if _is_valid_candidate(path_p, st.st_size):
+                                size_to_paths_map[st.st_size].append(path_p)
+                                visited_files.add(entry.path)
                     except (FileNotFoundError, OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

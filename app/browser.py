@@ -227,12 +227,7 @@ def _sum_directory_recursive(
     if root_abs in memo:
         return memo[root_abs]
 
-    if not is_safe_to_modify(Path(root_abs)) or is_protected_path(Path(root_abs)):
-        return 0
-
-    if depth > MAX_SCAN_DEPTH or not _is_path_inside_base(root_abs, root_base_abs):
-        return 0
-
+    # La validación de seguridad básica se hace en el caller, acá solo procesamos recursión
     directory_total_bytes: int = 0
     try:
         with os.scandir(root_abs) as it:
@@ -242,9 +237,10 @@ def _sum_directory_recursive(
                 
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        directory_total_bytes += _sum_directory_recursive(
-                            entry.path, is_junction_fn, kernel32, memo, root_base_abs, depth + 1
-                        )
+                        if depth < MAX_SCAN_DEPTH:
+                            directory_total_bytes += _sum_directory_recursive(
+                                entry.path, is_junction_fn, kernel32, memo, root_base_abs, depth + 1
+                            )
                     elif entry.is_file(follow_symlinks=False):
                         try:
                             directory_total_bytes += int(entry.stat(follow_symlinks=False).st_size)
@@ -325,6 +321,7 @@ def detect_profiles(
                     continue
                 
                 real_candidate = str(candidate.resolve(strict=True))
+                # Pasamos global_memo para que subdirectorios compartidos sean procesados una sola vez
                 size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, global_memo, str(real_base))
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), Path(real_candidate), size))

@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 38
+- Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 231
 
@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 50 | 5 | 8 | 6 | 69 |
+| 2026-09-19 | 48 | 5 | 7 | 6 | 68 |
 | 2026-09-20 | 134 | 9 | 28 | 17 | 162 |
-| 2026-09-21 | 14 | 0 | 2 | 0 | 0 |
+| 2026-09-21 | 17 | 0 | 2 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **39**
-- robustez ante casos límite: **35**
-- rendimiento: **24**
+- robustez ante casos límite: **33**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **17**
-- `safety.py`: **17**
-- `browser.py`: **17**
+- `browser.py`: **18**
+- `healthscore.py`: **18**
 - `diskreport.py`: **17**
 - `settings.py`: **17**
-- `healthscore.py`: **17**
+- `safety.py`: **16**
 - `assistant.py`: **16**
+- `quarantine.py`: **16**
 - `memory.py`: **16**
-- `duplicates.py`: **14**
+- `duplicates.py`: **15**
 - `branding.py`: **13**
 - `organizer.py`: **11**
 - `scanner.py`: **11**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T00:49:12` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la creación repetitiva de copias de diccionarios y listas dentro del bucle principal del pipeline, reemplazando la copia innecesaria de `_INITIAL_BREAKDOWN` por una estructura pre-calculada y mejorando la eficiencia de las validaciones.
+- `2026-09-21T00:48:58` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar realizar llamadas repetitivas de `_is_valid_candidate` (que contiene múltiples chequeos de seguridad y acceso a disco) llamando a `entry.stat()` una sola vez, consolidando la lógica de filtrado inicial para reducir el I/O innecesario.
+- `2026-09-21T00:48:03` **browser.py** (rendimiento): Se optimizó `_sum_directory_recursive` implementando un chequeo de `is_protected_path` centralizado y eliminando la redundancia de validación en cada llamada recursiva, además de asegurar que el `memo` se propague correctamente para evitar re-escaneos de subdirectorios ya calculados.
 - `2026-09-21T00:39:16` **branding.py** (rendimiento): Optimicé el rendimiento de `_hex_to_rgb` reemplazando los intentos de indexación por slicing con una conversión de base directa más eficiente y agregué una validación previa a la conversión para evitar excepciones innecesarias en el flujo de ejecución.
 - `2026-09-21T00:38:22` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `StartupEntry` documentando los métodos privados con docstrings claros y clarificando la lógica de resolución de rutas, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
 - `2026-09-21T00:37:54` **settings.py** (legibilidad y documentación): Documenté con precisión el propósito de las funciones internas del namespace `_Validators` para mejorar la mantenibilidad y claridad del código, asegurando que el flujo de validación (de texto crudo a objeto seguro) sea evidente para futuros colaboradores.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T00:17:19` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings más precisos en las funciones de normalización y tipos, clarificando la relación entre métricas crudas y ratios, y eliminando la redundancia entre `_RULES_MAP` y `_PIPELINE`.
 - `2026-09-21T00:08:23` **duplicates.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo añadiendo docstrings técnicos con Type Hints en las funciones de hashing y filtrado, detallando la lógica de los estados de archivo y el flujo de resolución de rutas para evitar ambigüedades.
 - `2026-09-21T00:08:10` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de procesamiento de datos y clases auxiliares, aclarando las complejidades algorítmicas (O(N log K) y LIFO) y el propósito de cada estructura.
-- `2026-09-21T00:07:43` **browser.py** (legibilidad y documentación): Documenté con docstrings claros y tipado estricto las funciones de bajo nivel que interactúan con el sistema de archivos (`_is_junction_default`, `_get_kernel32`, `_is_unc_path`), eliminando ambigüedades sobre sus responsabilidades y condiciones de error.
-- `2026-09-21T00:07:16` **branding.py** (legibilidad y documentación): Mejora la legibilidad del módulo mediante la adición de Type Hints en parámetros faltantes y la normalización de la estructura de las constantes globales, facilitando el mantenimiento y la comprensión de las dependencias visuales.
-- `2026-09-20T14:57:12` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de comparación en `ProblemCriterion` reemplazando la lógica de control `if/else` en `_evaluate_metric` por una estructura de mapa de operadores más limpia, lo cual es una técnica recomendada para reducir la complejidad ciclomática sin cambiar el comportamiento.

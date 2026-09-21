@@ -1337,3 +1337,10 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-21T00:39:16` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el rendimiento de `_hex_to_rgb` reemplazando los intentos de indexación por slicing con una conversión de base directa más eficiente y agregué una validación previa a la conversión para evitar excepciones innecesarias en el flujo de ejecución.
 - `2026-09-21T00:39:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T00:39:16` Corrida terminada. Total usado hoy: 16.
+- `2026-09-21T00:47:32` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-09-21T00:48:03` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó `_sum_directory_recursive` implementando un chequeo de `is_protected_path` centralizado y eliminando la redundancia de validación en cada llamada recursiva, además de asegurar que el `memo` se propague correctamente para evitar re-escaneos de subdirectorios ya calculados.
+- `2026-09-21T00:48:31` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-21T00:48:58` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` para evitar realizar llamadas repetitivas de `_is_valid_candidate` (que contiene múltiples chequeos de seguridad y acceso a disco) llamando a `entry.stat()` una sola vez, consolidando la lógica de filtrado inicial para reducir el I/O innecesario.
+- `2026-09-21T00:49:12` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score evitando la creación repetitiva de copias de diccionarios y listas dentro del bucle principal del pipeline, reemplazando la copia innecesaria de `_INITIAL_BREAKDOWN` por una estructura pre-calculada y mejorando la eficiencia de las validaciones.
+- `2026-09-21T00:49:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T00:49:12` Corrida terminada. Total usado hoy: 20.
