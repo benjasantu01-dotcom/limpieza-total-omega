@@ -251,18 +251,17 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     if _is_excluded_path(entry): continue
                     
                     try:
+                        st = entry.stat(follow_symlinks=False)
                         if entry.is_dir(follow_symlinks=False):
                             path = Path(entry.path)
                             if skip_protected and is_protected_path(path): continue
                             
-                            st = entry.stat(follow_symlinks=False)
                             inode: Inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
                                 stack.append(path)
                                 
                         elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat(follow_symlinks=False)
                             if st.st_size >= 0:
                                 yield Path(entry.path), st.st_size
                             
@@ -302,7 +301,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size_bytes in walk_files(root, skip_protected):
         try:
-            if not path.exists(): continue
             relative = path.relative_to(root)
             if not relative.parts: continue
             
@@ -339,8 +337,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        if not path.exists() or not path.is_file(): continue
-        
+        # Validar existencias antes de operar, walk_files ya valida lecturabilidad
         total_bytes += size_bytes
         total_files += 1
         
@@ -365,7 +362,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     preparado para ser renderizado en la interfaz de usuario.
     """
     root = _validate_root(directory)
-    if root is None: return ["Error: Ruta no válida."]
+    if root is None: return ["Error: Ruta no válida o inaccesible."]
     
     data = _collect_summary_data(root, skip_protected, limit=20)
     
@@ -380,7 +377,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if data.top_files:
         lines.extend(["", "Mayores archivos:"])
         for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
-            if isinstance(p, Path) and p.exists() and not is_protected_path(p):
+            if p is not None and p.exists():
                 lines.append(f"  {format_size(s):>10}  {str(p)}")
     
     return lines

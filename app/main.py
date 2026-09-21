@@ -1669,15 +1669,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @ensure_safety
     def on_trim_process(self) -> None:
         """Intenta liberar memoria de un proceso por PID."""
-        pid_raw = self._safe_get_entry_value(getattr(self, 'pid_entry', None), None)
+        pid_val = self._safe_get_entry_value(getattr(self, 'pid_entry', None), None)
         try:
-            pid = int(pid_raw) if pid_raw else None
+            pid = int(pid_val)
         except (ValueError, TypeError):
-            messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
+            self.log("Error: PID inválido. Debe ser un número entero.", "Memoria")
             return
 
-        if pid is None or pid < 100:
-            self.log(f"Error: PID {pid} no es válido o es un proceso protegido del sistema.", "Memoria")
+        if pid < 100:
+            self.log(f"Error: El proceso {pid} es crítico del sistema.", "Memoria")
             return
         
         if not memory_mod.process_exists(pid):
