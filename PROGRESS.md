@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 43
+- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 102 | 7 | 20 | 11 | 132 |
-| 2026-09-21 | 112 | 6 | 23 | 6 | 85 |
+| 2026-09-20 | 101 | 6 | 20 | 11 | 130 |
+| 2026-09-21 | 114 | 6 | 24 | 6 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
-- seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **49**
+- seguridad defensiva: **48**
 - robustez ante casos límite: **34**
-- rendimiento: **30**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **18**
+- `quarantine.py`: **19**
 - `diskreport.py`: **18**
 - `duplicates.py`: **18**
 - `memory.py`: **18**
-- `quarantine.py`: **18**
 - `healthscore.py`: **17**
 - `safety.py`: **17**
 - `settings.py`: **17**
 - `browser.py`: **17**
+- `assistant.py`: **17**
+- `organizer.py`: **13**
 - `branding.py`: **13**
 - `scanner.py`: **13**
-- `organizer.py`: **12**
 - `startup.py`: **9**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T10:00:25` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando las búsquedas en el sistema de archivos de una lista a un `set` de nombres, evitando así iteraciones anidadas de complejidad O(N*M) y reduciendo las llamadas a `stat` mediante la validación previa del nombre existente.
+- `2026-09-21T09:59:45` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la lógica de resolución repetida de rutas y validaciones redundantes dentro de `_process_directory` y `_is_safe_for_disk_op`, utilizando un conjunto de caché para evitar procesar subdirectorios ya validados y consolidando los chequeos de permisos antes de realizar operaciones costosas de I/O.
 - `2026-09-21T09:54:49` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reduciendo las operaciones de string y evitando el uso de una lista intermedia con `split()`, además de delegar la conversión de tipos directamente en el bucle para mejorar la velocidad al procesar los 50 procesos del snapshot.
 - `2026-09-21T09:49:33` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `_is_file_locked` (que realizaban operaciones de entrada/salida costosas) al centralizar la validación de seguridad una sola vez por entrada durante el escaneo inicial.
 - `2026-09-21T09:40:49` **diskreport.py** (rendimiento): Optimizé `walk_files` y las funciones auxiliares para evitar la redundancia de llamadas a `is_protected_path` sobre el mismo objeto `Path`, consolidando el filtrado para mejorar el rendimiento en recorridos profundos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T09:08:46` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` y `_is_excluded_path` mediante docstrings detallados que explican el "porqué" técnico de las exclusiones (evitar bucles de recursión y el manejo de rutas largas), cumpliendo con el enfoque de legibilidad.
 - `2026-09-21T09:00:58` **browser.py** (legibilidad y documentación): Se introdujo un `NamedTuple` para los tipos de archivos detectados por el sistema y se refinaron los comentarios críticos en el escáner de atributos de Windows para documentar la lógica de los flags, mejorando la legibilidad técnica y el mantenimiento del código bajo el enfoque de documentación solicitado.
 - `2026-09-21T08:59:14` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la aplicación de docstrings explicativos sobre las intenciones de los decoradores, la estandarización de type hints y la consolidación de la lógica de validación de métricas, facilitando así la comprensión del flujo de datos sin alterar el comportamiento.
-- `2026-09-21T08:58:29` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_registry_csv` al capturar el caso `None` o vacío en `reader.fieldnames` y validando explícitamente que los datos procesados no sean `None` antes de aplicar transformaciones de cadena, evitando errores de tipo innecesarios.
-- `2026-09-21T08:50:39` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la deserialización de JSON al envolver `json.load` en un bloque `try-except` específico y añadir una verificación de integridad de tipo explícita antes de pasar los datos al validador, evitando así errores no capturados por el `try` externo.
