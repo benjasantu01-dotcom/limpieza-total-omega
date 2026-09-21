@@ -296,21 +296,24 @@ def _load_impl(ruta: Path) -> AppSettings:
     if not ruta.exists() or not os.access(ruta, os.R_OK):
         return DEFAULTS.copy()
     
-    stats = ruta.stat()
-    if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
+    try:
+        stats = ruta.stat()
+        if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
+            return DEFAULTS.copy()
+            
+        with open(ruta, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return _coerce_and_verify(validate(data))
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
         return DEFAULTS.copy()
-        
-    with open(ruta, "r", encoding="utf-8") as f:
-        return _coerce_and_verify(validate(json.load(f)))
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga y normaliza los ajustes desde disco, usando respaldo .bak si es necesario."""
     ruta = settings_path(custom_base)
-    # Intenta cargar la ruta principal, luego el backup
     for r in [ruta, ruta.with_suffix(".bak")]:
         try:
             return _load_impl(r)
-        except (OSError, PermissionError, ValueError, json.JSONDecodeError, UnicodeDecodeError):
+        except (OSError, PermissionError, ValueError):
             continue
     return DEFAULTS.copy()
 

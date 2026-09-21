@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 228
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 41 | 4 | 6 | 3 | 60 |
+| 2026-09-19 | 41 | 4 | 6 | 3 | 56 |
 | 2026-09-20 | 134 | 9 | 28 | 17 | 162 |
-| 2026-09-21 | 26 | 2 | 6 | 0 | 6 |
+| 2026-09-21 | 28 | 3 | 6 | 1 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
+- robustez ante casos límite: **41**
 - manejo de errores y validación de entradas: **39**
-- robustez ante casos límite: **39**
 - seguridad defensiva: **36**
 - rendimiento: **30**
 
@@ -32,21 +32,23 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `healthscore.py`: **19**
 - `quarantine.py`: **18**
+- `settings.py`: **18**
 - `assistant.py`: **17**
 - `browser.py`: **17**
 - `diskreport.py`: **17**
-- `settings.py`: **17**
 - `memory.py`: **17**
 - `safety.py`: **16**
 - `duplicates.py`: **14**
+- `scanner.py`: **12**
 - `branding.py`: **12**
-- `scanner.py`: **11**
 - `organizer.py`: **10**
 - `startup.py`: **9**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T01:50:15` **settings.py** (robustez ante casos límite): Se mejora la robustez ante archivos de configuración corruptos o bloqueados añadiendo un chequeo explícito de tamaño y permisos en `_load_impl`, y se previene una posible excepción por lectura parcial al envolver la carga del JSON con un bloque de control de errores más estricto.
+- `2026-09-21T01:49:41` **scanner.py** (robustez ante casos límite): Se reforzó la robustez ante errores de acceso a disco en `_run_file_heuristics` y `scan_file`, envolviendo las llamadas de archivo en bloques `try/except` para prevenir que fallos transitorios en atributos de metadatos interrumpan el escaneo de toda una rama.
 - `2026-09-21T01:42:06` **quarantine.py** (robustez ante casos límite): Mejora la robustez ante condiciones de carrera en `quarantine_file` añadiendo una verificación post-escritura más estricta que asegura la persistencia física del archivo en el sandbox mediante `os.fsync` y una re-validación de integridad completa antes de marcar el archivo como aislado, previniendo estados inconsistentes si el sistema operativo interrumpe la operación.
 - `2026-09-21T01:38:52` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable antes de intentar cualquier operación de memoria, asegurando que procesos del sistema operativo incluso con PID no crítico no sean modificados.
 - `2026-09-21T01:31:44` **main.py** (robustez ante casos límite): Se introdujo una validación robusta de existencia y accesibilidad en el método `_validate_environment` para detectar rutas de sistema o estados inválidos (como `Path.home()` inaccesible) antes de instanciar la interfaz, evitando que el bucle de eventos (`mainloop`) intente operar sobre estados nulos o bloqueados.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T00:48:58` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar realizar llamadas repetitivas de `_is_valid_candidate` (que contiene múltiples chequeos de seguridad y acceso a disco) llamando a `entry.stat()` una sola vez, consolidando la lógica de filtrado inicial para reducir el I/O innecesario.
 - `2026-09-21T00:48:03` **browser.py** (rendimiento): Se optimizó `_sum_directory_recursive` implementando un chequeo de `is_protected_path` centralizado y eliminando la redundancia de validación en cada llamada recursiva, además de asegurar que el `memo` se propague correctamente para evitar re-escaneos de subdirectorios ya calculados.
 - `2026-09-21T00:39:16` **branding.py** (rendimiento): Optimicé el rendimiento de `_hex_to_rgb` reemplazando los intentos de indexación por slicing con una conversión de base directa más eficiente y agregué una validación previa a la conversión para evitar excepciones innecesarias en el flujo de ejecución.
-- `2026-09-21T00:38:22` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `StartupEntry` documentando los métodos privados con docstrings claros y clarificando la lógica de resolución de rutas, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
-- `2026-09-21T00:37:54` **settings.py** (legibilidad y documentación): Documenté con precisión el propósito de las funciones internas del namespace `_Validators` para mejorar la mantenibilidad y claridad del código, asegurando que el flujo de validación (de texto crudo a objeto seguro) sea evidente para futuros colaboradores.

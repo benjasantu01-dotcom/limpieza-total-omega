@@ -197,29 +197,35 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """Aplica el set completo de heurísticas a un archivo ejecutable identificado."""
-        if not path.exists():
-            return
-        if (double_ext := check_double_extension(path, entry, self.now_ts)):
-            self.results.append(double_ext)
-        if ext in SUSPICIOUS_EXECUTABLE_EXT:
-            for check_fn in self._registry:
-                if (result := check_fn(path, entry, self.now_ts)):
-                    self.results.append(result)
+        try:
+            if not path.exists():
+                return
+            if (double_ext := check_double_extension(path, entry, self.now_ts)):
+                self.results.append(double_ext)
+            if ext in SUSPICIOUS_EXECUTABLE_EXT:
+                for check_fn in self._registry:
+                    if (result := check_fn(path, entry, self.now_ts)):
+                        self.results.append(result)
+        except (OSError, PermissionError):
+            pass
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """Escanea un único archivo sin recorrido recursivo."""
-    if not path or not path.exists() or is_protected_path(path): 
-        return []
-    
-    findings: ScanResult = []
-    if (double_ext := check_double_extension(path, entry, now_ts)):
-        findings.append(double_ext)
+    try:
+        if not path or not path.exists() or is_protected_path(path): 
+            return []
         
-    if ext and ext.lower() in SUSPICIOUS_EXECUTABLE_EXT:
-        for check_fn in EXECUTABLE_CHECK_REGISTRY:
-            if (result := check_fn(path, entry, now_ts)):
-                findings.append(result)
-    return findings
+        findings: ScanResult = []
+        if (double_ext := check_double_extension(path, entry, now_ts)):
+            findings.append(double_ext)
+            
+        if ext and ext.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+            for check_fn in EXECUTABLE_CHECK_REGISTRY:
+                if (result := check_fn(path, entry, now_ts)):
+                    findings.append(result)
+        return findings
+    except (OSError, PermissionError):
+        return []
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Ejecuta el escaneo de directorios utilizando una pila LIFO para control de recursos."""

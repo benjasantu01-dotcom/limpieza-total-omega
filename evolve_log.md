@@ -1455,3 +1455,35 @@ FAILED evolve/tests/test_modules.py::test_never_scans_system_folders - Attribute
 - `2026-09-21T01:42:12` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-21T01:42:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T01:42:12` Corrida terminada. Total usado hoy: 40.
+- `2026-09-21T01:48:36` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-09-21T01:49:15` ➖ Sin cambios en safety.py (enfoque: robustez ante casos límite). Motivo: Se ha añadido una validación explícita para archivos con el bit `FILE_ATTRIBUTE_OFFLINE` y atributos de reparse mediante el uso de `GetFileAttributesW` en las comprobaciones de integridad, además de proteger específicamente la existencia de archivos con atributos de lectura/escritura incoherentes en el volumen mediante `GetVolumeInformationW` dentro de `ensure_safe_to_modify` para evitar fallos por cambios de estado dinámicos en el sistema de archivos (TOCTOU).
+- `2026-09-21T01:49:41` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores de acceso a disco en `_run_file_heuristics` y `scan_file`, envolviendo las llamadas de archivo en bloques `try/except` para prevenir que fallos transitorios en atributos de metadatos interrumpan el escaneo de toda una rama.
+- `2026-09-21T01:49:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-21T01:50:15` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejora la robustez ante archivos de configuración corruptos o bloqueados añadiendo un chequeo explícito de tamaño y permisos en `_load_impl`, y se previene una posible excepción por lectura parcial al envolver la carga del JSON con un bloque de control de errores más estricto.
+- `2026-09-21T01:50:28` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.40s
+
+```
+- `2026-09-21T01:50:28` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejoró la robustez de `StartupEntry._resolve_and_cache_path` añadiendo una validación explícita de `p.exists()` antes de invocar `resolve()` (que puede fallar si la ruta no existe físicamente) y asegurando que las excepciones de tipo `OSError` o `RuntimeError` al resolver no detengan la ejecución del escaneo.
+- `2026-09-21T01:50:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T01:50:28` Corrida terminada. Total usado hoy: 44.
