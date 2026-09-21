@@ -665,6 +665,9 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             if raw_text and _ensure_safe_text(raw_text):
                 return _validate_response_length(raw_text.strip())
             return None
+    except urllib.error.HTTPError as e:
+        logging.error(f"Error HTTP en Gemini: {e.code}")
+        return None
     except (urllib.error.URLError, OSError, ValueError, KeyError, json.JSONDecodeError):
         return None
 

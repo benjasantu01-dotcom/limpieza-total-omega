@@ -538,3 +538,15 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T03:44:46` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-21T03:44:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T03:44:46` Corrida terminada. Total usado hoy: 88.
+- `2026-09-21T03:50:50` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-09-21T03:50:52` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-21T03:50:52` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-21T03:51:12` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-21T03:51:12` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-21T03:51:42` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-21T03:51:42` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-21T03:52:40` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de errores en `ask()` y `_call_gemini` mediante la captura explícita de `urllib.error.HTTPError`, evitando que errores de red (como 401 o 403) se traguen de forma genérica, y asegura que la validación `_ensure_safe_text` sea el filtro final indiscutible antes de cualquier retorno.
+- `2026-09-21T03:53:12` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y `draw_ring` validando explícitamente la integridad de los parámetros numéricos y de ruta antes de operar, previniendo excepciones inesperadas en el bucle de renderizado y el sistema de archivos.
+- `2026-09-21T03:53:23` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `_resolve_browser_path` incorporando validaciones explícitas de entrada, asegurando que si `rel_str` contiene caracteres no válidos o el joinpath falla, se retorne un objeto Path vacío o seguro en lugar de devolver la carpeta base erróneamente, previniendo así escaneos no deseados.
+- `2026-09-21T03:53:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T03:53:23` Corrida terminada. Total usado hoy: 92.

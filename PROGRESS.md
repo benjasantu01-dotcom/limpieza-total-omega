@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 27 | 4 | 5 | 2 | 28 |
+| 2026-09-19 | 24 | 4 | 5 | 2 | 27 |
 | 2026-09-20 | 134 | 9 | 28 | 17 | 162 |
-| 2026-09-21 | 40 | 3 | 8 | 1 | 36 |
+| 2026-09-21 | 43 | 3 | 8 | 1 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
+- legibilidad y documentación: **49**
 - seguridad defensiva: **48**
 - robustez ante casos límite: **41**
+- manejo de errores y validación de entradas: **33**
 - rendimiento: **30**
-- manejo de errores y validación de entradas: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **19**
-- `memory.py`: **18**
 - `quarantine.py`: **18**
+- `healthscore.py`: **18**
 - `settings.py`: **18**
+- `assistant.py`: **17**
+- `browser.py`: **17**
+- `memory.py`: **17**
 - `safety.py`: **16**
-- `assistant.py`: **16**
-- `browser.py`: **16**
 - `diskreport.py`: **15**
 - `duplicates.py`: **14**
+- `branding.py`: **13**
 - `scanner.py`: **12**
-- `branding.py`: **12**
-- `organizer.py`: **11**
+- `organizer.py`: **10**
 - `startup.py`: **9**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T03:53:23` **browser.py** (manejo de errores y validación de entradas): Mejora la robustez de `_resolve_browser_path` incorporando validaciones explícitas de entrada, asegurando que si `rel_str` contiene caracteres no válidos o el joinpath falla, se retorne un objeto Path vacío o seguro en lugar de devolver la carpeta base erróneamente, previniendo así escaneos no deseados.
+- `2026-09-21T03:53:12` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_ring` validando explícitamente la integridad de los parámetros numéricos y de ruta antes de operar, previniendo excepciones inesperadas en el bucle de renderizado y el sistema de archivos.
+- `2026-09-21T03:52:40` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `ask()` y `_call_gemini` mediante la captura explícita de `urllib.error.HTTPError`, evitando que errores de red (como 401 o 403) se traguen de forma genérica, y asegura que la validación `_ensure_safe_text` sea el filtro final indiscutible antes de cualquier retorno.
 - `2026-09-21T02:30:51` **startup.py** (seguridad defensiva): Mejoré `entries_from_folders` para verificar si una ruta es un punto de reparse (como una unión de directorios) usando `is_symlink()` de forma consistente, evitando así bucles infinitos o el seguimiento no intencionado de estructuras fuera de la jerarquía esperada.
 - `2026-09-21T02:30:23` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` aplicando `ensure_safe_to_modify` en la lectura del archivo de configuración (antes de abrirlo), garantizando que no se procesen archivos que hayan sido reemplazados por enlaces simbólicos malintencionados (puntos de reparse) después de haber verificado la ruta, manteniendo la coherencia con las reglas de seguridad.
 - `2026-09-21T02:29:52` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo una validación explícita de `is_protected_path` al inicio de cada iteración de entrada, asegurando que cualquier entrada sea validada contra las listas negras antes de cualquier operación, incluso si ya pasó el filtro de estructura de ruta.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T02:00:25` **browser.py** (seguridad defensiva): Se endureció `_is_valid_cache_path` y `_resolve_browser_path` para prevenir ataques de path traversal mediante la validación estricta de rutas normalizadas y el uso de `.resolve(strict=True)` antes de cualquier operación de I/O, asegurando que el navegador no pueda ser inducido a escanear fuera del perfil del usuario mediante rutas relativas maliciosas.
 - `2026-09-21T01:59:58` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una comprobación explícita mediante `is_protected_path` sobre el directorio padre antes de intentar crear directorios, reforzando la protección contra operaciones fuera del ámbito permitido.
 - `2026-09-21T01:59:24` **assistant.py** (seguridad defensiva): Reforcé la integridad del sistema ante datos externos invalidando el `SystemContext` si se detectan valores `NaN` o `Inf` explícitos en las métricas durante el `ingest`, previniendo errores de cálculo en `healthscore` o visualización.
-- `2026-09-21T01:50:15` **settings.py** (robustez ante casos límite): Se mejora la robustez ante archivos de configuración corruptos o bloqueados añadiendo un chequeo explícito de tamaño y permisos en `_load_impl`, y se previene una posible excepción por lectura parcial al envolver la carga del JSON con un bloque de control de errores más estricto.
-- `2026-09-21T01:49:41` **scanner.py** (robustez ante casos límite): Se reforzó la robustez ante errores de acceso a disco en `_run_file_heuristics` y `scan_file`, envolviendo las llamadas de archivo en bloques `try/except` para prevenir que fallos transitorios en atributos de metadatos interrumpan el escaneo de toda una rama.
-- `2026-09-21T01:42:06` **quarantine.py** (robustez ante casos límite): Mejora la robustez ante condiciones de carrera en `quarantine_file` añadiendo una verificación post-escritura más estricta que asegura la persistencia física del archivo en el sandbox mediante `os.fsync` y una re-validación de integridad completa antes de marcar el archivo como aislado, previniendo estados inconsistentes si el sistema operativo interrumpe la operación.

@@ -288,13 +288,15 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Combina base de usuario y ruta relativa protegiendo contra caracteres malformados."""
     if not isinstance(real_base, Path) or not isinstance(rel_str, str) or any(c in rel_str for c in '\0\r\n'):
-        return real_base
+        return Path()
     try:
         target = real_base.joinpath(*rel_str.split("\\"))
-        # Retorna el target normalizado para evitar paths escapando del base
-        return target.resolve() if len(str(target)) < MAX_PATH_LEN else real_base
+        # Verifica integridad post-join para prevenir escapes de directorio
+        if len(str(target)) >= MAX_PATH_LEN:
+            return Path()
+        return target
     except (TypeError, ValueError, OSError):
-        return real_base
+        return Path()
 
 
 def detect_profiles(
@@ -319,7 +321,7 @@ def detect_profiles(
             real_base = base.resolve(strict=True)
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base, rel_str)
-                if not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
+                if not candidate or not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                     continue
                 
                 real_candidate = str(candidate.resolve(strict=True))
