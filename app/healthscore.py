@@ -156,12 +156,12 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura la integridad de los datos, forzando rangos positivos y limpieza de NaNs."""
-        self.junk_mb = float(max(0.0, _to_float(self.junk_mb)))
-        self.duplicate_mb = float(max(0.0, _to_float(self.duplicate_mb)))
-        self.suspicious_count = int(max(0, int(_to_float(self.suspicious_count))))
-        self.suspicious_warnings = int(max(0, int(_to_float(self.suspicious_warnings))))
-        self.startup_count = int(max(0, int(_to_float(self.startup_count))))
-        self.quarantined_count = int(max(0, int(_to_float(self.quarantined_count))))
+        self.junk_mb = max(0.0, _to_float(self.junk_mb, 0.0))
+        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb, 0.0))
+        self.suspicious_count = int(max(0, int(_to_float(self.suspicious_count, 0.0))))
+        self.suspicious_warnings = int(max(0, int(_to_float(self.suspicious_warnings, 0.0))))
+        self.startup_count = int(max(0, int(_to_float(self.startup_count, 0.0))))
+        self.quarantined_count = int(max(0, int(_to_float(self.quarantined_count, 0.0))))
         self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
         self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
 
@@ -188,10 +188,9 @@ class HealthResult:
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     """Fuerza un valor numérico a estar dentro de [min_val, max_val]."""
     try:
-        if not math.isfinite(value): return min_val
-        if value < min_val: return min_val
-        if value > max_val: return max_val
-        return float(value)
+        val = float(value)
+        if not math.isfinite(val): return min_val
+        return max(min_val, min(val, max_val))
     except (TypeError, ValueError):
         return min_val
 

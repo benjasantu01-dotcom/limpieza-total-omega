@@ -1411,3 +1411,38 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-09-21T01:19:54` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
 - `2026-09-21T01:19:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T01:19:54` Corrida terminada. Total usado hoy: 32.
+- `2026-09-21T01:28:13` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-09-21T01:28:45` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejora la robustez ante casos límite en `walk_files` y `largest_folders` añadiendo chequeos de `path.exists()` y `is_dir()` post-recorrido para manejar archivos que son borrados o bloqueados por procesos externos durante la ejecución de la app (Race conditions).
+- `2026-09-21T01:29:13` Tests FALLARON:
+```
+dir(current_dir) as iterator:
+                for entry in iterator:
+                    try:
+                        if entry.is_symlink() or (entry.is_dir() and is_junction(Path(entry.path))):
+                            continue
+    
+                        if entry.is_dir():
+                            _scan_dir(Path(entry.path))
+                            continue
+    
+                        # Validar existencia antes del stat para evitar race conditions
+>                       if not entry.exists():
+                               ^^^^^^^^^^^^
+E                       AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+
+app/duplicates.py:240: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_ignores_files_with_different_content - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_never_scans_system_folders - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+5 failed, 294 passed in 1.49s
+
+```
+- `2026-09-21T01:29:13` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_collect_candidates` ante archivos que desaparecen entre el listado de `scandir` y la llamada a `stat` (condición de carrera típica en sistemas de archivos dinámicos), y añadí validación de existencia inmediata tras el `stat` para evitar procesar descriptores huérfanos.
+- `2026-09-21T01:29:40` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` ante estados inesperados integrando una validación exhaustiva al constructor y evitando que valores `NaN` o `inf` propaguen errores en los cálculos del pipeline.
+- `2026-09-21T01:30:40` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-21T01:31:44` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta de existencia y accesibilidad en el método `_validate_environment` para detectar rutas de sistema o estados inválidos (como `Path.home()` inaccesible) antes de instanciar la interfaz, evitando que el bucle de eventos (`mainloop`) intente operar sobre estados nulos o bloqueados.
+- `2026-09-21T01:31:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T01:31:44` Corrida terminada. Total usado hoy: 36.

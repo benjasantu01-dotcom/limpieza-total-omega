@@ -302,12 +302,14 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size_bytes in walk_files(root, skip_protected):
         try:
+            if not path.exists(): continue
             relative = path.relative_to(root)
             if not relative.parts: continue
             
             top_level_folder = root / relative.parts[0]
-            folder_total_bytes[top_level_folder] += size_bytes
-            folder_file_counts[top_level_folder] += 1
+            if top_level_folder.is_dir():
+                folder_total_bytes[top_level_folder] += size_bytes
+                folder_file_counts[top_level_folder] += 1
         except (ValueError, OSError): 
             continue
 
@@ -337,7 +339,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        if not path.is_file(): continue
+        if not path.exists() or not path.is_file(): continue
         
         total_bytes += size_bytes
         total_files += 1

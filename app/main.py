@@ -293,6 +293,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         cwd = Path.cwd().resolve()
         home = Path.home()
         
+        # Validación estricta de rutas de sistema y estados de acceso
         validations = [
             (app_root.exists(), "Directorio de aplicación inexistente."),
             (not app_root.is_symlink(), "App ubicada en enlace simbólico."),
@@ -307,6 +308,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if not condition:
                 raise RuntimeError(f"Entorno inválido: {error_msg}")
         
+        # Última comprobación de integridad con el guardián de seguridad
         safety.ensure_safe_to_modify(app_root)
 
     def _ensure_path_writable_and_clean(self, path: Union[str, Path]) -> None:
