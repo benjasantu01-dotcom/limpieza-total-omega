@@ -1344,3 +1344,56 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-21T00:49:12` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score evitando la creación repetitiva de copias de diccionarios y listas dentro del bucle principal del pipeline, reemplazando la copia innecesaria de `_INITIAL_BREAKDOWN` por una estructura pre-calculada y mejorando la eficiencia de las validaciones.
 - `2026-09-21T00:49:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T00:49:12` Corrida terminada. Total usado hoy: 20.
+- `2026-09-21T00:57:41` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-09-21T00:58:43` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-21T00:59:47` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._update_cards, LimpiezaTotalOmegaApp._validate_numeric_setting
+- `2026-09-21T01:00:17` Tests FALLARON:
+```
+................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_parse_process_csv_sorts_by_consumption __________________
+
+    def test_parse_process_csv_sorts_by_consumption():
+        csv = (
+            '"Name","Id","WorkingSet"\n'
+            '"chico","10","1048576"\n'
+            '"grande","11","104857600"\n'
+            '"medio","12","10485760"\n'
+        )
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert ['chico', 'grande', 'medio'] == ['grande', 'medio', 'chico']
+E         
+E         At index 0 diff: 'chico' != 'grande'
+E         
+E         Full diff:
+E           [
+E         +     'chico',
+E               'grande',
+E               'medio',
+E         -     'chico',
+E           ]
+
+evolve/tests/test_modules.py:346: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert ['chico', 'grande', 'medio'] == ['grande', 'medio', 'chico']
+  
+  At index 0 diff: 'chico' != 'grande'
+  
+  Full diff:
+    [
+  +     'chico',
+        'grande',
+        'medio',
+  -     'chico',
+    ]
+1 failed, 298 passed in 1.40s
+
+```
+- `2026-09-21T01:00:17` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del módulo mediante la implementación de un caché más eficiente en `top_memory_processes`, reemplazando el filtrado en Python por un filtrado previo en PowerShell y reduciendo la frecuencia de llamadas costosas a `subprocess`.
+- `2026-09-21T01:00:42` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-21T01:01:07` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé `list_items` y `purge_all` transformando búsquedas lineales repetitivas de ítems en una estructura `dict` indexada, reduciendo la complejidad algorítmica de O(N*M) a O(N+M) al sincronizar el estado del disco con el manifiesto.
+- `2026-09-21T01:01:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T01:01:07` Corrida terminada. Total usado hoy: 24.

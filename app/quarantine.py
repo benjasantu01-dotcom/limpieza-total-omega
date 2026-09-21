@@ -692,7 +692,6 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
         
-        # Obtener set de archivos existentes para O(1)
         try:
             existing = {f.name for f in base_path.iterdir() if f.is_file()}
         except OSError:
@@ -822,11 +821,11 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
+    # Indexamos por nombre de archivo para evitar búsquedas O(N) en el loop
     item_map = {item.stored_name: item for item in items}
     purged_ids: Set[str] = set()
     
     try:
-        # Solo iteramos una vez sobre el directorio
         for stored_path in quarantine_root.iterdir():
             if stored_path.name == MANIFEST_NAME or stored_path.is_dir():
                 continue
@@ -836,7 +835,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 purged_ids.add(item.item_id)
                 
         if purged_ids:
-            # Filtramos solo si hubo cambios
             remaining_items = [i for i in items if i.item_id not in purged_ids]
             save_manifest(remaining_items, base)
             

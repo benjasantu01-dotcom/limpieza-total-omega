@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 37
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 231
+- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 38
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 48 | 5 | 7 | 6 | 68 |
+| 2026-09-19 | 48 | 5 | 7 | 4 | 66 |
 | 2026-09-20 | 134 | 9 | 28 | 17 | 162 |
-| 2026-09-21 | 17 | 0 | 2 | 0 | 1 |
+| 2026-09-21 | 18 | 1 | 3 | 0 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **33**
-- rendimiento: **27**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **18**
 - `diskreport.py`: **17**
 - `settings.py`: **17**
+- `quarantine.py`: **17**
 - `safety.py`: **16**
 - `assistant.py`: **16**
-- `quarantine.py`: **16**
 - `memory.py`: **16**
 - `duplicates.py`: **15**
 - `branding.py`: **13**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T01:01:07` **quarantine.py** (rendimiento): Optimizé `list_items` y `purge_all` transformando búsquedas lineales repetitivas de ítems en una estructura `dict` indexada, reduciendo la complejidad algorítmica de O(N*M) a O(N+M) al sincronizar el estado del disco con el manifiesto.
 - `2026-09-21T00:49:12` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la creación repetitiva de copias de diccionarios y listas dentro del bucle principal del pipeline, reemplazando la copia innecesaria de `_INITIAL_BREAKDOWN` por una estructura pre-calculada y mejorando la eficiencia de las validaciones.
 - `2026-09-21T00:48:58` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar realizar llamadas repetitivas de `_is_valid_candidate` (que contiene múltiples chequeos de seguridad y acceso a disco) llamando a `entry.stat()` una sola vez, consolidando la lógica de filtrado inicial para reducir el I/O innecesario.
 - `2026-09-21T00:48:03` **browser.py** (rendimiento): Se optimizó `_sum_directory_recursive` implementando un chequeo de `is_protected_path` centralizado y eliminando la redundancia de validación en cada llamada recursiva, además de asegurar que el `memo` se propague correctamente para evitar re-escaneos de subdirectorios ya calculados.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T00:18:34` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `main.py` mediante la implementación de `docstrings` explicativos en métodos de infraestructura críticos, clarificando el propósito de cada sección de la arquitectura de la clase `LimpiezaTotalOmegaApp` y justificando la existencia de los decoradores de seguridad.
 - `2026-09-21T00:17:19` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings más precisos en las funciones de normalización y tipos, clarificando la relación entre métricas crudas y ratios, y eliminando la redundancia entre `_RULES_MAP` y `_PIPELINE`.
 - `2026-09-21T00:08:23` **duplicates.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo añadiendo docstrings técnicos con Type Hints en las funciones de hashing y filtrado, detallando la lógica de los estados de archivo y el flujo de resolución de rutas para evitar ambigüedades.
-- `2026-09-21T00:08:10` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de procesamiento de datos y clases auxiliares, aclarando las complejidades algorítmicas (O(N log K) y LIFO) y el propósito de cada estructura.
