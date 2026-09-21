@@ -49,7 +49,7 @@ FILE_ATTRIBUTE_SYSTEM: int = 0x4
 
 def is_junction(path: Path) -> bool:
     """Verifica si una ruta es un punto de reparse (junction) en Windows usando Win32 API."""
-    if not isinstance(path, Path):
+    if not isinstance(path, Path) or not is_safe_to_modify(path):
         return False
     try:
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
@@ -60,6 +60,8 @@ def is_junction(path: Path) -> bool:
 
 def is_system_or_hidden(path: Path) -> bool:
     """Valida atributos de sistema o visibilidad (oculto) en Windows."""
+    if not is_safe_to_modify(path):
+        return True
     try:
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         if attrs == -1:

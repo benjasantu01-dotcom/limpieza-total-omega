@@ -107,9 +107,15 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
     2. Los symlinks pueden crear bucles infinitos en el recorrido del árbol.
     3. Los puntos de reparse (0x400) en Windows (como Junctions) no deben 
        seguirse para evitar re-escaneo de discos o carpetas fuera de la raíz.
+    4. Caracteres de control RTL o Unicode sospechosos suelen ocultar extensiones.
     """
     try:
         if not entry.path or len(entry.path) > 260:
+            return True
+        
+        # Detección de caracteres sospechosos de suplantación
+        name = entry.name
+        if any(c in name for c in ['\u202E', '\u202D', '\u200E', '\u200F']):
             return True
             
         if entry.is_symlink():

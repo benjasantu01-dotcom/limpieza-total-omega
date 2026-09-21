@@ -270,9 +270,11 @@ def _sum_directory_recursive(
                     
                     if entry.is_dir(follow_symlinks=False):
                         if depth < MAX_SCAN_DEPTH:
-                            directory_total_bytes += _sum_directory_recursive(
-                                entry.path, is_junction_fn, kernel32, memo, root_base_abs, depth + 1
-                            )
+                            # Validamos seguridad antes de descender
+                            if is_safe_to_modify(Path(entry.path)):
+                                directory_total_bytes += _sum_directory_recursive(
+                                    entry.path, is_junction_fn, kernel32, memo, root_base_abs, depth + 1
+                                )
                     elif entry.is_file(follow_symlinks=False):
                         try:
                             directory_total_bytes += int(entry.stat(follow_symlinks=False).st_size)

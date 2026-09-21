@@ -1104,3 +1104,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-21T10:52:11` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-09-21T10:52:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T10:52:11` Corrida terminada. Total usado hoy: 256.
+- `2026-09-21T11:00:28` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-09-21T11:00:58` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva añadiendo una validación explícita mediante `is_safe_to_modify` en la función `_sum_directory_recursive` antes de proceder con el escaneo, asegurando que cualquier entrada que pueda haber sido alterada o que resulte ser un punto de reparse/enlace sea rechazada antes de intentar operar sobre ella.
+- `2026-09-21T11:01:58` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-21T11:03:01` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-21T11:04:16` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del escáner en `_is_excluded_path` añadiendo una comprobación explícita para evitar seguir rutas que contengan caracteres de control RTL (Right-to-Left) o caracteres de espacio inusuales que suelen usarse para ocultar extensiones o suplantar la identidad de archivos, reforzando la seguridad defensiva contra la manipulación de nombres de archivos.
+- `2026-09-21T11:04:49` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `is_junction` y `is_system_or_hidden` añadiendo una validación explícita mediante `is_safe_to_modify` antes de interactuar con el sistema de archivos, asegurando que ninguna ruta bloqueada sea procesada ni siquiera por consultas de metadatos de bajo nivel.
+- `2026-09-21T11:05:01` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-09-21T11:05:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T11:05:01` Corrida terminada. Total usado hoy: 260.
