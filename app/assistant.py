@@ -631,13 +631,18 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     """Extrae de forma segura el texto de la estructura JSON devuelta por la API."""
     if not isinstance(data, dict): return None
     try:
+        # Validación defensiva estricta de estructura
         candidates = data.get("candidates")
         if not isinstance(candidates, list) or not candidates: return None
-        content = candidates[0].get("content")
+        candidate = candidates[0]
+        if not isinstance(candidate, dict): return None
+        content = candidate.get("content")
         if not isinstance(content, dict): return None
         parts = content.get("parts")
         if not isinstance(parts, list) or not parts: return None
-        text_val = parts[0].get("text")
+        part = parts[0]
+        if not isinstance(part, dict): return None
+        text_val = part.get("text")
         return str(text_val) if isinstance(text_val, str) else None
     except (AttributeError, TypeError, IndexError): 
         return None

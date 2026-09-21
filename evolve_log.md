@@ -628,3 +628,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T05:36:29` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé `_is_relevant_extension` reemplazando la creación dinámica de `splitext` y llamadas a `os.path.splitext` en cada iteración del bucle, utilizando en su lugar una verificación directa de sufijos con el `frozenset` `SUSPICIOUS_ALL_EXTS` para reducir la sobrecarga de CPU durante el recorrido de grandes directorios.
 - `2026-09-21T05:36:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T05:36:29` Corrida terminada. Total usado hoy: 132.
+- `2026-09-21T05:43:11` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-09-21T05:43:42` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Optimizé la validación de rutas reemplazando las llamadas redundantes a `os.path.realpath` y `expanduser` dentro de los bucles por una evaluación previa y cacheada, reduciendo significativamente la sobrecarga de I/O en la carga de configuración.
+- `2026-09-21T05:44:07` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-21T05:44:46` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se introdujo una validación defensiva en `_extract_text_from_gemini_json` para manejar estructuras JSON anidadas potencialmente maliciosas o malformadas, previniendo errores de acceso a atributos y asegurando que la respuesta siempre sea un string limpio, fortaleciendo la robustez ante datos externos inesperados.
+- `2026-09-21T05:45:06` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-21T05:45:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T05:45:06` Corrida terminada. Total usado hoy: 136.

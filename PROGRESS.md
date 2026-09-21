@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **210** (41.7% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 218
+- Rechazadas por guardia de seguridad: 45
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 5 | 0 | 1 | 0 | 16 |
+| 2026-09-19 | 4 | 0 | 1 | 0 | 13 |
 | 2026-09-20 | 134 | 9 | 28 | 17 | 162 |
-| 2026-09-21 | 71 | 3 | 15 | 3 | 40 |
+| 2026-09-21 | 72 | 3 | 16 | 4 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
-- seguridad defensiva: **46**
+- seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **43**
+- robustez ante casos límite: **34**
 - rendimiento: **33**
-- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **19**
 - `healthscore.py`: **19**
-- `memory.py`: **18**
 - `quarantine.py`: **18**
 - `safety.py`: **17**
+- `assistant.py`: **17**
 - `browser.py`: **17**
 - `diskreport.py`: **17**
-- `assistant.py`: **16**
+- `memory.py`: **17**
 - `duplicates.py`: **16**
 - `scanner.py`: **13**
 - `branding.py`: **12**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T05:44:46` **assistant.py** (robustez ante casos límite): Se introdujo una validación defensiva en `_extract_text_from_gemini_json` para manejar estructuras JSON anidadas potencialmente maliciosas o malformadas, previniendo errores de acceso a atributos y asegurando que la respuesta siempre sea un string limpio, fortaleciendo la robustez ante datos externos inesperados.
 - `2026-09-21T05:36:29` **scanner.py** (rendimiento): Optimizé `_is_relevant_extension` reemplazando la creación dinámica de `splitext` y llamadas a `os.path.splitext` en cada iteración del bucle, utilizando en su lugar una verificación directa de sufijos con el `frozenset` `SUSPICIOUS_ALL_EXTS` para reducir la sobrecarga de CPU durante el recorrido de grandes directorios.
 - `2026-09-21T05:25:03` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo `_process_directory` implementando un caché de rutas resueltas (`set`) para evitar llamadas redundantes y costosas a `.resolve()` sobre directorios ya visitados, reduciendo la complejidad de I/O durante la recursión.
 - `2026-09-21T05:24:22` **main.py** (rendimiento): Se ha implementado un mecanismo de "Caché de Eventos de Salud" (a través de `_last_health_state`) para evitar el redibujo innecesario y el cálculo redundante de las métricas visuales del dashboard cuando el estado del sistema no ha cambiado entre iteraciones.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T04:52:38` **organizer.py** (legibilidad y documentación): Se han añadido type hints más precisos (especialmente en `scan_for_junk`) y se han clarificado docstrings críticos, como en `_is_safe_for_disk_op`, para explicar el "PORQUÉ" de la jerarquía de validaciones, mejorando la legibilidad técnica del flujo de seguridad sin alterar la lógica.
 - `2026-09-21T04:44:30` **memory.py** (legibilidad y documentación): Se introdujo documentación técnica detallada mediante docstrings en las funciones internas (`_is_system_process`, `_get_process_path`, `_is_safe_to_trim`) y se añadieron Type Hints ausentes en las firmas de funciones para mejorar la legibilidad y el mantenimiento, cumpliendo estrictamente con el enfoque de legibilidad sin alterar la lógica de negocio ni el comportamiento.
 - `2026-09-21T04:42:51` **healthscore.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en `compute_score` y la estandarización de tipos, asegurando que las responsabilidades de normalización y ponderación estén claramente documentadas para futuros colaboradores.
-- `2026-09-21T04:42:23` **duplicates.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los helpers críticos (`_is_file_locked`, `_validate_and_resolve_path`) para mejorar la legibilidad y evitar ambigüedades en la lógica de acceso a archivos.
