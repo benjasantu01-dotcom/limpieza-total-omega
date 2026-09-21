@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 101 | 6 | 20 | 11 | 130 |
-| 2026-09-21 | 114 | 6 | 24 | 6 | 86 |
+| 2026-09-20 | 98 | 6 | 20 | 11 | 129 |
+| 2026-09-21 | 115 | 6 | 27 | 6 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **48**
-- robustez ante casos límite: **34**
+- seguridad defensiva: **45**
+- robustez ante casos límite: **35**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
-- `diskreport.py`: **18**
-- `duplicates.py`: **18**
 - `memory.py`: **18**
-- `healthscore.py`: **17**
+- `assistant.py`: **18**
 - `safety.py`: **17**
 - `settings.py`: **17**
+- `diskreport.py`: **17**
 - `browser.py`: **17**
-- `assistant.py`: **17**
+- `duplicates.py`: **17**
+- `healthscore.py`: **16**
 - `organizer.py`: **13**
 - `branding.py`: **13**
 - `scanner.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T10:11:28` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` ante entradas malformadas o tipos inesperados, añadiendo un chequeo de tipo más estricto y un manejo de errores más defensivo al procesar el `source` para evitar excepciones no controladas durante la ingesta de datos.
 - `2026-09-21T10:00:25` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando las búsquedas en el sistema de archivos de una lista a un `set` de nombres, evitando así iteraciones anidadas de complejidad O(N*M) y reduciendo las llamadas a `stat` mediante la validación previa del nombre existente.
 - `2026-09-21T09:59:45` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la lógica de resolución repetida de rutas y validaciones redundantes dentro de `_process_directory` y `_is_safe_for_disk_op`, utilizando un conjunto de caché para evitar procesar subdirectorios ya validados y consolidando los chequeos de permisos antes de realizar operaciones costosas de I/O.
 - `2026-09-21T09:54:49` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reduciendo las operaciones de string y evitando el uso de una lista intermedia con `split()`, además de delegar la conversión de tipos directamente en el bucle para mejorar la velocidad al procesar los 50 procesos del snapshot.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T09:09:20` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `duplicates.py` añadiendo type hints más precisos, unificando la documentación mediante docstrings claros y estandarizando el manejo de errores en funciones críticas para evitar la propagación de excepciones silenciosas.
 - `2026-09-21T09:08:46` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` y `_is_excluded_path` mediante docstrings detallados que explican el "porqué" técnico de las exclusiones (evitar bucles de recursión y el manejo de rutas largas), cumpliendo con el enfoque de legibilidad.
 - `2026-09-21T09:00:58` **browser.py** (legibilidad y documentación): Se introdujo un `NamedTuple` para los tipos de archivos detectados por el sistema y se refinaron los comentarios críticos en el escáner de atributos de Windows para documentar la lógica de los flags, mejorando la legibilidad técnica y el mantenimiento del código bajo el enfoque de documentación solicitado.
-- `2026-09-21T08:59:14` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la aplicación de docstrings explicativos sobre las intenciones de los decoradores, la estandarización de type hints y la consolidación de la lógica de validación de métricas, facilitando así la comprensión del flujo de datos sin alterar el comportamiento.

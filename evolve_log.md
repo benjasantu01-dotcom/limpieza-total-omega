@@ -1050,3 +1050,10 @@ FAILED evolve/tests/test_modules.py::test_warnings_hurt_more_than_informational_
 - `2026-09-21T10:01:10` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-09-21T10:01:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T10:01:10` Corrida terminada. Total usado hoy: 236.
+- `2026-09-21T10:09:28` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-09-21T10:09:59` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
+- `2026-09-21T10:10:31` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _Validators._is_reparse_point, _Validators._run_safety_checks
+- `2026-09-21T10:10:59` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-21T10:11:28` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` ante entradas malformadas o tipos inesperados, añadiendo un chequeo de tipo más estricto y un manejo de errores más defensivo al procesar el `source` para evitar excepciones no controladas durante la ingesta de datos.
+- `2026-09-21T10:11:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T10:11:28` Corrida terminada. Total usado hoy: 240.
