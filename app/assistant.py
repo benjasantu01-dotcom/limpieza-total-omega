@@ -293,7 +293,7 @@ class SystemContext:
         """Obtiene una métrica del contexto, aplicando un valor por defecto si no existe o es inválida."""
         try:
             val = getattr(self, key, default)
-            return float(val) if isinstance(val, (int, float)) else default
+            return float(val) if isinstance(val, (int, float)) and math.isfinite(val) else default
         except (TypeError, ValueError):
             return default
 
@@ -321,7 +321,7 @@ class SystemContext:
             
         try:
             float_val = float(val)
-            if _is_metric_within_bounds(float_val, spec):
+            if math.isfinite(float_val) and _is_metric_within_bounds(float_val, spec):
                 setattr(self, key, spec.cast_func(float_val))
                 return True
         except (ValueError, TypeError, OverflowError):

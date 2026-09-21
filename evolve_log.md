@@ -1404,3 +1404,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-09-21T01:09:27` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un sistema de `lru_cache` explícito para la función `load` (reemplazando el cache manual por una implementación robusta) y se optimizó el proceso de validación eliminando el `hash` de los valores, reemplazándolo por una verificación de igualdad rápida sobre el diccionario cargado, reduciendo drásticamente el costo de computación en cada acceso a configuraciones.
 - `2026-09-21T01:09:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T01:09:27` Corrida terminada. Total usado hoy: 28.
+- `2026-09-21T01:18:00` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-09-21T01:18:29` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-21T01:19:09` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez del manejo de métricas en `SystemContext.ingest` para prevenir el uso de valores numéricos `NaN` o `Inf` que podrían romper la lógica de comparación o los cálculos de salud, asegurando que `math.isfinite` sea verificado rigurosamente durante la ingesta.
+- `2026-09-21T01:19:43` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-21T01:19:54` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-21T01:19:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T01:19:54` Corrida terminada. Total usado hoy: 32.
