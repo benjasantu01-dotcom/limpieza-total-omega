@@ -1074,3 +1074,26 @@ FAILED evolve/tests/test_modules.py::test_warnings_hurt_more_than_informational_
 - `2026-09-21T10:34:51` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_safe_for_disk_op` añadiendo una verificación de existencia real mediante `path.exists()` antes de realizar chequeos de estado, evitando excepciones innecesarias en condiciones de carrera (Race Conditions) donde un archivo es borrado por el sistema entre la detección y la manipulación.
 - `2026-09-21T10:34:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T10:34:51` Corrida terminada. Total usado hoy: 248.
+- `2026-09-21T10:40:05` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-09-21T10:40:47` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejora la robustez de `quarantine.py` ante casos de concurrencia y corrupción de archivos mediante la implementación de `os.fsync` y validaciones de estado post-operación más estrictas en `_safe_unlink`, evitando dejar manifiestos desincronizados cuando el sistema de archivos falla o bloquea el acceso.
+- `2026-09-21T10:41:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-21T10:41:50` Tests FALLARON:
+```
+'windll'
+FAILED evolve/tests/test_modules.py::test_directory_size_adds_up_recursively - AttributeError: module 'ctypes' has no attribute 'windll'
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - AttributeError: module 'ctypes' has no attribute 'windll'
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - AttributeError: module 'ctypes' has no attribute 'windll'
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - AttributeError: module 'ctypes' has no attribute 'windll'
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - AttributeError: module 'ctypes' has no attribute 'windll'
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - AttributeError: module 'ctypes' has no attribute 'windll'
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - AttributeError: module 'ctypes' has no attribute 'windll'
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - AttributeError: module 'ctypes' has no attribute 'windll'
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AttributeError: module 'ctypes' has no attribute 'windll'
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - AttributeError: module 'ctypes' has no attribute 'windll'
+39 failed, 260 passed in 3.57s
+
+```
+- `2026-09-21T10:41:50` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `is_running_as_admin` y de las consultas de atributos de archivo para prevenir fallos catastróficos cuando `ctypes` intenta acceder a una API de Windows que no existe o cuando el sistema operativo devuelve un error de acceso denegado durante la inicialización de handles.
+- `2026-09-21T10:42:08` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-21T10:42:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T10:42:08` Corrida terminada. Total usado hoy: 252.

@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 46
+- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 93 | 6 | 19 | 11 | 127 |
-| 2026-09-21 | 119 | 6 | 27 | 7 | 89 |
+| 2026-09-20 | 93 | 6 | 19 | 11 | 123 |
+| 2026-09-21 | 120 | 7 | 28 | 7 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **49**
+- robustez ante casos límite: **40**
 - seguridad defensiva: **40**
-- robustez ante casos límite: **39**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **19**
 - `memory.py`: **18**
-- `quarantine.py`: **18**
 - `browser.py`: **18**
 - `assistant.py`: **18**
 - `diskreport.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T10:40:47` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine.py` ante casos de concurrencia y corrupción de archivos mediante la implementación de `os.fsync` y validaciones de estado post-operación más estrictas en `_safe_unlink`, evitando dejar manifiestos desincronizados cuando el sistema de archivos falla o bloquea el acceso.
 - `2026-09-21T10:34:51` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_safe_for_disk_op` añadiendo una verificación de existencia real mediante `path.exists()` antes de realizar chequeos de estado, evitando excepciones innecesarias en condiciones de carrera (Race Conditions) donde un archivo es borrado por el sistema entre la detección y la manipulación.
 - `2026-09-21T10:34:39` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` al implementar una validación estricta contra entradas malformadas o PIDs negativos, evitando errores de casting durante el procesamiento de datos asíncronos y garantizando que el bucle de diagnóstico no se rompa ante texto inesperado de PowerShell.
 - `2026-09-21T10:20:49` **browser.py** (robustez ante casos límite): Se mejora la robustez frente a errores de I/O en `_sum_directory_recursive` asegurando que la llamada a `os.scandir` gestione el contexto de forma segura ante carpetas con permisos restringidos, evitando propagar excepciones de acceso a niveles superiores.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T09:39:36` **assistant.py** (rendimiento): Se optimizó la eficiencia en la búsqueda de handlers de preguntas mediante la eliminación de un loop redundante sobre las claves del diccionario `TOKENS_BY_CATEGORY`, reemplazándolo por una búsqueda directa y validación de tokens en una sola pasada.
 - `2026-09-21T09:29:22` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `_check_file_integrity` extrayendo la lógica compleja de evaluación de reglas a una función con nombre explicativo, documentando mejor el flujo de seguridad para evitar errores de interpretación en futuras iteraciones.
 - `2026-09-21T09:20:13` **quarantine.py** (legibilidad y documentación): He mejorado la documentación y legibilidad interna añadiendo docstrings descriptivos con las causas de las excepciones en las funciones críticas de validación y persistencia (`_check_isolation_safety`, `_validate_isolation_request`, `_write_temp_to_final`), facilitando la depuración y auditoría del comportamiento ante fallos de seguridad.
-- `2026-09-21T09:19:32` **organizer.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones clave de validación y escaneo para mejorar la legibilidad y facilitar el mantenimiento del flujo lógico complejo.

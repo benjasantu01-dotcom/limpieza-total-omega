@@ -200,7 +200,6 @@ def _is_file_locked(path: Path) -> bool:
     if not path.exists():
         return False
     try:
-        # Usamos flags de bajo nivel para asegurar comportamiento predecible
         flags = os.O_RDONLY | os.O_EXCL
         if hasattr(os, 'O_NOFOLLOW'):
             flags |= os.O_NOFOLLOW
@@ -222,6 +221,10 @@ def _safe_unlink(path: Path) -> bool:
             
         if is_safe_to_modify(resolved) and not _is_file_locked(resolved):
             path.unlink()
+            # Forzar sincronización del directorio padre post-borrado
+            dir_fd = os.open(str(path.parent), os.O_RDONLY)
+            try: os.fsync(dir_fd)
+            finally: os.close(dir_fd)
             return True
         return False
     except (OSError, PermissionError):
@@ -357,7 +360,6 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
         raise PermissionError("Directorio de cuarentena sin permisos de escritura.")
 
     try:
-        # Prevenir movimientos entre diferentes sistemas de archivos (Device ID check)
         if resolved_source.stat().st_dev != resolved_dest_dir.stat().st_dev:
             raise UnsafePathError("Operación entre dispositivos no permitida.")
             
@@ -395,7 +397,6 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     except (OSError, RuntimeError) as e:
         raise UnsafePathError(f"Ruta origen inaccesible: {e}")
     
-    # Validar longitud de ruta destino (previene errores de path demasiado largo)
     if len(str(dest_dir)) > 240:
         raise UnsafePathError("Ruta de cuarentena demasiado larga.")
 
@@ -410,7 +411,6 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
         if not m_path.is_file():
             return []
         
-        # Lectura con manejo de errores para archivos vacíos o bloqueados
         try:
             with open(m_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -461,7 +461,6 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         else:
             raise OSError("Integridad del archivo temporal fallida.")
         
-        # Sincronizar directorio para garantizar persistencia en metadata del FS
         dir_fd = os.open(str(base_path), os.O_RDONLY)
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)
@@ -493,7 +492,6 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
     if not is_safe_to_modify(destination.parent):
         raise UnsafePathError("Directorio destino no es seguro para escritura.")
     
-    # Validar que origen y destino estén en el mismo dispositivo físico
     if source.stat().st_dev != destination.parent.resolve().stat().st_dev:
         raise UnsafePathError("Operación entre dispositivos no permitida.")
     
@@ -503,7 +501,6 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
     if not source.is_file():
         raise OSError("Archivo origen inaccesible para copia.")
     
-    # Bloqueo adicional: detectar si el origen es de solo lectura (Windows)
     if os.name == 'nt':
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(source))
         if attrs != -1 and (attrs & 0x01):
@@ -522,7 +519,6 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
 
-    # Capturar estado inicial para detectar cambios en vuelo
     try:
         st_initial = source.stat()
     except OSError:
@@ -533,20 +529,16 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     fd_src: int = os.open(str(source), os.O_RDONLY)
     try:
         stat_src = os.fstat(fd_src)
-        # Redundancia: asegurar que no cambió desde la última validación
         if stat_src.st_size != st_initial.st_size or stat_src.st_mtime != st_initial.st_mtime:
             raise OSError("El archivo cambió durante el proceso de aislamiento.")
 
         if not (stat_src.st_mode & 0o100000): 
             raise OSError("El archivo origen no es un archivo regular.")
             
-        # TOCTOU Protection: abrir con flags O_EXCL para asegurar creación nueva,
-        # luego verificar de nuevo que el destino no es un enlace simbólico creado maliciosamente.
         flags: int = os.O_WRONLY | os.O_CREAT | os.O_EXCL
         mode: int = 0o600
         fd_dest: int = os.open(str(destination), flags, mode)
         try:
-            # Validar nuevamente que no es un symlink (TOCTOU protection)
             if destination.is_symlink():
                 raise UnsafePathError("Intento de ataque symlink detectado durante la escritura.")
                 
@@ -555,7 +547,6 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
                 dst_file.flush()
                 os.fsync(dst_file.fileno())
             
-            # Post-escritura: asegurar que el tamaño en disco es consistente
             if destination.stat().st_size != stat_src.st_size:
                 raise OSError("Error de integridad post-escritura (tamaño mismatch).")
         except Exception as e:
@@ -565,7 +556,6 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
             raise e
             
     except Exception as e:
-        # fd_src ya está gestionado por el try/except, el descriptor de fd_dest es cerrado por os.fdopen/bloque try
         if 'fd_src' in locals(): os.close(fd_src)
         raise e
         
@@ -575,7 +565,6 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
             _safe_unlink(destination)
         raise OSError("Falla crítica: el hash del archivo copiado no coincide con el original.")
     
-    # Finalizar: asegurar que el directorio padre reconoce la creación
     ensure_safe_to_modify(destination, allow_sensitive=True)
     dir_fd: int = os.open(str(destination.parent), os.O_RDONLY)
     try: os.fsync(dir_fd)
@@ -643,7 +632,6 @@ def _validate_source_for_quarantine(source: Path) -> Path:
         raise UnsafePathError("No se permite aislar enlaces simbólicos.")
     if not source.is_file():
         raise FileNotFoundError("Archivo origen inexistente.")
-    # Validar bloqueo antes de proceder
     if _is_file_locked(source):
         raise IOError("Archivo origen bloqueado por el sistema.")
     return source
@@ -667,7 +655,6 @@ def quarantine_file(
             raise UnsafePathError(f"Ruta origen no válida: {e}")
     
     source_path = _validate_source_for_quarantine(p_source)
-    # Re-verificar existencia inmediata tras validaciones iniciales
     if not source_path.exists():
         raise FileNotFoundError("El archivo origen desapareció antes del aislamiento.")
         
@@ -708,7 +695,6 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
         
-        # O(N) para crear el set en lugar de iterar por cada ítem
         existing: Set[str] = {f.name for f in base_path.iterdir() if f.is_file()}
         
         valid_items: List[QuarantineItem] = []
@@ -760,7 +746,6 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         if destination.exists():
             raise FileExistsError("El destino ya existe.")
         
-        # Validación de dispositivos para evitar cruce de FS
         if stored_file.stat().st_dev != destination.parent.resolve().stat().st_dev:
             raise UnsafePathError("Dispositivos incompatibles.")
         
@@ -776,7 +761,6 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
             except OSError as e:
                 raise RuntimeError(f"Falla al crear destino: {e}")
                 
-        # Validación crítica: asegurar que el destino final sea seguro antes de la operación
         if not is_safe_to_modify(destination):
             raise UnsafePathError("Destino no seguro.")
             
@@ -836,12 +820,10 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
-    # Optimización: mapeo directo para acceso O(1) dentro del loop
     item_map = {item.stored_name: item for item in items}
     purged_ids: Set[str] = set()
     
     try:
-        # Iteración única sobre el directorio
         for stored_path in quarantine_root.iterdir():
             if stored_path.name == MANIFEST_NAME or not stored_path.is_file() or stored_path.is_symlink():
                 continue
