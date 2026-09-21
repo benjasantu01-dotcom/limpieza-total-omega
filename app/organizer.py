@@ -185,9 +185,10 @@ def _validate_file_attributes(src: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Validador de alto nivel para operaciones de E/S.
-    Verifica seguridad de rutas, consistencia lógica (evitar recursión), permisos de escritura
-    en el directorio padre y atributos del archivo fuente antes de cualquier movimiento.
+    Validador jerárquico de seguridad para operaciones de I/O.
+    Se asegura de verificar primero la integridad de las rutas (evitar recursión), 
+    luego los permisos de acceso y finalmente los atributos del archivo antes 
+    de confirmar que es seguro proceder.
     """
     if src is None or dest is None: return False
     if not _validate_path_security(src, dest): return False
@@ -253,11 +254,15 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                 except (OSError, PermissionError): continue
     except (OSError, PermissionError, RuntimeError): pass
 
-def scan_for_junk(directories: Optional[Sequence[str]] = None) -> List[JunkFile]:
-    """Inicia el escaneo en directorios predefinidos o provistos por el usuario."""
+def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[JunkFile]:
+    """
+    Inicia el escaneo en directorios predefinidos o provistos por el usuario.
+    Normaliza todas las rutas de entrada para asegurar compatibilidad con Path.
+    """
     found: List[JunkFile] = []
     protected_cache: set[str] = set()
-    for d in (directories or DEFAULT_SCAN_DIRS):
+    scan_list: Sequence[str | Path] = directories or DEFAULT_SCAN_DIRS
+    for d in scan_list:
         p = Path(d).expanduser()
         if p.exists() and p.is_dir() and not _is_unc_path(p):
             _process_directory(p, found, 0, protected_cache)

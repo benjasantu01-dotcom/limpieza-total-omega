@@ -36,7 +36,8 @@ __all__ = [
     "is_running_as_admin",
 ]
 
-# Constantes de atributos de archivo Win32
+# Constantes de atributos de archivo Win32 obtenidas de WinBase.h
+# Se utilizan para filtrar archivos que el SO bloquea o gestiona de forma especial.
 FILE_ATTRIBUTE_HIDDEN: Final[int] = 0x02
 FILE_ATTRIBUTE_SYSTEM: Final[int] = 0x04
 FILE_ATTRIBUTE_TEMPORARY: Final[int] = 0x100
@@ -47,9 +48,9 @@ FILE_ATTRIBUTE_COMPRESSED: Final[int] = 0x800
 FILE_ATTRIBUTE_ENCRYPTED: Final[int] = 0x4000
 FILE_ATTRIBUTE_SPARSE_FILE: Final[int] = 0x200
 MAX_PATH_LENGTH: Final[int] = 260
-MAX_FILE_SIZE: Final[int] = 2 * 1024 * 1024 * 1024  # 2GB límite de seguridad
+MAX_FILE_SIZE: Final[int] = 2 * 1024 * 1024 * 1024  # 2GB límite de seguridad arbitrario
 
-# Constantes Win32 Drive Types
+# Constantes Win32 Drive Types (GetDriveType)
 DRIVE_UNKNOWN: Final[int] = 0
 DRIVE_NO_ROOT_DIR: Final[int] = 1
 DRIVE_REMOVABLE: Final[int] = 2
@@ -289,6 +290,7 @@ def _is_sensitive_extension(path: Path) -> bool:
     return path.suffix.lower() in SENSITIVE_EXTENSIONS
 
 # Lista de validadores de integridad aplicada secuencialmente
+# Cada regla es un predicado booleano que determina si una ruta es insegura.
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _IntegrityCheck(ProtectionReason.SYMLINK, lambda p, _: p.is_symlink()),
     _IntegrityCheck(ProtectionReason.REPARSE_POINT, lambda p, _: _is_reparse_point(str(p))),
