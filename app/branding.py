@@ -276,22 +276,20 @@ def _interpolate_rgb(s1: RGBTuple, s2: RGBTuple, delta: float) -> RGBTuple:
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
     """Genera secuencia de colores intermedios entre puntos de gradiente."""
-    try:
-        n = max(1, int(steps))
-        if not stops or len(stops) < 2: 
-            return (stops[0] if stops else C_TEXT_MUTED,) * n
-        
-        rgb_stops = [_hex_to_rgb(s) for s in stops]
-        tramos = len(stops) - 1
-        paso = float(n - 1) if n > 1 else 1.0
-        
-        res = []
-        for i in range(n):
-            pos = (i / paso) * tramos
-            idx = min(int(pos), tramos - 1)
-            res.append(_rgb_to_hex(_interpolate_rgb(rgb_stops[idx], rgb_stops[idx + 1], pos - idx)))
-        return tuple(res)
-    except (ValueError, TypeError, ZeroDivisionError): return (C_TEXT_MUTED,) * max(1, steps)
+    n = max(1, int(steps))
+    if not stops or len(stops) < 2: 
+        return (stops[0] if stops else C_TEXT_MUTED,) * n
+    
+    rgb_stops = [_hex_to_rgb(s) for s in stops]
+    tramos = len(stops) - 1
+    paso = float(n - 1) if n > 1 else 1.0
+    
+    res = [None] * n
+    for i in range(n):
+        pos = (i / paso) * tramos
+        idx = min(int(pos), tramos - 1)
+        res[i] = _rgb_to_hex(_interpolate_rgb(rgb_stops[idx], rgb_stops[idx + 1], pos - idx))
+    return tuple(res) # type: ignore
 
 @lru_cache(maxsize=64)
 def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:

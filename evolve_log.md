@@ -602,3 +602,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T05:04:06` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_active_problems` y `_identify_active_problems` utilizando una estructura de `cached_property` o caché en `SystemContext` para evitar el re-procesamiento innecesario de criterios en cada llamada, y mejoré la construcción de `TOKENS_BY_CATEGORY` para evitar iteraciones redundantes en el arranque.
 - `2026-09-21T05:04:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T05:04:07` Corrida terminada. Total usado hoy: 120.
+- `2026-09-21T05:12:34` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-09-21T05:13:13` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de `gradient_colors` eliminando la creación innecesaria de listas intermedias y reduciendo las llamadas a `_hex_to_rgb` mediante una caché interna para los colores de los stops, mejorando así el rendimiento en el renderizado de la UI.
+- `2026-09-21T05:13:40` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se implementó un sistema de `memo` para evitar recálculos redundantes en la estructura recursiva de `_sum_directory_recursive`, optimizando drásticamente el rendimiento al procesar cachés que comparten subdirectorios o cuando se realizan múltiples lecturas sobre un mismo árbol.
+- `2026-09-21T05:14:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-21T05:14:43` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-21T05:15:49` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-21T05:16:32` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-21T05:17:32` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-21T05:17:57` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé la performance del escaneo inicial en `_collect_candidates` evitando llamadas redundantes a `is_safe_to_modify` y `_is_file_locked` al consolidar las comprobaciones en un flujo de una sola pasada y reutilizando el valor `stat` ya obtenido del sistema de archivos.
+- `2026-09-21T05:17:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T05:17:57` Corrida terminada. Total usado hoy: 124.

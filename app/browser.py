@@ -347,6 +347,7 @@ def detect_profiles(
                     continue
                 
                 real_candidate = str(candidate.resolve(strict=True))
+                # Uso de global_memo para evitar re-escaneo de rutas compartidas
                 size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, global_memo, str(real_base))
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), Path(real_candidate), size))

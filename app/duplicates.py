@@ -92,10 +92,6 @@ class DuplicateGroup:
 def _is_file_locked(path: Path) -> bool:
     """
     Determina si un archivo está bloqueado intentando abrirlo en modo lectura.
-    
-    Esta comprobación es necesaria para evitar excepciones de E/S durante el hashing 
-    en archivos bloqueados por procesos del sistema. Retorna True si el archivo 
-    es inaccesible para lectura exclusiva.
     """
     try:
         with open(path, 'rb') as f:
@@ -106,14 +102,7 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
-    """
-    Normaliza, resuelve y valida una ruta de archivo.
-    
-    Asegura que:
-    1. La ruta exista y sea un archivo (no directorio o enlace roto).
-    2. La ruta no esté en la lista de exclusión (safety.py).
-    3. El archivo esté libre para lectura (no bloqueado por otro proceso).
-    """
+    """Normaliza, resuelve y valida una ruta de archivo."""
     if not path:
         return None
     try:
@@ -207,7 +196,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Recorre recursivamente los directorios buscando archivos candidatos a duplicados."""
+    """Recorre recursivamente buscando candidatos, optimizando las llamadas a sistema."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     visited_files: set[str] = set()
 
@@ -216,22 +205,22 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        p = Path(entry.path)
-                        if skip_protected and is_protected_path(p):
-                            continue
-                        if entry.is_symlink() or (entry.is_dir() and is_junction(p)):
+                        if entry.is_dir():
+                            if not (entry.is_symlink() or is_junction(Path(entry.path))):
+                                _scan_dir(Path(entry.path))
                             continue
                         
-                        if entry.is_dir():
-                            _scan_dir(p)
+                        p = Path(entry.path)
+                        if (skip_protected and is_protected_path(p)) or not is_safe_to_modify(p):
                             continue
                         
                         st = entry.stat(follow_symlinks=False)
-                        
-                        if st.st_size >= min_size and entry.path not in visited_files:
-                            if _is_valid_candidate(p, st.st_size):
-                                size_to_paths_map[st.st_size].append(p)
-                                visited_files.add(entry.path)
+                        if st.st_size < min_size or entry.path in visited_files or is_system_or_hidden(p):
+                            continue
+                            
+                        if not _is_file_locked(p):
+                            size_to_paths_map[st.st_size].append(p)
+                            visited_files.add(entry.path)
                     except (FileNotFoundError, OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
