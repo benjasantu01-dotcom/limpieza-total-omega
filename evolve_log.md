@@ -984,3 +984,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T09:20:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-09-21T09:20:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T09:20:18` Corrida terminada. Total usado hoy: 220.
+- `2026-09-21T09:28:41` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-09-21T09:29:22` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `_check_file_integrity` extrayendo la lógica compleja de evaluación de reglas a una función con nombre explicativo, documentando mejor el flujo de seguridad para evitar errores de interpretación en futuras iteraciones.
+- `2026-09-21T09:29:49` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: legibilidad y documentación).
+- `2026-09-21T09:30:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-21T09:31:13` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-21T09:31:37` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-21T09:32:50` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-21T09:33:15` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-21T09:33:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T09:33:15` Corrida terminada. Total usado hoy: 224.

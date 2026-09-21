@@ -322,6 +322,13 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.SPARSE_FILE: SafetyValidationErrorCode.SPARSE_FILE_DETECTED
 }
 
+def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
+    """Ejecuta los predicados de seguridad sobre el archivo y lanza UnsafePathError si falla."""
+    for rule in _VALIDATORS:
+        if rule.predicate(path, current_stat):
+            code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
+            raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
+
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     """Verifica metadatos en disco y compara con estado inicial para prevenir ataques TOCTOU."""
     if not path.exists():
@@ -337,10 +344,7 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     if _is_directory_junction(str(path)):
         raise UnsafePathError(f"Junction detectada: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
-    for rule in _VALIDATORS:
-        if rule.predicate(path, current_stat):
-            code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
-            raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
+    _evaluate_security_rules(path, current_stat)
 
 @lru_cache(maxsize=2048)
 def _is_readonly(path_str: str) -> bool:
