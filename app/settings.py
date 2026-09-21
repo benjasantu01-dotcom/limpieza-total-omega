@@ -297,6 +297,8 @@ def _load_impl(ruta: Path) -> AppSettings:
         return DEFAULTS.copy()
     
     try:
+        # Verificación final antes de leer
+        ensure_safe_to_modify(ruta)
         stats = ruta.stat()
         if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
             return DEFAULTS.copy()
@@ -304,7 +306,7 @@ def _load_impl(ruta: Path) -> AppSettings:
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)
             return _coerce_and_verify(validate(data))
-    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError, UnsafePathError):
         return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:

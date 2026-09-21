@@ -238,7 +238,7 @@ def startup_folders() -> List[Path]:
             candidates.append(Path(programdata) / r"Microsoft\Windows\Start Menu\Programs\Startup")
     except (ValueError, TypeError, OSError):
         pass
-    return [c for c in candidates if c and c.is_dir() and not is_protected_path(c)]
+    return [c for c in candidates if c and c.is_dir() and not c.is_symlink() and not is_protected_path(c)]
 
 
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
@@ -254,7 +254,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
                         _, ext = os.path.splitext(entry.name)
                         if ext.lower() in EXECUTABLE_EXTS:
                             p = Path(entry.path)
-                            if not is_protected_path(p):
+                            if not p.is_symlink() and not is_protected_path(p):
                                 name = os.path.splitext(entry.name)[0]
                                 clean_name = "".join(c for c in name if ord(c) >= 32)
                                 found_entries.append(StartupEntry(

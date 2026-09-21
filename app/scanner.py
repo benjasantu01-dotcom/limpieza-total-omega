@@ -198,7 +198,8 @@ class Scanner:
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """Aplica el set completo de heurísticas a un archivo ejecutable identificado."""
         try:
-            if not path.exists():
+            # Re-verificar seguridad antes de cualquier acceso profundo
+            if not path.exists() or is_protected_path(path):
                 return
             if (double_ext := check_double_extension(path, entry, self.now_ts)):
                 self.results.append(double_ext)
@@ -252,7 +253,9 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 with os.scandir(current_dir) as it:
                     for entry in it:
                         try:
-                            scanner.process_entry(entry, directory_stack)
+                            # Doble chequeo de seguridad antes de procesar cualquier entrada
+                            if not is_protected_path(Path(entry.path)):
+                                scanner.process_entry(entry, directory_stack)
                         except (OSError, PermissionError):
                             continue
             except (PermissionError, OSError):
