@@ -70,8 +70,8 @@ class SummaryData(NamedTuple):
     top_files: List[Tuple[int, Path]]
 
 
-def _bytes_to_mb(size_bytes: int | float) -> float:
-    """Convierte bytes a Megabytes con precisión de dos decimales."""
+def _bytes_to_mb(size_bytes: int | float | None) -> float:
+    """Convierte bytes a Megabytes con precisión de dos decimales, validando entradas inválidas."""
     if not isinstance(size_bytes, (int, float)) or size_bytes < 0:
         return 0.0
     return round(float(size_bytes) / MB_SIZE, 2)
@@ -206,10 +206,11 @@ class DriveUsage:
 def format_size(num: Union[int, float, None]) -> str:
     """
     Formatea bytes en una cadena human-readable con unidades ajustables (B, KB, MB, GB, TB).
-    Utiliza una precisión decimal fija para mantener la consistencia en reportes.
+    Valida que el número sea positivo y numérico antes de procesar.
     """
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
+    
     value = float(num)
     for unit in ("B", "KB", "MB", "GB", "TB"):
         if value < 1024 or unit == "TB":

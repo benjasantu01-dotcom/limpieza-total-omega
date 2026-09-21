@@ -339,13 +339,14 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         path_obj = Path(destination)
         target = path_obj.resolve()
         
-        if is_protected_path(target): return None
+        # Validar si el directorio padre es seguro antes de intentar cualquier operación
+        if is_protected_path(target) or is_protected_path(target.parent):
+            return None
+            
         ensure_safe_to_modify(target)
         
         parent = target.parent
         if not parent.exists():
-            if is_protected_path(parent): return None
-            ensure_safe_to_modify(parent)
             parent.mkdir(parents=True, exist_ok=True)
         elif not parent.is_dir():
             return None
@@ -368,7 +369,6 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
         center_x = canvas_x + 64 * scale
         
         for seg in _get_grouped_segments(gradient_colors(franjas_count)):
-            # Cálculo optimizado del ancho medio del segmento
             mid_idx = (seg.start_index + seg.end_index - 1) / 2
             progreso = mid_idx / (franjas_count - 1)
             w = 36 * scale * (1.0 if progreso < 0.55 else 1.0 - (progreso - 0.55) * 1.9)
@@ -381,7 +381,6 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Renderiza símbolos internos (Omega y corte) sobre el escudo base."""
     try:
-        # Usamos valores pre-calculados para las decoraciones
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, 
                            canvas_x + 75 * scale, canvas_y + 41 * scale, 
                            fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
@@ -400,7 +399,6 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         if not math.isfinite(s) or s <= 0: return
         scale = max(0.1, min(10.0, s / 128.0))
         
-        # Renderizado de capas
         canvas.create_oval(
             canvas_x + (64 * scale) - 75 * scale, canvas_y + (58 * scale) - 75 * scale, 
             canvas_x + (64 * scale) + 75 * scale, canvas_y + (58 * scale) + 75 * scale, 
@@ -424,7 +422,7 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, 
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
     """Renderiza un gráfico de anillo circular; si percent es None, no renderiza."""
-    if percent is None: return
+    if percent is None or not isinstance(percent, (int, float)): return
     try:
         val = float(percent)
         if not math.isfinite(val): val = 0.0
@@ -433,7 +431,7 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         thick = max(2, min(int(thickness), (diam // 2) - 1))
         borde: float = float(thick) / 2.0
         caja = (canvas_x + borde, canvas_y + borde, canvas_x + diam - borde, canvas_y + diam - borde)
-        # track es el color de fondo del anillo (usualmente un gris neutro o superficie)
+        
         canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)
         if val > 0: 
             fill_color = fill or score_color(val)

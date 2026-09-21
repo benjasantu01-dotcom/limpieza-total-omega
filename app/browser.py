@@ -86,8 +86,6 @@ MAX_SCAN_DEPTH: int = 15
 MAX_PATH_LEN: int = 260
 # Máscara combinada para ignorar archivos que el sistema considera protegidos o de infraestructura
 SYSTEM_HIDDEN_FLAGS: int = FileAttributes().HIDDEN | FileAttributes().SYSTEM | FileAttributes().REPARSE_POINT
-ERROR_SHARING_VIOLATION: int = 32
-ERROR_ACCESS_DENIED: int = 5
 
 @dataclass
 class BrowserCache:
@@ -180,6 +178,8 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
+        # Definimos el tipo de retorno explícitamente para asegurar compatibilidad
+        kernel32.GetFileAttributesW.restype = ctypes.c_ulong
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False 
@@ -200,14 +200,17 @@ def _should_skip_entry(
     if entry.name is None or _is_excluded_file(entry.name):
         return True
     
-    path = entry.path
-    if not path or len(path) >= MAX_PATH_LEN or any(c in path for c in '\0\r\n') or _is_unc_path(path):
-        return True
-    
-    if entry.is_symlink() or is_junction_fn(path):
-        return True
-            
-    if __is_system_hidden(path, kernel32):
+    try:
+        path = entry.path
+        if not path or len(path) >= MAX_PATH_LEN or any(c in path for c in '\0\r\n') or _is_unc_path(path):
+            return True
+        
+        if entry.is_symlink() or is_junction_fn(path):
+            return True
+                
+        if __is_system_hidden(path, kernel32):
+            return True
+    except (OSError, AttributeError):
         return True
         
     return False

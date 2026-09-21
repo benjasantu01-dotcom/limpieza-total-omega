@@ -1404,3 +1404,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T12:49:55` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: SystemContext.is_valid_structure
 - `2026-09-21T12:49:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T12:49:55` Corrida terminada. Total usado hoy: 300.
+- `2026-09-21T12:52:42` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-21T12:53:20` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y `draw_ring` validando explícitamente los parámetros de entrada y asegurando que las operaciones críticas de `Path` no lancen excepciones inesperadas, reemplazando chequeos genéricos por validaciones más estrictas.
+- `2026-09-21T12:53:50` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `__is_system_hidden` y `_should_skip_entry` al manejar explícitamente posibles errores de llamada al sistema mediante `ctypes` y validación de tipos, evitando que excepciones inesperadas interrumpan el escaneo de directorios.
+- `2026-09-21T12:54:16` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `format_size` y `_bytes_to_mb` mediante una validación de tipo más estricta y el manejo explícito de valores negativos, evitando divisiones por cero o cálculos erróneos que podrían romper la UI en reportes malformados.
+- `2026-09-21T12:54:25` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-21T12:54:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T12:54:25` Corrida terminada. Total usado hoy: 304.
