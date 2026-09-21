@@ -308,11 +308,14 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def _is_system_process(pid: int) -> bool:
-    """Verifica si el PID es crítico para el sistema operativo o nuestra app."""
+    """Verifica si el PID es crítico para el sistema operativo o el proceso actual."""
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: int) -> Optional[Path]:
-    """Usa Psapi para obtener la ruta absoluta del proceso abierto."""
+    """
+    Recupera mediante la API Win32 PSAPI la ruta del ejecutable para validar 
+    que no sea una ruta protegida del sistema antes de cualquier operación.
+    """
     if not proc_handle or proc_handle == -1: return None
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
@@ -339,7 +342,11 @@ def _get_process_path(proc_handle: int) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(proc_handle: int) -> Tuple[bool, Optional[str]]:
-    """Valida que el handle del proceso sea seguro para la operación de trim."""
+    """
+    Validación de seguridad en múltiples capas antes de permitir la liberación:
+    comprueba el estado del proceso, verifica su ruta contra la política de 
+    protección y confirma que no sea un componente crítico del sistema.
+    """
     kernel32 = ctypes.windll.kernel32
     exit_code = ctypes.c_ulong()
     try:

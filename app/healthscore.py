@@ -220,7 +220,13 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Pipeline de evaluación: mapea SystemMetrics -> HealthResult."""
+    """
+    Ejecuta el pipeline de evaluación principal transformando métricas brutas en un HealthResult.
+    
+    El proceso normaliza cada métrica [0.0, 1.0], aplica los pesos definidos en WEIGHTS, 
+    evalúa las reglas de recomendación asociadas a cada área y consolida el puntaje final 
+    en una escala de 0 a 100.
+    """
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
     
@@ -236,7 +242,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
-            # Calcular puntos ponderados evitando valores fuera de rango
+            # Cálculo de puntos ponderados normalizando el resultado al peso asignado
             weighted_points = int(round(area_ratio * entry.weight))
             metric_breakdown[entry.area] = max(0, min(weighted_points, entry.weight))
             accumulated_score += float(metric_breakdown[entry.area])
