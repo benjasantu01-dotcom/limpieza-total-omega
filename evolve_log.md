@@ -962,3 +962,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T08:50:39` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la deserialización de JSON al envolver `json.load` en un bloque `try-except` específico y añadir una verificación de integridad de tipo explícita antes de pasar los datos al validador, evitando así errores no capturados por el `try` externo.
 - `2026-09-21T08:50:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T08:50:39` Corrida terminada. Total usado hoy: 208.
+- `2026-09-21T08:57:59` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-09-21T08:58:29` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `parse_registry_csv` al capturar el caso `None` o vacío en `reader.fieldnames` y validando explícitamente que los datos procesados no sean `None` antes de aplicar transformaciones de cadena, evitando errores de tipo innecesarios.
+- `2026-09-21T08:59:14` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la aplicación de docstrings explicativos sobre las intenciones de los decoradores, la estandarización de type hints y la consolidación de la lógica de validación de métricas, facilitando así la comprensión del flujo de datos sin alterar el comportamiento.
+- `2026-09-21T08:59:47` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-09-21T09:00:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-21T09:00:58` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se introdujo un `NamedTuple` para los tipos de archivos detectados por el sistema y se refinaron los comentarios críticos en el escáner de atributos de Windows para documentar la lógica de los flags, mejorando la legibilidad técnica y el mantenimiento del código bajo el enfoque de documentación solicitado.
+- `2026-09-21T09:00:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T09:00:58` Corrida terminada. Total usado hoy: 212.

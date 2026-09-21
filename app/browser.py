@@ -21,7 +21,7 @@ import os
 import ctypes
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Sequence, Dict, List, Optional, Callable, Union, TypeAlias
+from typing import Iterable, Sequence, Dict, List, Optional, Callable, Union, TypeAlias, NamedTuple
 
 from safety import is_protected_path, is_safe_to_modify
 
@@ -41,6 +41,13 @@ __all__ = [
 JunctionChecker: TypeAlias = Callable[[str], bool]
 BrowserMap: TypeAlias = Dict[str, str]
 OSPath: TypeAlias = Union[str, Path]
+
+class FileAttributes(NamedTuple):
+    """Flags de Win32 para filtrar archivos del sistema mediante bitmask."""
+    READONLY: int = 0x01
+    HIDDEN: int = 0x02
+    SYSTEM: int = 0x04
+    REPARSE_POINT: int = 0x400
 
 def _is_junction_default(path: str) -> bool:
     """Retorna siempre False; utilizado como fallback si os.path.isjunction no existe."""
@@ -77,7 +84,8 @@ SAFETY_NOTE: str = (
 
 MAX_SCAN_DEPTH: int = 15
 MAX_PATH_LEN: int = 260
-SYSTEM_HIDDEN_FLAGS: int = 0x01 | 0x02 | 0x04 | 0x400
+# Máscara combinada para ignorar archivos que el sistema considera protegidos o de infraestructura
+SYSTEM_HIDDEN_FLAGS: int = FileAttributes().HIDDEN | FileAttributes().SYSTEM | FileAttributes().REPARSE_POINT
 ERROR_SHARING_VIOLATION: int = 32
 ERROR_ACCESS_DENIED: int = 5
 

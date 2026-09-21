@@ -76,8 +76,8 @@ DEFAULT_RAM_PCT: Final[float] = 50.0
 
 def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
     """
-    Decorador para handlers de preguntas: garantiza una estructura de retorno consistente
-    y aísla excepciones internas para evitar el cierre inesperado del hilo de la UI.
+    Decorador protector para handlers de preguntas: intercepta excepciones en la lógica 
+    del motor local para evitar fallos en la interfaz gráfica.
     """
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
@@ -123,18 +123,18 @@ class ProblemCriterion(NamedTuple):
     message_format: str
 
     def _evaluate_metric(self, val: float) -> bool:
-        """Compara el valor de la métrica contra el umbral usando el operador definido ('>' o '<')."""
+        """Compara el valor de la métrica contra el umbral usando operadores estándar."""
         ops = {"<": operator.lt, ">": operator.gt}
         op_func = ops.get(self.operator)
         return op_func(val, self.threshold) if op_func else False
 
     def is_triggered_by(self, ctx: SystemContext) -> bool:
-        """Evalúa si una métrica específica en el contexto excede el umbral de riesgo definido."""
+        """Evalúa si una métrica específica en el contexto excede el umbral de riesgo."""
         val = ctx.get_metric(self.metric_key, DEFAULT_METRIC_VAL)
         return val >= 0 and self._evaluate_metric(val)
 
     def format_if_triggered(self, ctx: SystemContext) -> Optional[str]:
-        """Formatea el mensaje de advertencia si la métrica supera el umbral, validando la integridad del texto."""
+        """Devuelve el mensaje de alerta formateado si se supera el umbral, tras validar integridad."""
         val: float = ctx.get_metric(self.metric_key, DEFAULT_METRIC_VAL)
         
         if val < 0 or not self._evaluate_metric(val):
@@ -343,7 +343,7 @@ class SystemContext:
     def ingest(self, source: Any) -> bool:
         """
         Carga datos externos hacia el contexto tras validar la integridad de cada campo.
-        Retorna True solo si al menos una métrica fue importada exitosamente y el contexto es íntegro.
+        Retorna True solo si al menos una métrica fue importada exitosamente.
         """
         if source is None or _is_input_too_deep_or_complex(source):
             return False
@@ -377,7 +377,7 @@ class Answer:
         return self.source == "gemini"
 
 def _validate_context_integrity(ctx: SystemContext) -> bool:
-    """Verifica que las métricas del contexto se encuentren dentro de rangos físicamente posibles y no sean valores NaN/Inf."""
+    """Verifica que las métricas del contexto se encuentren dentro de rangos físicamente posibles."""
     return (
         ctx.junk_mb >= 0 and math.isfinite(ctx.junk_mb) and
         ctx.duplicate_mb >= 0 and math.isfinite(ctx.duplicate_mb) and
@@ -387,8 +387,8 @@ def _validate_context_integrity(ctx: SystemContext) -> bool:
 
 def _is_safe_text_structure(text: str) -> bool:
     """
-    Chequeo profundo de seguridad: busca patrones de inyección de rutas, 
-    comandos de PowerShell o caracteres de control en textos recibidos.
+    Chequeo profundo de seguridad: busca patrones de inyección, comandos 
+    o caracteres no permitidos en textos recibidos.
     """
     if not text: return True
     if any(ord(c) < 32 and c not in '\n\r\t' for c in text): return False
@@ -631,7 +631,6 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     """Extrae de forma segura el texto de la estructura JSON devuelta por la API."""
     if not isinstance(data, dict): return None
     try:
-        # Validación defensiva estricta de estructura
         candidates = data.get("candidates")
         if not isinstance(candidates, list) or not candidates: return None
         candidate = candidates[0]
@@ -651,7 +650,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     """Realiza la comunicación HTTP con Gemini mediante librería estándar."""
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): 
         return None
-    # Validación extra: No conectar si no hay contexto de datos
     if not context_text: return None
     
     payload = _build_payload(question, context_text)
@@ -689,7 +687,6 @@ def ask(question: str, context: Optional[SystemContext] = None,
         settings_data = settings.load(base)
         cfg = _parse_config(settings_data)
         
-        # Validar disponibilidad de métricas antes de intentar llamado remoto
         if ctx.is_empty and cfg.allow_metrics:
             return respaldo
             
