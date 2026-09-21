@@ -687,3 +687,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T06:25:56` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se introdujo la verificación `is_safe_to_modify` dentro del bucle de `_sum_directory_recursive` para asegurar que, ante cualquier cambio inesperado en el sistema de archivos durante el escaneo, la función mantenga el cumplimiento de las políticas de seguridad de la aplicación antes de procesar cada subdirectorio.
 - `2026-09-21T06:25:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T06:25:56` Corrida terminada. Total usado hoy: 152.
+- `2026-09-21T06:34:05` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-09-21T06:34:32` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-09-21T06:34:59` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_collect_candidates` para asegurar que el recorrido recursivo verifique explícitamente el estado de los enlaces simbólicos y puntos de reparse antes de procesar cualquier entrada, previniendo errores de recursión infinita o acceso no autorizado a rutas fuera de los directorios raíz definidos.
+- `2026-09-21T06:35:26` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-09-21T06:36:25` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva en `main.py` añadiendo una validación explícita mediante `safety.is_safe_to_modify` en todas las entradas de usuario que aceptan rutas (específicamente en `on_target_choice_changed`), evitando que rutas potencialmente peligrosas o fuera del alcance permitido lleguen a ser procesadas por el bucle de ejecución asíncrona.
+- `2026-09-21T06:36:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T06:36:25` Corrida terminada. Total usado hoy: 156.

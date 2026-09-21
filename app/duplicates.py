@@ -205,9 +205,12 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Seguridad: validar reparse points antes de procesar entrada
+                        if entry.is_symlink() or is_junction(Path(entry.path)):
+                            continue
+                        
                         if entry.is_dir():
-                            if not (entry.is_symlink() or is_junction(Path(entry.path))):
-                                _scan_dir(Path(entry.path))
+                            _scan_dir(Path(entry.path))
                             continue
                         
                         p = Path(entry.path)
