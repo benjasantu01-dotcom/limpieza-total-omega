@@ -52,7 +52,7 @@ def is_junction(path: Path) -> bool:
     if not isinstance(path, Path):
         return False
     try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT))
     except (AttributeError, OSError, RuntimeError):
         return False
@@ -61,7 +61,7 @@ def is_junction(path: Path) -> bool:
 def is_system_or_hidden(path: Path) -> bool:
     """Valida atributos de sistema o visibilidad (oculto) en Windows."""
     try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         if attrs == -1:
             return False
         return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM))
@@ -90,25 +90,21 @@ class DuplicateGroup:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """
-    Determina si un archivo está bloqueado intentando abrirlo en modo lectura.
-    """
+    """Verifica si un archivo está bloqueado mediante intento de lectura."""
     try:
         with open(path, 'rb') as f:
             f.read(1)
         return False
-    except (PermissionError, BlockingIOError, OSError):
-        return True
-    except (FileNotFoundError, IsADirectoryError, EOFError):
+    except (PermissionError, BlockingIOError, OSError, FileNotFoundError, IsADirectoryError, EOFError):
         return True
 
 
 def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
-    """Normaliza, resuelve y valida una ruta de archivo."""
+    """Normaliza, resuelve y valida una ruta de archivo para operaciones de lectura."""
     if not path:
         return None
     try:
-        p = Path(path).resolve(strict=True)
+        p: Path = Path(path).resolve(strict=True)
         if p.is_file() and is_safe_to_modify(p) and not _is_file_locked(p):
             return p
     except (OSError, RuntimeError, ValueError):
@@ -118,7 +114,7 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo del contenido del archivo."""
-    if chunk_size <= 0 or path is None:
+    if chunk_size <= 0:
         return None
         
     p = _validate_and_resolve_path(path)
@@ -137,7 +133,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula hash SHA256 de los primeros N bytes para pre-filtrado rápido."""
-    if read_bytes <= 0 or path is None:
+    if read_bytes <= 0:
         return None
 
     p = _validate_and_resolve_path(path)
@@ -156,8 +152,6 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Filtro de seguridad: descarta rutas protegidas, archivos de sistema o en uso."""
-    if not isinstance(path, Path):
-        return False
     try:
         if is_protected_path(path) or not is_safe_to_modify(path):
             return False
@@ -175,11 +169,10 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         if not p: continue
         try:
             path_obj = Path(p).resolve(strict=True)
-            if not is_safe_to_modify(path_obj):
-                continue
-            st = path_obj.stat()
-            if _is_valid_candidate(path_obj, st.st_size):
-                groups[st.st_size].append(path_obj)
+            if is_safe_to_modify(path_obj):
+                st = path_obj.stat()
+                if _is_valid_candidate(path_obj, st.st_size):
+                    groups[st.st_size].append(path_obj)
         except (OSError, RuntimeError, ValueError):
             continue
     return groups
@@ -207,10 +200,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Seguridad: validar reparse points antes de procesar entrada
                         if entry.is_symlink() or is_junction(Path(entry.path)):
                             continue
-                        
                         if entry.is_dir():
                             _scan_dir(Path(entry.path))
                             continue
@@ -276,7 +267,7 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Calcula el total de bytes recuperables sumando el desperdicio de cada grupo."""
-    return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
+    return sum(g.wasted_bytes for g in groups)
 
 
 def _get_keeper_score(path: Path) -> Optional[Tuple[float, int]]:
@@ -290,16 +281,15 @@ def _get_keeper_score(path: Path) -> Optional[Tuple[float, int]]:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """Selecciona el archivo para conservar (más antiguo y ruta más corta)."""
-    if not group or not isinstance(group, DuplicateGroup) or not group.paths:
+    if not group or not group.paths:
         return None
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
         try:
-            if not p.exists() or not is_safe_to_modify(p):
-                continue
-            if score := _get_keeper_score(p):
-                candidates.append((score, p))
+            if p.exists() and is_safe_to_modify(p):
+                if score := _get_keeper_score(p):
+                    candidates.append((score, p))
         except OSError:
             continue
             
@@ -308,7 +298,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Convierte un objeto DuplicateGroup en líneas de texto para la UI."""
-    if not group or not isinstance(group, DuplicateGroup) or not group.paths:
+    if not group or not group.paths:
         return ["Error: Grupo inválido o vacío"]
         
     keeper = suggest_keeper(group)
@@ -316,9 +306,6 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
     
     for path in group.paths:
-        if not isinstance(path, Path):
-            lines.append(f"   [error] ruta no es objeto Path")
-            continue
         try:
             if not is_safe_to_modify(path):
                 lines.append(f"   [inaccesible] {path}")

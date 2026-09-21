@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 43
+- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 113 | 9 | 23 | 12 | 135 |
-| 2026-09-21 | 101 | 5 | 20 | 6 | 80 |
+| 2026-09-20 | 112 | 8 | 21 | 12 | 135 |
+| 2026-09-21 | 103 | 5 | 21 | 6 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **49**
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **48**
 - robustez ante casos límite: **43**
-- rendimiento: **27**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
 - `settings.py`: **19**
 - `assistant.py`: **18**
 - `browser.py`: **18**
+- `diskreport.py`: **18**
 - `healthscore.py`: **18**
-- `diskreport.py`: **17**
+- `quarantine.py`: **18**
 - `memory.py`: **17**
 - `safety.py`: **17**
-- `duplicates.py`: **16**
+- `duplicates.py`: **17**
 - `scanner.py`: **14**
 - `branding.py`: **12**
 - `organizer.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T09:09:20` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `duplicates.py` añadiendo type hints más precisos, unificando la documentación mediante docstrings claros y estandarizando el manejo de errores en funciones críticas para evitar la propagación de excepciones silenciosas.
+- `2026-09-21T09:08:46` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` y `_is_excluded_path` mediante docstrings detallados que explican el "porqué" técnico de las exclusiones (evitar bucles de recursión y el manejo de rutas largas), cumpliendo con el enfoque de legibilidad.
 - `2026-09-21T09:00:58` **browser.py** (legibilidad y documentación): Se introdujo un `NamedTuple` para los tipos de archivos detectados por el sistema y se refinaron los comentarios críticos en el escáner de atributos de Windows para documentar la lógica de los flags, mejorando la legibilidad técnica y el mantenimiento del código bajo el enfoque de documentación solicitado.
 - `2026-09-21T08:59:14` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la aplicación de docstrings explicativos sobre las intenciones de los decoradores, la estandarización de type hints y la consolidación de la lógica de validación de métricas, facilitando así la comprensión del flujo de datos sin alterar el comportamiento.
 - `2026-09-21T08:58:29` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_registry_csv` al capturar el caso `None` o vacío en `reader.fieldnames` y validando explícitamente que los datos procesados no sean `None` antes de aplicar transformaciones de cadena, evitando errores de tipo innecesarios.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T08:28:18` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando fallos en `Path.exists()` y `Path.is_dir()` para evitar excepciones inesperadas al procesar rutas que cambian de estado durante la iteración.
 - `2026-09-21T08:20:08` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de datos externos en `SystemContext.ingest` y `_apply_field`, asegurando que si una métrica individual falla en su validación o conversión, no invalide la ingesta completa, permitiendo una degradación elegante del contexto y evitando la propagación de errores de tipo.
 - `2026-09-21T06:56:03` **settings.py** (seguridad defensiva): Se ha añadido un chequeo explícito en `_Validators.path` para detectar y bloquear rutas que contengan el carácter de escape de consola (`^`) o secuencias de escape ANSI, previniendo inyecciones de comandos o comportamientos inesperados en sistemas Windows cuando las rutas se procesan en el shell.
-- `2026-09-21T06:55:05` **safety.py** (seguridad defensiva): Se añadió una validación explícita para evitar que `_is_file_in_use` intente abrir directorios, usando `os.path.isfile` para asegurar que el chequeo de exclusividad mediante `CreateFileW` se limite exclusivamente a archivos regulares, evitando errores de permisos al intentar acceder a carpetas bloqueadas por el sistema.
-- `2026-09-21T06:45:53` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad del proceso de restauración de archivos agregando una validación explícita mediante `is_safe_to_modify` sobre el `Path` destino antes de realizar la operación `os.replace`, evitando cualquier intento de manipulación del manifiesto para sobreescribir archivos críticos del sistema.

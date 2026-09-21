@@ -101,8 +101,12 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry) -> bool:
     """
     Filtro de exclusión para el escáner de archivos.
-    Detecta enlaces simbólicos y puntos de reparse (Junctions) mediante atributos de archivo
-    de bajo nivel en Windows para evitar bucles infinitos en el recorrido.
+    
+    Por qué: 
+    1. Las rutas > 260 chars en Windows causan errores de API nativa (MAX_PATH).
+    2. Los symlinks pueden crear bucles infinitos en el recorrido del árbol.
+    3. Los puntos de reparse (0x400) en Windows (como Junctions) no deben 
+       seguirse para evitar re-escaneo de discos o carpetas fuera de la raíz.
     """
     try:
         if not entry.path or len(entry.path) > 260:
@@ -231,7 +235,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre el sistema de archivos de forma iterativa mediante un stack LIFO.
+    Recorre el sistema de archivos de forma iterativa empleando un stack LIFO.
+    
+    Implementa un mecanismo de prevención de bucles basándose en el Inode (o ID 
+    único del archivo en Windows) para asegurar que el recorrido no entre en una 
+    recursión infinita ante enlaces simbólicos circulares.
 
     Args:
         directory: Ruta raíz a explorar.
