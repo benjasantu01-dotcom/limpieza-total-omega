@@ -150,7 +150,8 @@ def _is_path_inside_base(target_abs: str, base_abs: str) -> bool:
     if len(target_abs) >= MAX_PATH_LEN or len(base_abs) >= MAX_PATH_LEN or any(c in target_abs for c in '\0\r\n'):
         return False
     try:
-        return os.path.commonpath([target_abs, base_abs]) == base_abs
+        common = os.path.commonpath([target_abs, base_abs])
+        return common == base_abs
     except (OSError, ValueError):
         return False
 
@@ -227,7 +228,6 @@ def _sum_directory_recursive(
     if root_abs in memo:
         return memo[root_abs]
 
-    # La validación de seguridad básica se hace en el caller, acá solo procesamos recursión
     directory_total_bytes: int = 0
     try:
         with os.scandir(root_abs) as it:
@@ -275,7 +275,8 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
         if not candidate.is_absolute() or not candidate.exists() or not candidate.is_dir():
             return False
         real_candidate = candidate.resolve(strict=True)
-        if _is_unc_path(str(real_candidate)) or not _is_path_inside_base(str(real_candidate), str(base_path.resolve(strict=True))):
+        real_base = base_path.resolve(strict=True)
+        if _is_unc_path(str(real_candidate)) or not _is_path_inside_base(str(real_candidate), str(real_base)):
             return False
         if not is_safe_to_modify(real_candidate) or is_protected_path(real_candidate):
             return False
@@ -290,7 +291,8 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
         return real_base
     try:
         target = real_base.joinpath(*rel_str.split("\\"))
-        return target if len(str(target)) < MAX_PATH_LEN else real_base
+        # Retorna el target normalizado para evitar paths escapando del base
+        return target.resolve() if len(str(target)) < MAX_PATH_LEN else real_base
     except (TypeError, ValueError, OSError):
         return real_base
 
@@ -321,7 +323,6 @@ def detect_profiles(
                     continue
                 
                 real_candidate = str(candidate.resolve(strict=True))
-                # Pasamos global_memo para que subdirectorios compartidos sean procesados una sola vez
                 size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, global_memo, str(real_base))
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), Path(real_candidate), size))

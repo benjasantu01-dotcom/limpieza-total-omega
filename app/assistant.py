@@ -371,10 +371,10 @@ class Answer:
         return self.source == "gemini"
 
 def _validate_context_integrity(ctx: SystemContext) -> bool:
-    """Verifica que las métricas del contexto se encuentren dentro de rangos físicamente posibles."""
+    """Verifica que las métricas del contexto se encuentren dentro de rangos físicamente posibles y no sean valores NaN/Inf."""
     return (
-        ctx.junk_mb >= 0 and 
-        ctx.duplicate_mb >= 0 and 
+        ctx.junk_mb >= 0 and math.isfinite(ctx.junk_mb) and
+        ctx.duplicate_mb >= 0 and math.isfinite(ctx.duplicate_mb) and
         0 <= ctx.get_metric("disk_free_percent", 0.0) <= 100 and
         0 <= ctx.get_metric("memory_available_percent", 0.0) <= 100
     )
