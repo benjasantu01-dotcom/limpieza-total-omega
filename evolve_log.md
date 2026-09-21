@@ -620,3 +620,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T05:25:03` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el proceso de escaneo `_process_directory` implementando un caché de rutas resueltas (`set`) para evitar llamadas redundantes y costosas a `.resolve()` sobre directorios ya visitados, reduciendo la complejidad de I/O durante la recursión.
 - `2026-09-21T05:25:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T05:25:03` Corrida terminada. Total usado hoy: 128.
+- `2026-09-21T05:33:05` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-09-21T05:33:47` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `list_items` y `purge_all` transformando las iteraciones sobre el manifiesto en búsquedas de complejidad O(1) mediante el uso de diccionarios, evitando así loops anidados en cada validación.
+- `2026-09-21T05:34:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-21T05:35:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-21T05:36:17` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 35% del original (posible pérdida de código)
+- `2026-09-21T05:36:29` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé `_is_relevant_extension` reemplazando la creación dinámica de `splitext` y llamadas a `os.path.splitext` en cada iteración del bucle, utilizando en su lugar una verificación directa de sufijos con el `frozenset` `SUSPICIOUS_ALL_EXTS` para reducir la sobrecarga de CPU durante el recorrido de grandes directorios.
+- `2026-09-21T05:36:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T05:36:29` Corrida terminada. Total usado hoy: 132.

@@ -195,8 +195,9 @@ class Scanner:
     def _is_relevant_extension(self, name: str, is_dir: bool) -> Optional[str]:
         """Determina si un archivo o directorio es apto para análisis heurístico basado en extensiones."""
         if is_dir: return ""
-        _, ext = os.path.splitext(name)
-        ext_low = ext.lower()
+        # Optimizacion: Evitar splitext si no contiene punto o es demasiado corto
+        if "." not in name: return None
+        ext_low = ("." + name.rsplit(".", 1)[-1]).lower()
         return ext_low if ext_low in SUSPICIOUS_ALL_EXTS else None
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
