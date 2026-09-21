@@ -147,8 +147,10 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return stat
 
-def _safe_int_conversion(value: str, multiplier: int = 1) -> BytesValue:
-    """Intenta convertir un string a entero con validación de seguridad."""
+def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValue:
+    """Intenta convertir un string a entero con validación robusta ante errores de lectura."""
+    if value is None:
+        return BytesValue(0)
     try:
         clean_val = "".join(c for c in value if c.isdigit())
         if not clean_val: return BytesValue(0)
@@ -200,7 +202,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         if len(parts) < 3: continue
         
         name, pid_raw, ws_raw = parts[0], parts[1], parts[2]
-        pid = _safe_int_conversion(pid_raw)
+        pid = int(_safe_int_conversion(pid_raw))
         ws = _safe_int_conversion(ws_raw)
         
         if pid > 0 and ws >= 0:

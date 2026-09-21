@@ -663,6 +663,10 @@ def quarantine_file(
             raise UnsafePathError(f"Ruta origen no válida: {e}")
     
     source_path = _validate_source_for_quarantine(p_source)
+    # Re-verificar existencia inmediata tras validaciones iniciales
+    if not source_path.exists():
+        raise FileNotFoundError("El archivo origen desapareció antes del aislamiento.")
+        
     original_size = source_path.stat().st_size
     dest_dir = quarantine_dir(base)
     

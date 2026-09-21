@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Mejoras aceptadas: **212** (42.1% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 1 | 0 | 0 | 0 | 13 |
+| 2026-09-19 | 0 | 0 | 0 | 0 | 10 |
 | 2026-09-20 | 134 | 9 | 28 | 17 | 162 |
-| 2026-09-21 | 75 | 3 | 16 | 4 | 42 |
+| 2026-09-21 | 78 | 3 | 16 | 4 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **42**
-- robustez ante casos límite: **37**
+- seguridad defensiva: **41**
+- robustez ante casos límite: **40**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **20**
-- `settings.py`: **19**
+- `settings.py`: **18**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
+- `memory.py`: **18**
+- `quarantine.py`: **18**
 - `assistant.py`: **17**
-- `memory.py`: **17**
-- `quarantine.py`: **17**
 - `safety.py`: **16**
 - `duplicates.py`: **16**
 - `scanner.py`: **13**
 - `branding.py`: **12**
 - `organizer.py`: **10**
 - `startup.py`: **9**
-- `main.py`: **8**
+- `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T06:06:20` **quarantine.py** (robustez ante casos límite): Se añadió una validación de existencia y permisos de escritura en la función `_ensure_disk_space` y se mejoró la robustez de `quarantine_file` para manejar casos donde el archivo origen pueda ser eliminado por un proceso externo justo después de la validación inicial, evitando estados inconsistentes.
+- `2026-09-21T06:05:19` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_safe_int_conversion` ante casos límite de entrada, añadiendo soporte explícito para valores nulos o vacíos que podrían provenir de lecturas fallidas del sistema, evitando excepciones innecesarias y asegurando que las funciones de parseo devuelvan estados consistentes en lugar de valores parciales corruptos.
+- `2026-09-21T06:04:50` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_target_choice_changed` al implementar una validación de seguridad asíncrona mediante `_verify_disk_path` antes de aceptar la selección del usuario, evitando que rutas inválidas o protegidas contaminen el estado del escáner.
 - `2026-09-21T05:54:59` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor frente a posibles fallos de ejecución en el pipeline y métricas inconsistentes, añadiendo protección contra divisiones por cero en `score_security` y garantizando que el `HealthResult` devuelva una estructura completa incluso si el cálculo falla parcialmente.
 - `2026-09-21T05:54:22` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_protected_path` en el bucle principal de `walk_files` para manejar casos límite donde el usuario intenta escanear una carpeta que podría haberse vuelto protegida dinámicamente durante el recorrido, evitando errores de acceso o procesamiento no autorizado.
 - `2026-09-21T05:53:55` **browser.py** (robustez ante casos límite): Se ha robustecido el escaneo de directorios frente a posibles errores de entrada mediante una mejora en la validación de la existencia de rutas `Path` y el manejo de excepciones al intentar resolver rutas absolutas, evitando que entradas de configuración malformadas interrumpan el proceso.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T05:13:40` **browser.py** (rendimiento): Se implementó un sistema de `memo` para evitar recálculos redundantes en la estructura recursiva de `_sum_directory_recursive`, optimizando drásticamente el rendimiento al procesar cachés que comparten subdirectorios o cuando se realizan múltiples lecturas sobre un mismo árbol.
 - `2026-09-21T05:13:13` **branding.py** (rendimiento): Optimicé el cálculo de `gradient_colors` eliminando la creación innecesaria de listas intermedias y reduciendo las llamadas a `_hex_to_rgb` mediante una caché interna para los colores de los stops, mejorando así el rendimiento en el renderizado de la UI.
 - `2026-09-21T05:04:07` **assistant.py** (rendimiento): Optimicé el rendimiento de `_get_active_problems` y `_identify_active_problems` utilizando una estructura de `cached_property` o caché en `SystemContext` para evitar el re-procesamiento innecesario de criterios en cada llamada, y mejoré la construcción de `TOKENS_BY_CATEGORY` para evitar iteraciones redundantes en el arranque.
-- `2026-09-21T05:03:17` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la inclusión de docstrings detallados que explican el propósito funcional de las funciones, eliminando ambigüedades sobre el flujo de control y las responsabilidades de validación en los métodos de `_Validators`.
-- `2026-09-21T05:02:47` **scanner.py** (legibilidad y documentación): Se introdujo un `NamedTuple` para las constantes de configuración y se mejoró la documentación (docstrings) de los métodos del `Scanner` para clarificar la lógica de exclusión y el manejo de seguridad, facilitando el mantenimiento y auditoría del código.
-- `2026-09-21T04:54:55` **safety.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en las constantes de atributos de archivo Win32 y en el diccionario de validadores, aclarando el propósito y el impacto de cada chequeo de integridad para facilitar el mantenimiento futuro y la auditoría de seguridad.
