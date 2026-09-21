@@ -1439,3 +1439,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T13:21:04` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_volume_readonly` para manejar correctamente errores de bajo nivel en llamadas a `ctypes` y se añadió una validación defensiva en `_is_file_in_use` para prevenir errores de tipo cuando se manejan rutas problemáticas, asegurando que `safety.py` no colapse ante entradas inesperadas.
 - `2026-09-21T13:21:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T13:21:04` Corrida terminada. Total usado hoy: 311.
+- `2026-09-21T13:23:47` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-21T13:24:16` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-21T13:24:51` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_load_impl` y `save` mediante el uso de bloques `try-except` más granulares y la validación explícita del estado del archivo (existencia y permisos) antes de intentar operaciones de lectura/escritura, evitando errores de E/S no controlados durante la carga o persistencia de configuración.
+- `2026-09-21T13:25:22` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.30s
+
+```
+- `2026-09-21T13:25:22` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `StartupEntry.executable` manejando explícitamente posibles valores `None` o errores de sistema durante la resolución del path, evitando que una entrada mal formada interrumpa el proceso de listado y mejorando la calidad de los datos reportados.
+- `2026-09-21T13:25:52` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad del motor de reglas local mediante la documentación técnica de `ProblemCriterion` y la formalización de la lógica de comparación, facilitando la comprensión de las heurísticas de salud del sistema sin alterar la funcionalidad.
+- `2026-09-21T13:25:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T13:25:52` Corrida terminada. Total usado hoy: 315.

@@ -114,13 +114,15 @@ class MetricSpec:
 
 class ProblemCriterion(NamedTuple):
     """
-    Regla heurística para identificar problemas críticos según métricas.
-    Encapsula la lógica de comparación para evitar ramas 'if' complejas.
+    Regla heurística para identificar problemas críticos según métricas del sistema.
+    
+    Esta clase encapsula la comparación entre una métrica y un umbral, permitiendo
+    generar mensajes legibles para el usuario de forma declarativa sin ramas if-else.
     """
     metric_key: str
     threshold: float
-    operator: str
-    message_format: str
+    operator: str # Operadores soportados: "<" (menor que), ">" (mayor que)
+    message_format: str # Template string para formatear el valor de la métrica
 
     def _evaluate_metric(self, val: float) -> bool:
         """Compara el valor de la métrica contra el umbral usando operadores estándar."""
@@ -129,12 +131,15 @@ class ProblemCriterion(NamedTuple):
         return op_func(val, self.threshold) if op_func else False
 
     def is_triggered_by(self, ctx: SystemContext) -> bool:
-        """Evalúa si una métrica específica en el contexto excede el umbral de riesgo."""
+        """Evalúa si una métrica específica en el contexto excede el umbral de riesgo definido."""
         val = ctx.get_metric(self.metric_key, DEFAULT_METRIC_VAL)
         return val >= 0 and self._evaluate_metric(val)
 
     def format_if_triggered(self, ctx: SystemContext) -> Optional[str]:
-        """Devuelve el mensaje de alerta formateado si se supera el umbral, tras validar integridad."""
+        """
+        Devuelve el mensaje formateado si la condición es verdadera, tras validar 
+        que el valor existe y es seguro. Devuelve None si no se dispara.
+        """
         val: float = ctx.get_metric(self.metric_key, DEFAULT_METRIC_VAL)
         
         if val < 0 or not self._evaluate_metric(val):

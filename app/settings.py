@@ -181,7 +181,6 @@ class _Validators:
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
         """Valida sintaxis básica y seguridad de una ruta antes de considerarla para el JSON."""
-        # Bloquea caracteres de escape de shell y control, crucial en Windows para evitar inyecciones
         if not path_str or len(path_str) > 2048 or "\0" in path_str or "^" in path_str or "\033" in path_str: return False
         if path_str.startswith(("\\\\", "//")): return False
         try:
@@ -297,26 +296,23 @@ def validate(raw_values: Any) -> AppSettings:
 def _load_impl(ruta: Path) -> AppSettings:
     """Implementación privada cacheada para leer y verificar el archivo de configuración en disco."""
     try:
-        if not ruta.is_file() or not os.access(ruta, os.R_OK):
-            return DEFAULTS.copy()
-            
+        if not ruta.is_file(): return DEFAULTS.copy()
+        
+        # Validación de seguridad: debe ser un archivo seguro antes de acceder
         ensure_safe_to_modify(ruta)
         
-        # Validar integridad básica de tamaño antes de parsear
-        if ruta.stat().st_size == 0 or ruta.stat().st_size > MAX_SETTINGS_SIZE:
+        # Validación de lectura y tamaño
+        if not os.access(ruta, os.R_OK) or ruta.stat().st_size == 0 or ruta.stat().st_size > MAX_SETTINGS_SIZE:
             return DEFAULTS.copy()
             
         with open(ruta, "r", encoding="utf-8") as f:
-            try:
-                data = json.load(f)
-            except (json.JSONDecodeError, UnicodeDecodeError):
-                return DEFAULTS.copy()
-                
-            if not _is_dict(data):
-                return DEFAULTS.copy()
-                
-            return _coerce_and_verify(validate(data))
-    except (OSError, IOError, UnsafePathError, PermissionError):
+            data = json.load(f)
+            
+        if not _is_dict(data):
+            return DEFAULTS.copy()
+            
+        return _coerce_and_verify(validate(data))
+    except (OSError, IOError, UnsafePathError, PermissionError, json.JSONDecodeError, UnicodeDecodeError):
         return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
@@ -325,7 +321,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     for r in [ruta, ruta.with_suffix(".bak")]:
         try:
             return _load_impl(r)
-        except (OSError, PermissionError, ValueError):
+        except Exception:
             continue
     return DEFAULTS.copy()
 

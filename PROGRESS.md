@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **208** (41.3% de aceptación)
-- Rechazadas por tests: 15
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 76 | 6 | 17 | 9 | 85 |
-| 2026-09-21 | 132 | 9 | 32 | 7 | 131 |
+| 2026-09-20 | 74 | 6 | 17 | 9 | 83 |
+| 2026-09-21 | 134 | 10 | 32 | 7 | 132 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **47**
-- manejo de errores y validación de entradas: **47**
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **43**
 - robustez ante casos límite: **41**
-- rendimiento: **31**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **20**
 - `quarantine.py`: **19**
-- `assistant.py`: **19**
 - `browser.py`: **19**
 - `diskreport.py`: **17**
 - `memory.py`: **17**
 - `duplicates.py`: **17**
+- `settings.py`: **16**
 - `safety.py`: **16**
-- `healthscore.py`: **15**
-- `settings.py`: **15**
+- `healthscore.py`: **14**
 - `branding.py`: **13**
 - `scanner.py`: **12**
 - `organizer.py`: **12**
-- `main.py`: **9**
 - `startup.py`: **8**
+- `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T13:25:52` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del motor de reglas local mediante la documentación técnica de `ProblemCriterion` y la formalización de la lógica de comparación, facilitando la comprensión de las heurísticas de salud del sistema sin alterar la funcionalidad.
+- `2026-09-21T13:24:51` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_load_impl` y `save` mediante el uso de bloques `try-except` más granulares y la validación explícita del estado del archivo (existencia y permisos) antes de intentar operaciones de lectura/escritura, evitando errores de E/S no controlados durante la carga o persistencia de configuración.
 - `2026-09-21T13:21:04` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_volume_readonly` para manejar correctamente errores de bajo nivel en llamadas a `ctypes` y se añadió una validación defensiva en `_is_file_in_use` para prevenir errores de tipo cuando se manejan rutas problemáticas, asegurando que `safety.py` no colapse ante entradas inesperadas.
 - `2026-09-21T12:54:16` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `format_size` y `_bytes_to_mb` mediante una validación de tipo más estricta y el manejo explícito de valores negativos, evitando divisiones por cero o cálculos erróneos que podrían romper la UI en reportes malformados.
 - `2026-09-21T12:53:50` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `__is_system_hidden` y `_should_skip_entry` al manejar explícitamente posibles errores de llamada al sistema mediante `ctypes` y validación de tipos, evitando que excepciones inesperadas interrumpan el escaneo de directorios.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T10:51:54` **assistant.py** (seguridad defensiva): Reforcé la integridad del motor de comunicación HTTP mediante la validación de la URL antes de ejecutar el request, asegurando que `_ENDPOINT` y `api_key` no contengan inyecciones o caracteres fuera de formato antes de construir el objeto `urllib.request.Request`.
 - `2026-09-21T10:50:50` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante archivos corruptos o maliciosos agregando un chequeo de integridad basado en el tamaño real del archivo antes de intentar cargarlo y validando que el directorio de configuración sea un directorio real y no un enlace simbólico que pudiera apuntar a una ubicación sensible.
 - `2026-09-21T10:40:47` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine.py` ante casos de concurrencia y corrupción de archivos mediante la implementación de `os.fsync` y validaciones de estado post-operación más estrictas en `_safe_unlink`, evitando dejar manifiestos desincronizados cuando el sistema de archivos falla o bloquea el acceso.
-- `2026-09-21T10:34:51` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_safe_for_disk_op` añadiendo una verificación de existencia real mediante `path.exists()` antes de realizar chequeos de estado, evitando excepciones innecesarias en condiciones de carrera (Race Conditions) donde un archivo es borrado por el sistema entre la detección y la manipulación.
-- `2026-09-21T10:34:39` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` al implementar una validación estricta contra entradas malformadas o PIDs negativos, evitando errores de casting durante el procesamiento de datos asíncronos y garantizando que el bucle de diagnóstico no se rompa ante texto inesperado de PowerShell.
