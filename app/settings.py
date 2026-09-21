@@ -105,9 +105,7 @@ SETTINGS_FILE: Final = "config.json"
 MAX_SETTINGS_SIZE: Final = 1024 * 64
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
-_CACHE: dict[Path, tuple[float, AppSettings]] = {}
 _PATH_CACHE: dict[Path, Path] = {}
-_INTEGRITY_CACHE: dict[int, AppSettings] = {}
 
 VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
 VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))
@@ -283,9 +281,6 @@ def validate(raw_values: Any) -> AppSettings:
     """Valida y normaliza un diccionario crudo contra los tipos definidos en DEFAULTS."""
     if not _is_dict(raw_values): return DEFAULTS.copy()
     
-    raw_hash = hash(frozenset(raw_values.items()))
-    if raw_hash in _INTEGRITY_CACHE: return _INTEGRITY_CACHE[raw_hash].copy()
-    
     config = DEFAULTS.copy()
     for key_str, raw_val in raw_values.items():
         if (key_enum := _KEY_TO_ENUM.get(key_str)):
@@ -293,25 +288,28 @@ def validate(raw_values: Any) -> AppSettings:
             validated_val = validator(key_enum, raw_val)
             if validated_val is not None:
                 config[key_enum.value] = validated_val
-    
-    _INTEGRITY_CACHE[raw_hash] = config
     return config
+
+@lru_cache(maxsize=4)
+def _load_impl(ruta: Path) -> AppSettings:
+    """Implementación interna cacheada para evitar IO redundante."""
+    if not ruta.exists() or not os.access(ruta, os.R_OK):
+        return DEFAULTS.copy()
+    
+    stats = ruta.stat()
+    if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
+        return DEFAULTS.copy()
+        
+    with open(ruta, "r", encoding="utf-8") as f:
+        return _coerce_and_verify(validate(json.load(f)))
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga y normaliza los ajustes desde disco, usando respaldo .bak si es necesario."""
     ruta = settings_path(custom_base)
+    # Intenta cargar la ruta principal, luego el backup
     for r in [ruta, ruta.with_suffix(".bak")]:
         try:
-            if not r.exists() or not os.access(r, os.R_OK): continue
-            stats = r.stat()
-            if (cached := _CACHE.get(r)) and cached[0] == stats.st_mtime:
-                return cached[1].copy()
-            if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
-                continue
-            with open(r, "r", encoding="utf-8") as f:
-                final_data = _coerce_and_verify(validate(json.load(f)))
-            _CACHE[r] = (stats.st_mtime, final_data)
-            return final_data.copy()
+            return _load_impl(r)
         except (OSError, PermissionError, ValueError, json.JSONDecodeError, UnicodeDecodeError):
             continue
     return DEFAULTS.copy()
@@ -323,19 +321,15 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
         default_val = DEFAULTS.get(k_val)
         current_val = settings.get(k_val)
         
-        # Asegurar tipo estricto contra DEFAULTS
         if current_val is None or not isinstance(current_val, type(default_val)):
             settings[k_val] = default_val
-        # Limpieza de strings
         elif isinstance(settings[k_val], str):
             settings[k_val] = str(settings[k_val]).strip()
             
-    # Validación lógica de dependencias: Asistente requiere clave
     if settings.get("asistente_activado") and not (
         settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
     ):
         settings["asistente_activado"] = False
-        
     return settings
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
@@ -364,7 +358,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             try: os.replace(ruta, bak_path)
             except OSError: pass
         os.replace(temp_path, ruta)
-        _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
+        _load_impl.cache_clear()
         return ruta
     except (OSError, IOError, PermissionError, UnsafePathError): return None
     finally:
@@ -390,6 +384,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
 def reset(custom_base: PathLike | None = None) -> AppSettings:
     """Restaura la configuración a los valores de fábrica."""
     save(DEFAULTS, custom_base)
+    _load_impl.cache_clear()
     return DEFAULTS.copy()
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
