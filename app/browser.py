@@ -43,10 +43,10 @@ BrowserMap: TypeAlias = Dict[str, str]
 OSPath: TypeAlias = Union[str, Path]
 
 def _is_junction_default(path: str) -> bool:
-    """Retorna siempre False; utilizado como valor por defecto para entornos sin soporte de junctions."""
+    """Retorna siempre False; utilizado como fallback si os.path.isjunction no existe."""
     return False
 
-# Acceso seguro a la funcionalidad de junctions si existe en el runtime
+# Acceso seguro a la funcionalidad de junctions si existe en el runtime (Python 3.12+)
 _IS_JUNCTION_FN: JunctionChecker = getattr(os.path, 'isjunction', _is_junction_default)
 
 # Mapeo de nombres descriptivos a rutas relativas dentro de LOCALAPPDATA.
@@ -102,12 +102,14 @@ class BrowserCache:
 
 
 def _get_kernel32() -> Optional[ctypes.WinDLL]:
-    """Carga kernel32.dll para consultar atributos de archivo Win32; retorna None si no es Windows o falla."""
+    """
+    Intenta cargar kernel32.dll para operaciones Win32 nativas.
+    Retorna la instancia de WinDLL si es Windows y está disponible, None de lo contrario.
+    """
     if os.name != 'nt':
         return None
     try:
         dll = ctypes.WinDLL('kernel32.dll', use_last_error=True)
-        # Validación de integridad de la carga del DLL
         if not hasattr(dll, 'GetFileAttributesW'):
             return None
         return dll
@@ -115,7 +117,10 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
         return None
 
 def _is_unc_path(path_str: Optional[str]) -> bool:
-    """Verifica si la cadena de ruta corresponde a un recurso de red (UNC)."""
+    """
+    Verifica si una ruta es un recurso de red (UNC) basándose en el prefijo '\\'.
+    Las rutas UNC se omiten para evitar bloqueos por latencia de red.
+    """
     if not isinstance(path_str, str) or not path_str:
         return False
     return path_str.startswith(r"\\") or path_str.startswith("//")
@@ -128,11 +133,9 @@ def base_directories() -> List[Path]:
     
     try:
         p = Path(local_env)
-        # Verificación explícita de existencia y acceso
         if not p.exists() or not p.is_dir():
             return []
         path_local = p.resolve(strict=True)
-        # Validación: evita seguir rutas protegidas o inseguras por política de seguridad
         if is_safe_to_modify(path_local) and not is_protected_path(path_local):
             return [path_local]
     except (OSError, RuntimeError, PermissionError):
@@ -186,7 +189,6 @@ def _should_skip_entry(
     if not path or len(path) >= MAX_PATH_LEN or any(c in path for c in '\0\r\n') or _is_unc_path(path):
         return True
     
-    # El escaneo ignora junctions y symlinks para prevenir bucles infinitos
     if entry.is_symlink() or is_junction_fn(path):
         return True
             
@@ -220,12 +222,11 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula el peso total de una estructura de directorios de manera recursiva.
+    Calcula el peso total de una estructura de directorios de manera recursiva usando memoización.
     """
     if root_abs in memo:
         return memo[root_abs]
 
-    # Seguridad defensiva adicional: verificar si la ruta actual es segura de visitar
     if not is_safe_to_modify(Path(root_abs)) or is_protected_path(Path(root_abs)):
         return 0
 
@@ -324,7 +325,6 @@ def detect_profiles(
                     continue
                 
                 real_candidate = str(candidate.resolve(strict=True))
-                # El uso de global_memo permite que múltiples navegadores compartan cálculos de sub-árboles
                 size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, global_memo, str(real_base))
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), Path(real_candidate), size))

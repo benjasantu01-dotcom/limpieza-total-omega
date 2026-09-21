@@ -119,7 +119,15 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
 
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo del archivo para verificación de contenido."""
+    """
+    Calcula el hash SHA256 completo del contenido del archivo.
+    
+    Args:
+        path: Ruta del archivo a procesar.
+        chunk_size: Tamaño de bloques para lectura eficiente de archivos grandes.
+    Returns:
+        Hexdigest del hash SHA256, o None si el acceso es denegado.
+    """
     if chunk_size <= 0:
         return None
         
@@ -138,7 +146,15 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula hash SHA256 de los primeros N bytes para pre-filtrar candidatos rápidamente."""
+    """
+    Calcula hash SHA256 de los primeros N bytes del archivo para pre-filtrado rápido.
+    
+    Args:
+        path: Ruta del archivo.
+        read_bytes: Cantidad de bytes a leer (defecto 64KB).
+    Returns:
+        Hexdigest del hash, o None si no se puede leer el inicio del archivo.
+    """
     if read_bytes <= 0:
         return None
 

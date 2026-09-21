@@ -110,6 +110,7 @@ _PALETTE_MAP: Final[dict[str, ColorHex]] = {
 }
 PALETTE: Final[Mapping[str, ColorHex]] = MappingProxyType(_PALETTE_MAP)
 
+# Exposición de colores fundamentales para acceso rápido
 C_SURFACE: Final[ColorHex] = _PALETTE_MAP["surface"]
 C_BACKGROUND: Final[ColorHex] = _PALETTE_MAP["background"]
 C_GLOW: Final[ColorHex] = _PALETTE_MAP["glow"]

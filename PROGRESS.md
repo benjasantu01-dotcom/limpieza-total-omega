@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **193** (38.4% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 24
 - Sin respuesta de la IA (error o límite): 233
 
@@ -16,29 +16,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 59 | 6 | 9 | 7 | 71 |
+| 2026-09-19 | 58 | 6 | 8 | 7 | 71 |
 | 2026-09-20 | 134 | 9 | 28 | 17 | 162 |
+| 2026-09-21 | 4 | 0 | 0 | 0 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **43**
 - robustez ante casos límite: **41**
 - manejo de errores y validación de entradas: **39**
-- rendimiento: **26**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **17**
+- `browser.py`: **18**
 - `settings.py`: **17**
 - `assistant.py`: **17**
-- `browser.py`: **17**
 - `healthscore.py`: **17**
+- `diskreport.py`: **17**
 - `memory.py`: **16**
+- `quarantine.py`: **16**
 - `safety.py`: **16**
-- `diskreport.py`: **16**
-- `duplicates.py`: **14**
-- `branding.py`: **12**
+- `duplicates.py`: **15**
+- `branding.py`: **13**
 - `scanner.py`: **11**
 - `organizer.py`: **10**
 - `startup.py`: **8**
@@ -46,6 +47,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T00:08:23` **duplicates.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo añadiendo docstrings técnicos con Type Hints en las funciones de hashing y filtrado, detallando la lógica de los estados de archivo y el flujo de resolución de rutas para evitar ambigüedades.
+- `2026-09-21T00:08:10` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de procesamiento de datos y clases auxiliares, aclarando las complejidades algorítmicas (O(N log K) y LIFO) y el propósito de cada estructura.
+- `2026-09-21T00:07:43` **browser.py** (legibilidad y documentación): Documenté con docstrings claros y tipado estricto las funciones de bajo nivel que interactúan con el sistema de archivos (`_is_junction_default`, `_get_kernel32`, `_is_unc_path`), eliminando ambigüedades sobre sus responsabilidades y condiciones de error.
+- `2026-09-21T00:07:16` **branding.py** (legibilidad y documentación): Mejora la legibilidad del módulo mediante la adición de Type Hints en parámetros faltantes y la normalización de la estructura de las constantes globales, facilitando el mantenimiento y la comprensión de las dependencias visuales.
 - `2026-09-20T14:57:12` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de comparación en `ProblemCriterion` reemplazando la lógica de control `if/else` en `_evaluate_metric` por una estructura de mapa de operadores más limpia, lo cual es una técnica recomendada para reducir la complejidad ciclomática sin cambiar el comportamiento.
 - `2026-09-20T14:47:33` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del sistema de validación de `settings.py` al reemplazar accesos directos al diccionario (`settings[k_val]`) por `settings.get()` con valores de respaldo, evitando `KeyError` ante archivos de configuración parcialmente corruptos o mal formados, y eliminé la mutabilidad directa en `validate` para asegurar un retorno seguro.
 - `2026-09-20T14:46:52` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `is_file_in_use` y `_is_volume_readonly` al asegurar que los handles y buffers se gestionen de forma segura, además de añadir un filtro de seguridad adicional en `_validate_boundary_conditions` para evitar el acceso a directorios del sistema durante la creación de nuevas rutas.
@@ -57,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-20T14:29:45` **duplicates.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `hash_file` y `partial_hash` para evitar el uso de `p.exists()` (que puede fallar por condiciones de carrera) delegando la validación robusta al bloque `try-except` existente, y añadí validación de tipos estricta para evitar excepciones innecesarias en el procesamiento de rutas.
 - `2026-09-20T14:29:19` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `summarize` y `_collect_summary_data`, evitando que el reporte falle por condiciones de carrera o archivos inexistentes, y reemplazando validaciones implícitas por chequeos explícitos para asegurar la integridad de los resultados.
 - `2026-09-20T14:25:58` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_kernel32` y `base_directories` ante entornos con configuraciones de entorno malformadas o permisos restringidos, asegurando que el módulo maneje entradas `None` o rutas inválidas sin levantar excepciones imprevistas.
-- `2026-09-20T14:18:10` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_handler_wrapper` reemplazando la captura de `Exception` genérica por una lógica que preserva el error original durante el desarrollo (para facilitar el debugging) y garantiza una respuesta de fallback segura en producción, además de asegurar que `SystemContext.ingest` valide explícitamente el tipo de los valores recibidos mediante un chequeo de `None` y `isinstance` más riguroso antes de procesar cualquier métrica.
-- `2026-09-20T12:44:39` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_locked` para utilizar `os.open` con `os.O_NOFOLLOW` y un manejo de excepciones más específico, asegurando que no se sigan enlaces simbólicos ni se acceda a recursos protegidos accidentalmente al testear bloqueos.
-- `2026-09-20T12:44:00` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_safe_for_disk_op` añadiendo una validación explícita de `is_protected_path` sobre la ruta origen resuelta antes de cualquier operación, asegurando que incluso si el archivo es movido, su origen de datos nunca sea una ruta protegida.
-- `2026-09-20T12:34:13` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del módulo encapsulando la lógica de cálculo en un entorno de ejecución robusto, asegurando que las reglas de recomendación no puedan inyectar contenido arbitrario o causar fallos en cadena mediante la validación estricta de las entradas al pipeline.
