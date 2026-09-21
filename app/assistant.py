@@ -651,6 +651,9 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     """Realiza la comunicación HTTP con Gemini mediante librería estándar."""
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): 
         return None
+    # Validación extra: No conectar si no hay contexto de datos
+    if not context_text: return None
+    
     payload = _build_payload(question, context_text)
     if not payload: return None
     
@@ -685,6 +688,11 @@ def ask(question: str, context: Optional[SystemContext] = None,
     try:
         settings_data = settings.load(base)
         cfg = _parse_config(settings_data)
+        
+        # Validar disponibilidad de métricas antes de intentar llamado remoto
+        if ctx.is_empty and cfg.allow_metrics:
+            return respaldo
+            
         texto_contexto = context_as_text(ctx) if cfg.allow_metrics else "El usuario no autorizó enviar métricas."
         remoto = _call_gemini(question, texto_contexto, cfg.api_key, cfg.model)
         if not remoto:

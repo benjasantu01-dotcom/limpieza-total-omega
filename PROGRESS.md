@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 0 | 0 | 0 | 0 | 6 |
+| 2026-09-19 | 0 | 0 | 0 | 0 | 2 |
 | 2026-09-20 | 134 | 9 | 28 | 17 | 162 |
-| 2026-09-21 | 81 | 3 | 17 | 4 | 43 |
+| 2026-09-21 | 84 | 4 | 17 | 4 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
+- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **43**
-- seguridad defensiva: **41**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **20**
 - `settings.py`: **19**
-- `browser.py`: **18**
+- `browser.py`: **19**
+- `assistant.py`: **18**
 - `diskreport.py`: **18**
 - `memory.py`: **18**
 - `quarantine.py`: **18**
-- `assistant.py`: **17**
 - `safety.py`: **17**
 - `duplicates.py`: **16**
 - `scanner.py`: **14**
-- `branding.py`: **12**
+- `branding.py`: **13**
 - `organizer.py`: **10**
 - `startup.py`: **9**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T06:25:56` **browser.py** (seguridad defensiva): Se introdujo la verificación `is_safe_to_modify` dentro del bucle de `_sum_directory_recursive` para asegurar que, ante cualquier cambio inesperado en el sistema de archivos durante el escaneo, la función mantenga el cumplimiento de las políticas de seguridad de la aplicación antes de procesar cada subdirectorio.
+- `2026-09-21T06:25:42` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la validación manual por `is_protected_path` antes de cualquier operación, asegurando que el directorio destino no sea una ruta sensible y centralizando la protección mediante los guards del sistema.
+- `2026-09-21T06:25:07` **assistant.py** (seguridad defensiva): Mejoré la seguridad del motor de consulta externa (`ask` y `_call_gemini`) validando que el contexto de las métricas no sea nulo ni esté vacío antes de intentar cualquier conexión, evitando así el envío de payloads malformados o inútiles hacia la API.
 - `2026-09-21T06:15:27` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante errores de lectura de disco (como archivos bloqueados por otros procesos o denegación de permisos) al envolver las operaciones de `open()` dentro de `_load_impl` en un bloque `try-except` más específico y añadiendo una validación explícita de `ruta.is_file()` para evitar excepciones innecesarias al intentar leer directorios.
 - `2026-09-21T06:15:10` **scanner.py** (robustez ante casos límite): Mejoré `_safe_stat` y los manejadores de heurísticas para tratar con robustez los archivos bloqueados o inaccesibles, evitando que una `PermissionError` o un archivo borrado justo después de ser listado interrumpan el análisis del resto del sistema.
 - `2026-09-21T06:14:44` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes o con rutas mal formadas durante el proceso de validación al agregar un chequeo de existencia temprana en `_validate_access_permissions` y `_is_readonly`, evitando excepciones innecesarias que podrían interrumpir el flujo de la aplicación.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T05:44:46` **assistant.py** (robustez ante casos límite): Se introdujo una validación defensiva en `_extract_text_from_gemini_json` para manejar estructuras JSON anidadas potencialmente maliciosas o malformadas, previniendo errores de acceso a atributos y asegurando que la respuesta siempre sea un string limpio, fortaleciendo la robustez ante datos externos inesperados.
 - `2026-09-21T05:36:29` **scanner.py** (rendimiento): Optimizé `_is_relevant_extension` reemplazando la creación dinámica de `splitext` y llamadas a `os.path.splitext` en cada iteración del bucle, utilizando en su lugar una verificación directa de sufijos con el `frozenset` `SUSPICIOUS_ALL_EXTS` para reducir la sobrecarga de CPU durante el recorrido de grandes directorios.
 - `2026-09-21T05:25:03` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo `_process_directory` implementando un caché de rutas resueltas (`set`) para evitar llamadas redundantes y costosas a `.resolve()` sobre directorios ya visitados, reduciendo la complejidad de I/O durante la recursión.
-- `2026-09-21T05:24:22` **main.py** (rendimiento): Se ha implementado un mecanismo de "Caché de Eventos de Salud" (a través de `_last_health_state`) para evitar el redibujo innecesario y el cálculo redundante de las métricas visuales del dashboard cuando el estado del sistema no ha cambiado entre iteraciones.
-- `2026-09-21T05:23:10` **healthscore.py** (rendimiento): Se optimizó el cálculo en `compute_score` evitando redondeos innecesarios y recalculando el `final_score` como una suma directa de enteros para reducir el uso de `float` y mejorar la eficiencia del pipeline.
-- `2026-09-21T05:17:57` **duplicates.py** (rendimiento): Optimizé la performance del escaneo inicial en `_collect_candidates` evitando llamadas redundantes a `is_safe_to_modify` y `_is_file_locked` al consolidar las comprobaciones en un flujo de una sola pasada y reutilizando el valor `stat` ya obtenido del sistema de archivos.

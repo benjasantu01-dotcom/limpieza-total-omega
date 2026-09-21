@@ -656,3 +656,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T06:15:27` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante errores de lectura de disco (como archivos bloqueados por otros procesos o denegación de permisos) al envolver las operaciones de `open()` dentro de `_load_impl` en un bloque `try-except` más específico y añadiendo una validación explícita de `ruta.is_file()` para evitar excepciones innecesarias al intentar leer directorios.
 - `2026-09-21T06:15:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T06:15:27` Corrida terminada. Total usado hoy: 148.
+- `2026-09-21T06:23:54` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-09-21T06:24:25` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.39s
+
+```
+- `2026-09-21T06:24:25` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado `_resolve_and_cache_path` para incluir un manejo defensivo ante la posibilidad de rutas inexistentes o inaccesibles que disparan excepciones, asegurando que la aplicación no intente resolver rutas malformadas o en unidades desconectadas de manera recursiva, fortaleciendo la robustez ante entornos de archivos inestables o casos límite en el sistema de archivos.
+- `2026-09-21T06:25:07` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad del motor de consulta externa (`ask` y `_call_gemini`) validando que el contexto de las métricas no sea nulo ni esté vacío antes de intentar cualquier conexión, evitando así el envío de payloads malformados o inútiles hacia la API.
+- `2026-09-21T06:25:42` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la validación manual por `is_protected_path` antes de cualquier operación, asegurando que el directorio destino no sea una ruta sensible y centralizando la protección mediante los guards del sistema.
+- `2026-09-21T06:25:56` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se introdujo la verificación `is_safe_to_modify` dentro del bucle de `_sum_directory_recursive` para asegurar que, ante cualquier cambio inesperado en el sistema de archivos durante el escaneo, la función mantenga el cumplimiento de las políticas de seguridad de la aplicación antes de procesar cada subdirectorio.
+- `2026-09-21T06:25:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T06:25:56` Corrida terminada. Total usado hoy: 152.
