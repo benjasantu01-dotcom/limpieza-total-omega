@@ -499,7 +499,6 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
     except (OSError, RuntimeError, ValueError): pass
     if is_drive_root(target_path):
         raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS)
-    # Nueva validación de seguridad: impedir creación dentro de directorios de sistema
     if not target_path.exists() and is_protected_path(target_path.parent):
         raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
 

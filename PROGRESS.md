@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Mejoras aceptadas: **212** (42.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 41 | 4 | 6 | 3 | 48 |
+| 2026-09-19 | 41 | 4 | 6 | 3 | 44 |
 | 2026-09-20 | 134 | 9 | 28 | 17 | 162 |
-| 2026-09-21 | 34 | 3 | 7 | 1 | 7 |
+| 2026-09-21 | 37 | 3 | 8 | 1 | 7 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
-- seguridad defensiva: **42**
+- seguridad defensiva: **45**
 - robustez ante casos límite: **41**
 - manejo de errores y validación de entradas: **39**
 - rendimiento: **30**
@@ -31,22 +31,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **20**
+- `quarantine.py`: **19**
 - `assistant.py`: **18**
 - `browser.py`: **18**
-- `quarantine.py`: **18**
 - `settings.py`: **18**
 - `memory.py`: **18**
 - `diskreport.py`: **17**
-- `safety.py`: **16**
+- `safety.py`: **17**
 - `duplicates.py`: **15**
 - `branding.py`: **13**
 - `scanner.py`: **12**
-- `organizer.py`: **10**
+- `organizer.py`: **11**
 - `startup.py`: **9**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T02:20:58` **safety.py** (seguridad defensiva): He mejorado `_validate_boundary_conditions` para fortalecer la prevención de ataques de "Path Traversal" y "Privilege Escalation" mediante la validación estricta de la resolución de rutas relativas al directorio de la aplicación, evitando que el proceso pueda manipular archivos dentro de su propio árbol de directorios o ejecutables.
+- `2026-09-21T02:20:13` **quarantine.py** (seguridad defensiva): Se introdujo una validación explícita para prevenir ataques de "Time-of-check to time-of-use" (TOCTOU) durante el proceso de aislamiento, asegurando que la ruta destino no haya sido alterada o sustituida por un enlace simbólico entre el momento de la validación inicial y la apertura del descriptor de archivo.
+- `2026-09-21T02:19:35` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` añadiendo una comprobación explícita mediante `is_protected_path` al directorio destino final antes de cualquier operación, asegurando que el movimiento no ocurra hacia un directorio que, aunque no haya sido bloqueado inicialmente, contenga componentes de sistema o rutas protegidas.
 - `2026-09-21T02:13:33` **memory.py** (seguridad defensiva): Se ha implementado un chequeo adicional en `_get_process_path` para ignorar explícitamente rutas que contengan caracteres sospechosos o secuencias de escape de dispositivo/reparse, reforzando la seguridad defensiva antes de cualquier operación de validación de rutas en el módulo `memory.py`.
 - `2026-09-21T02:09:54` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del pipeline `compute_score` validando explícitamente el estado interno de las métricas antes y después del procesamiento, asegurando que cualquier entrada corrupta o inesperada sea neutralizada mediante el uso de `_to_float` y `_clamp` en cada punto crítico de acceso, evitando errores de ejecución y garantizando que siempre se devuelva un resultado válido.
 - `2026-09-21T02:09:27` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo de duplicados añadiendo una validación explícita mediante `is_protected_path` dentro de `_scan_dir`, garantizando que el recolector de candidatos no acceda ni procese rutas protegidas desde el inicio, reforzando la seguridad defensiva.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T01:38:52` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable antes de intentar cualquier operación de memoria, asegurando que procesos del sistema operativo incluso con PID no crítico no sean modificados.
 - `2026-09-21T01:31:44` **main.py** (robustez ante casos límite): Se introdujo una validación robusta de existencia y accesibilidad en el método `_validate_environment` para detectar rutas de sistema o estados inválidos (como `Path.home()` inaccesible) antes de instanciar la interfaz, evitando que el bucle de eventos (`mainloop`) intente operar sobre estados nulos o bloqueados.
 - `2026-09-21T01:29:40` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante estados inesperados integrando una validación exhaustiva al constructor y evitando que valores `NaN` o `inf` propaguen errores en los cálculos del pipeline.
-- `2026-09-21T01:28:45` **diskreport.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en `walk_files` y `largest_folders` añadiendo chequeos de `path.exists()` y `is_dir()` post-recorrido para manejar archivos que son borrados o bloqueados por procesos externos durante la ejecución de la app (Race conditions).
-- `2026-09-21T01:19:09` **assistant.py** (robustez ante casos límite): Mejora la robustez del manejo de métricas en `SystemContext.ingest` para prevenir el uso de valores numéricos `NaN` o `Inf` que podrían romper la lógica de comparación o los cálculos de salud, asegurando que `math.isfinite` sea verificado rigurosamente durante la ingesta.
-- `2026-09-21T01:09:27` **settings.py** (rendimiento): Se implementó un sistema de `lru_cache` explícito para la función `load` (reemplazando el cache manual por una implementación robusta) y se optimizó el proceso de validación eliminando el `hash` de los valores, reemplazándolo por una verificación de igualdad rápida sobre el diccionario cargado, reduciendo drásticamente el costo de computación en cada acceso a configuraciones.

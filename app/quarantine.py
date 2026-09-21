@@ -536,10 +536,16 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
         if not (stat_src.st_mode & 0o100000): 
             raise OSError("El archivo origen no es un archivo regular.")
             
+        # TOCTOU Protection: abrir con flags O_EXCL para asegurar creación nueva,
+        # luego verificar de nuevo que el destino no es un enlace simbólico creado maliciosamente.
         flags: int = os.O_WRONLY | os.O_CREAT | os.O_EXCL
         mode: int = 0o600
         fd_dest: int = os.open(str(destination), flags, mode)
         try:
+            # Validar nuevamente que no es un symlink (TOCTOU protection)
+            if destination.is_symlink():
+                raise UnsafePathError("Intento de ataque symlink detectado durante la escritura.")
+                
             with os.fdopen(fd_src, 'rb') as src_file, os.fdopen(fd_dest, 'wb') as dst_file:
                 shutil.copyfileobj(src_file, dst_file)
                 dst_file.flush()
@@ -555,7 +561,8 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
             raise e
             
     except Exception as e:
-        os.close(fd_src)
+        # fd_src ya está gestionado por el try/except, el descriptor de fd_dest es cerrado por os.fdopen/bloque try
+        if 'fd_src' in locals(): os.close(fd_src)
         raise e
         
     final_hash = _get_sha256(destination)
