@@ -9,43 +9,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **212** (42.1% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 46
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 217
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 95 | 6 | 19 | 11 | 129 |
-| 2026-09-21 | 117 | 6 | 27 | 6 | 88 |
+| 2026-09-20 | 93 | 6 | 19 | 11 | 127 |
+| 2026-09-21 | 119 | 6 | 27 | 7 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **42**
-- robustez ante casos límite: **37**
+- seguridad defensiva: **40**
+- robustez ante casos límite: **39**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **18**
 - `quarantine.py`: **18**
 - `browser.py`: **18**
 - `assistant.py`: **18**
-- `safety.py`: **17**
-- `settings.py`: **17**
 - `diskreport.py`: **17**
-- `memory.py`: **17**
 - `duplicates.py`: **17**
+- `safety.py`: **16**
+- `settings.py`: **16**
 - `healthscore.py`: **16**
 - `branding.py`: **14**
+- `organizer.py`: **13**
 - `scanner.py`: **13**
-- `organizer.py`: **12**
 - `startup.py`: **9**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T10:34:51` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_safe_for_disk_op` añadiendo una verificación de existencia real mediante `path.exists()` antes de realizar chequeos de estado, evitando excepciones innecesarias en condiciones de carrera (Race Conditions) donde un archivo es borrado por el sistema entre la detección y la manipulación.
+- `2026-09-21T10:34:39` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` al implementar una validación estricta contra entradas malformadas o PIDs negativos, evitando errores de casting durante el procesamiento de datos asíncronos y garantizando que el bucle de diagnóstico no se rompa ante texto inesperado de PowerShell.
 - `2026-09-21T10:20:49` **browser.py** (robustez ante casos límite): Se mejora la robustez frente a errores de I/O en `_sum_directory_recursive` asegurando que la llamada a `os.scandir` gestione el contexto de forma segura ante carpetas con permisos restringidos, evitando propagar excepciones de acceso a niveles superiores.
 - `2026-09-21T10:20:17` **branding.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `save_logo_svg` utilizando `try-except` específico para operaciones de sistema de archivos, asegurando que cualquier fallo en la resolución de rutas, creación de directorios o escritura sea capturado sin detener la ejecución de la UI, respetando los protocolos de seguridad existentes.
 - `2026-09-21T10:11:28` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` ante entradas malformadas o tipos inesperados, añadiendo un chequeo de tipo más estricto y un manejo de errores más defensivo al procesar el `source` para evitar excepciones no controladas durante la ingesta de datos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T09:29:22` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `_check_file_integrity` extrayendo la lógica compleja de evaluación de reglas a una función con nombre explicativo, documentando mejor el flujo de seguridad para evitar errores de interpretación en futuras iteraciones.
 - `2026-09-21T09:20:13` **quarantine.py** (legibilidad y documentación): He mejorado la documentación y legibilidad interna añadiendo docstrings descriptivos con las causas de las excepciones en las funciones críticas de validación y persistencia (`_check_isolation_safety`, `_validate_isolation_request`, `_write_temp_to_final`), facilitando la depuración y auditoría del comportamiento ante fallos de seguridad.
 - `2026-09-21T09:19:32` **organizer.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones clave de validación y escaneo para mejorar la legibilidad y facilitar el mantenimiento del flujo lógico complejo.
-- `2026-09-21T09:19:02` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, documentación explícita de parámetros en funciones críticas y la sustitución de constantes mágicas por nombres descriptivos, facilitando el mantenimiento para otros desarrolladores.
-- `2026-09-21T09:09:20` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `duplicates.py` añadiendo type hints más precisos, unificando la documentación mediante docstrings claros y estandarizando el manejo de errores en funciones críticas para evitar la propagación de excepciones silenciosas.

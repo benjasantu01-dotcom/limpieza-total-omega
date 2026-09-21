@@ -180,7 +180,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     Coordina todas las validaciones de seguridad necesarias antes de realizar
     una operación de disco (recursión, permisos, atributos y protección).
     """
-    if src is None or dest is None or not is_safe_to_modify(src): return False
+    if src is None or dest is None or not src.exists() or not is_safe_to_modify(src): return False
     if not _validate_path_security(src, dest): return False
         
     try:

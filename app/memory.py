@@ -198,16 +198,22 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         line = line.strip()
         if not line: continue
         
-        # Uso de split con maxsplit para evitar exceso de particiones
         parts = line.split(",", 2)
         if len(parts) < 3: continue
         
-        name = parts[0].strip("'\" ")
-        pid = int("".join(c for c in parts[1] if c.isdigit()) or 0)
-        ws = int("".join(c for c in parts[2] if c.isdigit()) or 0)
-        
-        if pid > 0 and ws >= 0:
-            results.append(ProcessMemory(name=name, pid=pid, working_set=BytesValue(ws)))
+        try:
+            name = parts[0].strip("'\" ")
+            # Validamos que los valores sean numéricos antes de crear el objeto
+            raw_pid = "".join(c for c in parts[1] if c.isdigit())
+            raw_ws = "".join(c for c in parts[2] if c.isdigit())
+            
+            if not raw_pid or not raw_ws: continue
+            
+            pid, ws = int(raw_pid), int(raw_ws)
+            if pid > 0 and ws >= 0:
+                results.append(ProcessMemory(name=name, pid=pid, working_set=BytesValue(ws)))
+        except (ValueError, TypeError):
+            continue
     
     results.sort(key=lambda p: p.working_set, reverse=True)
     return results[:limit]
