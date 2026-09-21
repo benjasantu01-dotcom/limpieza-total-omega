@@ -326,7 +326,7 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 }
 
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
-    """Verifica metadatos en disco y compara con estado inicial para prevenir ataques TOCTOU."""
+    """Verifica metadatos en disco y compara con estado inicial para prevenir ataques TOCTOU (Time-of-check to time-of-use)."""
     if not path.exists():
         raise UnsafePathError(f"Archivo ya no existe: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     try:
@@ -334,7 +334,7 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     except (PermissionError, OSError) as e:
         raise UnsafePathError(f"Acceso denegado a metadatos ({e}): {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     
-    # Si la identidad del archivo cambia mientras validamos, abortar para evitar Race Conditions
+    # Si la identidad del archivo cambia mientras validamos (dev/inode), abortar para evitar Race Conditions
     if getattr(current_stat, 'st_dev', 0) != initial_stat.st_dev or getattr(current_stat, 'st_ino', 0) != initial_stat.st_ino:
         raise UnsafePathError(f"Consistencia fallida (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
     
@@ -430,7 +430,10 @@ def is_sensitive_file(path: PathLike) -> bool:
     except (TypeError, ValueError, OSError): return True 
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
-    """Valida la estructura de la cadena de ruta buscando inyecciones o caracteres prohibidos."""
+    """
+    Realiza una validación puramente estructural de la ruta: detecta inyecciones de 
+    caracteres, path traversal (..), longitudes excesivas y nombres de dispositivos reservados.
+    """
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
     if ".." in path_string.split(os.sep):
@@ -466,7 +469,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Rutas UNC bloqueadas.", SafetyValidationErrorCode.UNC_PATH)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
-    """Verifica que el destino de la operación no rompa el alcance y sea una unidad permitida."""
+    """Verifica que la operación se limite a directorios permitidos y unidades de disco autorizadas."""
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):

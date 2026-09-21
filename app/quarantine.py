@@ -483,12 +483,8 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
         raise OSError("Espacio insuficiente en disco.")
 
 
-def _write_temp_to_final(source: Path, destination: Path) -> str:
-    """
-    Realiza una copia física segura del archivo origen al sandbox usando 
-    descriptores de archivo para evitar condiciones de carrera o bloqueos.
-    """
-    _check_path_syntax_integrity(destination)
+def _validate_file_transfer_preconditions(source: Path, destination: Path) -> None:
+    """Valida los permisos y seguridad de los paths antes de la transferencia física."""
     if is_protected_path(destination):
         raise UnsafePathError("Destino en ruta protegida.")
     if not is_safe_to_modify(destination.parent):
@@ -512,6 +508,15 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
 
     if destination.exists():
         raise FileExistsError(f"El destino ya existe: {destination}")
+
+
+def _write_temp_to_final(source: Path, destination: Path) -> str:
+    """
+    Realiza una copia física segura del archivo origen al sandbox usando 
+    descriptores de archivo para evitar condiciones de carrera o bloqueos.
+    """
+    _check_path_syntax_integrity(destination)
+    _validate_file_transfer_preconditions(source, destination)
 
     # Capturar estado inicial para detectar cambios en vuelo
     try:
