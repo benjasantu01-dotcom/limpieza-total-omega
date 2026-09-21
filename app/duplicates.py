@@ -97,7 +97,9 @@ def _is_file_locked(path: Path) -> bool:
         with open(path, 'rb') as f:
             f.read(1)
         return False
-    except (OSError, PermissionError, FileNotFoundError, BlockingIOError, IsADirectoryError, EOFError):
+    except (PermissionError, BlockingIOError, OSError):
+        return True
+    except (FileNotFoundError, IsADirectoryError, EOFError):
         return True
 
 

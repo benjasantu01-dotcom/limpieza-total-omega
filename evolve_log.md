@@ -939,3 +939,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T08:20:29` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-21T08:20:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T08:20:29` Corrida terminada. Total usado hoy: 196.
+- `2026-09-21T08:27:23` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-09-21T08:27:51` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-21T08:28:18` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` capturando fallos en `Path.exists()` y `Path.is_dir()` para evitar excepciones inesperadas al procesar rutas que cambian de estado durante la iteración.
+- `2026-09-21T08:28:45` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejora el manejo de errores en `_is_file_locked` y `_collect_candidates` para evitar que excepciones imprevistas (como `OSError` al acceder a atributos de archivo) interrumpan silenciosamente la ejecución o ignoren estados de error, utilizando un manejo más específico y robusto.
+- `2026-09-21T08:28:55` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: SystemMetrics.is_finite
+- `2026-09-21T08:28:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T08:28:55` Corrida terminada. Total usado hoy: 200.

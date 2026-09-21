@@ -215,7 +215,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
     try:
         p = Path(mount).resolve()
-        if not is_protected_path(p):
+        if p.exists() and not is_protected_path(p):
             usage = shutil.disk_usage(p)
             return DriveUsage(str(p), usage.total, usage.used, usage.free)
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError):
@@ -239,11 +239,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
     Yields:
         Tuplas (Path, int) conteniendo la ruta del archivo y su tamaño en bytes.
-
-    Technical Details:
-        - Evita recursión para prevenir stack overflow en árboles profundos.
-        - Implementa `visited_inodes` para detectar ciclos en enlaces simbólicos y junctions.
-        - Complejidad temporal O(N) donde N es el número total de archivos/carpetas.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -270,14 +265,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 stack.append(path)
                                 
                         elif entry.is_file(follow_symlinks=False):
-                            # Chequeo defensivo adicional antes de emitir un archivo
                             if skip_protected and is_protected_path(Path(entry.path)): continue
                             if st.st_size >= 0:
                                 yield Path(entry.path), st.st_size
                             
                     except (PermissionError, OSError):
                         continue
-        except (PermissionError, OSError):
+        except (PermissionError, OSError, FileNotFoundError):
             continue
 
 
@@ -299,11 +293,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """
-    Identifica las subcarpetas de primer nivel con mayor consumo de espacio.
-    Agrega recursivamente el peso total de todos los archivos hijos a sus respectivos
-    nodos padre de primer nivel.
-    """
+    """Identifica las subcarpetas de primer nivel con mayor consumo de espacio."""
     root = _validate_root(directory)
     if not root: return []
     folder_total_bytes: Dict[Path, int] = defaultdict(int)
@@ -334,16 +324,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """
-    Agrega estadísticas globales de un árbol de directorios en una pasada única.
-
-    Realiza el cálculo de uso por extensión y mantiene un Min-Heap de tamaño `limit`
-    para gestionar la lista de archivos más grandes.
-    
-    Complexity:
-        - Tiempo: O(N log K), donde N es el total de archivos y K es el `limit` del heap.
-        - Espacio: O(E + K), siendo E la cantidad de extensiones únicas encontradas.
-    """
+    """Agrega estadísticas globales de un árbol de directorios en una pasada única."""
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
@@ -369,11 +350,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
-    """
-    Genera un informe textual unificado del uso de disco.
-    Formatea los datos recopilados por `_collect_summary_data` en un formato legible
-    preparado para ser renderizado en la interfaz de usuario.
-    """
+    """Genera un informe textual unificado del uso de disco."""
     root = _validate_root(directory)
     if root is None: return ["Error: Ruta no válida o inaccesible."]
     
@@ -390,7 +367,10 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if data.top_files:
         lines.extend(["", "Mayores archivos:"])
         for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
-            if p is not None and p.exists():
-                lines.append(f"  {format_size(s):>10}  {str(p)}")
+            try:
+                if p.exists():
+                    lines.append(f"  {format_size(s):>10}  {str(p)}")
+            except OSError:
+                continue
     
     return lines
