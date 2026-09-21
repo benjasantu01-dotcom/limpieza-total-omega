@@ -5,40 +5,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Iteraciones totales: **503**
+- Mejoras aceptadas: **197** (39.2% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 53
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 53 | 5 | 14 | 8 | 77 |
-| 2026-09-21 | 144 | 10 | 39 | 8 | 146 |
+| 2026-09-20 | 52 | 5 | 11 | 8 | 77 |
+| 2026-09-21 | 145 | 10 | 39 | 8 | 148 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **38**
-- robustez ante casos límite: **31**
+- seguridad defensiva: **37**
+- robustez ante casos límite: **32**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
 - `assistant.py`: **18**
+- `quarantine.py`: **18**
 - `browser.py`: **17**
 - `duplicates.py`: **17**
 - `diskreport.py`: **16**
 - `memory.py`: **16**
 - `safety.py`: **16**
 - `settings.py`: **15**
+- `healthscore.py`: **14**
 - `branding.py`: **13**
-- `healthscore.py`: **13**
 - `scanner.py`: **12**
 - `organizer.py`: **11**
 - `startup.py`: **7**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T15:01:41` **healthscore.py** (robustez ante casos límite): Mejoré la resiliencia del motor ante datos incoherentes o métricas que escapan a los rangos previstos durante el cálculo, integrando validación estricta y protección contra desbordamientos en el `PipelineEntry` y el bucle principal.
 - `2026-09-21T14:40:44` **safety.py** (rendimiento): Se implementó un decorador `lru_cache` con un `maxsize` ajustado para la función `_is_sensitive_extension` y se optimizó `is_sensitive_file` para evitar la creación de objetos `Path` innecesarios en cada llamada, mejorando significativamente el rendimiento al escanear grandes volúmenes de archivos.
 - `2026-09-21T14:30:08` **quarantine.py** (rendimiento): Optimizé `list_items` y `purge_all` para evitar lecturas de disco innecesarias y el uso de listas temporales redundantes mediante el uso de conjuntos (`set`) para las búsquedas de metadatos, reduciendo la complejidad algorítmica de O(N*M) a O(N+M).
 - `2026-09-21T14:08:58` **branding.py** (rendimiento): Optimicé el cálculo de `_get_scaled_poly` reemplazando la lógica de comprensión de listas con una tupla precalculada y escalado matemático directo, reduciendo la carga de procesamiento en cada frame de dibujo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T13:24:51` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_load_impl` y `save` mediante el uso de bloques `try-except` más granulares y la validación explícita del estado del archivo (existencia y permisos) antes de intentar operaciones de lectura/escritura, evitando errores de E/S no controlados durante la carga o persistencia de configuración.
 - `2026-09-21T13:21:04` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_volume_readonly` para manejar correctamente errores de bajo nivel en llamadas a `ctypes` y se añadió una validación defensiva en `_is_file_in_use` para prevenir errores de tipo cuando se manejan rutas problemáticas, asegurando que `safety.py` no colapse ante entradas inesperadas.
 - `2026-09-21T12:54:16` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `format_size` y `_bytes_to_mb` mediante una validación de tipo más estricta y el manejo explícito de valores negativos, evitando divisiones por cero o cálculos erróneos que podrían romper la UI en reportes malformados.
-- `2026-09-21T12:53:50` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `__is_system_hidden` y `_should_skip_entry` al manejar explícitamente posibles errores de llamada al sistema mediante `ctypes` y validación de tipos, evitando que excepciones inesperadas interrumpan el escaneo de directorios.
