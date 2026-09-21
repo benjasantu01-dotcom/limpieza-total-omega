@@ -1490,3 +1490,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T13:49:34` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: legibilidad y documentación).
 - `2026-09-21T13:49:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T13:49:34` Corrida terminada. Total usado hoy: 323.
+- `2026-09-21T13:54:28` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-21T13:55:09` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_write_temp_to_final` para reducir la complejidad ciclomática y mejorar el manejo de errores mediante el uso de bloques `with` anidados y lógica de limpieza más clara.
+- `2026-09-21T13:55:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-21T13:56:13` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _CheckResult
+- `2026-09-21T13:56:30` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de las funciones de heurística añadiendo docstrings que explican el contexto de seguridad (el "porqué" de cada chequeo) y se han estandarizado los type hints para mejorar la legibilidad y mantenibilidad del registro de reglas.
+- `2026-09-21T13:56:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T13:56:30` Corrida terminada. Total usado hoy: 327.

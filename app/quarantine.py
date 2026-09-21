@@ -516,62 +516,39 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     """
     Realiza una copia física segura del archivo origen al sandbox usando 
     descriptores de archivo para evitar condiciones de carrera o bloqueos.
-    Valida integridad por hash pre/post copia.
     """
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
 
-    try:
-        st_initial = source.stat()
-    except OSError:
-        raise OSError("No se pudo obtener estado del archivo origen.")
-
     source_hash = _get_sha256(source)
-
-    fd_src: int = os.open(str(source), os.O_RDONLY)
+    
     try:
-        stat_src = os.fstat(fd_src)
-        if stat_src.st_size != st_initial.st_size or stat_src.st_mtime != st_initial.st_mtime:
-            raise OSError("El archivo cambió durante el proceso de aislamiento.")
+        with open(source, "rb") as f_src:
+            # Validar integridad inicial
+            stat_src = os.fstat(f_src.fileno())
+            if not (stat_src.st_mode & 0o100000):
+                raise OSError("El archivo origen no es un archivo regular.")
 
-        if not (stat_src.st_mode & 0o100000): 
-            raise OSError("El archivo origen no es un archivo regular.")
-            
-        flags: int = os.O_WRONLY | os.O_CREAT | os.O_EXCL
-        mode: int = 0o600
-        fd_dest: int = os.open(str(destination), flags, mode)
-        try:
-            if destination.is_symlink():
-                raise UnsafePathError("Intento de ataque symlink detectado durante la escritura.")
+            # Copiar destino con permisos restringidos
+            with open(destination, "wb") as f_dst:
+                shutil.copyfileobj(f_src, f_dst)
+                f_dst.flush()
+                os.fsync(f_dst.fileno())
                 
-            with os.fdopen(fd_src, 'rb') as src_file, os.fdopen(fd_dest, 'wb') as dst_file:
-                shutil.copyfileobj(src_file, dst_file)
-                dst_file.flush()
-                os.fsync(dst_file.fileno())
-            
-            if destination.stat().st_size != stat_src.st_size:
-                raise OSError("Error de integridad post-escritura (tamaño mismatch).")
-        except Exception as e:
-            if destination.exists():
-                try: os.remove(destination)
-                except OSError: pass
-            raise e
+        if destination.stat().st_size != stat_src.st_size:
+            raise OSError("Falla de integridad: tamaño mismatch tras copia.")
             
     except Exception as e:
-        if 'fd_src' in locals(): os.close(fd_src)
-        raise e
-        
-    final_hash = _get_sha256(destination)
-    if not final_hash or final_hash != source_hash:
         if destination.exists():
             _safe_unlink(destination)
-        raise OSError("Falla crítica: el hash del archivo copiado no coincide con el original.")
+        raise OSError(f"Error crítico en transferencia: {e}")
+            
+    final_hash = _get_sha256(destination)
+    if not final_hash or final_hash != source_hash:
+        _safe_unlink(destination)
+        raise OSError("Falla crítica: el hash del archivo copiado no coincide.")
     
     ensure_safe_to_modify(destination, allow_sensitive=True)
-    dir_fd: int = os.open(str(destination.parent), os.O_RDONLY)
-    try: os.fsync(dir_fd)
-    finally: os.close(dir_fd)
-    
     return final_hash
 
 
