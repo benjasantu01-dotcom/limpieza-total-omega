@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-19 | 18 | 3 | 4 | 2 | 27 |
+| 2026-09-19 | 16 | 3 | 4 | 2 | 25 |
 | 2026-09-20 | 134 | 9 | 28 | 17 | 162 |
-| 2026-09-21 | 49 | 3 | 9 | 1 | 38 |
+| 2026-09-21 | 53 | 3 | 9 | 1 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
 - legibilidad y documentación: **45**
+- manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **39**
-- rendimiento: **28**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **19**
+- `settings.py`: **19**
 - `memory.py`: **18**
-- `settings.py`: **18**
+- `healthscore.py`: **18**
 - `quarantine.py`: **18**
-- `browser.py`: **17**
 - `assistant.py`: **16**
+- `browser.py`: **16**
+- `safety.py`: **16**
 - `diskreport.py`: **16**
 - `duplicates.py`: **15**
-- `safety.py`: **15**
 - `branding.py`: **12**
-- `scanner.py`: **11**
+- `scanner.py`: **12**
 - `organizer.py`: **10**
+- `startup.py`: **9**
 - `main.py`: **8**
-- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T04:23:23` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que los nombres de columnas coincidan con las expectativas del CSV, evitando errores de `KeyError` o acceso a índices vacíos cuando la salida de PowerShell es inesperada.
+- `2026-09-21T04:23:10` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` reemplazando llamadas redundantes a `ensure_safe_to_modify` por un manejo de errores más específico y seguro, garantizando que si una operación de escritura falla, el estado interno de los archivos temporales se limpie correctamente sin ocultar excepciones críticas.
+- `2026-09-21T04:22:40` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_safe_stat` y las funciones de validación de rutas mediante la inclusión de `AttributeError` en los bloques de excepción, asegurando que el scanner no colapse ante objetos `os.DirEntry` malformados o sistemas de archivos con metadatos inesperados.
+- `2026-09-21T04:22:14` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` capturando explícitamente posibles errores durante la resolución de rutas y el acceso a metadatos, evitando que `UnsafePathError` se propague con mensajes genéricos o inesperados, y asegurando que las excepciones externas (como `PermissionError`) se conviertan correctamente a `UnsafePathError` con su código correspondiente para mejorar la trazabilidad.
 - `2026-09-21T04:12:56` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `purge_all` y `list_items` reemplazando bloques `except` genéricos que silenciaban fallos operativos por capturas de excepciones específicas (`OSError`, `PermissionError`), y añadí una validación explícita para evitar que `purge_all` intente operar sobre el archivo de manifiesto si no es un archivo regular o está bloqueado.
 - `2026-09-21T04:11:47` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la lectura de métricas de memoria al encapsular la conversión de datos en una función con manejo estricto de excepciones, evitando errores de desbordamiento o valores corruptos que podrían invalidar los cálculos de `MemorySnapshot`.
 - `2026-09-21T04:03:36` **main.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en el método `on_trim_process` para asegurar que el PID sea validado como un entero positivo y existente antes de intentar cualquier operación, evitando excepciones no capturadas al interactuar con el sistema de procesos.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T03:52:40` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `ask()` y `_call_gemini` mediante la captura explícita de `urllib.error.HTTPError`, evitando que errores de red (como 401 o 403) se traguen de forma genérica, y asegura que la validación `_ensure_safe_text` sea el filtro final indiscutible antes de cualquier retorno.
 - `2026-09-21T02:30:51` **startup.py** (seguridad defensiva): Mejoré `entries_from_folders` para verificar si una ruta es un punto de reparse (como una unión de directorios) usando `is_symlink()` de forma consistente, evitando así bucles infinitos o el seguimiento no intencionado de estructuras fuera de la jerarquía esperada.
 - `2026-09-21T02:30:23` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` aplicando `ensure_safe_to_modify` en la lectura del archivo de configuración (antes de abrirlo), garantizando que no se procesen archivos que hayan sido reemplazados por enlaces simbólicos malintencionados (puntos de reparse) después de haber verificado la ruta, manteniendo la coherencia con las reglas de seguridad.
-- `2026-09-21T02:29:52` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo una validación explícita de `is_protected_path` al inicio de cada iteración de entrada, asegurando que cualquier entrada sea validada contra las listas negras antes de cualquier operación, incluso si ya pasó el filtro de estructura de ruta.
-- `2026-09-21T02:20:58` **safety.py** (seguridad defensiva): He mejorado `_validate_boundary_conditions` para fortalecer la prevención de ataques de "Path Traversal" y "Privilege Escalation" mediante la validación estricta de la resolución de rutas relativas al directorio de la aplicación, evitando que el proceso pueda manipular archivos dentro de su propio árbol de directorios o ejecutables.
-- `2026-09-21T02:20:13` **quarantine.py** (seguridad defensiva): Se introdujo una validación explícita para prevenir ataques de "Time-of-check to time-of-use" (TOCTOU) durante el proceso de aislamiento, asegurando que la ruta destino no haya sido alterada o sustituida por un enlace simbólico entre el momento de la validación inicial y la apertura del descriptor de archivo.
-- `2026-09-21T02:19:35` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` añadiendo una comprobación explícita mediante `is_protected_path` al directorio destino final antes de cualquier operación, asegurando que el movimiento no ocurra hacia un directorio que, aunque no haya sido bloqueado inicialmente, contenga componentes de sistema o rutas protegidas.

@@ -357,21 +357,17 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.write(serialized)
             f.flush()
             os.fsync(f.fileno())
-        ensure_safe_to_modify(temp_path)
         if ruta.exists():
             ensure_safe_to_modify(ruta)
-            try: os.replace(ruta, bak_path)
-            except OSError: pass
+            os.replace(ruta, bak_path)
         os.replace(temp_path, ruta)
         _load_impl.cache_clear()
         return ruta
     except (OSError, IOError, PermissionError, UnsafePathError): return None
     finally:
         if temp_path.exists():
-            try:
-                ensure_safe_to_modify(temp_path)
-                os.remove(temp_path)
-            except (OSError, UnsafePathError): pass
+            try: os.remove(temp_path)
+            except OSError: pass
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     """Actualiza selectivamente las preferencias del usuario."""

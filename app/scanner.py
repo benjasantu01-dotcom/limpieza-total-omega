@@ -99,10 +99,14 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not path or not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     
-    if entry and entry.is_file(follow_symlinks=False):
-        stats = _safe_stat(entry)
-        if stats and hasattr(stats, 'st_mtime') and (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
-            return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
+    if entry:
+        try:
+            if entry.is_file(follow_symlinks=False):
+                stats = _safe_stat(entry)
+                if stats and hasattr(stats, 'st_mtime') and (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
+                    return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
+        except (OSError, AttributeError):
+            pass
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
@@ -115,10 +119,14 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta archivos ejecutables vacíos (0 bytes), a menudo usados en ataques de omisión."""
-    if entry and entry.is_file(follow_symlinks=False):
-        stats = _safe_stat(entry)
-        if stats and stats.st_size == 0:
-            return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
+    if entry:
+        try:
+            if entry.is_file(follow_symlinks=False):
+                stats = _safe_stat(entry)
+                if stats and stats.st_size == 0:
+                    return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
+        except (OSError, AttributeError):
+            pass
     return None
 
 class Scanner:
@@ -160,14 +168,17 @@ class Scanner:
             return False
         try:
             return not entry.is_symlink()
-        except OSError:
+        except (OSError, AttributeError):
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Añade un directorio seguro a la pila para escaneo posterior."""
-        if entry.path.lower() not in self.seen:
-            self.seen.add(entry.path.lower())
-            directory_stack.append(entry.path)
+        try:
+            if entry.path and entry.path.lower() not in self.seen:
+                self.seen.add(entry.path.lower())
+                directory_stack.append(entry.path)
+        except (OSError, AttributeError):
+            pass
 
     def _is_relevant_extension(self, name: str, is_dir: bool) -> Optional[str]:
         """Filtra extensiones que requieren análisis heurístico."""
@@ -192,13 +203,12 @@ class Scanner:
                 self._handle_directory(entry, directory_stack)
             else:
                 self._run_file_heuristics(Path(entry.path), entry, ext_low)
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, AttributeError):
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """Aplica el set completo de heurísticas a un archivo ejecutable identificado."""
         try:
-            # Re-verificar seguridad antes de cualquier acceso profundo
             if not path.exists() or is_protected_path(path):
                 return
             if (double_ext := check_double_extension(path, entry, self.now_ts)):
@@ -207,7 +217,7 @@ class Scanner:
                 for check_fn in self._registry:
                     if (result := check_fn(path, entry, self.now_ts)):
                         self.results.append(result)
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, AttributeError):
             pass
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
@@ -225,7 +235,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
                 if (result := check_fn(path, entry, now_ts)):
                     findings.append(result)
         return findings
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, AttributeError):
         return []
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
@@ -253,12 +263,11 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 with os.scandir(current_dir) as it:
                     for entry in it:
                         try:
-                            # Doble chequeo de seguridad antes de procesar cualquier entrada
                             if not is_protected_path(Path(entry.path)):
                                 scanner.process_entry(entry, directory_stack)
-                        except (OSError, PermissionError):
+                        except (OSError, PermissionError, AttributeError):
                             continue
-            except (PermissionError, OSError):
+            except (PermissionError, OSError, AttributeError):
                 continue
         return scanner.results
     except (ValueError, TypeError, RuntimeError) as e:

@@ -326,7 +326,7 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 }
 
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
-    """Verifica metadatos en disco y compara con estado inicial para prevenir ataques TOCTOU (Time-of-check to time-of-use)."""
+    """Verifica metadatos en disco y compara con estado inicial para prevenir ataques TOCTOU."""
     if not path.exists():
         raise UnsafePathError(f"Archivo ya no existe: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     try:
@@ -334,7 +334,6 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     except (PermissionError, OSError) as e:
         raise UnsafePathError(f"Acceso denegado a metadatos ({e}): {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     
-    # Si la identidad del archivo cambia mientras validamos (dev/inode), abortar para evitar Race Conditions
     if getattr(current_stat, 'st_dev', 0) != initial_stat.st_dev or getattr(current_stat, 'st_ino', 0) != initial_stat.st_ino:
         raise UnsafePathError(f"Consistencia fallida (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
     
@@ -431,10 +430,7 @@ def is_sensitive_file(path: PathLike) -> bool:
     except (TypeError, ValueError, OSError): return True 
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
-    """
-    Realiza una validación puramente estructural de la ruta: detecta inyecciones de 
-    caracteres, path traversal (..), longitudes excesivas y nombres de dispositivos reservados.
-    """
+    """Realiza una validación puramente estructural de la ruta."""
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
     if ".." in path_string.split(os.sep):
@@ -470,7 +466,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Rutas UNC bloqueadas.", SafetyValidationErrorCode.UNC_PATH)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
-    """Verifica que la operación se limite a directorios permitidos y unidades de disco autorizadas."""
+    """Verifica límites de alcance y restricciones de volumen."""
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
@@ -503,7 +499,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
         raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
 
 def _get_final_path_normalized(path: Path) -> Optional[Path]:
-    """Resuelve la ruta física real en disco mediante Win32 Handles para evitar redirecciones."""
+    """Resuelve la ruta física real en disco mediante Win32 Handles."""
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, 0, None, 3, 0x02000000, None)
     if handle == -1: return None
@@ -515,7 +511,7 @@ def _get_final_path_normalized(path: Path) -> Optional[Path]:
     return None
 
 def _validate_ntfs_reparse_redirection(path: Path) -> None:
-    """Asegura que la ruta no sea un proxy hacia otro volumen o unidad mediante NTFS links."""
+    """Asegura que la ruta no sea un proxy hacia otro volumen o unidad."""
     if not path.exists(): return
     if _is_reparse_point(str(path.parent)):
         raise UnsafePathError("Directorio padre es un punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
@@ -530,7 +526,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     """Valida integridad y seguridad. Lanza UnsafePathError si existe cualquier violación detectable."""
     if path is None: raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
     try: p = normalize(path)
-    except (ValueError, TypeError) as e: raise UnsafePathError(f"Ruta no normalizable: {e}", SafetyValidationErrorCode.GENERIC)
+    except (ValueError, TypeError, PermissionError, OSError) as e: 
+        raise UnsafePathError(f"Ruta no normalizable: {e}", SafetyValidationErrorCode.GENERIC)
     if not allow_sensitive and is_sensitive_file(p):
         raise UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
     _validate_structural_safety(p, str(p))
@@ -538,7 +535,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_access_permissions(p)
     if p.exists():
         try: initial_stat = p.stat()
-        except OSError: raise UnsafePathError(f"No se pueden obtener metadatos: {p.name}", SafetyValidationErrorCode.IO_ERROR)
+        except (OSError, PermissionError) as e: raise UnsafePathError(f"No se pueden obtener metadatos: {e}", SafetyValidationErrorCode.IO_ERROR)
         if not bool(initial_stat.st_mode & stat.S_IWRITE):
             raise UnsafePathError(f"Acceso de escritura denegado: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
         if os.name == 'nt': 
@@ -546,7 +543,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             if not os.access(p.parent, os.W_OK):
                  raise UnsafePathError("Directorio contenedor marcado como solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
         try: _check_file_integrity(p, initial_stat)
-        except OSError: raise UnsafePathError(f"Error de E/S durante validación: {p.name}", SafetyValidationErrorCode.IO_ERROR)
+        except (OSError, PermissionError) as e: raise UnsafePathError(f"Error durante validación: {e}", SafetyValidationErrorCode.IO_ERROR)
     else:
         parent = p.parent
         if parent.exists() and is_protected_path(parent):
