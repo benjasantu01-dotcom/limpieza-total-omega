@@ -704,10 +704,10 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
         
-        try:
-            existing = {f.name for f in base_path.iterdir() if f.is_file()}
-        except (OSError, PermissionError):
-            existing = set()
+        existing: Set[str] = set()
+        for f in base_path.iterdir():
+            if f.is_file():
+                existing.add(f.name)
         
         valid_items: List[QuarantineItem] = []
         needs_save = False
@@ -852,7 +852,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             save_manifest(remaining_items, base)
             
     except (OSError, PermissionError):
-        # Silenciamos solo errores de lectura de directorio para permitir completar la limpieza
         pass
         
     return len(purged_ids)
