@@ -359,12 +359,12 @@ def _is_readonly(path_str: str) -> bool:
 
 def _validate_access_permissions(path: Path) -> None:
     """Verifica si el proceso actual tiene permisos de lectura/escritura sobre el recurso."""
+    if not path.exists(): return
     try:
-        if path.exists():
-            if not os.access(path, os.R_OK):
-                raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED)
-            if not os.access(path, os.W_OK):
-                raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+        if not os.access(path, os.R_OK):
+            raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED)
+        if not os.access(path, os.W_OK):
+            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
     except (OSError, PermissionError):
         raise UnsafePathError("Acceso al sistema de archivos denegado.", SafetyValidationErrorCode.ACCESS_DENIED)
 

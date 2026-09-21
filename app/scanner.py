@@ -68,13 +68,13 @@ SYSTEM32_LOWER: Final[str] = "system32"
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
     Intenta obtener metadatos sin seguir enlaces simbólicos mediante la API de bajo nivel.
-    Retorna None si el archivo es inaccesible o no existe.
+    Retorna None si el archivo es inaccesible o no existe (archivo bloqueado/borrado).
     """
     if entry is None:
         return None
     try:
         return entry.stat(follow_symlinks=False)
-    except (OSError, PermissionError, AttributeError, FileNotFoundError, RuntimeError):
+    except (OSError, PermissionError, AttributeError, FileNotFoundError):
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -104,13 +104,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
     
     if entry:
-        try:
-            if entry.is_file(follow_symlinks=False):
-                stats = _safe_stat(entry)
-                if stats and hasattr(stats, 'st_mtime') and (now_ts - stats.st_mtime) < (LIMITS.recent_hours * 3600):
-                    return Suspicion(path, f"Ejecutable reciente detectado (<{LIMITS.recent_hours}h)", "info")
-        except (OSError, AttributeError):
-            pass
+        stats = _safe_stat(entry)
+        if stats and hasattr(stats, 'st_mtime') and (now_ts - stats.st_mtime) < (LIMITS.recent_hours * 3600):
+            return Suspicion(path, f"Ejecutable reciente detectado (<{LIMITS.recent_hours}h)", "info")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
@@ -124,13 +120,9 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta archivos ejecutables vacíos (0 bytes), a menudo usados en ataques de omisión."""
     if entry:
-        try:
-            if entry.is_file(follow_symlinks=False):
-                stats = _safe_stat(entry)
-                if stats and stats.st_size == 0:
-                    return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
-        except (OSError, AttributeError):
-            pass
+        stats = _safe_stat(entry)
+        if stats and stats.st_size == 0:
+            return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
     return None
 
 class Scanner:
@@ -180,7 +172,7 @@ class Scanner:
             return False
         try:
             return not entry.is_symlink()
-        except (OSError, AttributeError):
+        except (OSError, PermissionError, AttributeError):
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
@@ -224,35 +216,29 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """Ejecuta en cascada las heurísticas registradas sobre el archivo objetivo."""
-        try:
-            if not path.exists() or is_protected_path(path):
-                return
-            if (double_ext := check_double_extension(path, entry, self.now_ts)):
-                self.results.append(double_ext)
-            if ext in SUSPICIOUS_EXECUTABLE_EXT:
-                for check_fn in self._registry:
-                    if (result := check_fn(path, entry, self.now_ts)):
-                        self.results.append(result)
-        except (OSError, PermissionError, AttributeError):
-            pass
+        if not path.exists() or is_protected_path(path):
+            return
+        if (double_ext := check_double_extension(path, entry, self.now_ts)):
+            self.results.append(double_ext)
+        if ext in SUSPICIOUS_EXECUTABLE_EXT:
+            for check_fn in self._registry:
+                if (result := check_fn(path, entry, self.now_ts)):
+                    self.results.append(result)
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """Escanea un único archivo sin recorrido recursivo."""
-    try:
-        if not path or not path.exists() or is_protected_path(path): 
-            return []
-        
-        findings: ScanResult = []
-        if (double_ext := check_double_extension(path, entry, now_ts)):
-            findings.append(double_ext)
-            
-        if ext and ext.lower() in SUSPICIOUS_EXECUTABLE_EXT:
-            for check_fn in EXECUTABLE_CHECK_REGISTRY:
-                if (result := check_fn(path, entry, now_ts)):
-                    findings.append(result)
-        return findings
-    except (OSError, PermissionError, AttributeError):
+    if not path or not path.exists() or is_protected_path(path): 
         return []
+    
+    findings: ScanResult = []
+    if (double_ext := check_double_extension(path, entry, now_ts)):
+        findings.append(double_ext)
+        
+    if ext and ext.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+        for check_fn in EXECUTABLE_CHECK_REGISTRY:
+            if (result := check_fn(path, entry, now_ts)):
+                findings.append(result)
+    return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Ejecuta el escaneo de directorios utilizando una pila LIFO para control de recursos."""

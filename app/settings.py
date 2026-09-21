@@ -295,10 +295,10 @@ def validate(raw_values: Any) -> AppSettings:
 @lru_cache(maxsize=4)
 def _load_impl(ruta: Path) -> AppSettings:
     """Implementación privada cacheada para leer y verificar el archivo de configuración en disco."""
-    if not ruta.exists() or not os.access(ruta, os.R_OK):
-        return DEFAULTS.copy()
-    
     try:
+        if not ruta.is_file() or not os.access(ruta, os.R_OK):
+            return DEFAULTS.copy()
+            
         ensure_safe_to_modify(ruta)
         stats = ruta.stat()
         if stats.st_size == 0 or stats.st_size > MAX_SETTINGS_SIZE:
@@ -307,7 +307,7 @@ def _load_impl(ruta: Path) -> AppSettings:
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)
             return _coerce_and_verify(validate(data))
-    except (OSError, json.JSONDecodeError, UnicodeDecodeError, UnsafePathError):
+    except (OSError, IOError, json.JSONDecodeError, UnicodeDecodeError, UnsafePathError, PermissionError):
         return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
