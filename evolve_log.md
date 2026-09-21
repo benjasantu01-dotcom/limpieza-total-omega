@@ -613,3 +613,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-21T05:17:57` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé la performance del escaneo inicial en `_collect_candidates` evitando llamadas redundantes a `is_safe_to_modify` y `_is_file_locked` al consolidar las comprobaciones en un flujo de una sola pasada y reutilizando el valor `stat` ya obtenido del sistema de archivos.
 - `2026-09-21T05:17:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-21T05:17:57` Corrida terminada. Total usado hoy: 124.
+- `2026-09-21T05:22:42` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-09-21T05:23:10` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el cálculo en `compute_score` evitando redondeos innecesarios y recalculando el `final_score` como una suma directa de enteros para reducir el uso de `float` y mejorar la eficiencia del pipeline.
+- `2026-09-21T05:24:22` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se ha implementado un mecanismo de "Caché de Eventos de Salud" (a través de `_last_health_state`) para evitar el redibujo innecesario y el cálculo redundante de las métricas visuales del dashboard cuando el estado del sistema no ha cambiado entre iteraciones.
+- `2026-09-21T05:24:49` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-09-21T05:25:03` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el proceso de escaneo `_process_directory` implementando un caché de rutas resueltas (`set`) para evitar llamadas redundantes y costosas a `.resolve()` sobre directorios ya visitados, reduciendo la complejidad de I/O durante la recursión.
+- `2026-09-21T05:25:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-21T05:25:03` Corrida terminada. Total usado hoy: 128.

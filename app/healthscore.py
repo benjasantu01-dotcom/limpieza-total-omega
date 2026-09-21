@@ -234,7 +234,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
-    accumulated_score: float = 0.0
+    accumulated_score: int = 0
     
     for entry in _PIPELINE:
         try:
@@ -242,15 +242,15 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
-            # Cálculo de puntos ponderados normalizando el resultado al peso asignado
             weighted_points = int(round(area_ratio * entry.weight))
-            metric_breakdown[entry.area] = max(0, min(weighted_points, entry.weight))
-            accumulated_score += float(metric_breakdown[entry.area])
+            bounded_points = max(0, min(weighted_points, entry.weight))
+            metric_breakdown[entry.area] = bounded_points
+            accumulated_score += bounded_points
         except (Exception, TypeError, ValueError, ZeroDivisionError):
             metric_breakdown[entry.area] = 0
             continue
             
-    final_score = int(_clamp(round(accumulated_score), 0.0, 100.0))
+    final_score = max(0, min(accumulated_score, 100))
     
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")

@@ -245,6 +245,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         # Caché y persistencia
         self._last_card_values: Dict[str, str] = {}
         self._last_gauge_state: Tuple[int, str] = (-1, "")
+        self._last_health_state: Optional[Tuple] = None
         self.settings: AppSettings = {}
         self.setting_vars: Dict[str, Any] = {}
         
@@ -334,7 +335,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._cache_max_size = 20
         self._cache_access_times: Dict[str, float] = {}
         
-        self._last_health_state: Optional[Tuple] = None
         self.scan_target: Optional[str] = None
         self.analysis_folder: Optional[str] = None
         self.report_data: Dict[str, List[str]] = {}

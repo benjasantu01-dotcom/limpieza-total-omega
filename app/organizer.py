@@ -239,16 +239,20 @@ def _is_valid_junk_file(entry: os.DirEntry) -> bool:
     except (OSError, PermissionError):
         return False
 
-def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str]) -> None:
+def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
     """Realiza un recorrido recursivo en profundidad (limitado a 50 niveles)."""
     if depth > 50: return
     try:
+        resolved_dir = current_dir.resolve()
+        if resolved_dir in visited: return
+        visited.add(resolved_dir)
+        
         with os.scandir(current_dir) as it:
             for entry in it:
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
-                            _process_directory(Path(entry.path), found, depth + 1, protected_cache)
+                            _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False) and _is_valid_junk_file(entry):
                         _evaluate_entry(entry, found)
                 except (OSError, PermissionError): continue
@@ -261,11 +265,12 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
     """
     found: List[JunkFile] = []
     protected_cache: set[str] = set()
+    visited: set[Path] = set()
     scan_list: Sequence[str | Path] = directories or DEFAULT_SCAN_DIRS
     for d in scan_list:
         p = Path(d).expanduser()
         if p.exists() and p.is_dir() and not _is_unc_path(p):
-            _process_directory(p, found, 0, protected_cache)
+            _process_directory(p, found, 0, protected_cache, visited)
     return found
 
 def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
