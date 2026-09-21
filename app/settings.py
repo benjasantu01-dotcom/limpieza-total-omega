@@ -181,7 +181,8 @@ class _Validators:
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
         """Valida sintaxis básica y seguridad de una ruta antes de considerarla para el JSON."""
-        if not path_str or len(path_str) > 2048 or "\0" in path_str: return False
+        # Bloquea caracteres de escape de shell y control, crucial en Windows para evitar inyecciones
+        if not path_str or len(path_str) > 2048 or "\0" in path_str or "^" in path_str or "\033" in path_str: return False
         if path_str.startswith(("\\\\", "//")): return False
         try:
             p = Path(path_str).expanduser()

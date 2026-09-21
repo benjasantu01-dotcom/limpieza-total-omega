@@ -252,7 +252,8 @@ def _is_file_in_use(path_str: str) -> bool:
     if os.name != 'nt' or not os.path.isabs(path_str) or not os.path.isfile(path_str):
         return False
     kernel32 = ctypes.windll.kernel32
-    handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0, None, 3, 0x00000080, None)
+    # GENERIC_READ (0x80000000), FILE_SHARE_READ (0x00000001)
+    handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0x00000001, None, 3, 0x00000080, None)
     if handle == -1: 
         return ctypes.GetLastError() == 32
     kernel32.CloseHandle(handle)

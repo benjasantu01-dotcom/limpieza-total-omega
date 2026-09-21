@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
-- Rechazadas por tests: 13
+- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 134 | 9 | 28 | 17 | 156 |
-| 2026-09-21 | 87 | 4 | 18 | 5 | 46 |
+| 2026-09-20 | 134 | 9 | 28 | 17 | 152 |
+| 2026-09-21 | 89 | 5 | 18 | 5 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
-- seguridad defensiva: **47**
+- seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **43**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **20**
 - `healthscore.py`: **20**
-- `settings.py`: **19**
 - `browser.py`: **19**
 - `quarantine.py`: **19**
 - `assistant.py`: **18**
+- `safety.py`: **18**
 - `diskreport.py`: **18**
 - `memory.py`: **18**
-- `safety.py`: **17**
 - `duplicates.py`: **17**
 - `scanner.py`: **14**
 - `branding.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-21T06:56:03` **settings.py** (seguridad defensiva): Se ha añadido un chequeo explícito en `_Validators.path` para detectar y bloquear rutas que contengan el carácter de escape de consola (`^`) o secuencias de escape ANSI, previniendo inyecciones de comandos o comportamientos inesperados en sistemas Windows cuando las rutas se procesan en el shell.
+- `2026-09-21T06:55:05` **safety.py** (seguridad defensiva): Se añadió una validación explícita para evitar que `_is_file_in_use` intente abrir directorios, usando `os.path.isfile` para asegurar que el chequeo de exclusividad mediante `CreateFileW` se limite exclusivamente a archivos regulares, evitando errores de permisos al intentar acceder a carpetas bloqueadas por el sistema.
 - `2026-09-21T06:45:53` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad del proceso de restauración de archivos agregando una validación explícita mediante `is_safe_to_modify` sobre el `Path` destino antes de realizar la operación `os.replace`, evitando cualquier intento de manipulación del manifiesto para sobreescribir archivos críticos del sistema.
 - `2026-09-21T06:45:09` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` añadiendo una comprobación explícita para evitar que `shutil.move` intente realizar operaciones entre sistemas de archivos incompatibles (cruce de unidades), lo cual es una fuente común de errores de permisos y fallos de I/O en Windows.
 - `2026-09-21T06:34:59` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` para asegurar que el recorrido recursivo verifique explícitamente el estado de los enlaces simbólicos y puntos de reparse antes de procesar cualquier entrada, previniendo errores de recursión infinita o acceso no autorizado a rutas fuera de los directorios raíz definidos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T06:05:19` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_safe_int_conversion` ante casos límite de entrada, añadiendo soporte explícito para valores nulos o vacíos que podrían provenir de lecturas fallidas del sistema, evitando excepciones innecesarias y asegurando que las funciones de parseo devuelvan estados consistentes en lugar de valores parciales corruptos.
 - `2026-09-21T06:04:50` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_target_choice_changed` al implementar una validación de seguridad asíncrona mediante `_verify_disk_path` antes de aceptar la selección del usuario, evitando que rutas inválidas o protegidas contaminen el estado del escáner.
 - `2026-09-21T05:54:59` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor frente a posibles fallos de ejecución en el pipeline y métricas inconsistentes, añadiendo protección contra divisiones por cero en `score_security` y garantizando que el `HealthResult` devuelva una estructura completa incluso si el cálculo falla parcialmente.
-- `2026-09-21T05:54:22` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_protected_path` en el bucle principal de `walk_files` para manejar casos límite donde el usuario intenta escanear una carpeta que podría haberse vuelto protegida dinámicamente durante el recorrido, evitando errores de acceso o procesamiento no autorizado.
-- `2026-09-21T05:53:55` **browser.py** (robustez ante casos límite): Se ha robustecido el escaneo de directorios frente a posibles errores de entrada mediante una mejora en la validación de la existencia de rutas `Path` y el manejo de excepciones al intentar resolver rutas absolutas, evitando que entradas de configuración malformadas interrumpan el proceso.
