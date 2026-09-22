@@ -713,3 +713,72 @@ ERROR evolve/tests/test_modules.py
 - `2026-09-22T14:30:56` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-22T14:30:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T14:30:56` Corrida terminada. Total usado hoy: 336.
+- `2026-09-22T14:39:14` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-22T14:39:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-22T14:39:21` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-22T14:39:28` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-22T14:39:41` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-22T14:40:32` Tests FALLARON:
+```
+    +  where False = is_file()
+E        +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+E        +      where 'config.json' = settings.SETTINGS_FILE
+
+evolve/tests/test_assistant.py:61: AssertionError
+______________________ test_a_normal_folder_is_remembered ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_a_normal_folder_is_rememb0')
+
+    def test_a_normal_folder_is_remembered(tmp_path):
+        segura = str(tmp_path / "Descargas")
+>       assert settings.validate({"ultima_carpeta": segura})["ultima_carpeta"] == segura
+E       AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+E         
+E         - /tmp/pytest-of-runner/pytest-1/test_a_normal_folder_is_rememb0/Descargas
+
+evolve/tests/test_assistant.py:124: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert False
+ +  where False = is_file()
+ +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+ +      where 'config.json' = settings.SETTINGS_FILE
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-1/test_a_normal_folder_is_rememb0/Descargas
+2 failed, 297 passed in 1.41s
+
+```
+- `2026-09-22T14:40:32` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para que el uso de `os.path.realpath` y la validación posterior sean estrictamente robustos ante rutas inexistentes o maliciosas, añadiendo un chequeo explícito de existencia mediante `os.path.exists` para evitar que rutas inválidas sean tratadas como seguras por el `lru_cache`.
+- `2026-09-22T14:41:00` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.41s
+
+```
+- `2026-09-22T14:41:00` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha añadido un chequeo de seguridad mediante `is_protected_path` en `_resolve_and_cache_path` para validar el archivo ejecutable resultante tras la resolución de enlaces, asegurando que el proceso no interactúe accidentalmente con rutas protegidas del sistema antes de cachearlas.
+- `2026-09-22T14:41:01` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-22T14:41:01` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-22T14:41:21` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-22T14:41:21` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-22T14:41:51` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-22T14:41:51` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-22T14:41:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T14:41:51` Corrida terminada. Total usado hoy: 340.
