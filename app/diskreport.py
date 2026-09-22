@@ -43,6 +43,8 @@ __all__ = [
 ]
 
 MB_SIZE: int = 1024 * 1024
+# Caracteres Unicode que pueden ser usados para engañar visualmente al usuario con rutas falsas
+SUSPICIOUS_CHARS: Tuple[str, ...] = ('\u202E', '\u202D', '\u200E', '\u200F')
 Inode: TypeAlias = Tuple[int, int]
 SizeReport: TypeAlias = Tuple[int, int]
 
@@ -101,22 +103,22 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry) -> bool:
     """
     Filtro de exclusión para el escáner de archivos basado en seguridad defensiva.
+    Retorna True si la entrada debe ser ignorada por razones de seguridad o formato.
     """
     try:
-        # Validación defensiva de la ruta antes de cualquier operación
         entry_path = entry.path
         if not entry_path or len(entry_path) > 260:
             return True
         
         # Detección de caracteres sospechosos de suplantación (RTL)
-        name = entry.name
-        if any(c in name for c in ('\u202E', '\u202D', '\u200E', '\u200F')):
+        if any(c in entry.name for c in SUSPICIOUS_CHARS):
             return True
             
         if entry.is_symlink():
             return True
         if os.name == 'nt':
             st = entry.stat(follow_symlinks=False)
+            # 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) bloquea puntos de reparse/junctions
             if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
                 return True
     except (OSError, PermissionError, AttributeError):
@@ -304,7 +306,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             if not relative.parts: continue
             
             top_level_folder = root / relative.parts[0]
-            # Solo consideramos carpetas, no archivos sueltos en la raíz
             if top_level_folder != path:
                 folder_total_bytes[top_level_folder] += size_bytes
                 folder_file_counts[top_level_folder] += 1
@@ -326,7 +327,9 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Agrega estadísticas globales de un árbol de directorios en una pasada única (O(n)).
-    Usa un Min-Heap para mantener los N archivos más grandes con eficiencia O(n log limit).
+    
+    Procesa recursivamente cada archivo, categorizando por extensión y manteniendo
+    un Min-Heap de tamaño 'limit' para los archivos más grandes detectados.
     """
     total_bytes: int = 0
     total_files: int = 0

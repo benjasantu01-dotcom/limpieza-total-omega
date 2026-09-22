@@ -5,41 +5,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **192** (38.2% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 51
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 27 | 4 | 7 | 1 | 41 |
+| 2026-09-20 | 26 | 4 | 6 | 1 | 41 |
 | 2026-09-21 | 145 | 10 | 39 | 8 | 148 |
-| 2026-09-22 | 20 | 3 | 5 | 4 | 40 |
+| 2026-09-22 | 23 | 3 | 5 | 4 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
+- legibilidad y documentación: **43**
 - seguridad defensiva: **41**
-- legibilidad y documentación: **40**
 - robustez ante casos límite: **35**
-- rendimiento: **26**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **19**
 - `quarantine.py`: **19**
+- `diskreport.py`: **16**
 - `memory.py`: **16**
-- `safety.py`: **15**
-- `diskreport.py`: **15**
+- `healthscore.py`: **15**
 - `settings.py`: **15**
 - `browser.py`: **15**
-- `healthscore.py`: **14**
-- `duplicates.py`: **14**
+- `duplicates.py`: **15**
 - `organizer.py`: **14**
+- `safety.py`: **14**
 - `branding.py`: **12**
 - `scanner.py`: **11**
 - `main.py`: **8**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T03:24:44` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings de nivel de módulo y función que explican el "porqué" de las decisiones (como la normalización y el uso del pipeline), y añadí type hints explícitos para clarificar la arquitectura del motor de reglas, facilitando su mantenimiento como demo técnica.
+- `2026-09-22T03:24:15` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones críticas y la adición de una tabla de complejidad algorítmica para clarificar el flujo de decisión de hashing.
+- `2026-09-22T03:23:46` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la precisión del mantenimiento del código al extraer las constantes de configuración de los filtros de archivos y directorios fuera de `_is_excluded_path` y `_collect_summary_data`, además de añadir docstrings detallados en las funciones de procesamiento que aclaran la complejidad algorítmica y el manejo de excepciones.
 - `2026-09-22T03:04:05` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación estricta de la estructura del CSV y un manejo defensivo ante filas malformadas para prevenir excepciones silenciosas durante la carga de registros.
 - `2026-09-22T03:03:37` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_coerce_and_verify` agregando una validación estricta del tipo de cada valor cargado contra el valor por defecto, evitando así comportamientos inesperados ante datos malformados en el JSON.
 - `2026-09-22T03:03:07` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_relevant_extension` y `scan_directory` añadiendo validaciones preventivas de tipos y estados, evitando errores silenciosos al procesar entradas de sistema inesperadamente nulas o con nombres malformados.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T02:33:49` **browser.py** (manejo de errores y validación de entradas): Refactoricé `_sum_directory_recursive` para manejar el caso límite donde la ruta de entrada es un archivo y no un directorio, evitando que `os.scandir` lance un `OSError` innecesario y mejorando la robustez ante estructuras de archivo inesperadas dentro de la caché.
 - `2026-09-22T02:32:44` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y `ingest` mediante una validación de tipo más estricta y el uso de `getattr` con manejo defensivo, evitando que cualquier objeto inesperado o método malintencionado pueda ser inyectado durante la carga de configuración o datos de métricas.
 - `2026-09-22T01:11:06` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `save()` y `_load_impl` al añadir una validación estricta de "propiedad" mediante `os.path.samefile` (cuando existe) o verificación de permisos antes de realizar operaciones de archivo, evitando riesgos de colisión de rutas o manipulación indebida fuera del directorio destino.
-- `2026-09-22T01:00:41` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en la escritura del manifiesto y la validación de archivos al purgar, añadiendo una verificación explícita del hash del archivo antes de cualquier operación destructiva para prevenir condiciones de carrera o corrupción silenciosa.
-- `2026-09-22T00:52:08` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones de seguridad en `_is_safe_for_disk_op` integrando la validación del estado del sistema de archivos mediante `is_protected_path` sobre el destino `target_parent` para asegurar que el movimiento nunca ocurra hacia directorios críticos, evitando posibles intentos de escape fuera de la carpeta de cuarentena.
-- `2026-09-22T00:51:57` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `_get_process_path` validando que la ruta resultante del proceso, además de pasar por `is_safe_to_modify`, no sea una ruta de red (UNC) o dispositivo virtual que pueda evadir el chequeo de seguridad, evitando así interacciones con recursos externos inesperados.

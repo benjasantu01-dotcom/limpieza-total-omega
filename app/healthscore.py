@@ -1,9 +1,14 @@
 """
 healthscore.py — El motor analítico de salud del sistema.
 
-Este módulo implementa un motor de puntuación (scoring) de arquitectura funcional.
-Toma un objeto 'SystemMetrics' y, mediante un pipeline de normalización y 
-ponderación, lo transforma en un 'HealthResult' comprensible para el usuario.
+Este módulo implementa un motor de puntuación (scoring) basado en una arquitectura 
+funcional de "Pipeline". La lógica separa la recolección de datos (SystemMetrics) 
+de la evaluación (Scorer) y la generación de sugerencias (RecommendationRule).
+
+El proceso sigue tres pasos:
+1. Normalización: Convierte métricas crudas a un ratio [0.0, 1.0].
+2. Ponderación: Aplica pesos configurables (WEIGHTS) al ratio normalizado.
+3. Evaluación: Ejecuta reglas condicionales si el ratio cae bajo umbrales críticos.
 """
 
 from __future__ import annotations
@@ -39,7 +44,11 @@ class Grade(Enum):
         return cls.F.value
 
 class RecommendationRule(NamedTuple):
-    """Lógica condicional para generar sugerencias al detectar degradación en un área."""
+    """
+    Reglas de recomendación: una factoría de mensajes que se activa basándose 
+    en el ratio normalizado. El desacople entre el 'check' y el 'message_factory' 
+    permite generar texto dinámico basado en el estado real de 'SystemMetrics'.
+    """
     area: MetricKey
     threshold: float
     message_factory: Callable[[SystemMetrics], str]
@@ -141,7 +150,7 @@ _PIPELINE: Final[List[PipelineEntry]] = [
 
 @dataclass
 class SystemMetrics:
-    """Contenedor de datos crudos (inputs) para el motor de salud."""
+    """Contenedor de datos crudos (inputs) para el motor de salud. Se valida en post-init."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -207,7 +216,7 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Ejecuta reglas heurísticas con aislamiento de excepciones."""
+    """Ejecuta reglas heurísticas con aislamiento de excepciones para evitar fallos del motor principal."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -221,11 +230,12 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
-    Ejecuta el pipeline de evaluación principal transformando métricas brutas en un HealthResult.
+    Pipeline principal de evaluación.
     
-    El proceso normaliza cada métrica [0.0, 1.0], aplica los pesos definidos en WEIGHTS, 
-    evalúa las reglas de recomendación asociadas a cada área y consolida el puntaje final 
-    en una escala de 0 a 100.
+    Toma métricas crudas y las procesa secuencialmente según el _PIPELINE definido:
+    1. Calcula el ratio de salud para cada área mediante su 'scorer'.
+    2. Ejecuta reglas de advertencia si el ratio viola umbrales de seguridad.
+    3. Pondera el resultado para computar un puntaje global [0-100].
     """
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
@@ -271,7 +281,7 @@ def _render_bar(points: int, max_val: int) -> str:
     return ('#' * p) + ('.' * (m - p))
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera una representación en formato lista (texto) del HealthResult."""
+    """Genera una representación legible (lista de strings) del HealthResult para UI."""
     if not isinstance(result, HealthResult) or not (0 <= result.score <= 100):
         return ["Error: Informe de salud no disponible."]
     
