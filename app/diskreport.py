@@ -310,17 +310,14 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     folder_total_bytes: Dict[Path, int] = defaultdict(int)
     folder_file_counts: Dict[Path, int] = defaultdict(int)
     
+    root_parts = root.parts
     for path, size_bytes in walk_files(root, skip_protected):
-        try:
-            relative = path.relative_to(root)
-            if not relative.parts: continue
-            
-            top_level_folder = root / relative.parts[0]
-            if top_level_folder != path:
-                folder_total_bytes[top_level_folder] += size_bytes
-                folder_file_counts[top_level_folder] += 1
-        except (ValueError, OSError, RuntimeError): 
-            continue
+        # Determina la subcarpeta de primer nivel evitando relative_to costoso
+        path_parts = path.parts
+        if len(path_parts) > len(root_parts):
+            top_level = root / path_parts[len(root_parts)]
+            folder_total_bytes[top_level] += size_bytes
+            folder_file_counts[top_level] += 1
 
     results = [FolderUsage(p, folder_total_bytes[p], folder_file_counts[p]) for p in folder_total_bytes]
     return heapq.nlargest(valid_limit, results, key=lambda f: f.size_bytes)

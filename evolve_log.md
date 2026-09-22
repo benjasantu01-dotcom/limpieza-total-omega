@@ -510,3 +510,12 @@ ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defi
 - `2026-09-22T12:47:13` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-09-22T12:47:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T12:47:13` Corrida terminada. Total usado hoy: 296.
+- `2026-09-22T12:55:20` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-09-22T12:55:51` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-09-22T12:56:22` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para evitar la creación innecesaria de objetos `Path` y el uso intensivo de `relative_to` dentro del loop, operando directamente sobre los componentes de la ruta para mejorar el rendimiento en directorios con gran profundidad.
+- `2026-09-22T12:56:52` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `stat()` y `path.resolve()` para archivos ya visitados, reduciendo drásticamente las operaciones de I/O por archivo durante el escaneo.
+- `2026-09-22T12:57:52` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-22T12:58:55` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-22T12:59:14` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle de cómputo en `compute_score` eliminando la validación redundante de `entry.area` dentro del loop, ya que el pipeline es estático, y precalculando el acceso a `WEIGHTS` mediante una referencia directa en la tupla `PipelineEntry` para reducir el costo de búsqueda en diccionario.
+- `2026-09-22T12:59:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T12:59:14` Corrida terminada. Total usado hoy: 300.
