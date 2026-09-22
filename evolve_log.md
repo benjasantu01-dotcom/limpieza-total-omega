@@ -935,3 +935,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-09-22T05:28:26` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_write_temp_to_final` mediante el uso de `os.replace` (operación atómica) y validaciones de estado de archivo post-escritura, garantizando que el archivo en el sandbox no pueda ser reemplazado o manipulado durante la transferencia y confirmando su integridad final antes de ser registrado en el manifiesto.
 - `2026-09-22T05:28:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T05:28:26` Corrida terminada. Total usado hoy: 124.
+- `2026-09-22T05:35:53` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-09-22T05:37:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-22T05:37:45` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-09-22T05:38:27` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-22T05:38:50` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_load_impl` evitando la carga de archivos que presenten enlaces simbólicos o junctions, utilizando `ensure_safe_to_modify` antes de la lectura para garantizar que la ruta no sea un punto de reparse, alineando la carga con la lógica de persistencia.
+- `2026-09-22T05:38:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T05:38:50` Corrida terminada. Total usado hoy: 128.

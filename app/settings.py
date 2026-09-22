@@ -297,7 +297,7 @@ def validate(raw_values: Any) -> AppSettings:
 def _load_impl(ruta: Path) -> AppSettings:
     """Implementación privada cacheada para leer y verificar el archivo."""
     try:
-        if not ruta.is_file(): return DEFAULTS.copy()
+        if not ruta.is_file() or _Validators._is_reparse_point(ruta): return DEFAULTS.copy()
         ensure_safe_to_modify(ruta)
         if not os.access(ruta, os.R_OK) or ruta.stat().st_size == 0 or ruta.stat().st_size > MAX_SETTINGS_SIZE:
             return DEFAULTS.copy()

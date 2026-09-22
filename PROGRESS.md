@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 51
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 12 | 1 | 1 | 1 | 15 |
+| 2026-09-20 | 12 | 1 | 1 | 1 | 11 |
 | 2026-09-21 | 145 | 10 | 39 | 8 | 148 |
-| 2026-09-22 | 49 | 5 | 11 | 7 | 52 |
+| 2026-09-22 | 50 | 5 | 12 | 7 | 54 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **47**
-- seguridad defensiva: **41**
+- seguridad defensiva: **42**
 - robustez ante casos límite: **35**
 - rendimiento: **33**
 
@@ -34,10 +34,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **20**
 - `quarantine.py`: **20**
 - `diskreport.py`: **17**
+- `settings.py`: **17**
 - `browser.py`: **16**
 - `healthscore.py`: **16**
 - `safety.py`: **16**
-- `settings.py`: **16**
 - `duplicates.py`: **15**
 - `organizer.py`: **14**
 - `branding.py`: **11**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T05:38:50` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_load_impl` evitando la carga de archivos que presenten enlaces simbólicos o junctions, utilizando `ensure_safe_to_modify` antes de la lectura para garantizar que la ruta no sea un punto de reparse, alineando la carga con la lógica de persistencia.
 - `2026-09-22T05:28:26` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_write_temp_to_final` mediante el uso de `os.replace` (operación atómica) y validaciones de estado de archivo post-escritura, garantizando que el archivo en el sandbox no pueda ser reemplazado o manipulado durante la transferencia y confirmando su integridad final antes de ser registrado en el manifiesto.
 - `2026-09-22T05:27:32` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `memory.py` al aplicar una validación de ruta estricta utilizando `is_protected_path` directamente sobre la cadena de la ruta antes de cualquier operación, asegurando que las rutas de sistema detectadas a través de `_get_process_path` sean bloqueadas preventivamente, cumpliendo así con las directrices de seguridad defensiva para evitar la manipulación de procesos críticos.
 - `2026-09-22T05:27:03` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `on_trim_process` implementando una validación explícita para evitar que procesos del sistema o protegidos (PID < 100) sean objeto de manipulación de memoria, protegiendo la integridad del entorno Windows ante errores de usuario o intentos de manipulación.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T04:45:26` **healthscore.py** (robustez ante casos límite): Se ha robustecido el motor de puntuación añadiendo una verificación de integridad de métricas en `compute_score` mediante la validación explícita de `is_finite`, evitando el procesamiento de estados de error potencialmente propagados por módulos externos, y se ha encapsulado el cálculo de `weighted_points` en una lógica más resiliente ante entradas inesperadas.
 - `2026-09-22T04:37:17` **diskreport.py** (robustez ante casos límite): Mejora la robustez del escaneo de carpetas en `largest_folders` al manejar explícitamente el caso donde el archivo es el mismo directorio raíz o sufre cambios de permisos durante la iteración, evitando el fallo de `relative_to` o la pérdida de datos ante cambios en el sistema de archivos.
 - `2026-09-22T04:26:22` **assistant.py** (robustez ante casos límite): Mejora la robustez ante casos límite en la carga de datos del contexto, añadiendo una validación explícita mediante `_safe_float` para todos los campos numéricos en `ingest` y asegurando que las métricas con valores `None` o malformados no comprometan la integridad del objeto `SystemContext`.
-- `2026-09-22T04:25:29` **settings.py** (rendimiento): Optimizé la validación de rutas mediante la eliminación de un `lru_cache` redundante y la implementación de una técnica de pre-filtrado mediante conjuntos (`set`) en los validadores de configuración, reduciendo las llamadas innecesarias al sistema de archivos y mejorando la eficiencia del bucle de carga de `settings.py`.
