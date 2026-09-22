@@ -887,3 +887,37 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-22T05:01:09` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-09-22T05:01:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T05:01:09` Corrida terminada. Total usado hoy: 112.
+- `2026-09-22T05:05:21` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-09-22T05:06:22` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-22T05:07:25` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-22T05:08:01` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `settings.py` ante archivos corruptos o maliciosos detectados en disco, añadiendo una validación de estructura exhaustiva en `_coerce_and_verify` que limpia claves faltantes o tipos incorrectos, y mejorando la resiliencia de `_load_impl` ante archivos parcialmente escritos o con errores de codificación inusuales.
+- `2026-09-22T05:08:28` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................F............................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+1 failed, 298 passed in 0.76s
+
+```
+- `2026-09-22T05:08:28` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejoró la robustez de `parse_registry_csv` y `_extract_quoted_path` para prevenir excepciones ante rutas de registro que contienen valores numéricos o no interpretables como `Path`, añadiendo chequeos de tipo explícitos y manejo defensivo de errores en el parseo de comandos.
+- `2026-09-22T05:09:05` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la integridad del motor local limitando la ejecución de los handlers de preguntas solo a instancias de `SystemContext` que hayan sido analizadas correctamente, añadiendo un chequeo explícito en `local_answer` para evitar el procesamiento de contextos vacíos o mal formados.
+- `2026-09-22T05:09:27` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-22T05:09:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T05:09:27` Corrida terminada. Total usado hoy: 116.

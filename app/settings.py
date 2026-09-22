@@ -324,19 +324,17 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Aplica consistencia forzada de tipos y reglas post-validación."""
+    final_settings = DEFAULTS.copy()
     for key in ConfigKey:
-        k_val = key.value
-        default_val = DEFAULTS.get(k_val)
-        current_val = settings.get(k_val)
-        
-        if current_val is None or not isinstance(current_val, type(default_val)):
-            settings[k_val] = default_val
+        k = key.value
+        if k in settings and isinstance(settings[k], type(DEFAULTS[k])):
+            final_settings[k] = settings[k]
             
-    if settings.get("asistente_activado") and not (
-        settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
+    if final_settings.get("asistente_activado") and not (
+        final_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
     ):
-        settings["asistente_activado"] = False
-    return settings
+        final_settings["asistente_activado"] = False
+    return final_settings
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """Guarda los ajustes usando escritura atómica."""

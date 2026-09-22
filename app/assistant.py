@@ -311,8 +311,7 @@ class SystemContext:
     @property
     def is_empty(self) -> bool:
         """Verifica si el contexto contiene datos útiles tras el análisis."""
-        if not self.analyzed: return True
-        return self.score is None or not isinstance(self.score, int) or self.score < 0
+        return not self.analyzed or self.score is None or not isinstance(self.score, int) or self.score < 0
 
     def __hash__(self) -> int:
         return hash((self.score, self.grade, self.junk_mb, self.suspicious_count, 
@@ -576,9 +575,6 @@ def _sanitize_query(question: str) -> str:
 
 def local_answer(question: str, context: SystemContext) -> Answer:
     """Motor de inferencia local: procesa preguntas basadas en las métricas."""
-    q_sanitized = _sanitize_query(question)
-    if not q_sanitized:
-        return Answer("Entrada no válida.")
     if context.is_empty:
         return Answer(
             text="Todavía no corriste ningún análisis. Andá a la pestaña Salud "
@@ -586,6 +582,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             notice=OFFLINE_NOTICE,
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
+
+    q_sanitized = _sanitize_query(question)
+    if not q_sanitized:
+        return Answer("Entrada no válida.")
     
     for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
         if token in _TOKENS_MAP:
