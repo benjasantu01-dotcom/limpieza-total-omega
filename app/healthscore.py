@@ -239,8 +239,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in _PIPELINE:
         try:
             area_ratio: NormalizedRatio = entry.scorer(metrics)
-            if not (0.0 <= area_ratio <= 1.0):
-                area_ratio = _clamp(area_ratio)
+            if not math.isfinite(area_ratio):
+                area_ratio = 0.0
+            area_ratio = _clamp(area_ratio)
             
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)

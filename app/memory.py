@@ -203,14 +203,20 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         if len(parts) < 3: continue
         
         try:
-            name = parts[0].strip("'\" ")
-            raw_pid = "".join(c for c in parts[1] if c.isdigit())
-            raw_ws = "".join(c for c in parts[2] if c.isdigit())
+            name_part = parts[0]
+            raw_pid = parts[1]
+            raw_ws = parts[2]
             
-            if not raw_pid or not raw_ws: continue
+            if not isinstance(name_part, str) or not isinstance(raw_pid, str) or not isinstance(raw_ws, str):
+                continue
+                
+            name = name_part.strip("'\" ")
+            clean_pid = "".join(c for c in raw_pid if c.isdigit())
+            clean_ws = "".join(c for c in raw_ws if c.isdigit())
             
-            pid, ws = int(raw_pid), int(raw_ws)
-            # Validación de integridad contra valores erróneos o desbordamientos
+            if not clean_pid or not clean_ws: continue
+            
+            pid, ws = int(clean_pid), int(clean_ws)
             if pid > 0 and 0 <= ws < MAX_VALID_PROCESS_MEM:
                 results.append(ProcessMemory(name=name, pid=pid, working_set=BytesValue(ws)))
         except (ValueError, TypeError):

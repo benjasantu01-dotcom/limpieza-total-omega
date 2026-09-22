@@ -1669,13 +1669,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @ensure_safety
     def on_trim_process(self) -> None:
         """Intenta liberar memoria de un proceso por PID."""
-        pid_val = self._safe_get_entry_value(getattr(self, 'pid_entry', None), None)
-        try:
-            pid = int(pid_val)
-        except (ValueError, TypeError):
+        pid_val = self._safe_get_entry_value(getattr(self, 'pid_entry', None), None, numeric=True)
+        if pid_val is None:
             self.log("Error: PID inválido. Debe ser un número entero.", "Memoria")
             return
-
+        
+        pid = int(pid_val)
         if pid < 100:
             self.log(f"Error: El proceso {pid} es crítico del sistema.", "Memoria")
             return
@@ -1880,19 +1879,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @validated_ui_operation
     def on_ask_assistant(self, question: Optional[str] = None) -> None:
         """Realiza una consulta al asistente local/IA."""
-        if not hasattr(self, 'question_entry') or not self.question_entry.winfo_exists():
-            return
-            
-        entry_val = self.question_entry.get()
-        texto = (question or entry_val).strip()
-        # Sanitizar entrada del usuario
-        texto = "".join(c for c in texto if c.isprintable())[:500]
+        texto = self._safe_get_entry_value(getattr(self, 'question_entry', None), (question or "").strip())
         
         if not texto:
             self.log("Escribí una pregunta válida.", "Asistente")
             return
         
-        if question is None:
+        if question is None and hasattr(self, 'question_entry'):
             self.question_entry.delete(0, "end")
 
         def task() -> None:

@@ -739,3 +739,10 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-22T02:34:01` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-22T02:34:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T02:34:01` Corrida terminada. Total usado hoy: 58.
+- `2026-09-22T02:42:15` Arrancando corrida. Quedan hoy ~242 peticiones objetivo.
+- `2026-09-22T02:42:43` ➖ Sin cambios en duplicates.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de las funciones de hash al validar explícitamente los parámetros y manejar casos donde `path` es `None` o `is_safe_to_modify` falla antes de abrir el archivo, evitando excepciones silenciosas o procesamientos inválidos.
+- `2026-09-22T02:43:14` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del motor de cómputo validando la integridad de los resultados intermedios y el estado de `SystemMetrics` antes de proceder, asegurando que cualquier anomalía en los datos de entrada o cálculo no produzca resultados inconsistentes o corrompidos.
+- `2026-09-22T02:44:28` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `on_ask_assistant` y `on_trim_process` encapsulando la extracción de valores de widgets en un método de validación centralizado (`_safe_get_entry_value`) para prevenir excepciones de UI al procesar entradas vacías o malformadas.
+- `2026-09-22T02:44:42` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `parse_windows_process_csv` agregando una validación explícita para evitar errores de tipo si los datos de entrada están mal formados, garantizando que el bucle de procesamiento de memoria no se interrumpa ante datos inesperados.
+- `2026-09-22T02:44:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T02:44:42` Corrida terminada. Total usado hoy: 62.
