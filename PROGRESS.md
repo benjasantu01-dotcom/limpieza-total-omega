@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 238
+- Sin respuesta de la IA (error o límite): 237
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 56 | 5 | 21 | 3 | 91 |
-| 2026-09-22 | 121 | 14 | 27 | 19 | 147 |
+| 2026-09-21 | 56 | 5 | 21 | 3 | 87 |
+| 2026-09-22 | 122 | 14 | 27 | 19 | 150 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **34**
+- seguridad defensiva: **35**
 - rendimiento: **31**
 - robustez ante casos límite: **27**
 
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **17**
 - `memory.py`: **16**
 - `assistant.py`: **15**
+- `duplicates.py`: **14**
 - `settings.py`: **14**
 - `healthscore.py`: **14**
-- `duplicates.py`: **13**
 - `browser.py`: **12**
 - `organizer.py`: **11**
 - `scanner.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T14:20:02` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las verificaciones en `_collect_candidates` para asegurar que el uso de `os.scandir` respete consistentemente las restricciones de `is_safe_to_modify` y los filtros de seguridad, evitando accesos accidentales a rutas protegidas mediante la validación temprana de `entry.path`.
 - `2026-09-22T14:10:15` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_excluded_path` añadiendo una comprobación explícita para evitar que `path.resolve()` o `Path(entry.path)` accedan fuera del `root_path` en sistemas con enlaces simbólicos, asegurando que el escáner no escape del sandbox definido por el usuario.
 - `2026-09-22T14:09:55` **browser.py** (seguridad defensiva): Se ha implementado una validación de longitud de ruta más robusta en `_sum_directory_recursive` mediante el uso de `os.path.abspath` antes de procesar cada entrada, garantizando que el escaneo no supere `MAX_PATH_LEN` y se mantenga dentro de límites seguros de seguridad defensiva, además de asegurar que cada archivo procesado pase por `is_safe_to_modify` para evitar el acceso a archivos de sistema bloqueados.
 - `2026-09-22T13:58:38` **settings.py** (robustez ante casos límite): Mejoré la robustez ante archivos corruptos o maliciosos agregando un chequeo explícito de tamaño, tipo de archivo y permisos al leer el archivo de configuración, evitando que `json.load` procese archivos excesivamente grandes o no legibles.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T12:56:22` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación innecesaria de objetos `Path` y el uso intensivo de `relative_to` dentro del loop, operando directamente sobre los componentes de la ruta para mejorar el rendimiento en directorios con gran profundidad.
 - `2026-09-22T12:46:52` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la lógica de búsqueda basada en iteración manual sobre tokens por una búsqueda mediante un `set` de tokens pre-calculado, evitando re-tokenizar la query y buscar en una lista de listas en cada iteración.
 - `2026-09-22T12:46:10` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los métodos internos de `StartupEntry` y se han clarificado las intenciones del flujo en los métodos `_resolve_and_cache_path` y `_extract_quoted_path` para mejorar la mantenibilidad del código sin alterar su lógica.
-- `2026-09-22T12:45:40` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `settings.py` reemplazando los diccionarios de validación por una estructura de datos `Mapping` más robusta y añadiendo docstrings descriptivos, reduciendo la complejidad cognitiva en la lógica de despacho de validadores.
