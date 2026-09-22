@@ -521,42 +521,44 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
 
 def _write_temp_to_final(source: Path, destination: Path) -> str:
     """
-    Realiza una copia física segura del archivo origen al sandbox usando 
-    descriptores de archivo para evitar condiciones de carrera o bloqueos.
+    Copia física segura del origen al sandbox, usando un archivo temporal y 
+    reemplazo atómico para asegurar la integridad total.
     """
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
 
     source_hash = _get_sha256(source)
+    temp_dest = destination.with_suffix(".tmp")
     
     try:
         with open(source, "rb") as f_src:
-            # Validar integridad inicial
             stat_src = os.fstat(f_src.fileno())
             if not (stat_src.st_mode & 0o100000):
                 raise OSError("El archivo origen no es un archivo regular.")
 
-            # Copiar destino con permisos restringidos
-            with open(destination, "wb") as f_dst:
+            with open(temp_dest, "wb") as f_dst:
                 shutil.copyfileobj(f_src, f_dst)
                 f_dst.flush()
                 os.fsync(f_dst.fileno())
                 
-        if destination.stat().st_size != stat_src.st_size:
+        if temp_dest.stat().st_size != stat_src.st_size:
             raise OSError("Falla de integridad: tamaño mismatch tras copia.")
             
+        final_hash = _get_sha256(temp_dest)
+        if not final_hash or final_hash != source_hash:
+            raise OSError("Falla crítica: el hash del archivo copiado no coincide.")
+            
+        os.replace(temp_dest, destination)
+        ensure_safe_to_modify(destination, allow_sensitive=True)
+        return final_hash
+            
     except Exception as e:
+        if temp_dest.exists():
+            try: temp_dest.unlink()
+            except OSError: pass
         if destination.exists():
             _safe_unlink(destination)
         raise OSError(f"Error crítico en transferencia: {e}")
-            
-    final_hash = _get_sha256(destination)
-    if not final_hash or final_hash != source_hash:
-        _safe_unlink(destination)
-        raise OSError("Falla crítica: el hash del archivo copiado no coincide.")
-    
-    ensure_safe_to_modify(destination, allow_sensitive=True)
-    return final_hash
 
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:

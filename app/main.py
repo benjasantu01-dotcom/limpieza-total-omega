@@ -1672,8 +1672,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
         
         pid = int(pid_val)
+        # Seguridad defensiva: No permitir tocar procesos del sistema o protegidos.
+        # En Windows, los procesos PID < 100 suelen ser esenciales o críticos.
         if pid < 100:
-            self.log(f"Error: El proceso {pid} es crítico del sistema.", "Memoria")
+            self.log(f"Error: El proceso {pid} es crítico del sistema y no puede ser modificado.", "Memoria")
             return
         
         if not memory_mod.process_exists(pid):
