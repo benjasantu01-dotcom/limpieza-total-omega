@@ -178,7 +178,6 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
-        # Definimos el tipo de retorno explícitamente para asegurar compatibilidad
         kernel32.GetFileAttributesW.restype = ctypes.c_ulong
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
@@ -246,45 +245,31 @@ def _sum_directory_recursive(
     is_junction_fn: JunctionChecker, 
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[str, int],
-    root_base_abs: str,
     depth: int = 0
 ) -> int:
     """
     Calcula recursivamente el peso de una carpeta utilizando memoización para eficiencia.
-    Limpia resultados mediante exclusión selectiva de entradas bloqueadas o protegidas.
     """
     if root_abs in memo:
         return memo[root_abs]
 
-    root_path = Path(root_abs)
-    # Defensa: verificamos que la ruta sea un directorio antes de listar
-    if not root_path.is_dir() or not is_safe_to_modify(root_path):
-        return 0
-
     directory_total_bytes: int = 0
     try:
         with os.scandir(root_abs) as it:
-            while True:
-                try:
-                    entry = next(it, None)
-                    if entry is None:
-                        break
-                    if _should_skip_entry(entry, kernel32, is_junction_fn):
-                        continue
-                    
-                    if entry.is_dir(follow_symlinks=False):
-                        if depth < MAX_SCAN_DEPTH:
-                            if is_safe_to_modify(Path(entry.path)):
-                                directory_total_bytes += _sum_directory_recursive(
-                                    entry.path, is_junction_fn, kernel32, memo, root_base_abs, depth + 1
-                                )
-                    elif entry.is_file(follow_symlinks=False):
-                        try:
-                            directory_total_bytes += int(entry.stat(follow_symlinks=False).st_size)
-                        except (OSError, PermissionError):
-                            pass
-                except (StopIteration, OSError, PermissionError):
-                    break
+            for entry in it:
+                if _should_skip_entry(entry, kernel32, is_junction_fn):
+                    continue
+                
+                if entry.is_dir(follow_symlinks=False):
+                    if depth < MAX_SCAN_DEPTH:
+                        directory_total_bytes += _sum_directory_recursive(
+                            entry.path, is_junction_fn, kernel32, memo, depth + 1
+                        )
+                elif entry.is_file(follow_symlinks=False):
+                    try:
+                        directory_total_bytes += int(entry.stat(follow_symlinks=False).st_size)
+                    except (OSError, PermissionError):
+                        pass
         
         memo[root_abs] = directory_total_bytes
         return directory_total_bytes
@@ -304,7 +289,7 @@ def directory_size(path: Optional[OSPath]) -> int:
         if len(str(p)) >= MAX_PATH_LEN or not p.is_absolute() or not _is_safe_to_traverse(p, None):
             return 0
         resolved = str(p.resolve(strict=True))
-        return _sum_directory_recursive(resolved, _IS_JUNCTION_FN, _get_kernel32(), {}, resolved)
+        return _sum_directory_recursive(resolved, _IS_JUNCTION_FN, _get_kernel32(), {})
     except (OSError, RuntimeError, PermissionError, ValueError):
         return 0
 
@@ -337,7 +322,6 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
         return Path()
     try:
         target = real_base.joinpath(*rel_str.split("\\"))
-        # Verifica integridad post-join para prevenir escapes de directorio
         if len(str(target)) >= MAX_PATH_LEN:
             return Path()
         return target
@@ -374,8 +358,7 @@ def detect_profiles(
                     continue
                 
                 real_candidate = str(candidate.resolve(strict=True))
-                # Uso de global_memo para evitar re-escaneo de rutas compartidas
-                size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, global_memo, str(real_base))
+                size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, global_memo)
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), Path(real_candidate), size))
         except (OSError, PermissionError, TypeError, ValueError, RuntimeError):

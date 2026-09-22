@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 50
+- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 23 | 3 | 4 | 1 | 39 |
+| 2026-09-20 | 22 | 2 | 4 | 1 | 37 |
 | 2026-09-21 | 145 | 10 | 39 | 8 | 148 |
-| 2026-09-22 | 27 | 3 | 7 | 5 | 42 |
+| 2026-09-22 | 30 | 3 | 8 | 5 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **47**
 - seguridad defensiva: **41**
-- robustez ante casos límite: **32**
-- rendimiento: **25**
+- robustez ante casos límite: **31**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **19**
 - `quarantine.py`: **19**
-- `assistant.py`: **18**
 - `memory.py`: **17**
+- `browser.py`: **16**
+- `diskreport.py`: **16**
 - `settings.py`: **15**
-- `browser.py`: **15**
-- `diskreport.py`: **15**
 - `duplicates.py`: **15**
 - `organizer.py`: **15**
 - `safety.py`: **15**
 - `healthscore.py`: **14**
 - `scanner.py`: **12**
 - `branding.py`: **12**
-- `main.py`: **8**
+- `main.py`: **7**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T03:56:32` **diskreport.py** (rendimiento): Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y `path.lower()` dentro del bucle, procesando la extensión una sola vez por archivo, lo que reduce la carga computacional en escaneos de grandes directorios.
+- `2026-09-22T03:56:19` **browser.py** (rendimiento): Optimicé el cálculo del peso de los directorios reemplazando el uso de `os.scandir` dentro de un bucle `while True` con un `for` estándar, y eliminé la redundancia en la recursión donde se invocaba `is_safe_to_modify` dos veces por nivel, mejorando la eficiencia en el escaneo de profundidad.
+- `2026-09-22T03:55:19` **assistant.py** (rendimiento): Se implementó un cacheo más eficiente mediante `lru_cache` en `_format_problem_message` y se eliminó la recreación innecesaria de estructuras `frozenset` en cada llamada a `local_answer` moviendo `TOKENS_BY_CATEGORY` a una estructura constante precalculada, reduciendo la presión sobre el recolector de basura.
 - `2026-09-22T03:44:50` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la incorporación de type hints faltantes y la clarificación de los docstrings en las funciones heurísticas para explicitar sus criterios de detección, facilitando así el mantenimiento futuro del motor de análisis.
 - `2026-09-22T03:44:22` **safety.py** (legibilidad y documentación): Se introdujo un `TypedDict` para documentar la estructura esperada de los metadatos de validación y se añadieron docstrings explicativos a las funciones internas críticas de `safety.py` para mejorar la mantenibilidad y claridad del código.
 - `2026-09-22T03:34:28` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, aclarando las precondiciones y el propósito de las validaciones de seguridad, además de normalizar la consistencia de los tipos y clarificar la lógica de las comprobaciones de atributos de Windows.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T03:03:07` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_relevant_extension` y `scan_directory` añadiendo validaciones preventivas de tipos y estados, evitando errores silenciosos al procesar entradas de sistema inesperadamente nulas o con nombres malformados.
 - `2026-09-22T02:57:52` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la detección de errores durante la validación de integridad al agregar un manejo específico de `PermissionError` y `OSError` en `_is_file_in_use`, garantizando que el acceso bloqueado por el sistema no resulte en excepciones no capturadas que detengan el bucle de procesamiento.
 - `2026-09-22T02:57:06` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación defensiva en `_safe_unlink` para asegurar que el hash (si está presente) coincida antes de realizar la eliminación, evitando purgar archivos cuyo contenido haya sido manipulado externamente tras su cuarentena.
-- `2026-09-22T02:52:55` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_for_disk_op` y `_is_safe_to_move` centralizando la validación de nulos y existencias para evitar errores de tipo `NoneType` o `FileNotFoundError` antes de realizar operaciones de disco, asegurando que las guardas sean explícitas y preventivas.
-- `2026-09-22T02:44:42` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_windows_process_csv` agregando una validación explícita para evitar errores de tipo si los datos de entrada están mal formados, garantizando que el bucle de procesamiento de memoria no se interrumpa ante datos inesperados.
-- `2026-09-22T02:44:28` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_ask_assistant` y `on_trim_process` encapsulando la extracción de valores de widgets en un método de validación centralizado (`_safe_get_entry_value`) para prevenir excepciones de UI al procesar entradas vacías o malformadas.

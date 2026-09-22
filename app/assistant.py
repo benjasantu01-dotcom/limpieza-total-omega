@@ -481,6 +481,7 @@ def explain_area(area: Any) -> str:
         return "No tengo una explicación para esa área."
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
+@lru_cache(maxsize=32)
 def _format_problem_message(problems: tuple[str, ...], score: Union[int, str]) -> str:
     """Crea una oración descriptiva con los problemas encontrados."""
     try:
@@ -559,15 +560,15 @@ def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     cierre = " La app los lista, pero desactivalos desde el Administrador de tareas de Windows."
     return Answer(_validate_response_length(f"{estado} {valoracion}{cierre}"), notice=OFFLINE_NOTICE)
 
-TOKENS_BY_CATEGORY: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
+_TOKENS_MAP: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
     token: handler 
-    for key_set, handler in (
-        (frozenset(["ram", "memoria", "lenta", "lento", "acelerar"]), handle_ram),
-        (frozenset(["espacio", "disco", "lleno", "recuperar", "liberar"]), handle_disk),
-        (frozenset(["seguro", "virus", "sospechos", "borrar", "peligro"]), handle_security),
-        (frozenset(["puntaje", "salud", "nota", "score"]), handle_score),
-        (frozenset(["inicio", "arranque", "arranca", "encender"]), handle_startup)
-    ) for token in key_set
+    for tokens, handler in (
+        (["ram", "memoria", "lenta", "lento", "acelerar"], handle_ram),
+        (["espacio", "disco", "lleno", "recuperar", "liberar"], handle_disk),
+        (["seguro", "virus", "sospechos", "borrar", "peligro"], handle_security),
+        (["puntaje", "salud", "nota", "score"], handle_score),
+        (["inicio", "arranque", "arranca", "encender"], handle_startup)
+    ) for token in tokens
 }
 
 def _sanitize_query(question: str) -> str:
@@ -590,8 +591,8 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         )
     
     for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
-        if token in TOKENS_BY_CATEGORY:
-            return TOKENS_BY_CATEGORY[token](context, question)
+        if token in _TOKENS_MAP:
+            return _TOKENS_MAP[token](context, question)
             
     cuerpo = _format_problem_message(
         context.active_problems, 
