@@ -216,7 +216,7 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Ejecuta reglas heurísticas con aislamiento de excepciones y sanitización de salida para seguridad."""
+    """Ejecuta reglas heurísticas con aislamiento de excepciones y sanitización de salida."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -247,13 +247,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             metric_breakdown[entry.area] = weighted_points
             accumulated_score += weighted_points
         except Exception:
-            # En caso de error en un módulo, se preserva el cálculo del resto del pipeline
             metric_breakdown[entry.area] = 0
             
     final_score = int(min(accumulated_score, 100))
     
     if metrics.quarantined_count > 0:
-        recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")
+        clean_quarantine_msg = f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena."
+        recommendations.append(clean_quarantine_msg)
     
     return HealthResult(
         score=final_score, 

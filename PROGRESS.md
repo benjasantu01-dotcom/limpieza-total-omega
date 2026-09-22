@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 231
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 105 | 7 | 31 | 7 | 130 |
-| 2026-09-22 | 80 | 10 | 18 | 15 | 101 |
+| 2026-09-21 | 105 | 7 | 31 | 7 | 126 |
+| 2026-09-22 | 82 | 10 | 19 | 15 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **41**
+- seguridad defensiva: **35**
 - robustez ante casos límite: **33**
-- seguridad defensiva: **33**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
@@ -33,12 +33,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **18**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
+- `healthscore.py`: **16**
 - `safety.py`: **16**
-- `healthscore.py`: **15**
 - `browser.py`: **14**
 - `duplicates.py`: **14**
 - `settings.py`: **13**
-- `organizer.py`: **12**
+- `organizer.py`: **13**
 - `scanner.py`: **11**
 - `branding.py`: **9**
 - `main.py`: **8**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T09:54:59` **organizer.py** (seguridad defensiva): Se ha reforzado la integridad del movimiento de archivos en `stage_for_review` asegurando que la ruta destino sea un subdirectorio directo de `dest_base` y evitando cualquier inyección de nombres de archivo maliciosos mediante el uso de `name` en lugar de `stem/suffix` arbitrarios, además de añadir una verificación estricta de que la ruta destino no sea un punto de reparse (Junction).
+- `2026-09-22T09:51:59` **healthscore.py** (seguridad defensiva): Se ha implementado un mecanismo de "defensive string sanitization" en `_evaluate_rules` y `compute_score` para prevenir ataques de inyección de texto o caracteres de control que podrían desestabilizar la interfaz de usuario, garantizando que el asistente solo procese cadenas imprimibles y acotadas.
 - `2026-09-22T09:43:10` **duplicates.py** (seguridad defensiva): Se introdujo una validación explícita de puntos de reparse (junctions) y enlaces simbólicos en `_validate_and_resolve_path` utilizando `resolve()` con `strict=True` y una comprobación posterior de `is_symlink()` para asegurar que ninguna operación de hash acceda accidentalmente fuera de la jerarquía de directorios permitida o atraviese un punto de unión malintencionado.
 - `2026-09-22T09:42:39` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` implementando una validación estricta de rutas absolutas para evitar el seguimiento de enlaces simbólicos o rutas malintencionadas que apunten fuera del directorio base del escaneo, mitigando riesgos de traversals.
 - `2026-09-22T09:32:50` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_text_structure` añadiendo una validación explícita contra rutas relativas y absolutas, asegurando que ningún texto procesado por el asistente pueda ser interpretado como una ruta del sistema, incluso si no contiene caracteres especiales prohibidos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T08:47:23` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando búsquedas lineales O(N) en diccionarios o conjuntos, evitando iteraciones repetitivas sobre el manifiesto y mejorando la eficiencia de E/S al trabajar con los archivos en disco.
 - `2026-09-22T08:35:19` **main.py** (rendimiento): Optimicé el renderizado de la lista de archivos basura y duplicados reemplazando la recreación masiva de widgets de texto por un único volcado de cadena, reduciendo el número de operaciones de manipulación de `Tkinter` y mejorando la respuesta de la UI durante los procesos de reporte.
 - `2026-09-22T08:30:57` **healthscore.py** (rendimiento): Optimicé el bucle principal de `compute_score` eliminando la creación de listas intermedias y el uso de `float` innecesario, y mejoré la eficiencia del `summarize` usando un generador para el renderizado de barras y evitando consultas repetidas al diccionario.
-- `2026-09-22T08:21:28` **browser.py** (rendimiento): Se optimizó el proceso de escaneo en `detect_profiles` eliminando llamadas redundantes a `resolve()` y `exists()` mediante la reutilización de objetos `Path` y la comprobación de integridad en un solo paso, mejorando la eficiencia del bucle de detección.
-- `2026-09-22T08:20:39` **assistant.py** (rendimiento): Optimicé el rendimiento de `_get_source_value` reemplazando la lógica de manejo de errores por un acceso directo más eficiente y seguro, y mejoré la inicialización de `_TOKENS_MAP` para que sea una estructura estática calculada una única vez, evitando la sobrecarga de reconstrucción en cada importación.

@@ -262,6 +262,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     try:
         dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
+        if _is_junction(dest_base): return None
         ensure_safe_to_modify(dest_base)
     except (OSError, RuntimeError, PermissionError): return None
     
@@ -281,14 +282,17 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         usage = shutil.disk_usage(dest_base.anchor)
         if usage.free < (junk_file.size_bytes + 52428800): return None
     except (OSError, FileNotFoundError, AttributeError): return None
+    
+    # Asegurar que el nombre del archivo sea limpio y prevenir escape de directorio
     safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
-    return _generate_unique_target(dest_base / safe_name)
+    candidate = dest_base / safe_name
+    return _generate_unique_target(candidate)
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """Elimina permanentemente los archivos en cuarentena tras realizar chequeos de seguridad obligatorios."""
     try:
         dest = Path(review_dir).expanduser().resolve()
-        if not dest.is_dir() or not is_safe_to_modify(dest): return 0
+        if not dest.is_dir() or not is_safe_to_modify(dest) or _is_junction(dest): return 0
         
         count = 0
         for item in dest.iterdir():
