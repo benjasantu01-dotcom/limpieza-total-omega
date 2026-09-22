@@ -231,35 +231,26 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Pipeline principal de evaluación.
-    
-    Toma métricas crudas y las procesa secuencialmente según el _PIPELINE definido:
-    1. Calcula el ratio de salud para cada área mediante su 'scorer'.
-    2. Ejecuta reglas de advertencia si el ratio viola umbrales de seguridad.
-    3. Pondera el resultado para computar un puntaje global [0-100].
     """
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
     
-    metrics.validate()
-    
     recommendations: List[str] = []
-    metric_breakdown: Dict[MetricKey, int] = {k: 0 for k in WEIGHTS}
+    metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: int = 0
     
     for entry in _PIPELINE:
         try:
-            area_ratio: NormalizedRatio = entry.scorer(metrics)
-            if not math.isfinite(area_ratio):
-                area_ratio = 0.0
-            area_ratio = _clamp(area_ratio)
-            
+            # Normalización y ponderación directa sin redondeo innecesario
+            area_ratio = _clamp(entry.scorer(metrics))
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
-            weighted_points = int(round(area_ratio * entry.weight))
-            metric_breakdown[entry.area] = max(0, min(weighted_points, entry.weight))
-            accumulated_score += metric_breakdown[entry.area]
+            weighted_points = int(area_ratio * entry.weight + 0.5)
+            metric_breakdown[entry.area] = weighted_points
+            accumulated_score += weighted_points
         except Exception:
+            metric_breakdown[entry.area] = 0
             continue
             
     final_score = max(0, min(accumulated_score, 100))

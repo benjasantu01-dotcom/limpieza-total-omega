@@ -8,45 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 51
-- Sin cambios (nada sustancial que mejorar): 14
+- Rechazadas por guardia de seguridad: 50
+- Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 22 | 2 | 4 | 1 | 37 |
+| 2026-09-20 | 20 | 2 | 3 | 1 | 36 |
 | 2026-09-21 | 145 | 10 | 39 | 8 | 148 |
-| 2026-09-22 | 30 | 3 | 8 | 5 | 42 |
+| 2026-09-22 | 32 | 3 | 8 | 6 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **47**
 - seguridad defensiva: **41**
-- robustez ante casos límite: **31**
-- rendimiento: **28**
+- rendimiento: **30**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **19**
 - `quarantine.py`: **19**
-- `memory.py`: **17**
+- `memory.py`: **18**
 - `browser.py`: **16**
 - `diskreport.py`: **16**
-- `settings.py`: **15**
 - `duplicates.py`: **15**
+- `healthscore.py`: **15**
 - `organizer.py`: **15**
 - `safety.py`: **15**
-- `healthscore.py`: **14**
-- `scanner.py`: **12**
+- `settings.py`: **14**
 - `branding.py`: **12**
+- `scanner.py`: **11**
 - `main.py`: **7**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T04:06:35` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` eliminando el uso innecesario de `Select-Object -First 50` dentro de PowerShell y realizando el filtrado y ordenamiento de forma eficiente en Python, evitando también recálculos innecesarios mediante un manejo más estricto del caché de tiempo.
+- `2026-09-22T04:05:07` **healthscore.py** (rendimiento): Optimicé el cálculo del `compute_score` eliminando la validación duplicada y el uso de `round()` dentro del bucle, reemplazándolo por una aritmética entera más eficiente y un acceso directo a `WEIGHTS` que evita sobrecarga en el pipeline.
 - `2026-09-22T03:56:32` **diskreport.py** (rendimiento): Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y `path.lower()` dentro del bucle, procesando la extensión una sola vez por archivo, lo que reduce la carga computacional en escaneos de grandes directorios.
 - `2026-09-22T03:56:19` **browser.py** (rendimiento): Optimicé el cálculo del peso de los directorios reemplazando el uso de `os.scandir` dentro de un bucle `while True` con un `for` estándar, y eliminé la redundancia en la recursión donde se invocaba `is_safe_to_modify` dos veces por nivel, mejorando la eficiencia en el escaneo de profundidad.
 - `2026-09-22T03:55:19` **assistant.py** (rendimiento): Se implementó un cacheo más eficiente mediante `lru_cache` en `_format_problem_message` y se eliminó la recreación innecesaria de estructuras `frozenset` en cada llamada a `local_answer` moviendo `TOKENS_BY_CATEGORY` a una estructura constante precalculada, reduciendo la presión sobre el recolector de basura.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T03:04:05` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación estricta de la estructura del CSV y un manejo defensivo ante filas malformadas para prevenir excepciones silenciosas durante la carga de registros.
 - `2026-09-22T03:03:37` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_coerce_and_verify` agregando una validación estricta del tipo de cada valor cargado contra el valor por defecto, evitando así comportamientos inesperados ante datos malformados en el JSON.
 - `2026-09-22T03:03:07` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_relevant_extension` y `scan_directory` añadiendo validaciones preventivas de tipos y estados, evitando errores silenciosos al procesar entradas de sistema inesperadamente nulas o con nombres malformados.
-- `2026-09-22T02:57:52` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la detección de errores durante la validación de integridad al agregar un manejo específico de `PermissionError` y `OSError` en `_is_file_in_use`, garantizando que el acceso bloqueado por el sistema no resulte en excepciones no capturadas que detengan el bucle de procesamiento.
-- `2026-09-22T02:57:06` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación defensiva en `_safe_unlink` para asegurar que el hash (si está presente) coincida antes de realizar la eliminación, evitando purgar archivos cuyo contenido haya sido manipulado externamente tras su cuarentena.

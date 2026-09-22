@@ -807,3 +807,10 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-22T03:56:32` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y `path.lower()` dentro del bucle, procesando la extensión una sola vez por archivo, lo que reduce la carga computacional en escaneos de grandes directorios.
 - `2026-09-22T03:56:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T03:56:32` Corrida terminada. Total usado hoy: 88.
+- `2026-09-22T04:04:14` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-09-22T04:04:40` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-22T04:05:07` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del `compute_score` eliminando la validación duplicada y el uso de `round()` dentro del bucle, reemplazándolo por una aritmética entera más eficiente y un acceso directo a `WEIGHTS` que evita sobrecarga en el pipeline.
+- `2026-09-22T04:06:20` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de la interfaz al reemplazar el redibujado síncrono por una gestión de colas de eventos (debounce) y una carga perezosa de pestañas, asegurando que los recursos no se saturen durante operaciones intensivas de disco o UI.
+- `2026-09-22T04:06:35` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento de `top_memory_processes` eliminando el uso innecesario de `Select-Object -First 50` dentro de PowerShell y realizando el filtrado y ordenamiento de forma eficiente en Python, evitando también recálculos innecesarios mediante un manejo más estricto del caché de tiempo.
+- `2026-09-22T04:06:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T04:06:35` Corrida terminada. Total usado hoy: 92.

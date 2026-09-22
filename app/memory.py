@@ -59,7 +59,7 @@ ERROR_ACCESS_DENIED: Final[int] = 5
 
 PS_QUERY_CMD: Final[List[str]] = [
     'powershell', '-NoProfile', '-NonInteractive', '-Command', 
-    'Get-Process | Where-Object { $_.Id -notin 0,4 } | Select-Object -First 50 | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }'
+    'Get-Process | Where-Object { $_.Id -notin 0,4 } | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }'
 ]
 
 __all__ = [
@@ -208,10 +208,6 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             raw_pid = parts[1]
             raw_ws = parts[2]
             
-            if not isinstance(name_part, str) or not isinstance(raw_pid, str) or not isinstance(raw_ws, str):
-                continue
-                
-            name = name_part.strip("'\" ")
             clean_pid = "".join(c for c in raw_pid if c.isdigit())
             clean_ws = "".join(c for c in raw_ws if c.isdigit())
             
@@ -219,7 +215,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             
             pid, ws = int(clean_pid), int(clean_ws)
             if pid > 0 and 0 <= ws < MAX_VALID_PROCESS_MEM:
-                results.append(ProcessMemory(name=name, pid=pid, working_set=BytesValue(ws)))
+                results.append(ProcessMemory(name=name_part.strip("'\" "), pid=pid, working_set=BytesValue(ws)))
         except (ValueError, TypeError):
             continue
     
@@ -279,10 +275,11 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         try:
             proc = subprocess.run(PS_QUERY_CMD, capture_output=True, text=True, timeout=3, check=False)
             if proc.returncode == 0 and proc.stdout:
+                # Se filtra y ordena aquí para evitar overhead en el subproceso
                 _proc_cache_data = parse_windows_process_csv(proc.stdout, limit=50)
                 _proc_cache_time = now
         except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): 
-            _proc_cache_data = []
+            return []
             
     return _proc_cache_data[:limit]
 
