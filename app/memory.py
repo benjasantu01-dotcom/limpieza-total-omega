@@ -190,6 +190,10 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         cached=BytesValue(max(0, cached))
     )
 
+def _extract_numeric_val(text: str) -> int:
+    """Extrae solo dígitos de una cadena para conversión segura."""
+    return int("".join(c for c in text if c.isdigit()) or 0)
+
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """Procesa el CSV de PowerShell y retorna los N procesos con mayor consumo."""
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
@@ -197,24 +201,15 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     
     results: List[ProcessMemory] = []
     for line in raw_csv_text.splitlines():
-        line = line.strip()
-        if not line: continue
-        
-        parts = line.split(",", 2)
+        parts = line.strip().split(",", 2)
         if len(parts) < 3: continue
         
         try:
-            name_part = parts[0]
-            if not parts[1] or not parts[2]: continue
+            pid = _extract_numeric_val(parts[1])
+            ws = _extract_numeric_val(parts[2])
             
-            clean_pid = "".join(c for c in parts[1] if c.isdigit())
-            clean_ws = "".join(c for c in parts[2] if c.isdigit())
-            
-            if not clean_pid or not clean_ws: continue
-            
-            pid, ws = int(clean_pid), int(clean_ws)
             if pid > 0 and 0 <= ws < MAX_VALID_PROCESS_MEM:
-                results.append(ProcessMemory(name=name_part.strip("'\" "), pid=pid, working_set=BytesValue(ws)))
+                results.append(ProcessMemory(name=parts[0].strip("'\" "), pid=pid, working_set=BytesValue(ws)))
         except (ValueError, TypeError, OverflowError):
             continue
     
