@@ -337,13 +337,14 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     return final_settings
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Guarda los ajustes usando escritura atómica."""
+    """Guarda los ajustes usando escritura atómica y validación de seguridad."""
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     parent = ruta.parent
     try:
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         if not os.access(parent, os.W_OK) or _Validators._is_reparse_point(parent): return None
+        if not _Validators._is_safe_path(str(parent)): return None
         ensure_safe_to_modify(parent)
         cleaned_settings = _coerce_and_verify(validate(values))
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)

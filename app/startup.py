@@ -303,9 +303,13 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             
             try:
                 p_cmd = Path(cmd)
+                # Aplicamos filtro de seguridad riguroso antes de procesar el registro
                 if not p_cmd.parts or is_protected_path(p_cmd):
                     continue
-            except (ValueError, TypeError):
+                # Verificamos seguridad adicional tras normalización mínima
+                if is_protected_path(p_cmd.resolve(strict=False)):
+                    continue
+            except (ValueError, TypeError, OSError):
                 continue
             
             seen_commands.add(cmd)
