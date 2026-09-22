@@ -251,12 +251,14 @@ def _is_offline(path_str: str) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
-    """Verifica bloqueos mediante intento de apertura con acceso exclusivo al handle."""
+    """Verifica bloqueos mediante intento de apertura con acceso de solo lectura y compartido."""
     if os.name != 'nt' or not isinstance(path_str, str) or not os.path.isabs(path_str) or not os.path.isfile(path_str):
         return False
     try:
         kernel32 = ctypes.windll.kernel32
-        handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0x00000001, None, 3, 0x00000080, None)
+        # FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE = 0x00000007
+        # GENERIC_READ = 0x80000000
+        handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0x00000007, None, 3, 0x00000080, None)
         if handle == -1: 
             return ctypes.GetLastError() == 32
         kernel32.CloseHandle(handle)

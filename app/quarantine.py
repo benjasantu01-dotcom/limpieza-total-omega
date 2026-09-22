@@ -527,6 +527,9 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
 
+    if not source.exists():
+        raise FileNotFoundError("Archivo origen no encontrado durante la copia.")
+
     source_hash = _get_sha256(source)
     temp_dest = destination.with_suffix(".tmp")
     

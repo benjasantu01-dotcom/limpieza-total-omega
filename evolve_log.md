@@ -1428,3 +1428,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-22T09:12:50` ➖ Sin cambios en memory.py (enfoque: robustez ante casos límite). Motivo: Se mejora la robustez de `trim_working_set` añadiendo una verificación de privilegios (`OpenProcess`) más restrictiva y manejando correctamente el cierre de `proc_handle` en caso de fallos intermedios, evitando fugas de handles.
 - `2026-09-22T09:12:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T09:12:50` Corrida terminada. Total usado hoy: 212.
+- `2026-09-22T09:20:43` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-09-22T09:21:12` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-22T09:21:50` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine.py` ante errores de entrada y concurrencia al añadir un chequeo explícito de existencia de `source` en `_write_temp_to_final`, asegurando que no se intente operar sobre archivos que pudieron ser eliminados por procesos externos durante el paso de copia.
+- `2026-09-22T09:22:09` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-22T09:22:33` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una verificación de "deadlock" en la apertura de archivos (`_is_file_in_use`) para prevenir errores de acceso concurrente (`ERROR_SHARING_VIOLATION`) mediante el uso de una constante de acceso más conservadora, mejorando la robustez frente a bloqueos del kernel o procesos del sistema.
+- `2026-09-22T09:22:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T09:22:33` Corrida terminada. Total usado hoy: 216.
