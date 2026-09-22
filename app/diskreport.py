@@ -100,14 +100,18 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry) -> bool:
+def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """
     Filtro de exclusión para el escáner de archivos basado en seguridad defensiva.
-    Retorna True si la entrada debe ser ignorada por razones de seguridad o formato.
+    Retorna True si la entrada debe ser ignorada por razones de seguridad, formato o escape de sandbox.
     """
     try:
-        entry_path = entry.path
-        if not entry_path or len(entry_path) > 260:
+        # Validación estricta de sandbox: el archivo/carpeta debe estar contenido en la raíz
+        path = Path(entry.path).resolve()
+        if not str(path).startswith(str(root_path)):
+            return True
+
+        if len(entry.path) > 260:
             return True
         
         # Detección de caracteres sospechosos de suplantación (RTL)
@@ -254,7 +258,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    if _is_excluded_path(entry): continue
+                    if _is_excluded_path(entry, root_path): continue
                     
                     try:
                         st = entry.stat(follow_symlinks=False)

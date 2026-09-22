@@ -1442,3 +1442,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-22T09:32:50` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_text_structure` añadiendo una validación explícita contra rutas relativas y absolutas, asegurando que ningún texto procesado por el asistente pueda ser interpretado como una ruta del sistema, incluso si no contiene caracteres especiales prohibidos.
 - `2026-09-22T09:32:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T09:32:50` Corrida terminada. Total usado hoy: 220.
+- `2026-09-22T09:41:08` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-09-22T09:41:42` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-22T09:42:08` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-09-22T09:42:39` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_excluded_path` implementando una validación estricta de rutas absolutas para evitar el seguimiento de enlaces simbólicos o rutas malintencionadas que apunten fuera del directorio base del escaneo, mitigando riesgos de traversals.
+- `2026-09-22T09:43:10` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se introdujo una validación explícita de puntos de reparse (junctions) y enlaces simbólicos en `_validate_and_resolve_path` utilizando `resolve()` con `strict=True` y una comprobación posterior de `is_symlink()` para asegurar que ninguna operación de hash acceda accidentalmente fuera de la jerarquía de directorios permitida o atraviese un punto de unión malintencionado.
+- `2026-09-22T09:43:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T09:43:10` Corrida terminada. Total usado hoy: 224.

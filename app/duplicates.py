@@ -117,6 +117,9 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
         return None
     try:
         p: Path = Path(path).resolve(strict=True)
+        # Seguridad defensiva adicional: asegurar que no es un symlink/junction
+        if p.is_symlink() or is_junction(p):
+            return None
         if p.is_file() and is_safe_to_modify(p) and not _is_file_locked(p):
             return p
     except (OSError, RuntimeError, ValueError):
@@ -174,7 +177,7 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
     try:
         if is_protected_path(path) or not is_safe_to_modify(path):
             return False
-        if is_system_or_hidden(path):
+        if is_system_or_hidden(path) or path.is_symlink() or is_junction(path):
             return False
         return st_size > 0 and not _is_file_locked(path)
     except (OSError, ValueError, TypeError, RuntimeError, AttributeError):
@@ -188,7 +191,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         if not p: continue
         try:
             path_obj = Path(p).resolve(strict=True)
-            if is_safe_to_modify(path_obj):
+            if is_safe_to_modify(path_obj) and not path_obj.is_symlink():
                 st = path_obj.stat()
                 if _is_valid_candidate(path_obj, st.st_size):
                     groups[st.st_size].append(path_obj)
