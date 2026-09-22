@@ -239,6 +239,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
+            if entry.area not in WEIGHTS:
+                continue
             area_ratio = _clamp(entry.scorer(metrics))
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)

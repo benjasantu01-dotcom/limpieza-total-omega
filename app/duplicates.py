@@ -311,7 +311,11 @@ def _get_keeper_score(path: Path) -> Optional[Tuple[float, int]]:
     Se prioriza fecha de modificación más antigua (estabilidad) y 
     longitud de ruta (menor profundidad/simplicidad).
     """
+    if not isinstance(path, Path):
+        return None
     try:
+        if not path.exists():
+            return None
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
     except (OSError, PermissionError, ValueError, AttributeError):
@@ -325,6 +329,8 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
+        if not isinstance(p, Path):
+            continue
         try:
             if p.exists() and is_safe_to_modify(p):
                 if score := _get_keeper_score(p):
@@ -337,19 +343,24 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Serializa un grupo de duplicados en formato legible para la UI."""
-    if not group or not group.paths:
-        return ["Error: Grupo inválido o vacío"]
+    if not group or not isinstance(group, DuplicateGroup):
+        return ["Error: Grupo inválido"]
+    if not group.paths:
+        return ["Error: Grupo vacío"]
         
     keeper = suggest_keeper(group)
     mb_t, mb_w = round(group.size_bytes / 1048576, 2), round(group.wasted_bytes / 1048576, 2)
     lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
     
     for path in group.paths:
+        if not isinstance(path, Path):
+            continue
         try:
             if not is_safe_to_modify(path):
                 lines.append(f"   [inaccesible] {path}")
             else:
-                label = 'conservar' if (keeper is not None and path.resolve() == keeper.resolve()) else 'duplicado'
+                is_keeper = (keeper is not None and path.resolve() == keeper.resolve())
+                label = 'conservar' if is_keeper else 'duplicado'
                 lines.append(f"   [{label}] {path}")
         except (OSError, PermissionError):
             lines.append(f"   [error de acceso] {path}")

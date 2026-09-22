@@ -437,3 +437,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-22T11:37:07` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` capturando `PermissionError` y `OSError` de forma explícita al procesar rutas, evitando que una falla puntual en un archivo detenga el análisis completo, manteniendo el enfoque en el manejo de errores.
 - `2026-09-22T11:37:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T11:37:07` Corrida terminada. Total usado hoy: 268.
+- `2026-09-22T11:43:57` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-09-22T11:45:02` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación robusta de tipos y estados en `_get_keeper_score` y `format_group` para evitar excepciones no capturadas al procesar rutas, además de asegurar que `hash_file` y `partial_hash` manejen correctamente posibles errores de I/O al leer archivos en uso, mejorando la resiliencia del motor de duplicados.
+- `2026-09-22T11:45:57` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del motor de cómputo validando que `WEIGHTS` contenga las claves esperadas y agregando un manejo explícito para métricas faltantes en `compute_score`, evitando errores de ejecución si la estructura de datos evoluciona o recibe parámetros incompletos.
+- `2026-09-22T11:46:58` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-22T11:48:01` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-22T11:49:07` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-22T11:50:19` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-22T11:50:48` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `parse_linux_meminfo` mediante una validación más estricta de las líneas del archivo `/proc/meminfo` y una gestión de errores predecible, evitando que valores malformados o faltantes corrompan el `MemorySnapshot`.
+- `2026-09-22T11:50:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T11:50:48` Corrida terminada. Total usado hoy: 272.

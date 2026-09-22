@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 243
+- Sin respuesta de la IA (error o límite): 244
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 85 | 7 | 28 | 6 | 110 |
-| 2026-09-22 | 90 | 10 | 20 | 15 | 133 |
+| 2026-09-21 | 82 | 7 | 27 | 6 | 110 |
+| 2026-09-22 | 93 | 10 | 20 | 15 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **40**
-- manejo de errores y validación de entradas: **36**
-- legibilidad y documentación: **34**
+- manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **33**
 - rendimiento: **32**
+- legibilidad y documentación: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **17**
 - `diskreport.py`: **17**
 - `quarantine.py`: **17**
-- `safety.py`: **16**
-- `memory.py`: **15**
-- `healthscore.py`: **14**
-- `settings.py`: **13**
+- `memory.py`: **16**
+- `healthscore.py`: **15**
+- `safety.py`: **15**
 - `browser.py`: **13**
-- `duplicates.py`: **12**
+- `duplicates.py`: **13**
 - `organizer.py`: **12**
-- `scanner.py`: **11**
+- `settings.py`: **12**
+- `scanner.py`: **10**
 - `branding.py`: **8**
 - `main.py`: **7**
 - `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T11:50:48` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_linux_meminfo` mediante una validación más estricta de las líneas del archivo `/proc/meminfo` y una gestión de errores predecible, evitando que valores malformados o faltantes corrompan el `MemorySnapshot`.
+- `2026-09-22T11:45:57` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del motor de cómputo validando que `WEIGHTS` contenga las claves esperadas y agregando un manejo explícito para métricas faltantes en `compute_score`, evitando errores de ejecución si la estructura de datos evoluciona o recibe parámetros incompletos.
+- `2026-09-22T11:45:02` **duplicates.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de tipos y estados en `_get_keeper_score` y `format_group` para evitar excepciones no capturadas al procesar rutas, además de asegurar que `hash_file` y `partial_hash` manejen correctamente posibles errores de I/O al leer archivos en uso, mejorando la resiliencia del motor de duplicados.
 - `2026-09-22T11:37:07` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando `PermissionError` y `OSError` de forma explícita al procesar rutas, evitando que una falla puntual en un archivo detenga el análisis completo, manteniendo el enfoque en el manejo de errores.
 - `2026-09-22T11:35:52` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `_is_path_inside_base` y `_resolve_browser_path` para prevenir excepciones ante entradas inesperadas, y se ha añadido una protección de desbordamiento de pila en `_sum_directory_recursive` mediante una comprobación explícita de `depth` antes de la recursión profunda.
 - `2026-09-22T11:34:24` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` para evitar excepciones en escenarios de introspección inesperados y fortalecí el método `ingest` de `SystemContext` para manejar fallos de validación parciales sin interrumpir la carga de otras métricas válidas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T09:51:59` **healthscore.py** (seguridad defensiva): Se ha implementado un mecanismo de "defensive string sanitization" en `_evaluate_rules` y `compute_score` para prevenir ataques de inyección de texto o caracteres de control que podrían desestabilizar la interfaz de usuario, garantizando que el asistente solo procese cadenas imprimibles y acotadas.
 - `2026-09-22T09:43:10` **duplicates.py** (seguridad defensiva): Se introdujo una validación explícita de puntos de reparse (junctions) y enlaces simbólicos en `_validate_and_resolve_path` utilizando `resolve()` con `strict=True` y una comprobación posterior de `is_symlink()` para asegurar que ninguna operación de hash acceda accidentalmente fuera de la jerarquía de directorios permitida o atraviese un punto de unión malintencionado.
 - `2026-09-22T09:42:39` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` implementando una validación estricta de rutas absolutas para evitar el seguimiento de enlaces simbólicos o rutas malintencionadas que apunten fuera del directorio base del escaneo, mitigando riesgos de traversals.
-- `2026-09-22T09:32:50` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_text_structure` añadiendo una validación explícita contra rutas relativas y absolutas, asegurando que ningún texto procesado por el asistente pueda ser interpretado como una ruta del sistema, incluso si no contiene caracteres especiales prohibidos.
-- `2026-09-22T09:31:27` **scanner.py** (robustez ante casos límite): Se mejora la robustez frente a errores de sistema (como rutas inaccesibles o bloqueadas por otros procesos) en el escaneo recursivo, añadiendo validaciones `try-except` granulares en `_is_reparse_point` y `process_entry` para asegurar que el escáner no se detenga prematuramente ante archivos bloqueados.
-- `2026-09-22T09:22:33` **safety.py** (robustez ante casos límite): Se ha añadido una verificación de "deadlock" en la apertura de archivos (`_is_file_in_use`) para prevenir errores de acceso concurrente (`ERROR_SHARING_VIOLATION`) mediante el uso de una constante de acceso más conservadora, mejorando la robustez frente a bloqueos del kernel o procesos del sistema.
