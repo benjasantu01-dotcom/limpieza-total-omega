@@ -631,7 +631,9 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
         if len(full_prompt) > _MAX_PROMPT_LIMIT: return None
         payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
         payload = json.dumps(payload_data).encode("utf-8")
-        return payload if len(payload) < (_MAX_RESPONSE_BYTES // 2) else None
+        # Validación extra: impedir payloads masivos antes de enviar
+        if len(payload) > (_MAX_RESPONSE_BYTES // 2): return None
+        return payload
     except (TypeError, ValueError):
         return None
 
@@ -665,7 +667,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     
     try:
         url = _ENDPOINT_BASE.format(model=model) + f"?key={api_key}"
-        # Validación extra de seguridad: verificar que la URL construida se mantenga dentro del dominio esperado
+        # Validación de seguridad: verificar dominio oficial antes de realizar la petición
         if not url.startswith("https://generativelanguage.googleapis.com/"): return None
         
         req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"}, method="POST")

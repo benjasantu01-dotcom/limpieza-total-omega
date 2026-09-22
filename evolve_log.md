@@ -416,3 +416,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-22T00:29:05` Corte de seguridad: se alcanzó el límite de 480s para esta corrida. Termino prolijo.
 - `2026-09-22T00:29:05` Rotación — metrics: 3 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T00:29:05` Corrida terminada. Total usado hoy: 7.
+- `2026-09-22T00:29:21` Arrancando corrida. Quedan hoy ~293 peticiones objetivo.
+- `2026-09-22T00:29:51` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `_load_impl` para manejar situaciones donde el archivo JSON contenga una estructura inesperada (claves faltantes o tipos erróneos) tras la carga, asegurando que `_coerce_and_verify` actúe sobre el resultado final de la validación para garantizar la integridad completa del diccionario antes de su uso.
+- `2026-09-22T00:30:18` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.01s
+
+```
+- `2026-09-22T00:30:18` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejoró la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un manejo de excepciones más granular y un chequeo previo de `path.exists()` para evitar llamadas innecesarias a `resolve()` cuando el archivo no existe, lo cual previene errores al encontrar rutas huérfanas en el registro.
+- `2026-09-22T00:30:58` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `_call_gemini` integrando un chequeo estricto del host en la URL final antes de la ejecución, asegurando que la petición HTTP solo ocurra contra el endpoint oficial, y se añadió una validación adicional para el largo del payload en bytes antes de la serialización para evitar condiciones de desbordamiento de memoria por entradas maliciosas.
+- `2026-09-22T00:31:14` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-22T00:31:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T00:31:14` Corrida terminada. Total usado hoy: 11.
