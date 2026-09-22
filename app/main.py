@@ -233,6 +233,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         # Concurrencia y control de estado
         self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
         self._task_lock = threading.Lock()
+        self._executor_lock = threading.Lock()
         self._closing = False
         self._tasks_running = 0
         
@@ -269,7 +270,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _on_closing(self) -> None:
         """Finaliza hilos de fondo, libera recursos y destruye la ventana."""
-        with self._task_lock:
+        with self._executor_lock:
             self._closing = True
             executor = self._executor
             self._executor = None
@@ -342,7 +343,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         self.settings = get_cached_settings()
             
-        with self._task_lock:
+        with self._executor_lock:
             self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
             
     @safe_ui_operation
@@ -1135,21 +1136,17 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def run_async(self, fn: AsyncCallback, target: Optional[str] = None) -> None:
         """Envía tarea al pool, validando seguridad de ruta."""
-        if self._closing or not self.winfo_exists(): return
-        
-        # Validación de seguridad defensiva antes de delegar al pool
-        if target and not self._is_safe_disk_operation(target):
-            self.log("Acción denegada: la ruta destino no es segura.", self._current_tab())
-            return
-        
-        self._set_busy(True)
-        tab = self._current_tab()
-        
-        with self._task_lock:
-            if not self._closing and self._executor:
-                self._executor.submit(self._worker_thread_logic, fn, tab)
-            else:
-                self._set_busy(False)
+        with self._executor_lock:
+            if self._closing or self._executor is None or not self.winfo_exists(): return
+            
+            # Validación de seguridad defensiva antes de delegar al pool
+            if target and not self._is_safe_disk_operation(target):
+                self.log("Acción denegada: la ruta destino no es segura.", self._current_tab())
+                return
+            
+            self._set_busy(True)
+            tab = self._current_tab()
+            self._executor.submit(self._worker_thread_logic, fn, tab)
 
     def _current_tab(self) -> str:
         """Obtiene la pestaña activa actual."""

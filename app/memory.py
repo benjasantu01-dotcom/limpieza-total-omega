@@ -205,18 +205,18 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         
         try:
             name_part = parts[0]
-            raw_pid = parts[1]
-            raw_ws = parts[2]
+            # Validar que los campos de datos sean cadenas no vacías antes de procesar
+            if not parts[1] or not parts[2]: continue
             
-            clean_pid = "".join(c for c in raw_pid if c.isdigit())
-            clean_ws = "".join(c for c in raw_ws if c.isdigit())
+            clean_pid = "".join(c for c in parts[1] if c.isdigit())
+            clean_ws = "".join(c for c in parts[2] if c.isdigit())
             
             if not clean_pid or not clean_ws: continue
             
             pid, ws = int(clean_pid), int(clean_ws)
             if pid > 0 and 0 <= ws < MAX_VALID_PROCESS_MEM:
                 results.append(ProcessMemory(name=name_part.strip("'\" "), pid=pid, working_set=BytesValue(ws)))
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, OverflowError):
             continue
     
     results.sort(key=lambda p: p.working_set, reverse=True)

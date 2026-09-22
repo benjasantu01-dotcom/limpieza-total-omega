@@ -230,7 +230,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
-    Pipeline principal de evaluación.
+    Pipeline principal de evaluación. Valida la integridad de las métricas antes de procesar.
     """
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
@@ -241,12 +241,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
-            # Normalización y ponderación directa sin redondeo innecesario
             area_ratio = _clamp(entry.scorer(metrics))
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
-            weighted_points = int(area_ratio * entry.weight + 0.5)
+            # Cálculo de puntos con redondeo de seguridad para evitar excesos
+            weighted_points = max(0, min(int(area_ratio * entry.weight + 0.5), entry.weight))
             metric_breakdown[entry.area] = weighted_points
             accumulated_score += weighted_points
         except Exception:

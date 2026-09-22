@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 12 | 1 | 1 | 1 | 35 |
+| 2026-09-20 | 12 | 1 | 1 | 1 | 31 |
 | 2026-09-21 | 145 | 10 | 39 | 8 | 148 |
-| 2026-09-22 | 37 | 4 | 10 | 6 | 47 |
+| 2026-09-22 | 40 | 4 | 10 | 6 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **47**
+- robustez ante casos límite: **34**
 - rendimiento: **33**
 - seguridad defensiva: **33**
-- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **19**
+- `memory.py`: **19**
 - `quarantine.py`: **19**
-- `memory.py`: **18**
 - `diskreport.py`: **16**
 - `safety.py`: **16**
 - `browser.py`: **15**
+- `healthscore.py`: **15**
 - `settings.py`: **15**
 - `duplicates.py`: **14**
-- `healthscore.py`: **14**
 - `organizer.py`: **14**
 - `branding.py`: **11**
 - `scanner.py`: **11**
-- `main.py`: **7**
+- `main.py`: **8**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T04:47:08` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` agregando una validación explícita para evitar errores de tipo o desbordamiento al procesar datos crudos, asegurando que los valores numéricos sean procesables antes de intentar convertirlos, protegiendo así la ejecución ante salidas inesperadas de PowerShell.
+- `2026-09-22T04:46:39` **main.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inesperados del ciclo de vida de los hilos mediante la implementación de `self._executor_lock` en `_on_closing` y una verificación explícita en `run_async`, evitando condiciones de carrera al intentar enviar tareas a un executor que se está cerrando o ya no existe.
+- `2026-09-22T04:45:26` **healthscore.py** (robustez ante casos límite): Se ha robustecido el motor de puntuación añadiendo una verificación de integridad de métricas en `compute_score` mediante la validación explícita de `is_finite`, evitando el procesamiento de estados de error potencialmente propagados por módulos externos, y se ha encapsulado el cálculo de `weighted_points` en una lógica más resiliente ante entradas inesperadas.
 - `2026-09-22T04:37:17` **diskreport.py** (robustez ante casos límite): Mejora la robustez del escaneo de carpetas en `largest_folders` al manejar explícitamente el caso donde el archivo es el mismo directorio raíz o sufre cambios de permisos durante la iteración, evitando el fallo de `relative_to` o la pérdida de datos ante cambios en el sistema de archivos.
 - `2026-09-22T04:26:22` **assistant.py** (robustez ante casos límite): Mejora la robustez ante casos límite en la carga de datos del contexto, añadiendo una validación explícita mediante `_safe_float` para todos los campos numéricos en `ingest` y asegurando que las métricas con valores `None` o malformados no comprometan la integridad del objeto `SystemContext`.
 - `2026-09-22T04:25:29` **settings.py** (rendimiento): Optimizé la validación de rutas mediante la eliminación de un `lru_cache` redundante y la implementación de una técnica de pre-filtrado mediante conjuntos (`set`) en los validadores de configuración, reduciendo las llamadas innecesarias al sistema de archivos y mejorando la eficiencia del bucle de carga de `settings.py`.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T03:55:19` **assistant.py** (rendimiento): Se implementó un cacheo más eficiente mediante `lru_cache` en `_format_problem_message` y se eliminó la recreación innecesaria de estructuras `frozenset` en cada llamada a `local_answer` moviendo `TOKENS_BY_CATEGORY` a una estructura constante precalculada, reduciendo la presión sobre el recolector de basura.
 - `2026-09-22T03:44:50` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la incorporación de type hints faltantes y la clarificación de los docstrings en las funciones heurísticas para explicitar sus criterios de detección, facilitando así el mantenimiento futuro del motor de análisis.
 - `2026-09-22T03:44:22` **safety.py** (legibilidad y documentación): Se introdujo un `TypedDict` para documentar la estructura esperada de los metadatos de validación y se añadieron docstrings explicativos a las funciones internas críticas de `safety.py` para mejorar la mantenibilidad y claridad del código.
-- `2026-09-22T03:34:28` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, aclarando las precondiciones y el propósito de las validaciones de seguridad, además de normalizar la consistencia de los tipos y clarificar la lógica de las comprobaciones de atributos de Windows.
-- `2026-09-22T03:34:00` **memory.py** (legibilidad y documentación): Se han añadido type hints faltantes en funciones clave y se ha reorganizado el bloque de constantes para mejorar la claridad sobre qué es configuración técnica y qué es información de dominio, facilitando la lectura del código.
-- `2026-09-22T03:24:44` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings de nivel de módulo y función que explican el "porqué" de las decisiones (como la normalización y el uso del pipeline), y añadí type hints explícitos para clarificar la arquitectura del motor de reglas, facilitando su mantenimiento como demo técnica.

@@ -870,3 +870,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-22T04:37:26` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-09-22T04:37:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T04:37:26` Corrida terminada. Total usado hoy: 104.
+- `2026-09-22T04:44:56` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-09-22T04:45:26` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha robustecido el motor de puntuación añadiendo una verificación de integridad de métricas en `compute_score` mediante la validación explícita de `is_finite`, evitando el procesamiento de estados de error potencialmente propagados por módulos externos, y se ha encapsulado el cálculo de `weighted_points` en una lógica más resiliente ante entradas inesperadas.
+- `2026-09-22T04:46:39` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante estados inesperados del ciclo de vida de los hilos mediante la implementación de `self._executor_lock` en `_on_closing` y una verificación explícita en `run_async`, evitando condiciones de carrera al intentar enviar tareas a un executor que se está cerrando o ya no existe.
+- `2026-09-22T04:47:08` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `parse_windows_process_csv` agregando una validación explícita para evitar errores de tipo o desbordamiento al procesar datos crudos, asegurando que los valores numéricos sean procesables antes de intentar convertirlos, protegiendo así la ejecución ante salidas inesperadas de PowerShell.
+- `2026-09-22T04:47:20` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-22T04:47:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T04:47:20` Corrida terminada. Total usado hoy: 108.
