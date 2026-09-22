@@ -72,6 +72,16 @@ def _to_long_path(path_str: str) -> str:
         return "\\\\?\\" + path_str
     return path_str
 
+@lru_cache(maxsize=1024)
+def _get_file_attrs(path_str: str) -> int:
+    """Consulta centralizada de atributos Win32 para reducir syscalls."""
+    if os.name != 'nt': return 0
+    try:
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
+        return attrs if attrs != 0xFFFFFFFF else 0
+    except (AttributeError, OSError, ctypes.ArgumentError):
+        return 0
+
 class SafetyValidationErrorCode(IntEnum):
     """Códigos de error para diagnósticos específicos en fallos de seguridad."""
     GENERIC = 0
@@ -204,50 +214,26 @@ def _has_alternate_data_stream(path_name: str) -> bool:
     """Detecta la presencia de NTFS ADS (ej. 'archivo.txt:stream') usado para ocultar payloads."""
     return ":" in path_name and len(path_name.split(":")) > 2
 
-@lru_cache(maxsize=2048)
 def _is_system_or_hidden(path_str: str) -> bool:
     """Consulta atributos Win32 para identificar archivos protegidos por el SO."""
     if not os.path.isabs(path_str): return False
-    try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
-        if attrs == 0xFFFFFFFF: return False
-        return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_TEMPORARY))
-    except (AttributeError, OSError, FileNotFoundError, ctypes.ArgumentError):
-        return False 
+    attrs = _get_file_attrs(path_str)
+    return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_TEMPORARY))
 
-@lru_cache(maxsize=2048)
 def _is_reparse_point(path_str: str) -> bool:
     """Consulta Win32 para identificar Junctions o Symlinks que pueden causar bucles infinitos."""
-    if not isinstance(path_str, str) or not path_str: return False
     if os.name != 'nt': return os.path.islink(path_str)
-    try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
-        if attrs == 0xFFFFFFFF: return False
-        return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT)
-    except (AttributeError, OSError, TypeError, ctypes.WinError, ctypes.ArgumentError):
-        return False
+    return bool(_get_file_attrs(path_str) & FILE_ATTRIBUTE_REPARSE_POINT)
 
-@lru_cache(maxsize=2048)
 def _is_encrypted_or_compressed_or_sparse(path_str: str) -> bool:
     """Consulta atributos Win32 para detectar NTFS compresión, cifrado o archivos dispersos."""
     if os.name != 'nt': return False
-    try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
-        if attrs == 0xFFFFFFFF: return False
-        return bool(attrs & (FILE_ATTRIBUTE_COMPRESSED | FILE_ATTRIBUTE_ENCRYPTED | FILE_ATTRIBUTE_SPARSE_FILE))
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
-        return False
+    return bool(_get_file_attrs(path_str) & (FILE_ATTRIBUTE_COMPRESSED | FILE_ATTRIBUTE_ENCRYPTED | FILE_ATTRIBUTE_SPARSE_FILE))
 
-@lru_cache(maxsize=2048)
 def _is_offline(path_str: str) -> bool:
     """Detecta si un archivo es gestionado por proveedores en la nube."""
     if os.name != 'nt': return False
-    try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
-        if attrs == 0xFFFFFFFF: return False
-        return bool(attrs & FILE_ATTRIBUTE_OFFLINE)
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
-        return False
+    return bool(_get_file_attrs(path_str) & FILE_ATTRIBUTE_OFFLINE)
 
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
@@ -277,15 +263,10 @@ def _is_volume_readonly(path_str: str) -> bool:
         pass
     return False
 
-@lru_cache(maxsize=2048)
 def _is_directory_junction(path_str: str) -> bool:
     """Especialización para detectar directorios que son puntos de unión de NTFS."""
-    if os.name != 'nt': return False
-    try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
-        if attrs == 0xFFFFFFFF: return False
-        return bool(attrs & FILE_ATTRIBUTE_DIRECTORY and attrs & FILE_ATTRIBUTE_REPARSE_POINT)
-    except (AttributeError, OSError, TypeError, ctypes.WinError, ctypes.ArgumentError): return False
+    attrs = _get_file_attrs(path_str)
+    return bool(attrs & FILE_ATTRIBUTE_DIRECTORY and attrs & FILE_ATTRIBUTE_REPARSE_POINT)
 
 def _is_kernel_managed(path: Path) -> bool:
     """Previene manipulación de archivos esenciales que el kernel mantiene bloqueados."""

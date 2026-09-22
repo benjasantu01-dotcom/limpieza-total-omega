@@ -558,3 +558,13 @@ assert not {'replace'}
 - `2026-09-22T13:08:07` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó `list_items` para reducir drásticamente el I/O al realizar una única pasada por el directorio de cuarentena y centralizar la validación de integridad, evitando llamadas repetidas a `_validate_integrity` que generaban accesos innecesarios al sistema de archivos por cada ítem.
 - `2026-09-22T13:08:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T13:08:07` Corrida terminada. Total usado hoy: 304.
+- `2026-09-22T13:15:57` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-22T13:16:59` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-22T13:18:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-22T13:18:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-22T13:18:51` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-22T13:19:39` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de las validaciones recurrentes de rutas reemplazando los chequeos repetidos de atributos de disco por una caché estructurada, centralizando las consultas Win32 bajo un único `lru_cache` para `GetFileAttributesW` para reducir las llamadas al sistema.
+- `2026-09-22T13:20:16` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
+- `2026-09-22T13:20:37` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento del módulo reemplazando la lógica de validación repetitiva en `validate` y `save` mediante una pre-resolución de los validadores en el mapa de configuración, evitando búsquedas redundantes en cada iteración del bucle de procesamiento.
+- `2026-09-22T13:20:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T13:20:37` Corrida terminada. Total usado hoy: 308.
