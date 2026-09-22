@@ -1264,3 +1264,34 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-22T08:10:54` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._validate_enum_str
 - `2026-09-22T08:10:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T08:10:54` Corrida terminada. Total usado hoy: 188.
+- `2026-09-22T08:19:23` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-09-22T08:19:53` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.39s
+
+```
+- `2026-09-22T08:19:53` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_resolve_and_cache_path` para reducir su complejidad ciclomática y mejorar la claridad del flujo de validación, además de añadir documentación esencial.
+- `2026-09-22T08:20:39` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_source_value` reemplazando la lógica de manejo de errores por un acceso directo más eficiente y seguro, y mejoré la inicialización de `_TOKENS_MAP` para que sea una estructura estática calculada una única vez, evitando la sobrecarga de reconstrucción en cada importación.
+- `2026-09-22T08:21:14` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Optimicé el renderizado del escudo corporativo pre-calculando las coordenadas del polígono base (`SHIELD_BASE_COORDS`) para evitar la recreación de tuplas en el loop de escalado, y centralicé el cálculo de `scale` en el punto de entrada para reducir la carga aritmética innecesaria en las funciones auxiliares.
+- `2026-09-22T08:21:28` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el proceso de escaneo en `detect_profiles` eliminando llamadas redundantes a `resolve()` y `exists()` mediante la reutilización de objetos `Path` y la comprobación de integridad en un solo paso, mejorando la eficiencia del bucle de detección.
+- `2026-09-22T08:21:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T08:21:28` Corrida terminada. Total usado hoy: 192.

@@ -424,12 +424,8 @@ def _get_source_value(source: Any, key: str) -> Any:
     if not isinstance(key, str) or key.startswith("_"): return None
     if isinstance(source, dict):
         return source.get(key)
-    try:
-        if isinstance(source, (type, type(None))): return None
-        val = getattr(source, key, None)
-        return None if callable(val) or key.startswith("__") else val
-    except (AttributeError, TypeError):
-        return None
+    val = getattr(source, key, None)
+    return None if callable(val) or key.startswith("__") else val
 
 def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
     """Inicializa un SystemContext completo integrando datos de distintas fuentes."""

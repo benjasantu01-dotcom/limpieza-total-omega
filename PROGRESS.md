@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 233
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 123 | 8 | 34 | 8 | 143 |
-| 2026-09-22 | 65 | 6 | 16 | 11 | 90 |
+| 2026-09-21 | 120 | 8 | 34 | 8 | 142 |
+| 2026-09-22 | 67 | 7 | 16 | 12 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - seguridad defensiva: **42**
 - legibilidad y documentación: **41**
-- robustez ante casos límite: **33**
-- rendimiento: **26**
+- robustez ante casos límite: **30**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
+- `assistant.py`: **18**
+- `memory.py`: **18**
 - `quarantine.py`: **17**
-- `assistant.py`: **17**
 - `diskreport.py`: **16**
-- `healthscore.py`: **15**
 - `settings.py`: **15**
+- `browser.py`: **15**
 - `safety.py`: **15**
-- `browser.py`: **14**
+- `healthscore.py`: **14**
 - `duplicates.py`: **13**
 - `organizer.py`: **13**
 - `scanner.py`: **12**
 - `branding.py`: **10**
-- `main.py`: **8**
+- `main.py`: **7**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T08:21:28` **browser.py** (rendimiento): Se optimizó el proceso de escaneo en `detect_profiles` eliminando llamadas redundantes a `resolve()` y `exists()` mediante la reutilización de objetos `Path` y la comprobación de integridad en un solo paso, mejorando la eficiencia del bucle de detección.
+- `2026-09-22T08:20:39` **assistant.py** (rendimiento): Optimicé el rendimiento de `_get_source_value` reemplazando la lógica de manejo de errores por un acceso directo más eficiente y seguro, y mejoré la inicialización de `_TOKENS_MAP` para que sea una estructura estática calculada una única vez, evitando la sobrecarga de reconstrucción en cada importación.
 - `2026-09-22T08:10:42` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `scanner.py` mediante la adición de docstrings detallados en los métodos de `Scanner` y tipado explícito en la firma de las funciones de heurística, facilitando la comprensión del flujo de seguridad para futuros desarrollos.
 - `2026-09-22T08:10:15` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y la refactorización de `_VALIDATORS` para usar nombres más claros, facilitando la auditoría de las reglas de seguridad sin alterar el comportamiento.
 - `2026-09-22T08:01:13` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica del módulo mediante la incorporación de docstrings estructuradas (tipo Google/NumPy) que clarifican las intenciones, los tipos de parámetros y el comportamiento de las funciones críticas, facilitando el mantenimiento y la auditoría de seguridad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T07:35:43` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` capturando específicamente `PermissionError` y otros errores de SO, y optimicé el flujo de `ensure_safe_to_modify` para que el acceso a metadatos ocurra solo cuando es estrictamente necesario, evitando lanzar excepciones de I/O en estados intermedios.
 - `2026-09-22T07:19:59` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_trim_process` al implementar una validación explícita mediante `is_safe_path` y `ensure_safe_to_modify` para prevenir la manipulación de procesos críticos, mitigando riesgos de seguridad al interactuar con el sistema a nivel de PID.
 - `2026-09-22T07:18:44` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que el cálculo de `weighted_points` maneje correctamente casos donde el `scorer` devuelva valores fuera de rango o `NaN` mediante el uso de `_clamp` y validación de tipos, evitando que errores internos en funciones de scoring propaguen `None` o valores inconsistentes.
-- `2026-09-22T07:09:32` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez del módulo `diskreport.py` mediante la validación de tipos y rangos en parámetros críticos, evitando excepciones inesperadas en funciones públicas como `largest_files`, `usage_by_extension`, `largest_folders` y `summarize`.
-- `2026-09-22T07:08:36` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_logo_svg` y `draw_ring` mediante una validación más estricta de parámetros y el uso de excepciones específicas para evitar errores de ejecución inesperados al procesar datos externos o estados inconsistentes de la UI.

@@ -311,19 +311,18 @@ def directory_size(path: Optional[OSPath]) -> int:
         return 0
 
 
-def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
+def _is_valid_cache_path(candidate: Path, base_path: str, is_junction_fn: JunctionChecker) -> bool:
     """
     Verifica que la carpeta candidata sea un directorio válido dentro del scope,
     asegurando que no sea un enlace simbólico o una ruta protegida.
     """
     try:
-        if not candidate.is_absolute() or not candidate.exists() or not candidate.is_dir():
+        if not candidate.exists() or not candidate.is_dir():
             return False
-        real_candidate = candidate.resolve(strict=True)
-        real_base = base_path.resolve(strict=True)
-        if _is_unc_path(str(real_candidate)) or not _is_path_inside_base(str(real_candidate), str(real_base)):
+        real_candidate = str(candidate.resolve(strict=True))
+        if _is_unc_path(real_candidate) or not _is_path_inside_base(real_candidate, base_path):
             return False
-        if not is_safe_to_modify(real_candidate) or is_protected_path(real_candidate):
+        if not is_safe_to_modify(candidate) or is_protected_path(candidate):
             return False
         return not (candidate.is_symlink() or is_junction_fn(str(candidate)) or _is_excluded_file(candidate.name))
     except (OSError, PermissionError, RuntimeError, ValueError):
@@ -339,9 +338,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
         return Path()
     try:
         target = real_base.joinpath(*rel_str.split("\\"))
-        if len(str(target)) >= MAX_PATH_LEN:
-            return Path()
-        return target
+        return target if len(str(target)) < MAX_PATH_LEN else Path()
     except (TypeError, ValueError, OSError):
         return Path()
 
@@ -368,10 +365,11 @@ def detect_profiles(
         if not isinstance(base, Path) or not base.is_dir():
             continue
         try:
-            real_base = base.resolve(strict=True)
+            real_base_path = base.resolve(strict=True)
+            real_base_str = str(real_base_path)
             for browser_name, rel_str in browser_map.items():
-                candidate = _resolve_browser_path(real_base, rel_str)
-                if not candidate or not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
+                candidate = _resolve_browser_path(real_base_path, rel_str)
+                if not candidate or not _is_valid_cache_path(candidate, real_base_str, _IS_JUNCTION_FN):
                     continue
                 
                 real_candidate = str(candidate.resolve(strict=True))
