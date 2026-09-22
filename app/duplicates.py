@@ -101,6 +101,8 @@ def _is_file_locked(path: Path) -> bool:
     Intenta abrir en modo solo lectura; si falla, el archivo está siendo usado
     exclusivamente por otro proceso, impidiendo lectura confiable del hash.
     """
+    if not is_safe_to_modify(path):
+        return True
     try:
         fd = os.open(path, os.O_RDONLY)
         os.close(fd)

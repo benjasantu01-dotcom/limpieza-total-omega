@@ -247,6 +247,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             metric_breakdown[entry.area] = weighted_points
             accumulated_score += weighted_points
         except Exception:
+            # En caso de error en un módulo, se preserva el cálculo del resto del pipeline
             metric_breakdown[entry.area] = 0
             
     final_score = int(min(accumulated_score, 100))
