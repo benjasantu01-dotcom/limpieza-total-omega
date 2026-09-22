@@ -168,7 +168,7 @@ _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
 )
 
 class _IntegrityCheck(NamedTuple):
-    """Regla de seguridad: reason (motivo) y predicate (función de validación)."""
+    """Regla de seguridad que vincula un motivo de protección a un predicado evaluable."""
     reason: ProtectionReason
     predicate: ViolationPredicate
 

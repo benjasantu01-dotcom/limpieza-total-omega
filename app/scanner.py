@@ -152,17 +152,17 @@ class Scanner:
         self._registry: List[SuspicionCheck] = EXECUTABLE_CHECK_REGISTRY
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Valida que la ruta absoluta de la entrada se mantenga bajo el directorio base."""
+        """Valida si una ruta absoluta pertenece jerárquicamente a la base escaneada."""
         return entry_path.lower().startswith(self.base_root_str)
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Valida si el nombre del archivo contiene caracteres o patrones prohibidos por Windows."""
+        """Determina si el nombre de archivo contiene caracteres prohibidos o reservados por Windows."""
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
-        Determina si el archivo es un punto de reanálisis (Junction o Symlink).
-        Se prefiere el uso de `st_file_attributes` para evitar resolución de rutas.
+        Detecta si la entrada actual es un punto de reanálisis (Junction o Symlink) 
+        mediante inspección de atributos de archivo para evitar recursión circular.
         """
         stats = _safe_stat(entry)
         if stats and hasattr(stats, 'st_file_attributes'):
@@ -171,8 +171,8 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Filtro de seguridad principal. Verifica que la entrada no sea un enlace simbólico, 
-        no esté protegida por el sistema y respete la integridad de la jerarquía base.
+        Valida la seguridad de la entrada: verifica integridad de jerarquía, 
+        nombres prohibidos, protección de sistema y naturaleza del enlace.
         """
         if not entry or not entry.path or not entry.name:
             return False
@@ -188,7 +188,7 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """Registra una carpeta validada en el stack LIFO para su posterior procesamiento."""
+        """Agrega un directorio verificado a la pila de procesamiento LIFO."""
         try:
             if entry.path and entry.path.lower() not in self.seen:
                 self.seen.add(entry.path.lower())
@@ -197,7 +197,7 @@ class Scanner:
             pass
 
     def _is_relevant_extension(self, name: Optional[str], is_dir: bool) -> Optional[str]:
-        """Determina si un archivo o directorio es apto para análisis heurístico basado en extensiones."""
+        """Filtra archivos por extensiones definidas en el conjunto de sospecha global."""
         if is_dir or not name or "." not in name: 
             return None
         
@@ -210,8 +210,8 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """
-        Analiza una entrada individual. Si es directorio, lo encola; si es archivo 
-        sospechoso, delega a las funciones heurísticas registradas.
+        Lógica principal de procesamiento: clasifica la entrada y delega el 
+        análisis heurístico si el archivo es considerado sospechoso.
         """
         try:
             if not self._is_safe_entry(entry):
@@ -228,7 +228,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
-        """Ejecuta en cascada las heurísticas registradas sobre el archivo objetivo."""
+        """Aplica la batería de tests registrados sobre un archivo específico."""
         if not path or not path.exists():
             return
             

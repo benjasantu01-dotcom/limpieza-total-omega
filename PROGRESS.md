@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 48
+- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 235
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 124 | 9 | 34 | 8 | 145 |
-| 2026-09-22 | 63 | 6 | 14 | 11 | 90 |
+| 2026-09-21 | 123 | 8 | 34 | 8 | 143 |
+| 2026-09-22 | 65 | 6 | 16 | 11 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - seguridad defensiva: **42**
-- legibilidad y documentación: **39**
-- robustez ante casos límite: **34**
+- legibilidad y documentación: **41**
+- robustez ante casos límite: **33**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **19**
-- `diskreport.py`: **17**
 - `quarantine.py`: **17**
 - `assistant.py`: **17**
+- `diskreport.py`: **16**
 - `healthscore.py`: **15**
 - `settings.py`: **15**
+- `safety.py`: **15**
 - `browser.py`: **14**
-- `safety.py`: **14**
 - `duplicates.py`: **13**
 - `organizer.py`: **13**
-- `scanner.py`: **11**
+- `scanner.py`: **12**
 - `branding.py`: **10**
 - `main.py`: **8**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T08:10:42` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `scanner.py` mediante la adición de docstrings detallados en los métodos de `Scanner` y tipado explícito en la firma de las funciones de heurística, facilitando la comprensión del flujo de seguridad para futuros desarrollos.
+- `2026-09-22T08:10:15` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y la refactorización de `_VALIDATORS` para usar nombres más claros, facilitando la auditoría de las reglas de seguridad sin alterar el comportamiento.
 - `2026-09-22T08:01:13` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica del módulo mediante la incorporación de docstrings estructuradas (tipo Google/NumPy) que clarifican las intenciones, los tipos de parámetros y el comportamiento de las funciones críticas, facilitando el mantenimiento y la auditoría de seguridad.
 - `2026-09-22T08:00:46` **memory.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `parse_windows_process_csv` para extraer la lógica de limpieza de valores a una función dedicada, reduciendo la complejidad ciclomática y clarificando la intención.
 - `2026-09-22T07:50:31` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de docstrings detallados en las funciones de puntuación y la clarificación de los contratos de los parámetros en el pipeline, facilitando la comprensión del mantenimiento del motor analítico.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T07:18:44` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que el cálculo de `weighted_points` maneje correctamente casos donde el `scorer` devuelva valores fuera de rango o `NaN` mediante el uso de `_clamp` y validación de tipos, evitando que errores internos en funciones de scoring propaguen `None` o valores inconsistentes.
 - `2026-09-22T07:09:32` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez del módulo `diskreport.py` mediante la validación de tipos y rangos en parámetros críticos, evitando excepciones inesperadas en funciones públicas como `largest_files`, `usage_by_extension`, `largest_folders` y `summarize`.
 - `2026-09-22T07:08:36` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_logo_svg` y `draw_ring` mediante una validación más estricta de parámetros y el uso de excepciones específicas para evitar errores de ejecución inesperados al procesar datos externos o estados inconsistentes de la UI.
-- `2026-09-22T05:38:50` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_load_impl` evitando la carga de archivos que presenten enlaces simbólicos o junctions, utilizando `ensure_safe_to_modify` antes de la lectura para garantizar que la ruta no sea un punto de reparse, alineando la carga con la lógica de persistencia.
-- `2026-09-22T05:28:26` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_write_temp_to_final` mediante el uso de `os.replace` (operación atómica) y validaciones de estado de archivo post-escritura, garantizando que el archivo en el sandbox no pueda ser reemplazado o manipulado durante la transferencia y confirmando su integridad final antes de ser registrado en el manifiesto.
