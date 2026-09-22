@@ -459,3 +459,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-22T00:47:47` Corte de seguridad: se alcanzó el límite de 480s para esta corrida. Termino prolijo.
 - `2026-09-22T00:47:47` Rotación — metrics: 3 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T00:47:47` Corrida terminada. Total usado hoy: 14.
+- `2026-09-22T00:49:46` Arrancando corrida. Quedan hoy ~286 peticiones objetivo.
+- `2026-09-22T00:50:14` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-09-22T00:51:28` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se ha implementado una validación de seguridad proactiva en `_validate_environment` que bloquea la ejecución de la aplicación si el directorio de trabajo actual (`CWD`) se encuentra dentro de rutas críticas del sistema (Windows/Program Files), evitando riesgos de seguridad al operar sobre archivos del núcleo del sistema operativo.
+- `2026-09-22T00:51:57` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `_get_process_path` validando que la ruta resultante del proceso, además de pasar por `is_safe_to_modify`, no sea una ruta de red (UNC) o dispositivo virtual que pueda evadir el chequeo de seguridad, evitando así interacciones con recursos externos inesperados.
+- `2026-09-22T00:52:08` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las validaciones de seguridad en `_is_safe_for_disk_op` integrando la validación del estado del sistema de archivos mediante `is_protected_path` sobre el destino `target_parent` para asegurar que el movimiento nunca ocurra hacia directorios críticos, evitando posibles intentos de escape fuera de la carpeta de cuarentena.
+- `2026-09-22T00:52:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T00:52:08` Corrida terminada. Total usado hoy: 18.
