@@ -1363,3 +1363,54 @@ FAILED evolve/tests/test_modules.py::test_largest_files_sorted_descending - Asse
 - `2026-09-22T08:48:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
 - `2026-09-22T08:48:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T08:48:27` Corrida terminada. Total usado hoy: 200.
+- `2026-09-22T08:50:04` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-09-22T08:50:48` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el acceso a `_SYSTEM_ROOT_PATHS_SET` en `_is_system_path_cached` reemplazando el bucle manual `for` (con `commonpath`) por una verificación de prefijo de cadena más eficiente, dado que `os.path.normpath` ya normaliza los separadores a los nativos del SO.
+- `2026-09-22T08:51:14` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-09-22T08:51:47` Tests FALLARON:
+```
+............F........................................................... [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+____________________ test_booleans_accept_the_usual_strings ____________________
+
+    def test_booleans_accept_the_usual_strings():
+>       assert settings.validate({"asistente_activado": "true"})["asistente_activado"] is True
+E       assert False is True
+
+evolve/tests/test_assistant.py:105: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_booleans_accept_the_usual_strings - assert False is True
+1 failed, 298 passed in 1.41s
+
+```
+- `2026-09-22T08:51:47` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se ha optimizado la carga de configuración eliminando la doble validación redundante y se ha reemplazado la lógica de `_coerce_and_verify` (que iteraba innecesariamente cada vez) por una estructura que utiliza `dict.get()` directo con `DEFAULTS`, mejorando la eficiencia en tiempo de ejecución.
+- `2026-09-22T08:52:05` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.43s
+
+```
+- `2026-09-22T08:52:05` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el método `StartupEntry.executable` implementando una validación temprana (fail-fast) basada en la caché `_EXISTS_CACHE` para evitar operaciones redundantes de resolución de ruta (`Path.resolve`) en archivos que ya fueron marcados como inexistentes en iteraciones previas.
+- `2026-09-22T08:52:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T08:52:05` Corrida terminada. Total usado hoy: 204.
