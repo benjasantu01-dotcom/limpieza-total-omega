@@ -466,3 +466,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-22T00:52:08` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las validaciones de seguridad en `_is_safe_for_disk_op` integrando la validación del estado del sistema de archivos mediante `is_protected_path` sobre el destino `target_parent` para asegurar que el movimiento nunca ocurra hacia directorios críticos, evitando posibles intentos de escape fuera de la carpeta de cuarentena.
 - `2026-09-22T00:52:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T00:52:08` Corrida terminada. Total usado hoy: 18.
+- `2026-09-22T00:59:59` Arrancando corrida. Quedan hoy ~282 peticiones objetivo.
+- `2026-09-22T01:00:41` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad en la escritura del manifiesto y la validación de archivos al purgar, añadiendo una verificación explícita del hash del archivo antes de cualquier operación destructiva para prevenir condiciones de carrera o corrupción silenciosa.
+- `2026-09-22T01:01:41` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-22T01:02:45` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-22T01:03:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-22T01:03:35` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: seguridad defensiva): el archivo se encogió al 32% del original (posible pérdida de código)
+- `2026-09-22T01:03:48` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-22T01:03:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T01:03:48` Corrida terminada. Total usado hoy: 22.

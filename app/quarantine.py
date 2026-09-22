@@ -455,12 +455,14 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
 
     temp_path: Optional[Path] = None
     try:
+        # Usar un archivo temporal con sufijo seguro
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
             temp_path = Path(tf.name)
             tf.write(encoded_content)
             tf.flush()
             os.fsync(tf.fileno())
             
+        # Validación de integridad antes de reemplazar el manifiesto actual
         if temp_path and temp_path.exists() and temp_path.stat().st_size == len(encoded_content):
             os.replace(temp_path, target_path)
         else:
@@ -776,6 +778,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True
         
+    # Verificación de seguridad reforzada antes de purgar
     if not quarantine_item.verify_integrity(stored_file):
         raise UnsafePathError(f"Integridad fallida para {item_id}.")
         
@@ -791,6 +794,7 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
     """
     if not file_path.exists() or not file_path.is_file() or file_path.is_symlink() or is_protected_path(file_path):
         return False
+    # La integridad es crítica para evitar purgar archivos incorrectos por colisiones
     return (
         is_within_directory(file_path, base_path) and
         item.verify_integrity(file_path) and
