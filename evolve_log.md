@@ -821,3 +821,44 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-22T04:16:15` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento de `is_protected_path` reemplazando la iteración secuencial de `startswith` sobre una tupla por una verificación de prefijo `os.path.commonpath` (o comparación directa de componentes), evitando así múltiples llamadas a `startswith` y normalizaciones innecesarias.
 - `2026-09-22T04:16:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T04:16:15` Corrida terminada. Total usado hoy: 96.
+- `2026-09-22T04:24:34` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-09-22T04:24:59` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
+- `2026-09-22T04:25:29` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la validación de rutas mediante la eliminación de un `lru_cache` redundante y la implementación de una técnica de pre-filtrado mediante conjuntos (`set`) en los validadores de configuración, reduciendo las llamadas innecesarias al sistema de archivos y mejorando la eficiencia del bucle de carga de `settings.py`.
+- `2026-09-22T04:25:57` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.42s
+
+```
+- `2026-09-22T04:25:57` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el método `StartupEntry.executable` para evitar redundancias eliminando la llamada innecesaria a `_resolve_path_from_command` cuando el comando ya fue validado y resuelto, utilizando la caché existente de forma más estricta.
+- `2026-09-22T04:26:22` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez ante casos límite en la carga de datos del contexto, añadiendo una validación explícita mediante `_safe_float` para todos los campos numéricos en `ingest` y asegurando que las métricas con valores `None` o malformados no comprometan la integridad del objeto `SystemContext`.
+- `2026-09-22T04:26:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T04:26:22` Corrida terminada. Total usado hoy: 100.

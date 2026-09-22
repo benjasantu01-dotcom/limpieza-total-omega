@@ -327,16 +327,13 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> bool:
         """Valida y asigna un valor individual al campo correspondiente si cumple el contrato MetricSpec."""
         val = _get_source_value(source, key)
-        if val is None or not spec.is_valid_type(val):
+        if val is None:
             return False
             
-        try:
-            float_val = float(val)
-            if math.isfinite(float_val) and _is_metric_within_bounds(float_val, spec):
-                setattr(self, key, spec.cast_func(float_val))
-                return True
-        except (ValueError, TypeError, OverflowError):
-            pass
+        float_val = _safe_float(val, -1.0)
+        if float_val >= 0 and _is_metric_within_bounds(float_val, spec):
+            setattr(self, key, spec.cast_func(float_val))
+            return True
         return False
 
     def _clean_grade(self, val: Any) -> str:

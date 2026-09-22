@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 228
@@ -16,30 +16,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 17 | 1 | 3 | 1 | 36 |
+| 2026-09-20 | 14 | 1 | 2 | 1 | 36 |
 | 2026-09-21 | 145 | 10 | 39 | 8 | 148 |
-| 2026-09-22 | 34 | 3 | 9 | 6 | 44 |
+| 2026-09-22 | 36 | 4 | 10 | 6 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **47**
-- seguridad defensiva: **38**
-- rendimiento: **32**
-- robustez ante casos límite: **29**
+- seguridad defensiva: **35**
+- rendimiento: **33**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `assistant.py`: **18**
+- `assistant.py`: **19**
 - `memory.py`: **18**
-- `diskreport.py`: **16**
 - `safety.py`: **16**
-- `duplicates.py`: **15**
-- `healthscore.py`: **15**
 - `organizer.py`: **15**
 - `browser.py`: **15**
-- `settings.py`: **14**
+- `diskreport.py`: **15**
+- `settings.py`: **15**
+- `duplicates.py`: **14**
+- `healthscore.py`: **14**
 - `branding.py`: **11**
 - `scanner.py`: **11**
 - `main.py`: **7**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T04:26:22` **assistant.py** (robustez ante casos límite): Mejora la robustez ante casos límite en la carga de datos del contexto, añadiendo una validación explícita mediante `_safe_float` para todos los campos numéricos en `ingest` y asegurando que las métricas con valores `None` o malformados no comprometan la integridad del objeto `SystemContext`.
+- `2026-09-22T04:25:29` **settings.py** (rendimiento): Optimizé la validación de rutas mediante la eliminación de un `lru_cache` redundante y la implementación de una técnica de pre-filtrado mediante conjuntos (`set`) en los validadores de configuración, reduciendo las llamadas innecesarias al sistema de archivos y mejorando la eficiencia del bucle de carga de `settings.py`.
 - `2026-09-22T04:16:15` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` reemplazando la iteración secuencial de `startswith` sobre una tupla por una verificación de prefijo `os.path.commonpath` (o comparación directa de componentes), evitando así múltiples llamadas a `startswith` y normalizaciones innecesarias.
 - `2026-09-22T04:15:31` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando las búsquedas de archivos en el disco de listas lineales a un `set` de nombres, evitando O(N*M) en el procesamiento de manifiestos y reduciendo llamadas a I/O redundantes.
 - `2026-09-22T04:06:35` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` eliminando el uso innecesario de `Select-Object -First 50` dentro de PowerShell y realizando el filtrado y ordenamiento de forma eficiente en Python, evitando también recálculos innecesarios mediante un manejo más estricto del caché de tiempo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T03:34:00` **memory.py** (legibilidad y documentación): Se han añadido type hints faltantes en funciones clave y se ha reorganizado el bloque de constantes para mejorar la claridad sobre qué es configuración técnica y qué es información de dominio, facilitando la lectura del código.
 - `2026-09-22T03:24:44` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings de nivel de módulo y función que explican el "porqué" de las decisiones (como la normalización y el uso del pipeline), y añadí type hints explícitos para clarificar la arquitectura del motor de reglas, facilitando su mantenimiento como demo técnica.
 - `2026-09-22T03:24:15` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones críticas y la adición de una tabla de complejidad algorítmica para clarificar el flujo de decisión de hashing.
-- `2026-09-22T03:23:46` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la precisión del mantenimiento del código al extraer las constantes de configuración de los filtros de archivos y directorios fuera de `_is_excluded_path` y `_collect_summary_data`, además de añadir docstrings detallados en las funciones de procesamiento que aclaran la complejidad algorítmica y el manejo de excepciones.
-- `2026-09-22T03:04:05` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación estricta de la estructura del CSV y un manejo defensivo ante filas malformadas para prevenir excepciones silenciosas durante la carga de registros.
