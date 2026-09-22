@@ -746,3 +746,13 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-09-22T02:44:42` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `parse_windows_process_csv` agregando una validación explícita para evitar errores de tipo si los datos de entrada están mal formados, garantizando que el bucle de procesamiento de memoria no se interrumpa ante datos inesperados.
 - `2026-09-22T02:44:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T02:44:42` Corrida terminada. Total usado hoy: 62.
+- `2026-09-22T02:52:26` Arrancando corrida. Quedan hoy ~238 peticiones objetivo.
+- `2026-09-22T02:52:55` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_safe_for_disk_op` y `_is_safe_to_move` centralizando la validación de nulos y existencias para evitar errores de tipo `NoneType` o `FileNotFoundError` antes de realizar operaciones de disco, asegurando que las guardas sean explícitas y preventivas.
+- `2026-09-22T02:53:55` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-22T02:54:58` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-22T02:56:04` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-22T02:57:06` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación defensiva en `_safe_unlink` para asegurar que el hash (si está presente) coincida antes de realizar la eliminación, evitando purgar archivos cuyo contenido haya sido manipulado externamente tras su cuarentena.
+- `2026-09-22T02:57:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-09-22T02:57:52` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez en la detección de errores durante la validación de integridad al agregar un manejo específico de `PermissionError` y `OSError` en `_is_file_in_use`, garantizando que el acceso bloqueado por el sistema no resulte en excepciones no capturadas que detengan el bucle de procesamiento.
+- `2026-09-22T02:57:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T02:57:52` Corrida terminada. Total usado hoy: 66.

@@ -247,11 +247,14 @@ def _is_file_in_use(path_str: str) -> bool:
     """Verifica bloqueos mediante intento de apertura con acceso exclusivo al handle."""
     if os.name != 'nt' or not isinstance(path_str, str) or not os.path.isabs(path_str) or not os.path.isfile(path_str):
         return False
-    kernel32 = ctypes.windll.kernel32
-    handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0x00000001, None, 3, 0x00000080, None)
-    if handle == -1: 
-        return ctypes.GetLastError() == 32
-    kernel32.CloseHandle(handle)
+    try:
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0x00000001, None, 3, 0x00000080, None)
+        if handle == -1: 
+            return ctypes.GetLastError() == 32
+        kernel32.CloseHandle(handle)
+    except (OSError, PermissionError):
+        return True
     return False
 
 @lru_cache(maxsize=128)

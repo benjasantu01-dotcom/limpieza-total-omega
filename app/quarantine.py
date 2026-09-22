@@ -209,19 +209,21 @@ def _is_file_locked(path: Path) -> bool:
     except (OSError, PermissionError):
         return True
 
-def _safe_unlink(path: Path) -> bool:
+def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
     """
     Elimina un archivo tras validar políticas de seguridad y ausencia de bloqueos.
-    Utiliza `is_safe_to_modify` para asegurar que el path no sea de sistema.
+    Si se proporciona un hash, valida integridad antes del borrado.
     """
     try:
         resolved = path.resolve()
         if not resolved.exists() or not resolved.is_file() or resolved.is_symlink() or is_protected_path(resolved):
             return False
             
+        if expected_hash and _get_sha256(resolved) != expected_hash:
+            return False
+
         if is_safe_to_modify(resolved) and not _is_file_locked(resolved):
             path.unlink()
-            # Forzar sincronización del directorio padre post-borrado
             try:
                 dir_fd = os.open(str(path.parent), os.O_RDONLY)
                 try: os.fsync(dir_fd)
@@ -782,7 +784,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     if not quarantine_item.verify_integrity(stored_file):
         raise UnsafePathError(f"Integridad fallida para {item_id}.")
         
-    if _safe_unlink(stored_file):
+    if _safe_unlink(stored_file, expected_hash=quarantine_item.sha256):
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True
     return False
@@ -798,7 +800,7 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
     return (
         is_within_directory(file_path, base_path) and
         item.verify_integrity(file_path) and
-        _safe_unlink(file_path)
+        _safe_unlink(file_path, expected_hash=item.sha256)
     )
 
 

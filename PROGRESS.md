@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 16
+- Rechazadas por guardia de seguridad: 51
+- Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 32 | 5 | 8 | 4 | 43 |
+| 2026-09-20 | 30 | 5 | 8 | 2 | 43 |
 | 2026-09-21 | 145 | 10 | 39 | 8 | 148 |
-| 2026-09-22 | 14 | 3 | 3 | 4 | 38 |
+| 2026-09-22 | 17 | 3 | 4 | 4 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **44**
-- legibilidad y documentación: **41**
+- manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **41**
+- legibilidad y documentación: **40**
 - robustez ante casos límite: **35**
-- rendimiento: **30**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `assistant.py`: **19**
 - `memory.py`: **17**
-- `browser.py`: **16**
 - `duplicates.py`: **15**
+- `safety.py`: **15**
 - `diskreport.py`: **15**
-- `safety.py`: **14**
+- `browser.py`: **15**
 - `healthscore.py`: **14**
 - `settings.py`: **14**
-- `organizer.py`: **13**
+- `organizer.py`: **14**
 - `branding.py`: **12**
 - `scanner.py`: **10**
 - `main.py`: **8**
-- `startup.py`: **5**
+- `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T02:57:52` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la detección de errores durante la validación de integridad al agregar un manejo específico de `PermissionError` y `OSError` en `_is_file_in_use`, garantizando que el acceso bloqueado por el sistema no resulte en excepciones no capturadas que detengan el bucle de procesamiento.
+- `2026-09-22T02:57:06` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación defensiva en `_safe_unlink` para asegurar que el hash (si está presente) coincida antes de realizar la eliminación, evitando purgar archivos cuyo contenido haya sido manipulado externamente tras su cuarentena.
+- `2026-09-22T02:52:55` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_for_disk_op` y `_is_safe_to_move` centralizando la validación de nulos y existencias para evitar errores de tipo `NoneType` o `FileNotFoundError` antes de realizar operaciones de disco, asegurando que las guardas sean explícitas y preventivas.
 - `2026-09-22T02:44:42` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_windows_process_csv` agregando una validación explícita para evitar errores de tipo si los datos de entrada están mal formados, garantizando que el bucle de procesamiento de memoria no se interrumpa ante datos inesperados.
 - `2026-09-22T02:44:28` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_ask_assistant` y `on_trim_process` encapsulando la extracción de valores de widgets en un método de validación centralizado (`_safe_get_entry_value`) para prevenir excepciones de UI al procesar entradas vacías o malformadas.
 - `2026-09-22T02:43:14` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del motor de cómputo validando la integridad de los resultados intermedios y el estado de `SystemMetrics` antes de proceder, asegurando que cualquier anomalía en los datos de entrada o cálculo no produzca resultados inconsistentes o corrompidos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T00:43:10` **diskreport.py** (seguridad defensiva): Se ha implementado una validación de seguridad defensiva en `_is_excluded_path` para prevenir la resolución de rutas mediante `entry.path` cuando los nombres de archivo contienen caracteres de control potencialmente peligrosos o longitudes excesivas antes de procesar el acceso a disco, asegurando que `diskreport.py` no colapse ante manipulaciones del sistema de archivos.
 - `2026-09-22T00:30:58` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `_call_gemini` integrando un chequeo estricto del host en la URL final antes de la ejecución, asegurando que la petición HTTP solo ocurra contra el endpoint oficial, y se añadió una validación adicional para el largo del payload en bytes antes de la serialización para evitar condiciones de desbordamiento de memoria por entradas maliciosas.
 - `2026-09-22T00:10:08` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `purge_all` y `list_items` ante estados inconsistentes del sistema de archivos (archivos bloqueados o inexistentes) mediante un manejo más explícito de excepciones durante la iteración, evitando que una falla en un archivo individual interrumpa el proceso de saneamiento de la cuarentena.
-- `2026-09-22T00:09:44` **organizer.py** (robustez ante casos límite): Mejora la robustez del escaneo frente a errores de acceso al sistema de archivos al implementar un manejo más granular de `OSError` en `_is_file_locked`, evitando que la app considere bloqueado un archivo simplemente por un fallo de permisos transitorio durante el chequeo.
-- `2026-09-22T00:09:17` **memory.py** (robustez ante casos límite): Se añadió un control de desbordamiento en el parseo de procesos de Windows para evitar que valores de memoria absurdamente grandes (por errores de lectura o corrupción de datos en el CSV de salida) provoquen inconsistencias o errores en el cálculo de `working_set_mb`, reforzando la robustez frente a datos inesperados.
-- `2026-09-21T15:01:41` **healthscore.py** (robustez ante casos límite): Mejoré la resiliencia del motor ante datos incoherentes o métricas que escapan a los rangos previstos durante el cálculo, integrando validación estricta y protección contra desbordamientos en el `PipelineEntry` y el bucle principal.

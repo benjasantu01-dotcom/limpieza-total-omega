@@ -132,10 +132,8 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """Comprueba si el archivo está en uso verificando el acceso de lectura (R_OK)."""
     try:
-        # Usar os.access es seguro si manejamos el error de permisos
         return not os.access(path, os.R_OK)
     except (OSError, PermissionError):
-        # Ante un error de acceso, asumimos que no se puede mover de forma segura
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
@@ -194,7 +192,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     except (OSError, RuntimeError, AttributeError):
         return False
 
-def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
+def _is_safe_to_move(junk_file: Optional[JunkFile], dest: Path) -> bool:
     """Verifica que el objeto `JunkFile` exista y la operación de movimiento sea segura."""
     if junk_file is None or junk_file.path is None: return False
     return junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
