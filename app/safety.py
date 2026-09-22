@@ -13,12 +13,19 @@ import re
 import ctypes
 from enum import Enum, auto, IntEnum
 from pathlib import Path
-from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, Optional, TypeGuard
+from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, Optional, TypeGuard, TypedDict
 from functools import lru_cache
 import unicodedata
 
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result], bool]
+
+class FileMetadata(TypedDict):
+    """Representación de los atributos de archivo necesarios para evaluaciones de seguridad."""
+    is_reparse: bool
+    is_system_hidden: bool
+    is_readonly: bool
+    is_in_use: bool
 
 __all__ = [
     "UnsafePathError",

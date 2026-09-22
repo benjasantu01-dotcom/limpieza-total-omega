@@ -94,8 +94,8 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Detecta archivos que intentan engañar al usuario usando extensiones dobles, 
-    como 'documento.pdf.exe', donde la extensión real (ejecutable) es ocultada.
+    Detecta archivos con doble extensión (ej: 'doc.pdf.exe') que intentan ocultar 
+    el ejecutable real. Se basa en el emparejamiento contra 'DOUBLE_EXTENSION_RE'.
     """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -103,8 +103,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Identifica ejecutables descargados recientemente (ej. últimas 24h). 
-    Se enfoca en carpetas de alto riesgo donde el usuario suele recibir archivos de terceros.
+    Analiza la fecha de modificación del archivo para alertar sobre ejecutables 
+    nuevos en carpetas de alto riesgo (descargas, temp, escritorio).
     """
     if not path or not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
@@ -117,8 +117,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Detecta ejecutables que suplantan nombres de procesos críticos del sistema (ej. svchost.exe) 
-    pero se encuentran fuera de 'System32', indicando una posible ejecución maliciosa camuflada.
+    Detecta si un ejecutable posee un nombre idéntico a un proceso crítico del sistema 
+    pero reside fuera del directorio '%SystemRoot%\\System32'.
     """
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         path_str = str(path).lower()
@@ -128,9 +128,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Detecta ejecutables de 0 bytes. En contextos de seguridad, archivos vacíos 
-    pueden ser punteros hacia otros objetos o intentar evadir escaneos de AV 
-    que no procesan archivos sin contenido.
+    Evalúa si un archivo ejecutable tiene un tamaño de 0 bytes, patrón usado 
+    frecuentemente para evitar escaneos de AV tradicionales.
     """
     if entry:
         stats = _safe_stat(entry)
