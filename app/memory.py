@@ -43,9 +43,10 @@ else:
 BytesValue = NewType("BytesValue", int)
 MegabytesValue = NewType("MegabytesValue", float)
 
+# Constantes de conversión y límites de seguridad:
 BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
-MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB # Límite lógico de 128GB por proceso
+MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
 # Máscaras de acceso Win32 para operaciones seguras en procesos:
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000

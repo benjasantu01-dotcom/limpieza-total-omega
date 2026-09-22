@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 50
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 230
 
@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 26 | 4 | 6 | 1 | 41 |
+| 2026-09-20 | 25 | 4 | 4 | 1 | 40 |
 | 2026-09-21 | 145 | 10 | 39 | 8 | 148 |
-| 2026-09-22 | 23 | 3 | 5 | 4 | 41 |
+| 2026-09-22 | 25 | 3 | 6 | 4 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
-- legibilidad y documentación: **43**
+- legibilidad y documentación: **45**
 - seguridad defensiva: **41**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **34**
 - rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **19**
 - `quarantine.py`: **19**
+- `assistant.py`: **18**
+- `memory.py`: **17**
 - `diskreport.py`: **16**
-- `memory.py`: **16**
 - `healthscore.py`: **15**
 - `settings.py`: **15**
 - `browser.py`: **15**
 - `duplicates.py`: **15**
-- `organizer.py`: **14**
+- `organizer.py`: **15**
 - `safety.py`: **14**
 - `branding.py`: **12**
 - `scanner.py`: **11**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T03:34:28` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, aclarando las precondiciones y el propósito de las validaciones de seguridad, además de normalizar la consistencia de los tipos y clarificar la lógica de las comprobaciones de atributos de Windows.
+- `2026-09-22T03:34:00` **memory.py** (legibilidad y documentación): Se han añadido type hints faltantes en funciones clave y se ha reorganizado el bloque de constantes para mejorar la claridad sobre qué es configuración técnica y qué es información de dominio, facilitando la lectura del código.
 - `2026-09-22T03:24:44` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings de nivel de módulo y función que explican el "porqué" de las decisiones (como la normalización y el uso del pipeline), y añadí type hints explícitos para clarificar la arquitectura del motor de reglas, facilitando su mantenimiento como demo técnica.
 - `2026-09-22T03:24:15` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones críticas y la adición de una tabla de complejidad algorítmica para clarificar el flujo de decisión de hashing.
 - `2026-09-22T03:23:46` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la precisión del mantenimiento del código al extraer las constantes de configuración de los filtros de archivos y directorios fuera de `_is_excluded_path` y `_collect_summary_data`, además de añadir docstrings detallados en las funciones de procesamiento que aclaran la complejidad algorítmica y el manejo de excepciones.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T02:44:28` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_ask_assistant` y `on_trim_process` encapsulando la extracción de valores de widgets en un método de validación centralizado (`_safe_get_entry_value`) para prevenir excepciones de UI al procesar entradas vacías o malformadas.
 - `2026-09-22T02:43:14` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del motor de cómputo validando la integridad de los resultados intermedios y el estado de `SystemMetrics` antes de proceder, asegurando que cualquier anomalía en los datos de entrada o cálculo no produzca resultados inconsistentes o corrompidos.
 - `2026-09-22T02:33:49` **browser.py** (manejo de errores y validación de entradas): Refactoricé `_sum_directory_recursive` para manejar el caso límite donde la ruta de entrada es un archivo y no un directorio, evitando que `os.scandir` lance un `OSError` innecesario y mejorando la robustez ante estructuras de archivo inesperadas dentro de la caché.
-- `2026-09-22T02:32:44` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y `ingest` mediante una validación de tipo más estricta y el uso de `getattr` con manejo defensivo, evitando que cualquier objeto inesperado o método malintencionado pueda ser inyectado durante la carga de configuración o datos de métricas.
-- `2026-09-22T01:11:06` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `save()` y `_load_impl` al añadir una validación estricta de "propiedad" mediante `os.path.samefile` (cuando existe) o verificación de permisos antes de realizar operaciones de archivo, evitando riesgos de colisión de rutas o manipulación indebida fuera del directorio destino.
