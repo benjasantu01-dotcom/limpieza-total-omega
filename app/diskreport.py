@@ -109,8 +109,9 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     o puntos de reparse (Junctions) para prevenir bucles infinitos o escaneos fuera de ruta.
     """
     try:
-        path = Path(entry.path).resolve()
-        if not str(path).startswith(str(root_path)):
+        # Resolvemos la ruta para verificar que realmente pertenece al arbol base
+        full_path = Path(entry.path).resolve()
+        if root_path not in full_path.parents and full_path != root_path:
             return True
 
         if len(entry.path) > 260:
