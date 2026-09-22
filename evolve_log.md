@@ -645,3 +645,13 @@ ERROR evolve/tests/test_modules.py
 - `2026-09-22T13:39:08` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-22T13:39:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T13:39:08` Corrida terminada. Total usado hoy: 316.
+- `2026-09-22T13:46:36` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-22T13:47:07` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-22T13:47:34` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-22T13:48:13` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `quarantine.py` ante fallos de I/O y estados inconsistentes en disco mediante la implementación de validaciones más estrictas en el registro y en la lógica de `_safe_unlink`, asegurando que no se pierdan datos ni se rompa la integridad del manifiesto si ocurren errores de acceso o bloqueos temporales por parte del S.O.
+- `2026-09-22T13:48:30` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-22T13:48:52` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-22T13:49:58` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-22T13:50:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
+- `2026-09-22T13:50:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T13:50:44` Corrida terminada. Total usado hoy: 320.

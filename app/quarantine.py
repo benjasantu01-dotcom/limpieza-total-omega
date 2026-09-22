@@ -222,11 +222,12 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
         if expected_hash and _get_sha256(resolved) != expected_hash:
             return False
 
-        # Uso explícito de ensure_safe_to_modify para forzar validación y capturar fallos
+        # Validación explícita de seguridad antes de cualquier operación destructiva
         ensure_safe_to_modify(resolved)
         
         if not _is_file_locked(resolved):
             path.unlink()
+            # Intento síncrono para asegurar que el sistema de archivos registre el borrado
             try:
                 dir_fd = os.open(str(path.parent), os.O_RDONLY)
                 try: os.fsync(dir_fd)
