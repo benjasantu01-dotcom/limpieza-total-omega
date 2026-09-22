@@ -102,11 +102,13 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """
-    Filtro de exclusión para el escáner de archivos basado en seguridad defensiva.
-    Retorna True si la entrada debe ser ignorada por razones de seguridad, formato o escape de sandbox.
+    Aplica filtros de seguridad defensiva a una entrada de directorio.
+    
+    Evita el escape de sandbox, ignora rutas que superen el límite MAX_PATH para prevenir
+    desbordamientos, bloquea caracteres de ofuscación (RTL) y omite enlaces simbólicos
+    o puntos de reparse (Junctions) para prevenir bucles infinitos o escaneos fuera de ruta.
     """
     try:
-        # Validación estricta de sandbox: el archivo/carpeta debe estar contenido en la raíz
         path = Path(entry.path).resolve()
         if not str(path).startswith(str(root_path)):
             return True
@@ -114,7 +116,6 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if len(entry.path) > 260:
             return True
         
-        # Detección de caracteres sospechosos de suplantación (RTL)
         if any(c in entry.name for c in SUSPICIOUS_CHARS):
             return True
             
@@ -122,7 +123,6 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             return True
         if os.name == 'nt':
             st = entry.stat(follow_symlinks=False)
-            # 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) bloquea puntos de reparse/junctions
             if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
                 return True
     except (OSError, PermissionError, AttributeError, UnicodeDecodeError):
@@ -244,8 +244,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos de forma iterativa empleando un stack LIFO.
-    Evita ciclos de directorios rastreando inodos (dev, ino).
-    Silenciosamente ignora errores de acceso (Permisos, archivos desaparecidos).
+    
+    Implementa prevención de ciclos mediante el rastreo de inodos únicos (dev, ino).
+    Utiliza `os.scandir` para un rendimiento superior a `os.walk` y maneja excepciones
+    de acceso por carpeta de forma silenciosa para asegurar la continuidad del escaneo.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -310,7 +312,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size_bytes in walk_files(root, skip_protected):
         try:
-            # Asegurar resolución consistente contra la raíz actual
             relative = path.relative_to(root)
             if not relative.parts: continue
             
@@ -335,10 +336,11 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Agrega estadísticas globales de un árbol de directorios en una pasada única (O(n)).
+    Realiza una pasada única (O(n)) sobre el árbol de directorios para recolectar estadísticas.
     
-    Procesa recursivamente cada archivo mediante `walk_files`, categorizando por extensión 
-    y manteniendo un Min-Heap de tamaño 'limit' para los archivos más grandes encontrados.
+    Utiliza `walk_files` para procesar el árbol de forma iterativa. Mantiene un Min-Heap 
+    de tamaño `limit` para trackear eficientemente los archivos más pesados sin necesidad
+    de ordenar una lista completa en memoria.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -384,7 +386,6 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
         lines.extend(["", "Mayores archivos:"])
         for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
             try:
-                # Verificación de existencia para evitar errores en archivos temporales borrados
                 if p.is_file():
                     lines.append(f"  {format_size(s):>10}  {str(p)}")
             except (OSError, PermissionError):

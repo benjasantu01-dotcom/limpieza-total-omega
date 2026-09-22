@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
+- Mejoras aceptadas: **176** (34.9% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 48
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 244
+- Rechazadas por guardia de seguridad: 47
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 243
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 76 | 7 | 26 | 6 | 109 |
-| 2026-09-22 | 97 | 10 | 22 | 16 | 135 |
+| 2026-09-21 | 75 | 7 | 25 | 5 | 108 |
+| 2026-09-22 | 101 | 10 | 22 | 16 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - seguridad defensiva: **40**
+- legibilidad y documentación: **35**
 - robustez ante casos límite: **33**
-- legibilidad y documentación: **31**
-- rendimiento: **26**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **18**
 - `quarantine.py`: **18**
-- `diskreport.py`: **17**
 - `assistant.py`: **16**
 - `memory.py`: **16**
 - `safety.py`: **16**
 - `healthscore.py`: **14**
+- `browser.py`: **13**
 - `settings.py`: **13**
-- `organizer.py`: **12**
-- `browser.py`: **12**
-- `duplicates.py`: **12**
+- `duplicates.py`: **13**
 - `scanner.py`: **11**
-- `branding.py`: **7**
+- `organizer.py`: **11**
+- `branding.py`: **8**
 - `main.py`: **6**
 - `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T12:17:00` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de hashing y filtrado, clarificando el flujo lógico y los criterios de seguridad aplicados para facilitar el mantenimiento del código.
+- `2026-09-22T12:16:47` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` añadiendo docstrings detallados en funciones clave (`_collect_summary_data`, `walk_files`, `_is_excluded_path`) para explicar los mecanismos de seguridad y la eficiencia algorítmica (uso de heaps e inodos), alineándome con el enfoque de legibilidad.
+- `2026-09-22T12:15:41` **browser.py** (legibilidad y documentación): Mejora la legibilidad y la robustez del módulo `browser.py` mediante la refactorización de `_sum_directory_recursive` para separar la lógica de cálculo de tamaño de la gestión de errores, además de añadir type hints explícitos y docstrings detallados que clarifican el flujo de trabajo ante fallos de acceso.
+- `2026-09-22T12:15:13` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints detallados en los parámetros de las funciones de dibujo y docstrings que especifican explícitamente el sistema de coordenadas y las dependencias de escalado, facilitando el mantenimiento y la comprensión de la lógica geométrica.
 - `2026-09-22T12:05:29` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_load_impl` y `save` eliminando el uso de `ensure_safe_to_modify` como una llamada que puede lanzar excepciones inesperadas al verificar la existencia de archivos, reemplazándolo por chequeos booleanos que garantizan un flujo de control seguro y predecible.
 - `2026-09-22T12:04:51` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas de `scanner.py` al añadir validaciones defensivas de tipo y estado antes de acceder a atributos de archivos, evitando excepciones no capturadas al procesar archivos bloqueados o inaccesibles por el sistema operativo.
 - `2026-09-22T11:56:26` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_volume_readonly` y `_is_file_in_use` añadiendo validaciones de entrada (`isinstance`) y manejadores de excepciones específicos para evitar bloqueos por parámetros inválidos o estados transitorios del sistema operativo.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T11:35:52` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `_is_path_inside_base` y `_resolve_browser_path` para prevenir excepciones ante entradas inesperadas, y se ha añadido una protección de desbordamiento de pila en `_sum_directory_recursive` mediante una comprobación explícita de `depth` antes de la recursión profunda.
 - `2026-09-22T11:34:24` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` para evitar excepciones en escenarios de introspección inesperados y fortalecí el método `ingest` de `SystemContext` para manejar fallos de validación parciales sin interrumpir la carga de otras métricas válidas.
 - `2026-09-22T10:16:13` **startup.py** (seguridad defensiva): Reforcé la seguridad en `entries_from_registry` aplicando explícitamente `is_protected_path` al resultado de la resolución de rutas, evitando que comandos malintencionados (como los que inician con `\\` o rutas del sistema) pasen el filtro antes de procesarse, manteniendo el principio de defensa en profundidad.
-- `2026-09-22T10:15:24` **settings.py** (seguridad defensiva): Se reforzó la seguridad en el manejo de archivos mediante la implementación de `os.fsync` y una validación de ruta explícita antes de la escritura atómica, asegurando que el directorio destino no sea un punto de reparse incluso si la ruta original pasó validaciones previas.
-- `2026-09-22T10:03:40` **scanner.py** (seguridad defensiva): Se ha mejorado la validación de seguridad en `Scanner._is_safe_entry` y `scan_directory` reemplazando comparaciones de prefijos de cadena (potencialmente vulnerables a ataques de traversal como `C:\carpeta\..\windows`) por el uso robusto de `pathlib.Path.resolve()` y `pathlib.Path.is_relative_to()`, asegurando que el motor de escaneo nunca escape de la jerarquía asignada.
-- `2026-09-22T10:03:27` **safety.py** (seguridad defensiva): Se ha implementado una protección adicional en `ensure_safe_to_modify` para detectar si el proceso tiene permisos efectivos de escritura sobre la carpeta contenedora mediante la prueba de existencia del archivo, evitando así intentos de escritura fallidos en directorios de solo lectura que podrían no estar cubiertos por los flags de atributos de Win32.
-- `2026-09-22T10:02:25` **quarantine.py** (seguridad defensiva): Mejoré `_safe_unlink` para asegurar que, además de la validación lógica, se fuerce la sincronización del sistema de archivos mediante `os.fsync` sobre el directorio padre, garantizando la persistencia de la operación de borrado y cumpliendo con la exigencia de seguridad defensiva en operaciones de disco.

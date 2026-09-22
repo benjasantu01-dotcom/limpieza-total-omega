@@ -257,6 +257,14 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
         return False
 
 
+def _get_entry_size(entry: os.DirEntry) -> int:
+    """Obtiene de forma segura el tamaño de un archivo individual."""
+    try:
+        return int(entry.stat(follow_symlinks=False).st_size)
+    except (OSError, PermissionError):
+        return 0
+
+
 def _sum_directory_recursive(
     root_abs: str, 
     is_junction_fn: JunctionChecker, 
@@ -265,12 +273,14 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula recursivamente el peso de una carpeta utilizando memoización para eficiencia.
+    Calcula recursivamente el peso de una carpeta, sumando el tamaño de archivos
+    y resultados de subdirectorios, protegiendo contra errores de I/O mediante
+    captura de excepciones localizadas.
     """
     if depth > MAX_SCAN_DEPTH or root_abs in memo:
         return memo.get(root_abs, 0)
 
-    directory_total_bytes: int = 0
+    total_bytes: int = 0
     try:
         with os.scandir(root_abs) as it:
             for entry in it:
@@ -278,18 +288,17 @@ def _sum_directory_recursive(
                     continue
                 
                 if entry.is_dir(follow_symlinks=False):
-                    directory_total_bytes += _sum_directory_recursive(
+                    total_bytes += _sum_directory_recursive(
                         entry.path, is_junction_fn, kernel32, memo, depth + 1
                     )
                 elif entry.is_file(follow_symlinks=False):
-                    try:
-                        directory_total_bytes += int(entry.stat(follow_symlinks=False).st_size)
-                    except (OSError, PermissionError):
-                        pass
+                    total_bytes += _get_entry_size(entry)
         
-        memo[root_abs] = directory_total_bytes
-        return directory_total_bytes
+        memo[root_abs] = total_bytes
+        return total_bytes
     except (OSError, PermissionError, RuntimeError, ValueError):
+        # En caso de error de acceso (acceso denegado, disco desconectado),
+        # retornamos 0 bytes para la rama actual manteniendo la resiliencia del proceso.
         return 0
 
 
