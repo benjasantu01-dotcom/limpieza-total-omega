@@ -634,3 +634,14 @@ ERROR evolve/tests/test_modules.py
 - `2026-09-22T13:28:50` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se introdujo `_is_file_in_use` usando `msvcrt.locking` para detectar archivos bloqueados por el navegador, evitando lecturas fallidas o inestables en archivos activos, alineándose con el enfoque de robustez ante casos límite.
 - `2026-09-22T13:28:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T13:28:50` Corrida terminada. Total usado hoy: 312.
+- `2026-09-22T13:36:22` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-22T13:36:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-22T13:37:00` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `largest_folders` frente a rutas que contienen caracteres especiales o estructuras de archivos donde `path.parts` puede fallar, añadiendo una comprobación explícita para evitar errores en el acceso a índices de rutas mal formadas.
+- `2026-09-22T13:37:29` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-22T13:37:56` ➖ Sin cambios en healthscore.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `SystemMetrics` ante casos límite mediante una validación más estricta en `validate`, asegurando que los porcentajes se traten siempre como valores válidos y no como negativos o desbordados antes de entrar al pipeline.
+- `2026-09-22T13:38:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-22T13:38:34` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-22T13:38:44` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-22T13:39:08` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-22T13:39:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T13:39:08` Corrida terminada. Total usado hoy: 316.

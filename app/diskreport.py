@@ -312,8 +312,8 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     root_parts = root.parts
     for path, size_bytes in walk_files(root, skip_protected):
-        # Determina la subcarpeta de primer nivel evitando relative_to costoso
         path_parts = path.parts
+        # Validamos estructura de ruta para evitar índices fuera de rango en subcarpetas
         if len(path_parts) > len(root_parts):
             top_level = root / path_parts[len(root_parts)]
             folder_total_bytes[top_level] += size_bytes

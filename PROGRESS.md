@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 48
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 241
+- Rechazadas por guardia de seguridad: 47
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 59 | 6 | 22 | 3 | 102 |
-| 2026-09-22 | 115 | 14 | 26 | 18 | 139 |
+| 2026-09-21 | 57 | 6 | 21 | 3 | 101 |
+| 2026-09-22 | 116 | 14 | 26 | 19 | 141 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **35**
+- seguridad defensiva: **33**
 - rendimiento: **31**
-- robustez ante casos límite: **23**
+- robustez ante casos límite: **24**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
-- `diskreport.py`: **18**
-- `safety.py`: **17**
+- `diskreport.py`: **19**
+- `quarantine.py`: **17**
 - `memory.py`: **16**
+- `safety.py`: **16**
 - `assistant.py`: **15**
 - `settings.py`: **14**
 - `healthscore.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T13:37:00` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` frente a rutas que contienen caracteres especiales o estructuras de archivos donde `path.parts` puede fallar, añadiendo una comprobación explícita para evitar errores en el acceso a índices de rutas mal formadas.
 - `2026-09-22T13:20:37` **settings.py** (rendimiento): Optimicé el rendimiento del módulo reemplazando la lógica de validación repetitiva en `validate` y `save` mediante una pre-resolución de los validadores en el mapa de configuración, evitando búsquedas redundantes en cada iteración del bucle de procesamiento.
 - `2026-09-22T13:19:39` **safety.py** (rendimiento): Optimicé el rendimiento de las validaciones recurrentes de rutas reemplazando los chequeos repetidos de atributos de disco por una caché estructurada, centralizando las consultas Win32 bajo un único `lru_cache` para `GetFileAttributesW` para reducir las llamadas al sistema.
 - `2026-09-22T13:08:07` **quarantine.py** (rendimiento): Se optimizó `list_items` para reducir drásticamente el I/O al realizar una única pasada por el directorio de cuarentena y centralizar la validación de integridad, evitando llamadas repetidas a `_validate_integrity` que generaban accesos innecesarios al sistema de archivos por cada ítem.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T12:29:18` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en funciones clave y la sustitución de nombres de variables ambiguos (ej. `st` por `stats`) para clarificar el flujo de validación y seguridad.
 - `2026-09-22T12:29:05` **memory.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints faltantes, la estandarización de docstrings y la refactorización de la lógica de parseo en `parse_linux_meminfo` para hacerla más explícita y robusta.
 - `2026-09-22T12:28:35` **main.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la refactorización de `_build_health_metrics_row` y la adición de docstrings técnicos detallados en los métodos de construcción de la UI, asegurando que cada componente describa su propósito y su dependencia con el `branding`.
-- `2026-09-22T12:17:00` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de hashing y filtrado, clarificando el flujo lógico y los criterios de seguridad aplicados para facilitar el mantenimiento del código.
