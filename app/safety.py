@@ -252,12 +252,10 @@ def _is_offline(path_str: str) -> bool:
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
     """Verifica bloqueos mediante intento de apertura con acceso de solo lectura y compartido."""
-    if os.name != 'nt' or not isinstance(path_str, str) or not os.path.isabs(path_str) or not os.path.isfile(path_str):
+    if os.name != 'nt' or not isinstance(path_str, str) or not os.path.isabs(path_str):
         return False
     try:
         kernel32 = ctypes.windll.kernel32
-        # FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE = 0x00000007
-        # GENERIC_READ = 0x80000000
         handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0x00000007, None, 3, 0x00000080, None)
         if handle == -1: 
             return ctypes.GetLastError() == 32
@@ -269,7 +267,7 @@ def _is_file_in_use(path_str: str) -> bool:
 @lru_cache(maxsize=128)
 def _is_volume_readonly(path_str: str) -> bool:
     """Consulta el flag de solo lectura del volumen montado mediante GetVolumeInformationW."""
-    if os.name != 'nt' or not isinstance(path_str, str): return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
         flags = ctypes.c_ulong()

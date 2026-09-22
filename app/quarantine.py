@@ -222,9 +222,11 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
         if expected_hash and _get_sha256(resolved) != expected_hash:
             return False
 
-        if is_safe_to_modify(resolved) and not _is_file_locked(resolved):
+        # Uso explícito de ensure_safe_to_modify para forzar validación y capturar fallos
+        ensure_safe_to_modify(resolved)
+        
+        if not _is_file_locked(resolved):
             path.unlink()
-            # Forzar sincronización del directorio padre para garantizar el borrado en disco
             try:
                 dir_fd = os.open(str(path.parent), os.O_RDONLY)
                 try: os.fsync(dir_fd)
@@ -233,7 +235,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
                 pass
             return True
         return False
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, UnsafePathError):
         return False
 
 def _check_path_syntax_integrity(path: Path) -> None:
@@ -247,7 +249,6 @@ def _check_path_syntax_integrity(path: Path) -> None:
     if len(path.parts) > 32:
         raise UnsafePathError("Profundidad de ruta excesiva.")
     
-    # Previene ADS en Windows: nombre de archivo no debe contener ':' fuera del drive
     if ":" in path.name:
         raise UnsafePathError("Ruta con flujos de datos alternos (ADS) prohibidos.")
     
@@ -279,7 +280,6 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
     name_base = "".join(c for c in name_base if ord(c) >= 32)
     
     extension = f".{parts[-1]}" if len(parts) > 1 else ""
-    # Evitar que el nombre contenga ':' accidentalmente tras el filtrado
     candidate = f"{item_id}__{name_base[:64]}{extension}".replace(":", "_")[:128]
     return candidate
 
@@ -292,11 +292,6 @@ def _ensure_path_ownership(path: Path) -> None:
 def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Resuelve la ruta absoluta del sandbox y asegura las políticas de seguridad mínimas.
-    
-    Args:
-        base: Ruta base donde se alojará el directorio de cuarentena.
-    Returns:
-        Objeto Path absoluto y validado del sandbox.
     """
     if not base:
         raise ValueError("El directorio base no puede estar vacío.")
@@ -306,8 +301,9 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
             raise UnsafePathError("Ruta de cuarentena inválida.")
         if is_protected_path(path):
             raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
-        if not is_safe_to_modify(path):
-            raise UnsafePathError("Directorio no cumple políticas de seguridad.")
+        
+        # Validar via ensure antes de crear
+        ensure_safe_to_modify(path)
         
         try:
             path.mkdir(parents=True, exist_ok=True)
@@ -316,7 +312,7 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
             
         _ensure_path_ownership(path)
         return path
-    except (OSError, RuntimeError) as e:
+    except (OSError, RuntimeError, UnsafePathError) as e:
         raise OSError(f"Error al preparar directorio de cuarentena: {e}")
 
 
@@ -351,8 +347,6 @@ def _check_windows_file_attributes(path_str: str) -> None:
 def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     """
     Verifica condiciones de seguridad origen-destino previo a la operación.
-    Valida tipos de archivo, symlinks, espacio de dispositivos y accesos de escritura.
-    Lanza UnsafePathError o PermissionError ante inconsistencias detectadas.
     """
     resolved_source = source_path.resolve(strict=True)
     resolved_dest_dir = dest_dir.resolve()
@@ -391,9 +385,7 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
 
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
-    """Orquesta las verificaciones de integridad antes del movimiento.
-    Valida sintaxis del path, atributos de sistema y disponibilidad de espacio.
-    """
+    """Orquesta las verificaciones de integridad antes del movimiento."""
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
     
@@ -458,14 +450,12 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
 
     temp_path: Optional[Path] = None
     try:
-        # Usar un archivo temporal con sufijo seguro
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
             temp_path = Path(tf.name)
             tf.write(encoded_content)
             tf.flush()
             os.fsync(tf.fileno())
             
-        # Validación de integridad antes de reemplazar el manifiesto actual
         if temp_path and temp_path.exists() and temp_path.stat().st_size == len(encoded_content):
             os.replace(temp_path, target_path)
         else:
@@ -499,13 +489,13 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
     """Valida los permisos y seguridad de los paths antes de la transferencia física."""
     if is_protected_path(destination):
         raise UnsafePathError("Destino en ruta protegida.")
-    if not is_safe_to_modify(destination.parent):
-        raise UnsafePathError("Directorio destino no es seguro para escritura.")
+    
+    # Validar seguridad antes de operar sobre destino
+    ensure_safe_to_modify(destination.parent)
     
     if source.stat().st_dev != destination.parent.resolve().stat().st_dev:
         raise UnsafePathError("Operación entre dispositivos no permitida.")
     
-    ensure_safe_to_modify(destination.parent, allow_sensitive=True)
     _check_windows_file_attributes(str(destination))
 
     if not source.is_file():
@@ -782,7 +772,6 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True
         
-    # Verificación de seguridad reforzada antes de purgar
     if not quarantine_item.verify_integrity(stored_file):
         raise UnsafePathError(f"Integridad fallida para {item_id}.")
         
@@ -798,7 +787,6 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
     """
     if not file_path.exists() or not file_path.is_file() or file_path.is_symlink() or is_protected_path(file_path):
         return False
-    # La integridad es crítica para evitar purgar archivos incorrectos por colisiones
     return (
         is_within_directory(file_path, base_path) and
         item.verify_integrity(file_path) and
@@ -814,7 +802,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
-    # Optimización: mapeo para acceso O(1) en lugar de búsquedas O(N) dentro del loop
     item_map = {item.stored_name: item for item in items}
     purged_ids: Set[str] = set()
     

@@ -447,3 +447,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-22T11:50:48` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `parse_linux_meminfo` mediante una validación más estricta de las líneas del archivo `/proc/meminfo` y una gestión de errores predecible, evitando que valores malformados o faltantes corrompan el `MemorySnapshot`.
 - `2026-09-22T11:50:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T11:50:48` Corrida terminada. Total usado hoy: 272.
+- `2026-09-22T11:54:07` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-09-22T11:54:35` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-22T11:55:16` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez en `_safe_unlink` y `_write_temp_to_final` mediante la inclusión de un chequeo explícito `is_safe_to_modify` antes de cualquier operación de I/O, asegurando que si la validación falla (lanzando una excepción `UnsafePathError` en `ensure_safe_to_modify`), la ejecución se detenga de manera controlada y no silenciosa.
+- `2026-09-22T11:55:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-22T11:55:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-22T11:56:26` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_volume_readonly` y `_is_file_in_use` añadiendo validaciones de entrada (`isinstance`) y manejadores de excepciones específicos para evitar bloqueos por parámetros inválidos o estados transitorios del sistema operativo.
+- `2026-09-22T11:56:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T11:56:26` Corrida terminada. Total usado hoy: 276.
