@@ -224,6 +224,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
 
         if is_safe_to_modify(resolved) and not _is_file_locked(resolved):
             path.unlink()
+            # Forzar sincronización del directorio padre para garantizar el borrado en disco
             try:
                 dir_fd = os.open(str(path.parent), os.O_RDONLY)
                 try: os.fsync(dir_fd)

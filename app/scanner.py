@@ -147,13 +147,15 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.base_root: Path = base_root.resolve()
-        self.base_root_str: str = str(self.base_root).lower() + os.sep
         self.now_ts: float = datetime.now().timestamp()
         self._registry: List[SuspicionCheck] = EXECUTABLE_CHECK_REGISTRY
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Valida si una ruta absoluta pertenece jerárquicamente a la base escaneada."""
-        return entry_path.lower().startswith(self.base_root_str)
+        try:
+            return Path(entry_path).resolve().is_relative_to(self.base_root)
+        except ValueError:
+            return False
 
     def _has_invalid_name(self, name: str) -> bool:
         """Determina si el nombre de archivo contiene caracteres prohibidos o reservados por Windows."""
@@ -181,7 +183,7 @@ class Scanner:
             return False
         if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
             return False
-        if not entry.path.lower().startswith(self.base_root_str.rstrip(os.sep)):
+        if not self._is_inside_base_root(entry.path):
             return False
         if self._is_reparse_point(entry) or is_protected_path(Path(entry.path)):
             return False

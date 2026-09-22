@@ -565,8 +565,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         except (OSError, PermissionError) as e: raise UnsafePathError(f"Error durante validación: {e}", SafetyValidationErrorCode.IO_ERROR)
     else:
         parent = p.parent
+        if parent.exists() and not os.access(parent, os.W_OK):
+             raise UnsafePathError("Directorio contenedor no tiene permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
         if parent.exists() and is_protected_path(parent):
-            raise UnsafePathError("Directorio contenedor restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+            raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
     return p
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
