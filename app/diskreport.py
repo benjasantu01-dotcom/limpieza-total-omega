@@ -100,22 +100,17 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 def _is_excluded_path(entry: os.DirEntry) -> bool:
     """
-    Filtro de exclusión para el escáner de archivos.
-    
-    Por qué: 
-    1. Las rutas > 260 chars en Windows causan errores de API nativa (MAX_PATH).
-    2. Los symlinks pueden crear bucles infinitos en el recorrido del árbol.
-    3. Los puntos de reparse (0x400) en Windows (como Junctions) no deben 
-       seguirse para evitar re-escaneo de discos o carpetas fuera de la raíz.
-    4. Caracteres de control RTL o Unicode sospechosos suelen ocultar extensiones.
+    Filtro de exclusión para el escáner de archivos basado en seguridad defensiva.
     """
     try:
-        if not entry.path or len(entry.path) > 260:
+        # Validación defensiva de la ruta antes de cualquier operación
+        entry_path = entry.path
+        if not entry_path or len(entry_path) > 260:
             return True
         
-        # Detección de caracteres sospechosos de suplantación
+        # Detección de caracteres sospechosos de suplantación (RTL)
         name = entry.name
-        if any(c in name for c in ['\u202E', '\u202D', '\u200E', '\u200F']):
+        if any(c in name for c in ('\u202E', '\u202D', '\u200E', '\u200F')):
             return True
             
         if entry.is_symlink():
