@@ -1,5 +1,5 @@
 """
-assistant.py — asistente que explica el estado del sistema y qué conviene hacer.
+assistant.py — asistente que explica el estado del sistema y qué conviene hace.
 
 Tiene DOS motores, y el orden importa:
 
@@ -429,10 +429,10 @@ def _get_source_value(source: Any, key: str) -> Any:
     if isinstance(source, dict):
         return source.get(key)
     try:
-        if isinstance(source, type): return None
+        if isinstance(source, (type, type(None))): return None
         val = getattr(source, key, None)
         return None if callable(val) or key.startswith("__") else val
-    except Exception:
+    except (AttributeError, TypeError):
         return None
 
 def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:

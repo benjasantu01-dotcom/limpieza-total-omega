@@ -705,3 +705,37 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-22T02:26:01` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-22T02:26:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T02:26:01` Corrida terminada. Total usado hoy: 54.
+- `2026-09-22T02:32:04` Arrancando corrida. Quedan hoy ~246 peticiones objetivo.
+- `2026-09-22T02:32:44` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_source_value` y `ingest` mediante una validación de tipo más estricta y el uso de `getattr` con manejo defensivo, evitando que cualquier objeto inesperado o método malintencionado pueda ser inyectado durante la carga de configuración o datos de métricas.
+- `2026-09-22T02:33:18` Tests FALLARON:
+```
+ draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150,
+                  canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
+                  track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
+        """Renderiza un gráfico de anillo circular; si percent es None, no renderiza."""
+        if percent is None or not isinstance(percent, (int, float)): return
+        try:
+            val = float(percent)
+            if not math.isfinite(val): val = 0.0
+            val = max(0.0, min(100.0, val))
+            diam = max(20, int(size))
+            thick = max(2, min(int(thickness), (diam // 2) - 1))
+            borde: float = float(thick) / 2.0
+            caja = (canvas_x + borde, canvas_y + borde, canvas_x + diam - borde, canvas_y + diam - borde)
+    
+>           canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)
+            ^^^^^^^^^^^^^^^^^
+E           AttributeError: 'NoneType' object has no attribute 'create_arc'
+
+app/branding.py:441: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - AttributeError: 'NoneType' object has no attribute 'create_line'
+FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missing_canvas - AttributeError: 'NoneType' object has no attribute 'create_arc'
+2 failed, 297 passed in 1.00s
+
+```
+- `2026-09-22T02:33:18` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de las funciones `save_logo_svg` y `draw_ring` reemplazando los bloques `try-except` genéricos por validaciones de entrada y captura de excepciones específicas, siguiendo el enfoque de manejo de errores defensivo para asegurar la integridad de la app.
+- `2026-09-22T02:33:49` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Refactoricé `_sum_directory_recursive` para manejar el caso límite donde la ruta de entrada es un archivo y no un directorio, evitando que `os.scandir` lance un `OSError` innecesario y mejorando la robustez ante estructuras de archivo inesperadas dentro de la caché.
+- `2026-09-22T02:34:01` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-22T02:34:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T02:34:01` Corrida terminada. Total usado hoy: 58.

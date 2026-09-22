@@ -256,8 +256,9 @@ def _sum_directory_recursive(
     if root_abs in memo:
         return memo[root_abs]
 
-    # Defensa: verificamos que la carpeta actual sea segura antes de listar su contenido.
-    if not is_safe_to_modify(Path(root_abs)):
+    root_path = Path(root_abs)
+    # Defensa: verificamos que la ruta sea un directorio antes de listar
+    if not root_path.is_dir() or not is_safe_to_modify(root_path):
         return 0
 
     directory_total_bytes: int = 0
@@ -273,7 +274,6 @@ def _sum_directory_recursive(
                     
                     if entry.is_dir(follow_symlinks=False):
                         if depth < MAX_SCAN_DEPTH:
-                            # Validamos seguridad antes de descender
                             if is_safe_to_modify(Path(entry.path)):
                                 directory_total_bytes += _sum_directory_recursive(
                                     entry.path, is_junction_fn, kernel32, memo, root_base_abs, depth + 1
