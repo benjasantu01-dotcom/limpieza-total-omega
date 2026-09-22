@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 235
+- Rechazadas por guardia de seguridad: 49
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 237
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 112 | 7 | 33 | 7 | 141 |
-| 2026-09-22 | 71 | 10 | 17 | 12 | 94 |
+| 2026-09-21 | 109 | 7 | 32 | 7 | 141 |
+| 2026-09-22 | 72 | 10 | 17 | 13 | 96 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **41**
-- seguridad defensiva: **37**
+- seguridad defensiva: **34**
 - rendimiento: **32**
-- robustez ante casos límite: **27**
+- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **18**
-- `quarantine.py`: **17**
 - `assistant.py`: **17**
+- `diskreport.py`: **17**
+- `memory.py`: **17**
 - `safety.py`: **16**
-- `diskreport.py`: **16**
+- `quarantine.py`: **16**
 - `settings.py`: **14**
 - `browser.py`: **14**
 - `healthscore.py`: **14**
-- `organizer.py`: **13**
 - `duplicates.py`: **12**
+- `organizer.py`: **12**
 - `scanner.py`: **11**
 - `branding.py`: **9**
 - `main.py`: **8**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T09:02:14` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` y `largest_folders` frente a casos límite donde la ruta de entrada es un archivo individual o una ruta que contiene caracteres no codificables (surrogates), añadiendo verificaciones explícitas de tipo y capturando posibles fallos de serialización de rutas al procesar resultados del sistema de archivos.
 - `2026-09-22T08:50:48` **safety.py** (rendimiento): Se optimizó el acceso a `_SYSTEM_ROOT_PATHS_SET` en `_is_system_path_cached` reemplazando el bucle manual `for` (con `commonpath`) por una verificación de prefijo de cadena más eficiente, dado que `os.path.normpath` ya normaliza los separadores a los nativos del SO.
 - `2026-09-22T08:47:23` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando búsquedas lineales O(N) en diccionarios o conjuntos, evitando iteraciones repetitivas sobre el manifiesto y mejorando la eficiencia de E/S al trabajar con los archivos en disco.
 - `2026-09-22T08:35:19` **main.py** (rendimiento): Optimicé el renderizado de la lista de archivos basura y duplicados reemplazando la recreación masiva de widgets de texto por un único volcado de cadena, reduciendo el número de operaciones de manipulación de `Tkinter` y mejorando la respuesta de la UI durante los procesos de reporte.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T07:50:15` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante docstrings detallados que explican el "porqué" de las decisiones de diseño (especialmente en la jerarquía de escaneo y el motor de hashing), alineando el código con el objetivo de legibilidad técnica sin alterar su funcionamiento.
 - `2026-09-22T07:49:49` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código mediante la adición de Type Hints en retornos de funciones (como `_get_local_windows_drives`) y la clarificación de docstrings en las funciones `_collect_summary_data` y `walk_files`, especificando el comportamiento frente a excepciones y la complejidad algorítmica para mejorar la mantenibilidad.
 - `2026-09-22T07:49:21` **browser.py** (legibilidad y documentación): Mejora la legibilidad y la robustez del código mediante la clarificación de `__is_system_hidden`, convirtiendo la máscara de bits en una constante documentada y refactorizando la lógica de detección de atributos para evitar la repetición de filtros, cumpliendo con el enfoque de documentación técnica.
-- `2026-09-22T07:39:08` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la validación de archivos JSON al implementar una verificación explícita de `OSError` y `PermissionError` durante la carga y el guardado, asegurando que la aplicación gestione fallos de E/S de forma silenciosa y segura sin romper la ejecución.

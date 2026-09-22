@@ -1414,3 +1414,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-22T08:52:05` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el método `StartupEntry.executable` implementando una validación temprana (fail-fast) basada en la caché `_EXISTS_CACHE` para evitar operaciones redundantes de resolución de ruta (`Path.resolve`) en archivos que ya fueron marcados como inexistentes en iteraciones previas.
 - `2026-09-22T08:52:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T08:52:05` Corrida terminada. Total usado hoy: 204.
+- `2026-09-22T09:00:17` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-09-22T09:01:01` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `SystemContext.ingest` ante datos de entrada malformados (como tipos inesperados o estructuras anidadas profundas) y añadí una validación más estricta en `_get_source_value` para evitar accesos indebidos a atributos internos mediante manipulación de diccionarios, cumpliendo con el enfoque de robustez ante casos límite.
+- `2026-09-22T09:01:34` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-22T09:02:00` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-22T09:02:14` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `walk_files` y `largest_folders` frente a casos límite donde la ruta de entrada es un archivo individual o una ruta que contiene caracteres no codificables (surrogates), añadiendo verificaciones explícitas de tipo y capturando posibles fallos de serialización de rutas al procesar resultados del sistema de archivos.
+- `2026-09-22T09:02:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T09:02:14` Corrida terminada. Total usado hoy: 208.

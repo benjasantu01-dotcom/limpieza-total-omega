@@ -121,7 +121,7 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
             # 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) bloquea puntos de reparse/junctions
             if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
                 return True
-    except (OSError, PermissionError, AttributeError):
+    except (OSError, PermissionError, AttributeError, UnicodeDecodeError):
         return True
     return False
 
@@ -260,7 +260,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         st = entry.stat(follow_symlinks=False)
                         if entry.is_dir(follow_symlinks=False):
                             path = Path(entry.path)
-                            # Verificación de seguridad proactiva antes de profundizar
                             if skip_protected and is_protected_path(path): continue
                             
                             inode: Inode = (st.st_dev, st.st_ino)
@@ -272,9 +271,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             if st.st_size >= 0:
                                 yield Path(entry.path), st.st_size
                             
-                    except (PermissionError, OSError):
+                    except (PermissionError, OSError, UnicodeDecodeError):
                         continue
-        except (PermissionError, OSError, FileNotFoundError):
+        except (PermissionError, OSError, FileNotFoundError, UnicodeDecodeError):
             continue
 
 
@@ -282,7 +281,6 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
     """Encuentra los N archivos más pesados en el directorio especificado usando un heap."""
     root = _validate_root(directory)
     if not root: return []
-    # Validar que el limit sea un entero no negativo
     valid_limit = max(0, int(limit))
     data = _collect_summary_data(root, skip_protected, limit=valid_limit)
     return [FileEntry(p, s) for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True)]
@@ -292,7 +290,6 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
     """Calcula y agrupa métricas de uso de disco totales por cada extensión de archivo."""
     root = _validate_root(directory)
     if not root: return []
-    # Validar que el limit sea un entero no negativo
     valid_limit = max(0, int(limit))
     data = _collect_summary_data(root, skip_protected, limit=0)
     usage_list = [ExtensionUsage(ext, s.total_bytes, s.count) for ext, s in data.ext_stats.items()]
@@ -303,7 +300,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     """Identifica las subcarpetas de primer nivel con mayor consumo de espacio."""
     root = _validate_root(directory)
     if not root: return []
-    # Validar que el limit sea un entero no negativo
     valid_limit = max(0, int(limit))
     folder_total_bytes: Dict[Path, int] = defaultdict(int)
     folder_file_counts: Dict[Path, int] = defaultdict(int)
@@ -318,7 +314,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             if top_level_folder != path:
                 folder_total_bytes[top_level_folder] += size_bytes
                 folder_file_counts[top_level_folder] += 1
-        except (ValueError, OSError): 
+        except (ValueError, OSError, RuntimeError): 
             continue
 
     results = [FolderUsage(p, folder_total_bytes[p], folder_file_counts[p]) for p in folder_total_bytes]
@@ -370,7 +366,6 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     root = _validate_root(directory)
     if root is None: return ["Error: Ruta no válida o inaccesible."]
     
-    # Se impone un límite interno de 20 para el resumen, validando integridad
     data = _collect_summary_data(root, skip_protected, limit=20)
     
     if data.total_files == 0: 
