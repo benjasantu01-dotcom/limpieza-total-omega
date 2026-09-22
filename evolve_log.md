@@ -568,3 +568,69 @@ assert not {'replace'}
 - `2026-09-22T13:20:37` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento del módulo reemplazando la lógica de validación repetitiva en `validate` y `save` mediante una pre-resolución de los validadores en el mapa de configuración, evitando búsquedas redundantes en cada iteración del bucle de procesamiento.
 - `2026-09-22T13:20:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T13:20:37` Corrida terminada. Total usado hoy: 308.
+- `2026-09-22T13:26:09` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-22T13:26:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-22T13:27:08` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.23s
+
+```
+- `2026-09-22T13:27:08` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé la resolución de rutas en `StartupEntry.executable` mediante una lógica de validación jerárquica que evita llamadas innecesarias al sistema de archivos si la ruta ya fue validada o es inválida, reduciendo drásticamente el I/O en ejecuciones repetidas.
+- `2026-09-22T13:27:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-22T13:27:51` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `SystemContext.ingest` ante datos de entrada maliciosos o malformados mediante la implementación de `_is_input_too_deep_or_complex` para prevenir desbordamientos de pila y añadiendo una validación explícita de los tipos de datos recibidos antes de procesarlos.
+- `2026-09-22T13:28:25` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-22T13:28:50` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+ImportError while importing test module '/home/runner/work/limpieza-total-omega/limpieza-total-omega/evolve/tests/test_modules.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+evolve/tests/test_modules.py:22: in <module>
+    import browser  # noqa: E402
+    ^^^^^^^^^^^^^^
+app/browser.py:22: in <module>
+    import msvcrt
+E   ModuleNotFoundError: No module named 'msvcrt'
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.26s
+
+```
+- `2026-09-22T13:28:50` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se introdujo `_is_file_in_use` usando `msvcrt.locking` para detectar archivos bloqueados por el navegador, evitando lecturas fallidas o inestables en archivos activos, alineándose con el enfoque de robustez ante casos límite.
+- `2026-09-22T13:28:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T13:28:50` Corrida terminada. Total usado hoy: 312.
