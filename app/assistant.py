@@ -397,11 +397,13 @@ def _is_safe_text_structure(text: str) -> bool:
     if not text: return True
     if any(ord(c) < 32 and c not in '\n\r\t' for c in text): return False
     
-    if not is_protected_path(text): 
-        try:
-            p = Path(text)
-            if p.is_absolute() or text.startswith(("./", "../", "..\\")): return False
-        except Exception: pass
+    # Bloqueo estricto de rutas: si el texto parece un path (absoluto o relativo), es inseguro
+    try:
+        p = Path(text)
+        if p.is_absolute(): return False
+        if text.startswith(("./", "../", "..\\", "C:", "D:", "/")): return False
+    except (ValueError, TypeError, OSError):
+        pass
     
     return not (
         _PATH_INJECTION_REGEX.search(text) or 

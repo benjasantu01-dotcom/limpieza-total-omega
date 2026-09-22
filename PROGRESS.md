@@ -6,30 +6,30 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 235
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 105 | 7 | 31 | 7 | 138 |
-| 2026-09-22 | 76 | 10 | 18 | 15 | 97 |
+| 2026-09-21 | 105 | 7 | 31 | 7 | 134 |
+| 2026-09-22 | 78 | 10 | 18 | 15 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **41**
+- robustez ante casos límite: **33**
 - rendimiento: **32**
-- robustez ante casos límite: **32**
-- seguridad defensiva: **30**
+- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **17**
+- `assistant.py`: **18**
 - `diskreport.py`: **17**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
@@ -39,13 +39,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **13**
 - `settings.py`: **13**
 - `organizer.py`: **12**
-- `scanner.py`: **10**
+- `scanner.py`: **11**
 - `branding.py`: **9**
 - `main.py`: **8**
 - `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T09:32:50` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_text_structure` añadiendo una validación explícita contra rutas relativas y absolutas, asegurando que ningún texto procesado por el asistente pueda ser interpretado como una ruta del sistema, incluso si no contiene caracteres especiales prohibidos.
+- `2026-09-22T09:31:27` **scanner.py** (robustez ante casos límite): Se mejora la robustez frente a errores de sistema (como rutas inaccesibles o bloqueadas por otros procesos) en el escaneo recursivo, añadiendo validaciones `try-except` granulares en `_is_reparse_point` y `process_entry` para asegurar que el escáner no se detenga prematuramente ante archivos bloqueados.
 - `2026-09-22T09:22:33` **safety.py** (robustez ante casos límite): Se ha añadido una verificación de "deadlock" en la apertura de archivos (`_is_file_in_use`) para prevenir errores de acceso concurrente (`ERROR_SHARING_VIOLATION`) mediante el uso de una constante de acceso más conservadora, mejorando la robustez frente a bloqueos del kernel o procesos del sistema.
 - `2026-09-22T09:21:50` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de entrada y concurrencia al añadir un chequeo explícito de existencia de `source` en `_write_temp_to_final`, asegurando que no se intente operar sobre archivos que pudieron ser eliminados por procesos externos durante el paso de copia.
 - `2026-09-22T09:11:24` **healthscore.py** (robustez ante casos límite): Se añadió una validación defensiva en el método `__post_init__` de `SystemMetrics` para asegurar que los porcentajes no sean negativos y se reforzó el manejo de excepciones en `compute_score` para garantizar que un fallo en una métrica individual no invalide todo el cálculo del puntaje.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T08:20:39` **assistant.py** (rendimiento): Optimicé el rendimiento de `_get_source_value` reemplazando la lógica de manejo de errores por un acceso directo más eficiente y seguro, y mejoré la inicialización de `_TOKENS_MAP` para que sea una estructura estática calculada una única vez, evitando la sobrecarga de reconstrucción en cada importación.
 - `2026-09-22T08:10:42` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `scanner.py` mediante la adición de docstrings detallados en los métodos de `Scanner` y tipado explícito en la firma de las funciones de heurística, facilitando la comprensión del flujo de seguridad para futuros desarrollos.
 - `2026-09-22T08:10:15` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y la refactorización de `_VALIDATORS` para usar nombres más claros, facilitando la auditoría de las reglas de seguridad sin alterar el comportamiento.
-- `2026-09-22T08:01:13` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica del módulo mediante la incorporación de docstrings estructuradas (tipo Google/NumPy) que clarifican las intenciones, los tipos de parámetros y el comportamiento de las funciones críticas, facilitando el mantenimiento y la auditoría de seguridad.
-- `2026-09-22T08:00:46` **memory.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `parse_windows_process_csv` para extraer la lógica de limpieza de valores a una función dedicada, reduciendo la complejidad ciclomática y clarificando la intención.

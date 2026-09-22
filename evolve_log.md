@@ -1435,3 +1435,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-22T09:22:33` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una verificación de "deadlock" en la apertura de archivos (`_is_file_in_use`) para prevenir errores de acceso concurrente (`ERROR_SHARING_VIOLATION`) mediante el uso de una constante de acceso más conservadora, mejorando la robustez frente a bloqueos del kernel o procesos del sistema.
 - `2026-09-22T09:22:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T09:22:33` Corrida terminada. Total usado hoy: 216.
+- `2026-09-22T09:30:56` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-09-22T09:31:27` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejora la robustez frente a errores de sistema (como rutas inaccesibles o bloqueadas por otros procesos) en el escaneo recursivo, añadiendo validaciones `try-except` granulares en `_is_reparse_point` y `process_entry` para asegurar que el escáner no se detenga prematuramente ante archivos bloqueados.
+- `2026-09-22T09:31:57` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: robustez ante casos límite).
+- `2026-09-22T09:32:24` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-22T09:32:50` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_text_structure` añadiendo una validación explícita contra rutas relativas y absolutas, asegurando que ningún texto procesado por el asistente pueda ser interpretado como una ruta del sistema, incluso si no contiene caracteres especiales prohibidos.
+- `2026-09-22T09:32:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T09:32:50` Corrida terminada. Total usado hoy: 220.

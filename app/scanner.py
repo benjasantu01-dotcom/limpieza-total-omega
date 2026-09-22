@@ -164,9 +164,12 @@ class Scanner:
         Detecta si la entrada actual es un punto de reanálisis (Junction o Symlink) 
         mediante inspección de atributos de archivo para evitar recursión circular.
         """
-        stats = _safe_stat(entry)
-        if stats and hasattr(stats, 'st_file_attributes'):
-            return bool(stats.st_file_attributes & LIMITS.reparse_attr)
+        try:
+            stats = _safe_stat(entry)
+            if stats and hasattr(stats, 'st_file_attributes'):
+                return bool(stats.st_file_attributes & LIMITS.reparse_attr)
+        except Exception:
+            return True # Asumir riesgo en caso de error de acceso
         return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
