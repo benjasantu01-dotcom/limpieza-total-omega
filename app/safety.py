@@ -539,7 +539,20 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
             raise UnsafePathError("Salida de carpeta permitida vía redirección.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
-    """Valida integridad y seguridad. Lanza UnsafePathError si existe cualquier violación detectable."""
+    """
+    Valida integridad y seguridad de una ruta.
+    
+    Args:
+        path: Ruta a validar.
+        allow_sensitive: Si es True, permite archivos con extensiones críticas.
+        base_dir: Directorio raíz opcional para restringir el alcance (sandbox).
+        
+    Returns:
+        Path normalizado y validado.
+        
+    Raises:
+        UnsafePathError: Si la ruta infringe políticas de seguridad o integridad.
+    """
     if path is None: raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
     try: p = normalize(path)
     except (ValueError, TypeError, PermissionError, OSError) as e: 
@@ -570,14 +583,24 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     return p
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
-    """Wrapper booleano para validar seguridad sin lanzar excepciones (ideal para bucles)."""
+    """
+    Wrapper booleano para validar seguridad sin lanzar excepciones.
+    
+    Returns:
+        True si es seguro modificar, False en caso contrario.
+    """
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
         return True
     except (UnsafePathError, ValueError, TypeError, OSError, PermissionError): return False
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
-    """Aplica filtro de seguridad a un iterable de rutas, ignorando las inseguras."""
+    """
+    Filtra una colección de rutas, devolviendo solo aquellas consideradas seguras.
+    
+    Returns:
+        Lista de objetos Path validados.
+    """
     results = []
     for p in paths:
         if p is None: continue
@@ -586,7 +609,12 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     return results
 
 def describe_protection(path: PathLike) -> str:
-    """Provee un diagnóstico humano legible de por qué una ruta fue marcada como insegura."""
+    """
+    Provee un diagnóstico humano legible de por qué una ruta fue marcada como insegura.
+    
+    Returns:
+        Cadena con el motivo de bloqueo o confirmación de seguridad.
+    """
     if path is None: return "Ruta nula."
     try:
         p = normalize(path)

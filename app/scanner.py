@@ -86,6 +86,7 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     return True
 
 # Registro centralizado de reglas heurísticas para archivos ejecutables
+# Cada función debe aceptar: path (Path), entry (DirEntry|None), now_ts (float)
 EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
     lambda p, e, t: check_system_lookalike(p, e, t),
     lambda p, e, t: check_recent_executable_in_downloads(p, e, t),
@@ -94,8 +95,8 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Detecta archivos con doble extensión (ej: 'doc.pdf.exe') que intentan ocultar 
-    el ejecutable real. Se basa en el emparejamiento contra 'DOUBLE_EXTENSION_RE'.
+    Verifica si el nombre de archivo contiene múltiples extensiones sospechosas (e.g., .pdf.exe).
+    Esta técnica es común en ataques de suplantación de tipo de archivo.
     """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -104,7 +105,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Analiza la fecha de modificación del archivo para alertar sobre ejecutables 
-    nuevos en carpetas de alto riesgo (descargas, temp, escritorio).
+    nuevos (creados en las últimas 'recent_hours') ubicados en directorios temporales o de descarga.
     """
     if not path or not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
@@ -117,8 +118,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Detecta si un ejecutable posee un nombre idéntico a un proceso crítico del sistema 
-    pero reside fuera del directorio '%SystemRoot%\\System32'.
+    Detecta si un ejecutable tiene un nombre coincidente con procesos críticos del sistema 
+    (ej: svchost.exe) pero se encuentra fuera de la ruta protegida System32.
     """
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         path_str = str(path).lower()
@@ -128,8 +129,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Evalúa si un archivo ejecutable tiene un tamaño de 0 bytes, patrón usado 
-    frecuentemente para evitar escaneos de AV tradicionales.
+    Evalúa si un archivo ejecutable tiene un tamaño de 0 bytes, comportamiento anómalo 
+    utilizado a menudo para evadir el análisis de contenido de antivirus tradicionales.
     """
     if entry:
         stats = _safe_stat(entry)
