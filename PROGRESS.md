@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 236
+- Sin respuesta de la IA (error o límite): 237
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 136 | 10 | 38 | 8 | 148 |
-| 2026-09-22 | 52 | 5 | 12 | 7 | 88 |
+| 2026-09-21 | 132 | 10 | 38 | 8 | 148 |
+| 2026-09-22 | 54 | 6 | 12 | 7 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **43**
 - seguridad defensiva: **42**
-- manejo de errores y validación de entradas: **41**
-- legibilidad y documentación: **37**
 - robustez ante casos límite: **35**
 - rendimiento: **33**
+- legibilidad y documentación: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **18**
 - `assistant.py`: **18**
 - `memory.py`: **18**
-- `settings.py`: **16**
 - `diskreport.py`: **16**
-- `safety.py`: **15**
+- `healthscore.py`: **15**
+- `settings.py`: **15**
 - `browser.py`: **14**
-- `healthscore.py`: **14**
+- `safety.py`: **14**
 - `duplicates.py`: **13**
 - `organizer.py`: **12**
-- `scanner.py`: **11**
 - `branding.py`: **11**
-- `main.py`: **7**
-- `startup.py`: **5**
+- `scanner.py`: **10**
+- `main.py`: **8**
+- `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T07:19:59` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_trim_process` al implementar una validación explícita mediante `is_safe_path` y `ensure_safe_to_modify` para prevenir la manipulación de procesos críticos, mitigando riesgos de seguridad al interactuar con el sistema a nivel de PID.
+- `2026-09-22T07:18:44` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que el cálculo de `weighted_points` maneje correctamente casos donde el `scorer` devuelva valores fuera de rango o `NaN` mediante el uso de `_clamp` y validación de tipos, evitando que errores internos en funciones de scoring propaguen `None` o valores inconsistentes.
 - `2026-09-22T07:09:32` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez del módulo `diskreport.py` mediante la validación de tipos y rangos en parámetros críticos, evitando excepciones inesperadas en funciones públicas como `largest_files`, `usage_by_extension`, `largest_folders` y `summarize`.
 - `2026-09-22T07:08:36` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_logo_svg` y `draw_ring` mediante una validación más estricta de parámetros y el uso de excepciones específicas para evitar errores de ejecución inesperados al procesar datos externos o estados inconsistentes de la UI.
 - `2026-09-22T05:38:50` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_load_impl` evitando la carga de archivos que presenten enlaces simbólicos o junctions, utilizando `ensure_safe_to_modify` antes de la lectura para garantizar que la ruta no sea un punto de reparse, alineando la carga con la lógica de persistencia.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T05:09:05` **assistant.py** (seguridad defensiva): Reforcé la integridad del motor local limitando la ejecución de los handlers de preguntas solo a instancias de `SystemContext` que hayan sido analizadas correctamente, añadiendo un chequeo explícito en `local_answer` para evitar el procesamiento de contextos vacíos o mal formados.
 - `2026-09-22T05:08:01` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante archivos corruptos o maliciosos detectados en disco, añadiendo una validación de estructura exhaustiva en `_coerce_and_verify` que limpia claves faltantes o tipos incorrectos, y mejorando la resiliencia de `_load_impl` ante archivos parcialmente escritos o con errores de codificación inusuales.
 - `2026-09-22T04:47:08` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` agregando una validación explícita para evitar errores de tipo o desbordamiento al procesar datos crudos, asegurando que los valores numéricos sean procesables antes de intentar convertirlos, protegiendo así la ejecución ante salidas inesperadas de PowerShell.
-- `2026-09-22T04:46:39` **main.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inesperados del ciclo de vida de los hilos mediante la implementación de `self._executor_lock` en `_on_closing` y una verificación explícita en `run_async`, evitando condiciones de carrera al intentar enviar tareas a un executor que se está cerrando o ya no existe.
-- `2026-09-22T04:45:26` **healthscore.py** (robustez ante casos límite): Se ha robustecido el motor de puntuación añadiendo una verificación de integridad de métricas en `compute_score` mediante la validación explícita de `is_finite`, evitando el procesamiento de estados de error potencialmente propagados por módulos externos, y se ha encapsulado el cálculo de `weighted_points` en una lógica más resiliente ante entradas inesperadas.

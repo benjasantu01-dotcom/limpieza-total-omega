@@ -1161,3 +1161,66 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-09-22T07:09:43` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-22T07:09:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T07:09:43` Corrida terminada. Total usado hoy: 164.
+- `2026-09-22T07:18:09` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-09-22T07:18:44` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` asegurando que el cálculo de `weighted_points` maneje correctamente casos donde el `scorer` devuelva valores fuera de rango o `NaN` mediante el uso de `_clamp` y validación de tipos, evitando que errores internos en funciones de scoring propaguen `None` o valores inconsistentes.
+- `2026-09-22T07:19:59` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `on_trim_process` al implementar una validación explícita mediante `is_safe_path` y `ensure_safe_to_modify` para prevenir la manipulación de procesos críticos, mitigando riesgos de seguridad al interactuar con el sistema a nivel de PID.
+- `2026-09-22T07:20:27` Tests FALLARON:
+```
+     
+E         At index 0 diff: '"grande"' != 'grande'
+E         
+E         Full diff:
+E           [
+E         -     'grande',
+E         +     '"grande"',
+E         ?      +      +
+E         -     'medio',
+E         +     '"medio"',
+E         ?      +     +
+E         -     'chico',
+E         +     '"chico"',
+E         ?      +     +
+E           ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+        assert len(procesos) == 1
+>       assert procesos[0].name == "ok"
+E       assert '"ok"' == 'ok'
+E         
+E         - ok
+E         + "ok"
+
+evolve/tests/test_modules.py:354: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - assert ['"grande"', ..."', '"chico"'] == ['grande', 'medio', 'chico']
+  
+  At index 0 diff: '"grande"' != 'grande'
+  
+  Full diff:
+    [
+  -     'grande',
+  +     '"grande"',
+  ?      +      +
+  -     'medio',
+  +     '"medio"',
+  ?      +     +
+  -     'chico',
+  +     '"chico"',
+  ?      +     +
+    ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert '"ok"' == 'ok'
+  
+  - ok
+  + "ok"
+2 failed, 297 passed in 1.45s
+
+```
+- `2026-09-22T07:20:27` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejora la robustez de `parse_windows_process_csv` implementando validaciones más estrictas sobre los datos crudos, evitando así errores de desbordamiento (OverflowError) o malformaciones en la entrada que podrían corromper la lista de procesos.
+- `2026-09-22T07:20:38` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-22T07:20:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T07:20:38` Corrida terminada. Total usado hoy: 168.

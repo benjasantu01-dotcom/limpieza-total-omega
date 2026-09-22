@@ -247,14 +247,14 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
             # Cálculo de puntos con redondeo de seguridad para evitar excesos
-            weighted_points = max(0, min(int(area_ratio * entry.weight + 0.5), entry.weight))
+            weighted_points = int(_clamp(area_ratio * entry.weight + 0.5, 0.0, float(entry.weight)))
             metric_breakdown[entry.area] = weighted_points
             accumulated_score += weighted_points
         except Exception:
             metric_breakdown[entry.area] = 0
             continue
             
-    final_score = max(0, min(accumulated_score, 100))
+    final_score = int(_clamp(float(accumulated_score), 0.0, 100.0))
     
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")
