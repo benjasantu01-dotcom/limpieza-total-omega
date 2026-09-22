@@ -16,16 +16,16 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 132 | 10 | 38 | 8 | 148 |
-| 2026-09-22 | 54 | 6 | 12 | 7 | 89 |
+| 2026-09-21 | 130 | 10 | 37 | 8 | 147 |
+| 2026-09-22 | 56 | 6 | 13 | 7 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **43**
+- manejo de errores y validación de entradas: **45**
 - seguridad defensiva: **42**
 - robustez ante casos límite: **35**
-- rendimiento: **33**
 - legibilidad y documentación: **33**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,18 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **18**
 - `diskreport.py`: **16**
 - `healthscore.py`: **15**
+- `safety.py`: **15**
 - `settings.py`: **15**
-- `browser.py`: **14**
-- `safety.py`: **14**
 - `duplicates.py`: **13**
+- `browser.py`: **13**
 - `organizer.py`: **12**
-- `branding.py`: **11**
-- `scanner.py`: **10**
+- `scanner.py`: **11**
+- `branding.py`: **10**
 - `main.py`: **8**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T07:35:57` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez del manejo de errores en `_is_relevant_extension` eliminando el manejo de excepciones mediante `try-except` (que es costoso en bucles calientes) por un chequeo explícito de integridad de string, y añadí validaciones defensivas en `_run_file_heuristics` para asegurar que las operaciones sobre la ruta no fallen si el archivo desaparece durante el escaneo.
+- `2026-09-22T07:35:43` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` capturando específicamente `PermissionError` y otros errores de SO, y optimicé el flujo de `ensure_safe_to_modify` para que el acceso a metadatos ocurra solo cuando es estrictamente necesario, evitando lanzar excepciones de I/O en estados intermedios.
 - `2026-09-22T07:19:59` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_trim_process` al implementar una validación explícita mediante `is_safe_path` y `ensure_safe_to_modify` para prevenir la manipulación de procesos críticos, mitigando riesgos de seguridad al interactuar con el sistema a nivel de PID.
 - `2026-09-22T07:18:44` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que el cálculo de `weighted_points` maneje correctamente casos donde el `scorer` devuelva valores fuera de rango o `NaN` mediante el uso de `_clamp` y validación de tipos, evitando que errores internos en funciones de scoring propaguen `None` o valores inconsistentes.
 - `2026-09-22T07:09:32` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez del módulo `diskreport.py` mediante la validación de tipos y rangos en parámetros críticos, evitando excepciones inesperadas en funciones públicas como `largest_files`, `usage_by_extension`, `largest_folders` y `summarize`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T05:16:29` **diskreport.py** (seguridad defensiva): Se ha mejorado `walk_files` para implementar una verificación de seguridad proactiva mediante `is_protected_path` sobre los subdirectorios antes de entrar en ellos, asegurando que el recorrido no penetre en jerarquías restringidas incluso si el sistema operativo permite el acceso nominal.
 - `2026-09-22T05:16:03` **browser.py** (seguridad defensiva): Se ha implementado una validación de seguridad proactiva en `_is_safe_to_traverse` para detectar si el sistema de archivos admite puntos de reparse, asegurando que la recursión no escape del directorio base incluso si las comprobaciones de `isjunction` fallan en entornos restringidos.
 - `2026-09-22T05:09:05` **assistant.py** (seguridad defensiva): Reforcé la integridad del motor local limitando la ejecución de los handlers de preguntas solo a instancias de `SystemContext` que hayan sido analizadas correctamente, añadiendo un chequeo explícito en `local_answer` para evitar el procesamiento de contextos vacíos o mal formados.
-- `2026-09-22T05:08:01` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante archivos corruptos o maliciosos detectados en disco, añadiendo una validación de estructura exhaustiva en `_coerce_and_verify` que limpia claves faltantes o tipos incorrectos, y mejorando la resiliencia de `_load_impl` ante archivos parcialmente escritos o con errores de codificación inusuales.
-- `2026-09-22T04:47:08` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` agregando una validación explícita para evitar errores de tipo o desbordamiento al procesar datos crudos, asegurando que los valores numéricos sean procesables antes de intentar convertirlos, protegiendo así la ejecución ante salidas inesperadas de PowerShell.

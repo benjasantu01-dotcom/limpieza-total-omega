@@ -260,7 +260,7 @@ def _is_file_in_use(path_str: str) -> bool:
         if handle == -1: 
             return ctypes.GetLastError() == 32
         kernel32.CloseHandle(handle)
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, Exception):
         return True
     return False
 
@@ -342,12 +342,10 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
 
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     """Verifica metadatos en disco y compara con estado inicial para prevenir ataques TOCTOU."""
-    if not path.exists():
-        raise UnsafePathError(f"Archivo ya no existe: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     try:
         current_stat = path.stat()
-    except (PermissionError, OSError) as e:
-        raise UnsafePathError(f"Acceso denegado a metadatos ({e}): {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+    except (PermissionError, OSError, FileNotFoundError) as e:
+        raise UnsafePathError(f"Acceso denegado o archivo perdido ({e}): {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     
     if getattr(current_stat, 'st_dev', 0) != initial_stat.st_dev or getattr(current_stat, 'st_ino', 0) != initial_stat.st_ino:
         raise UnsafePathError(f"Consistencia fallida (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
@@ -553,8 +551,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         raise UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
-    _validate_access_permissions(p)
+    
     if p.exists():
+        _validate_access_permissions(p)
         try: initial_stat = p.stat()
         except (OSError, PermissionError) as e: raise UnsafePathError(f"No se pueden obtener metadatos: {e}", SafetyValidationErrorCode.IO_ERROR)
         if not bool(initial_stat.st_mode & stat.S_IWRITE):

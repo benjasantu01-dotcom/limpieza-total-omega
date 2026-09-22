@@ -198,15 +198,15 @@ class Scanner:
 
     def _is_relevant_extension(self, name: Optional[str], is_dir: bool) -> Optional[str]:
         """Determina si un archivo o directorio es apto para análisis heurístico basado en extensiones."""
-        if is_dir or not name: 
+        if is_dir or not name or "." not in name: 
             return None
-        if "." not in name: 
+        
+        parts = name.rsplit(".", 1)
+        if len(parts) != 2:
             return None
-        try:
-            ext_low = ("." + name.rsplit(".", 1)[-1]).lower()
-            return ext_low if ext_low in SUSPICIOUS_ALL_EXTS else None
-        except (IndexError, ValueError):
-            return None
+            
+        ext_low = ("." + parts[1]).lower()
+        return ext_low if ext_low in SUSPICIOUS_ALL_EXTS else None
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """
@@ -229,15 +229,18 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """Ejecuta en cascada las heurísticas registradas sobre el archivo objetivo."""
-        if not path.exists():
+        if not path or not path.exists():
             return
             
         if (double_ext := check_double_extension(path, entry, self.now_ts)):
             self.results.append(double_ext)
         if ext in SUSPICIOUS_EXECUTABLE_EXT:
             for check_fn in self._registry:
-                if (result := check_fn(path, entry, self.now_ts)):
-                    self.results.append(result)
+                try:
+                    if (result := check_fn(path, entry, self.now_ts)):
+                        self.results.append(result)
+                except Exception as e:
+                    logger.debug(f"Error en heurística para {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """Escanea un único archivo sin recorrido recursivo."""
