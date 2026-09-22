@@ -109,28 +109,28 @@ if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Normaliza la acumulación de basura: a mayor MB, menor ratio (lineal hasta el límite)."""
+    """Calcula el ratio basado en la cantidad de MB ocupados por basura; a mayor MB, menor ratio."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Normaliza el riesgo de seguridad: penalización acumulativa por hallazgos y advertencias."""
+    """Calcula el ratio de seguridad penalizando hallazgos directos y advertencias de heurística."""
     penalization = (_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)
     return _clamp(1.0 - _clamp(penalization, 0.0, 1.0))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Normaliza la RAM disponible: escala el porcentaje actual respecto al umbral crítico."""
+    """Calcula el ratio de salud de memoria comparando el porcentaje libre contra umbrales de saturación."""
     return _clamp(_to_float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Normaliza el espacio en disco: escala el porcentaje libre respecto al umbral crítico."""
+    """Calcula el ratio de salud de disco midiendo el porcentaje de espacio libre disponible."""
     return _clamp(_to_float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Normaliza la redundancia de datos comparando MB duplicados contra el límite definido."""
+    """Calcula el ratio de redundancia basándose en el volumen total de archivos duplicados hallados."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
-    """Normaliza la carga de inicio: inversamente proporcional al conteo de programas."""
+    """Calcula el ratio de salud de inicio basándose en la cantidad de programas registrados al arrancar."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
 _PIPELINE: Final[List[PipelineEntry]] = [

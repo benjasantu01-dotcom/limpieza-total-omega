@@ -49,6 +49,14 @@ class FileAttributes(NamedTuple):
     SYSTEM: int = 0x04
     REPARSE_POINT: int = 0x400
 
+# Máscara combinada para identificar archivos que el sistema considera protegidos o de infraestructura.
+# Se utiliza para omitir directorios que no deben ser recorridos (ocultos, sistema o junctions).
+SYSTEM_HIDDEN_FLAGS: int = (
+    FileAttributes().HIDDEN | 
+    FileAttributes().SYSTEM | 
+    FileAttributes().REPARSE_POINT
+)
+
 def _is_junction_default(path: str) -> bool:
     """Retorna siempre False; utilizado como fallback si os.path.isjunction no existe."""
     return False
@@ -84,8 +92,6 @@ SAFETY_NOTE: str = (
 
 MAX_SCAN_DEPTH: int = 15
 MAX_PATH_LEN: int = 260
-# Máscara combinada para ignorar archivos que el sistema considera protegidos o de infraestructura
-SYSTEM_HIDDEN_FLAGS: int = FileAttributes().HIDDEN | FileAttributes().SYSTEM | FileAttributes().REPARSE_POINT
 
 @dataclass
 class BrowserCache:
@@ -173,13 +179,17 @@ def _is_excluded_file(name: Optional[str]) -> bool:
     return name is not None and name.lower() in NEVER_TOUCH
 
 
-def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
-    """Consulta atributos Win32 para identificar archivos marcados como ocultos o sistema."""
-    if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
+def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
+    """
+    Consulta atributos Win32 mediante bitmask para identificar si un archivo
+    está marcado como oculto, de sistema o es un punto de reanálisis.
+    """
+    if kernel32 is None or not entry_path:
         return False
     try:
         kernel32.GetFileAttributesW.restype = ctypes.c_ulong
         attrs: int = kernel32.GetFileAttributesW(entry_path)
+        # 0xFFFFFFFF indica error en la llamada Win32 API
         if attrs == 0xFFFFFFFF:
             return False 
         return bool(attrs & SYSTEM_HIDDEN_FLAGS)
@@ -204,10 +214,11 @@ def _should_skip_entry(
         if not path or len(path) >= MAX_PATH_LEN or any(c in path for c in '\0\r\n') or _is_unc_path(path):
             return True
         
+        # Primero revisamos enlaces directos de Python, luego atributos de sistema Win32
         if entry.is_symlink() or is_junction_fn(path):
             return True
                 
-        if __is_system_hidden(path, kernel32):
+        if _is_system_hidden(path, kernel32):
             return True
     except (OSError, AttributeError):
         return True
@@ -225,9 +236,10 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
     try:
         if not path_obj.exists():
             return False
-        # Verificación explícita contra reparse points mediante kernel32
+            
+        # Verificación contra archivos de sistema/ocultos antes de procesar
         k32 = _get_kernel32()
-        if k32 and __is_system_hidden(str(path_obj.absolute()), k32):
+        if k32 and _is_system_hidden(str(path_obj.absolute()), k32):
             return False
             
         p_res = path_obj.resolve(strict=True)

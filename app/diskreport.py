@@ -241,6 +241,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Recorre el sistema de archivos de forma iterativa empleando un stack LIFO.
     Evita ciclos de directorios rastreando inodos (dev, ino).
+    Silenciosamente ignora errores de acceso (Permisos, archivos desaparecidos).
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -336,8 +337,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Agrega estadísticas globales de un árbol de directorios en una pasada única (O(n)).
     
-    Procesa recursivamente cada archivo, categorizando por extensión y manteniendo
-    un Min-Heap de tamaño 'limit' para los archivos más grandes detectados.
+    Procesa recursivamente cada archivo mediante `walk_files`, categorizando por extensión 
+    y manteniendo un Min-Heap de tamaño 'limit' para los archivos más grandes encontrados.
     """
     total_bytes: int = 0
     total_files: int = 0
