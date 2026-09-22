@@ -222,7 +222,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str) and msg:
-                    # Sanitización defensiva: solo caracteres imprimibles y límite estricto
                     clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                     if clean_msg:
                         findings.append(clean_msg[:200])
@@ -230,9 +229,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """
-    Pipeline principal de evaluación. Valida la integridad de las métricas antes de procesar.
-    """
+    """Pipeline principal de evaluación. Valida la integridad de las métricas antes de procesar."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
     
@@ -246,15 +243,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
-            # Cálculo de puntos con redondeo de seguridad para evitar excesos
-            weighted_points = int(_clamp(area_ratio * entry.weight + 0.5, 0.0, float(entry.weight)))
+            weighted_points = int(area_ratio * entry.weight + 0.5)
             metric_breakdown[entry.area] = weighted_points
             accumulated_score += weighted_points
         except Exception:
             metric_breakdown[entry.area] = 0
-            continue
             
-    final_score = int(_clamp(float(accumulated_score), 0.0, 100.0))
+    final_score = int(min(accumulated_score, 100))
     
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")
@@ -268,9 +263,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
 def _render_bar(points: int, max_val: int) -> str:
     """Visualización en texto de una barra de progreso de caracteres ASCII."""
-    m = max(1, int(max_val))
-    p = max(0, min(int(points), m))
-    return ('#' * p) + ('.' * (m - p))
+    p = max(0, min(points, max_val))
+    return ('#' * p) + ('.' * (max_val - p))
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una representación legible (lista de strings) del HealthResult para UI."""
@@ -283,5 +277,5 @@ def summarize(result: HealthResult | None) -> List[str]:
         lines.append(f"  {area.capitalize():<12} {val:>2}/{maximo:<2} [{_render_bar(val, maximo)}]")
     
     recs = result.recommendations if result.recommendations else ["Sin recomendaciones."]
-    lines.extend(["", "Recomendaciones:", *(f"  - {r}" for r in recs)])
+    lines.extend(("", "Recomendaciones:", *(f"  - {r}" for r in recs)))
     return lines

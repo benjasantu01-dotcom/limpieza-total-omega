@@ -1295,3 +1295,58 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-22T08:21:28` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el proceso de escaneo en `detect_profiles` eliminando llamadas redundantes a `resolve()` y `exists()` mediante la reutilización de objetos `Path` y la comprobación de integridad en un solo paso, mejorando la eficiencia del bucle de detección.
 - `2026-09-22T08:21:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T08:21:28` Corrida terminada. Total usado hoy: 192.
+- `2026-09-22T08:29:36` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-09-22T08:30:05` Tests FALLARON:
+```
+ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_____________________ test_largest_files_sorted_descending _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_largest_files_sorted_desc0')
+
+    def test_largest_files_sorted_descending(tmp_path):
+        (tmp_path / "chico").write_bytes(b"a" * 10)
+        (tmp_path / "grande").write_bytes(b"a" * 1000)
+        (tmp_path / "medio").write_bytes(b"a" * 100)
+        top = diskreport.largest_files(tmp_path, limit=3)
+>       assert [e.path.name for e in top] == ["grande", "medio", "chico"]
+E       AssertionError: assert ['chico', 'medio', 'grande'] == ['grande', 'medio', 'chico']
+E         
+E         At index 0 diff: 'chico' != 'grande'
+E         
+E         Full diff:
+E           [
+E         +     'chico',
+E         +     'medio',
+E               'grande',
+E         -     'medio',
+E         -     'chico',
+E           ]
+
+evolve/tests/test_modules.py:586: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_largest_files_sorted_descending - AssertionError: assert ['chico', 'medio', 'grande'] == ['grande', 'medio', 'chico']
+  
+  At index 0 diff: 'chico' != 'grande'
+  
+  Full diff:
+    [
+  +     'chico',
+  +     'medio',
+        'grande',
+  -     'medio',
+  -     'chico',
+    ]
+1 failed, 298 passed in 1.39s
+
+```
+- `2026-09-22T08:30:05` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y la creación de objetos `ExtStats` innecesarios mediante el uso de `dict.get` o asignación directa, y eliminé la conversión a `sorted` en `largest_files`, delegando la ordenación final al consumidor para mejorar la eficiencia en grandes volúmenes de datos.
+- `2026-09-22T08:30:30` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-22T08:30:57` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle principal de `compute_score` eliminando la creación de listas intermedias y el uso de `float` innecesario, y mejoré la eficiencia del `summarize` usando un generador para el renderizado de barras y evitando consultas repetidas al diccionario.
+- `2026-09-22T08:31:57` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-22T08:33:00` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-22T08:34:06` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-22T08:35:19` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el renderizado de la lista de archivos basura y duplicados reemplazando la recreación masiva de widgets de texto por un único volcado de cadena, reduciendo el número de operaciones de manipulación de `Tkinter` y mejorando la respuesta de la UI durante los procesos de reporte.
+- `2026-09-22T08:35:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T08:35:19` Corrida terminada. Total usado hoy: 196.

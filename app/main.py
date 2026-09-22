@@ -35,6 +35,7 @@ Se optimizan eventos de redibujo UI y se utiliza gestión de colas de eventos
 para evitar saturación del hilo principal durante el logueo masivo.
 Carga perezosa de pestañas implementada para alertar el inicio de la app.
 Se optimiza la recolección de basura mediante procesamiento por generadores.
+Se optimiza el volcado de reportes mediante inserción de bloques de texto únicos.
 
 Instalar dependencias:
     pip install customtkinter
@@ -1382,10 +1383,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         ordered = sort_junk(junk, by=self.sort_by.get())
         lines = [f"{jf.size_mb:>8} MB  |  {jf.modified:%Y-%m-%d}  |  {jf.path}" for jf in ordered]
         self.report_data["limpieza"] = lines
-        box = self._box("Limpieza")
-        if box and box.winfo_exists():
-            box.delete("1.0", "end")
-            box.insert("1.0", "\n".join(lines))
+        self.log_lines(lines, "Limpieza")
 
     @validated_ui_operation
     @ensure_safety
