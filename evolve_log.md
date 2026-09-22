@@ -655,3 +655,12 @@ ERROR evolve/tests/test_modules.py
 - `2026-09-22T13:50:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
 - `2026-09-22T13:50:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T13:50:44` Corrida terminada. Total usado hoy: 320.
+- `2026-09-22T13:56:50` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-22T13:57:33` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez ante casos límite agregando la detección de rutas que contienen caracteres de control de nombres de archivo no soportados y añadiendo una validación explícita para evitar que `is_file_in_use` falle silenciosamente en situaciones de falta de memoria o handles agotados, fortaleciendo la integridad del bucle de seguridad.
+- `2026-09-22T13:58:00` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-22T13:58:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-22T13:58:38` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez ante archivos corruptos o maliciosos agregando un chequeo explícito de tamaño, tipo de archivo y permisos al leer el archivo de configuración, evitando que `json.load` procese archivos excesivamente grandes o no legibles.
+- `2026-09-22T13:58:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-22T13:59:06` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-22T13:59:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T13:59:06` Corrida terminada. Total usado hoy: 324.

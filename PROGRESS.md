@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
+- Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 242
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 56 | 5 | 21 | 3 | 99 |
-| 2026-09-22 | 117 | 14 | 27 | 19 | 143 |
+| 2026-09-21 | 56 | 5 | 21 | 3 | 95 |
+| 2026-09-22 | 119 | 14 | 27 | 19 | 145 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,18 +25,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **42**
 - seguridad defensiva: **32**
 - rendimiento: **31**
-- robustez ante casos límite: **25**
+- robustez ante casos límite: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
 - `quarantine.py`: **18**
+- `safety.py`: **17**
 - `memory.py`: **16**
-- `safety.py`: **16**
 - `assistant.py`: **15**
+- `settings.py`: **14**
 - `healthscore.py`: **14**
 - `duplicates.py`: **13**
-- `settings.py`: **13**
 - `organizer.py`: **11**
 - `browser.py`: **11**
 - `scanner.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T13:58:38` **settings.py** (robustez ante casos límite): Mejoré la robustez ante archivos corruptos o maliciosos agregando un chequeo explícito de tamaño, tipo de archivo y permisos al leer el archivo de configuración, evitando que `json.load` procese archivos excesivamente grandes o no legibles.
+- `2026-09-22T13:57:33` **safety.py** (robustez ante casos límite): Mejoré la robustez ante casos límite agregando la detección de rutas que contienen caracteres de control de nombres de archivo no soportados y añadiendo una validación explícita para evitar que `is_file_in_use` falle silenciosamente en situaciones de falta de memoria o handles agotados, fortaleciendo la integridad del bucle de seguridad.
 - `2026-09-22T13:48:13` **quarantine.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `quarantine.py` ante fallos de I/O y estados inconsistentes en disco mediante la implementación de validaciones más estrictas en el registro y en la lógica de `_safe_unlink`, asegurando que no se pierdan datos ni se rompa la integridad del manifiesto si ocurren errores de acceso o bloqueos temporales por parte del S.O.
 - `2026-09-22T13:37:00` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` frente a rutas que contienen caracteres especiales o estructuras de archivos donde `path.parts` puede fallar, añadiendo una comprobación explícita para evitar errores en el acceso a índices de rutas mal formadas.
 - `2026-09-22T13:20:37` **settings.py** (rendimiento): Optimicé el rendimiento del módulo reemplazando la lógica de validación repetitiva en `validate` y `save` mediante una pre-resolución de los validadores en el mapa de configuración, evitando búsquedas redundantes en cada iteración del bucle de procesamiento.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T12:45:40` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `settings.py` reemplazando los diccionarios de validación por una estructura de datos `Mapping` más robusta y añadiendo docstrings descriptivos, reduciendo la complejidad cognitiva en la lógica de despacho de validadores.
 - `2026-09-22T12:36:54` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `scanner.py` mediante la adición de docstrings detallados en las funciones del registro de heurísticas y la estandarización de las firmas de funciones en el `EXECUTABLE_CHECK_REGISTRY` para facilitar su mantenimiento y futura extensión.
 - `2026-09-22T12:36:38` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones `Args`, `Raises` y `Returns`) en las funciones públicas, facilitando el mantenimiento y la comprensión de las restricciones de seguridad por parte de futuros colaboradores.
-- `2026-09-22T12:29:18` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en funciones clave y la sustitución de nombres de variables ambiguos (ej. `st` por `stats`) para clarificar el flujo de validación y seguridad.
-- `2026-09-22T12:29:05` **memory.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints faltantes, la estandarización de docstrings y la refactorización de la lógica de parseo en `parse_linux_meminfo` para hacerla más explícita y robusta.

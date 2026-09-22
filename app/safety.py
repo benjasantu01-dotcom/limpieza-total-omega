@@ -202,7 +202,8 @@ def is_running_as_admin() -> bool:
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
     """Detecta caracteres prohibidos en rutas Windows, secuencias de control RTL o nulos."""
     if not isinstance(path_str, str) or not path_str: return True
-    return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]|[\x00-\x1f\x7f]', path_str))
+    # Filtro expandido para caracteres de control y secuencias de control de formato
+    return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]|[\x00-\x1f\x7f]', path_str))
 
 @lru_cache(maxsize=128)
 def _is_reserved_device_name(name: str) -> bool:
@@ -244,7 +245,9 @@ def _is_file_in_use(path_str: str) -> bool:
         kernel32 = ctypes.windll.kernel32
         handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0x00000007, None, 3, 0x00000080, None)
         if handle == -1: 
-            return ctypes.GetLastError() == 32
+            # Error 32 es 'sharing violation', cualquier otro error (ej. acceso denegado) se trata como uso
+            err = ctypes.GetLastError()
+            return err != 0
         kernel32.CloseHandle(handle)
     except (OSError, PermissionError, Exception):
         return True
