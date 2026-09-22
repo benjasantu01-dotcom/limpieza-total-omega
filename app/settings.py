@@ -309,7 +309,7 @@ def _load_impl(ruta: Path) -> AppSettings:
             return DEFAULTS.copy()
             
         return _coerce_and_verify(validate(data))
-    except (OSError, IOError, UnsafePathError, PermissionError, json.JSONDecodeError, UnicodeDecodeError):
+    except (OSError, PermissionError, IOError, UnsafePathError, json.JSONDecodeError, UnicodeDecodeError):
         return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
@@ -347,7 +347,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         ensure_safe_to_modify(parent)
         cleaned_settings = _coerce_and_verify(validate(values))
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
-    except (UnsafePathError, TypeError, ValueError, OSError): return None
+    except (UnsafePathError, TypeError, ValueError, OSError, PermissionError): return None
     
     temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
     bak_path = ruta.with_suffix(".bak")
@@ -367,7 +367,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     finally:
         if temp_path.exists():
             try: os.remove(temp_path)
-            except OSError: pass
+            except (OSError, PermissionError): pass
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     """Actualiza selectivamente las preferencias."""
