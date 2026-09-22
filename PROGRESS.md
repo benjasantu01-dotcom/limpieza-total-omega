@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 49
+- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 235
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 118 | 8 | 33 | 7 | 142 |
-| 2026-09-22 | 69 | 8 | 16 | 12 | 91 |
+| 2026-09-21 | 115 | 7 | 33 | 7 | 142 |
+| 2026-09-22 | 70 | 8 | 17 | 12 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **42**
 - legibilidad y documentación: **41**
-- rendimiento: **30**
-- robustez ante casos límite: **28**
+- seguridad defensiva: **40**
+- rendimiento: **31**
+- robustez ante casos límite: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **18**
 - `memory.py`: **18**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
+- `assistant.py`: **17**
 - `diskreport.py`: **16**
-- `settings.py`: **15**
 - `browser.py`: **15**
 - `healthscore.py`: **15**
 - `safety.py`: **15**
+- `settings.py`: **14**
 - `duplicates.py`: **13**
 - `organizer.py`: **13**
 - `scanner.py`: **11**
-- `branding.py`: **10**
+- `branding.py`: **9**
 - `main.py`: **8**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T08:47:23` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando búsquedas lineales O(N) en diccionarios o conjuntos, evitando iteraciones repetitivas sobre el manifiesto y mejorando la eficiencia de E/S al trabajar con los archivos en disco.
 - `2026-09-22T08:35:19` **main.py** (rendimiento): Optimicé el renderizado de la lista de archivos basura y duplicados reemplazando la recreación masiva de widgets de texto por un único volcado de cadena, reduciendo el número de operaciones de manipulación de `Tkinter` y mejorando la respuesta de la UI durante los procesos de reporte.
 - `2026-09-22T08:30:57` **healthscore.py** (rendimiento): Optimicé el bucle principal de `compute_score` eliminando la creación de listas intermedias y el uso de `float` innecesario, y mejoré la eficiencia del `summarize` usando un generador para el renderizado de barras y evitando consultas repetidas al diccionario.
 - `2026-09-22T08:21:28` **browser.py** (rendimiento): Se optimizó el proceso de escaneo en `detect_profiles` eliminando llamadas redundantes a `resolve()` y `exists()` mediante la reutilización de objetos `Path` y la comprobación de integridad en un solo paso, mejorando la eficiencia del bucle de detección.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T07:49:21` **browser.py** (legibilidad y documentación): Mejora la legibilidad y la robustez del código mediante la clarificación de `__is_system_hidden`, convirtiendo la máscara de bits en una constante documentada y refactorizando la lógica de detección de atributos para evitar la repetición de filtros, cumpliendo con el enfoque de documentación técnica.
 - `2026-09-22T07:39:08` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la validación de archivos JSON al implementar una verificación explícita de `OSError` y `PermissionError` durante la carga y el guardado, asegurando que la aplicación gestione fallos de E/S de forma silenciosa y segura sin romper la ejecución.
 - `2026-09-22T07:35:57` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez del manejo de errores en `_is_relevant_extension` eliminando el manejo de excepciones mediante `try-except` (que es costoso en bucles calientes) por un chequeo explícito de integridad de string, y añadí validaciones defensivas en `_run_file_heuristics` para asegurar que las operaciones sobre la ruta no fallen si el archivo desaparece durante el escaneo.
-- `2026-09-22T07:35:43` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` capturando específicamente `PermissionError` y otros errores de SO, y optimicé el flujo de `ensure_safe_to_modify` para que el acceso a metadatos ocurra solo cuando es estrictamente necesario, evitando lanzar excepciones de I/O en estados intermedios.

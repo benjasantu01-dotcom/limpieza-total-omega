@@ -683,14 +683,13 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
         
-        # O(N) para obtener el set de archivos físicos, optimizando la validación posterior
         existing_filenames: Set[str] = {f.name for f in base_path.iterdir() if f.is_file()}
-        
         valid_items: List[QuarantineItem] = []
         needs_save = False
         
         for i in items:
-            if i.stored_name in existing_filenames and i._validate_integrity(base_path / i.stored_name):
+            stored_path = base_path / i.stored_name
+            if i.stored_name in existing_filenames and i._validate_integrity(stored_path):
                 valid_items.append(i)
             else:
                 needs_save = True
@@ -811,17 +810,16 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
+    # Optimización: mapeo para acceso O(1) en lugar de búsquedas O(N) dentro del loop
     item_map = {item.stored_name: item for item in items}
     purged_ids: Set[str] = set()
     
     try:
-        # Pre-filtrado O(1) para verificar existencia de archivos físicos
-        existing_files = [f for f in quarantine_root.iterdir() if f.is_file() and f.name != MANIFEST_NAME]
-        
-        for f in existing_files:
-            item = item_map.get(f.name)
-            if item and _is_item_purgable(f, item, quarantine_root):
-                purged_ids.add(item.item_id)
+        for f in quarantine_root.iterdir():
+            if f.is_file() and f.name != MANIFEST_NAME:
+                item = item_map.get(f.name)
+                if item and _is_item_purgable(f, item, quarantine_root):
+                    purged_ids.add(item.item_id)
                 
         if purged_ids:
             remaining_items = [i for i in items if i.item_id not in purged_ids]
