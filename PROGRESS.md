@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 12 | 1 | 1 | 1 | 23 |
+| 2026-09-20 | 12 | 1 | 1 | 1 | 19 |
 | 2026-09-21 | 145 | 10 | 39 | 8 | 148 |
-| 2026-09-22 | 42 | 5 | 11 | 7 | 51 |
+| 2026-09-22 | 46 | 5 | 11 | 7 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **47**
+- seguridad defensiva: **38**
 - robustez ante casos límite: **35**
-- seguridad defensiva: **34**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
@@ -33,12 +33,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **20**
 - `memory.py`: **19**
 - `quarantine.py`: **19**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
+- `browser.py`: **16**
+- `healthscore.py`: **16**
 - `safety.py`: **16**
 - `settings.py`: **16**
-- `browser.py`: **15**
-- `healthscore.py`: **15**
-- `duplicates.py`: **14**
+- `duplicates.py`: **15**
 - `organizer.py`: **14**
 - `branding.py`: **11**
 - `scanner.py`: **11**
@@ -47,6 +47,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T05:17:07` **healthscore.py** (seguridad defensiva): Se ha añadido un filtro en `_evaluate_rules` para asegurar que el contenido de los mensajes de recomendación no contenga caracteres de control o secuencias sospechosas, mitigando el riesgo de inyección de texto en la interfaz y garantizando que los datos visualizados sean siempre seguros (Sanitización de salida).
+- `2026-09-22T05:16:54` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad en `_is_file_locked` para evitar falsos positivos y errores de acceso innecesarios al utilizar `os.open` con flags de lectura exclusiva (`os.O_RDONLY` | `os.O_NONBLOCK` donde sea posible), reduciendo la posibilidad de activar bloqueos de sistema o disparar excepciones bloqueantes en archivos del sistema antes de su validación completa.
+- `2026-09-22T05:16:29` **diskreport.py** (seguridad defensiva): Se ha mejorado `walk_files` para implementar una verificación de seguridad proactiva mediante `is_protected_path` sobre los subdirectorios antes de entrar en ellos, asegurando que el recorrido no penetre en jerarquías restringidas incluso si el sistema operativo permite el acceso nominal.
+- `2026-09-22T05:16:03` **browser.py** (seguridad defensiva): Se ha implementado una validación de seguridad proactiva en `_is_safe_to_traverse` para detectar si el sistema de archivos admite puntos de reparse, asegurando que la recursión no escape del directorio base incluso si las comprobaciones de `isjunction` fallan en entornos restringidos.
 - `2026-09-22T05:09:05` **assistant.py** (seguridad defensiva): Reforcé la integridad del motor local limitando la ejecución de los handlers de preguntas solo a instancias de `SystemContext` que hayan sido analizadas correctamente, añadiendo un chequeo explícito en `local_answer` para evitar el procesamiento de contextos vacíos o mal formados.
 - `2026-09-22T05:08:01` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante archivos corruptos o maliciosos detectados en disco, añadiendo una validación de estructura exhaustiva en `_coerce_and_verify` que limpia claves faltantes o tipos incorrectos, y mejorando la resiliencia de `_load_impl` ante archivos parcialmente escritos o con errores de codificación inusuales.
 - `2026-09-22T04:47:08` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` agregando una validación explícita para evitar errores de tipo o desbordamiento al procesar datos crudos, asegurando que los valores numéricos sean procesables antes de intentar convertirlos, protegiendo así la ejecución ante salidas inesperadas de PowerShell.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T04:16:15` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` reemplazando la iteración secuencial de `startswith` sobre una tupla por una verificación de prefijo `os.path.commonpath` (o comparación directa de componentes), evitando así múltiples llamadas a `startswith` y normalizaciones innecesarias.
 - `2026-09-22T04:15:31` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando las búsquedas de archivos en el disco de listas lineales a un `set` de nombres, evitando O(N*M) en el procesamiento de manifiestos y reduciendo llamadas a I/O redundantes.
 - `2026-09-22T04:06:35` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` eliminando el uso innecesario de `Select-Object -First 50` dentro de PowerShell y realizando el filtrado y ordenamiento de forma eficiente en Python, evitando también recálculos innecesarios mediante un manejo más estricto del caché de tiempo.
-- `2026-09-22T04:05:07` **healthscore.py** (rendimiento): Optimicé el cálculo del `compute_score` eliminando la validación duplicada y el uso de `round()` dentro del bucle, reemplazándolo por una aritmética entera más eficiente y un acceso directo a `WEIGHTS` que evita sobrecarga en el pipeline.
-- `2026-09-22T03:56:32` **diskreport.py** (rendimiento): Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y `path.lower()` dentro del bucle, procesando la extensión una sola vez por archivo, lo que reduce la carga computacional en escaneos de grandes directorios.
-- `2026-09-22T03:56:19` **browser.py** (rendimiento): Optimicé el cálculo del peso de los directorios reemplazando el uso de `os.scandir` dentro de un bucle `while True` con un `for` estándar, y eliminé la redundancia en la recursión donde se invocaba `is_safe_to_modify` dos veces por nivel, mejorando la eficiencia en el escaneo de profundidad.
-- `2026-09-22T03:55:19` **assistant.py** (rendimiento): Se implementó un cacheo más eficiente mediante `lru_cache` en `_format_problem_message` y se eliminó la recreación innecesaria de estructuras `frozenset` en cada llamada a `local_answer` moviendo `TOKENS_BY_CATEGORY` a una estructura constante precalculada, reduciendo la presión sobre el recolector de basura.

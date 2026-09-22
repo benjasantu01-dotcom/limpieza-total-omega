@@ -259,6 +259,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         st = entry.stat(follow_symlinks=False)
                         if entry.is_dir(follow_symlinks=False):
                             path = Path(entry.path)
+                            # Verificación de seguridad proactiva antes de profundizar
                             if skip_protected and is_protected_path(path): continue
                             
                             inode: Inode = (st.st_dev, st.st_ino)

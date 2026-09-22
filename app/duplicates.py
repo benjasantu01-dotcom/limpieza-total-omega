@@ -92,12 +92,13 @@ class DuplicateGroup:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Verifica si un archivo está bloqueado mediante intento de lectura exclusiva."""
+    """Verifica si un archivo está bloqueado mediante intento de apertura no exclusiva."""
     try:
-        with open(path, 'rb') as f:
-            f.read(1)
+        # Usamos flags de bajo nivel para intentar abrir solo lectura sin bloquear
+        fd = os.open(path, os.O_RDONLY)
+        os.close(fd)
         return False
-    except (PermissionError, BlockingIOError, OSError, FileNotFoundError, IsADirectoryError, EOFError):
+    except (PermissionError, OSError):
         return True
 
 

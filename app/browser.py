@@ -225,6 +225,11 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
     try:
         if not path_obj.exists():
             return False
+        # Verificación explícita contra reparse points mediante kernel32
+        k32 = _get_kernel32()
+        if k32 and __is_system_hidden(str(path_obj.absolute()), k32):
+            return False
+            
         p_res = path_obj.resolve(strict=True)
         if _is_unc_path(str(p_res)) or not p_res.is_dir() or not is_safe_to_modify(p_res) or is_protected_path(p_res):
             return False

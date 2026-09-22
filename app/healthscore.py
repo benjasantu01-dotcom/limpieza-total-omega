@@ -216,12 +216,13 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Ejecuta reglas heurísticas con aislamiento de excepciones para evitar fallos del motor principal."""
+    """Ejecuta reglas heurísticas con aislamiento de excepciones y sanitización de salida para seguridad."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str) and msg:
+                    # Sanitización defensiva: solo caracteres imprimibles y límite estricto
                     clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                     if clean_msg:
                         findings.append(clean_msg[:200])
