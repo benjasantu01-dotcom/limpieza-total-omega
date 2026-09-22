@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 51
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 229
+- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 52
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 30 | 5 | 8 | 2 | 43 |
+| 2026-09-20 | 29 | 4 | 8 | 1 | 42 |
 | 2026-09-21 | 145 | 10 | 39 | 8 | 148 |
-| 2026-09-22 | 17 | 3 | 4 | 4 | 38 |
+| 2026-09-22 | 20 | 3 | 5 | 4 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **47**
+- manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **41**
 - legibilidad y documentación: **40**
 - robustez ante casos límite: **35**
-- rendimiento: **29**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
 - `assistant.py`: **19**
 - `memory.py`: **17**
-- `duplicates.py`: **15**
 - `safety.py`: **15**
 - `diskreport.py`: **15**
+- `settings.py`: **15**
 - `browser.py`: **15**
 - `healthscore.py`: **14**
-- `settings.py`: **14**
+- `duplicates.py`: **14**
 - `organizer.py`: **14**
 - `branding.py`: **12**
-- `scanner.py`: **10**
+- `scanner.py`: **11**
 - `main.py`: **8**
-- `startup.py`: **4**
+- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T03:04:05` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación estricta de la estructura del CSV y un manejo defensivo ante filas malformadas para prevenir excepciones silenciosas durante la carga de registros.
+- `2026-09-22T03:03:37` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_coerce_and_verify` agregando una validación estricta del tipo de cada valor cargado contra el valor por defecto, evitando así comportamientos inesperados ante datos malformados en el JSON.
+- `2026-09-22T03:03:07` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_relevant_extension` y `scan_directory` añadiendo validaciones preventivas de tipos y estados, evitando errores silenciosos al procesar entradas de sistema inesperadamente nulas o con nombres malformados.
 - `2026-09-22T02:57:52` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la detección de errores durante la validación de integridad al agregar un manejo específico de `PermissionError` y `OSError` en `_is_file_in_use`, garantizando que el acceso bloqueado por el sistema no resulte en excepciones no capturadas que detengan el bucle de procesamiento.
 - `2026-09-22T02:57:06` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación defensiva en `_safe_unlink` para asegurar que el hash (si está presente) coincida antes de realizar la eliminación, evitando purgar archivos cuyo contenido haya sido manipulado externamente tras su cuarentena.
 - `2026-09-22T02:52:55` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_for_disk_op` y `_is_safe_to_move` centralizando la validación de nulos y existencias para evitar errores de tipo `NoneType` o `FileNotFoundError` antes de realizar operaciones de disco, asegurando que las guardas sean explícitas y preventivas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T01:00:41` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en la escritura del manifiesto y la validación de archivos al purgar, añadiendo una verificación explícita del hash del archivo antes de cualquier operación destructiva para prevenir condiciones de carrera o corrupción silenciosa.
 - `2026-09-22T00:52:08` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones de seguridad en `_is_safe_for_disk_op` integrando la validación del estado del sistema de archivos mediante `is_protected_path` sobre el destino `target_parent` para asegurar que el movimiento nunca ocurra hacia directorios críticos, evitando posibles intentos de escape fuera de la carpeta de cuarentena.
 - `2026-09-22T00:51:57` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `_get_process_path` validando que la ruta resultante del proceso, además de pasar por `is_safe_to_modify`, no sea una ruta de red (UNC) o dispositivo virtual que pueda evadir el chequeo de seguridad, evitando así interacciones con recursos externos inesperados.
-- `2026-09-22T00:43:10` **diskreport.py** (seguridad defensiva): Se ha implementado una validación de seguridad defensiva en `_is_excluded_path` para prevenir la resolución de rutas mediante `entry.path` cuando los nombres de archivo contienen caracteres de control potencialmente peligrosos o longitudes excesivas antes de procesar el acceso a disco, asegurando que `diskreport.py` no colapse ante manipulaciones del sistema de archivos.
-- `2026-09-22T00:30:58` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `_call_gemini` integrando un chequeo estricto del host en la URL final antes de la ejecución, asegurando que la petición HTTP solo ocurra contra el endpoint oficial, y se añadió una validación adicional para el largo del payload en bytes antes de la serialización para evitar condiciones de desbordamiento de memoria por entradas maliciosas.
-- `2026-09-22T00:10:08` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `purge_all` y `list_items` ante estados inconsistentes del sistema de archivos (archivos bloqueados o inexistentes) mediante un manejo más explícito de excepciones durante la iteración, evitando que una falla en un archivo individual interrumpa el proceso de saneamiento de la cuarentena.

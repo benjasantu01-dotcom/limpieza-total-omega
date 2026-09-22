@@ -197,13 +197,17 @@ class Scanner:
         except (OSError, AttributeError):
             pass
 
-    def _is_relevant_extension(self, name: str, is_dir: bool) -> Optional[str]:
+    def _is_relevant_extension(self, name: Optional[str], is_dir: bool) -> Optional[str]:
         """Determina si un archivo o directorio es apto para análisis heurístico basado en extensiones."""
-        if is_dir: return ""
-        # Optimizacion: Evitar splitext si no contiene punto o es demasiado corto
-        if "." not in name: return None
-        ext_low = ("." + name.rsplit(".", 1)[-1]).lower()
-        return ext_low if ext_low in SUSPICIOUS_ALL_EXTS else None
+        if is_dir or not name: 
+            return None
+        if "." not in name: 
+            return None
+        try:
+            ext_low = ("." + name.rsplit(".", 1)[-1]).lower()
+            return ext_low if ext_low in SUSPICIOUS_ALL_EXTS else None
+        except (IndexError, ValueError):
+            return None
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """
@@ -217,19 +221,15 @@ class Scanner:
             is_dir = entry.is_dir(follow_symlinks=False)
             ext_low = self._is_relevant_extension(entry.name, is_dir)
             
-            if ext_low is None:
-                return
-
             if is_dir:
                 self._handle_directory(entry, directory_stack)
-            else:
+            elif ext_low:
                 self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, AttributeError):
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """Ejecuta en cascada las heurísticas registradas sobre el archivo objetivo."""
-        # El archivo pudo haber sido borrado o bloqueado en milisegundos previos
         if not path.exists():
             return
             
@@ -257,10 +257,10 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Ejecuta el escaneo de directorios utilizando una pila LIFO para control de recursos."""
-    if not directory: return []
+    if directory is None: return []
     try:
         path_str: str = str(directory).strip()
-        if not _is_valid_path_structure(path_str):
+        if not path_str or not _is_valid_path_structure(path_str):
             return []
         
         base_path = Path(path_str)
@@ -280,7 +280,6 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 with os.scandir(current_dir) as it:
                     for entry in it:
                         try:
-                            # Se delega el chequeo de protección a _is_safe_entry para consistencia
                             scanner.process_entry(entry, directory_stack)
                         except (OSError, PermissionError, AttributeError):
                             continue

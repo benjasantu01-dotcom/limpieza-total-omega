@@ -328,10 +328,9 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
         default_val = DEFAULTS.get(k_val)
         current_val = settings.get(k_val)
         
+        # Validación estricta de tipo contra el valor por defecto
         if current_val is None or not isinstance(current_val, type(default_val)):
             settings[k_val] = default_val
-        elif isinstance(settings[k_val], str):
-            settings[k_val] = str(settings[k_val]).strip()
             
     if settings.get("asistente_activado") and not (
         settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
