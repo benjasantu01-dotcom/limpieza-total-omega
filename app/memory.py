@@ -166,7 +166,10 @@ _EMPTY_SNAPSHOT: MemorySnapshot = MemorySnapshot(BytesValue(0), BytesValue(0))
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
-    """Parsea el contenido crudo de /proc/meminfo en una instancia MemorySnapshot."""
+    """
+    Parsea el contenido crudo de /proc/meminfo (Linux) en una instancia MemorySnapshot.
+    Extrae MemTotal, MemAvailable/MemFree y Cached para estimar la salud del sistema.
+    """
     if not isinstance(meminfo_text, str) or not meminfo_text.strip():
         return _EMPTY_SNAPSHOT
     
@@ -174,17 +177,15 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     for line in meminfo_text.splitlines():
         if ":" not in line: 
             continue
-        parts = line.split(":", 1)
-        if len(parts) == 2:
-            key, value_part = parts
-            metrics[key.strip()] = _safe_int_conversion(value_part, 1024)
+        key, _, value_part = line.partition(":")
+        metrics[key.strip()] = _safe_int_conversion(value_part, 1024)
             
-    total = metrics.get("MemTotal", BytesValue(0))
+    total: BytesValue = metrics.get("MemTotal", BytesValue(0))
     if total <= 0: 
         return _EMPTY_SNAPSHOT
     
-    available = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))
-    cached = metrics.get("Cached", BytesValue(0))
+    available: BytesValue = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))
+    cached: BytesValue = metrics.get("Cached", BytesValue(0))
     
     return MemorySnapshot(
         total=total, 

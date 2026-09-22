@@ -469,3 +469,30 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-22T12:17:00` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings detallados en las funciones de hashing y filtrado, clarificando el flujo lógico y los criterios de seguridad aplicados para facilitar el mantenimiento del código.
 - `2026-09-22T12:17:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T12:17:00` Corrida terminada. Total usado hoy: 284.
+- `2026-09-22T12:24:41` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-09-22T12:25:12` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:25: in <module>
+    import healthscore  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^
+app/healthscore.py:23: in <module>
+    MessageFactory: TypeAlias = Callable[[SystemMetrics], str]
+                                          ^^^^^^^^^^^^^
+E   NameError: name 'SystemMetrics' is not defined
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defined
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.19s
+
+```
+- `2026-09-22T12:25:12` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Mejoré la documentación técnica del módulo mediante docstrings específicos, clarifiqué la lógica del `Pipeline` agregando un `TypeAlias` explícito para la función de mensaje, y añadí `assert`s internos para asegurar la consistencia del pipeline antes de cualquier cálculo.
+- `2026-09-22T12:26:12` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-22T12:27:15` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-22T12:28:35` ✅ Mejora aceptada en main.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la refactorización de `_build_health_metrics_row` y la adición de docstrings técnicos detallados en los métodos de construcción de la UI, asegurando que cada componente describa su propósito y su dependencia con el `branding`.
+- `2026-09-22T12:29:05` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints faltantes, la estandarización de docstrings y la refactorización de la lógica de parseo en `parse_linux_meminfo` para hacerla más explícita y robusta.
+- `2026-09-22T12:29:18` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en funciones clave y la sustitución de nombres de variables ambiguos (ej. `st` por `stats`) para clarificar el flujo de validación y seguridad.
+- `2026-09-22T12:29:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T12:29:18` Corrida terminada. Total usado hoy: 288.

@@ -586,7 +586,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Salud", tab)
 
     def _build_health_metrics_row(self, container: ctk.CTkFrame) -> None:
-        """Renderiza las tarjetas resumen del sistema iterando sobre la configuración."""
+        """Itera sobre la configuración de métricas para renderizar las tarjetas del dashboard."""
         for i, (clave, titulo) in enumerate(HEALTH_METRICS_CONFIG):
             container.grid_columnconfigure(i, weight=1)
             self.cards[clave] = self._metric_card(container, titulo, i)

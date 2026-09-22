@@ -161,16 +161,25 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
     return not (is_protected_path(src) or is_protected_path(dest))
 
 def _validate_file_attributes(src: Path) -> bool:
-    """Confirma si un archivo cumple con los requisitos de seguridad: no es directorio, ni está bloqueado."""
+    """
+    Realiza una auditoría profunda de atributos para verificar si un archivo es apto 
+    para ser movido. Filtra archivos bloqueados, puntos de reparse, archivos vacíos 
+    o de tamaño extremo (>100GB).
+    """
     try:
-        st = src.stat()
-        if not src.is_file() or _is_junction(src) or st.st_size == 0 or st.st_size > 100_000_000_000: return False
+        stats = src.stat()
+        if not src.is_file() or _is_junction(src) or stats.st_size == 0 or stats.st_size > 100_000_000_000: 
+            return False
         return _passes_system_checks(src) and not _is_file_locked(src)
     except (OSError, PermissionError):
         return False
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """Coordinador de seguridad que valida permisos, recursión y atributos antes de una operación de E/S."""
+    """
+    Coordinador central de seguridad para operaciones de E/S.
+    Verifica permisos del sistema, integridad de la jerarquía de rutas y 
+    restricciones de lectura/escritura antes de autorizar cualquier movimiento.
+    """
     if src is None or dest is None or not src.exists() or not is_safe_to_modify(src): return False
     if not _validate_path_security(src, dest): return False
         
@@ -203,10 +212,13 @@ def _is_size_within_limits(size: int) -> bool:
     return 0 < size < 100_000_000_000
 
 def _is_valid_junk_file(entry: os.DirEntry) -> bool:
-    """Aplica filtros de tamaño, atributos OS y extensión para considerar un archivo como 'basura'."""
+    """
+    Aplica filtros iniciales de metadatos (tamaño, atributos, extensión) para determinar 
+    si una entrada de directorio es un candidato válido para el escaneo de basura.
+    """
     try:
-        st = entry.stat(follow_symlinks=False)
-        return (_is_size_within_limits(st.st_size) and 
+        stats = entry.stat(follow_symlinks=False)
+        return (_is_size_within_limits(stats.st_size) and 
                 not (_get_win_attributes(entry) & WIN_ATTR_MASK) and
                 is_valid_junk_extension(entry.name))
     except (OSError, PermissionError):
@@ -244,10 +256,13 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
     return found
 
 def _evaluate_entry(entry: os.DirEntry, found: List[JunkFile]) -> None:
-    """Extrae metadatos y crea la estructura JunkFile del archivo detectado."""
+    """
+    Transforma un `os.DirEntry` válido en un objeto `JunkFile`. 
+    Captura metadatos de sistema como tamaño y fecha de última modificación.
+    """
     try:
-        stat_info = entry.stat(follow_symlinks=False)
-        found.append(JunkFile(Path(entry.path), stat_info.st_size, datetime.fromtimestamp(stat_info.st_mtime)))
+        stats = entry.stat(follow_symlinks=False)
+        found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
     except (OSError, PermissionError, ValueError):
         pass
 
