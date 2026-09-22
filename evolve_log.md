@@ -862,3 +862,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-22T04:26:22` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez ante casos límite en la carga de datos del contexto, añadiendo una validación explícita mediante `_safe_float` para todos los campos numéricos en `ingest` y asegurando que las métricas con valores `None` o malformados no comprometan la integridad del objeto `SystemContext`.
 - `2026-09-22T04:26:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T04:26:22` Corrida terminada. Total usado hoy: 100.
+- `2026-09-22T04:34:46` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-09-22T04:35:22` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-22T04:36:22` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-22T04:36:50` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-22T04:37:17` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejora la robustez del escaneo de carpetas en `largest_folders` al manejar explícitamente el caso donde el archivo es el mismo directorio raíz o sufre cambios de permisos durante la iteración, evitando el fallo de `relative_to` o la pérdida de datos ante cambios en el sistema de archivos.
+- `2026-09-22T04:37:26` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-22T04:37:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T04:37:26` Corrida terminada. Total usado hoy: 104.

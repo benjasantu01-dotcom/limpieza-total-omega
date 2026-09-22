@@ -302,6 +302,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size_bytes in walk_files(root, skip_protected):
         try:
+            # Asegurar resolución consistente contra la raíz actual
             relative = path.relative_to(root)
             if not relative.parts: continue
             
