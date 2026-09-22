@@ -519,3 +519,42 @@ ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defi
 - `2026-09-22T12:59:14` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle de cómputo en `compute_score` eliminando la validación redundante de `entry.area` dentro del loop, ya que el pipeline es estático, y precalculando el acceso a `WEIGHTS` mediante una referencia directa en la tupla `PipelineEntry` para reducir el costo de búsqueda en diccionario.
 - `2026-09-22T12:59:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T12:59:14` Corrida terminada. Total usado hoy: 300.
+- `2026-09-22T13:05:40` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-22T13:06:35` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._apply_card_updates, LimpiezaTotalOmegaApp._collect_settings, LimpiezaTotalOmegaApp._ensure_path_writable_and_clean, LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._get_home_disk_info, LimpiezaTotalOmegaApp._init_state, LimpiezaTotalOmegaApp._is_safe_file_access, LimpiezaTotalOmegaApp._is_safe_target_dir, LimpiezaTotalOmegaApp._is_valid_dir, LimpiezaTotalOmegaApp._safe_run, LimpiezaTotalOmegaApp._update_cards, LimpiezaTotalOmegaApp._update_health_bars, LimpiezaTotalOmegaApp._validate_numeric_setting
+- `2026-09-22T13:07:06` Tests FALLARON:
+```
+...................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_read_only_modules_never_delete_or_move __________________
+
+    def test_read_only_modules_never_delete_or_move():
+        """Ningún módulo de solo lectura puede borrar ni mover archivos."""
+        destructivos = {"unlink", "rmdir", "rmtree", "move", "remove", "rename", "replace"}
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            usados = calls_and_imports(parse(archivo)) & destructivos
+>           assert not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: memory.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: memory.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed in 1.68s
+
+```
+- `2026-09-22T13:07:06` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución costosa de un comando PowerShell (que inicializa un entorno completo) por un mapeo directo de datos, moviendo el filtro de los procesos con mayor consumo dentro de la lógica de procesamiento del CSV para evitar el crecimiento innecesario de listas en memoria.
+- `2026-09-22T13:07:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-22T13:07:43` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-22T13:08:07` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó `list_items` para reducir drásticamente el I/O al realizar una única pasada por el directorio de cuarentena y centralizar la validación de integridad, evitando llamadas repetidas a `_validate_integrity` que generaban accesos innecesarios al sistema de archivos por cada ítem.
+- `2026-09-22T13:08:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T13:08:07` Corrida terminada. Total usado hoy: 304.

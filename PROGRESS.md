@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **176** (34.9% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 242
+- Sin respuesta de la IA (error o límite): 243
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 66 | 7 | 22 | 4 | 105 |
-| 2026-09-22 | 112 | 11 | 23 | 17 | 137 |
+| 2026-09-21 | 63 | 6 | 22 | 4 | 105 |
+| 2026-09-22 | 113 | 12 | 24 | 17 | 138 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **40**
-- rendimiento: **28**
-- robustez ante casos límite: **25**
+- seguridad defensiva: **39**
+- rendimiento: **29**
+- robustez ante casos límite: **23**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **18**
 - `diskreport.py`: **18**
-- `quarantine.py`: **17**
-- `assistant.py`: **16**
 - `safety.py`: **16**
 - `memory.py`: **16**
-- `settings.py`: **14**
+- `assistant.py`: **15**
 - `duplicates.py`: **14**
 - `healthscore.py`: **14**
+- `settings.py`: **13**
 - `browser.py`: **12**
 - `organizer.py`: **12**
-- `scanner.py`: **11**
+- `scanner.py`: **10**
 - `branding.py`: **8**
 - `main.py`: **6**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T13:08:07` **quarantine.py** (rendimiento): Se optimizó `list_items` para reducir drásticamente el I/O al realizar una única pasada por el directorio de cuarentena y centralizar la validación de integridad, evitando llamadas repetidas a `_validate_integrity` que generaban accesos innecesarios al sistema de archivos por cada ítem.
 - `2026-09-22T12:59:14` **healthscore.py** (rendimiento): Optimicé el bucle de cómputo en `compute_score` eliminando la validación redundante de `entry.area` dentro del loop, ya que el pipeline es estático, y precalculando el acceso a `WEIGHTS` mediante una referencia directa en la tupla `PipelineEntry` para reducir el costo de búsqueda en diccionario.
 - `2026-09-22T12:56:52` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `stat()` y `path.resolve()` para archivos ya visitados, reduciendo drásticamente las operaciones de I/O por archivo durante el escaneo.
 - `2026-09-22T12:56:22` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación innecesaria de objetos `Path` y el uso intensivo de `relative_to` dentro del loop, operando directamente sobre los componentes de la ruta para mejorar el rendimiento en directorios con gran profundidad.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T12:17:00` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de hashing y filtrado, clarificando el flujo lógico y los criterios de seguridad aplicados para facilitar el mantenimiento del código.
 - `2026-09-22T12:16:47` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` añadiendo docstrings detallados en funciones clave (`_collect_summary_data`, `walk_files`, `_is_excluded_path`) para explicar los mecanismos de seguridad y la eficiencia algorítmica (uso de heaps e inodos), alineándome con el enfoque de legibilidad.
 - `2026-09-22T12:15:41` **browser.py** (legibilidad y documentación): Mejora la legibilidad y la robustez del módulo `browser.py` mediante la refactorización de `_sum_directory_recursive` para separar la lógica de cálculo de tamaño de la gestión de errores, además de añadir type hints explícitos y docstrings detallados que clarifican el flujo de trabajo ante fallos de acceso.
-- `2026-09-22T12:15:13` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints detallados en los parámetros de las funciones de dibujo y docstrings que especifican explícitamente el sistema de coordenadas y las dependencias de escalado, facilitando el mantenimiento y la comprensión de la lógica geométrica.

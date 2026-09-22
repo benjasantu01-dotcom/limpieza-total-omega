@@ -677,18 +677,20 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
         
-        existing_filenames: Set[str] = {f.name for f in base_path.iterdir() if f.is_file()}
+        # Mapeo O(1) de archivos en disco para evitar iterar múltiples veces
+        actual_files = {f.name: f for f in base_path.iterdir() if f.is_file()}
+        
         valid_items: List[QuarantineItem] = []
-        needs_save = False
+        modified = False
         
         for i in items:
-            stored_path = base_path / i.stored_name
-            if i.stored_name in existing_filenames and i._validate_integrity(stored_path):
+            f_path = actual_files.get(i.stored_name)
+            if f_path and i._validate_integrity(f_path):
                 valid_items.append(i)
             else:
-                needs_save = True
+                modified = True
             
-        if needs_save:
+        if modified:
             save_manifest(valid_items, base)
             
         return sorted(valid_items, key=lambda x: x.quarantined_at, reverse=True)
