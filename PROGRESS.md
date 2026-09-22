@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 50 | 5 | 11 | 8 | 58 |
+| 2026-09-20 | 50 | 5 | 11 | 8 | 54 |
 | 2026-09-21 | 145 | 10 | 39 | 8 | 148 |
-| 2026-09-22 | 8 | 1 | 3 | 3 | 7 |
+| 2026-09-22 | 9 | 2 | 3 | 3 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **40**
+- seguridad defensiva: **41**
 - robustez ante casos límite: **35**
 - rendimiento: **30**
 
@@ -37,8 +37,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **17**
 - `duplicates.py`: **17**
 - `safety.py`: **16**
+- `settings.py`: **15**
 - `healthscore.py`: **14**
-- `settings.py`: **14**
 - `branding.py`: **13**
 - `organizer.py`: **13**
 - `scanner.py`: **12**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T01:11:06` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `save()` y `_load_impl` al añadir una validación estricta de "propiedad" mediante `os.path.samefile` (cuando existe) o verificación de permisos antes de realizar operaciones de archivo, evitando riesgos de colisión de rutas o manipulación indebida fuera del directorio destino.
 - `2026-09-22T01:00:41` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en la escritura del manifiesto y la validación de archivos al purgar, añadiendo una verificación explícita del hash del archivo antes de cualquier operación destructiva para prevenir condiciones de carrera o corrupción silenciosa.
 - `2026-09-22T00:52:08` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones de seguridad en `_is_safe_for_disk_op` integrando la validación del estado del sistema de archivos mediante `is_protected_path` sobre el destino `target_parent` para asegurar que el movimiento nunca ocurra hacia directorios críticos, evitando posibles intentos de escape fuera de la carpeta de cuarentena.
 - `2026-09-22T00:51:57` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `_get_process_path` validando que la ruta resultante del proceso, además de pasar por `is_safe_to_modify`, no sea una ruta de red (UNC) o dispositivo virtual que pueda evadir el chequeo de seguridad, evitando así interacciones con recursos externos inesperados.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T14:08:58` **branding.py** (rendimiento): Optimicé el cálculo de `_get_scaled_poly` reemplazando la lógica de comprensión de listas con una tupla precalculada y escalado matemático directo, reduciendo la carga de procesamiento en cada frame de dibujo.
 - `2026-09-21T13:56:30` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de heurística añadiendo docstrings que explican el contexto de seguridad (el "porqué" de cada chequeo) y se han estandarizado los type hints para mejorar la legibilidad y mantenibilidad del registro de reglas.
 - `2026-09-21T13:55:09` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_write_temp_to_final` para reducir la complejidad ciclomática y mejorar el manejo de errores mediante el uso de bloques `with` anidados y lógica de limpieza más clara.
-- `2026-09-21T13:49:12` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las estructuras críticas y funciones de bajo nivel en `memory.py` mediante type hints más precisos, docstrings explicativos sobre las intenciones de las APIs de Win32, y la estandarización de la nomenclatura interna para facilitar el mantenimiento del código.

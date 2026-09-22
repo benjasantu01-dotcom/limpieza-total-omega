@@ -297,11 +297,7 @@ def _load_impl(ruta: Path) -> AppSettings:
     """Implementación privada cacheada para leer y verificar el archivo de configuración en disco."""
     try:
         if not ruta.is_file(): return DEFAULTS.copy()
-        
-        # Validación de seguridad: debe ser un archivo seguro antes de acceder
         ensure_safe_to_modify(ruta)
-        
-        # Validación de lectura y tamaño
         if not os.access(ruta, os.R_OK) or ruta.stat().st_size == 0 or ruta.stat().st_size > MAX_SETTINGS_SIZE:
             return DEFAULTS.copy()
             
@@ -365,7 +361,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             os.fsync(f.fileno())
         if ruta.exists():
             ensure_safe_to_modify(ruta)
-            os.replace(ruta, bak_path)
+            if not os.path.samefile(ruta, bak_path) if bak_path.exists() else True:
+                os.replace(ruta, bak_path)
         os.replace(temp_path, ruta)
         _load_impl.cache_clear()
         return ruta
