@@ -163,13 +163,13 @@ def _is_path_inside_base(target_abs: str, base_abs: str) -> bool:
     Confirma que 'target_abs' sea subdirectorio o hijo de 'base_abs'.
     Implementa un mecanismo de defensa contra Path Traversal.
     """
-    if not isinstance(target_abs, str) or not isinstance(base_abs, str):
+    if not isinstance(target_abs, str) or not isinstance(base_abs, str) or not target_abs or not base_abs:
         return False
     if len(target_abs) >= MAX_PATH_LEN or len(base_abs) >= MAX_PATH_LEN or any(c in target_abs for c in '\0\r\n'):
         return False
     try:
-        common = os.path.commonpath([target_abs, base_abs])
-        return common == base_abs
+        common = os.path.commonpath([os.path.normpath(target_abs), os.path.normpath(base_abs)])
+        return os.path.normpath(common) == os.path.normpath(base_abs)
     except (OSError, ValueError):
         return False
 
@@ -267,8 +267,8 @@ def _sum_directory_recursive(
     """
     Calcula recursivamente el peso de una carpeta utilizando memoización para eficiencia.
     """
-    if root_abs in memo:
-        return memo[root_abs]
+    if depth > MAX_SCAN_DEPTH or root_abs in memo:
+        return memo.get(root_abs, 0)
 
     directory_total_bytes: int = 0
     try:
@@ -278,10 +278,9 @@ def _sum_directory_recursive(
                     continue
                 
                 if entry.is_dir(follow_symlinks=False):
-                    if depth < MAX_SCAN_DEPTH:
-                        directory_total_bytes += _sum_directory_recursive(
-                            entry.path, is_junction_fn, kernel32, memo, depth + 1
-                        )
+                    directory_total_bytes += _sum_directory_recursive(
+                        entry.path, is_junction_fn, kernel32, memo, depth + 1
+                    )
                 elif entry.is_file(follow_symlinks=False):
                     try:
                         directory_total_bytes += int(entry.stat(follow_symlinks=False).st_size)
@@ -337,6 +336,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     if not isinstance(real_base, Path) or not isinstance(rel_str, str) or any(c in rel_str for c in '\0\r\n'):
         return Path()
     try:
+        # Uso de joinpath seguro asegurando que el path resultante no escape del base
         target = real_base.joinpath(*rel_str.split("\\"))
         return target if len(str(target)) < MAX_PATH_LEN else Path()
     except (TypeError, ValueError, OSError):

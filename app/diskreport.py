@@ -384,9 +384,10 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
         lines.extend(["", "Mayores archivos:"])
         for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
             try:
-                if p.exists():
+                # Verificación de existencia para evitar errores en archivos temporales borrados
+                if p.is_file():
                     lines.append(f"  {format_size(s):>10}  {str(p)}")
-            except OSError:
+            except (OSError, PermissionError):
                 continue
     
     return lines

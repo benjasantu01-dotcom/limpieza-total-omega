@@ -429,3 +429,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-22T11:27:43` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-22T11:27:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T11:27:43` Corrida terminada. Total usado hoy: 264.
+- `2026-09-22T11:33:40` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-09-22T11:34:24` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_source_value` para evitar excepciones en escenarios de introspección inesperados y fortalecí el método `ingest` de `SystemContext` para manejar fallos de validación parciales sin interrumpir la carga de otras métricas válidas.
+- `2026-09-22T11:35:24` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-22T11:35:52` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las validaciones de entrada en `_is_path_inside_base` y `_resolve_browser_path` para prevenir excepciones ante entradas inesperadas, y se ha añadido una protección de desbordamiento de pila en `_sum_directory_recursive` mediante una comprobación explícita de `depth` antes de la recursión profunda.
+- `2026-09-22T11:36:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-22T11:37:07` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` capturando `PermissionError` y `OSError` de forma explícita al procesar rutas, evitando que una falla puntual en un archivo detenga el análisis completo, manteniendo el enfoque en el manejo de errores.
+- `2026-09-22T11:37:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T11:37:07` Corrida terminada. Total usado hoy: 268.

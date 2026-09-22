@@ -353,8 +353,11 @@ class SystemContext:
             
         found_data = False
         for key, spec in _VALIDATORS.items():
-            if self._apply_field(source, key, spec):
-                found_data = True
+            try:
+                if self._apply_field(source, key, spec):
+                    found_data = True
+            except Exception:
+                continue
         
         try:
             grade_val = _get_source_value(source, "grade")
@@ -424,10 +427,13 @@ def _ensure_safe_text(text: Any) -> bool:
 def _get_source_value(source: Any, key: str) -> Any:
     """Acceso seguro a atributos: previene la ejecución de métodos o acceso a dunders."""
     if not isinstance(key, str) or key.startswith("_"): return None
-    if isinstance(source, dict):
-        return source.get(key)
-    val = getattr(source, key, None)
-    return None if callable(val) or key.startswith("__") else val
+    try:
+        if isinstance(source, dict):
+            return source.get(key)
+        val = getattr(source, key, None)
+        return None if callable(val) or key.startswith("__") else val
+    except Exception:
+        return None
 
 def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
     """Inicializa un SystemContext completo integrando datos de distintas fuentes."""
