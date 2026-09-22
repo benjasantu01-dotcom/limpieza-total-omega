@@ -344,6 +344,10 @@ def _check_windows_file_attributes(path_str: str) -> None:
         if attrs & 0x02 or attrs & 0x04:
             raise UnsafePathError("Archivo con atributos del sistema/oculto no permitido.")
 
+def _check_device_consistency(source: Path, target_dir: Path) -> None:
+    """Verifica que el origen y destino estén en el mismo volumen (dispositivo)."""
+    if source.stat().st_dev != target_dir.stat().st_dev:
+        raise UnsafePathError("Operación entre distintos volúmenes no permitida.")
 
 def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     """
@@ -363,8 +367,7 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
         raise PermissionError("Directorio de cuarentena sin permisos de escritura.")
 
     try:
-        if resolved_source.stat().st_dev != resolved_dest_dir.stat().st_dev:
-            raise UnsafePathError("Operación entre dispositivos no permitida.")
+        _check_device_consistency(resolved_source, resolved_dest_dir)
             
         if os.path.samefile(resolved_source, resolved_dest_dir):
             raise UnsafePathError("Operación circular detectada.")
@@ -494,8 +497,7 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
     # Validar seguridad antes de operar sobre destino
     ensure_safe_to_modify(destination.parent)
     
-    if source.stat().st_dev != destination.parent.resolve().stat().st_dev:
-        raise UnsafePathError("Operación entre dispositivos no permitida.")
+    _check_device_consistency(source, destination.parent.resolve())
     
     _check_windows_file_attributes(str(destination))
 
@@ -731,8 +733,7 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         if destination.exists():
             raise FileExistsError("El destino ya existe.")
         
-        if stored_file.stat().st_dev != destination.parent.resolve().stat().st_dev:
-            raise UnsafePathError("Dispositivos incompatibles.")
+        _check_device_consistency(stored_file, destination.parent.resolve())
         
         parent = destination.parent
         if not is_safe_to_modify(parent):
