@@ -35,7 +35,7 @@ from types import MappingProxyType
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple, TypeGuard
 from functools import lru_cache
 
-from safety import is_safe_to_modify, is_protected_path, UnsafePathError, ensure_safe_to_modify
+from safety import is_safe_to_modify, is_protected_path, ensure_safe_to_modify
 
 PathLike: TypeAlias = str | Path
 SettingsDict: TypeAlias = dict[str, Any]
@@ -176,7 +176,7 @@ class _Validators:
                 if _Validators._is_reparse_point(Path(part)):
                     return False
             return not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
-        except (OSError, PermissionError, RuntimeError, UnsafePathError, IndexError):
+        except (OSError, PermissionError, RuntimeError, IndexError):
             return False
 
     @staticmethod
@@ -298,7 +298,7 @@ def _load_impl(ruta: Path) -> AppSettings:
     """Implementación privada cacheada para leer y verificar el archivo."""
     try:
         if not ruta.is_file() or _Validators._is_reparse_point(ruta): return DEFAULTS.copy()
-        ensure_safe_to_modify(ruta)
+        if not is_safe_to_modify(str(ruta)): return DEFAULTS.copy()
         if not os.access(ruta, os.R_OK) or ruta.stat().st_size == 0 or ruta.stat().st_size > MAX_SETTINGS_SIZE:
             return DEFAULTS.copy()
             
@@ -309,7 +309,7 @@ def _load_impl(ruta: Path) -> AppSettings:
             return DEFAULTS.copy()
             
         return _coerce_and_verify(validate(data))
-    except (OSError, PermissionError, IOError, UnsafePathError, json.JSONDecodeError, UnicodeDecodeError):
+    except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError):
         return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
@@ -345,10 +345,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         if not os.access(parent, os.W_OK) or _Validators._is_reparse_point(parent): return None
         if not _Validators._is_safe_path(str(parent)): return None
-        ensure_safe_to_modify(parent)
         cleaned_settings = _coerce_and_verify(validate(values))
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
-    except (UnsafePathError, TypeError, ValueError, OSError, PermissionError): return None
+    except (TypeError, ValueError, OSError, PermissionError): return None
     
     temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
     bak_path = ruta.with_suffix(".bak")
@@ -358,13 +357,13 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.flush()
             os.fsync(f.fileno())
         if ruta.exists():
-            ensure_safe_to_modify(ruta)
+            if not is_safe_to_modify(str(ruta)): return None
             if not os.path.samefile(ruta, bak_path) if bak_path.exists() else True:
                 os.replace(ruta, bak_path)
         os.replace(temp_path, ruta)
         _load_impl.cache_clear()
         return ruta
-    except (OSError, IOError, PermissionError, UnsafePathError): return None
+    except (OSError, IOError, PermissionError): return None
     finally:
         if temp_path.exists():
             try: os.remove(temp_path)

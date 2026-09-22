@@ -133,7 +133,7 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: fl
     """
     if entry:
         stats = _safe_stat(entry)
-        if stats and stats.st_size == 0:
+        if stats and hasattr(stats, 'st_size') and stats.st_size == 0:
             return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
     return None
 
@@ -154,7 +154,7 @@ class Scanner:
         """Valida si una ruta absoluta pertenece jerárquicamente a la base escaneada."""
         try:
             return Path(entry_path).resolve().is_relative_to(self.base_root)
-        except ValueError:
+        except (ValueError, RuntimeError):
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
@@ -171,7 +171,7 @@ class Scanner:
             if stats and hasattr(stats, 'st_file_attributes'):
                 return bool(stats.st_file_attributes & LIMITS.reparse_attr)
         except Exception:
-            return True # Asumir riesgo en caso de error de acceso
+            return True 
         return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
@@ -258,8 +258,11 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
         
     if ext and ext.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         for check_fn in EXECUTABLE_CHECK_REGISTRY:
-            if (result := check_fn(path, entry, now_ts)):
-                findings.append(result)
+            try:
+                if (result := check_fn(path, entry, now_ts)):
+                    findings.append(result)
+            except Exception:
+                continue
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
