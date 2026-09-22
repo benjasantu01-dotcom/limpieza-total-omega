@@ -281,7 +281,9 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
     """Encuentra los N archivos más pesados en el directorio especificado usando un heap."""
     root = _validate_root(directory)
     if not root: return []
-    data = _collect_summary_data(root, skip_protected, limit=max(0, limit))
+    # Validar que el limit sea un entero no negativo
+    valid_limit = max(0, int(limit))
+    data = _collect_summary_data(root, skip_protected, limit=valid_limit)
     return [FileEntry(p, s) for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True)]
 
 
@@ -289,15 +291,19 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
     """Calcula y agrupa métricas de uso de disco totales por cada extensión de archivo."""
     root = _validate_root(directory)
     if not root: return []
+    # Validar que el limit sea un entero no negativo
+    valid_limit = max(0, int(limit))
     data = _collect_summary_data(root, skip_protected, limit=0)
     usage_list = [ExtensionUsage(ext, s.total_bytes, s.count) for ext, s in data.ext_stats.items()]
-    return heapq.nlargest(max(0, limit), usage_list, key=lambda u: u.size_bytes)
+    return heapq.nlargest(valid_limit, usage_list, key=lambda u: u.size_bytes)
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """Identifica las subcarpetas de primer nivel con mayor consumo de espacio."""
     root = _validate_root(directory)
     if not root: return []
+    # Validar que el limit sea un entero no negativo
+    valid_limit = max(0, int(limit))
     folder_total_bytes: Dict[Path, int] = defaultdict(int)
     folder_file_counts: Dict[Path, int] = defaultdict(int)
     
@@ -315,7 +321,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             continue
 
     results = [FolderUsage(p, folder_total_bytes[p], folder_file_counts[p]) for p in folder_total_bytes]
-    return heapq.nlargest(max(0, limit), results, key=lambda f: f.size_bytes)
+    return heapq.nlargest(valid_limit, results, key=lambda f: f.size_bytes)
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> SizeReport:
@@ -363,6 +369,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     root = _validate_root(directory)
     if root is None: return ["Error: Ruta no válida o inaccesible."]
     
+    # Se impone un límite interno de 20 para el resumen, validando integridad
     data = _collect_summary_data(root, skip_protected, limit=20)
     
     if data.total_files == 0: 

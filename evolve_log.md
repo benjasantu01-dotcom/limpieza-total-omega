@@ -1154,3 +1154,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-09-22T07:05:23` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-09-22T07:05:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T07:05:23` Corrida terminada. Total usado hoy: 160.
+- `2026-09-22T07:08:00` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-09-22T07:08:36` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `save_logo_svg` y `draw_ring` mediante una validación más estricta de parámetros y el uso de excepciones específicas para evitar errores de ejecución inesperados al procesar datos externos o estados inconsistentes de la UI.
+- `2026-09-22T07:09:03` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-22T07:09:32` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del módulo `diskreport.py` mediante la validación de tipos y rangos en parámetros críticos, evitando excepciones inesperadas en funciones públicas como `largest_files`, `usage_by_extension`, `largest_folders` y `summarize`.
+- `2026-09-22T07:09:43` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-22T07:09:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T07:09:43` Corrida terminada. Total usado hoy: 164.

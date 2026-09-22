@@ -396,7 +396,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
                               fill=C_BACKGROUND, outline="")
         canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", 
                            fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(UI_FONT_HEADER_SIZE * scale)), UI_FONT_BOLD))
-    except (TypeError, ValueError, Exception): pass
+    except (TypeError, ValueError, AttributeError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Renderiza el escudo corporativo en el canvas provisto."""
@@ -413,7 +413,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         canvas.create_polygon(*_get_scaled_poly(scale, canvas_x, canvas_y), fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
         _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, scale)
-    except (TypeError, ValueError, Exception): pass
+    except (TypeError, ValueError, AttributeError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
     """Dibuja una línea decorativa con gradiente lineal sobre el canvas."""
@@ -422,7 +422,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
         h_val = max(1, int(height))
         for seg in _get_grouped_segments(gradient_colors(w_val, stops)):
             canvas.create_line(canvas_x + seg.start_index, canvas_y, canvas_x + seg.end_index, canvas_y, fill=seg.hex_color, width=h_val)
-    except (TypeError, ValueError, Exception): pass
+    except (TypeError, ValueError, AttributeError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, 
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, 
@@ -442,4 +442,4 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         if val > 0: 
             fill_color = fill or score_color(val)
             canvas.create_arc(*caja, start=90, extent=-(val / 100 * 359.9), style="arc", outline=fill_color, width=thick)
-    except (ValueError, TypeError, Exception): return
+    except (ValueError, TypeError, AttributeError): return
