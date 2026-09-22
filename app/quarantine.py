@@ -222,9 +222,12 @@ def _safe_unlink(path: Path) -> bool:
         if is_safe_to_modify(resolved) and not _is_file_locked(resolved):
             path.unlink()
             # Forzar sincronización del directorio padre post-borrado
-            dir_fd = os.open(str(path.parent), os.O_RDONLY)
-            try: os.fsync(dir_fd)
-            finally: os.close(dir_fd)
+            try:
+                dir_fd = os.open(str(path.parent), os.O_RDONLY)
+                try: os.fsync(dir_fd)
+                finally: os.close(dir_fd)
+            except OSError:
+                pass
             return True
         return False
     except (OSError, PermissionError):
@@ -674,7 +677,11 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
         
-        existing: Set[str] = {f.name for f in base_path.iterdir() if f.is_file()}
+        existing: Set[str] = set()
+        try:
+            existing = {f.name for f in base_path.iterdir() if f.is_file()}
+        except OSError:
+            pass
         
         valid_items: List[QuarantineItem] = []
         needs_save = False
@@ -804,11 +811,15 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     
     try:
         # Pre-filtrado de archivos físicos existentes
-        existing_files = {f.name for f in quarantine_root.iterdir() if f.is_file() and f.name != MANIFEST_NAME}
+        existing_files = []
+        try:
+            existing_files = [f for f in quarantine_root.iterdir() if f.is_file() and f.name != MANIFEST_NAME]
+        except OSError:
+            pass
         
-        for name in existing_files:
-            item = item_map.get(name)
-            if item and _is_item_purgable(quarantine_root / name, item, quarantine_root):
+        for f in existing_files:
+            item = item_map.get(f.name)
+            if item and _is_item_purgable(f, item, quarantine_root):
                 purged_ids.add(item.item_id)
                 
         if purged_ids:

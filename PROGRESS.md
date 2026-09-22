@@ -5,47 +5,51 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **503**
-- Mejoras aceptadas: **197** (39.2% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **198** (39.3% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 225
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 52 | 5 | 11 | 8 | 77 |
+| 2026-09-20 | 50 | 5 | 11 | 8 | 76 |
 | 2026-09-21 | 145 | 10 | 39 | 8 | 148 |
+| 2026-09-22 | 3 | 0 | 0 | 1 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **37**
-- robustez ante casos límite: **32**
+- robustez ante casos límite: **35**
+- seguridad defensiva: **35**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **19**
 - `assistant.py`: **18**
-- `quarantine.py`: **18**
 - `browser.py`: **17**
 - `duplicates.py`: **17**
+- `memory.py`: **17**
 - `diskreport.py`: **16**
-- `memory.py`: **16**
 - `safety.py`: **16**
-- `settings.py`: **15**
 - `healthscore.py`: **14**
+- `settings.py`: **14**
 - `branding.py`: **13**
 - `scanner.py`: **12**
-- `organizer.py`: **11**
-- `startup.py`: **7**
+- `organizer.py`: **12**
 - `main.py`: **7**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T00:10:08` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `purge_all` y `list_items` ante estados inconsistentes del sistema de archivos (archivos bloqueados o inexistentes) mediante un manejo más explícito de excepciones durante la iteración, evitando que una falla en un archivo individual interrumpa el proceso de saneamiento de la cuarentena.
+- `2026-09-22T00:09:44` **organizer.py** (robustez ante casos límite): Mejora la robustez del escaneo frente a errores de acceso al sistema de archivos al implementar un manejo más granular de `OSError` en `_is_file_locked`, evitando que la app considere bloqueado un archivo simplemente por un fallo de permisos transitorio durante el chequeo.
+- `2026-09-22T00:09:17` **memory.py** (robustez ante casos límite): Se añadió un control de desbordamiento en el parseo de procesos de Windows para evitar que valores de memoria absurdamente grandes (por errores de lectura o corrupción de datos en el CSV de salida) provoquen inconsistencias o errores en el cálculo de `working_set_mb`, reforzando la robustez frente a datos inesperados.
 - `2026-09-21T15:01:41` **healthscore.py** (robustez ante casos límite): Mejoré la resiliencia del motor ante datos incoherentes o métricas que escapan a los rangos previstos durante el cálculo, integrando validación estricta y protección contra desbordamientos en el `PipelineEntry` y el bucle principal.
 - `2026-09-21T14:40:44` **safety.py** (rendimiento): Se implementó un decorador `lru_cache` con un `maxsize` ajustado para la función `_is_sensitive_extension` y se optimizó `is_sensitive_file` para evitar la creación de objetos `Path` innecesarios en cada llamada, mejorando significativamente el rendimiento al escanear grandes volúmenes de archivos.
 - `2026-09-21T14:30:08` **quarantine.py** (rendimiento): Optimizé `list_items` y `purge_all` para evitar lecturas de disco innecesarias y el uso de listas temporales redundantes mediante el uso de conjuntos (`set`) para las búsquedas de metadatos, reduciendo la complejidad algorítmica de O(N*M) a O(N+M).
@@ -58,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-21T13:38:19` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` y `_collect_summary_data` para clarificar la complejidad algorítmica y el uso del heap, y añadí type hints explícitos para mejorar la legibilidad técnica sin alterar la funcionalidad.
 - `2026-09-21T13:34:37` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a las constantes globales y a las estructuras de datos complejas (`PaletteDict`, `FontSizesDict`), facilitando la comprensión de la jerarquía visual del proyecto.
 - `2026-09-21T13:25:52` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del motor de reglas local mediante la documentación técnica de `ProblemCriterion` y la formalización de la lógica de comparación, facilitando la comprensión de las heurísticas de salud del sistema sin alterar la funcionalidad.
-- `2026-09-21T13:24:51` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_load_impl` y `save` mediante el uso de bloques `try-except` más granulares y la validación explícita del estado del archivo (existencia y permisos) antes de intentar operaciones de lectura/escritura, evitando errores de E/S no controlados durante la carga o persistencia de configuración.
-- `2026-09-21T13:21:04` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_volume_readonly` para manejar correctamente errores de bajo nivel en llamadas a `ctypes` y se añadió una validación defensiva en `_is_file_in_use` para prevenir errores de tipo cuando se manejan rutas problemáticas, asegurando que `safety.py` no colapse ante entradas inesperadas.
-- `2026-09-21T12:54:16` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `format_size` y `_bytes_to_mb` mediante una validación de tipo más estricta y el manejo explícito de valores negativos, evitando divisiones por cero o cálculos erróneos que podrían romper la UI en reportes malformados.

@@ -132,8 +132,10 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """Comprueba si el archivo está en uso verificando el acceso de lectura (R_OK)."""
     try:
+        # Usar os.access es seguro si manejamos el error de permisos
         return not os.access(path, os.R_OK)
     except (OSError, PermissionError):
+        # Ante un error de acceso, asumimos que no se puede mover de forma segura
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:

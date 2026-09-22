@@ -45,6 +45,7 @@ MegabytesValue = NewType("MegabytesValue", float)
 
 BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
+MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB # Límite lógico de 128GB por proceso
 
 # Máscaras de acceso Win32 para operaciones seguras en procesos:
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
@@ -209,7 +210,8 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             if not raw_pid or not raw_ws: continue
             
             pid, ws = int(raw_pid), int(raw_ws)
-            if pid > 0 and ws >= 0:
+            # Validación de integridad contra valores erróneos o desbordamientos
+            if pid > 0 and 0 <= ws < MAX_VALID_PROCESS_MEM:
                 results.append(ProcessMemory(name=name, pid=pid, working_set=BytesValue(ws)))
         except (ValueError, TypeError):
             continue
