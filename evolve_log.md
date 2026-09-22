@@ -877,3 +877,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-22T04:47:20` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-09-22T04:47:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-22T04:47:20` Corrida terminada. Total usado hoy: 108.
+- `2026-09-22T04:55:10` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-09-22T04:56:12` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-22T04:57:15` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-22T04:58:19` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-22T04:58:52` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-22T04:59:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-09-22T05:00:09` ➖ Sin cambios en safety.py (enfoque: robustez ante casos límite). Motivo: Se añadió una validación específica para detectar rutas que apuntan a dispositivos de almacenamiento externo o de red (mediante `DRIVE_REMOTE` y `DRIVE_REMOVABLE`) en `_validate_boundary_conditions` para evitar bloqueos por latencia de red o errores de I/O en unidades desconectables.
+- `2026-09-22T05:01:09` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-22T05:01:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-22T05:01:09` Corrida terminada. Total usado hoy: 112.
