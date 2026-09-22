@@ -681,17 +681,14 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
         
-        existing: Set[str] = set()
-        try:
-            existing = {f.name for f in base_path.iterdir() if f.is_file()}
-        except OSError:
-            pass
+        # O(N) para obtener el set de archivos físicos, optimizando la validación posterior
+        existing_filenames: Set[str] = {f.name for f in base_path.iterdir() if f.is_file()}
         
         valid_items: List[QuarantineItem] = []
         needs_save = False
         
         for i in items:
-            if i.stored_name in existing and i._validate_integrity(base_path / i.stored_name):
+            if i.stored_name in existing_filenames and i._validate_integrity(base_path / i.stored_name):
                 valid_items.append(i)
             else:
                 needs_save = True
@@ -816,12 +813,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     purged_ids: Set[str] = set()
     
     try:
-        # Pre-filtrado de archivos físicos existentes
-        existing_files = []
-        try:
-            existing_files = [f for f in quarantine_root.iterdir() if f.is_file() and f.name != MANIFEST_NAME]
-        except OSError:
-            pass
+        # Pre-filtrado O(1) para verificar existencia de archivos físicos
+        existing_files = [f for f in quarantine_root.iterdir() if f.is_file() and f.name != MANIFEST_NAME]
         
         for f in existing_files:
             item = item_map.get(f.name)

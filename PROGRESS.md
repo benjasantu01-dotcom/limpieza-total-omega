@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 50
+- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-20 | 20 | 2 | 3 | 1 | 36 |
+| 2026-09-20 | 17 | 1 | 3 | 1 | 36 |
 | 2026-09-21 | 145 | 10 | 39 | 8 | 148 |
-| 2026-09-22 | 32 | 3 | 8 | 6 | 43 |
+| 2026-09-22 | 34 | 3 | 9 | 6 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **47**
-- seguridad defensiva: **41**
-- rendimiento: **30**
+- seguridad defensiva: **38**
+- rendimiento: **32**
 - robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **19**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
+- `assistant.py`: **18**
 - `memory.py`: **18**
-- `browser.py`: **16**
 - `diskreport.py`: **16**
+- `safety.py`: **16**
 - `duplicates.py`: **15**
 - `healthscore.py`: **15**
 - `organizer.py`: **15**
-- `safety.py`: **15**
+- `browser.py`: **15**
 - `settings.py`: **14**
-- `branding.py`: **12**
+- `branding.py`: **11**
 - `scanner.py`: **11**
 - `main.py`: **7**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-22T04:16:15` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` reemplazando la iteración secuencial de `startswith` sobre una tupla por una verificación de prefijo `os.path.commonpath` (o comparación directa de componentes), evitando así múltiples llamadas a `startswith` y normalizaciones innecesarias.
+- `2026-09-22T04:15:31` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando las búsquedas de archivos en el disco de listas lineales a un `set` de nombres, evitando O(N*M) en el procesamiento de manifiestos y reduciendo llamadas a I/O redundantes.
 - `2026-09-22T04:06:35` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` eliminando el uso innecesario de `Select-Object -First 50` dentro de PowerShell y realizando el filtrado y ordenamiento de forma eficiente en Python, evitando también recálculos innecesarios mediante un manejo más estricto del caché de tiempo.
 - `2026-09-22T04:05:07` **healthscore.py** (rendimiento): Optimicé el cálculo del `compute_score` eliminando la validación duplicada y el uso de `round()` dentro del bucle, reemplazándolo por una aritmética entera más eficiente y un acceso directo a `WEIGHTS` que evita sobrecarga en el pipeline.
 - `2026-09-22T03:56:32` **diskreport.py** (rendimiento): Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y `path.lower()` dentro del bucle, procesando la extensión una sola vez por archivo, lo que reduce la carga computacional en escaneos de grandes directorios.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T03:24:15` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones críticas y la adición de una tabla de complejidad algorítmica para clarificar el flujo de decisión de hashing.
 - `2026-09-22T03:23:46` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la precisión del mantenimiento del código al extraer las constantes de configuración de los filtros de archivos y directorios fuera de `_is_excluded_path` y `_collect_summary_data`, además de añadir docstrings detallados en las funciones de procesamiento que aclaran la complejidad algorítmica y el manejo de excepciones.
 - `2026-09-22T03:04:05` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación estricta de la estructura del CSV y un manejo defensivo ante filas malformadas para prevenir excepciones silenciosas durante la carga de registros.
-- `2026-09-22T03:03:37` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_coerce_and_verify` agregando una validación estricta del tipo de cada valor cargado contra el valor por defecto, evitando así comportamientos inesperados ante datos malformados en el JSON.
-- `2026-09-22T03:03:07` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_relevant_extension` y `scan_directory` añadiendo validaciones preventivas de tipos y estados, evitando errores silenciosos al procesar entradas de sistema inesperadamente nulas o con nombres malformados.
