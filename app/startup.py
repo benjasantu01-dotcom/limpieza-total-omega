@@ -114,13 +114,16 @@ class StartupEntry:
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Limpia caracteres de control (0-31) de una línea de comando cruda."""
+        """Elimina caracteres de control ASCII (0-31) que no pertenecen a nombres de archivo válidos."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Busca y extrae una ruta encerrada entre comillas dentro de una cadena de comando."""
+        """
+        Extrae una ruta entre comillas de una línea de comando compleja.
+        Retorna vacío si no se hallan comillas, si la ruta es sospechosa o está protegida.
+        """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
         
@@ -145,7 +148,7 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Verifica existencia, tipo de archivo y protección de ruta antes de reportar."""
+        """Comprueba existencia y seguridad de acceso para una ruta ya normalizada."""
         try:
             if not p.exists():
                 return False
@@ -156,7 +159,10 @@ class StartupEntry:
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Resuelve una ruta a su forma canónica absoluta y aplica caché para optimizar I/O."""
+        """
+        Normaliza y resuelve la ruta absoluta, aplicando caché de I/O para optimización.
+        Realiza chequeos de seguridad antes de persistir la validación en caché.
+        """
         if not isinstance(path_string, str) or not self.is_valid:
             return ""
         

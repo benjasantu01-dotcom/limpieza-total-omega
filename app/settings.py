@@ -5,24 +5,6 @@ Guarda un JSON chico en la carpeta del usuario. Todo valor se valida al
 cargar: un archivo editado a mano, corrupto o de una versión vieja nunca debe
 dejar la app sin arrancar, así que cualquier valor inválido se reemplaza
 silenciosamente por el de fábrica.
-
-DECISIONES QUE IMPORTAN
------------------------
-1. **El asistente viene apagado.** Encenderlo implica mandar datos a Google,
-   y eso lo decide el usuario, no el valor por defecto.
-
-2. **La clave de API se prefiere desde el entorno.** Una clave en un JSON de
-   texto plano queda expuesta a cualquier programa que lea la carpeta del
-   usuario, y se filtra si el archivo termina en un respaldo en la nube.
-   `assistant_api_key()` mira primero la variable de entorno; guardarla en el
-   archivo es una opción, no el camino recomendado.
-
-3. **Nada de rutas de sistema.** Las carpetas configurables pasan por
-   `safety.is_safe_to_modify` antes de aceptarse, así una preferencia mal
-   puesta no puede convertirse en un borrado en `C:\\Windows`.
-
-4. **Este módulo no sabe nada de la interfaz.** Devuelve datos, no widgets,
-   para que se pueda testear sin pantalla.
 """
 
 from __future__ import annotations
@@ -237,32 +219,25 @@ class _Validators:
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(key, text)
         return _Validators._validate_enum_str(text, key)
 
-def _get_validator_entry(key: ConfigKey) -> _ValidatorEntry:
-    """Selecciona el validador estático adecuado para la clave proporcionada."""
-    mapa: dict[ConfigKey, Callable[[ConfigKey, Any], Any]] = {
-        ConfigKey.MOSTRAR_BARRAS: _Validators.bool,
-        ConfigKey.ANIMACIONES: _Validators.bool,
-        ConfigKey.CONFIRMAR_SIEMPRE: _Validators.bool,
-        ConfigKey.RECORDAR_ULTIMA_CARPETA: _Validators.bool,
-        ConfigKey.ANALISIS_EN_PARALELO: _Validators.bool,
-        ConfigKey.ASISTENTE_ACTIVADO: _Validators.bool,
-        ConfigKey.ASISTENTE_ENVIAR_METRICAS: _Validators.bool,
+def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
+    """Genera un mapa inmutable de validadores para la configuración."""
+    mapping: dict[ConfigKey, Callable[[ConfigKey, Any], Any]] = {
+        key: _Validators.bool for key in (
+            ConfigKey.MOSTRAR_BARRAS, ConfigKey.ANIMACIONES, ConfigKey.CONFIRMAR_SIEMPRE,
+            ConfigKey.RECORDAR_ULTIMA_CARPETA, ConfigKey.ANALISIS_EN_PARALELO,
+            ConfigKey.ASISTENTE_ACTIVADO, ConfigKey.ASISTENTE_ENVIAR_METRICAS
+        )
+    }
+    mapping.update({
         ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: _Validators.int,
         ConfigKey.TOP_ARCHIVOS: _Validators.int,
         ConfigKey.TOP_PROCESOS: _Validators.int,
         ConfigKey.ULTIMA_CARPETA: _Validators.path,
-    }
-    return _ValidatorEntry(mapa.get(key, _Validators.str))
-
-@lru_cache(maxsize=len(ConfigKey))
-def _get_validator_for_key(key: ConfigKey) -> _ValidatorEntry:
-    """Obtiene el validador cacheado para una clave específica."""
-    return _get_validator_entry(key)
-
-@lru_cache(maxsize=1)
-def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
-    """Genera un mapa inmutable de validadores."""
-    return MappingProxyType({k: _get_validator_for_key(k) for k in ConfigKey})
+    })
+    
+    return MappingProxyType({
+        k: _ValidatorEntry(mapping.get(k, _Validators.str)) for k in ConfigKey
+    })
 
 _VALIDATOR_MAP: Final = _build_validator_map()
 
