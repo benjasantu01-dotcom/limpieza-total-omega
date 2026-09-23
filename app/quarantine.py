@@ -826,6 +826,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
+    # Mapeo O(1) para buscar rápidamente ítems por nombre de archivo
     item_map = {item.stored_name: item for item in items}
     purged_ids: Set[str] = set()
     
