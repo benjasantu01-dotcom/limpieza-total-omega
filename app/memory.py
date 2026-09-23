@@ -372,6 +372,7 @@ def _is_safe_to_trim(proc_handle: ctypes.c_void_p) -> Tuple[bool, Optional[str]]
     Evita manipular procesos del sistema que podrían entrar en estado inestable.
     """
     exec_path = _get_process_path(proc_handle)
+    # Validamos ruta con is_protected_path (bloqueo) y is_safe_to_modify (heurística de riesgo)
     if not exec_path or is_protected_path(str(exec_path)) or not is_safe_to_modify(str(exec_path)):
         return False, "Acceso no autorizado o ruta protegida del sistema."
 
@@ -405,13 +406,14 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado al proceso."
     
     try:
+        # Validación de seguridad antes de cualquier acción
+        is_safe, err = _is_safe_to_trim(proc_handle)
+        if not is_safe: return False, err or "Verificación de seguridad fallida."
+        
         psapi = getattr(ctypes.windll, "psapi", None)
         if not psapi or not hasattr(psapi, "EmptyWorkingSet"):
             return False, "Función de sistema no disponible."
 
-        is_safe, err = _is_safe_to_trim(proc_handle)
-        if not is_safe: return False, err or "Verificación de seguridad fallida."
-        
         if not psapi.EmptyWorkingSet(proc_handle): 
             return False, "El sistema denegó la operación de liberación."
             

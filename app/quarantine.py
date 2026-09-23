@@ -296,7 +296,8 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
     if name_base.upper() in WINDOWS_RESERVED_NAMES:
         name_base = f"q_{name_base}"
     
-    name_base = "".join(c for c in name_base if ord(c) >= 32)
+    # Asegurar que el nombre no contenga caracteres de control o invisibles
+    name_base = "".join(c for c in name_base if c.isprintable() and c not in '<>:"/\\|?*')
     
     extension = f".{parts[-1]}" if len(parts) > 1 else ""
     candidate = f"{item_id}__{name_base[:64]}{extension}".replace(":", "_")[:128]
