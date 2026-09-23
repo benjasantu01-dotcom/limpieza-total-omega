@@ -221,23 +221,24 @@ class _Validators:
 
 def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
     """Genera un mapa inmutable de validadores para la configuración."""
-    mapping: dict[ConfigKey, Callable[[ConfigKey, Any], Any]] = {
-        key: _Validators.bool for key in (
-            ConfigKey.MOSTRAR_BARRAS, ConfigKey.ANIMACIONES, ConfigKey.CONFIRMAR_SIEMPRE,
-            ConfigKey.RECORDAR_ULTIMA_CARPETA, ConfigKey.ANALISIS_EN_PARALELO,
-            ConfigKey.ASISTENTE_ACTIVADO, ConfigKey.ASISTENTE_ENVIAR_METRICAS
-        )
+    bool_keys = {
+        ConfigKey.MOSTRAR_BARRAS, ConfigKey.ANIMACIONES, ConfigKey.CONFIRMAR_SIEMPRE,
+        ConfigKey.RECORDAR_ULTIMA_CARPETA, ConfigKey.ANALISIS_EN_PARALELO,
+        ConfigKey.ASISTENTE_ACTIVADO, ConfigKey.ASISTENTE_ENVIAR_METRICAS
     }
-    mapping.update({
-        ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: _Validators.int,
-        ConfigKey.TOP_ARCHIVOS: _Validators.int,
-        ConfigKey.TOP_PROCESOS: _Validators.int,
-        ConfigKey.ULTIMA_CARPETA: _Validators.path,
-    })
+    int_keys = {
+        ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB, ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS
+    }
     
-    return MappingProxyType({
-        k: _ValidatorEntry(mapping.get(k, _Validators.str)) for k in ConfigKey
-    })
+    mapping = {}
+    for key in ConfigKey:
+        if key in bool_keys: validator = _Validators.bool
+        elif key in int_keys: validator = _Validators.int
+        elif key == ConfigKey.ULTIMA_CARPETA: validator = _Validators.path
+        else: validator = _Validators.str
+        mapping[key] = _ValidatorEntry(validator)
+        
+    return MappingProxyType(mapping)
 
 _VALIDATOR_MAP: Final = _build_validator_map()
 
@@ -300,17 +301,12 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Aplica consistencia forzada de tipos y reglas post-validación."""
-    final_settings = DEFAULTS.copy()
-    for key in ConfigKey:
-        k = key.value
-        if k in settings and isinstance(settings[k], type(DEFAULTS[k])):
-            final_settings[k] = settings[k]
-            
-    if final_settings.get("asistente_activado") and not (
-        final_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
-    ):
-        final_settings["asistente_activado"] = False
-    return final_settings
+    final = {k: settings.get(k, v) for k, v in DEFAULTS.items()}
+    
+    # Reglas de negocio post-validación
+    if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
+        final["asistente_activado"] = False
+    return final
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """Guarda los ajustes usando escritura atómica y validación de seguridad."""

@@ -96,7 +96,10 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Verifica si el nombre de archivo contiene múltiples extensiones sospechosas (e.g., .pdf.exe).
-    Esta técnica es común en ataques de suplantación de tipo de archivo.
+    Args:
+        path: Ruta del archivo.
+        entry: Entrada opcional de sistema.
+        now_ts: Timestamp actual para comparaciones temporales.
     """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")

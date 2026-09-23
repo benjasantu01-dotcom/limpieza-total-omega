@@ -5,28 +5,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **503**
-- Mejoras aceptadas: **168** (33.4% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **171** (33.9% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 250
+- Rechazadas por guardia de seguridad: 43
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 248
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 28 | 4 | 12 | 2 | 61 |
+| 2026-09-21 | 28 | 4 | 12 | 1 | 59 |
 | 2026-09-22 | 123 | 16 | 28 | 19 | 164 |
-| 2026-09-23 | 17 | 1 | 2 | 1 | 25 |
+| 2026-09-23 | 20 | 1 | 3 | 1 | 25 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
-- legibilidad y documentación: **39**
+- legibilidad y documentación: **41**
 - seguridad defensiva: **36**
+- rendimiento: **25**
 - robustez ante casos límite: **24**
-- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,19 +34,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **16**
 - `safety.py`: **16**
 - `healthscore.py`: **16**
+- `settings.py`: **15**
 - `memory.py`: **14**
-- `settings.py`: **14**
-- `assistant.py`: **13**
+- `assistant.py`: **14**
 - `duplicates.py`: **12**
 - `browser.py`: **11**
+- `scanner.py`: **11**
 - `organizer.py`: **10**
-- `scanner.py`: **10**
 - `main.py`: **7**
 - `branding.py`: **6**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-23T02:07:27` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` eliminando la recreación de listas y la iteración innecesaria, moviendo la lógica de filtrado de tokens a un lookup directo en el set de tokens, evitando así re-procesar todo el input del usuario en cada llamada.
+- `2026-09-23T02:06:30` **settings.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `settings.py` mediante la refactorización de `_build_validator_map` y `_coerce_and_verify` para eliminar redundancias y mejorar la claridad del esquema de configuración, reemplazando bucles manuales y chequeos de tipo complejos por estructuras más declarativas.
+- `2026-09-23T02:05:57` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las funciones de heurística y la estandarización de la documentación en los `check_` helpers para asegurar que todo desarrollador entienda los parámetros requeridos.
 - `2026-09-23T01:50:52` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización y expansión de docstrings en las funciones críticas de validación y recorrido, aclarando el propósito y las precondiciones de cada etapa para facilitar el mantenimiento futuro.
 - `2026-09-23T01:50:37` **memory.py** (legibilidad y documentación): Se introdujo documentación técnica detallada mediante docstrings estructurados (usando el formato Google) y se extrajo la lógica de ordenamiento de procesos en `parse_windows_process_csv` hacia una función helper para mejorar la legibilidad del flujo principal.
 - `2026-09-23T01:45:27` **healthscore.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el pipeline de evaluación, clarificando la función de las constantes críticas para facilitar el mantenimiento del modelo de scoring.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-23T01:09:58` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones de entrada en `_is_safe_for_disk_op` y `stage_for_review` para prevenir errores de ejecución ante rutas mal formadas, incorporando chequeos específicos de tipo `Path` y manejo de excepciones ante llamadas a `resolve()` sobre rutas inexistentes.
 - `2026-09-23T01:09:15` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` mediante la validación temprana de entradas, el filtrado de caracteres no imprimibles y la verificación explícita de existencia antes de operar, evitando excepciones no controladas durante la ejecución de tareas asíncronas.
 - `2026-09-23T01:04:37` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` reemplazando chequeos tipo `isinstance` por validaciones de estado más seguras y agregando un manejo de excepciones explícito en la generación del desglose para evitar estados inconsistentes si un `scorer` falla.
-- `2026-09-23T00:55:43` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` ante errores de lectura mediante un manejo de excepciones explícito en el bloque `with`, asegurando que el archivo se cierre correctamente y que fallos transitorios en el sistema de archivos no devuelvan resultados parciales o corruptos.
-- `2026-09-23T00:55:31` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` validando explícitamente los resultados de las operaciones de sistema de archivos para evitar fallos por rutas malformadas o condiciones de carrera, garantizando que el escaneo sea resiliente ante cambios inesperados en el disco.
-- `2026-09-23T00:55:03` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_kernel32` y `_is_system_hidden` para evitar fallos por valores inesperados (`None`) o errores de tipo durante la inicialización de la API de Windows, aplicando validaciones preventivas antes de interactuar con el sistema operativo.

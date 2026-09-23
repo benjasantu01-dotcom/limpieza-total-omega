@@ -590,8 +590,9 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     
     # Búsqueda eficiente usando el set pre-calculado
     for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
-        if token in _TOKENS_SET:
-            return _TOKENS_MAP[token](context, question)
+        handler = _TOKENS_MAP.get(token)
+        if handler:
+            return handler(context, question)
             
     cuerpo = _format_problem_message(
         context.active_problems, 
