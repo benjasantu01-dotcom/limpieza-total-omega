@@ -296,11 +296,10 @@ class SystemContext:
 
     def get_metric(self, key: str, default: float) -> float:
         """Obtiene una métrica del contexto, aplicando un valor por defecto si no existe o es inválida."""
-        try:
-            val = getattr(self, key, default)
-            return float(val) if isinstance(val, (int, float)) and math.isfinite(val) else default
-        except (TypeError, ValueError):
+        val = getattr(self, key, None)
+        if not isinstance(val, (int, float)) or not math.isfinite(val):
             return default
+        return float(val)
 
     @cached_property
     def active_problems(self) -> tuple[str, ...]:

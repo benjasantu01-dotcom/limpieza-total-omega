@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 232
+- Sin respuesta de la IA (error o límite): 234
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 103 | 13 | 23 | 15 | 124 |
-| 2026-09-23 | 86 | 7 | 17 | 8 | 108 |
+| 2026-09-22 | 100 | 13 | 23 | 15 | 123 |
+| 2026-09-23 | 87 | 7 | 17 | 8 | 111 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **42**
+- manejo de errores y validación de entradas: **40**
+- legibilidad y documentación: **39**
 - seguridad defensiva: **39**
-- manejo de errores y validación de entradas: **39**
 - rendimiento: **37**
 - robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
-- `healthscore.py`: **19**
+- `diskreport.py`: **21**
+- `healthscore.py`: **18**
 - `safety.py`: **17**
 - `quarantine.py`: **17**
-- `assistant.py`: **15**
+- `assistant.py`: **16**
 - `settings.py`: **15**
 - `memory.py`: **14**
 - `scanner.py`: **14**
 - `browser.py`: **14**
-- `duplicates.py`: **13**
 - `organizer.py`: **12**
+- `duplicates.py`: **12**
 - `main.py`: **6**
 - `branding.py`: **6**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-23T09:50:11` **assistant.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `build_context` y las consultas a `SystemContext` agregando validaciones preventivas contra entradas nulas o malformadas, asegurando que `get_metric` y el proceso de ingesta sean robustos ante datos inesperados sin depender de excepciones generales.
 - `2026-09-23T08:26:49` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_load_impl` y `save` mediante la validación estricta de que el archivo de configuración no sea un enlace simbólico ni esté contenido dentro de uno, utilizando `path.resolve()` para detectar intentos de redirección de ruta antes de cualquier operación de E/S.
 - `2026-09-23T08:26:33` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo una validación explícita mediante `is_protected_path` al resolver las rutas de los directorios, asegurando que los enlaces simbólicos o puntos de reanálisis que apunten fuera de la raíz permitida sean rechazados antes de ser procesados.
 - `2026-09-23T08:20:33` **quarantine.py** (seguridad defensiva): Se introdujo una validación estricta de nombres de archivo basada en una lista blanca de caracteres permitidos para evitar la inyección de caracteres de control o nombres reservados (como `CON` o `LPT1`) en el sistema de archivos del sandbox, reforzando la seguridad defensiva al aislar archivos potencialmente maliciosos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-23T07:15:09` **assistant.py** (robustez ante casos límite): Mejora la robustez del manejo de métricas en `assistant.py` mediante la validación estricta de tipos en el método `ingest` de `SystemContext`, asegurando que `_apply_field` no intente procesar contenedores anidados ni tipos inesperados como valores de métricas, previniendo errores de ejecución durante la ingesta de datos externos.
 - `2026-09-23T07:13:42` **scanner.py** (rendimiento): Optimizé la detección de extensiones en `_is_relevant_extension` reemplazando la creación dinámica de cadenas y el uso de `rsplit` dentro del bucle principal por una verificación de sufijo usando `pathlib.Path.suffix` comparado contra un conjunto (`set`) pre-indexado, evitando así la asignación de memoria innecesaria y el procesamiento de strings redundantes.
 - `2026-09-23T07:04:55` **safety.py** (rendimiento): Se ha optimizado la validación de rutas mediante la implementación de un caché de resultados para `is_protected_path` basado en la normalización de la cadena, evitando llamadas repetitivas a `pathlib.Path` y `resolve()` en bucles intensivos de escaneo.
-- `2026-09-23T07:04:10` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando búsquedas lineales `O(N)` en búsquedas de diccionario `O(1)` para evitar recorridos redundantes del sistema de archivos y manifiestos durante la sincronización.
