@@ -85,7 +85,11 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura Win32 (GlobalMemoryStatusEx) para obtener métricas de RAM global."""
+    """
+    Estructura Win32 utilizada por la API GlobalMemoryStatusEx.
+    Define el layout de memoria física y virtual del sistema. dwLength debe 
+    inicializarse con sizeof(estructura) para que la API acepte la llamada.
+    """
     _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),
         ("dwMemoryLoad", ctypes.c_ulong),
@@ -168,11 +172,6 @@ _EMPTY_SNAPSHOT: MemorySnapshot = MemorySnapshot(BytesValue(0), BytesValue(0))
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     """
     Parsea el contenido crudo de /proc/meminfo (Linux) en una instancia MemorySnapshot.
-    
-    Args:
-        meminfo_text: Contenido completo del archivo /proc/meminfo.
-    Returns:
-        Snapshot con las métricas extraídas o un snapshot vacío si el formato es inválido.
     """
     if not isinstance(meminfo_text, str) or not meminfo_text.strip():
         return _EMPTY_SNAPSHOT
@@ -332,12 +331,15 @@ def _is_system_process(pid: int) -> bool:
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: ctypes.c_void_p) -> Optional[Path]:
-    """Obtiene la ruta absoluta del ejecutable desde un handle de proceso (PSAPI)."""
+    """
+    Resuelve la ruta completa del ejecutable asociado a un handle de proceso.
+    Utiliza PSAPI (GetModuleFileNameExW). Realiza validaciones de seguridad 
+    para descartar rutas de sistema, alias de dispositivos o caracteres maliciosos.
+    """
     if not proc_handle: return None
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
     
-    # Usar un buffer de tamaño fijo definido por MAX_PATH
     MAX_PATH = 260
     buf = ctypes.create_unicode_buffer(MAX_PATH)
     try:
@@ -347,7 +349,6 @@ def _get_process_path(proc_handle: ctypes.c_void_p) -> Optional[Path]:
     
     if 0 < chars_written < MAX_PATH:
         path_str = buf.value
-        # Filtra rutas de dispositivo, UNC o caracteres no imprimibles
         if not path_str or any(path_str.startswith(p) for p in ("\\\\", "\\??\\", "\\Device\\", "\\\\?\\")):
             return None
         if any(ord(c) < 32 for c in path_str):
@@ -363,7 +364,13 @@ def _get_process_path(proc_handle: ctypes.c_void_p) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(proc_handle: ctypes.c_void_p) -> Tuple[bool, Optional[str]]:
-    """Valida que el proceso objetivo sea seguro para manipular su working set."""
+    """
+    Verifica si un proceso es candidato seguro para llamar a EmptyWorkingSet.
+    La validación cruza: 
+    1. La ruta del ejecutable (debe estar fuera de carpetas protegidas).
+    2. El estado del proceso (el proceso debe estar activo/ejecutándose).
+    Evita manipular procesos del sistema que podrían entrar en estado inestable.
+    """
     exec_path = _get_process_path(proc_handle)
     if not exec_path or is_protected_path(str(exec_path)) or not is_safe_to_modify(str(exec_path)):
         return False, "Acceso no autorizado o ruta protegida del sistema."

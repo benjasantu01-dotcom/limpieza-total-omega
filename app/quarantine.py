@@ -212,25 +212,38 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
     """
     Elimina un archivo tras validar políticas de seguridad y ausencia de bloqueos.
-    Si se proporciona un hash, valida integridad antes del borrado.
+    
+    Args:
+        path: Ruta del archivo a eliminar.
+        expected_hash: Hash opcional para verificar integridad antes del borrado.
+        
+    Returns:
+        True si el archivo fue eliminado exitosamente, False de lo contrario.
     """
     try:
         resolved = path.resolve()
-        if not resolved.exists() or not resolved.is_file() or resolved.is_symlink() or is_protected_path(resolved):
+        
+        # Validaciones de seguridad pre-borrado
+        is_valid_target = (
+            resolved.exists() and 
+            resolved.is_file() and 
+            not resolved.is_symlink() and 
+            not is_protected_path(resolved) and
+            is_safe_to_modify(resolved)
+        )
+        if not is_valid_target:
             return False
             
+        # Validación opcional de integridad
         if expected_hash and _get_sha256(resolved) != expected_hash:
             return False
 
-        # Validación explícita de seguridad antes de cualquier operación destructiva
-        if not is_safe_to_modify(resolved):
-            return False
-            
+        # El borrado requiere confirmación de seguridad explícita (lanza excepción si falla)
         ensure_safe_to_modify(resolved)
         
         if not _is_file_locked(resolved):
             path.unlink()
-            # Intento síncrono para asegurar que el sistema de archivos registre el borrado
+            # Sincronización de sistema de archivos para asegurar persistencia
             try:
                 dir_fd = os.open(str(path.parent), os.O_RDONLY)
                 try: os.fsync(dir_fd)

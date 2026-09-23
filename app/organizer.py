@@ -131,7 +131,7 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Intenta verificar si un archivo está en uso exclusivo verificando permisos de lectura.
+    Intenta verificar si un archivo está en uso exclusivo mediante permisos de lectura.
     Retorna True si el acceso es denegado o si ocurren errores de I/O.
     """
     try:
@@ -236,7 +236,16 @@ def _is_valid_junk_file(entry: os.DirEntry) -> bool:
         return False
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
-    """Recorrido recursivo optimizado del sistema de archivos limitado a 50 niveles."""
+    """
+    Recorrido recursivo optimizado del sistema de archivos limitado a 50 niveles.
+    
+    Args:
+        current_dir: Directorio actual a procesar.
+        found: Lista acumulativa de JunkFiles hallados.
+        depth: Profundidad actual del árbol.
+        protected_cache: Rutas protegidas detectadas en sesión.
+        visited: Conjunto de rutas ya recorridas para prevenir bucles cíclicos.
+    """
     if depth > 50: return
     try:
         resolved_dir = current_dir.resolve()
@@ -280,7 +289,12 @@ def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = Tru
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Mueve archivos validados a cuarentena tras asegurar permisos de escritura y seguridad de destino."""
+    """
+    Mueve archivos validados a cuarentena tras asegurar permisos de escritura y seguridad de destino.
+    
+    Returns:
+        Path del directorio de cuarentena, o None si la operación no fue posible.
+    """
     if not files: return None
     try:
         dest_base = Path(review_dir).expanduser()
@@ -315,7 +329,13 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     return _generate_unique_target(candidate)
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente los archivos en cuarentena tras realizar chequeos de seguridad obligatorios."""
+    """
+    Elimina permanentemente los archivos en cuarentena tras realizar chequeos 
+    de seguridad obligatorios (is_safe_to_modify y ensure_safe_to_modify).
+    
+    Returns:
+        Número de archivos eliminados exitosamente.
+    """
     try:
         dest = Path(review_dir).expanduser().resolve()
         if not dest.is_dir() or not is_safe_to_modify(dest) or _is_junction(dest): return 0
