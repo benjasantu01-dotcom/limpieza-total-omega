@@ -142,7 +142,10 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     try:
         digest = hashlib.sha256()
         with open(p, "rb") as f:
-            while (chunk := f.read(chunk_size)):
+            while True:
+                chunk = f.read(chunk_size)
+                if not chunk:
+                    break
                 digest.update(chunk)
         return digest.hexdigest()
     except (OSError, PermissionError, IOError, MemoryError):

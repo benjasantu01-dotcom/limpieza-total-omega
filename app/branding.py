@@ -343,12 +343,14 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination: return None
     try:
         path_obj = Path(destination)
+        # Convertir a absoluto para evitar ambigüedades
         target = path_obj.resolve()
         
-        # Validar si el directorio padre es seguro antes de intentar cualquier operación
-        if is_protected_path(target) or is_protected_path(target.parent):
+        # Validar si el directorio o archivo es protegido
+        if is_protected_path(target):
             return None
             
+        # ensure_safe_to_modify lanza excepción si la ruta no es apta para escritura
         ensure_safe_to_modify(target)
         
         parent = target.parent
@@ -360,6 +362,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError): 
+        # Captura genérica de errores de IO o validación, retorna None sin romper el flujo
         return None
 
 def logo_ascii() -> str:

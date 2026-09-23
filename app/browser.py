@@ -184,7 +184,7 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     Consulta atributos Win32 mediante bitmask para identificar si un archivo
     está marcado como oculto, de sistema o es un punto de reanálisis.
     """
-    if kernel32 is None or not entry_path:
+    if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
         kernel32.GetFileAttributesW.restype = ctypes.c_ulong

@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **166** (32.9% de aceptación)
+- Mejoras aceptadas: **167** (33.1% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 250
 
@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 42 | 5 | 18 | 2 | 67 |
+| 2026-09-21 | 39 | 5 | 17 | 2 | 67 |
 | 2026-09-22 | 123 | 16 | 28 | 19 | 164 |
-| 2026-09-23 | 1 | 0 | 0 | 0 | 19 |
+| 2026-09-23 | 5 | 0 | 0 | 0 | 19 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **38**
 - seguridad defensiva: **36**
-- manejo de errores y validación de entradas: **34**
+- legibilidad y documentación: **35**
 - rendimiento: **31**
 - robustez ante casos límite: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
+- `quarantine.py`: **17**
 - `safety.py`: **16**
-- `memory.py`: **15**
 - `assistant.py`: **14**
+- `memory.py`: **14**
 - `healthscore.py`: **14**
+- `duplicates.py`: **13**
 - `settings.py`: **13**
-- `duplicates.py`: **12**
-- `browser.py`: **11**
-- `organizer.py`: **10**
+- `browser.py`: **12**
+- `organizer.py`: **9**
 - `scanner.py`: **9**
-- `branding.py`: **7**
+- `branding.py`: **8**
 - `main.py`: **6**
 - `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-23T00:55:43` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` ante errores de lectura mediante un manejo de excepciones explícito en el bloque `with`, asegurando que el archivo se cierre correctamente y que fallos transitorios en el sistema de archivos no devuelvan resultados parciales o corruptos.
+- `2026-09-23T00:55:31` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` validando explícitamente los resultados de las operaciones de sistema de archivos para evitar fallos por rutas malformadas o condiciones de carrera, garantizando que el escaneo sea resiliente ante cambios inesperados en el disco.
+- `2026-09-23T00:55:03` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_kernel32` y `_is_system_hidden` para evitar fallos por valores inesperados (`None`) o errores de tipo durante la inicialización de la API de Windows, aplicando validaciones preventivas antes de interactuar con el sistema operativo.
+- `2026-09-23T00:54:34` **branding.py** (manejo de errores y validación de entradas): Se reforzó `save_logo_svg` validando la existencia de la ruta y capturando excepciones de sistema de forma granular para evitar cierres inesperados, asegurando que cualquier error durante la escritura a disco sea silenciado de forma segura sin afectar el hilo principal.
 - `2026-09-23T00:47:31` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para que ante errores en la lectura de valores externos (como tipos inesperados o fallos en `getattr`), la función retorne explícitamente `False` en lugar de propagar una excepción, garantizando que el estado interno del contexto solo se modifique cuando la integridad de los datos esté garantizada.
 - `2026-09-22T14:29:34` **quarantine.py** (seguridad defensiva): Se ha implementado `_check_device_consistency` para asegurar que el archivo de origen y el directorio destino residan en el mismo sistema de archivos (número de dispositivo), evitando errores de `os.replace` (que no es atómico entre dispositivos) y previniendo comportamientos inconsistentes en entornos con múltiples volúmenes.
 - `2026-09-22T14:20:02` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las verificaciones en `_collect_candidates` para asegurar que el uso de `os.scandir` respete consistentemente las restricciones de `is_safe_to_modify` y los filtros de seguridad, evitando accesos accidentales a rutas protegidas mediante la validación temprana de `entry.path`.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T13:37:00` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` frente a rutas que contienen caracteres especiales o estructuras de archivos donde `path.parts` puede fallar, añadiendo una comprobación explícita para evitar errores en el acceso a índices de rutas mal formadas.
 - `2026-09-22T13:20:37` **settings.py** (rendimiento): Optimicé el rendimiento del módulo reemplazando la lógica de validación repetitiva en `validate` y `save` mediante una pre-resolución de los validadores en el mapa de configuración, evitando búsquedas redundantes en cada iteración del bucle de procesamiento.
 - `2026-09-22T13:19:39` **safety.py** (rendimiento): Optimicé el rendimiento de las validaciones recurrentes de rutas reemplazando los chequeos repetidos de atributos de disco por una caché estructurada, centralizando las consultas Win32 bajo un único `lru_cache` para `GetFileAttributesW` para reducir las llamadas al sistema.
-- `2026-09-22T13:08:07` **quarantine.py** (rendimiento): Se optimizó `list_items` para reducir drásticamente el I/O al realizar una única pasada por el directorio de cuarentena y centralizar la validación de integridad, evitando llamadas repetidas a `_validate_integrity` que generaban accesos innecesarios al sistema de archivos por cada ítem.
-- `2026-09-22T12:59:14` **healthscore.py** (rendimiento): Optimicé el bucle de cómputo en `compute_score` eliminando la validación redundante de `entry.area` dentro del loop, ya que el pipeline es estático, y precalculando el acceso a `WEIGHTS` mediante una referencia directa en la tupla `PipelineEntry` para reducir el costo de búsqueda en diccionario.
-- `2026-09-22T12:56:52` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `stat()` y `path.resolve()` para archivos ya visitados, reduciendo drásticamente las operaciones de I/O por archivo durante el escaneo.
-- `2026-09-22T12:56:22` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación innecesaria de objetos `Path` y el uso intensivo de `relative_to` dentro del loop, operando directamente sobre los componentes de la ruta para mejorar el rendimiento en directorios con gran profundidad.
