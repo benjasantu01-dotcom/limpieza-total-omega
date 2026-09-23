@@ -171,12 +171,12 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura la integridad de los datos, forzando rangos positivos y sanitización."""
-        self.junk_mb = max(0.0, _to_float(self.junk_mb, 0.0))
-        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb, 0.0))
-        self.suspicious_count = int(max(0, int(_to_float(self.suspicious_count, 0.0))))
-        self.suspicious_warnings = int(max(0, int(_to_float(self.suspicious_warnings, 0.0))))
-        self.startup_count = int(max(0, int(_to_float(self.startup_count, 0.0))))
-        self.quarantined_count = int(max(0, int(_to_float(self.quarantined_count, 0.0))))
+        self.junk_mb = max(0.0, _to_float(self.junk_mb))
+        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
+        self.suspicious_count = int(max(0, int(_to_float(self.suspicious_count))))
+        self.suspicious_warnings = int(max(0, int(_to_float(self.suspicious_warnings))))
+        self.startup_count = int(max(0, int(_to_float(self.startup_count))))
+        self.quarantined_count = int(max(0, int(_to_float(self.quarantined_count))))
         self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
         self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
 
