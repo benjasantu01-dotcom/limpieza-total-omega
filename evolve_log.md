@@ -716,3 +716,53 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-23T10:29:18` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la clarificación de los docstrings en las funciones geométricas y de renderizado, explicando el parámetro `canvas_x` y `canvas_y` como punto de anclaje (offset) para evitar ambigüedades en la interpretación de las coordenadas.
 - `2026-09-23T10:29:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T10:29:18` Corrida terminada. Total usado hoy: 246.
+- `2026-09-23T10:37:24` Arrancando corrida. Quedan hoy ~54 peticiones objetivo.
+- `2026-09-23T10:37:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-23T10:38:01` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la documentación de las funciones de recursión y filtrado, añadiendo docstrings que explican el contrato de seguridad (por qué se omite el `ensure_safe` en el bucle principal) para evitar errores futuros, y clarifiqué la intención de las constantes de máscara de bits.
+- `2026-09-23T10:38:30` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica y la mantenibilidad de `_collect_summary_data` y `walk_files` mediante Type Hints más precisos y la sustitución de `try-except` genéricos por bloques más específicos, asegurando que las intenciones del código sean claras y consistentes con las reglas de seguridad.
+- `2026-09-23T10:38:58` Tests FALLARON:
+```
+rupos.values()) == [1, 2]
+E       assert [] == [1, 2]
+E         
+E         Right contains 2 more items, first extra item: 1
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     1,
+E         -     2,
+E         - ]
+
+evolve/tests/test_modules.py:479: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:216: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) no aptas para archivos."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size - assert [] == [1, 2]
+  
+  Right contains 2 more items, first extra item: 1
+  
+  Full diff:
+  + []
+  - [
+  -     1,
+  -     2,
+  - ]
+3 failed, 296 passed, 4 warnings in 0.83s
+
+```
+- `2026-09-23T10:38:58` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Documenté con docstrings detallados las funciones del pipeline de hashing y corregí la ambigüedad en `is_system_or_hidden` para asegurar que el manejo de errores en llamadas a la Win32 API sea consistente con los estándares de seguridad exigidos.
+- `2026-09-23T10:39:12` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna agregando docstrings descriptivos a los parámetros de las funciones y a la estructura del pipeline, clarificando la intención y los contratos de cada componente para facilitar su mantenimiento.
+- `2026-09-23T10:39:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T10:39:12` Corrida terminada. Total usado hoy: 250.

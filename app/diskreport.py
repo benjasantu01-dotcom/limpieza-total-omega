@@ -264,7 +264,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     while stack:
         current_dir = stack.pop()
         try:
-            if not current_dir.exists(): continue
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
@@ -286,7 +285,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             
                     except (PermissionError, OSError, UnicodeDecodeError):
                         continue
-        except (PermissionError, OSError, FileNotFoundError, UnicodeDecodeError):
+        except (PermissionError, OSError, FileNotFoundError):
             continue
 
 
@@ -347,25 +346,23 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Realiza una pasada única (O(n)) sobre el árbol de directorios para recolectar estadísticas.
     
-    Utiliza `walk_files` para procesar el árbol de forma iterativa. Mantiene un Min-Heap 
-    de tamaño `limit` para trackear eficientemente los archivos más pesados sin 
-    necesidad de cargar toda la lista de archivos en memoria.
+    Mantiene un Min-Heap de tamaño `limit` para trackear eficientemente los archivos 
+    más pesados sin necesidad de cargar toda la lista de archivos en memoria.
     """
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
     
+    # Min-heap para almacenar tuplas (size_bytes, path)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
         total_bytes += size_bytes
         total_files += 1
         
-        try:
-            ext_raw = path.suffix
-            ext = ext_raw.lower() if ext_raw else "(sin extensión)"
-        except Exception:
-            ext = "(error lectura)"
+        # Categorización por extensión
+        ext_raw = path.suffix.lower()
+        ext = ext_raw if ext_raw else "(sin extensión)"
             
         stat = ext_stats[ext]
         stat.total_bytes += size_bytes

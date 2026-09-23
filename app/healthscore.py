@@ -50,8 +50,8 @@ class RecommendationRule(NamedTuple):
     Attributes:
         area: Identificador del dominio (ej. 'disco').
         threshold: Ratio límite de salud para considerar necesaria la regla.
-        message_factory: Callable que toma SystemMetrics y devuelve el string sugerido.
-        check: Callable que evalúa si, dadas las métricas y el ratio, aplicar la recomendación.
+        message_factory: Función que genera un mensaje dinámico basado en métricas.
+        check: Predicado que recibe métricas y ratio para decidir si disparar la regla.
     """
     area: MetricKey
     threshold: float
@@ -59,7 +59,15 @@ class RecommendationRule(NamedTuple):
     check: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
-    """Configuración de una etapa de evaluación: cómo normalizar y qué reglas aplicar."""
+    """
+    Configuración de una etapa de evaluación.
+    
+    Attributes:
+        area: Nombre de la métrica a evaluar.
+        weight: Valor porcentual (0-100) del impacto en el puntaje total.
+        scorer: Función normalizadora para convertir datos a [0.0, 1.0].
+        rules: Lista de reglas de recomendación asociadas a esta área.
+    """
     area: MetricKey
     weight: int
     scorer: Scorer
@@ -182,7 +190,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Verifica que no existan valores no numéricos o infinitos."""
+        """Verifica que no existan valores no numéricos o infinitos en las métricas."""
         return (math.isfinite(self.junk_mb) and math.isfinite(self.suspicious_count) and 
                 math.isfinite(self.suspicious_warnings) and math.isfinite(self.memory_available_percent) and 
                 math.isfinite(self.disk_free_percent) and math.isfinite(self.duplicate_mb) and 

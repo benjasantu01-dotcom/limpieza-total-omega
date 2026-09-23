@@ -49,8 +49,8 @@ class FileAttributes(NamedTuple):
     SYSTEM: int = 0x04
     REPARSE_POINT: int = 0x400
 
-# Máscara combinada para identificar archivos que el sistema considera protegidos o de infraestructura.
-# Se utiliza para omitir directorios que no deben ser recorridos (ocultos, sistema o junctions).
+# Máscara usada para ignorar archivos de sistema, ocultos o puntos de unión (junctions).
+# Se utiliza en _is_system_hidden para filtrar el escaneo recursivo.
 SYSTEM_HIDDEN_FLAGS: int = (
     FileAttributes().HIDDEN | 
     FileAttributes().SYSTEM | 
@@ -152,6 +152,7 @@ def base_directories() -> List[Path]:
         if not p.exists() or not p.is_dir():
             return []
         path_local = p.resolve(strict=True)
+        # Usamos is_safe_to_modify como predicado lógico (bool) para filtrado.
         if is_safe_to_modify(path_local) and not is_protected_path(path_local):
             return [path_local]
     except (OSError, RuntimeError, PermissionError):
@@ -246,7 +247,8 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
             return False
             
         p_res = path_obj.resolve(strict=True)
-        # Optimizamos evitando llamadas repetidas a resolve()
+        # Optimizamos evitando llamadas repetidas a resolve(). 
+        # is_safe_to_modify devuelve bool: ideal para chequeos en bucle.
         if _is_unc_path(str(p_res)) or not p_res.is_dir() or not is_safe_to_modify(p_res) or is_protected_path(p_res):
             return False
         if base_check_path:
@@ -278,7 +280,8 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula recursivamente el peso de una carpeta. Utiliza memoización y
-    omite validaciones redundantes dentro del loop principal.
+    omite validaciones redundantes de seguridad, asumiendo que la ruta
+    ya fue validada por el caller principal (is_safe_to_traverse).
     """
     if not isinstance(root_abs, str) or not root_abs or root_abs in memo:
         return memo.get(root_abs, 0)
@@ -295,6 +298,7 @@ def _sum_directory_recursive(
                     break
                 
                 try:
+                    # El filtrado aquí es puramente heurístico/performance.
                     if _should_skip_entry(entry, kernel32, is_junction_fn):
                         continue
                     
@@ -341,6 +345,7 @@ def _is_valid_cache_path(candidate: Path, base_path: str, is_junction_fn: Juncti
         real_candidate = str(candidate.resolve(strict=True))
         if _is_unc_path(real_candidate) or not _is_path_inside_base(real_candidate, base_path):
             return False
+        # is_safe_to_modify actúa como barrera de seguridad antes de procesar el nodo.
         if not is_safe_to_modify(candidate) or is_protected_path(candidate):
             return False
         return not (candidate.is_symlink() or is_junction_fn(str(candidate)) or _is_excluded_file(candidate.name))
@@ -389,6 +394,7 @@ def detect_profiles(
             real_base_str = str(real_base_path)
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base_path, rel_str)
+                # Validamos cada candidato antes de llamar a la recursión.
                 if not candidate or not _is_valid_cache_path(candidate, real_base_str, _IS_JUNCTION_FN):
                     continue
                 
