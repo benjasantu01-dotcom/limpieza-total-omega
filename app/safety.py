@@ -54,6 +54,7 @@ FILE_ATTRIBUTE_COMPRESSED: Final[int] = 0x800
 FILE_ATTRIBUTE_ENCRYPTED: Final[int] = 0x4000
 FILE_ATTRIBUTE_SPARSE_FILE: Final[int] = 0x200
 MAX_PATH_LENGTH: Final[int] = 260
+MAX_FILENAME_LENGTH: Final[int] = 255
 MAX_FILE_SIZE: Final[int] = 2 * 1024 * 1024 * 1024  # 2GB límite de seguridad arbitrario
 
 # Constantes Win32 Drive Types (GetDriveType)
@@ -330,6 +331,8 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
 
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     """Verifica metadatos en disco y compara con estado inicial para prevenir ataques TOCTOU."""
+    if not os.access(path, os.R_OK):
+        raise UnsafePathError(f"Acceso de lectura denegado a {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     try:
         current_stat = path.stat()
     except (PermissionError, OSError, FileNotFoundError) as e:
@@ -455,6 +458,8 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         if not target_path.parts or (len(target_path.parts) == 1 and target_path.parts[0] == os.sep):
              raise UnsafePathError("Ruta raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS)
         for part in target_path.parts:
+            if len(part) > MAX_FILENAME_LENGTH:
+                raise UnsafePathError(f"Nombre de componente demasiado largo: {part[:10]}...", SafetyValidationErrorCode.PATH_TOO_LONG)
             if not part or part.strip() != part:
                 raise UnsafePathError(f"Componente '{part}' con espacios envolventes.", SafetyValidationErrorCode.INVALID_CHARS)
             if part.endswith(('.', ' ')):

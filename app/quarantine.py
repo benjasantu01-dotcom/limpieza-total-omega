@@ -198,7 +198,7 @@ def _is_file_locked(path: Path) -> bool:
     Intenta abrir el archivo para lectura exclusiva evitando seguir symlinks.
     """
     if not path.exists():
-        return False
+        return True
     try:
         flags = os.O_RDONLY | os.O_EXCL
         if hasattr(os, 'O_NOFOLLOW'):
@@ -221,6 +221,8 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
         True si el archivo fue eliminado exitosamente, False de lo contrario.
     """
     try:
+        if not path.exists():
+            return False
         resolved = path.resolve()
         
         # Validaciones de seguridad pre-borrado
