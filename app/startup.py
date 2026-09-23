@@ -283,6 +283,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f = io.StringIO(csv_text.strip())
         reader = csv.DictReader(f)
         
+        # Validar que los campos existan y haya datos
         if not reader.fieldnames or len(reader.fieldnames) < 2:
             return []
             
@@ -292,7 +293,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             if not isinstance(row, dict):
                 continue
             
-            # Validación robusta de campos
             val_name = row.get(f_name)
             val_cmd = row.get(f_cmd)
             
@@ -307,11 +307,12 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             
             try:
                 p_cmd = Path(cmd)
-                # Aplicamos filtro de seguridad riguroso antes de procesar el registro
-                if not p_cmd.parts or is_protected_path(p_cmd):
+                # Validar seguridad de la ruta antes de añadirla
+                if is_protected_path(p_cmd):
                     continue
-                # Verificamos seguridad adicional tras normalización mínima
-                if is_protected_path(p_cmd.resolve(strict=False)):
+                # Resolvemos para verificar si la ruta normalizada viola protecciones
+                resolved = p_cmd.resolve(strict=False)
+                if is_protected_path(resolved):
                     continue
             except (ValueError, TypeError, OSError):
                 continue

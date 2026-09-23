@@ -369,7 +369,7 @@ def logo_ascii() -> str:
     return "\n   ___  __  __ ___ ___   _\n  / _ \\|  \\/  | __/ __| /_\\\n | (_) | |\\/| | _|| (_ // _ \\\n  \\___/|_|  |_|___\\___/_/ \\_\\\n      Limpieza Total Omega\n"
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Dibuja franjas decorativas de gradiente en el escudo (coordenadas relativas)."""
+    """Dibuja franjas decorativas en el escudo usando (canvas_x, canvas_y) como origen de offset."""
     try:
         if not math.isfinite(scale) or scale <= 0: return
         franjas_count = max(6, int(28 * scale))
@@ -388,7 +388,7 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
     except (TypeError, ValueError, ZeroDivisionError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza símbolos de corte y carácter Omega sobre el escudo."""
+    """Renderiza símbolos de corte y carácter Omega sobre el escudo, aplicando desplazamiento (canvas_x, canvas_y)."""
     try:
         if not math.isfinite(scale) or scale <= 0: return
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, 
@@ -403,7 +403,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza el escudo corporativo escalado a partir de (canvas_x, canvas_y)."""
+    """Renderiza el escudo corporativo escalado a partir de la posición (canvas_x, canvas_y)."""
     try:
         s = float(size)
         if not math.isfinite(s) or s <= 0: return
@@ -420,7 +420,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una barra horizontal con gradiente lineal en la posición indicada."""
+    """Dibuja una barra horizontal con gradiente lineal iniciada en las coordenadas (canvas_x, canvas_y)."""
     try:
         w_val = max(1, int(width))
         h_val = max(1, int(height))
@@ -431,7 +431,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, 
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, 
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Renderiza un gráfico circular de progreso en (canvas_x, canvas_y)."""
+    """Renderiza un gráfico circular de progreso posicionado en (canvas_x, canvas_y)."""
     if percent is None or not isinstance(percent, (int, float)): return
     try:
         val = float(percent)

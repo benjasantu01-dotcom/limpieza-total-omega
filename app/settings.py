@@ -318,6 +318,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not _Validators._is_safe_path(str(parent)): return None
         cleaned_settings = _coerce_and_verify(validate(values))
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
+        if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
     except (TypeError, ValueError, OSError, PermissionError): return None
     
     temp_path = ruta.with_suffix(".tmp")

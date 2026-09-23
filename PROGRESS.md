@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 38
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 236
+- Rechazadas por guardia de seguridad: 39
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 235
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 93 | 13 | 20 | 14 | 122 |
-| 2026-09-23 | 94 | 8 | 18 | 8 | 114 |
+| 2026-09-22 | 91 | 13 | 20 | 13 | 121 |
+| 2026-09-23 | 97 | 8 | 19 | 8 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **47**
+- manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **39**
-- legibilidad y documentación: **35**
-- rendimiento: **34**
+- legibilidad y documentación: **36**
+- rendimiento: **32**
 - robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `healthscore.py`: **19**
+- `healthscore.py`: **18**
 - `quarantine.py`: **17**
 - `safety.py`: **17**
-- `settings.py`: **15**
+- `settings.py`: **16**
 - `assistant.py`: **15**
 - `browser.py`: **14**
 - `scanner.py`: **14**
-- `memory.py`: **13**
 - `duplicates.py`: **13**
+- `memory.py`: **12**
 - `organizer.py`: **11**
-- `branding.py`: **7**
+- `branding.py`: **8**
 - `main.py`: **6**
-- `startup.py`: **5**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-23T10:29:18` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de los docstrings en las funciones geométricas y de renderizado, explicando el parámetro `canvas_x` y `canvas_y` como punto de anclaje (offset) para evitar ambigüedades en la interpretación de las coordenadas.
+- `2026-09-23T10:28:24` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita de `reader.fieldnames` para evitar errores de acceso a índices `IndexError` cuando el CSV de PowerShell retorna vacío o mal formado, y refactoricé la lógica de filtrado para asegurar que las rutas se validen mediante `is_protected_path` de forma consistente.
+- `2026-09-23T10:27:56` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` añadiendo una validación explícita para evitar la corrupción por archivos de configuración excesivamente grandes antes de intentar cualquier operación de escritura, reforzando la integridad del sistema.
 - `2026-09-23T10:19:00` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la validación de archivos mediante una nueva función `_is_file_accessible` que previene errores al procesar entradas nulas o rutas inválidas, asegurando que las funciones de chequeo no fallen ante estados inesperados del sistema de archivos.
 - `2026-09-23T10:18:41` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando una validación explícita de `path` contra `None` y tipos incorrectos antes de invocar `normalize` o cualquier operación de sistema, evitando `UnsafePathError` con mensajes confusos o excepciones no capturadas durante la fase de normalización.
 - `2026-09-23T10:07:21` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `compute_score` implementando un chequeo de pre-condición más estricto y un manejo de errores defensivo mediante `try-except` encapsulando cada etapa del pipeline, evitando que una falla en una regla o calculador particular degrade el resultado global.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-23T08:26:33` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo una validación explícita mediante `is_protected_path` al resolver las rutas de los directorios, asegurando que los enlaces simbólicos o puntos de reanálisis que apunten fuera de la raíz permitida sean rechazados antes de ser procesados.
 - `2026-09-23T08:20:33` **quarantine.py** (seguridad defensiva): Se introdujo una validación estricta de nombres de archivo basada en una lista blanca de caracteres permitidos para evitar la inyección de caracteres de control o nombres reservados (como `CON` o `LPT1`) en el sistema de archivos del sandbox, reforzando la seguridad defensiva al aislar archivos potencialmente maliciosos.
 - `2026-09-23T08:19:36` **memory.py** (seguridad defensiva): Se reforzó la seguridad de la función `trim_working_set` asegurando que la ruta del ejecutable se valide explícitamente mediante `is_safe_to_modify` ANTES de cualquier operación con el handle, evitando condiciones de carrera o validaciones incompletas sobre procesos que podrían elevar privilegios o ser críticos.
-- `2026-09-23T08:05:09` **diskreport.py** (seguridad defensiva): Se ha mejorado `_is_excluded_path` para validar explícitamente que la ruta no sea un "punto de reparse" (junction) mediante una verificación más estricta de los atributos de archivo en Windows, previniendo así el escape del sandbox de escaneo hacia otras unidades o carpetas fuera de la raíz de análisis.
-- `2026-09-23T07:46:54` **safety.py** (robustez ante casos límite): Mejora la robustez ante casos límite agregando una validación de "ruta existente pero inaccesible" mediante `os.access` en `_check_file_integrity`, evitando que `path.stat()` silenciosamente levante `PermissionError` sin contexto y añadiendo un check de longitud de nombre de archivo para prevenir desbordes en sistemas de archivos con limitaciones de segmentación.
-- `2026-09-23T07:45:01` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la función `_is_file_locked` para que gestione correctamente situaciones donde el archivo desaparece o carece de permisos durante la consulta, y se agregó una validación de existencia previa en `_safe_unlink` para evitar excepciones innecesarias en entornos de alta concurrencia.
