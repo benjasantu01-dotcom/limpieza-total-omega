@@ -326,7 +326,7 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> bool:
         """Valida y asigna un valor individual al campo correspondiente si cumple el contrato MetricSpec."""
         val = _get_source_value(source, key)
-        if val is None: return False
+        if val is None or not spec.is_valid_type(val): return False
         float_val = _safe_float(val, -1.0)
         if float_val >= 0 and _is_metric_within_bounds(float_val, spec):
             setattr(self, key, spec.cast_func(float_val))

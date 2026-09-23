@@ -170,17 +170,16 @@ class Scanner:
             self.seen.add(entry.path.lower())
             directory_stack.append(entry.path)
 
-    def _is_relevant_extension(self, name: Optional[str], is_dir: bool) -> bool:
-        if is_dir or not name or "." not in name: return False
-        ext_low = ("." + name.rsplit(".", 1)[-1]).lower()
-        return ext_low in SUSPICIOUS_ALL_EXTS
+    def _is_relevant_extension(self, name: str) -> bool:
+        """Verifica si la extensión del archivo está en el conjunto de interés de forma eficiente."""
+        return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         try:
             if not self._is_safe_entry(entry): return
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack)
-            elif self._is_relevant_extension(entry.name, False):
+            elif self._is_relevant_extension(entry.name):
                 self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, AttributeError):
             pass

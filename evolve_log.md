@@ -1560,3 +1560,79 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-23T07:04:55` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado la validación de rutas mediante la implementación de un caché de resultados para `is_protected_path` basado en la normalización de la cadena, evitando llamadas repetitivas a `pathlib.Path` y `resolve()` en bucles intensivos de escaneo.
 - `2026-09-23T07:04:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T07:04:55` Corrida terminada. Total usado hoy: 166.
+- `2026-09-23T07:13:13` Arrancando corrida. Quedan hoy ~134 peticiones objetivo.
+- `2026-09-23T07:13:42` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la detección de extensiones en `_is_relevant_extension` reemplazando la creación dinámica de cadenas y el uso de `rsplit` dentro del bucle principal por una verificación de sufijo usando `pathlib.Path.suffix` comparado contra un conjunto (`set`) pre-indexado, evitando así la asignación de memoria innecesaria y el procesamiento de strings redundantes.
+- `2026-09-23T07:14:13` Tests FALLARON:
+```
+..io: 19 items'
+E         
+E         '2400' is contained here:
+E           Puntaje de salud: 61 nota C
+E           Basura: 2400 MB
+E         ?         ++++
+E           Sospechosos: 3
+E           RAM disponible: 11%
+E           Disco libre: 6%
+E           Duplicados: 900 MB
+E           Inicio: 19 items
+
+evolve/tests/test_assistant.py:418: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:215: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) no aptas para archivos."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C
+    Basura: 2400 MB
+  ?         ++++
+    Sospechosos: 3
+    RAM disponible: 11%
+    Disco libre: 6%
+    Duplicados: 900 MB
+    Inicio: 19 items
+1 failed, 298 passed, 4 warnings in 1.40s
+
+```
+- `2026-09-23T07:14:13` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimizé la validación de rutas implementando un set `_PATH_CACHE_INVALID` para evitar re-ejecutar verificaciones costosas sobre rutas que ya fueron marcadas como inseguras, reduciendo la carga en el sistema de archivos durante las llamadas repetidas a `load()`.
+- `2026-09-23T07:14:45` Tests FALLARON:
+```
+.................. [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:215: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) no aptas para archivos."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 4 warnings in 1.41s
+
+```
+- `2026-09-23T07:14:45` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `list_startup_entries` y `estimate_impact` implementando una pre-validación de caché en el acceso a ejecutables y reduciendo redundancias en la cadena de procesamiento de `entries_from_folders` mediante un conjunto de extensiones pre-normalizado.
+- `2026-09-23T07:15:09` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez del manejo de métricas en `assistant.py` mediante la validación estricta de tipos en el método `ingest` de `SystemContext`, asegurando que `_apply_field` no intente procesar contenedores anidados ni tipos inesperados como valores de métricas, previniendo errores de ejecución durante la ingesta de datos externos.
+- `2026-09-23T07:15:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T07:15:09` Corrida terminada. Total usado hoy: 170.
