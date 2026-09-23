@@ -1636,3 +1636,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-23T07:15:09` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez del manejo de métricas en `assistant.py` mediante la validación estricta de tipos en el método `ingest` de `SystemContext`, asegurando que `_apply_field` no intente procesar contenedores anidados ni tipos inesperados como valores de métricas, previniendo errores de ejecución durante la ingesta de datos externos.
 - `2026-09-23T07:15:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T07:15:09` Corrida terminada. Total usado hoy: 170.
+- `2026-09-23T07:23:23` Arrancando corrida. Quedan hoy ~130 peticiones objetivo.
+- `2026-09-23T07:24:00` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-23T07:24:31` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de acceso en `_sum_directory_recursive` mediante el uso de un manejo de excepciones más granular en `os.scandir`, asegurando que archivos bloqueados por el sistema (típicos al escanear cachés de navegadores abiertos) no aborten el conteo de toda una carpeta y evitando la propagación de errores hacia el resto de la aplicación.
+- `2026-09-23T07:25:00` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `walk_files` y `largest_folders` ante rutas que devuelven errores inesperados de sistema operativo (como archivos bloqueados o sin acceso a atributos) agregando bloques `try-except` granulares en el ciclo de agregación y evitando caídas por rutas relativas malformadas al trabajar con sistemas de archivos volátiles.
+- `2026-09-23T07:25:11` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-23T07:25:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T07:25:11` Corrida terminada. Total usado hoy: 174.
