@@ -260,6 +260,9 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
 def _get_entry_size(entry: os.DirEntry) -> int:
     """Obtiene de forma segura el tamaño de un archivo individual."""
     try:
+        # Pre-verificar si el archivo es accesible antes de acceder a stat
+        if not os.access(entry.path, os.R_OK):
+            return 0
         return int(entry.stat(follow_symlinks=False).st_size)
     except (OSError, PermissionError):
         return 0

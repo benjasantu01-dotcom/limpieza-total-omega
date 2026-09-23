@@ -628,8 +628,11 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     if not q or not _ensure_safe_text(q): return None
     
     try:
+        # Validación defensiva del prompt completo para evitar inyecciones
         full_prompt = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
-        if len(full_prompt) > _MAX_PROMPT_LIMIT: return None
+        if len(full_prompt) > _MAX_PROMPT_LIMIT or not _ensure_safe_text(full_prompt): 
+            return None
+            
         payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
         payload = json.dumps(payload_data).encode("utf-8")
         if len(payload) > (_MAX_RESPONSE_BYTES // 2): return None
