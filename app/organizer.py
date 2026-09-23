@@ -147,7 +147,13 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
     return not (is_protected_path(src) or is_protected_path(dest))
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """Coordinador central de seguridad para operaciones de E/S."""
+    """
+    Coordina validaciones de seguridad para operaciones de E/S.
+    
+    Verifica: Existencia del archivo, permisos de acceso (RW), 
+    restricciones por seguridad (protected_path), prevención de 
+    movimientos recursivos y exclusión de archivos en uso (locks).
+    """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if not src.exists() or not src.is_file() or not is_safe_to_modify(src): return False
     if not _validate_path_security(src, dest): return False
@@ -180,7 +186,16 @@ def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result) -> bool:
             is_valid_junk_extension(entry.name))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
-    """Recorrido recursivo optimizado del sistema de archivos."""
+    """
+    Realiza un recorrido recursivo controlado del sistema de archivos.
+    
+    Args:
+        current_dir: Directorio base del escaneo actual.
+        found: Lista acumuladora de objetos JunkFile hallados.
+        depth: Profundidad actual (limitado a 50 para evitar bucles infinitos).
+        protected_cache: Caché de rutas bloqueadas para optimización.
+        visited: Registro de rutas resueltas ya visitadas para evitar ciclos.
+    """
     if depth > 50 or not current_dir.exists(): return
     try:
         resolved_dir = current_dir.resolve()

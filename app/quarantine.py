@@ -73,8 +73,9 @@ class QuarantineItem:
     """
     Modelo de datos para un archivo en cuarentena.
     
-    Gestiona la persistencia de metadatos de seguridad y validación de 
-    integridad (SHA-256) entre el almacenamiento en disco y el manifiesto.
+    Esta clase actúa como el contrato de datos para el manifiesto de cuarentena,
+    asegurando que cada ítem contenga la trazabilidad necesaria para una 
+    restauración segura (ubicación original, hash de integridad y razón).
     """
     item_id: str
     original_path: str
@@ -137,7 +138,7 @@ class QuarantineItem:
             return None
 
     def _validate_integrity(self, stored_path: Path) -> bool:
-        """Verificación básica de existencia, tipo y tamaño en disco."""
+        """Verificación física: confirma que el archivo existe y es un archivo regular."""
         if not stored_path.exists(): return False
         try:
             st = stored_path.stat()
@@ -152,13 +153,13 @@ class QuarantineItem:
 
     def verify_integrity(self, stored_path: Path) -> bool:
         """
-        Verificación profunda mediante comparación de hash SHA-256.
+        Verificación profunda: contrasta el hash SHA-256 del archivo contra el registro.
 
         Args:
             stored_path: Ruta física del archivo en el sandbox.
 
         Returns:
-            True si el hash coincide con el registrado originalmente.
+            True si el hash coincide exactamente con la firma almacenada.
         """
         if not self._validate_integrity(stored_path):
             return False
@@ -170,12 +171,10 @@ class QuarantineItem:
 
 def _get_sha256(path: Path) -> str:
     """
-    Calcula el hash SHA-256 de un archivo mediante streaming para optimizar RAM.
+    Calcula el hash SHA-256 de un archivo mediante streaming.
     
-    Args:
-        path: Ruta del archivo a procesar.
-    Returns:
-        String con el hash hexadecimal o cadena vacía si falla la lectura.
+    El uso de chunks permite procesar archivos grandes sin agotar la memoria RAM
+    del sistema, manteniendo la eficiencia en entornos limitados.
     """
     if not path.is_file():
         return ""
@@ -194,8 +193,10 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado por el S.O.
-    Intenta abrir el archivo para lectura exclusiva evitando seguir symlinks.
+    Determina si un archivo está siendo utilizado por otro proceso (bloqueo exclusivo).
+    
+    Utiliza flags de bajo nivel para intentar abrir el archivo en modo exclusivo,
+    lo cual falla si el archivo está siendo editado o bloqueado por el S.O.
     """
     if not path.exists():
         return True
@@ -211,14 +212,10 @@ def _is_file_locked(path: Path) -> bool:
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
     """
-    Elimina un archivo tras validar políticas de seguridad y ausencia de bloqueos.
+    Elimina de forma segura un archivo tras validar su integridad y seguridad.
     
-    Args:
-        path: Ruta del archivo a eliminar.
-        expected_hash: Hash opcional para verificar integridad antes del borrado.
-        
-    Returns:
-        True si el archivo fue eliminado exitosamente, False de lo contrario.
+    Aplica políticas estrictas: no borra enlaces simbólicos, respeta rutas 
+    protegidas y verifica opcionalmente el hash para evitar borrados accidentales.
     """
     try:
         if not path.exists():
@@ -259,8 +256,10 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
 
 def _check_path_syntax_integrity(path: Path) -> None:
     """
-    Valida sintaxis, profundidad y naturaleza del objeto para prevenir Path Traversal.
-    Impide acceso a flujos de datos alternos (ADS) o paths excesivamente profundos.
+    Previene ataques de 'Path Traversal' y validación de sintaxis de ruta.
+    
+    Verifica la profundidad de directorios y la presencia de caracteres 
+    prohibidos o flujos de datos alternos (ADS) que podrían evadir filtros.
     """
     path_str = str(path)
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
@@ -286,7 +285,7 @@ def _sanitize_filename(filename: str) -> str:
     return "".join(c for c in filename if c.isalnum() or c in "._-")
 
 def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
-    """Crea un nombre de archivo único prefijado para aislar el ítem en el sandbox."""
+    """Genera un identificador de archivo en el sandbox, neutralizando caracteres peligrosos."""
     sanitized = _sanitize_filename(original_path.name)
     if not sanitized or sanitized in (".", ".."):
         sanitized = "unknown_file"
@@ -311,7 +310,10 @@ def _ensure_path_ownership(path: Path) -> None:
 
 def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """
-    Resuelve la ruta absoluta del sandbox y asegura las políticas de seguridad mínimas.
+    Resuelve y prepara el directorio de cuarentena (sandbox).
+    
+    Asegura que el directorio exista, no esté en una ruta protegida y cumpla
+    con las validaciones de seguridad de propiedad del sistema.
     """
     if not base:
         raise ValueError("El directorio base no puede estar vacío.")
@@ -535,8 +537,7 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
 
 def _write_temp_to_final(source: Path, destination: Path) -> str:
     """
-    Copia física segura del origen al sandbox, usando un archivo temporal y 
-    reemplazo atómico para asegurar la integridad total.
+    Copia física segura al sandbox mediante un archivo temporal y reemplazo atómico.
     """
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
@@ -579,10 +580,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
 
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
-    """
-    Coordina el aislamiento seguro del archivo hacia el sandbox mediante 
-    validaciones de ruta previas a la escritura final.
-    """
+    """Coordina el aislamiento seguro del archivo hacia el sandbox."""
     if not source.exists():
         raise FileNotFoundError("Archivo origen inexistente.")
     
