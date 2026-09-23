@@ -223,6 +223,9 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
             return False
 
         # Validación explícita de seguridad antes de cualquier operación destructiva
+        if not is_safe_to_modify(resolved):
+            return False
+            
         ensure_safe_to_modify(resolved)
         
         if not _is_file_locked(resolved):
@@ -792,6 +795,9 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
     Verifica requisitos de seguridad antes de purgar un ítem del sandbox.
     """
     if not file_path.exists() or not file_path.is_file() or file_path.is_symlink() or is_protected_path(file_path):
+        return False
+    # Verificación explícita de seguridad global antes de purgar
+    if not is_safe_to_modify(file_path):
         return False
     return (
         is_within_directory(file_path, base_path) and

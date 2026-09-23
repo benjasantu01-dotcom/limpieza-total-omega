@@ -142,8 +142,8 @@ def _is_file_locked(path: Path) -> bool:
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """Previene que la ruta destino sea un subdirectorio del origen para evitar bucles o pérdidas."""
     try:
-        s, d = src.resolve(), dest.resolve()
-        return s == d or d.is_relative_to(s)
+        s, d = str(src.resolve()), str(dest.resolve())
+        return os.path.commonpath([s, d]) == s
     except (OSError, ValueError):
         return True
 

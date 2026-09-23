@@ -363,6 +363,10 @@ def _get_process_path(proc_handle: ctypes.c_void_p) -> Optional[Path]:
 
 def _is_safe_to_trim(proc_handle: ctypes.c_void_p) -> Tuple[bool, Optional[str]]:
     """Valida que el proceso objetivo sea seguro para manipular su working set."""
+    exec_path = _get_process_path(proc_handle)
+    if not exec_path or is_protected_path(str(exec_path)) or not is_safe_to_modify(str(exec_path)):
+        return False, "Acceso no autorizado o ruta protegida del sistema."
+
     kernel32 = ctypes.windll.kernel32
     exit_code = ctypes.c_ulong()
     try:
@@ -373,10 +377,6 @@ def _is_safe_to_trim(proc_handle: ctypes.c_void_p) -> Tuple[bool, Optional[str]]
         
     if exit_code.value != STILL_ACTIVE_EXIT_CODE:
         return False, "El proceso no está activo."
-        
-    exec_path = _get_process_path(proc_handle)
-    if not exec_path or is_protected_path(str(exec_path)) or not is_safe_to_modify(str(exec_path)):
-        return False, "Acceso no autorizado o ruta protegida del sistema."
     
     return True, None
 
