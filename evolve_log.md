@@ -1170,3 +1170,10 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-09-23T02:47:23` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-09-23T02:47:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T02:47:23` Corrida terminada. Total usado hoy: 62.
+- `2026-09-23T02:47:40` Arrancando corrida. Quedan hoy ~238 peticiones objetivo.
+- `2026-09-23T02:48:12` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-09-23T02:48:39` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-23T02:49:19` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `SystemContext.ingest` ante datos de entrada malformados (como tipos inesperados o estructuras profundamente anidadas) agregando validación de tipo estricta y limitando la profundidad de recursión, previniendo así posibles excepciones inesperadas durante la inicialización desde fuentes externas.
+- `2026-09-23T02:49:39` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de tipos y estados, garantizando que valores numéricos inválidos o nulos no provoquen errores en tiempo de ejecución ni bloqueos visuales.
+- `2026-09-23T02:49:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T02:49:39` Corrida terminada. Total usado hoy: 66.

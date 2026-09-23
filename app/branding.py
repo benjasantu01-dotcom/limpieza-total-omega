@@ -342,9 +342,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo SVG tras validar la seguridad de la ruta destino."""
     if not destination: return None
     try:
-        path_obj = Path(destination)
-        # Convertir a absoluto para evitar ambigüedades
-        target = path_obj.resolve()
+        target = Path(destination).resolve()
         
         # Validar si el directorio o archivo es protegido
         if is_protected_path(target):
@@ -372,6 +370,7 @@ def logo_ascii() -> str:
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Dibuja franjas decorativas de gradiente en el escudo (coordenadas relativas)."""
     try:
+        if not math.isfinite(scale) or scale <= 0: return
         franjas_count = max(6, int(28 * scale))
         base_y = canvas_y + 18 * scale
         factor_y = 92 * scale / franjas_count
@@ -390,6 +389,7 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Renderiza símbolos de corte y carácter Omega sobre el escudo."""
     try:
+        if not math.isfinite(scale) or scale <= 0: return
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, 
                            canvas_x + 75 * scale, canvas_y + 41 * scale, 
                            fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")

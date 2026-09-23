@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Mejoras aceptadas: **170** (33.7% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 248
+- Rechazadas por guardia de seguridad: 45
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 247
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 21 | 3 | 11 | 1 | 56 |
+| 2026-09-21 | 19 | 3 | 11 | 1 | 54 |
 | 2026-09-22 | 123 | 16 | 28 | 19 | 164 |
-| 2026-09-23 | 27 | 1 | 5 | 1 | 28 |
+| 2026-09-23 | 28 | 1 | 6 | 2 | 29 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **41**
-- seguridad defensiva: **33**
 - rendimiento: **32**
-- robustez ante casos límite: **20**
+- seguridad defensiva: **31**
+- robustez ante casos límite: **21**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,19 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **17**
 - `quarantine.py`: **16**
 - `safety.py`: **16**
-- `memory.py`: **14**
 - `settings.py`: **14**
-- `duplicates.py`: **13**
 - `assistant.py`: **13**
+- `memory.py`: **13**
+- `duplicates.py`: **12**
 - `browser.py`: **11**
 - `scanner.py`: **11**
 - `organizer.py`: **10**
+- `branding.py`: **7**
 - `main.py`: **7**
-- `branding.py`: **6**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-23T02:49:39` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de tipos y estados, garantizando que valores numéricos inválidos o nulos no provoquen errores en tiempo de ejecución ni bloqueos visuales.
 - `2026-09-23T02:38:05` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total de cuarentena y el reporte de resumen evitando la recarga innecesaria del archivo de manifiesto desde el disco mediante el uso de una lista ya cargada en memoria, y mejoré la eficiencia de `total_quarantined_bytes` y `summarize` para reducir las operaciones de I/O redundantes.
 - `2026-09-23T02:28:39` **organizer.py** (rendimiento): Se ha optimizado `_process_directory` eliminando la resolución redundante de rutas en cada iteración y utilizando un conjunto (`visited`) para evitar procesar recursivamente el mismo subárbol, mejorando significativamente el rendimiento en estructuras de carpetas complejas o profundas.
 - `2026-09-23T02:28:25` **memory.py** (rendimiento): Optimizé la recuperación de datos de procesos en `top_memory_processes` evitando el uso innecesario de `subprocess` y evitando el reprocesamiento completo de la lista de procesos en cada llamada, utilizando un conjunto (set) para filtrar PIDs y mejorando la eficiencia de búsqueda.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-23T01:50:37` **memory.py** (legibilidad y documentación): Se introdujo documentación técnica detallada mediante docstrings estructurados (usando el formato Google) y se extrajo la lógica de ordenamiento de procesos en `parse_windows_process_csv` hacia una función helper para mejorar la legibilidad del flujo principal.
 - `2026-09-23T01:45:27` **healthscore.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el pipeline de evaluación, clarificando la función de las constantes críticas para facilitar el mantenimiento del modelo de scoring.
 - `2026-09-23T01:40:14` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando docstrings más descriptivos, clarificando los tipos de datos complejos (`Inode`, `SizeReport`) y documentando explícitamente los límites de los algoritmos utilizados (como la complejidad O(n) y el uso de heaps) para facilitar el mantenimiento y la auditoría.
-- `2026-09-23T01:26:15` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de negocio en `assistant.py` mediante la refactorización de `_CRITERIOS_SALUD` a una estructura más explícita y la estandarización de la documentación en los handlers, facilitando futuras auditorías de seguridad.
