@@ -267,19 +267,20 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     # Protección contra rutas corruptas o nombres ilegibles
                     try:
                         if _is_excluded_path(entry, root_path): continue
+                        
+                        # Doble verificación: filtrar rutas protegidas definidas en safety.py
+                        if skip_protected and is_protected_path(Path(entry.path)):
+                            continue
                     except (OSError, UnicodeDecodeError):
                         continue
                     
                     try:
                         st = entry.stat(follow_symlinks=False)
                         if entry.is_dir(follow_symlinks=False):
-                            path = Path(entry.path)
-                            if skip_protected and is_protected_path(path): continue
-                            
                             inode: Inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(path)
+                                stack.append(Path(entry.path))
                                 
                         elif entry.is_file(follow_symlinks=False):
                             if st.st_size >= 0:

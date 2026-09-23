@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 241
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 17 | 1 | 9 | 1 | 44 |
+| 2026-09-21 | 17 | 1 | 9 | 1 | 40 |
 | 2026-09-22 | 123 | 16 | 28 | 19 | 164 |
-| 2026-09-23 | 39 | 1 | 7 | 2 | 33 |
+| 2026-09-23 | 41 | 1 | 8 | 2 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **41**
+- seguridad defensiva: **34**
 - rendimiento: **32**
-- seguridad defensiva: **32**
 - robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
-- `healthscore.py`: **17**
+- `diskreport.py`: **21**
+- `healthscore.py`: **18**
 - `safety.py`: **16**
 - `quarantine.py`: **16**
 - `settings.py`: **15**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-23T03:40:47` **healthscore.py** (seguridad defensiva): Se implementó una capa de validación defensiva en `_evaluate_rules` mediante `is_printable()` y una longitud máxima de 200 caracteres, protegiendo a la UI de posibles inyecciones de texto malformado o desbordamientos de buffer desde los factories de mensajes.
+- `2026-09-23T03:39:52` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escáner en `walk_files` y `_is_excluded_path` añadiendo una comprobación explícita de `is_protected_path` al procesar cada subdirectorio y archivo, asegurando que los cambios de estructura del sistema no expongan rutas protegidas durante la recursión.
 - `2026-09-23T03:30:33` **browser.py** (seguridad defensiva): Se ha mejorado la defensa contra el acceso a archivos en uso mediante el uso de `os.access` con el flag `os.W_OK` antes de intentar medir el tamaño, complementando la validación existente y evitando el manejo innecesario de excepciones de permisos durante el escaneo recursivo.
 - `2026-09-23T03:30:18` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` reemplazando la validación simplista por un chequeo robusto utilizando `is_protected_path` antes de cualquier resolución de ruta, asegurando que no se intente interactuar con rutas del sistema ni puntos de reparse, alineándose con las directivas de seguridad defensiva y evitando condiciones de carrera o manipulación de rutas externas.
 - `2026-09-23T03:29:41` **assistant.py** (seguridad defensiva): Mejoré la seguridad de la función `_build_payload` implementando una validación estricta de la estructura del JSON y el contenido del prompt para prevenir ataques de inyección de prompts, asegurando que los datos agregados no contengan secuencias de control o caracteres maliciosos antes de ser serializados.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-23T02:58:21` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas de sistema con problemas de resolución o permisos denegados en `_sum_directory_recursive` mediante la implementación de una técnica de "failsafe" en la profundidad de la recursión, evitando que errores de I/O en subdirectorios profundos propaguen excepciones y detengan el escaneo de todo el árbol.
 - `2026-09-23T02:49:39` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de tipos y estados, garantizando que valores numéricos inválidos o nulos no provoquen errores en tiempo de ejecución ni bloqueos visuales.
 - `2026-09-23T02:38:05` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total de cuarentena y el reporte de resumen evitando la recarga innecesaria del archivo de manifiesto desde el disco mediante el uso de una lista ya cargada en memoria, y mejoré la eficiencia de `total_quarantined_bytes` y `summarize` para reducir las operaciones de I/O redundantes.
-- `2026-09-23T02:28:39` **organizer.py** (rendimiento): Se ha optimizado `_process_directory` eliminando la resolución redundante de rutas en cada iteración y utilizando un conjunto (`visited`) para evitar procesar recursivamente el mismo subárbol, mejorando significativamente el rendimiento en estructuras de carpetas complejas o profundas.
-- `2026-09-23T02:28:25` **memory.py** (rendimiento): Optimizé la recuperación de datos de procesos en `top_memory_processes` evitando el uso innecesario de `subprocess` y evitando el reprocesamiento completo de la lista de procesos en cada llamada, utilizando un conjunto (set) para filtrar PIDs y mejorando la eficiencia de búsqueda.
