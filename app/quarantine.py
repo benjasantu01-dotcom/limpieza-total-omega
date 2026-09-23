@@ -414,27 +414,26 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Carga y deserializa el manifiesto, filtrando ítems malformados."""
     try:
-        m_path = _manifest_path(quarantine_dir(base))
+        base_dir = quarantine_dir(base)
+        m_path = _manifest_path(base_dir)
         if not m_path.is_file():
             return []
         
-        try:
-            with open(m_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            return []
+        with open(m_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
                 
         if not isinstance(data, list):
             return []
             
         results: List[QuarantineItem] = []
         for d in data:
-            if isinstance(d, dict):
-                item = QuarantineItem.from_dict(d)
-                if item:
-                    results.append(item)
+            if not isinstance(d, dict):
+                continue
+            item = QuarantineItem.from_dict(d)
+            if item:
+                results.append(item)
         return results
-    except (OSError, PermissionError, UnsafePathError):
+    except (json.JSONDecodeError, OSError, PermissionError, UnsafePathError, ValueError):
         return []
 
 

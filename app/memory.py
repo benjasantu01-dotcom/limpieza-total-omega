@@ -213,6 +213,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     results: List[ProcessMemory] = []
     seen_pids: Set[int] = set()
     for line in raw_csv_text.splitlines():
+        if not line.strip(): continue
         parts = line.strip().split(",", 2)
         if len(parts) < 3: continue
         

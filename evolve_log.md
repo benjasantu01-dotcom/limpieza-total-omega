@@ -1450,3 +1450,13 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-09-23T05:38:08` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `compute_score` implementando un chequeo explícito de integridad previa (`validate`) y envolviendo el pipeline en un bloque de manejo de errores más estricto, asegurando que ante una excepción en cualquier métrica se retorne un estado de salud degradado pero consistente y seguro para la UI.
 - `2026-09-23T05:38:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T05:38:08` Corrida terminada. Total usado hoy: 130.
+- `2026-09-23T05:41:31` Arrancando corrida. Quedan hoy ~170 peticiones objetivo.
+- `2026-09-23T05:42:33` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-23T05:43:36` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-23T05:44:42` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-23T05:45:54` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-23T05:46:41` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez en `parse_windows_process_csv` añadiendo una validación explícita para evitar que una lista vacía o malformada de PowerShell provoque errores en los pasos siguientes, asegurando que los datos procesados siempre tengan la estructura esperada de un `ProcessMemory`.
+- `2026-09-23T05:47:08` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-23T05:47:35` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `load_manifest` añadiendo un manejo de excepciones más granular y verificaciones de tipo para prevenir fallos silenciosos al procesar un JSON corrompido o malintencionado.
+- `2026-09-23T05:47:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T05:47:35` Corrida terminada. Total usado hoy: 134.
