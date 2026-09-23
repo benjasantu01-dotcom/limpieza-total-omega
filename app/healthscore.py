@@ -124,28 +124,28 @@ if sum(WEIGHTS.values()) != 100:
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
     """Normaliza volumen de basura: mayor cantidad resulta en un ratio menor."""
-    return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
+    return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
     """Normaliza riesgo de seguridad penalizando amenazas detectadas y avisos heurísticos."""
-    penalization = (_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)
+    penalization = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
     return _clamp(1.0 - _clamp(penalization, 0.0, 1.0))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Normaliza salud de memoria: compara RAM libre contra capacidad de saturación."""
-    return _clamp(_to_float(available_percent) * _INV_RAM)
+    return _clamp(float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
     """Normaliza salud de disco: mide espacio libre disponible."""
-    return _clamp(_to_float(free_percent) * _INV_DISK)
+    return _clamp(float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
     """Normaliza redundancia basándose en el tamaño de archivos duplicados."""
-    return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP))
+    return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
     """Normaliza eficiencia de arranque: penaliza cantidad excesiva de programas."""
-    return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
+    return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
 _PIPELINE: Final[List[PipelineEntry]] = [
     PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), 
@@ -211,17 +211,13 @@ class HealthResult:
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     """Restringe un valor numérico a un rango acotado, devolviendo min_val en caso de error."""
-    try:
-        val = float(value)
-        if not math.isfinite(val): return min_val
-        return max(min_val, min(val, max_val))
-    except (TypeError, ValueError):
-        return min_val
+    val = float(value)
+    if not math.isfinite(val): return min_val
+    return max(min_val, min(val, max_val))
 
 def _to_float(value: Any, default: float = 0.0) -> float:
     """Convierte cualquier entrada a float de forma segura."""
     try:
-        if value is None: return default
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError, OverflowError): return default
@@ -233,16 +229,15 @@ def grade_for_score(score: float | int) -> str:
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta reglas heurísticas, sanitizando mensajes antes de añadirlos al reporte."""
     for rule in rules:
-        try:
-            if rule.check(metrics, ratio):
-                msg: str = rule.message_factory(metrics)
+        if rule.check(metrics, ratio):
+            try:
+                msg = rule.message_factory(metrics)
                 if msg:
-                    # Defensivo: restringir caracteres imprimibles y longitud para evitar inyecciones en la UI
                     clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                     if clean_msg:
                         findings.append(clean_msg[:200])
-        except Exception:
-            continue
+            except Exception:
+                continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Pipeline de evaluación: procesa métricas, calcula pesos y genera recomendaciones."""
@@ -256,16 +251,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     accumulated_score: int = 0
     
     for entry in _PIPELINE:
-        try:
-            area_ratio: NormalizedRatio = entry.scorer(metrics)
-            if entry.rules:
-                _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
-            
-            weighted_points: int = int(area_ratio * entry.weight + 0.5)
-            metric_breakdown[entry.area] = weighted_points
-            accumulated_score += weighted_points
-        except Exception:
-            metric_breakdown[entry.area] = 0
+        area_ratio = entry.scorer(metrics)
+        if entry.rules:
+            _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
+        
+        weighted_points = int(area_ratio * entry.weight + 0.5)
+        metric_breakdown[entry.area] = weighted_points
+        accumulated_score += weighted_points
             
     final_score = min(accumulated_score, 100)
     

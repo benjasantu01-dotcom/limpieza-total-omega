@@ -112,11 +112,6 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     o puntos de reparse (Junctions) para prevenir bucles infinitos o escaneos fuera de ruta.
     """
     try:
-        # Resolvemos la ruta para verificar que realmente pertenece al arbol base
-        full_path = Path(entry.path).resolve()
-        if root_path not in full_path.parents and full_path != root_path:
-            return True
-
         if len(entry.path) > 260:
             return True
         
@@ -250,10 +245,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos de forma iterativa empleando un stack LIFO.
-    
-    Implementa prevención de ciclos mediante el rastreo de inodos únicos (dev, ino).
-    Utiliza `os.scandir` para un rendimiento superior a `os.walk` y maneja excepciones
-    de acceso por carpeta de forma silenciosa para asegurar la continuidad del escaneo.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -280,12 +271,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 stack.append(Path(entry.path))
                                 
                         elif entry.is_file(follow_symlinks=False):
-                            if st.st_size >= 0:
-                                yield Path(entry.path), st.st_size
+                            yield Path(entry.path), st.st_size
                             
-                    except (PermissionError, OSError, UnicodeDecodeError):
+                    except (PermissionError, OSError):
                         continue
-        except (PermissionError, OSError, FileNotFoundError):
+        except (PermissionError, OSError):
             continue
 
 
@@ -309,11 +299,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """
-    Identifica las subcarpetas de primer nivel con mayor consumo de espacio.
-    Realiza una agregación por raíz inmediata usando `relative_to` para evitar 
-    costosas manipulaciones recursivas de listas en cada iteración del walk.
-    """
+    """Identifica las subcarpetas de primer nivel con mayor consumo de espacio."""
     root = _validate_root(directory)
     if not root: return []
     valid_limit = max(0, int(limit) if isinstance(limit, (int, float)) else 0)
@@ -327,7 +313,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
                 top_level = root / rel.parts[0]
                 folder_total_bytes[top_level] += size_bytes
                 folder_file_counts[top_level] += 1
-        except (ValueError, IndexError, OSError):
+        except (ValueError, IndexError):
             continue
 
     results = [FolderUsage(p, folder_total_bytes[p], folder_file_counts[p]) for p in folder_total_bytes]
@@ -343,32 +329,21 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """
-    Realiza una pasada única (O(n)) sobre el árbol de directorios para recolectar estadísticas.
-    
-    Mantiene un Min-Heap de tamaño `limit` para trackear eficientemente los archivos 
-    más pesados sin necesidad de cargar toda la lista de archivos en memoria.
-    """
+    """Realiza una pasada única (O(n)) sobre el árbol de directorios para recolectar estadísticas."""
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
-    
-    # Min-heap para almacenar tuplas (size_bytes, path)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
         total_bytes += size_bytes
         total_files += 1
         
-        # Categorización por extensión
-        ext_raw = path.suffix.lower()
-        ext = ext_raw if ext_raw else "(sin extensión)"
-            
+        ext = path.suffix.lower() or "(sin extensión)"
         stat = ext_stats[ext]
         stat.total_bytes += size_bytes
         stat.count += 1
         
-        # Lógica de Min-Heap para mantener solo los N elementos más pesados
         if limit > 0 and size_bytes > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size_bytes, path))
@@ -396,11 +371,6 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if data.top_files:
         lines.extend(["", "Mayores archivos:"])
         for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
-            try:
-                # Verificación adicional antes de reportar
-                if p.is_file():
-                    lines.append(f"  {format_size(s):>10}  {str(p)}")
-            except (OSError, PermissionError):
-                continue
+            lines.append(f"  {format_size(s):>10}  {str(p)}")
     
     return lines
