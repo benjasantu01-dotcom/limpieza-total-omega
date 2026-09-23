@@ -276,39 +276,37 @@ def _sum_directory_recursive(
     is_junction_fn: JunctionChecker, 
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[str, int],
+    visited: set[str],
     depth: int = 0
 ) -> int:
     """
-    Calcula recursivamente el peso de una carpeta. Utiliza memoización y
-    omite validaciones redundantes de seguridad, asumiendo que la ruta
-    ya fue validada por el caller principal (is_safe_to_traverse).
+    Calcula recursivamente el peso de una carpeta utilizando memoización y un set
+    de visitados para evitar ciclos y re-evaluación de rutas.
     """
-    if not isinstance(root_abs, str) or not root_abs or root_abs in memo:
-        return memo.get(root_abs, 0)
+    if not isinstance(root_abs, str) or not root_abs or root_abs in visited:
+        return 0
     if depth > MAX_SCAN_DEPTH:
         return 0
+    
+    visited.add(root_abs)
+    if root_abs in memo:
+        return memo[root_abs]
 
     total_bytes: int = 0
     try:
         with os.scandir(root_abs) as it:
-            while True:
+            for entry in it:
                 try:
-                    entry = next(it)
-                except (StopIteration, OSError, PermissionError):
-                    break
-                
-                try:
-                    # El filtrado aquí es puramente heurístico/performance.
                     if _should_skip_entry(entry, kernel32, is_junction_fn):
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
                         total_bytes += _sum_directory_recursive(
-                            entry.path, is_junction_fn, kernel32, memo, depth + 1
+                            entry.path, is_junction_fn, kernel32, memo, visited, depth + 1
                         )
                     else:
                         total_bytes += _get_entry_size(entry)
-                except (OSError, PermissionError, RuntimeError):
+                except (OSError, PermissionError):
                     continue
         
         memo[root_abs] = total_bytes
@@ -329,7 +327,7 @@ def directory_size(path: Optional[OSPath]) -> int:
         if len(str(p)) >= MAX_PATH_LEN or not p.is_absolute() or not _is_safe_to_traverse(p, None):
             return 0
         resolved = str(p.resolve(strict=True))
-        return _sum_directory_recursive(resolved, _IS_JUNCTION_FN, _get_kernel32(), {})
+        return _sum_directory_recursive(resolved, _IS_JUNCTION_FN, _get_kernel32(), {}, set())
     except (OSError, RuntimeError, PermissionError, ValueError):
         return 0
 
@@ -399,7 +397,7 @@ def detect_profiles(
                     continue
                 
                 real_candidate = str(candidate.resolve(strict=True))
-                size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, global_memo)
+                size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, global_memo, set())
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), Path(real_candidate), size))
         except (OSError, PermissionError, TypeError, ValueError, RuntimeError):

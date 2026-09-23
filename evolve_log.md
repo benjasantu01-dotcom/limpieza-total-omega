@@ -780,3 +780,10 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-09-23T10:59:36` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en las funciones auxiliares de validación y persistencia para mejorar la mantenibilidad y claridad del flujo de datos en `settings.py`.
 - `2026-09-23T10:59:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T10:59:36` Corrida terminada. Total usado hoy: 258.
+- `2026-09-23T11:07:54` Arrancando corrida. Quedan hoy ~42 peticiones objetivo.
+- `2026-09-23T11:08:21` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-23T11:09:04` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` reemplazando la lógica de búsqueda por `word in _TOKENS_MAP` (que requería iterar sobre las palabras de la consulta) por un acceso directo más eficiente y reduje llamadas a funciones innecesarias, manteniendo la robustez del motor local.
+- `2026-09-23T11:09:52` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Optimicé el cálculo del gradiente de las franjas del escudo reemplazando la creación de rectángulos individuales en un bucle `for` por el uso de segmentos agrupados, reduciendo drásticamente las llamadas a `create_rectangle` en el canvas sin alterar la representación visual.
+- `2026-09-23T11:10:07` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` implementando un pre-filtrado de rutas mediante un conjunto (`set`) para evitar la re-evaluación recursiva de subdirectorios, reduciendo drásticamente las llamadas redundantes a `os.stat` y comprobaciones de seguridad en estructuras de archivos profundas.
+- `2026-09-23T11:10:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T11:10:07` Corrida terminada. Total usado hoy: 262.

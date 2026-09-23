@@ -573,10 +573,11 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     if not q_sanitized:
         return Answer("Entrada no válida.")
     
-    # Búsqueda eficiente evitando iteración innecesaria y conversión múltiple
+    # Búsqueda directa optimizada
     for word in _TOKEN_REGEX.findall(q_sanitized.lower()):
-        if word in _TOKENS_MAP:
-            return _TOKENS_MAP[word](context, question)
+        handler = _TOKENS_MAP.get(word)
+        if handler:
+            return handler(context, question)
             
     cuerpo = _format_problem_message(
         context.active_problems, 
