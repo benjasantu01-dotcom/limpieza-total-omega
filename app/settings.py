@@ -144,6 +144,7 @@ class _Validators:
     def _is_reparse_point(path: Path) -> bool:
         """Determina si una ruta es un enlace simbólico o un junction."""
         try:
+            p = path.resolve()
             return path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction())
         except (OSError, PermissionError):
             return True
@@ -327,7 +328,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.flush()
             os.fsync(f.fileno())
         if ruta.exists():
-            if not is_safe_to_modify(str(ruta)): return None
+            if not is_safe_to_modify(str(ruta)) or _Validators._is_reparse_point(ruta): return None
             os.replace(ruta, bak_path)
         os.replace(temp_path, ruta)
         _load_impl.cache_clear()

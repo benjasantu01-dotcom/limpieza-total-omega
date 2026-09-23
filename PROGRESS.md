@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 41
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 222
+- Rechazadas por guardia de seguridad: 42
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 114 | 14 | 25 | 16 | 141 |
-| 2026-09-23 | 84 | 6 | 16 | 7 | 81 |
+| 2026-09-22 | 114 | 14 | 25 | 16 | 137 |
+| 2026-09-23 | 86 | 6 | 17 | 8 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **42**
+- seguridad defensiva: **39**
 - rendimiento: **37**
-- seguridad defensiva: **37**
 - robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
@@ -34,10 +34,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **18**
 - `safety.py`: **18**
 - `assistant.py`: **16**
+- `settings.py`: **16**
 - `browser.py`: **15**
 - `memory.py`: **15**
-- `settings.py`: **15**
-- `scanner.py`: **14**
+- `scanner.py`: **15**
 - `organizer.py`: **13**
 - `duplicates.py`: **13**
 - `main.py`: **7**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-23T08:26:49` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_load_impl` y `save` mediante la validación estricta de que el archivo de configuración no sea un enlace simbólico ni esté contenido dentro de uno, utilizando `path.resolve()` para detectar intentos de redirección de ruta antes de cualquier operación de E/S.
+- `2026-09-23T08:26:33` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo una validación explícita mediante `is_protected_path` al resolver las rutas de los directorios, asegurando que los enlaces simbólicos o puntos de reanálisis que apunten fuera de la raíz permitida sean rechazados antes de ser procesados.
 - `2026-09-23T08:20:33` **quarantine.py** (seguridad defensiva): Se introdujo una validación estricta de nombres de archivo basada en una lista blanca de caracteres permitidos para evitar la inyección de caracteres de control o nombres reservados (como `CON` o `LPT1`) en el sistema de archivos del sandbox, reforzando la seguridad defensiva al aislar archivos potencialmente maliciosos.
 - `2026-09-23T08:19:36` **memory.py** (seguridad defensiva): Se reforzó la seguridad de la función `trim_working_set` asegurando que la ruta del ejecutable se valide explícitamente mediante `is_safe_to_modify` ANTES de cualquier operación con el handle, evitando condiciones de carrera o validaciones incompletas sobre procesos que podrían elevar privilegios o ser críticos.
 - `2026-09-23T08:05:09` **diskreport.py** (seguridad defensiva): Se ha mejorado `_is_excluded_path` para validar explícitamente que la ruta no sea un "punto de reparse" (junction) mediante una verificación más estricta de los atributos de archivo en Windows, previniendo así el escape del sandbox de escaneo hacia otras unidades o carpetas fuera de la raíz de análisis.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-23T07:13:42` **scanner.py** (rendimiento): Optimizé la detección de extensiones en `_is_relevant_extension` reemplazando la creación dinámica de cadenas y el uso de `rsplit` dentro del bucle principal por una verificación de sufijo usando `pathlib.Path.suffix` comparado contra un conjunto (`set`) pre-indexado, evitando así la asignación de memoria innecesaria y el procesamiento de strings redundantes.
 - `2026-09-23T07:04:55` **safety.py** (rendimiento): Se ha optimizado la validación de rutas mediante la implementación de un caché de resultados para `is_protected_path` basado en la normalización de la cadena, evitando llamadas repetitivas a `pathlib.Path` y `resolve()` en bucles intensivos de escaneo.
 - `2026-09-23T07:04:10` **quarantine.py** (rendimiento): Optimicé el rendimiento de `list_items` y `purge_all` transformando búsquedas lineales `O(N)` en búsquedas de diccionario `O(1)` para evitar recorridos redundantes del sistema de archivos y manifiestos durante la sincronización.
-- `2026-09-23T07:03:30` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo de archivos mediante la pre-compilación de la lógica de extensión y la consolidación de atributos en una única llamada a `stat` (evitando llamadas redundantes), mejorando significativamente el rendimiento en directorios con gran cantidad de archivos.
-- `2026-09-23T06:54:47` **healthscore.py** (rendimiento): Se optimizó el método `is_finite` de la clase `SystemMetrics` reemplazando la creación de tuplas y la iteración dinámica por un acceso directo a los campos, reduciendo el consumo de CPU y memoria en cada chequeo del motor.

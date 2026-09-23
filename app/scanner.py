@@ -221,7 +221,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    scanner.process_entry(entry, directory_stack)
+                    if not is_protected_path(Path(entry.path)):
+                        scanner.process_entry(entry, directory_stack)
         except (PermissionError, OSError, AttributeError):
             continue
     return scanner.results
