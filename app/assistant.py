@@ -323,15 +323,12 @@ class SystemContext:
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> bool:
         """Valida y asigna un valor individual al campo correspondiente si cumple el contrato MetricSpec."""
-        try:
-            val = _get_source_value(source, key)
-            if val is None: return False
-            float_val = _safe_float(val, -1.0)
-            if float_val >= 0 and _is_metric_within_bounds(float_val, spec):
-                setattr(self, key, spec.cast_func(float_val))
-                return True
-        except Exception:
-            pass
+        val = _get_source_value(source, key)
+        if val is None: return False
+        float_val = _safe_float(val, -1.0)
+        if float_val >= 0 and _is_metric_within_bounds(float_val, spec):
+            setattr(self, key, spec.cast_func(float_val))
+            return True
         return False
 
     def _clean_grade(self, val: Any) -> str:
@@ -355,15 +352,12 @@ class SystemContext:
             if self._apply_field(source, key, spec):
                 found_data = True
         
-        try:
-            grade_val = _get_source_value(source, "grade")
-            if isinstance(grade_val, str):
-                clean_grade = self._clean_grade(grade_val)
-                if clean_grade:
-                    self.grade = clean_grade
-                    found_data = True
-        except Exception:
-            pass
+        grade_val = _get_source_value(source, "grade")
+        if isinstance(grade_val, str):
+            clean_grade = self._clean_grade(grade_val)
+            if clean_grade:
+                self.grade = clean_grade
+                found_data = True
         
         return found_data and _validate_context_integrity(self)
 
@@ -479,13 +473,10 @@ def explain_area(area: Any) -> str:
 @lru_cache(maxsize=32)
 def _format_problem_message(problems: tuple[str, ...], score: Union[int, str]) -> str:
     """Crea una oración descriptiva con los problemas encontrados."""
-    try:
-        clean_score = str(score)
-        if not problems:
-            return f"Tu sistema está en buen estado ({clean_score}/100). No hay nada urgente."
-        return f"Con un puntaje de {clean_score}/100, por orden de prioridad: {', '.join(problems)}."
-    except Exception:
-        return "Tu sistema tiene problemas detectados."
+    clean_score = str(score)
+    if not problems:
+        return f"Tu sistema está en buen estado ({clean_score}/100). No hay nada urgente."
+    return f"Con un puntaje de {clean_score}/100, por orden de prioridad: {', '.join(problems)}."
 
 @_safe_handler_wrapper
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
@@ -627,16 +618,14 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     q = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
     
+    full_prompt = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
+    if len(full_prompt) > _MAX_PROMPT_LIMIT or not _ensure_safe_text(full_prompt): 
+        return None
+        
     try:
-        # Validación defensiva del prompt completo para evitar inyecciones
-        full_prompt = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
-        if len(full_prompt) > _MAX_PROMPT_LIMIT or not _ensure_safe_text(full_prompt): 
-            return None
-            
         payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
         payload = json.dumps(payload_data).encode("utf-8")
-        if len(payload) > (_MAX_RESPONSE_BYTES // 2): return None
-        return payload
+        return payload if len(payload) <= (_MAX_RESPONSE_BYTES // 2) else None
     except (TypeError, ValueError):
         return None
 

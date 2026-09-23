@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 242
+- Sin respuesta de la IA (error o límite): 243
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 9 | 0 | 7 | 1 | 15 |
+| 2026-09-21 | 6 | 0 | 7 | 1 | 14 |
 | 2026-09-22 | 123 | 16 | 28 | 19 | 164 |
-| 2026-09-23 | 47 | 1 | 9 | 2 | 63 |
+| 2026-09-23 | 49 | 1 | 9 | 2 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **42**
 - seguridad defensiva: **40**
-- manejo de errores y validación de entradas: **40**
-- legibilidad y documentación: **38**
+- legibilidad y documentación: **35**
 - rendimiento: **32**
 - robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `healthscore.py`: **18**
 - `quarantine.py`: **17**
+- `healthscore.py`: **17**
 - `safety.py`: **16**
-- `memory.py`: **15**
 - `settings.py`: **15**
-- `assistant.py`: **13**
-- `duplicates.py`: **12**
+- `memory.py`: **14**
+- `assistant.py`: **14**
 - `scanner.py`: **12**
 - `organizer.py`: **12**
 - `browser.py`: **12**
+- `duplicates.py`: **11**
+- `branding.py`: **7**
 - `main.py`: **7**
-- `branding.py`: **6**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-23T05:24:29` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_ring` mediante una validación más estricta de sus entradas, garantizando que los parámetros numéricos y de ruta sean procesados de forma segura antes de operar sobre ellos.
+- `2026-09-23T05:24:08` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de datos externos en `SystemContext.ingest` y `_build_payload`, reemplazando capturas genéricas (`except Exception`) por validaciones explícitas de tipo y estructura, siguiendo el enfoque de manejo de errores y validación.
 - `2026-09-23T04:01:37` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_and_cache_path` mediante la validación de `path.is_absolute()` antes de cualquier operación de resolución, asegurando que solo se procesen rutas que tengan un origen definido y evitando comportamientos imprevistos con rutas relativas maliciosas.
 - `2026-09-23T04:01:25` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` implementando una validación de ruta explícita y robusta antes de cualquier operación de escritura, asegurando que `SETTINGS_DIR` sea siempre tratada como una ruta absoluta, verificada y protegida contra puntos de reparse, mitigando el riesgo de escritura en ubicaciones comprometidas o inusuales.
 - `2026-09-23T04:00:24` **safety.py** (seguridad defensiva): Se implementó una verificación de "puntos de reparse" en el chequeo estructural inicial dentro de `_validate_structural_safety` usando `GetFileAttributesW` para prevenir la navegación hacia rutas fuera del alcance permitido mediante enlaces simbólicos o junctions antes de siquiera intentar acceder a los metadatos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-23T03:29:41` **assistant.py** (seguridad defensiva): Mejoré la seguridad de la función `_build_payload` implementando una validación estricta de la estructura del JSON y el contenido del prompt para prevenir ataques de inyección de prompts, asegurando que los datos agregados no contengan secuencias de control o caracteres maliciosos antes de ser serializados.
 - `2026-09-23T03:20:12` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save` frente a fallos parciales de disco (interrupciones durante la escritura o permisos denegados) mediante un bloque `try-except` más estricto y la adición de una verificación de integridad post-escritura, asegurando que si la escritura falla, no se corrompa el estado previo.
 - `2026-09-23T03:19:54` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante archivos inexistentes o bloqueados durante la lectura de metadatos en `_is_reparse_point` y `_safe_stat`, garantizando que el escáner no aborte ante condiciones de carrera típicas del sistema de archivos.
-- `2026-09-23T03:19:26` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_is_device_file` para detectar archivos de dispositivo (`\\.\...`) que son riesgosos y no deben ser tratados como archivos regulares, previniendo errores de E/S o bloqueos en el sistema al intentar manipularlos como archivos de usuario.
-- `2026-09-23T03:14:11` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine.py` ante casos de concurrencia y fallos de I/O en `save_manifest` mediante un bloque `try-finally` para asegurar que el descriptor de archivo (fd) del directorio siempre se cierre, incluso si `os.fsync` falla, evitando fugas de recursos del sistema.
