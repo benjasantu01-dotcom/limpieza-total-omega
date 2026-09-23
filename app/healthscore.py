@@ -241,7 +241,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
     
-    # Asegurar que las métricas internas están sanitizadas antes de operar
     metrics.validate()
     
     recommendations: List[str] = []
@@ -257,7 +256,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             weighted_points: int = int(area_ratio * entry.weight + 0.5)
             metric_breakdown[entry.area] = weighted_points
             accumulated_score += weighted_points
-        except (ValueError, TypeError, ZeroDivisionError, AttributeError):
+        except Exception:
             metric_breakdown[entry.area] = 0
             
     final_score = min(accumulated_score, 100)

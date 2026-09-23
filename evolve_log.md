@@ -670,3 +670,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-23T09:58:32` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `format_group` añadiendo validaciones preventivas de estado y tipos, asegurando que las comparaciones de rutas `Path` se realicen siempre sobre rutas resueltas y normalizadas para evitar inconsistencias de sistema de archivos.
 - `2026-09-23T09:58:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T09:58:32` Corrida terminada. Total usado hoy: 234.
+- `2026-09-23T10:06:48` Arrancando corrida. Quedan hoy ~66 peticiones objetivo.
+- `2026-09-23T10:07:21` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `compute_score` implementando un chequeo de pre-condición más estricto y un manejo de errores defensivo mediante `try-except` encapsulando cada etapa del pipeline, evitando que una falla en una regla o calculador particular degrade el resultado global.
+- `2026-09-23T10:08:21` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-23T10:09:24` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-23T10:10:30` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-23T10:11:42` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-23T10:12:37` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-23T10:12:48` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-23T10:12:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T10:12:48` Corrida terminada. Total usado hoy: 238.
