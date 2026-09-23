@@ -345,13 +345,17 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         
     try:
         path = Path(destination)
-        # Validación de seguridad defensiva antes de interactuar con el FS
-        if not is_safe_to_modify(path):
+        # Validación de seguridad defensiva: no modificar áreas protegidas
+        if is_protected_path(path) or not is_safe_to_modify(path):
             return None
         
         target = path.resolve()
-        
         parent = target.parent
+        
+        # Validar carpeta padre antes de crearla
+        if is_protected_path(parent):
+            return None
+            
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
         elif not parent.is_dir():

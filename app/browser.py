@@ -359,7 +359,10 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     if not isinstance(real_base, Path) or not isinstance(rel_str, str) or any(c in rel_str for c in '\0\r\n'):
         return Path()
     try:
+        # Se verifica que la resolución mantenga la contención del base para evitar Path Traversal
         target = real_base.joinpath(*rel_str.split("\\"))
+        if not str(target.resolve()).startswith(str(real_base)):
+            return Path()
         return target if len(str(target)) < MAX_PATH_LEN else Path()
     except (TypeError, ValueError, OSError):
         return Path()

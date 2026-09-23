@@ -103,21 +103,19 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry) -> bool:
+def _is_excluded_path(path: Path) -> bool:
     """
     Aplica filtros de seguridad defensiva a una entrada de directorio.
     """
     try:
-        if any(c in entry.name for c in SUSPICIOUS_CHARS):
+        if any(c in path.name for c in SUSPICIOUS_CHARS):
             return True
             
-        if entry.is_symlink():
+        if is_protected_path(path):
             return True
             
-        if os.name == 'nt':
-            st = entry.stat(follow_symlinks=False)
-            if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
-                return True
+        if path.is_symlink():
+            return True
     except (OSError, PermissionError, AttributeError):
         return True
     return False
@@ -250,10 +248,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if _is_excluded_path(entry): continue
-                        
                         path_obj = Path(entry.path)
-                        if skip_protected and is_protected_path(path_obj):
+                        if skip_protected and _is_excluded_path(path_obj):
                             continue
                         
                         st = entry.stat(follow_symlinks=False)

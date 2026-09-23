@@ -224,15 +224,15 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             continue
                             
                         # Validación robusta ante cambios de estado concurrentes
-                        if not entry.is_file():
+                        p_entry = Path(entry.path)
+                        if not entry.is_file() or not is_safe_to_modify(p_entry):
                             continue
                             
                         st = entry.stat(follow_symlinks=False)
                         if st.st_size < min_size:
                             continue
                             
-                        p_entry = Path(entry.path)
-                        if not is_safe_to_modify(p_entry) or (skip_protected and is_protected_path(p_entry)):
+                        if (skip_protected and is_protected_path(p_entry)):
                             continue
                             
                         if is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
@@ -256,7 +256,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Clasifica rutas según el hash resultante, manteniendo solo grupos con colisiones."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if path.is_file():
+        # Re-validar seguridad antes de procesar para evitar race conditions
+        if path.is_file() and is_safe_to_modify(path):
             if (digest := hash_func(path)):
                 groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
