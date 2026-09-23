@@ -343,9 +343,9 @@ class SystemContext:
         Carga datos externos hacia el contexto tras validar la integridad de cada campo.
         Retorna True solo si al menos una métrica fue importada exitosamente.
         """
-        if source is None or _is_input_too_deep_or_complex(source):
-            return False
         if not isinstance(source, (dict, object)) or isinstance(source, (str, int, float, bool)):
+            return False
+        if _is_input_too_deep_or_complex(source):
             return False
             
         found_data = False
@@ -360,7 +360,10 @@ class SystemContext:
                 self.grade = clean_grade
                 found_data = True
         
-        return found_data and _validate_context_integrity(self)
+        if found_data and _validate_context_integrity(self):
+            self.analyzed = True
+            return True
+        return False
 
 @dataclass
 class Answer:
@@ -429,8 +432,8 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
     """Inicializa un SystemContext completo integrando datos de distintas fuentes."""
     ctx = SystemContext()
     for s in (metrics, health, extra):
-        if s is not None and ctx.ingest(s):
-            ctx.analyzed = True
+        if s is not None:
+            ctx.ingest(s)
     return ctx
 
 def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:

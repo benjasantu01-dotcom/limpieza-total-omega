@@ -912,3 +912,12 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-23T12:11:38` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha implementado una mejora en `ensure_safe_to_modify` para detectar y prevenir el uso de rutas que contienen caracteres no imprimibles o secuencias de control ocultas que podrían ser utilizadas para ofuscar rutas críticas en Windows, fortaleciendo la validación de integridad ante casos límite de entrada.
 - `2026-09-23T12:11:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T12:11:38` Corrida terminada. Total usado hoy: 286.
+- `2026-09-23T12:19:20` Arrancando corrida. Quedan hoy ~14 peticiones objetivo.
+- `2026-09-23T12:19:47` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-23T12:20:25` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez ante estados inconsistentes del sistema de archivos añadiendo un chequeo explícito de disponibilidad (permisos de lectura/escritura) y de integridad de las rutas en el método `settings_path`, previniendo que la app intente operar sobre puntos de montaje o volúmenes inaccesibles.
+- `2026-09-23T12:20:52` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-23T12:21:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-23T12:21:32` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-23T12:22:04` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `SystemContext.ingest` validando el tipo de `source` y evitando la carga de atributos potencialmente peligrosos, además de centralizar la validación de integridad mediante una llamada a `_validate_context_integrity` que protege el estado interno ante datos malformados.
+- `2026-09-23T12:22:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T12:22:04` Corrida terminada. Total usado hoy: 290.

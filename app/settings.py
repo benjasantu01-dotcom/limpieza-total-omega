@@ -243,14 +243,18 @@ def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
 _VALIDATOR_MAP: Final = _build_validator_map()
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
-    """Calcula la ruta absoluta del archivo de configuración, usando caché para eficiencia."""
-    if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
-    base_path = Path(custom_base).expanduser().resolve()
+    """Calcula la ruta absoluta del archivo de configuración, verificando disponibilidad de acceso."""
+    if custom_base is None: base_path = SETTINGS_DIR
+    else: base_path = Path(custom_base).expanduser().resolve()
+    
     if base_path in _PATH_CACHE: return _PATH_CACHE[base_path]
+    
     try:
         if _Validators._is_safe_path(str(base_path)) and not _Validators._is_reparse_point(base_path):
-            _PATH_CACHE[base_path] = base_path / SETTINGS_FILE
-            return _PATH_CACHE[base_path]
+            if not base_path.exists(): base_path.mkdir(parents=True, exist_ok=True)
+            if os.access(base_path, os.R_OK | os.W_OK):
+                _PATH_CACHE[base_path] = base_path / SETTINGS_FILE
+                return _PATH_CACHE[base_path]
     except (OSError, RuntimeError, PermissionError):
         pass
     return SETTINGS_DIR / SETTINGS_FILE
