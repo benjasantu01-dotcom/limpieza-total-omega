@@ -940,3 +940,46 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-23T12:41:48` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-09-23T12:41:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T12:41:48` Corrida terminada. Total usado hoy: 298.
+- `2026-09-23T12:49:55` Arrancando corrida. Quedan hoy ~2 peticiones objetivo.
+- `2026-09-23T12:51:08` Tests FALLARON:
+```
+t("importante")
+    
+        origen = tmp_path / "cualquiera.txt"
+        origen.write_text("x")
+        item = quarantine.quarantine_file(origen, base=cuarentena)
+    
+        # Manifiesto manipulado para apuntar afuera de la cuarentena.
+        items = quarantine.load_manifest(cuarentena)
+        items[0].stored_name = "../no-tocar.txt"
+        quarantine.save_manifest(items, cuarentena)
+    
+>       with pytest.raises(safety.UnsafePathError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE UnsafePathError
+
+evolve/tests/test_safety.py:255: Failed
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:219: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) no aptas para archivos."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+1 failed, 298 passed, 4 warnings in 1.37s
+
+```
+- `2026-09-23T12:51:08` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad en `quarantine.py` implementando una validación estricta de nombres de archivo mediante el uso de `pathlib` para evitar inyecciones por nombres maliciosos y reforzando las comprobaciones de integridad durante la carga de datos del manifiesto, asegurando que ninguna ruta absoluta malintencionada pueda ser instanciada desde el JSON.
+- `2026-09-23T12:51:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-23T12:51:59` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-23T12:52:59` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-23T12:53:10` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-23T12:53:56` ➖ Sin cambios en safety.py (enfoque: seguridad defensiva). Motivo: Se reforzó la protección contra puntos de reparse (junctions/symlinks) añadiendo una verificación estructural directa antes de realizar cualquier operación de acceso al disco, previniendo así comportamientos inesperados en rutas que apuntan fuera del árbol esperado.
+- `2026-09-23T12:54:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-23T12:54:17` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo una validación explícita mediante `path.resolve()` antes de comparar con `base_root_str`, previniendo así posibles ataques de "path traversal" donde rutas relativas con `..` podrían escapar del directorio base del escaneo.
+- `2026-09-23T12:54:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T12:54:17` Corrida terminada. Total usado hoy: 302.

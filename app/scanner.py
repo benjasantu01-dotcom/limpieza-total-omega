@@ -144,7 +144,11 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        return entry_path.lower().startswith(self.base_root_str)
+        # Resolver para evitar que rutas relativas (..) escapen del root
+        try:
+            return str(Path(entry_path).resolve()).lower().startswith(self.base_root_str)
+        except (OSError, RuntimeError):
+            return False
 
     def _has_invalid_name(self, name: str) -> bool:
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name))
