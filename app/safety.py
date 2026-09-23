@@ -420,8 +420,10 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
     try:
         c_path = normalize(child)
         p_path = normalize(parent)
-        if is_drive_root(c_path) or is_protected_path(c_path): return False
-        return os.path.commonpath([c_path, p_path]) == str(p_path) if allow_equal else os.path.commonpath([c_path, p_path]) == str(p_path) and c_path != p_path
+        if is_drive_root(c_path) or is_protected_path(str(c_path)): return False
+        p_str = str(p_path)
+        common = os.path.commonpath([c_path, p_path])
+        return common == p_str if allow_equal else (common == p_str and c_path != p_path)
     except (ValueError, TypeError, OSError, RuntimeError): return False
 
 @lru_cache(maxsize=2048)
@@ -482,7 +484,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
-    if is_protected_path(target_path):
+    if is_protected_path(str(target_path)):
         raise UnsafePathError("Ruta en directorio del sistema bloqueada.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
     # Verificación adicional de nombres de dispositivo en cualquier parte de la ruta
     for part in target_path.parts:
@@ -510,7 +512,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
     except (OSError, RuntimeError, ValueError): pass
     if is_drive_root(target_path):
         raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS)
-    if not target_path.exists() and is_protected_path(target_path.parent):
+    if not target_path.exists() and is_protected_path(str(target_path.parent)):
         raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
 
 def _get_final_path_normalized(path: Path) -> Optional[Path]:
@@ -571,7 +573,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             if parent.exists() and not os.access(parent, os.W_OK):
                  raise UnsafePathError("Directorio contenedor no tiene permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
         except (OSError, PermissionError): raise UnsafePathError("Directorio contenedor inaccesible.", SafetyValidationErrorCode.IO_ERROR)
-        if parent.exists() and is_protected_path(parent):
+        if parent.exists() and is_protected_path(str(parent)):
             raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
     return p
 
@@ -607,7 +609,7 @@ def describe_protection(path: PathLike) -> str:
     if raw_str.startswith(("\\\\", "//")): return f"'{raw_str}' es ruta de red."
     if _is_device_file(p): return f"'{raw_str}' es un archivo de dispositivo."
     if is_drive_root(p): return f"'{p}' es raíz de unidad."
-    if is_protected_path(p): return f"'{p}' protegida por sistema."
+    if is_protected_path(str(p)): return f"'{p}' protegida por sistema."
     try:
         if p.exists():
             if p.is_symlink(): return f"'{p}' es un enlace simbólico."

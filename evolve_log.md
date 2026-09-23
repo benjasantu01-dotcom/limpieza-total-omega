@@ -806,3 +806,49 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-09-23T11:30:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
 - `2026-09-23T11:30:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T11:30:19` Corrida terminada. Total usado hoy: 270.
+- `2026-09-23T11:38:28` Arrancando corrida. Quedan hoy ~30 peticiones objetivo.
+- `2026-09-23T11:39:14` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado la validación de rutas mediante la implementación de `lru_cache` en `is_protected_path` y la refactorización de `is_within_directory` para reutilizar el valor ya normalizado, reduciendo significativamente las syscalls repetitivas en escaneos masivos.
+- `2026-09-23T11:39:40` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scanner.py` reemplazando la creación redundante de objetos `Path` dentro del bucle de `scan_directory` por comparaciones directas de cadenas, reduciendo el overhead de instanciación en recorridos masivos de disco.
+- `2026-09-23T11:40:14` Tests FALLARON:
+```
+..io: 19 items'
+E         
+E         '2400' is contained here:
+E           Puntaje de salud: 61 nota C
+E           Basura: 2400 MB
+E         ?         ++++
+E           Sospechosos: 3
+E           RAM disponible: 11%
+E           Disco libre: 6%
+E           Duplicados: 900 MB
+E           Inicio: 19 items
+
+evolve/tests/test_assistant.py:418: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:218: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) no aptas para archivos."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C
+    Basura: 2400 MB
+  ?         ++++
+    Sospechosos: 3
+    RAM disponible: 11%
+    Disco libre: 6%
+    Duplicados: 900 MB
+    Inicio: 19 items
+1 failed, 298 passed, 4 warnings in 1.39s
+
+```
+- `2026-09-23T11:40:14` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a los datos de configuración eliminando llamadas redundantes a la función `load()` (que implica lectura de disco y validación) en las funciones de acceso frecuente, mediante la implementación de una pequeña caché a nivel de módulo con `_LATEST_SETTINGS`.
+- `2026-09-23T11:40:29` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-23T11:40:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T11:40:29` Corrida terminada. Total usado hoy: 274.

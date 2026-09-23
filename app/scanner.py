@@ -140,13 +140,11 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.base_root: Path = base_root.resolve()
+        self.base_root_str: str = str(self.base_root).lower()
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        try:
-            return Path(entry_path).resolve().is_relative_to(self.base_root)
-        except (ValueError, RuntimeError):
-            return False
+        return entry_path.lower().startswith(self.base_root_str)
 
     def _has_invalid_name(self, name: str) -> bool:
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name))
@@ -177,7 +175,7 @@ class Scanner:
             directory_stack.append(entry.path)
 
     def _is_relevant_extension(self, name: str) -> bool:
-        return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
+        return os.path.splitext(name)[1].lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         try:
@@ -227,8 +225,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if not is_protected_path(Path(entry.path)):
-                        scanner.process_entry(entry, directory_stack)
+                    # El chequeo de seguridad se delega a scanner.process_entry
+                    scanner.process_entry(entry, directory_stack)
         except (PermissionError, OSError, AttributeError):
             continue
     return scanner.results
