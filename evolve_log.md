@@ -402,3 +402,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-09-23T07:56:03` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-09-23T07:56:03` Rotación — log: 1335 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T07:56:03` Corrida terminada. Total usado hoy: 186.
+- `2026-09-23T08:04:10` Arrancando corrida. Quedan hoy ~114 peticiones objetivo.
+- `2026-09-23T08:04:41` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-09-23T08:05:09` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado `_is_excluded_path` para validar explícitamente que la ruta no sea un "punto de reparse" (junction) mediante una verificación más estricta de los atributos de archivo en Windows, previniendo así el escape del sandbox de escaneo hacia otras unidades o carpetas fuera de la raíz de análisis.
+- `2026-09-23T08:05:35` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-09-23T08:05:48` ➖ Sin cambios en healthscore.py (enfoque: seguridad defensiva). Motivo: Se reforzó la integridad del sistema ante datos de entrada maliciosos o corruptos mediante la validación estricta de las métricas crudas en `SystemMetrics.validate`, garantizando que todos los valores numéricos cumplan con las restricciones del dominio antes de pasar por el motor de cálculo.
+- `2026-09-23T08:05:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T08:05:49` Corrida terminada. Total usado hoy: 190.

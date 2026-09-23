@@ -125,7 +125,9 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             
         if entry.is_symlink():
             return True
+            
         if os.name == 'nt':
+            # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT. Validamos integridad antes de procesar.
             st = entry.stat(follow_symlinks=False)
             if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
                 return True
