@@ -1489,3 +1489,49 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-09-23T06:24:09` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-09-23T06:24:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T06:24:09` Corrida terminada. Total usado hoy: 150.
+- `2026-09-23T06:32:29` Arrancando corrida. Quedan hoy ~150 peticiones objetivo.
+- `2026-09-23T06:33:09` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult
+- `2026-09-23T06:33:35` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y la mantenibilidad del escáner refactorizando `_run_file_heuristics` para utilizar un registro único de heurísticas, eliminando la bifurcación manual de lógica y estandarizando la firma de las funciones de chequeo.
+- `2026-09-23T06:34:06` Tests FALLARON:
+```
+..io: 19 items'
+E         
+E         '2400' is contained here:
+E           Puntaje de salud: 61 nota C
+E           Basura: 2400 MB
+E         ?         ++++
+E           Sospechosos: 3
+E           RAM disponible: 11%
+E           Disco libre: 6%
+E           Duplicados: 900 MB
+E           Inicio: 19 items
+
+evolve/tests/test_assistant.py:418: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:215: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) no aptas para archivos."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C
+    Basura: 2400 MB
+  ?         ++++
+    Sospechosos: 3
+    RAM disponible: 11%
+    Disco libre: 6%
+    Duplicados: 900 MB
+    Inicio: 19 items
+1 failed, 298 passed, 4 warnings in 1.48s
+
+```
+- `2026-09-23T06:34:06` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones `Args` y `Returns`) en las funciones críticas y se han renombrado variables internas de los validadores para eliminar ambigüedades, facilitando la comprensión del flujo de integridad de los datos.
+- `2026-09-23T06:34:18` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable, StartupEntry._sanitize_command
+- `2026-09-23T06:34:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T06:34:18` Corrida terminada. Total usado hoy: 154.
