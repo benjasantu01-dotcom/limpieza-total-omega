@@ -276,9 +276,12 @@ def _sum_directory_recursive(
     Calcula recursivamente el peso de una carpeta, sumando el tamaño de archivos
     y resultados de subdirectorios, protegiendo contra errores de I/O mediante
     captura de excepciones localizadas y validación de seguridad.
+    Usa un diccionario 'memo' para evitar re-escaneo de rutas compartidas.
     """
-    if depth > MAX_SCAN_DEPTH or root_abs in memo:
-        return memo.get(root_abs, 0)
+    if root_abs in memo:
+        return memo[root_abs]
+    if depth > MAX_SCAN_DEPTH:
+        return 0
 
     total_bytes: int = 0
     try:

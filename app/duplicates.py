@@ -232,23 +232,24 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        p_entry = Path(entry.path)
-                        # Validación de seguridad defensiva temprana
-                        if not is_safe_to_modify(p_entry):
-                            continue
-
-                        if entry.is_symlink() or (entry.is_dir() and is_junction(p_entry)):
+                        # Usar is_symlink y is_dir del propio entry es más eficiente que re-estat
+                        if entry.is_symlink():
                             continue
                         
                         if entry.is_dir():
-                            _scan_dir(p_entry)
+                            # Validar seguridad antes de entrar
+                            if not is_junction(Path(entry.path)):
+                                _scan_dir(Path(entry.path))
                             continue
                         
-                        # Validaciones de existencia y protección
-                        if entry.path in visited_files or (skip_protected and is_protected_path(p_entry)):
+                        # Validaciones rápidas basadas en el entry
+                        p_entry = Path(entry.path)
+                        if entry.path in visited_files or not is_safe_to_modify(p_entry):
+                            continue
+                        if skip_protected and is_protected_path(p_entry):
                             continue
 
-                        stat = entry.stat(follow_symlinks=False)
+                        stat = entry.stat()
                         if stat.st_size < min_size or is_system_or_hidden(p_entry):
                             continue
                             

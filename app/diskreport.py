@@ -309,7 +309,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
     Identifica las subcarpetas de primer nivel con mayor consumo de espacio.
-    Realiza una agregación por raíz inmediata para identificar qué rama ocupa más espacio.
+    Realiza una agregación por raíz inmediata usando relative_to para evitar costosas manipulaciones de lista.
     """
     root = _validate_root(directory)
     if not root: return []
@@ -317,16 +317,15 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     folder_total_bytes: Dict[Path, int] = defaultdict(int)
     folder_file_counts: Dict[Path, int] = defaultdict(int)
     
-    root_parts = root.parts
     for path, size_bytes in walk_files(root, skip_protected):
         try:
-            path_parts = path.parts
-            # Validamos estructura de ruta para evitar errores si la profundidad cambia
-            if len(path_parts) > len(root_parts):
-                top_level = root / path_parts[len(root_parts)]
+            # Obtener el componente de nivel superior directamente del path relativo
+            rel = path.relative_to(root)
+            if rel.parts:
+                top_level = root / rel.parts[0]
                 folder_total_bytes[top_level] += size_bytes
                 folder_file_counts[top_level] += 1
-        except (IndexError, AttributeError):
+        except (ValueError, IndexError):
             continue
 
     results = [FolderUsage(p, folder_total_bytes[p], folder_file_counts[p]) for p in folder_total_bytes]

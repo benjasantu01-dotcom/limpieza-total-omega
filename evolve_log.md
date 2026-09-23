@@ -1140,3 +1140,10 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-09-23T02:07:27` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` eliminando la recreación de listas y la iteración innecesaria, moviendo la lógica de filtrado de tokens a un lookup directo en el set de tokens, evitando así re-procesar todo el input del usuario en cada llamada.
 - `2026-09-23T02:07:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T02:07:27` Corrida terminada. Total usado hoy: 50.
+- `2026-09-23T02:15:34` Arrancando corrida. Quedan hoy ~250 peticiones objetivo.
+- `2026-09-23T02:16:28` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-23T02:16:58` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Implementé un sistema de memoización eficiente en `_sum_directory_recursive` pasando el diccionario `memo` por referencia, lo cual evita recalcular el tamaño de subdirectorios compartidos en estructuras de caché, reduciendo drásticamente las llamadas redundantes a `os.scandir` y `stat`.
+- `2026-09-23T02:17:31` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para que realice una sola pasada sobre `walk_files` usando una agregación lógica basada en el path relativo, evitando el overhead de reconstruir rutas con `path.parts` dentro del loop principal.
+- `2026-09-23T02:17:43` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` sustituyendo llamadas redundantes a `path.stat()` y `path.resolve()` por el uso directo de los objetos `DirEntry` que ya contienen la información necesaria, evitando I/O innecesario en el loop principal.
+- `2026-09-23T02:17:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T02:17:43` Corrida terminada. Total usado hoy: 54.
