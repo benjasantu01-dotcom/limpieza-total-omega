@@ -539,7 +539,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     """
     Valida integridad y seguridad de una ruta.
     """
-    if path is None: raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
+    if path is None or (not isinstance(path, (str, os.PathLike))):
+        raise UnsafePathError("Entrada de ruta inválida o nula.", SafetyValidationErrorCode.GENERIC)
     try: p = normalize(path)
     except (ValueError, TypeError, PermissionError, OSError) as e: 
         raise UnsafePathError(f"Ruta no normalizable: {e}", SafetyValidationErrorCode.GENERIC)

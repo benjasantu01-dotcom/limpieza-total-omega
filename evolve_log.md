@@ -680,3 +680,31 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-23T10:12:48` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-23T10:12:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T10:12:48` Corrida terminada. Total usado hoy: 238.
+- `2026-09-23T10:16:58` Arrancando corrida. Quedan hoy ~62 peticiones objetivo.
+- `2026-09-23T10:17:39` Tests FALLARON:
+```
+Aislado: 2026-09-23T10:17:39'
+
+evolve/tests/test_safety.py:311: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:216: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) no aptas para archivos."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - safety.UnsafePathError: [GENERIC] Origen no apto para aislamiento.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - AssertionError: assert 'restaurar' in '1 archivo(s) en cuarentena — 0.00 MB\n\n  [ac48181daea7] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba\n      Origen: /tmp/pytest-of-runner/pytest-1/test_quarantine_summary_report0/pesado.bin\n      Aislado: 2026-09-23T10:17:39'
+3 failed, 296 passed, 4 warnings in 1.43s
+
+```
+- `2026-09-23T10:17:39` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `quarantine.py` ante entradas malformadas o inesperadas en las funciones de carga de manifiesto y validación de rutas, añadiendo chequeos de tipo defensivos y manejando fallos de `path.resolve()` de forma más resiliente para evitar excepciones no controladas.
+- `2026-09-23T10:18:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-09-23T10:18:41` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `ensure_safe_to_modify` implementando una validación explícita de `path` contra `None` y tipos incorrectos antes de invocar `normalize` o cualquier operación de sistema, evitando `UnsafePathError` con mensajes confusos o excepciones no capturadas durante la fase de normalización.
+- `2026-09-23T10:19:00` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las heurísticas centralizando la validación de archivos mediante una nueva función `_is_file_accessible` que previene errores al procesar entradas nulas o rutas inválidas, asegurando que las funciones de chequeo no fallen ante estados inesperados del sistema de archivos.
+- `2026-09-23T10:19:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T10:19:00` Corrida terminada. Total usado hoy: 242.

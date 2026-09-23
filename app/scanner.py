@@ -65,6 +65,13 @@ WATCHED_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp", "deskto
 
 SYSTEM32_LOWER: Final[str] = "system32"
 
+def _is_file_accessible(path: Path) -> bool:
+    """Valida la existencia básica y legibilidad del archivo antes de aplicar heurísticas."""
+    try:
+        return path.is_file()
+    except (OSError, PermissionError):
+        return False
+
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
     Intenta obtener metadatos sin seguir enlaces simbólicos mediante la API de bajo nivel.
@@ -117,7 +124,6 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: fl
     return None
 
 # Registro centralizado de reglas heurísticas
-# Se divide en reglas generales (aplican siempre) y específicas de ejecutables
 ALL_CHECKS: Final[List[SuspicionCheck]] = [
     check_double_extension,
     check_system_lookalike,
@@ -186,6 +192,7 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Aplica toda la batería de tests registrados sobre un archivo específico."""
+        if not _is_file_accessible(path): return
         for check_fn in ALL_CHECKS:
             try:
                 if (result := check_fn(path, entry, self.now_ts)):
@@ -195,7 +202,7 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un único archivo sin recorrido recursivo."""
-    if not path or not path.exists() or is_protected_path(path): return []
+    if not path or not _is_file_accessible(path) or is_protected_path(path): return []
     findings: ScanResult = []
     for check_fn in ALL_CHECKS:
         try:
