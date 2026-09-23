@@ -1565,22 +1565,25 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
             return
         
-        if not quarantine.item_exists(raw_id):
-            self.log(f"Error: El ID '{raw_id}' no existe en cuarentena.", "Cuarentena")
+        # Sanitizar ID para evitar inyecciones o rutas arbitrarias
+        clean_id = "".join(c for c in raw_id if c.isalnum() or c == "-")
+        if not quarantine.item_exists(clean_id):
+            self.log(f"Error: El ID '{clean_id}' no existe en cuarentena.", "Cuarentena")
             return
 
         def task() -> None:
             try:
-                item = quarantine.get_item(raw_id)
+                item = quarantine.get_item(clean_id)
                 if not item or not hasattr(item, 'original_path'):
                     self._safe_run_ui_callback(lambda: self.log("Error: Manifiesto de cuarentena corrupto o inaccesible.", "Cuarentena"))
                     return
                 
+                # Validar ruta destino
                 if not self._is_safe_path(item.original_path):
                     self._safe_run_ui_callback(lambda: self.log("Error: La ruta original del archivo no es segura para restauración.", "Cuarentena"))
                     return
                 
-                destino = quarantine.restore_item(raw_id)
+                destino = quarantine.restore_item(clean_id)
                 self._safe_run_ui_callback(lambda: self.log(f"Restaurado en: {destino}", "Cuarentena"))
             except Exception as e:
                 self._safe_run_ui_callback(lambda: self.log(f"Error inesperado al restaurar: {e}", "Cuarentena"))

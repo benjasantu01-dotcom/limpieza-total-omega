@@ -1040,3 +1040,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-23T00:55:43` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `hash_file` y `partial_hash` ante errores de lectura mediante un manejo de excepciones explícito en el bloque `with`, asegurando que el archivo se cierre correctamente y que fallos transitorios en el sistema de archivos no devuelvan resultados parciales o corruptos.
 - `2026-09-23T00:55:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T00:55:43` Corrida terminada. Total usado hoy: 24.
+- `2026-09-23T01:04:07` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-09-23T01:04:37` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y `summarize` reemplazando chequeos tipo `isinstance` por validaciones de estado más seguras y agregando un manejo de excepciones explícito en la generación del desglose para evitar estados inconsistentes si un `scorer` falla.
+- `2026-09-23T01:05:37` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-23T01:06:40` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-23T01:07:47` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-23T01:09:15` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` mediante la validación temprana de entradas, el filtrado de caracteres no imprimibles y la verificación explícita de existencia antes de operar, evitando excepciones no controladas durante la ejecución de tareas asíncronas.
+- `2026-09-23T01:09:43` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-23T01:09:58` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las validaciones de entrada en `_is_safe_for_disk_op` y `stage_for_review` para prevenir errores de ejecución ante rutas mal formadas, incorporando chequeos específicos de tipo `Path` y manejo de excepciones ante llamadas a `resolve()` sobre rutas inexistentes.
+- `2026-09-23T01:09:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T01:09:58` Corrida terminada. Total usado hoy: 28.

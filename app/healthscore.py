@@ -230,7 +230,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Pipeline principal de evaluación. Valida la integridad de las métricas antes de procesar."""
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+    if metrics is None or not hasattr(metrics, 'is_finite') or not metrics.is_finite:
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
     
     recommendations: List[str] = []
@@ -269,7 +269,7 @@ def _render_bar(points: int, max_val: int) -> str:
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una representación legible (lista de strings) del HealthResult para UI."""
-    if not isinstance(result, HealthResult) or not (0 <= result.score <= 100):
+    if result is None or not isinstance(result, HealthResult):
         return ["Error: Informe de salud no disponible."]
     
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]

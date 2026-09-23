@@ -180,8 +180,12 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     Verifica permisos del sistema, integridad de la jerarquía de rutas y 
     restricciones de lectura/escritura antes de autorizar cualquier movimiento.
     """
-    if src is None or dest is None or not src.exists() or not is_safe_to_modify(src): return False
-    if not _validate_path_security(src, dest): return False
+    if not isinstance(src, Path) or not isinstance(dest, Path) or not src.exists(): 
+        return False
+    if not is_safe_to_modify(src): 
+        return False
+    if not _validate_path_security(src, dest): 
+        return False
         
     try:
         target_parent = (dest.parent if not dest.exists() else dest.resolve().parent)
@@ -277,8 +281,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     try:
         dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-        if _is_junction(dest_base): return None
-        ensure_safe_to_modify(dest_base)
+        if _is_junction(dest_base) or not is_safe_to_modify(dest_base): return None
     except (OSError, RuntimeError, PermissionError): return None
     
     for junk_file in files:
