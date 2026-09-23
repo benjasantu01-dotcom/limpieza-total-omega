@@ -82,7 +82,7 @@ __all__ = [
     "assistant_enabled", "describe",
 ]
 
-SETTINGS_DIR: Final = Path("~/LimpiezaTotalOmega").expanduser()
+SETTINGS_DIR: Final = Path("~/LimpiezaTotalOmega").expanduser().resolve()
 SETTINGS_FILE: Final = "config.json"
 MAX_SETTINGS_SIZE: Final = 1024 * 64
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
@@ -245,12 +245,11 @@ _VALIDATOR_MAP: Final = _build_validator_map()
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Calcula la ruta absoluta del archivo de configuración."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
-    base_path = Path(custom_base).expanduser()
+    base_path = Path(custom_base).expanduser().resolve()
     if base_path in _PATH_CACHE: return _PATH_CACHE[base_path]
     try:
-        resolved_parent = Path(os.path.realpath(base_path))
-        if _Validators._is_safe_path(str(resolved_parent)) and not _Validators._is_reparse_point(resolved_parent):
-            _PATH_CACHE[base_path] = resolved_parent / SETTINGS_FILE
+        if _Validators._is_safe_path(str(base_path)) and not _Validators._is_reparse_point(base_path):
+            _PATH_CACHE[base_path] = base_path / SETTINGS_FILE
             return _PATH_CACHE[base_path]
     except (OSError, RuntimeError, PermissionError):
         pass

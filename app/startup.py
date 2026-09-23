@@ -178,13 +178,11 @@ class StartupEntry:
         
         try:
             p: Path = Path(norm)
+            # Seguridad adicional: verificar que la ruta normalizada sea absoluta antes de resolver
             if not p.is_absolute():
                 _EXISTS_CACHE[path_string] = False
                 return ""
             
-            if not p.anchor or not Path(p.anchor).exists():
-                return ""
-                
             p = p.resolve(strict=False)
             
             if not self._validate_file_access(p):

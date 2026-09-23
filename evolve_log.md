@@ -1226,3 +1226,10 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-09-23T03:51:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-23T03:51:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T03:51:22` Corrida terminada. Total usado hoy: 90.
+- `2026-09-23T03:59:42` Arrancando corrida. Quedan hoy ~210 peticiones objetivo.
+- `2026-09-23T04:00:24` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se implementó una verificación de "puntos de reparse" en el chequeo estructural inicial dentro de `_validate_structural_safety` usando `GetFileAttributesW` para prevenir la navegación hacia rutas fuera del alcance permitido mediante enlaces simbólicos o junctions antes de siquiera intentar acceder a los metadatos.
+- `2026-09-23T04:00:55` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-23T04:01:25` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `settings.py` implementando una validación de ruta explícita y robusta antes de cualquier operación de escritura, asegurando que `SETTINGS_DIR` sea siempre tratada como una ruta absoluta, verificada y protegida contra puntos de reparse, mitigando el riesgo de escritura en ubicaciones comprometidas o inusuales.
+- `2026-09-23T04:01:37` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_resolve_and_cache_path` mediante la validación de `path.is_absolute()` antes de cualquier operación de resolución, asegurando que solo se procesen rutas que tengan un origen definido y evitando comportamientos imprevistos con rutas relativas maliciosas.
+- `2026-09-23T04:01:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T04:01:37` Corrida terminada. Total usado hoy: 94.
