@@ -207,7 +207,8 @@ def is_running_as_admin() -> bool:
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
     """Detecta caracteres prohibidos en rutas Windows, secuencias de control RTL o nulos."""
     if not isinstance(path_str, str) or not path_str: return True
-    return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]|[\x00-\x1f\x7f]', path_str))
+    # Detecta caracteres de control no imprimibles y marcas de formato bidireccional (RTL/LTR)
+    return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str))
 
 @lru_cache(maxsize=128)
 def _is_reserved_device_name(name: str) -> bool:

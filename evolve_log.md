@@ -904,3 +904,11 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-23T12:02:05` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `parse_windows_process_csv` añadiendo una validación explícita para evitar errores ante líneas mal formadas o datos numéricos no parseables que podrían causar excepciones no capturadas durante la recolección de métricas.
 - `2026-09-23T12:02:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T12:02:05` Corrida terminada. Total usado hoy: 282.
+- `2026-09-23T12:09:05` Arrancando corrida. Quedan hoy ~18 peticiones objetivo.
+- `2026-09-23T12:09:46` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez en `_is_file_locked` para manejar archivos inaccesibles o bloqueados por el sistema de forma más exhaustiva, evitando excepciones inesperadas que interrumpan el escaneo.
+- `2026-09-23T12:10:26` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine.py` ante errores de entrada y condiciones de carrera en el sistema de archivos al añadir validaciones explícitas de existencia y tipo (`is_file`) antes de realizar operaciones críticas (especialmente en `_write_temp_to_final` y `restore_item`), garantizando que no se intenten manipular rutas nulas o directorios inesperados durante la transferencia atómica.
+- `2026-09-23T12:10:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-23T12:11:12` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-09-23T12:11:38` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha implementado una mejora en `ensure_safe_to_modify` para detectar y prevenir el uso de rutas que contienen caracteres no imprimibles o secuencias de control ocultas que podrían ser utilizadas para ofuscar rutas críticas en Windows, fortaleciendo la validación de integridad ante casos límite de entrada.
+- `2026-09-23T12:11:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T12:11:38` Corrida terminada. Total usado hoy: 286.

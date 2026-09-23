@@ -121,10 +121,11 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
-    """Verifica si un archivo está en uso exclusivo mediante permisos de lectura."""
+    """Verifica si un archivo está en uso exclusivo mediante un intento de apertura en modo lectura."""
     try:
-        return not os.access(path, os.R_OK)
-    except (OSError, PermissionError):
+        with open(path, 'rb') as f:
+            return False
+    except (OSError, PermissionError, IOError):
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:

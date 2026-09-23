@@ -542,8 +542,8 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
 
-    if not source.exists():
-        raise FileNotFoundError("Archivo origen no encontrado durante la copia.")
+    if not source.is_file():
+        raise FileNotFoundError("Archivo origen no encontrado o no es un archivo.")
 
     source_hash = _get_sha256(source)
     temp_dest = destination.with_suffix(".tmp")
@@ -581,8 +581,8 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
     """Coordina el aislamiento seguro del archivo hacia el sandbox."""
-    if not source.exists():
-        raise FileNotFoundError("Archivo origen inexistente.")
+    if not source.is_file():
+        raise FileNotFoundError("Archivo origen inexistente o inválido.")
     
     if source.resolve() == destination.resolve():
         raise UnsafePathError("El origen ya reside en el directorio destino.")
