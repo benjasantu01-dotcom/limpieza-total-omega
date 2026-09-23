@@ -1271,3 +1271,4 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-23T14:55:31` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-23T14:55:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T14:55:31` Corrida terminada. Total usado hoy: 350.
+- `2026-09-23T15:02:52` Presupuesto diario agotado (350 usados). Corte hasta mañana.
