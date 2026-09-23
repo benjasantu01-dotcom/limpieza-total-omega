@@ -361,8 +361,12 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         total_bytes += size_bytes
         total_files += 1
         
-        ext_raw = path.suffix
-        ext = ext_raw.lower() if ext_raw else "(sin extensión)"
+        try:
+            ext_raw = path.suffix
+            ext = ext_raw.lower() if ext_raw else "(sin extensión)"
+        except Exception:
+            ext = "(error lectura)"
+            
         stat = ext_stats[ext]
         stat.total_bytes += size_bytes
         stat.count += 1
@@ -396,7 +400,8 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
         lines.extend(["", "Mayores archivos:"])
         for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
             try:
-                if p.exists() and p.is_file():
+                # Verificación adicional antes de reportar
+                if p.is_file():
                     lines.append(f"  {format_size(s):>10}  {str(p)}")
             except (OSError, PermissionError):
                 continue

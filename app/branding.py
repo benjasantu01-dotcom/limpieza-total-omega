@@ -340,14 +340,16 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo SVG tras validar la seguridad de la ruta destino."""
-    if not destination or not isinstance(destination, (str, Path)): 
+    if not isinstance(destination, (str, Path)): 
         return None
+        
     try:
         path = Path(destination)
         if is_protected_path(path):
             return None
         
         target = path.resolve()
+        # ensure_safe_to_modify lanza excepción si la ruta no es segura
         ensure_safe_to_modify(target)
         
         parent = target.parent
@@ -357,7 +359,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
             return None
             
         target.write_text(logo_svg(), encoding="utf-8")
-        return target
+        return target if target.exists() else None
+        
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError): 
         return None
 

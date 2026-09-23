@@ -215,7 +215,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Chequeos rápidos sin invocar métodos costosos repetidamente
                         if entry.is_dir(follow_symlinks=False):
                             if not is_junction(Path(entry.path)):
                                 _scan_dir(Path(entry.path))
@@ -224,7 +223,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         if entry.path in visited_files:
                             continue
                             
-                        # Stat único para verificar tamaño y atributos simultáneamente
                         stat = entry.stat(follow_symlinks=False)
                         if stat.st_size < min_size:
                             continue
@@ -309,6 +307,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
+        # Validar existencia y seguridad antes de calcular heurística
         if isinstance(p, Path) and p.exists() and is_safe_to_modify(p):
             if score := _calculate_keeper_heuristic(p):
                 candidates.append((score, p))
@@ -322,6 +321,9 @@ def format_group(group: DuplicateGroup) -> List[str]:
         return ["Error: Grupo inválido o vacío"]
         
     keeper = suggest_keeper(group)
+    # Resolución segura del keeper para comparación consistente
+    keeper_resolved = keeper.resolve() if keeper else None
+    
     mb_t, mb_w = round(group.size_bytes / 1048576, 2), round(group.wasted_bytes / 1048576, 2)
     lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
     
@@ -332,7 +334,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
             if not is_safe_to_modify(path):
                 lines.append(f"   [inaccesible] {path}")
             else:
-                is_keeper = (keeper is not None and path.resolve() == keeper.resolve())
+                is_keeper = (keeper_resolved is not None and path.resolve() == keeper_resolved)
                 label = 'conservar' if is_keeper else 'duplicado'
                 lines.append(f"   [{label}] {path}")
         except (OSError, PermissionError):

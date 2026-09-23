@@ -280,8 +280,8 @@ def _sum_directory_recursive(
     Calcula recursivamente el peso de una carpeta. Utiliza memoización y
     omite validaciones redundantes dentro del loop principal.
     """
-    if root_abs in memo:
-        return memo[root_abs]
+    if not isinstance(root_abs, str) or not root_abs or root_abs in memo:
+        return memo.get(root_abs, 0)
     if depth > MAX_SCAN_DEPTH:
         return 0
 
@@ -336,12 +336,11 @@ def _is_valid_cache_path(candidate: Path, base_path: str, is_junction_fn: Juncti
     de seguridad, asegurando que no escape del directorio base (`LOCALAPPDATA`).
     """
     try:
-        if not candidate.exists() or not candidate.is_dir():
+        if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir():
             return False
         real_candidate = str(candidate.resolve(strict=True))
         if _is_unc_path(real_candidate) or not _is_path_inside_base(real_candidate, base_path):
             return False
-        # Las comprobaciones de seguridad se hacen al inicio, evitamos repeticiones costosas
         if not is_safe_to_modify(candidate) or is_protected_path(candidate):
             return False
         return not (candidate.is_symlink() or is_junction_fn(str(candidate)) or _is_excluded_file(candidate.name))
@@ -394,7 +393,6 @@ def detect_profiles(
                     continue
                 
                 real_candidate = str(candidate.resolve(strict=True))
-                # Ya validamos la seguridad, procedemos directamente al cálculo memoizado
                 size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, global_memo)
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), Path(real_candidate), size))
@@ -409,7 +407,7 @@ def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
     """Calcula la sumatoria total de bytes de una colección de cachés, manejando casos nulos."""
     if caches is None:
         return 0
-    return sum(c.size_bytes for c in caches if hasattr(c, 'size_bytes'))
+    return sum(c.size_bytes for c in caches if isinstance(c, BrowserCache))
 
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
