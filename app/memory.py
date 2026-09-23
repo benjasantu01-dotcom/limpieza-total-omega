@@ -150,7 +150,7 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     return stat
 
 def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValue:
-    """Convierte una cadena a BytesValue extrayendo solo dígitos, útil para parseo."""
+    """Convierte una cadena a BytesValue extrayendo solo dígitos."""
     if value is None:
         return BytesValue(0)
     try:
@@ -168,7 +168,11 @@ _EMPTY_SNAPSHOT: MemorySnapshot = MemorySnapshot(BytesValue(0), BytesValue(0))
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     """
     Parsea el contenido crudo de /proc/meminfo (Linux) en una instancia MemorySnapshot.
-    Extrae MemTotal, MemAvailable/MemFree y Cached para estimar la salud del sistema.
+    
+    Args:
+        meminfo_text: Contenido completo del archivo /proc/meminfo.
+    Returns:
+        Snapshot con las métricas extraídas o un snapshot vacío si el formato es inválido.
     """
     if not isinstance(meminfo_text, str) or not meminfo_text.strip():
         return _EMPTY_SNAPSHOT
@@ -197,6 +201,10 @@ def _extract_numeric_val(text: str) -> int:
     """Extrae solo dígitos de una cadena para conversión segura."""
     return int("".join(c for c in text if c.isdigit()) or 0)
 
+def _sort_processes_by_memory(processes: List[ProcessMemory]) -> List[ProcessMemory]:
+    """Ordena una lista de procesos por memoria en uso (descendente)."""
+    return sorted(processes, key=lambda p: p.working_set, reverse=True)
+
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """Procesa el CSV de PowerShell y retorna los N procesos con mayor consumo."""
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
@@ -216,8 +224,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         except (ValueError, TypeError, OverflowError):
             continue
     
-    results.sort(key=lambda p: p.working_set, reverse=True)
-    return results[:limit]
+    return _sort_processes_by_memory(results)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Invoca GlobalMemoryStatusEx para obtener métricas físicas del sistema (Win32 API)."""
