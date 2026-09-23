@@ -114,7 +114,8 @@ class MetricSpec:
 
 class ProblemCriterion(NamedTuple):
     """
-    Regla heurística para identificar problemas críticos según métricas del sistema.
+    Regla heurística para identificar problemas críticos evaluando una métrica contra
+    un umbral determinado. Se utiliza para generar diagnósticos automáticos.
     """
     metric_key: str
     threshold: float
@@ -275,8 +276,9 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
 @dataclass
 class SystemContext:
     """
-    Agregador de estado del sistema utilizado para diagnósticos.
-    Implementa validación de integridad para evitar métricas malformadas o peligrosas.
+    Agregador centralizado del estado del sistema. Contiene métricas normalizadas,
+    valida la integridad de los datos entrantes y expone métodos de consulta para
+    la lógica de diagnóstico, protegiendo siempre la privacidad de rutas y archivos.
     """
     score: Optional[int] = None
     grade: str = ""
@@ -302,7 +304,7 @@ class SystemContext:
 
     @cached_property
     def active_problems(self) -> tuple[str, ...]:
-        """Retorna problemas activos identificados, cacheados por instancia."""
+        """Retorna problemas activos identificados mediante la evaluación de criterios, cacheados por instancia."""
         if not self.analyzed: return ()
         return tuple(msg for crit in _CRITERIOS_SALUD if (msg := crit.format_if_triggered(self)))
 

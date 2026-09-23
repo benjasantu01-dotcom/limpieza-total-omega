@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 243
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 3 | 0 | 2 | 1 | 10 |
+| 2026-09-21 | 3 | 0 | 0 | 0 | 9 |
 | 2026-09-22 | 123 | 16 | 28 | 19 | 164 |
-| 2026-09-23 | 56 | 1 | 10 | 2 | 69 |
+| 2026-09-23 | 59 | 1 | 10 | 3 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **49**
+- manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **40**
-- legibilidad y documentación: **33**
+- legibilidad y documentación: **35**
 - rendimiento: **31**
 - robustez ante casos límite: **29**
 
@@ -36,17 +36,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **17**
 - `settings.py`: **16**
 - `memory.py`: **15**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
+- `browser.py`: **13**
 - `organizer.py`: **12**
-- `browser.py`: **12**
 - `scanner.py`: **12**
 - `duplicates.py`: **11**
 - `main.py`: **7**
+- `startup.py`: **6**
 - `branding.py`: **6**
-- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-23T06:04:00` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna de `browser.py` mediante la normalización y expansión de docstrings en las funciones críticas de escaneo, detallando las precondiciones de seguridad y el manejo de excepciones, para facilitar el mantenimiento y la auditoría del flujo de datos.
+- `2026-09-23T06:03:09` **assistant.py** (legibilidad y documentación): Mejoré la documentación de `SystemContext` y `ProblemCriterion` con type hints y descripciones claras sobre su rol en la integridad del sistema, facilitando el mantenimiento y la comprensión de las restricciones de seguridad.
+- `2026-09-23T06:02:27` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validaciones preventivas sobre los datos crudos del CSV (evitando errores por filas mal formadas o valores `None`) y ajustando el manejo de excepciones para evitar que una línea corrupta invalide el procesamiento del resto del registro.
 - `2026-09-23T05:53:56` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save` mediante el uso de `os.replace` (que es atómico en sistemas POSIX y Windows, evitando corrupciones) y se ha endurecido la validación de `_load_impl` para capturar errores de formato o tipos de manera más explícita antes de usar los datos, garantizando que el estado de la aplicación sea siempre consistente.
 - `2026-09-23T05:53:13` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la validación de archivos mediante una protección defensiva contra errores (null checks y acceso a atributos), evitando fallos silenciosos o excepciones no capturadas durante la ejecución de los chequeos.
 - `2026-09-23T05:52:45` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante errores de acceso a disco al centralizar la captura de excepciones, asegurando que los fallos específicos del sistema de archivos (como `OSError` durante la lectura de metadatos) sean encapsulados con el código de error `IO_ERROR` en lugar de permitir que se propaguen o sean capturados de forma ambigua.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-23T04:01:37` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_and_cache_path` mediante la validación de `path.is_absolute()` antes de cualquier operación de resolución, asegurando que solo se procesen rutas que tengan un origen definido y evitando comportamientos imprevistos con rutas relativas maliciosas.
 - `2026-09-23T04:01:25` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` implementando una validación de ruta explícita y robusta antes de cualquier operación de escritura, asegurando que `SETTINGS_DIR` sea siempre tratada como una ruta absoluta, verificada y protegida contra puntos de reparse, mitigando el riesgo de escritura en ubicaciones comprometidas o inusuales.
 - `2026-09-23T04:00:24` **safety.py** (seguridad defensiva): Se implementó una verificación de "puntos de reparse" en el chequeo estructural inicial dentro de `_validate_structural_safety` usando `GetFileAttributesW` para prevenir la navegación hacia rutas fuera del alcance permitido mediante enlaces simbólicos o junctions antes de siquiera intentar acceder a los metadatos.
-- `2026-09-23T03:51:15` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `_safe_unlink` y `_is_item_purgable` al añadir una verificación explícita mediante `is_safe_to_modify` sobre el archivo en sí antes de cualquier operación de borrado, asegurando coherencia con las políticas globales de seguridad incluso dentro del sandbox.
-- `2026-09-23T03:50:34` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de la función `_is_recursive_violation` integrando `os.path.commonpath` para detectar con precisión si una ruta está contenida en otra, evitando comparaciones de strings ambiguas y bloqueando explícitamente cualquier intento de mover un archivo hacia dentro de su propia estructura de directorios, reforzando la seguridad defensiva.
-- `2026-09-23T03:50:03` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `trim_working_set` moviendo la validación mediante `is_safe_to_modify` antes de cualquier interacción con el proceso y asegurando que `_get_process_path` retorne una ruta validable antes de realizar la operación, evitando así riesgos de manipulación de procesos del sistema que pudieran evadir los chequeos iniciales.

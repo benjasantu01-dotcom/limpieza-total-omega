@@ -292,19 +292,15 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             if not isinstance(row, dict):
                 continue
             
-            # Validamos que los campos esperados existan en la fila
-            if f_name not in row or f_cmd not in row:
-                continue
-
-            val_name = row[f_name]
-            val_cmd = row[f_cmd]
+            # Validación robusta de campos
+            val_name = row.get(f_name)
+            val_cmd = row.get(f_cmd)
             
             if val_name is None or val_cmd is None:
                 continue
             
-            name_raw, cmd_raw = str(val_name), str(val_cmd)
-            name = "".join(c for c in name_raw if ord(c) >= 32).strip()
-            cmd = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
+            name = "".join(c for c in str(val_name) if ord(c) >= 32).strip()
+            cmd = "".join(c for c in str(val_cmd) if ord(c) >= 32).strip()
             
             if not name or not cmd or cmd.startswith(r"\\") or cmd in seen_commands or name.upper().startswith("PS"):
                 continue
