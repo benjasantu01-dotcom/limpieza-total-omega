@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 39
-- Sin cambios (nada sustancial que mejorar): 21
+- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 40
+- Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 83 | 12 | 17 | 12 | 114 |
-| 2026-09-23 | 111 | 9 | 22 | 9 | 115 |
+| 2026-09-22 | 81 | 11 | 17 | 12 | 113 |
+| 2026-09-23 | 112 | 9 | 23 | 10 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
 - legibilidad y documentación: **45**
-- seguridad defensiva: **39**
-- rendimiento: **34**
-- robustez ante casos límite: **27**
+- seguridad defensiva: **38**
+- rendimiento: **35**
+- robustez ante casos límite: **26**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,12 +33,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **19**
 - `quarantine.py`: **17**
 - `safety.py`: **17**
-- `settings.py`: **16**
 - `browser.py`: **16**
-- `assistant.py`: **15**
+- `settings.py`: **15**
 - `scanner.py`: **15**
 - `duplicates.py`: **14**
-- `memory.py`: **12**
+- `assistant.py`: **14**
+- `memory.py`: **13**
 - `organizer.py`: **12**
 - `branding.py`: **8**
 - `startup.py`: **6**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-23T11:28:48` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación y verificación repetitiva de listas en cada iteración por un set para la detección de PIDs duplicados y ajustando la lógica de filtrado para minimizar operaciones sobre cadenas.
 - `2026-09-23T11:19:58` **healthscore.py** (rendimiento): Se optimizó el cálculo de los ratios de salud mediante la pre-validación de `is_finite` en las métricas y la eliminación de redundancias en el flujo del pipeline, asegurando que las operaciones aritméticas sean mínimas y evitando cálculos repetitivos dentro de los bucles.
 - `2026-09-23T11:19:31` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando `os.scandir` para reducir llamadas redundantes al sistema de archivos: ahora se recupera el tamaño del archivo directamente de la entrada del escáner (`entry.stat().st_size`) en lugar de hacer un `stat()` adicional posterior, mejorando el rendimiento en directorios grandes.
 - `2026-09-23T11:18:41` **diskreport.py** (rendimiento): Optimizamos `walk_files` y `_collect_summary_data` eliminando llamadas redundantes a `is_protected_path` y pre-calculando el estado de la extensión, lo cual reduce significativamente el número de operaciones de IO y llamadas a funciones en el hot-loop de escaneo de archivos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-23T10:39:12` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los parámetros de las funciones y a la estructura del pipeline, clarificando la intención y los contratos de cada componente para facilitar su mantenimiento.
 - `2026-09-23T10:38:30` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad de `_collect_summary_data` y `walk_files` mediante Type Hints más precisos y la sustitución de `try-except` genéricos por bloques más específicos, asegurando que las intenciones del código sean claras y consistentes con las reglas de seguridad.
 - `2026-09-23T10:38:01` **browser.py** (legibilidad y documentación): Mejoré la documentación de las funciones de recursión y filtrado, añadiendo docstrings que explican el contrato de seguridad (por qué se omite el `ensure_safe` en el bucle principal) para evitar errores futuros, y clarifiqué la intención de las constantes de máscara de bits.
-- `2026-09-23T10:29:18` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de los docstrings en las funciones geométricas y de renderizado, explicando el parámetro `canvas_x` y `canvas_y` como punto de anclaje (offset) para evitar ambigüedades en la interpretación de las coordenadas.

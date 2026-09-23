@@ -209,17 +209,20 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     results: List[ProcessMemory] = []
     seen_pids: Set[int] = set()
     for line in raw_csv_text.splitlines():
-        if not line.strip(): continue
-        parts = line.strip().split(",", 2)
+        line = line.strip()
+        if not line: continue
+        parts = line.split(",", 2)
         if len(parts) < 3: continue
+        
         try:
             pid = _extract_numeric_val(parts[1])
             ws = _extract_numeric_val(parts[2])
-            if pid > 0 and pid not in seen_pids and 0 <= ws < MAX_VALID_PROCESS_MEM:
+            if pid > 0 and pid not in seen_pids and ws < MAX_VALID_PROCESS_MEM:
                 seen_pids.add(pid)
                 results.append(ProcessMemory(name=parts[0].strip("'\" "), pid=pid, working_set=BytesValue(ws)))
         except (ValueError, TypeError, OverflowError):
             continue
+            
     return _sort_processes_by_memory(results)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
