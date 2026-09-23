@@ -956,7 +956,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             if any(ord(c) < 32 for c in path): return False
             p = Path(path).resolve(strict=True)
-            if p.is_symlink() or safety.is_protected_path(p): return False
+            if not p.exists() or p.is_symlink() or safety.is_protected_path(p): return False
             safety.ensure_safe_to_modify(p)
             return True
         except (safety.UnsafePathError, OSError, PermissionError, ValueError):

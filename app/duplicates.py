@@ -130,7 +130,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         return None
         
     p = _validate_and_resolve_path(path)
-    if not p:
+    if not p or not p.is_file():
         return None
             
     try:
@@ -152,7 +152,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
         return None
 
     p = _validate_and_resolve_path(path)
-    if not p:
+    if not p or not p.is_file():
         return None
 
     try:
@@ -168,7 +168,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Verifica criterios de seguridad, visibilidad y bloqueo para un archivo candidato."""
     try:
-        if is_protected_path(path) or not is_safe_to_modify(path):
+        if not path.is_file() or is_protected_path(path) or not is_safe_to_modify(path):
             return False
         if is_system_or_hidden(path) or path.is_symlink() or is_junction(path):
             return False
@@ -223,6 +223,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         if entry.path in visited_files:
                             continue
                             
+                        # Validación robusta ante cambios de estado concurrentes
+                        if not entry.is_file():
+                            continue
+                            
                         st = entry.stat(follow_symlinks=False)
                         if st.st_size < min_size:
                             continue
@@ -252,8 +256,9 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Clasifica rutas según el hash resultante, manteniendo solo grupos con colisiones."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if (digest := hash_func(path)):
-            groups_by_digest[digest].append(path)
+        if path.is_file():
+            if (digest := hash_func(path)):
+                groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
 

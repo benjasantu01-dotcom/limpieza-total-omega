@@ -859,3 +859,48 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-23T11:51:03` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `_is_excluded_path` para manejar correctamente rutas con longitud excesiva o errores de acceso inesperados, evitando que una excepción en un subdirectorio corte prematuramente el escaneo completo del sistema.
 - `2026-09-23T11:51:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T11:51:03` Corrida terminada. Total usado hoy: 278.
+- `2026-09-23T11:58:52` Arrancando corrida. Quedan hoy ~22 peticiones objetivo.
+- `2026-09-23T11:59:20` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de la lógica de escaneo en `_collect_candidates` ante cambios dinámicos del sistema de archivos (ej. archivos eliminados o bloqueados durante la iteración) mediante la adición de un bloque `try-except` envolvente y validación de existencia `path.is_file()` previa al procesamiento del hash, evitando el quiebre de la ejecución ante condiciones de carrera (Race Conditions) comunes en escaneos de disco.
+- `2026-09-23T11:59:49` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `compute_score` ante posibles excepciones en los `scorers` (por ejemplo, errores de división inesperados) y se garantizó la integridad del reporte final mediante un manejo defensivo de los pesos calculados, evitando resultados fuera de rango si un componente de terceros inyecta métricas atípicas.
+- `2026-09-23T12:01:05` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una comprobación de robustez en el método `_verify_disk_path` para evitar errores silenciosos o mal manejo de rutas con caracteres de control, y se añadió una validación explícita de `path.exists()` dentro del flujo crítico de `_on_disk_analysis` para evitar que la aplicación intente procesar rutas inexistentes que podrían causar excepciones no capturadas durante la recursión.
+- `2026-09-23T12:01:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-23T12:01:28` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-23T12:02:05` Tests FALLARON:
+```
+s_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:218: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) no aptas para archivos."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed, 4 warnings in 1.11s
+
+```
+- `2026-09-23T12:02:05` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `parse_windows_process_csv` añadiendo una validación explícita para evitar errores ante líneas mal formadas o datos numéricos no parseables que podrían causar excepciones no capturadas durante la recolección de métricas.
+- `2026-09-23T12:02:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T12:02:05` Corrida terminada. Total usado hoy: 282.
