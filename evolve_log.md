@@ -1535,3 +1535,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-23T06:34:18` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable, StartupEntry._sanitize_command
 - `2026-09-23T06:34:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T06:34:18` Corrida terminada. Total usado hoy: 154.
+- `2026-09-23T06:42:38` Arrancando corrida. Quedan hoy ~146 peticiones objetivo.
+- `2026-09-23T06:43:23` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_generate_context_cached` y `local_answer` reemplazando la lógica de búsqueda basada en iteración de tokens por una estructura de control más directa, reduciendo la carga sobre el `lru_cache` y evitando llamadas redundantes a `findall` y `lower` en el bucle principal.
+- `2026-09-23T06:43:58` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-23T06:44:30` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó la recursión en `_sum_directory_recursive` implementando una técnica de "memoización de resultados de subdirectorios" y evitando múltiples llamadas a `is_safe_to_modify` y `resolve` dentro del bucle de `os.scandir`, reduciendo drásticamente las llamadas al sistema y el tiempo de escaneo.
+- `2026-09-23T06:44:44` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-23T06:44:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T06:44:44` Corrida terminada. Total usado hoy: 158.

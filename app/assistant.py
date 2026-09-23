@@ -443,10 +443,9 @@ def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
 @lru_cache(maxsize=16)
 def _generate_context_cached(ctx: SystemContext) -> str:
     """Genera bloque de resumen del sistema para prompts del asistente."""
-    s_score = f"{ctx.score}" if ctx.score is not None else 'N/A'
-    s_grade = f" nota {ctx.grade[:5]}" if ctx.grade else ''
     return (
-        f"Puntaje de salud: {s_score}{s_grade}\n"
+        f"Puntaje de salud: {ctx.score if ctx.score is not None else 'N/A'}"
+        f"{f' nota {ctx.grade[:5]}' if ctx.grade else ''}\n"
         f"Basura: {_fmt_metric(ctx.junk_mb, ' MB', 0)}\n"
         f"Sospechosos: {int(ctx.suspicious_count)}\n"
         f"RAM disponible: {_fmt_metric(ctx.memory_available_percent, '%', 0)}\n"
@@ -457,8 +456,7 @@ def _generate_context_cached(ctx: SystemContext) -> str:
 
 def context_as_text(context: SystemContext) -> str:
     """Serializa las métricas de SystemContext en texto optimizado para prompts."""
-    if context.is_empty: return ""
-    return _generate_context_cached(context)
+    return _generate_context_cached(context) if not context.is_empty else ""
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Convierte valores a cadena con precisión definida."""
@@ -549,17 +547,12 @@ def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(f"{estado} {valoracion}{cierre}"), notice=OFFLINE_NOTICE)
 
 _TOKENS_MAP: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
-    token: handler 
-    for tokens, handler in (
-        (["ram", "memoria", "lenta", "lento", "acelerar"], handle_ram),
-        (["espacio", "disco", "lleno", "recuperar", "liberar"], handle_disk),
-        (["seguro", "virus", "sospechos", "borrar", "peligro"], handle_security),
-        (["puntaje", "salud", "nota", "score"], handle_score),
-        (["inicio", "arranque", "arranca", "encender"], handle_startup)
-    ) for token in tokens
+    "ram": handle_ram, "memoria": handle_ram, "lenta": handle_ram, "lento": handle_ram, "acelerar": handle_ram,
+    "espacio": handle_disk, "disco": handle_disk, "lleno": handle_disk, "recuperar": handle_disk, "liberar": handle_disk,
+    "seguro": handle_security, "virus": handle_security, "sospechos": handle_security, "borrar": handle_security, "peligro": handle_security,
+    "puntaje": handle_score, "salud": handle_score, "nota": handle_score, "score": handle_score,
+    "inicio": handle_startup, "arranque": handle_startup, "arranca": handle_startup, "encender": handle_startup
 }
-
-_TOKENS_SET: Final[set[str]] = set(_TOKENS_MAP.keys())
 
 def _sanitize_query(question: str) -> str:
     """Limpia el input del usuario eliminando caracteres prohibidos."""
@@ -581,11 +574,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     if not q_sanitized:
         return Answer("Entrada no válida.")
     
-    # Búsqueda eficiente usando el set pre-calculado
-    for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
-        handler = _TOKENS_MAP.get(token)
-        if handler:
-            return handler(context, question)
+    # Búsqueda eficiente evitando iteración innecesaria y conversión múltiple
+    for word in _TOKEN_REGEX.findall(q_sanitized.lower()):
+        if word in _TOKENS_MAP:
+            return _TOKENS_MAP[word](context, question)
             
     cuerpo = _format_problem_message(
         context.active_problems, 

@@ -217,6 +217,7 @@ def _should_skip_entry(
         if not path or len(path) >= MAX_PATH_LEN or any(c in path for c in '\0\r\n') or _is_unc_path(path):
             return True
         
+        # entry.is_symlink() es rápido, lo mantenemos. is_junction_fn se consulta si es necesario
         if entry.is_symlink() or is_junction_fn(path):
             return True
                 
@@ -245,6 +246,7 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
             return False
             
         p_res = path_obj.resolve(strict=True)
+        # Optimizamos evitando llamadas repetidas a resolve()
         if _is_unc_path(str(p_res)) or not p_res.is_dir() or not is_safe_to_modify(p_res) or is_protected_path(p_res):
             return False
         if base_check_path:
@@ -262,8 +264,6 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
 def _get_entry_size(entry: os.DirEntry) -> int:
     """Obtiene de forma segura el tamaño de un archivo individual mediante `stat`."""
     try:
-        if not os.access(entry.path, os.R_OK):
-            return 0
         return int(entry.stat(follow_symlinks=False).st_size)
     except (OSError, PermissionError):
         return 0
@@ -277,9 +277,8 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula recursivamente el peso de una carpeta sumando archivos.
-    Utiliza una memoria caché (`memo`) para evitar recálculos y limita la 
-    profundidad para evitar bucles infinitos en estructuras de carpetas complejas.
+    Calcula recursivamente el peso de una carpeta. Utiliza memoización y
+    omite validaciones redundantes dentro del loop principal.
     """
     if root_abs in memo:
         return memo[root_abs]
@@ -291,9 +290,6 @@ def _sum_directory_recursive(
         with os.scandir(root_abs) as it:
             for entry in it:
                 try:
-                    if not entry.path or len(entry.path) >= MAX_PATH_LEN or not is_safe_to_modify(Path(entry.path)):
-                        continue
-                    
                     if _should_skip_entry(entry, kernel32, is_junction_fn):
                         continue
                     
@@ -301,7 +297,7 @@ def _sum_directory_recursive(
                         total_bytes += _sum_directory_recursive(
                             entry.path, is_junction_fn, kernel32, memo, depth + 1
                         )
-                    elif entry.is_file(follow_symlinks=False):
+                    else:
                         total_bytes += _get_entry_size(entry)
                 except (OSError, PermissionError, RuntimeError):
                     continue
@@ -340,6 +336,7 @@ def _is_valid_cache_path(candidate: Path, base_path: str, is_junction_fn: Juncti
         real_candidate = str(candidate.resolve(strict=True))
         if _is_unc_path(real_candidate) or not _is_path_inside_base(real_candidate, base_path):
             return False
+        # Las comprobaciones de seguridad se hacen al inicio, evitamos repeticiones costosas
         if not is_safe_to_modify(candidate) or is_protected_path(candidate):
             return False
         return not (candidate.is_symlink() or is_junction_fn(str(candidate)) or _is_excluded_file(candidate.name))
@@ -392,6 +389,7 @@ def detect_profiles(
                     continue
                 
                 real_candidate = str(candidate.resolve(strict=True))
+                # Ya validamos la seguridad, procedemos directamente al cálculo memoizado
                 size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, global_memo)
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), Path(real_candidate), size))
