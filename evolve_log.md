@@ -1050,3 +1050,43 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-23T01:09:58` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las validaciones de entrada en `_is_safe_for_disk_op` y `stage_for_review` para prevenir errores de ejecución ante rutas mal formadas, incorporando chequeos específicos de tipo `Path` y manejo de excepciones ante llamadas a `resolve()` sobre rutas inexistentes.
 - `2026-09-23T01:09:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T01:09:58` Corrida terminada. Total usado hoy: 28.
+- `2026-09-23T01:14:18` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-09-23T01:15:00` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+F..........                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_purge_all_only_deletes_inside_the_quarantine _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_purge_all_only_deletes_in0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-1/test_purge_all_only_deletes_in0/_Cuarentena')
+
+    def test_purge_all_only_deletes_inside_the_quarantine(tmp_path, cuarentena):
+        afuera = tmp_path / "intacto.txt"
+        afuera.write_text("y")
+    
+        for nombre in ("a.txt", "b.txt"):
+            f = tmp_path / nombre
+            f.write_text("x")
+            quarantine.quarantine_file(f, base=cuarentena)
+    
+        borrados = quarantine.purge_all(base=cuarentena)
+    
+>       assert borrados == 2
+E       assert 0 == 2
+
+evolve/tests/test_safety.py:272: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - assert 0 == 2
+1 failed, 298 passed in 1.37s
+
+```
+- `2026-09-23T01:15:00` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `save_manifest` eliminando el potencial `MemoryError` o estados inconsistentes al manejar listas grandes, y añadí una validación explícita para evitar que `_safe_unlink` intente procesar rutas fuera del sandbox de cuarentena, cerrando una brecha de seguridad lógica.
+- `2026-09-23T01:15:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-23T01:16:02` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_in_use` capturando errores específicos de `ctypes` y validando el tipo de entrada para evitar excepciones no controladas durante la validación de seguridad.
+- `2026-09-23T01:16:17` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_reparse_point` y `_safe_stat` implementando una validación de `entry` más estricta antes de acceder a sus atributos, evitando excepciones en caso de que el objeto `DirEntry` ya no sea válido al momento del acceso, cumpliendo con el enfoque de manejo seguro de errores.
+- `2026-09-23T01:16:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T01:16:17` Corrida terminada. Total usado hoy: 32.

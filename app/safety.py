@@ -245,11 +245,10 @@ def _is_file_in_use(path_str: str) -> bool:
         kernel32 = ctypes.windll.kernel32
         handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0x00000007, None, 3, 0x00000080, None)
         if handle == -1: 
-            # Error 32 es 'sharing violation', cualquier otro error (ej. acceso denegado) se trata como uso
-            err = ctypes.GetLastError()
-            return err != 0
+            # Cualquier error al abrir denota posible uso o falta de permisos
+            return True
         kernel32.CloseHandle(handle)
-    except (OSError, PermissionError, Exception):
+    except (OSError, PermissionError, AttributeError, ctypes.ArgumentError, Exception):
         return True
     return False
 

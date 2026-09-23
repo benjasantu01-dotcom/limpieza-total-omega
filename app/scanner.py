@@ -167,11 +167,13 @@ class Scanner:
         Detecta si la entrada actual es un punto de reanálisis (Junction o Symlink) 
         mediante inspección de atributos de archivo para evitar recursión circular.
         """
+        if entry is None:
+            return True
         try:
             stats = _safe_stat(entry)
             if stats and hasattr(stats, 'st_file_attributes'):
                 return bool(stats.st_file_attributes & LIMITS.reparse_attr)
-        except Exception:
+        except (OSError, PermissionError, AttributeError):
             return True 
         return False
 
