@@ -852,3 +852,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-23T11:40:29` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
 - `2026-09-23T11:40:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T11:40:29` Corrida terminada. Total usado hoy: 274.
+- `2026-09-23T11:48:39` Arrancando corrida. Quedan hoy ~26 peticiones objetivo.
+- `2026-09-23T11:49:39` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: robustez ante casos límite).
+- `2026-09-23T11:50:15` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos (como denegación de permisos o rutas de solo lectura) mediante la implementación de una validación explícita `is_safe_to_modify` antes de intentar operaciones de escritura, siguiendo las guías de seguridad para evitar excepciones no controladas.
+- `2026-09-23T11:50:49` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-23T11:51:03` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `_is_excluded_path` para manejar correctamente rutas con longitud excesiva o errores de acceso inesperados, evitando que una excepción en un subdirectorio corte prematuramente el escaneo completo del sistema.
+- `2026-09-23T11:51:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T11:51:03` Corrida terminada. Total usado hoy: 278.

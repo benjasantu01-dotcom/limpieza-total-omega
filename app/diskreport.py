@@ -103,18 +103,11 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
+def _is_excluded_path(entry: os.DirEntry) -> bool:
     """
     Aplica filtros de seguridad defensiva a una entrada de directorio.
-    
-    Evita el escape de sandbox, ignora rutas que superen el límite MAX_PATH para prevenir
-    desbordamientos, bloquea caracteres de ofuscación (RTL) y omite enlaces simbólicos
-    o puntos de reparse (Junctions) para prevenir bucles infinitos o escaneos fuera de ruta.
     """
     try:
-        if len(entry.path) > 260:
-            return True
-        
         if any(c in entry.name for c in SUSPICIOUS_CHARS):
             return True
             
@@ -122,11 +115,10 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             return True
             
         if os.name == 'nt':
-            # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT. Validamos integridad antes de procesar.
             st = entry.stat(follow_symlinks=False)
             if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
                 return True
-    except (OSError, PermissionError, AttributeError, UnicodeDecodeError):
+    except (OSError, PermissionError, AttributeError):
         return True
     return False
 
@@ -258,9 +250,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if _is_excluded_path(entry, root_path): continue
+                        if _is_excluded_path(entry): continue
                         
-                        if skip_protected and is_protected_path(Path(entry.path)):
+                        path_obj = Path(entry.path)
+                        if skip_protected and is_protected_path(path_obj):
                             continue
                         
                         st = entry.stat(follow_symlinks=False)
@@ -268,10 +261,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             inode: Inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(Path(entry.path))
+                                stack.append(path_obj)
                                 
                         elif entry.is_file(follow_symlinks=False):
-                            yield Path(entry.path), st.st_size
+                            yield path_obj, st.st_size
                             
                     except (PermissionError, OSError):
                         continue
