@@ -264,7 +264,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    if _is_excluded_path(entry, root_path): continue
+                    # Protección contra rutas corruptas o nombres ilegibles
+                    try:
+                        if _is_excluded_path(entry, root_path): continue
+                    except (OSError, UnicodeDecodeError):
+                        continue
                     
                     try:
                         st = entry.stat(follow_symlinks=False)

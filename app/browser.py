@@ -276,7 +276,6 @@ def _sum_directory_recursive(
     Calcula recursivamente el peso de una carpeta, sumando el tamaño de archivos
     y resultados de subdirectorios, protegiendo contra errores de I/O mediante
     captura de excepciones localizadas y validación de seguridad.
-    Usa un diccionario 'memo' para evitar re-escaneo de rutas compartidas.
     """
     if root_abs in memo:
         return memo[root_abs]
@@ -287,20 +286,22 @@ def _sum_directory_recursive(
     try:
         with os.scandir(root_abs) as it:
             for entry in it:
-                # Verificación de seguridad defensiva
-                full_path = os.path.abspath(entry.path)
-                if len(full_path) >= MAX_PATH_LEN or not is_safe_to_modify(Path(full_path)):
+                try:
+                    # Verificación de seguridad defensiva
+                    if not entry.path or len(entry.path) >= MAX_PATH_LEN or not is_safe_to_modify(Path(entry.path)):
+                        continue
+                    
+                    if _should_skip_entry(entry, kernel32, is_junction_fn):
+                        continue
+                    
+                    if entry.is_dir(follow_symlinks=False):
+                        total_bytes += _sum_directory_recursive(
+                            entry.path, is_junction_fn, kernel32, memo, depth + 1
+                        )
+                    elif entry.is_file(follow_symlinks=False):
+                        total_bytes += _get_entry_size(entry)
+                except (OSError, PermissionError, RuntimeError):
                     continue
-                
-                if _should_skip_entry(entry, kernel32, is_junction_fn):
-                    continue
-                
-                if entry.is_dir(follow_symlinks=False):
-                    total_bytes += _sum_directory_recursive(
-                        entry.path, is_junction_fn, kernel32, memo, depth + 1
-                    )
-                elif entry.is_file(follow_symlinks=False):
-                    total_bytes += _get_entry_size(entry)
         
         memo[root_abs] = total_bytes
         return total_bytes

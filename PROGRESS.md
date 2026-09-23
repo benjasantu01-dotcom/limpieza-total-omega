@@ -8,37 +8,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **170** (33.7% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 247
+- Sin respuesta de la IA (error o límite): 248
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 19 | 3 | 11 | 1 | 54 |
+| 2026-09-21 | 17 | 3 | 10 | 1 | 53 |
 | 2026-09-22 | 123 | 16 | 28 | 19 | 164 |
-| 2026-09-23 | 28 | 1 | 6 | 2 | 29 |
+| 2026-09-23 | 30 | 1 | 6 | 2 | 31 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **41**
 - rendimiento: **32**
-- seguridad defensiva: **31**
-- robustez ante casos límite: **21**
+- seguridad defensiva: **29**
+- robustez ante casos límite: **23**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `healthscore.py`: **17**
-- `quarantine.py`: **16**
-- `safety.py`: **16**
+- `safety.py`: **15**
+- `quarantine.py`: **15**
 - `settings.py`: **14**
 - `assistant.py`: **13**
 - `memory.py`: **13**
+- `browser.py`: **12**
 - `duplicates.py`: **12**
-- `browser.py`: **11**
 - `scanner.py`: **11**
 - `organizer.py`: **10**
 - `branding.py`: **7**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-23T02:58:58` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante escenarios donde `entry.path` puede exceder los límites del sistema operativo o presentar errores de decodificación durante el escaneo, asegurando que el bucle de iteración no se interrumpa ante nombres de archivo corruptos o rutas excepcionalmente largas.
+- `2026-09-23T02:58:21` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas de sistema con problemas de resolución o permisos denegados en `_sum_directory_recursive` mediante la implementación de una técnica de "failsafe" en la profundidad de la recursión, evitando que errores de I/O en subdirectorios profundos propaguen excepciones y detengan el escaneo de todo el árbol.
 - `2026-09-23T02:49:39` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de tipos y estados, garantizando que valores numéricos inválidos o nulos no provoquen errores en tiempo de ejecución ni bloqueos visuales.
 - `2026-09-23T02:38:05` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total de cuarentena y el reporte de resumen evitando la recarga innecesaria del archivo de manifiesto desde el disco mediante el uso de una lista ya cargada en memoria, y mejoré la eficiencia de `total_quarantined_bytes` y `summarize` para reducir las operaciones de I/O redundantes.
 - `2026-09-23T02:28:39` **organizer.py** (rendimiento): Se ha optimizado `_process_directory` eliminando la resolución redundante de rutas en cada iteración y utilizando un conjunto (`visited`) para evitar procesar recursivamente el mismo subárbol, mejorando significativamente el rendimiento en estructuras de carpetas complejas o profundas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-23T02:05:57` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las funciones de heurística y la estandarización de la documentación en los `check_` helpers para asegurar que todo desarrollador entienda los parámetros requeridos.
 - `2026-09-23T01:50:52` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización y expansión de docstrings en las funciones críticas de validación y recorrido, aclarando el propósito y las precondiciones de cada etapa para facilitar el mantenimiento futuro.
 - `2026-09-23T01:50:37` **memory.py** (legibilidad y documentación): Se introdujo documentación técnica detallada mediante docstrings estructurados (usando el formato Google) y se extrajo la lógica de ordenamiento de procesos en `parse_windows_process_csv` hacia una función helper para mejorar la legibilidad del flujo principal.
-- `2026-09-23T01:45:27` **healthscore.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el pipeline de evaluación, clarificando la función de las constantes críticas para facilitar el mantenimiento del modelo de scoring.
-- `2026-09-23T01:40:14` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando docstrings más descriptivos, clarificando los tipos de datos complejos (`Inode`, `SizeReport`) y documentando explícitamente los límites de los algoritmos utilizados (como la complejidad O(n) y el uso de heaps) para facilitar el mantenimiento y la auditoría.

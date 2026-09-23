@@ -1177,3 +1177,14 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-09-23T02:49:39` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de tipos y estados, garantizando que valores numéricos inválidos o nulos no provoquen errores en tiempo de ejecución ni bloqueos visuales.
 - `2026-09-23T02:49:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T02:49:39` Corrida terminada. Total usado hoy: 66.
+- `2026-09-23T02:57:50` Arrancando corrida. Quedan hoy ~234 peticiones objetivo.
+- `2026-09-23T02:58:21` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante rutas de sistema con problemas de resolución o permisos denegados en `_sum_directory_recursive` mediante la implementación de una técnica de "failsafe" en la profundidad de la recursión, evitando que errores de I/O en subdirectorios profundos propaguen excepciones y detengan el escaneo de todo el árbol.
+- `2026-09-23T02:58:58` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `walk_files` ante escenarios donde `entry.path` puede exceder los límites del sistema operativo o presentar errores de decodificación durante el escaneo, asegurando que el bucle de iteración no se interrumpa ante nombres de archivo corruptos o rutas excepcionalmente largas.
+- `2026-09-23T02:58:59` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-23T02:59:30` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-23T03:00:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-23T03:00:43` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-23T03:01:49` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-23T03:03:01` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-23T03:03:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T03:03:01` Corrida terminada. Total usado hoy: 70.
