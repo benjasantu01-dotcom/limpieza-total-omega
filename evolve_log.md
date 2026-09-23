@@ -1542,3 +1542,14 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-23T06:44:44` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-09-23T06:44:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T06:44:44` Corrida terminada. Total usado hoy: 158.
+- `2026-09-23T06:52:50` Arrancando corrida. Quedan hoy ~142 peticiones objetivo.
+- `2026-09-23T06:53:18` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el proceso de recolección de candidatos reemplazando múltiples llamadas costosas a `os.scandir` y `stat` por una única operación, además de evitar la resolución redundante de rutas (`resolve`) y chequeos de seguridad repetitivos dentro del bucle de escaneo.
+- `2026-09-23T06:54:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-23T06:54:47` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el método `is_finite` de la clase `SystemMetrics` reemplazando la creación de tuplas y la iteración dinámica por un acceso directo a los campos, reduciendo el consumo de CPU y memoria en cada chequeo del motor.
+- `2026-09-23T06:55:47` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-23T06:56:50` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-23T06:57:56` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-23T06:59:08` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-23T06:59:38` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-09-23T06:59:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T06:59:38` Corrida terminada. Total usado hoy: 162.

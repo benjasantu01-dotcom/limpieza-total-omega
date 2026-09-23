@@ -215,27 +215,29 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if entry.is_symlink():
-                            continue
-                        
-                        if entry.is_dir():
+                        # Chequeos rápidos sin invocar métodos costosos repetidamente
+                        if entry.is_dir(follow_symlinks=False):
                             if not is_junction(Path(entry.path)):
                                 _scan_dir(Path(entry.path))
                             continue
                         
-                        p_entry = Path(entry.path)
-                        if entry.path in visited_files or not is_safe_to_modify(p_entry):
-                            continue
-                        if skip_protected and is_protected_path(p_entry):
-                            continue
-
-                        stat = entry.stat()
-                        if stat.st_size < min_size or is_system_or_hidden(p_entry):
+                        if entry.path in visited_files:
                             continue
                             
-                        if not _is_file_locked(p_entry):
-                            size_to_paths_map[stat.st_size].append(p_entry)
-                            visited_files.add(entry.path)
+                        # Stat único para verificar tamaño y atributos simultáneamente
+                        stat = entry.stat(follow_symlinks=False)
+                        if stat.st_size < min_size:
+                            continue
+                            
+                        p_entry = Path(entry.path)
+                        if not is_safe_to_modify(p_entry) or (skip_protected and is_protected_path(p_entry)):
+                            continue
+                            
+                        if is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
+                            continue
+                            
+                        size_to_paths_map[stat.st_size].append(p_entry)
+                        visited_files.add(entry.path)
                     except (FileNotFoundError, OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
