@@ -231,12 +231,11 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
     for rule in rules:
         if rule.check(metrics, ratio):
             try:
-                msg = rule.message_factory(metrics)
-                if msg:
-                    clean_msg = "".join(c for c in msg if c.isprintable()).strip()
-                    if clean_msg:
-                        findings.append(clean_msg[:200])
-            except Exception:
+                msg = str(rule.message_factory(metrics))
+                clean_msg = "".join(c for c in msg if c.isprintable()).strip()
+                if clean_msg:
+                    findings.append(clean_msg[:200])
+            except (Exception, ValueError, TypeError):
                 continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

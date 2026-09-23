@@ -320,7 +320,8 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[Path]:
     try:
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 260) > 0:
             path_str = buf.value
-            if any(path_str.startswith(p) for p in ("\\\\", "\\??\\", "\\Device\\", "\\\\?\\")): return None
+            # Validación defensiva: solo aceptar rutas que parezcan unidades locales (ej. C:\...)
+            if not (len(path_str) >= 3 and path_str[1] == ":" and path_str[2] == "\\"): return None
             if any(ord(c) < 32 for c in path_str): return None
             p = Path(path_str).resolve(strict=False)
             return p if p.is_absolute() else None
