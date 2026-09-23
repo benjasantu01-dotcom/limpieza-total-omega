@@ -144,7 +144,6 @@ class _Validators:
     def _is_reparse_point(path: Path) -> bool:
         """Determina si una ruta es un enlace simbólico o un junction."""
         try:
-            p = path.resolve()
             return path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction())
         except (OSError, PermissionError):
             return True
@@ -244,7 +243,7 @@ def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
 _VALIDATOR_MAP: Final = _build_validator_map()
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
-    """Calcula la ruta absoluta del archivo de configuración."""
+    """Calcula la ruta absoluta del archivo de configuración, usando caché para eficiencia."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     base_path = Path(custom_base).expanduser().resolve()
     if base_path in _PATH_CACHE: return _PATH_CACHE[base_path]
@@ -257,7 +256,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida y normaliza un diccionario crudo."""
+    """Valida y normaliza un diccionario crudo convirtiéndolo al esquema AppSettings."""
     if not _is_dict(raw_values): return DEFAULTS.copy()
     
     config = DEFAULTS.copy()
@@ -270,7 +269,7 @@ def validate(raw_values: Any) -> AppSettings:
 
 @lru_cache(maxsize=4)
 def _load_impl(ruta: Path) -> AppSettings:
-    """Implementación privada cacheada para leer y verificar el archivo."""
+    """Implementación privada cacheada para leer y verificar el archivo desde disco."""
     try:
         if not ruta.exists() or not ruta.is_file() or _Validators._is_reparse_point(ruta): return DEFAULTS.copy()
         if not is_safe_to_modify(str(ruta)): return DEFAULTS.copy()
@@ -289,7 +288,7 @@ def _load_impl(ruta: Path) -> AppSettings:
         return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga los ajustes intentando leer el archivo principal o su respaldo."""
+    """Carga los ajustes intentando leer el archivo principal o su respaldo .bak."""
     ruta = settings_path(custom_base)
     for r in [ruta, ruta.with_suffix(".bak")]:
         try:
@@ -299,16 +298,15 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
-    """Aplica consistencia forzada de tipos y reglas post-validación."""
+    """Aplica consistencia forzada de tipos y reglas de negocio post-validación."""
     final = {k: settings.get(k, v) for k, v in DEFAULTS.items()}
     
-    # Reglas de negocio post-validación
     if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         final["asistente_activado"] = False
     return final
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Guarda los ajustes usando escritura atómica y validación de seguridad."""
+    """Guarda los ajustes usando escritura atómica: temp -> rename, con validación previa."""
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     parent = ruta.parent
@@ -342,7 +340,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             except (OSError, PermissionError): pass
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Actualiza selectivamente las preferencias."""
+    """Actualiza selectivamente las preferencias y persite cambios si hubo modificaciones."""
     current = load(custom_base)
     modified = False
     for k, v in changes.items():
@@ -355,28 +353,28 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
-    """Restaura a valores de fábrica."""
+    """Restaura a valores de fábrica y limpia la caché."""
     save(DEFAULTS, custom_base)
     _load_impl.cache_clear()
     return DEFAULTS.copy()
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
-    """Obtiene un valor específico."""
+    """Obtiene un valor específico consultando la configuración cargada."""
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
-    """Obtiene la clave de API."""
+    """Obtiene la clave de API priorizando la variable de entorno sobre el archivo."""
     if env_key := os.environ.get(API_KEY_ENV_VAR, "").strip(): return env_key
     return str(load(custom_base).get("asistente_clave_api", "")).strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
-    """Verifica si el asistente tiene habilitación lógica."""
+    """Verifica si el asistente tiene habilitación lógica y clave disponible."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado")) and bool(str(settings.get("asistente_clave_api", "")).strip())
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
-    """Genera un reporte textual."""
+    """Genera un reporte textual de la configuración actual para el usuario."""
     current = load(custom_base)
     api_key_env = os.environ.get(API_KEY_ENV_VAR)
     api_key_file = str(current.get("asistente_clave_api", "")).strip()

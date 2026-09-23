@@ -43,16 +43,18 @@ __all__ = [
     "is_running_as_admin",
 ]
 
-# Constantes de atributos de archivo Win32 obtenidas de WinBase.h
-FILE_ATTRIBUTE_HIDDEN: Final[int] = 0x02
-FILE_ATTRIBUTE_SYSTEM: Final[int] = 0x04
-FILE_ATTRIBUTE_TEMPORARY: Final[int] = 0x100
-FILE_ATTRIBUTE_OFFLINE: Final[int] = 0x1000
-FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x400
-FILE_ATTRIBUTE_DIRECTORY: Final[int] = 0x10
-FILE_ATTRIBUTE_COMPRESSED: Final[int] = 0x800
-FILE_ATTRIBUTE_ENCRYPTED: Final[int] = 0x4000
-FILE_ATTRIBUTE_SPARSE_FILE: Final[int] = 0x200
+# Máscaras de bits para FileAttributes (Win32 API)
+class Win32Attr(IntEnum):
+    HIDDEN: int = 0x02
+    SYSTEM: int = 0x04
+    DIRECTORY: int = 0x10
+    TEMPORARY: int = 0x100
+    SPARSE_FILE: int = 0x200
+    REPARSE_POINT: int = 0x400
+    COMPRESSED: int = 0x800
+    OFFLINE: int = 0x1000
+    ENCRYPTED: int = 0x4000
+
 MAX_PATH_LENGTH: Final[int] = 260
 MAX_FILENAME_LENGTH: Final[int] = 255
 MAX_FILE_SIZE: Final[int] = 2 * 1024 * 1024 * 1024  # 2GB límite de seguridad arbitrario
@@ -226,22 +228,22 @@ def _is_system_or_hidden(path_str: str) -> bool:
     """Consulta atributos Win32 para identificar archivos protegidos por el SO."""
     if not os.path.isabs(path_str): return False
     attrs = _get_file_attrs(path_str)
-    return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_TEMPORARY))
+    return bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY))
 
 def _is_reparse_point(path_str: str) -> bool:
     """Consulta Win32 para identificar Junctions o Symlinks que pueden causar bucles infinitos."""
     if os.name != 'nt': return os.path.islink(path_str)
-    return bool(_get_file_attrs(path_str) & FILE_ATTRIBUTE_REPARSE_POINT)
+    return bool(_get_file_attrs(path_str) & Win32Attr.REPARSE_POINT)
 
 def _is_encrypted_or_compressed_or_sparse(path_str: str) -> bool:
     """Consulta atributos Win32 para detectar NTFS compresión, cifrado o archivos dispersos."""
     if os.name != 'nt': return False
-    return bool(_get_file_attrs(path_str) & (FILE_ATTRIBUTE_COMPRESSED | FILE_ATTRIBUTE_ENCRYPTED | FILE_ATTRIBUTE_SPARSE_FILE))
+    return bool(_get_file_attrs(path_str) & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED | Win32Attr.SPARSE_FILE))
 
 def _is_offline(path_str: str) -> bool:
     """Detecta si un archivo es gestionado por proveedores en la nube."""
     if os.name != 'nt': return False
-    return bool(_get_file_attrs(path_str) & FILE_ATTRIBUTE_OFFLINE)
+    return bool(_get_file_attrs(path_str) & Win32Attr.OFFLINE)
 
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
@@ -274,7 +276,7 @@ def _is_volume_readonly(path_str: str) -> bool:
 def _is_directory_junction(path_str: str) -> bool:
     """Especialización para detectar directorios que son puntos de unión de NTFS."""
     attrs = _get_file_attrs(path_str)
-    return bool(attrs & FILE_ATTRIBUTE_DIRECTORY and attrs & FILE_ATTRIBUTE_REPARSE_POINT)
+    return bool(attrs & Win32Attr.DIRECTORY and attrs & Win32Attr.REPARSE_POINT)
 
 def _is_kernel_managed(path: Path) -> bool:
     """Previene manipulación de archivos esenciales que el kernel mantiene bloqueados."""
@@ -450,7 +452,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if _is_device_file(target_path):
         raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
     # Verificación preventiva de reparse point antes de acceder al disco
-    if os.name == 'nt' and (_get_file_attrs(path_string) & FILE_ATTRIBUTE_REPARSE_POINT):
+    if os.name == 'nt' and (_get_file_attrs(path_string) & Win32Attr.REPARSE_POINT):
         raise UnsafePathError("Punto de reparse detectado estructuralmente.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
     try:
         if target_path.exists() and not target_path.is_absolute():
