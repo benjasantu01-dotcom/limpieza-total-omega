@@ -46,14 +46,14 @@ MB_SIZE: int = 1024 * 1024
 # Caracteres Unicode que pueden ser usados para engañar visualmente al usuario con rutas falsas
 SUSPICIOUS_CHARS: Tuple[str, ...] = ('\u202E', '\u202D', '\u200E', '\u200F')
 
-# Identificador único de archivo basado en el dispositivo y número de inodo
+# Identificador único de archivo basado en el dispositivo y número de inodo para detectar recursión
 Inode: TypeAlias = Tuple[int, int]
-# Tupla de (total_bytes, total_files) para reportes de peso
+# Tupla de (total_bytes, total_files) para reportes de peso acumulado
 SizeReport: TypeAlias = Tuple[int, int]
 
 
 class ExtStats:
-    """Contenedor mutable para acumular métricas por extensión durante el escaneo."""
+    """Contenedor mutable para acumular métricas por extensión durante el escaneo secuencial."""
     def __init__(self) -> None:
         self.total_bytes: int = 0
         self.count: int = 0
@@ -289,7 +289,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Encuentra los N archivos más pesados en el directorio especificado usando un heap."""
+    """Encuentra los N archivos más pesados en el directorio especificado usando un heap para optimizar memoria."""
     root = _validate_root(directory)
     if not root: return []
     valid_limit = max(0, int(limit) if isinstance(limit, (int, float)) else 0)
@@ -310,7 +310,8 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
     Identifica las subcarpetas de primer nivel con mayor consumo de espacio.
-    Realiza una agregación por raíz inmediata usando relative_to para evitar costosas manipulaciones de lista.
+    Realiza una agregación por raíz inmediata usando `relative_to` para evitar 
+    costosas manipulaciones recursivas de listas en cada iteración del walk.
     """
     root = _validate_root(directory)
     if not root: return []
@@ -345,7 +346,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     Realiza una pasada única (O(n)) sobre el árbol de directorios para recolectar estadísticas.
     
     Utiliza `walk_files` para procesar el árbol de forma iterativa. Mantiene un Min-Heap 
-    de tamaño `limit` para trackear eficientemente los archivos más pesados.
+    de tamaño `limit` para trackear eficientemente los archivos más pesados sin 
+    necesidad de cargar toda la lista de archivos en memoria.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -363,6 +365,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         stat.total_bytes += size_bytes
         stat.count += 1
         
+        # Lógica de Min-Heap para mantener solo los N elementos más pesados
         if limit > 0 and size_bytes > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size_bytes, path))
@@ -373,7 +376,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
-    """Genera un informe textual unificado del uso de disco."""
+    """Genera un informe textual unificado del uso de disco con formato legible."""
     root = _validate_root(directory)
     if root is None: return ["Error: Ruta no válida o inaccesible."]
     

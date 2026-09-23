@@ -45,11 +45,13 @@ class Grade(Enum):
 
 class RecommendationRule(NamedTuple):
     """
-    Reglas de recomendación: factoría de mensajes que se activa si 'check' es verdadero.
-    area: Categoría del sistema (ej. 'disco').
-    threshold: Valor límite del ratio para disparar la regla.
-    message_factory: Función que genera un mensaje contextual.
-    check: Lógica de validación que recibe las métricas y el ratio normalizado.
+    Reglas de recomendación: factory de mensajes activada por validación de métricas.
+    
+    Attributes:
+        area: Identificador del dominio (ej. 'disco').
+        threshold: Ratio límite de salud para considerar necesaria la regla.
+        message_factory: Callable que toma SystemMetrics y devuelve el string sugerido.
+        check: Callable que evalúa si, dadas las métricas y el ratio, aplicar la recomendación.
     """
     area: MetricKey
     threshold: float
@@ -224,7 +226,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
-                msg = rule.message_factory(metrics)
+                msg: str = rule.message_factory(metrics)
                 if msg:
                     # Defensivo: restringir caracteres imprimibles y longitud para evitar inyecciones en la UI
                     clean_msg = "".join(c for c in msg if c.isprintable()).strip()
@@ -247,11 +249,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
-            area_ratio = entry.scorer(metrics)
+            area_ratio: NormalizedRatio = entry.scorer(metrics)
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
-            weighted_points = int(area_ratio * entry.weight + 0.5)
+            weighted_points: int = int(area_ratio * entry.weight + 0.5)
             metric_breakdown[entry.area] = weighted_points
             accumulated_score += weighted_points
         except (ValueError, TypeError, ZeroDivisionError, AttributeError):
@@ -279,7 +281,7 @@ def summarize(result: HealthResult | None) -> List[str]:
     if not isinstance(result, HealthResult):
         return ["Error: Informe de salud no disponible."]
     
-    lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+    lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in WEIGHTS.items():
         val = result.breakdown.get(area, 0)
         lines.append(f"  {area.capitalize():<12} {val:>2}/{maximo:<2} [{_render_bar(val, maximo)}]")
