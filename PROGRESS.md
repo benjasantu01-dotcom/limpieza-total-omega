@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **167** (33.1% de aceptación)
+- Mejoras aceptadas: **166** (32.9% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 248
+- Sin respuesta de la IA (error o límite): 250
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 44 | 5 | 19 | 2 | 68 |
+| 2026-09-21 | 42 | 5 | 18 | 2 | 67 |
 | 2026-09-22 | 123 | 16 | 28 | 19 | 164 |
-| 2026-09-23 | 0 | 0 | 0 | 0 | 16 |
+| 2026-09-23 | 1 | 0 | 0 | 0 | 19 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **40**
+- legibilidad y documentación: **38**
 - seguridad defensiva: **36**
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **34**
 - rendimiento: **31**
 - robustez ante casos límite: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
 - `quarantine.py`: **18**
+- `diskreport.py`: **18**
 - `safety.py`: **16**
 - `memory.py`: **15**
+- `assistant.py`: **14**
 - `healthscore.py`: **14**
-- `duplicates.py`: **13**
-- `assistant.py`: **13**
 - `settings.py`: **13**
+- `duplicates.py`: **12**
 - `browser.py`: **11**
 - `organizer.py`: **10**
 - `scanner.py`: **9**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-23T00:47:31` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para que ante errores en la lectura de valores externos (como tipos inesperados o fallos en `getattr`), la función retorne explícitamente `False` en lugar de propagar una excepción, garantizando que el estado interno del contexto solo se modifique cuando la integridad de los datos esté garantizada.
 - `2026-09-22T14:29:34` **quarantine.py** (seguridad defensiva): Se ha implementado `_check_device_consistency` para asegurar que el archivo de origen y el directorio destino residan en el mismo sistema de archivos (número de dispositivo), evitando errores de `os.replace` (que no es atómico entre dispositivos) y previniendo comportamientos inconsistentes en entornos con múltiples volúmenes.
 - `2026-09-22T14:20:02` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las verificaciones en `_collect_candidates` para asegurar que el uso de `os.scandir` respete consistentemente las restricciones de `is_safe_to_modify` y los filtros de seguridad, evitando accesos accidentales a rutas protegidas mediante la validación temprana de `entry.path`.
 - `2026-09-22T14:10:15` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_excluded_path` añadiendo una comprobación explícita para evitar que `path.resolve()` o `Path(entry.path)` accedan fuera del `root_path` en sistemas con enlaces simbólicos, asegurando que el escáner no escape del sandbox definido por el usuario.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-22T12:59:14` **healthscore.py** (rendimiento): Optimicé el bucle de cómputo en `compute_score` eliminando la validación redundante de `entry.area` dentro del loop, ya que el pipeline es estático, y precalculando el acceso a `WEIGHTS` mediante una referencia directa en la tupla `PipelineEntry` para reducir el costo de búsqueda en diccionario.
 - `2026-09-22T12:56:52` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `stat()` y `path.resolve()` para archivos ya visitados, reduciendo drásticamente las operaciones de I/O por archivo durante el escaneo.
 - `2026-09-22T12:56:22` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación innecesaria de objetos `Path` y el uso intensivo de `relative_to` dentro del loop, operando directamente sobre los componentes de la ruta para mejorar el rendimiento en directorios con gran profundidad.
-- `2026-09-22T12:46:52` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la lógica de búsqueda basada en iteración manual sobre tokens por una búsqueda mediante un `set` de tokens pre-calculado, evitando re-tokenizar la query y buscar en una lista de listas en cada iteración.
