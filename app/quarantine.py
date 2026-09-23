@@ -466,8 +466,10 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             raise OSError("Integridad del archivo temporal fallida.")
         
         dir_fd = os.open(str(base_path), os.O_RDONLY)
-        try: os.fsync(dir_fd)
-        finally: os.close(dir_fd)
+        try: 
+            os.fsync(dir_fd)
+        finally: 
+            os.close(dir_fd)
         
         return target_path
     except (OSError, IOError) as e:

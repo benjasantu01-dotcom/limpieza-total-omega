@@ -336,13 +336,15 @@ def _get_process_path(proc_handle: ctypes.c_void_p) -> Optional[Path]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
     
-    buf = ctypes.create_unicode_buffer(1024)
+    # Usar un buffer de tamaño fijo definido por MAX_PATH
+    MAX_PATH = 260
+    buf = ctypes.create_unicode_buffer(MAX_PATH)
     try:
-        chars_written = psapi.GetModuleFileNameExW(proc_handle, None, buf, 1024)
+        chars_written = psapi.GetModuleFileNameExW(proc_handle, None, buf, MAX_PATH)
     except (ValueError, TypeError, ctypes.ArgumentError):
         return None
     
-    if 0 < chars_written < 1024:
+    if 0 < chars_written < MAX_PATH:
         path_str = buf.value
         # Filtra rutas de dispositivo, UNC o caracteres no imprimibles
         if not path_str or any(path_str.startswith(p) for p in ("\\\\", "\\??\\", "\\Device\\", "\\\\?\\")):

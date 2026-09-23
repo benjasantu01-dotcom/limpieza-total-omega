@@ -186,15 +186,16 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     Valida permisos de sistema, jerarquía de rutas y estado de bloqueo mediante 
     `is_safe_to_modify` antes de autorizar cualquier movimiento.
     """
-    if not isinstance(src, Path) or not isinstance(dest, Path) or not src.exists(): 
+    if not isinstance(src, Path) or not isinstance(dest, Path): 
         return False
-    if not is_safe_to_modify(src): 
+    if not src.exists() or not is_safe_to_modify(src): 
         return False
     if not _validate_path_security(src, dest): 
         return False
         
     try:
-        target_parent = (dest.parent if not dest.exists() else dest.resolve().parent)
+        dest_abs = dest.resolve() if dest.exists() else dest.parent.resolve()
+        target_parent = dest_abs.parent if dest.exists() else dest_abs
         if is_protected_path(target_parent) or _is_unc_path(target_parent) or src.drive != target_parent.drive: return False
         if _is_recursive_violation(src, dest): return False
         if not os.access(target_parent, os.W_OK) or not os.access(src, os.W_OK): return False
@@ -282,19 +283,20 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     """Mueve archivos validados a cuarentena tras asegurar permisos de escritura y seguridad de destino."""
     if not files: return None
     try:
-        dest_base = Path(review_dir).expanduser().resolve()
+        dest_base = Path(review_dir).expanduser()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-        if _is_junction(dest_base) or not is_safe_to_modify(dest_base): return None
+        dest_res = dest_base.resolve()
+        if _is_junction(dest_res) or not is_safe_to_modify(dest_res): return None
     except (OSError, RuntimeError, PermissionError): return None
     
     for junk_file in files:
         try:
-            target_path = _can_move_file(junk_file, dest_base)
-            if target_path and is_safe_to_modify(junk_file.path):
+            target_path = _can_move_file(junk_file, dest_res)
+            if target_path and junk_file.path.exists() and is_safe_to_modify(junk_file.path):
                 ensure_safe_to_modify(junk_file.path)
                 shutil.move(str(junk_file.path), str(target_path))
         except (OSError, shutil.Error, PermissionError): continue
-    return dest_base
+    return dest_res
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """

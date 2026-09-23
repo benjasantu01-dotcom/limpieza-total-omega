@@ -1188,3 +1188,13 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-09-23T03:03:01` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-09-23T03:03:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T03:03:01` Corrida terminada. Total usado hoy: 70.
+- `2026-09-23T03:08:05` Arrancando corrida. Quedan hoy ~230 peticiones objetivo.
+- `2026-09-23T03:09:07` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-23T03:10:11` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-23T03:11:17` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-23T03:12:29` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-23T03:13:14` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `trim_working_set` y `_get_process_path` mediante la validación estricta de límites en buffers Win32 y el manejo de excepciones durante la apertura de procesos, evitando que llamadas a APIs de sistema malformadas o rutas inválidas generen efectos secundarios no deseados.
+- `2026-09-23T03:13:43` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la resiliencia ante rutas inexistentes o inaccesibles en `_is_safe_for_disk_op` y `stage_for_review`, añadiendo chequeos de `exists()` y manejo de excepciones en la resolución de rutas para evitar caídas durante la iteración en entornos con archivos bloqueados o volátiles.
+- `2026-09-23T03:14:11` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejora la robustez de `quarantine.py` ante casos de concurrencia y fallos de I/O en `save_manifest` mediante un bloque `try-finally` para asegurar que el descriptor de archivo (fd) del directorio siempre se cierre, incluso si `os.fsync` falla, evitando fugas de recursos del sistema.
+- `2026-09-23T03:14:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T03:14:11` Corrida terminada. Total usado hoy: 74.
