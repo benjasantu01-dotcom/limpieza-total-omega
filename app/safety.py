@@ -333,7 +333,7 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     try:
         current_stat = path.stat()
     except (PermissionError, OSError, FileNotFoundError) as e:
-        raise UnsafePathError(f"Acceso denegado o archivo perdido ({e}): {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+        raise UnsafePathError(f"Acceso denegado o archivo perdido ({e}): {path.name}", SafetyValidationErrorCode.IO_ERROR)
     
     if getattr(current_stat, 'st_dev', 0) != initial_stat.st_dev or getattr(current_stat, 'st_ino', 0) != initial_stat.st_ino:
         raise UnsafePathError(f"Consistencia fallida (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
@@ -362,7 +362,7 @@ def _validate_access_permissions(path: Path) -> None:
         if not os.access(path, os.W_OK):
             raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
     except (OSError, PermissionError):
-        raise UnsafePathError("Acceso al sistema de archivos denegado.", SafetyValidationErrorCode.ACCESS_DENIED)
+        raise UnsafePathError("Acceso al sistema de archivos denegado.", SafetyValidationErrorCode.IO_ERROR)
 
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
@@ -552,14 +552,18 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             raise UnsafePathError(f"Acceso de escritura denegado: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
         if os.name == 'nt': 
             _validate_ntfs_reparse_redirection(p)
-            if not os.access(p.parent, os.W_OK):
-                 raise UnsafePathError("Directorio contenedor marcado como solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
+            try:
+                if not os.access(p.parent, os.W_OK):
+                     raise UnsafePathError("Directorio contenedor marcado como solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
+            except (OSError, PermissionError): raise UnsafePathError("Directorio contenedor inaccesible.", SafetyValidationErrorCode.IO_ERROR)
         try: _check_file_integrity(p, initial_stat)
         except (OSError, PermissionError) as e: raise UnsafePathError(f"Error durante validación: {e}", SafetyValidationErrorCode.IO_ERROR)
     else:
         parent = p.parent
-        if parent.exists() and not os.access(parent, os.W_OK):
-             raise UnsafePathError("Directorio contenedor no tiene permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+        try:
+            if parent.exists() and not os.access(parent, os.W_OK):
+                 raise UnsafePathError("Directorio contenedor no tiene permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+        except (OSError, PermissionError): raise UnsafePathError("Directorio contenedor inaccesible.", SafetyValidationErrorCode.IO_ERROR)
         if parent.exists() and is_protected_path(parent):
             raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
     return p

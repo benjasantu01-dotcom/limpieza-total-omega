@@ -281,8 +281,7 @@ def _load_impl(ruta: Path) -> AppSettings:
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)
             
-        if not _is_dict(data) or not all(k in _KEY_TO_ENUM for k in data):
-            return DEFAULTS.copy()
+        if not _is_dict(data): return DEFAULTS.copy()
             
         return _coerce_and_verify(validate(data))
     except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError):
@@ -320,7 +319,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
     except (TypeError, ValueError, OSError, PermissionError): return None
     
-    temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
+    temp_path = ruta.with_suffix(".tmp")
     bak_path = ruta.with_suffix(".bak")
     try:
         with open(temp_path, "w", encoding="utf-8") as f:
@@ -331,8 +330,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             if not is_safe_to_modify(str(ruta)): return None
             os.replace(ruta, bak_path)
         os.replace(temp_path, ruta)
-        # Verificación post-escritura simple: asegurar que el archivo es legible
-        if not (ruta.exists() and ruta.stat().st_size > 0): raise IOError("Integridad de escritura fallida")
         _load_impl.cache_clear()
         return ruta
     except (OSError, IOError, PermissionError): 

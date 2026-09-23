@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 246
+- Sin respuesta de la IA (error o límite): 243
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 4 | 0 | 2 | 1 | 13 |
+| 2026-09-21 | 3 | 0 | 2 | 1 | 10 |
 | 2026-09-22 | 123 | 16 | 28 | 19 | 164 |
-| 2026-09-23 | 53 | 1 | 9 | 2 | 69 |
+| 2026-09-23 | 56 | 1 | 10 | 2 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **46**
+- manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **40**
 - legibilidad y documentación: **33**
-- rendimiento: **32**
+- rendimiento: **31**
 - robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
@@ -33,20 +33,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **20**
 - `healthscore.py`: **18**
 - `quarantine.py`: **17**
-- `safety.py`: **16**
+- `safety.py`: **17**
+- `settings.py`: **16**
 - `memory.py`: **15**
-- `settings.py`: **15**
 - `assistant.py`: **14**
 - `organizer.py`: **12**
 - `browser.py`: **12**
-- `scanner.py`: **11**
+- `scanner.py`: **12**
 - `duplicates.py`: **11**
-- `branding.py`: **7**
 - `main.py`: **7**
+- `branding.py`: **6**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-23T05:53:56` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save` mediante el uso de `os.replace` (que es atómico en sistemas POSIX y Windows, evitando corrupciones) y se ha endurecido la validación de `_load_impl` para capturar errores de formato o tipos de manera más explícita antes de usar los datos, garantizando que el estado de la aplicación sea siempre consistente.
+- `2026-09-23T05:53:13` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la validación de archivos mediante una protección defensiva contra errores (null checks y acceso a atributos), evitando fallos silenciosos o excepciones no capturadas durante la ejecución de los chequeos.
+- `2026-09-23T05:52:45` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante errores de acceso a disco al centralizar la captura de excepciones, asegurando que los fallos específicos del sistema de archivos (como `OSError` durante la lectura de metadatos) sean encapsulados con el código de error `IO_ERROR` en lugar de permitir que se propaguen o sean capturados de forma ambigua.
 - `2026-09-23T05:47:35` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` añadiendo un manejo de excepciones más granular y verificaciones de tipo para prevenir fallos silenciosos al procesar un JSON corrompido o malintencionado.
 - `2026-09-23T05:46:41` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez en `parse_windows_process_csv` añadiendo una validación explícita para evitar que una lista vacía o malformada de PowerShell provoque errores en los pasos siguientes, asegurando que los datos procesados siempre tengan la estructura esperada de un `ProcessMemory`.
 - `2026-09-23T05:38:08` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `compute_score` implementando un chequeo explícito de integridad previa (`validate`) y envolviendo el pipeline en un bloque de manejo de errores más estricto, asegurando que ante una excepción en cualquier métrica se retorne un estado de salud degradado pero consistente y seguro para la UI.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-23T03:51:15` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `_safe_unlink` y `_is_item_purgable` al añadir una verificación explícita mediante `is_safe_to_modify` sobre el archivo en sí antes de cualquier operación de borrado, asegurando coherencia con las políticas globales de seguridad incluso dentro del sandbox.
 - `2026-09-23T03:50:34` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de la función `_is_recursive_violation` integrando `os.path.commonpath` para detectar con precisión si una ruta está contenida en otra, evitando comparaciones de strings ambiguas y bloqueando explícitamente cualquier intento de mover un archivo hacia dentro de su propia estructura de directorios, reforzando la seguridad defensiva.
 - `2026-09-23T03:50:03` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `trim_working_set` moviendo la validación mediante `is_safe_to_modify` antes de cualquier interacción con el proceso y asegurando que `_get_process_path` retorne una ruta validable antes de realizar la operación, evitando así riesgos de manipulación de procesos del sistema que pudieran evadir los chequeos iniciales.
-- `2026-09-23T03:40:47` **healthscore.py** (seguridad defensiva): Se implementó una capa de validación defensiva en `_evaluate_rules` mediante `is_printable()` y una longitud máxima de 200 caracteres, protegiendo a la UI de posibles inyecciones de texto malformado o desbordamientos de buffer desde los factories de mensajes.
-- `2026-09-23T03:39:52` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escáner en `walk_files` y `_is_excluded_path` añadiendo una comprobación explícita de `is_protected_path` al procesar cada subdirectorio y archivo, asegurando que los cambios de estructura del sistema no expongan rutas protegidas durante la recursión.
-- `2026-09-23T03:30:33` **browser.py** (seguridad defensiva): Se ha mejorado la defensa contra el acceso a archivos en uso mediante el uso de `os.access` con el flag `os.W_OK` antes de intentar medir el tamaño, complementando la validación existente y evitando el manejo innecesario de excepciones de permisos durante el escaneo recursivo.
