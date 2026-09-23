@@ -172,12 +172,9 @@ class Scanner:
         """
         if entry is None:
             return True
-        try:
-            stats = _safe_stat(entry)
-            if stats and hasattr(stats, 'st_file_attributes'):
-                return bool(stats.st_file_attributes & LIMITS.reparse_attr)
-        except (OSError, PermissionError, AttributeError):
-            return True 
+        stats = _safe_stat(entry)
+        if stats and hasattr(stats, 'st_file_attributes'):
+            return bool(stats.st_file_attributes & LIMITS.reparse_attr)
         return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:

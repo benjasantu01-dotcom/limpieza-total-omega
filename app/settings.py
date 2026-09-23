@@ -330,12 +330,14 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             os.fsync(f.fileno())
         if ruta.exists():
             if not is_safe_to_modify(str(ruta)): return None
-            if not os.path.samefile(ruta, bak_path) if bak_path.exists() else True:
-                os.replace(ruta, bak_path)
+            os.replace(ruta, bak_path)
         os.replace(temp_path, ruta)
+        # Verificación post-escritura simple: asegurar que el archivo es legible
+        if not (ruta.exists() and ruta.stat().st_size > 0): raise IOError("Integridad de escritura fallida")
         _load_impl.cache_clear()
         return ruta
-    except (OSError, IOError, PermissionError): return None
+    except (OSError, IOError, PermissionError): 
+        return None
     finally:
         if temp_path.exists():
             try: os.remove(temp_path)

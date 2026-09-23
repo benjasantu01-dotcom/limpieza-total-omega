@@ -112,6 +112,7 @@ class SafetyValidationErrorCode(IntEnum):
     MOUNT_POINT_DETECTED = 25
     TOCTOU_VIOLATION = 26
     SPARSE_FILE_DETECTED = 27
+    DEVICE_FILE_DETECTED = 28
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
@@ -143,6 +144,7 @@ class ProtectionReason(Enum):
     ACCESS_WRITE = "acceso de escritura denegado"
     TOCTOU_VIOLATION = "violación de consistencia (TOCTOU)"
     SPARSE_FILE = "archivo disperso (sparse file)"
+    DEVICE_FILE = "archivo de dispositivo detectado"
 
 class ValidationContext(Enum):
     """Define si la validación es estructural o requiere acceso a disco."""
@@ -202,13 +204,17 @@ def is_running_as_admin() -> bool:
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
     """Detecta caracteres prohibidos en rutas Windows, secuencias de control RTL o nulos."""
     if not isinstance(path_str, str) or not path_str: return True
-    # Filtro expandido para caracteres de control y secuencias de control de formato
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]|[\x00-\x1f\x7f]', path_str))
 
 @lru_cache(maxsize=128)
 def _is_reserved_device_name(name: str) -> bool:
     """Valida contra nombres reservados de dispositivos legados (CON, NUL) que no pueden ser archivos."""
     return bool(_RESERVED_NAMES_PATTERN.fullmatch(name))
+
+def _is_device_file(path: Path) -> bool:
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) no aptas para archivos."""
+    path_str = str(path).upper()
+    return path_str.startswith(("\\\\.\\", "//./"))
 
 @lru_cache(maxsize=512)
 def _has_alternate_data_stream(path_name: str) -> bool:
@@ -245,7 +251,6 @@ def _is_file_in_use(path_str: str) -> bool:
         kernel32 = ctypes.windll.kernel32
         handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0x00000007, None, 3, 0x00000080, None)
         if handle == -1: 
-            # Cualquier error al abrir denota posible uso o falta de permisos
             return True
         kernel32.CloseHandle(handle)
     except (OSError, PermissionError, AttributeError, ctypes.ArgumentError, Exception):
@@ -440,6 +445,8 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Codificación de caracteres sospechosa.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING)
     if _has_alternate_data_stream(path_string):
         raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED)
+    if _is_device_file(target_path):
+        raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
     try:
         if target_path.exists() and not target_path.is_absolute():
             raise UnsafePathError("Ruta inconsistente con el sistema.", SafetyValidationErrorCode.GENERIC)
@@ -524,17 +531,6 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
     Valida integridad y seguridad de una ruta.
-    
-    Args:
-        path: Ruta a validar.
-        allow_sensitive: Si es True, permite archivos con extensiones críticas.
-        base_dir: Directorio raíz opcional para restringir el alcance (sandbox).
-        
-    Returns:
-        Path normalizado y validado.
-        
-    Raises:
-        UnsafePathError: Si la ruta infringe políticas de seguridad o integridad.
     """
     if path is None: raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
     try: p = normalize(path)
@@ -568,9 +564,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
     """
     Wrapper booleano para validar seguridad sin lanzar excepciones.
-    
-    Returns:
-        True si es seguro modificar, False en caso contrario.
     """
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
@@ -580,9 +573,6 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
     """
     Filtra una colección de rutas, devolviendo solo aquellas consideradas seguras.
-    
-    Returns:
-        Lista de objetos Path validados.
     """
     results = []
     for p in paths:
@@ -594,9 +584,6 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
 def describe_protection(path: PathLike) -> str:
     """
     Provee un diagnóstico humano legible de por qué una ruta fue marcada como insegura.
-    
-    Returns:
-        Cadena con el motivo de bloqueo o confirmación de seguridad.
     """
     if path is None: return "Ruta nula."
     try:
@@ -604,6 +591,7 @@ def describe_protection(path: PathLike) -> str:
         raw_str = str(path)
     except (TypeError, ValueError): return "Ruta mal formada."
     if raw_str.startswith(("\\\\", "//")): return f"'{raw_str}' es ruta de red."
+    if _is_device_file(p): return f"'{raw_str}' es un archivo de dispositivo."
     if is_drive_root(p): return f"'{p}' es raíz de unidad."
     if is_protected_path(p): return f"'{p}' protegida por sistema."
     try:
