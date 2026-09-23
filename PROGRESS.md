@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **168** (33.3% de aceptación)
-- Rechazadas por tests: 22
+- Mejoras aceptadas: **169** (33.5% de aceptación)
+- Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 248
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 247
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-21 | 35 | 5 | 16 | 2 | 64 |
+| 2026-09-21 | 33 | 4 | 16 | 2 | 63 |
 | 2026-09-22 | 123 | 16 | 28 | 19 | 164 |
-| 2026-09-23 | 10 | 1 | 1 | 0 | 20 |
+| 2026-09-23 | 13 | 1 | 1 | 1 | 20 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **43**
+- manejo de errores y validación de entradas: **45**
 - seguridad defensiva: **36**
-- legibilidad y documentación: **34**
-- rendimiento: **28**
+- legibilidad y documentación: **35**
 - robustez ante casos límite: **27**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,19 +34,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **17**
 - `safety.py`: **16**
 - `healthscore.py`: **15**
-- `memory.py`: **14**
-- `duplicates.py`: **13**
-- `assistant.py`: **13**
-- `settings.py`: **13**
+- `assistant.py`: **14**
+- `settings.py`: **14**
+- `memory.py`: **13**
 - `browser.py`: **12**
+- `duplicates.py`: **12**
 - `organizer.py`: **10**
 - `scanner.py`: **10**
 - `branding.py`: **7**
 - `main.py`: **7**
-- `startup.py`: **3**
+- `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-23T01:26:15` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de negocio en `assistant.py` mediante la refactorización de `_CRITERIOS_SALUD` a una estructura más explícita y la estandarización de la documentación en los handlers, facilitando futuras auditorías de seguridad.
+- `2026-09-23T01:25:35` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que las filas del CSV contengan los nombres de campos esperados antes de intentar acceder a ellos, evitando errores `KeyError` o `NoneType` al procesar salidas de PowerShell potencialmente malformadas o inesperadas.
+- `2026-09-23T01:25:06` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_load_impl` al añadir validación explícita sobre el contenido deserializado contra el esquema `AppSettings` antes de procesarlo, evitando errores de clave ausente o tipo incorrecto que podrían romper la lógica de `_coerce_and_verify`.
 - `2026-09-23T01:16:17` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_reparse_point` y `_safe_stat` implementando una validación de `entry` más estricta antes de acceder a sus atributos, evitando excepciones en caso de que el objeto `DirEntry` ya no sea válido al momento del acceso, cumpliendo con el enfoque de manejo seguro de errores.
 - `2026-09-23T01:16:02` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` capturando errores específicos de `ctypes` y validando el tipo de entrada para evitar excepciones no controladas durante la validación de seguridad.
 - `2026-09-23T01:09:58` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones de entrada en `_is_safe_for_disk_op` y `stage_for_review` para prevenir errores de ejecución ante rutas mal formadas, incorporando chequeos específicos de tipo `Path` y manejo de excepciones ante llamadas a `resolve()` sobre rutas inexistentes.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-23T00:47:31` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para que ante errores en la lectura de valores externos (como tipos inesperados o fallos en `getattr`), la función retorne explícitamente `False` en lugar de propagar una excepción, garantizando que el estado interno del contexto solo se modifique cuando la integridad de los datos esté garantizada.
 - `2026-09-22T14:29:34` **quarantine.py** (seguridad defensiva): Se ha implementado `_check_device_consistency` para asegurar que el archivo de origen y el directorio destino residan en el mismo sistema de archivos (número de dispositivo), evitando errores de `os.replace` (que no es atómico entre dispositivos) y previniendo comportamientos inconsistentes en entornos con múltiples volúmenes.
 - `2026-09-22T14:20:02` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las verificaciones en `_collect_candidates` para asegurar que el uso de `os.scandir` respete consistentemente las restricciones de `is_safe_to_modify` y los filtros de seguridad, evitando accesos accidentales a rutas protegidas mediante la validación temprana de `entry.path`.
-- `2026-09-22T14:10:15` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_excluded_path` añadiendo una comprobación explícita para evitar que `path.resolve()` o `Path(entry.path)` accedan fuera del `root_path` en sistemas con enlaces simbólicos, asegurando que el escáner no escape del sandbox definido por el usuario.
-- `2026-09-22T14:09:55` **browser.py** (seguridad defensiva): Se ha implementado una validación de longitud de ruta más robusta en `_sum_directory_recursive` mediante el uso de `os.path.abspath` antes de procesar cada entrada, garantizando que el escaneo no supere `MAX_PATH_LEN` y se mantenga dentro de límites seguros de seguridad defensiva, además de asegurar que cada archivo procesado pase por `is_safe_to_modify` para evitar el acceso a archivos de sistema bloqueados.
-- `2026-09-22T13:58:38` **settings.py** (robustez ante casos límite): Mejoré la robustez ante archivos corruptos o maliciosos agregando un chequeo explícito de tamaño, tipo de archivo y permisos al leer el archivo de configuración, evitando que `json.load` procese archivos excesivamente grandes o no legibles.

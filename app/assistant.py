@@ -115,13 +115,10 @@ class MetricSpec:
 class ProblemCriterion(NamedTuple):
     """
     Regla heurística para identificar problemas críticos según métricas del sistema.
-    
-    Esta clase encapsula la comparación entre una métrica y un umbral, permitiendo
-    generar mensajes legibles para el usuario de forma declarativa sin ramas if-else.
     """
     metric_key: str
     threshold: float
-    operator: str # Operadores soportados: "<" (menor que), ">" (mayor que)
+    operator: str # "<" (menor que), ">" (mayor que)
     message_format: str # Template string para formatear el valor de la métrica
 
     def _evaluate_metric(self, val: float) -> bool:
@@ -215,6 +212,7 @@ _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
 _MODEL_NAME_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9\.\-_]{1,64}$")
 _API_KEY_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9_\-\.]{1,128}$")
 
+# Definición de umbrales para salud del sistema
 _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
     ProblemCriterion("disk_free_percent", 10.0, "<", "{:.0f}% de disco libre"),
     ProblemCriterion("suspicious_warnings", 0, ">", "{:d} archivo(s) sospechosos"),
@@ -398,7 +396,6 @@ def _is_safe_text_structure(text: str) -> bool:
     if not text: return True
     if any(ord(c) < 32 and c not in '\n\r\t' for c in text): return False
     
-    # Bloqueo estricto de rutas: si el texto parece un path (absoluto o relativo), es inseguro
     try:
         p = Path(text)
         if p.is_absolute(): return False
@@ -492,7 +489,7 @@ def _format_problem_message(problems: tuple[str, ...], score: Union[int, str]) -
 
 @_safe_handler_wrapper
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
-    """Procesa consultas sobre el uso y estado de memoria RAM."""
+    """Handler local para consultas sobre uso y estado de memoria RAM."""
     mem_pct = ctx.get_metric("memory_available_percent", DEFAULT_RAM_PCT)
     total_gb = ctx.get_metric("memory_total_gb", 0.0)
     
@@ -510,7 +507,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
 
 @_safe_handler_wrapper
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
-    """Procesa consultas sobre el espacio en disco."""
+    """Handler local para consultas sobre espacio en disco."""
     junk = ctx.get_metric("junk_mb", 0.0)
     dup = ctx.get_metric("duplicate_mb", 0.0)
     cache = ctx.get_metric("browser_cache_mb", 0.0)
@@ -526,7 +523,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
 
 @_safe_handler_wrapper
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
-    """Procesa consultas sobre riesgos de seguridad hallados."""
+    """Handler local para consultas sobre riesgos de seguridad hallados."""
     count = int(ctx.get_metric("suspicious_count", 0.0))
     warn = int(ctx.get_metric("suspicious_warnings", 0.0))
     if count == 0:
@@ -539,7 +536,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
 
 @_safe_handler_wrapper
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
-    """Responde explicando cómo se compone el puntaje de salud."""
+    """Handler local para explicar la composición del puntaje de salud."""
     score_val = ctx.score if ctx.score is not None else "N/A"
     grade_str = ctx.grade if ctx.grade else ""
     score_display = f"Tu puntaje es {score_val}/100{f' (nota {grade_str})' if grade_str else ''}."
@@ -551,7 +548,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
 
 @_safe_handler_wrapper
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
-    """Procesa consultas sobre programas de arranque."""
+    """Handler local para consultas sobre programas de arranque."""
     count = int(ctx.get_metric("startup_count", 0.0))
     estado = f"Tenés {count} programas que arrancan con Windows."
     valoracion = "Son bastantes, y cada uno suma tiempo de encendido." if count > 15 else ("Es normal." if count > 8 else "Está bien.")
@@ -634,7 +631,6 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
         if len(full_prompt) > _MAX_PROMPT_LIMIT: return None
         payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
         payload = json.dumps(payload_data).encode("utf-8")
-        # Validación extra: impedir payloads masivos antes de enviar
         if len(payload) > (_MAX_RESPONSE_BYTES // 2): return None
         return payload
     except (TypeError, ValueError):
@@ -670,7 +666,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     
     try:
         url = _ENDPOINT_BASE.format(model=model) + f"?key={api_key}"
-        # Validación de seguridad: verificar dominio oficial antes de realizar la petición
         if not url.startswith("https://generativelanguage.googleapis.com/"): return None
         
         req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"}, method="POST")

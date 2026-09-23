@@ -281,7 +281,7 @@ def _load_impl(ruta: Path) -> AppSettings:
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)
             
-        if not _is_dict(data):
+        if not _is_dict(data) or not all(k in _KEY_TO_ENUM for k in data):
             return DEFAULTS.copy()
             
         return _coerce_and_verify(validate(data))
