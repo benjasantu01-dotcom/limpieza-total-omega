@@ -262,19 +262,15 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     while stack:
         current_dir = stack.pop()
         try:
+            if not current_dir.exists(): continue
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    # Protección contra rutas corruptas o nombres ilegibles
                     try:
                         if _is_excluded_path(entry, root_path): continue
                         
-                        # Doble verificación: filtrar rutas protegidas definidas en safety.py
                         if skip_protected and is_protected_path(Path(entry.path)):
                             continue
-                    except (OSError, UnicodeDecodeError):
-                        continue
-                    
-                    try:
+                        
                         st = entry.stat(follow_symlinks=False)
                         if entry.is_dir(follow_symlinks=False):
                             inode: Inode = (st.st_dev, st.st_ino)
@@ -296,7 +292,7 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
     """Encuentra los N archivos más pesados en el directorio especificado usando un heap."""
     root = _validate_root(directory)
     if not root: return []
-    valid_limit = max(0, int(limit))
+    valid_limit = max(0, int(limit) if isinstance(limit, (int, float)) else 0)
     data = _collect_summary_data(root, skip_protected, limit=valid_limit)
     return [FileEntry(p, s) for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True)]
 
@@ -305,7 +301,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
     """Calcula y agrupa métricas de uso de disco totales por cada extensión de archivo."""
     root = _validate_root(directory)
     if not root: return []
-    valid_limit = max(0, int(limit))
+    valid_limit = max(0, int(limit) if isinstance(limit, (int, float)) else 0)
     data = _collect_summary_data(root, skip_protected, limit=0)
     usage_list = [ExtensionUsage(ext, s.total_bytes, s.count) for ext, s in data.ext_stats.items()]
     return heapq.nlargest(valid_limit, usage_list, key=lambda u: u.size_bytes)
@@ -318,13 +314,12 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     """
     root = _validate_root(directory)
     if not root: return []
-    valid_limit = max(0, int(limit))
+    valid_limit = max(0, int(limit) if isinstance(limit, (int, float)) else 0)
     folder_total_bytes: Dict[Path, int] = defaultdict(int)
     folder_file_counts: Dict[Path, int] = defaultdict(int)
     
     for path, size_bytes in walk_files(root, skip_protected):
         try:
-            # Obtener el componente de nivel superior directamente del path relativo
             rel = path.relative_to(root)
             if rel.parts:
                 top_level = root / rel.parts[0]
@@ -350,14 +345,12 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     Realiza una pasada única (O(n)) sobre el árbol de directorios para recolectar estadísticas.
     
     Utiliza `walk_files` para procesar el árbol de forma iterativa. Mantiene un Min-Heap 
-    de tamaño `limit` para trackear eficientemente los archivos más pesados, manteniendo 
-    la complejidad de espacio bajo control (O(limit) vs O(files)).
+    de tamaño `limit` para trackear eficientemente los archivos más pesados.
     """
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
     
-    # Heap para trackear los N archivos más grandes en O(n log limit)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
@@ -398,7 +391,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
         lines.extend(["", "Mayores archivos:"])
         for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
             try:
-                if p.is_file():
+                if p.exists() and p.is_file():
                     lines.append(f"  {format_size(s):>10}  {str(p)}")
             except (OSError, PermissionError):
                 continue

@@ -235,15 +235,17 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Pipeline de evaluación: procesa métricas, calcula pesos y genera recomendaciones."""
-    if metrics is None or not getattr(metrics, 'is_finite', False):
+    if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
+    
+    # Asegurar que las métricas internas están sanitizadas antes de operar
+    metrics.validate()
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: int = 0
-    pipeline = _PIPELINE
     
-    for entry in pipeline:
+    for entry in _PIPELINE:
         try:
             area_ratio = entry.scorer(metrics)
             if entry.rules:
@@ -252,7 +254,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             weighted_points = int(area_ratio * entry.weight + 0.5)
             metric_breakdown[entry.area] = weighted_points
             accumulated_score += weighted_points
-        except Exception:
+        except (ValueError, TypeError, ZeroDivisionError, AttributeError):
             metric_breakdown[entry.area] = 0
             
     final_score = min(accumulated_score, 100)

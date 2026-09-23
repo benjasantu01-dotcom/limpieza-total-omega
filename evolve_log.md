@@ -1440,3 +1440,13 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-09-23T05:24:29` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `save_logo_svg` y `draw_ring` mediante una validación más estricta de sus entradas, garantizando que los parámetros numéricos y de ruta sean procesados de forma segura antes de operar sobre ellos.
 - `2026-09-23T05:24:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T05:24:29` Corrida terminada. Total usado hoy: 126.
+- `2026-09-23T05:31:20` Arrancando corrida. Quedan hoy ~174 peticiones objetivo.
+- `2026-09-23T05:32:26` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-23T05:33:01` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` añadiendo validación de tipo para `limit` y manejo de excepciones ante rutas inexistentes durante la iteración, previniendo posibles errores de ejecución si los archivos son movidos o eliminados mientras se escanean.
+- `2026-09-23T05:33:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-23T05:34:36` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-23T05:35:42` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-23T05:36:54` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-23T05:38:08` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `compute_score` implementando un chequeo explícito de integridad previa (`validate`) y envolviendo el pipeline en un bloque de manejo de errores más estricto, asegurando que ante una excepción en cualquier métrica se retorne un estado de salud degradado pero consistente y seguro para la UI.
+- `2026-09-23T05:38:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T05:38:08` Corrida terminada. Total usado hoy: 130.
