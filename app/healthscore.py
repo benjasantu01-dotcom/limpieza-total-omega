@@ -225,7 +225,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
-                if isinstance(msg, str) and msg:
+                if msg:
                     clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                     if clean_msg:
                         findings.append(clean_msg[:200])
@@ -234,16 +234,17 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Pipeline de evaluación: procesa métricas, calcula pesos y genera recomendaciones."""
-    if metrics is None or not hasattr(metrics, 'is_finite') or not metrics.is_finite:
+    if metrics is None or not getattr(metrics, 'is_finite', False):
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: int = 0
+    pipeline = _PIPELINE
     
-    for entry in _PIPELINE:
+    for entry in pipeline:
         try:
-            area_ratio = _clamp(entry.scorer(metrics))
+            area_ratio = entry.scorer(metrics)
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
@@ -253,11 +254,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         except Exception:
             metric_breakdown[entry.area] = 0
             
-    final_score = int(min(accumulated_score, 100))
+    final_score = min(accumulated_score, 100)
     
     if metrics.quarantined_count > 0:
-        clean_quarantine_msg = f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena."
-        recommendations.append(clean_quarantine_msg)
+        recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")
     
     return HealthResult(
         score=final_score, 
@@ -273,7 +273,7 @@ def _render_bar(points: int, max_val: int) -> str:
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera informe legible para la UI a partir del HealthResult."""
-    if result is None or not isinstance(result, HealthResult):
+    if not isinstance(result, HealthResult):
         return ["Error: Informe de salud no disponible."]
     
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]

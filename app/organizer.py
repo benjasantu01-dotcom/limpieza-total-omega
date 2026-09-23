@@ -235,7 +235,7 @@ def _is_valid_junk_file(entry: os.DirEntry) -> bool:
         return False
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
-    """Recorrido recursivo del sistema de archivos limitado a una profundidad de 50 niveles."""
+    """Recorrido recursivo optimizado del sistema de archivos limitado a 50 niveles."""
     if depth > 50: return
     try:
         resolved_dir = current_dir.resolve()

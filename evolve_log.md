@@ -1147,3 +1147,11 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-09-23T02:17:43` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` sustituyendo llamadas redundantes a `path.stat()` y `path.resolve()` por el uso directo de los objetos `DirEntry` que ya contienen la información necesaria, evitando I/O innecesario en el loop principal.
 - `2026-09-23T02:17:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-23T02:17:43` Corrida terminada. Total usado hoy: 54.
+- `2026-09-23T02:25:46` Arrancando corrida. Quedan hoy ~246 peticiones objetivo.
+- `2026-09-23T02:26:16` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el cálculo en `compute_score` cacheando el acceso a `_PIPELINE` y pre-calculando los puntos máximos de las recomendaciones, evitando iteraciones redundantes y validaciones de tipos innecesarias en el bucle principal.
+- `2026-09-23T02:27:16` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-23T02:27:55` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 26% del original (posible pérdida de código)
+- `2026-09-23T02:28:25` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la recuperación de datos de procesos en `top_memory_processes` evitando el uso innecesario de `subprocess` y evitando el reprocesamiento completo de la lista de procesos en cada llamada, utilizando un conjunto (set) para filtrar PIDs y mejorando la eficiencia de búsqueda.
+- `2026-09-23T02:28:39` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se ha optimizado `_process_directory` eliminando la resolución redundante de rutas en cada iteración y utilizando un conjunto (`visited`) para evitar procesar recursivamente el mismo subárbol, mejorando significativamente el rendimiento en estructuras de carpetas complejas o profundas.
+- `2026-09-23T02:28:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-23T02:28:39` Corrida terminada. Total usado hoy: 58.

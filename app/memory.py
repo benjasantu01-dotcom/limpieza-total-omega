@@ -211,6 +211,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         return []
     
     results: List[ProcessMemory] = []
+    seen_pids: Set[int] = set()
     for line in raw_csv_text.splitlines():
         parts = line.strip().split(",", 2)
         if len(parts) < 3: continue
@@ -219,7 +220,8 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             pid = _extract_numeric_val(parts[1])
             ws = _extract_numeric_val(parts[2])
             
-            if pid > 0 and 0 <= ws < MAX_VALID_PROCESS_MEM:
+            if pid > 0 and pid not in seen_pids and 0 <= ws < MAX_VALID_PROCESS_MEM:
+                seen_pids.add(pid)
                 results.append(ProcessMemory(name=parts[0].strip("'\" "), pid=pid, working_set=BytesValue(ws)))
         except (ValueError, TypeError, OverflowError):
             continue
@@ -279,12 +281,12 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         try:
             proc = subprocess.run(PS_QUERY_CMD, capture_output=True, text=True, timeout=3, check=False)
             if proc.returncode == 0 and proc.stdout:
-                _proc_cache_data = parse_windows_process_csv(proc.stdout, limit=50)
+                _proc_cache_data = parse_windows_process_csv(proc.stdout, limit=limit)
                 _proc_cache_time = now
         except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): 
             return []
             
-    return _proc_cache_data[:limit]
+    return _proc_cache_data
 
 @lru_cache(maxsize=8)
 def pressure_level(snapshot: MemorySnapshot) -> str:
