@@ -831,10 +831,13 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     item_map = {item.stored_name: item for item in items}
     purged_ids: Set[str] = set()
     
+    # Cacheamos el contenido una sola vez para eficiencia
+    existing_files = {f.name: f for f in quarantine_root.iterdir() if f.is_file()}
+    
     try:
-        for f in quarantine_root.iterdir():
-            if f.is_file() and f.name != MANIFEST_NAME:
-                item = item_map.get(f.name)
+        for name, f in existing_files.items():
+            if name != MANIFEST_NAME:
+                item = item_map.get(name)
                 if item and _is_item_purgable(f, item, quarantine_root):
                     purged_ids.add(item.item_id)
                 

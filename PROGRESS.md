@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 241
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 47 | 6 | 10 | 4 | 67 |
+| 2026-09-22 | 45 | 6 | 10 | 4 | 65 |
 | 2026-09-23 | 131 | 12 | 25 | 11 | 171 |
-| 2026-09-24 | 11 | 1 | 3 | 2 | 3 |
+| 2026-09-24 | 12 | 1 | 3 | 2 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **42**
-- seguridad defensiva: **38**
-- rendimiento: **34**
-- robustez ante casos límite: **30**
+- seguridad defensiva: **37**
+- rendimiento: **35**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `healthscore.py`: **18**
-- `scanner.py`: **16**
+- `quarantine.py`: **16**
 - `browser.py`: **16**
 - `duplicates.py`: **15**
-- `quarantine.py`: **15**
 - `safety.py`: **15**
-- `assistant.py`: **14**
+- `scanner.py`: **15**
 - `settings.py`: **14**
+- `assistant.py`: **13**
 - `memory.py`: **13**
 - `organizer.py`: **12**
 - `branding.py`: **10**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T01:00:35` **quarantine.py** (rendimiento): Optimicé `list_items` y `purge_all` para evitar lecturas recurrentes y repetitivas del sistema de archivos mediante el uso de un cacheo local del contenido del directorio de cuarentena, reduciendo la complejidad de las operaciones masivas de O(N*M) a O(N+M).
 - `2026-09-24T00:48:05` **healthscore.py** (rendimiento): Optimicé el rendimiento del Pipeline reemplazando `dict.get()` y iteraciones redundantes en `summarize` y `compute_score` por acceso directo y pre-cálculo de estructuras, minimizando llamadas a funciones dentro de los bucles críticos.
 - `2026-09-24T00:47:36` **duplicates.py** (rendimiento): Optimizé la recolección de candidatos en `_collect_candidates` para evitar llamadas redundantes a `stat()` y `is_safe_to_modify()` mediante el uso de `os.scandir` (que ya expone los atributos del sistema de archivos en Windows), reduciendo significativamente las llamadas al sistema y mejorando la velocidad de escaneo.
 - `2026-09-24T00:46:35` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios sustituyendo el paso de `visited` por parámetro (que solo prevenía ciclos en una rama) por una estrategia global en `global_memo` para evitar re-escaneos redundantes de subdirectorios compartidos entre navegadores, reduciendo drásticamente las llamadas a `os.scandir` en escaneos de perfiles múltiples.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-23T12:54:17` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo una validación explícita mediante `path.resolve()` antes de comparar con `base_root_str`, previniendo así posibles ataques de "path traversal" donde rutas relativas con `..` podrían escapar del directorio base del escaneo.
 - `2026-09-23T12:41:34` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_get_process_path` validando que la ruta resuelta resida bajo una unidad de disco lógica, evitando el procesamiento de rutas de dispositivos o volúmenes arbitrarios que podrían evadir los chequeos de `safety.py`.
 - `2026-09-23T12:40:13` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de salud limitando el impacto de posibles errores en `message_factory` mediante un bloque `try-except` más estricto y garantizando que los mensajes no superen límites de longitud, evitando inyecciones de texto incontrolado o errores en el reporte final.
-- `2026-09-23T12:32:41` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `_group_paths_by_hash` mediante la validación explícita de `is_safe_to_modify` ante posibles cambios en el estado del sistema de archivos durante la iteración, evitando el procesamiento de rutas que podrían haber sido bloqueadas o movidas tras la verificación inicial.
