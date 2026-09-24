@@ -171,10 +171,13 @@ class QuarantineItem:
 
 def _get_sha256(path: Path) -> str:
     """
-    Calcula el hash SHA-256 de un archivo mediante streaming.
-    
-    El uso de chunks permite procesar archivos grandes sin agotar la memoria RAM
-    del sistema, manteniendo la eficiencia en entornos limitados.
+    Calcula el hash SHA-256 de un archivo mediante streaming para ahorrar memoria.
+
+    Args:
+        path: Objeto Path al archivo a procesar.
+
+    Returns:
+        Hash hexadecimal como string, o cadena vacía en caso de error.
     """
     if not path.is_file():
         return ""
@@ -193,27 +196,29 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Determina si un archivo está siendo utilizado por otro proceso.
+    Determina si un archivo está siendo bloqueado por otro proceso.
     
-    Utiliza el modo de apertura exclusivo ('x') para verificar disponibilidad.
-    Si falla el intento, se considera bloqueado o inaccesible para operación segura.
+    Técnica: Intenta abrir el archivo en modo binario; si el SO deniega el acceso
+    por concurrencia, se asume el estado de "bloqueado".
     """
     if not path.exists():
         return True
     try:
-        # Intentamos abrir en modo solo lectura exclusivo
         with open(path, "rb") as f:
-            # En sistemas operativos modernos, esto suele fallar si hay bloqueos mandatorios.
             return False
     except (OSError, IOError):
         return True
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
     """
-    Elimina de forma segura un archivo tras validar su integridad y seguridad.
+    Elimina un archivo tras validar seguridad y opcionalmente su integridad.
     
-    Aplica políticas estrictas: no borra enlaces simbólicos, respeta rutas 
-    protegidas y verifica opcionalmente el hash para evitar borrados accidentales.
+    Args:
+        path: Ruta a eliminar.
+        expected_hash: Hash opcional para evitar borrado de archivos sustituidos.
+
+    Returns:
+        True si la eliminación fue exitosa, False de lo contrario.
     """
     try:
         if not path.exists():
@@ -254,10 +259,9 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
 
 def _check_path_syntax_integrity(path: Path) -> None:
     """
-    Previene ataques de 'Path Traversal' y validación de sintaxis de ruta.
+    Previene ataques de 'Path Traversal' validando profundidad y caracteres.
     
-    Verifica la profundidad de directorios y la presencia de caracteres 
-    prohibidos o flujos de datos alternos (ADS) que podrían evadir filtros.
+    Lanza UnsafePathError si la ruta es sospechosa o viola restricciones de sistema.
     """
     path_str = str(path)
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
@@ -283,7 +287,7 @@ def _sanitize_filename(filename: str) -> str:
     return "".join(c for c in filename if c.isalnum() or c in "._-")
 
 def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
-    """Genera un identificador de archivo en el sandbox, neutralizando caracteres peligrosos."""
+    """Genera un nombre para el archivo dentro del sandbox, neutralizando caracteres."""
     sanitized = _sanitize_filename(original_path.name)
     if not sanitized or sanitized in (".", ".."):
         sanitized = "unknown_file"
@@ -293,7 +297,6 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
     if name_base.upper() in WINDOWS_RESERVED_NAMES:
         name_base = f"q_{name_base}"
     
-    # Asegurar que el nombre no contenga caracteres de control o invisibles
     name_base = "".join(c for c in name_base if c.isprintable() and c not in '<>:"/\\|?*')
     
     extension = f".{parts[-1]}" if len(parts) > 1 else ""
@@ -428,7 +431,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
-    """Carga y deserializa el manifiesto, filtrando ítems malformados."""
+    """Carga el manifiesto de cuarentena y filtra ítems malformados."""
     try:
         base_dir = quarantine_dir(base)
         m_path = _manifest_path(base_dir)
@@ -454,7 +457,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste el manifiesto usando escritura atómica y validaciones de integridad."""
+    """Persiste el manifiesto usando escritura atómica para garantizar integridad."""
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista.")
     
@@ -504,7 +507,6 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
     if not os.access(dest_dir, os.W_OK):
         raise PermissionError(f"Sin permisos de escritura: {dest_dir}")
     
-    # Intento de validación de sistema de archivos de solo lectura
     test_file = dest_dir / f".test_{uuid.uuid4().hex}"
     try:
         test_file.touch()
@@ -519,15 +521,12 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 
 
 def _validate_file_transfer_preconditions(source: Path, destination: Path) -> None:
-    """Valida los permisos y seguridad de los paths antes de la transferencia física."""
+    """Valida permisos y seguridad del origen y destino antes de la transferencia."""
     if is_protected_path(destination):
         raise UnsafePathError("Destino en ruta protegida.")
     
-    # Validar seguridad antes de operar sobre destino
     ensure_safe_to_modify(destination.parent)
-    
     _check_device_consistency(source, destination.parent.resolve())
-    
     _check_windows_file_attributes(str(destination))
 
     if not source.is_file():
@@ -563,16 +562,13 @@ def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> 
 
 
 def _write_temp_to_final(source: Path, destination: Path) -> str:
-    """
-    Copia física segura al sandbox mediante un archivo temporal y reemplazo atómico.
-    """
+    """Copia física segura al sandbox mediante un archivo temporal y reemplazo atómico."""
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
 
     if not source.is_file():
         raise FileNotFoundError("Archivo origen no encontrado o no es un archivo.")
 
-    # Seguridad defensiva: validar que el destino es seguro antes de escribir
     ensure_safe_to_modify(destination.parent)
 
     source_hash = _get_sha256(source)
@@ -719,7 +715,6 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
         
-        # Mapeo O(1) de archivos en disco para evitar iterar múltiples veces
         actual_files = {f.name: f for f in base_path.iterdir() if f.is_file()}
         
         valid_items: List[QuarantineItem] = []
@@ -851,11 +846,9 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
-    # Mapeo O(1) para buscar rápidamente ítems por nombre de archivo
     item_map = {item.stored_name: item for item in items}
     purged_ids: Set[str] = set()
     
-    # Cacheamos el contenido una sola vez para eficiencia
     existing_files = {f.name: f for f in quarantine_root.iterdir() if f.is_file()}
     
     try:

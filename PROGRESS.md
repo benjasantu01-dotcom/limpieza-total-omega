@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
-- Rechazadas por tests: 20
+- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 251
+- Sin respuesta de la IA (error o límite): 254
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 58 | 10 | 11 | 7 | 98 |
-| 2026-09-24 | 125 | 10 | 20 | 12 | 153 |
+| 2026-09-23 | 56 | 8 | 11 | 7 | 98 |
+| 2026-09-24 | 126 | 10 | 20 | 12 | 156 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
-- robustez ante casos límite: **40**
-- legibilidad y documentación: **38**
+- robustez ante casos límite: **39**
+- legibilidad y documentación: **39**
 - manejo de errores y validación de entradas: **33**
-- rendimiento: **28**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **18**
 - `diskreport.py`: **18**
 - `browser.py`: **17**
 - `healthscore.py`: **17**
-- `assistant.py`: **16**
+- `scanner.py`: **17**
 - `settings.py`: **15**
+- `assistant.py`: **15**
 - `duplicates.py`: **15**
 - `memory.py`: **14**
 - `branding.py`: **14**
 - `safety.py`: **13**
-- `quarantine.py`: **11**
+- `quarantine.py`: **12**
 - `organizer.py`: **7**
 - `startup.py`: **6**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T13:46:30` **quarantine.py** (legibilidad y documentación): Mejoré la documentación de las funciones de entrada/salida y validación de seguridad mediante docstrings descriptivos, añadiendo detalles sobre las precondiciones y el comportamiento de las excepciones para mejorar la mantenibilidad y legibilidad técnica.
 - `2026-09-24T13:35:26` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en las colecciones internas, la clarificación de docstrings mediante el uso de parámetros tipados y la descripción detallada de las estructuras de control, facilitando la mantenibilidad a largo plazo sin alterar la lógica.
 - `2026-09-24T13:23:28` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de configuración incluyendo un manejo explícito de `OSError` al abrir el archivo y validando que el archivo no sea un directorio (usando `is_file()` junto a `lstat`), evitando fallos silenciosos o inesperados en entornos con permisos restrictivos.
 - `2026-09-24T13:15:24` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas centralizando la validación de archivos en `_run_file_heuristics` y `scan_file`, asegurando que el acceso a metadatos mediante `_safe_stat` sea verificado para evitar errores al procesar entradas inexistentes o bloqueadas durante el escaneo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T11:21:21` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para evitar que `ensure_safe_to_modify` procese archivos que residen en rutas con puntos de reparse (reparse points) en cualquiera de sus segmentos de directorio superiores, previniendo así posibles escapes del sandbox o inconsistencias en la resolución de rutas mediante la verificación de `path.parents`.
 - `2026-09-24T11:13:09` **memory.py** (seguridad defensiva): Se endureció la seguridad en `trim_working_set` al evitar el uso de `OpenProcess` con permisos innecesarios de `PROCESS_SET_QUOTA` (que permite modificar cuotas del proceso) y limitando el acceso estrictamente a `PROCESS_QUERY_LIMITED_INFORMATION` para la validación previa, reduciendo la superficie de ataque al operar sobre procesos ajenos.
 - `2026-09-24T11:02:00` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del Pipeline al incluir una verificación explícita de `is_finite` dentro del bucle de procesamiento de métricas, evitando que métricas maliciosamente alteradas (NaN/Inf) puedan propagarse y corromper el cálculo de `accumulated_score` o `weighted_points`.
-- `2026-09-24T11:00:42` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` implementando una validación estricta de rutas mediante `Path.resolve()` para prevenir ataques de *path traversal* o resolución de enlaces simbólicos maliciosos, además de consolidar la lógica de exclusión para que sea más robusta ante entradas malformadas.
