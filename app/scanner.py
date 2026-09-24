@@ -88,18 +88,16 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Detecta si el nombre del archivo contiene extensiones anidadas sospechosas.
-    Precondición: 'path' debe ser un objeto Path válido.
     """
-    if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
+    if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Evalúa la frescura de un archivo ejecutable en directorios críticos de usuario.
-    Requiere 'now_ts' (timestamp actual) para calcular la diferencia temporal.
     """
-    if not path or not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
+    if not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     stats = _safe_stat(entry) if entry else None
     if stats and hasattr(stats, 'st_mtime'):
@@ -110,9 +108,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Detecta ejecutables que intentan suplantar procesos críticos fuera de 'System32'.
-    Utiliza una comparación case-insensitive del nombre y la ruta.
     """
-    if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+    if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         path_str = str(path).lower()
         if SYSTEM32_LOWER not in path_str:
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
@@ -121,7 +118,6 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Identifica archivos con tamaño 0 bytes que suelen ser marcadores de procesos maliciosos.
-    Requiere una entrada de sistema válida para el acceso a metadatos.
     """
     stats = _safe_stat(entry) if entry else None
     if stats and hasattr(stats, 'st_size') and stats.st_size == 0:
@@ -194,8 +190,8 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Procesa una única entrada, delegando el manejo a directorios o ejecutando heurísticas."""
+        if not self._is_safe_entry(entry): return
         try:
-            if not self._is_safe_entry(entry): return
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack)
             elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
@@ -211,7 +207,7 @@ class Scanner:
                 if isinstance(res, Suspicion):
                     self.results.append(res)
             except Exception as e:
-                logger.debug(f"Error en heurística {check_fn.__name__} para {path}: {e}")
+                logger.debug(f"Error silencioso en heurística {check_fn.__name__}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un único archivo sin recorrido recursivo, validando previamente su seguridad."""
@@ -227,8 +223,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
             if isinstance(res, Suspicion):
                 findings.append(res)
         except Exception as e:
-            logger.error(f"Error inesperado en {check_fn.__name__}: {e}")
-            continue
+            logger.error(f"Error procesando {path.name} con {check_fn.__name__}: {e}")
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:

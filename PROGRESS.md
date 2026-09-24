@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 247
 
@@ -16,25 +16,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 65 | 10 | 12 | 7 | 102 |
-| 2026-09-24 | 122 | 10 | 19 | 12 | 145 |
+| 2026-09-23 | 63 | 10 | 12 | 7 | 100 |
+| 2026-09-24 | 123 | 10 | 20 | 12 | 147 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
 - robustez ante casos límite: **40**
 - legibilidad y documentación: **37**
-- rendimiento: **35**
-- manejo de errores y validación de entradas: **31**
+- rendimiento: **33**
+- manejo de errores y validación de entradas: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **18**
 - `healthscore.py`: **18**
-- `assistant.py`: **17**
-- `scanner.py`: **17**
+- `scanner.py`: **18**
+- `browser.py`: **17**
 - `diskreport.py`: **17**
 - `duplicates.py`: **16**
+- `assistant.py`: **16**
 - `safety.py`: **14**
 - `memory.py`: **14**
 - `settings.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T13:15:24` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas centralizando la validación de archivos en `_run_file_heuristics` y `scan_file`, asegurando que el acceso a metadatos mediante `_safe_stat` sea verificado para evitar errores al procesar entradas inexistentes o bloqueadas durante el escaneo.
 - `2026-09-24T13:04:38` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y `_get_process_path` reemplazando llamadas a `ctypes` que no validaban sus resultados, asegurando que `OpenProcess` devuelva un handle válido antes de operar y evitando escapes de excepciones no controladas durante la manipulación de recursos de sistema.
 - `2026-09-24T12:54:39` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_collect_candidates` mediante la captura explícita de `OSError` al realizar `entry.stat()` y se mejoró la validación inicial en `group_by_size` para evitar fallos por rutas nulas o errores de resolución, siguiendo las directrices de manejo de errores del enfoque.
 - `2026-09-24T12:54:25` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` validando que los resultados de `entry.stat()` sean utilizables antes de procesarlos, evitando errores por archivos bloqueados o inaccesibles que antes podían causar excepciones no capturadas al acceder a `.st_size`.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T11:00:42` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` implementando una validación estricta de rutas mediante `Path.resolve()` para prevenir ataques de *path traversal* o resolución de enlaces simbólicos maliciosos, además de consolidar la lógica de exclusión para que sea más robusta ante entradas malformadas.
 - `2026-09-24T11:00:12` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_browser_path` aplicando una validación estricta de "Path Traversal" mediante `pathlib.Path.is_relative_to` (o su equivalente lógico para versiones anteriores) para garantizar que, ante cualquier intento de inyección de rutas (ej. mediante `..`), el acceso quede confinado estrictamente dentro de la jerarquía de `LOCALAPPDATA`.
 - `2026-09-24T10:52:04` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` reemplazando la verificación directa dentro de la función por un chequeo robusto utilizando `is_safe_to_modify` para evitar efectos secundarios y asegurar que el sistema de archivos no sea alterado en rutas prohibidas.
-- `2026-09-24T10:50:08` **settings.py** (robustez ante casos límite): Se mejoró la resiliencia en la inicialización de `SETTINGS_DIR` envolviendo la resolución de rutas en un bloque try-except para manejar casos donde el entorno del sistema operativo pueda devolver resultados inesperados o inaccesibles, evitando así que una falla en el inicio impida la carga de la aplicación.
