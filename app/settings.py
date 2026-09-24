@@ -83,7 +83,14 @@ __all__ = [
     "assistant_enabled", "describe",
 ]
 
-SETTINGS_DIR: Final = Path("~/LimpiezaTotalOmega").expanduser().resolve()
+def _get_default_settings_dir() -> Path:
+    """Calcula la carpeta por defecto de forma segura ante errores de entorno."""
+    try:
+        return Path("~/LimpiezaTotalOmega").expanduser().resolve()
+    except (OSError, RuntimeError):
+        return Path(os.getcwd()) / "LimpiezaTotalOmega"
+
+SETTINGS_DIR: Final = _get_default_settings_dir()
 SETTINGS_FILE: Final = "config.json"
 MAX_SETTINGS_SIZE: Final = 1024 * 64
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"

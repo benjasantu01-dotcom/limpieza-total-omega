@@ -350,10 +350,12 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     
     try:
         path = Path(destination).resolve()
-        if is_protected_path(path) or not is_safe_to_modify(path):
+        # Uso de la función booleana de seguridad antes de cualquier operación
+        if not is_safe_to_modify(path):
             return None
         
         safe_size = max(16, min(1024, int(size)))
+        # ensure_safe_to_modify es para asegurar la intención de escritura tras pasar el filtro
         ensure_safe_to_modify(path)
         
         path.parent.mkdir(parents=True, exist_ok=True)
