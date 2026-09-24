@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 228
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 84 | 11 | 16 | 9 | 116 |
-| 2026-09-24 | 116 | 10 | 19 | 11 | 112 |
+| 2026-09-23 | 84 | 11 | 16 | 9 | 112 |
+| 2026-09-24 | 117 | 10 | 19 | 11 | 115 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
-- seguridad defensiva: **43**
+- seguridad defensiva: **44**
 - robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **36**
 - rendimiento: **35**
@@ -41,11 +41,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **14**
 - `quarantine.py`: **14**
 - `organizer.py`: **9**
-- `startup.py`: **6**
+- `startup.py`: **7**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T11:30:56` **startup.py** (seguridad defensiva): Se ha mejorado `startup.py` añadiendo una comprobación explícita mediante `is_protected_path` en `entries_from_folders` para descartar directorios sospechosos antes de iniciar el escaneo recursivo, cumpliendo con la política de seguridad defensiva sobre rutas críticas.
 - `2026-09-24T11:22:05` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en `save` reemplazando el uso de `os.remove` por `os.replace` (o una lógica más robusta si fuera necesario) y, fundamentalmente, añadiendo una validación explícita de `is_safe_to_modify` para el archivo `bak_path` antes de intentar cualquier operación de renombrado, asegurando que el proceso de rotación de archivos sea coherente con las protecciones del sistema.
 - `2026-09-24T11:21:48` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_run_file_heuristics` y `scan_file` para evitar que una heurística mal implementada (ej. un `check_fn` que acceda al disco de forma inesperada o lance una excepción no capturada) comprometa el bucle de escaneo, centralizando el manejo de errores y validando la integridad del resultado antes de añadirlo a la lista.
 - `2026-09-24T11:21:21` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para evitar que `ensure_safe_to_modify` procese archivos que residen en rutas con puntos de reparse (reparse points) en cualquiera de sus segmentos de directorio superiores, previniendo así posibles escapes del sandbox o inconsistencias en la resolución de rutas mediante la verificación de `path.parents`.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T10:32:14` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` añadiendo una validación explícita para evitar que una entrada con `pid` negativo o una cadena mal formada (como un `ws` vacío o no numérico) provoque excepciones silenciosas o procesamientos incorrectos, asegurando que el parser sea resiliente a datos de entrada imprevistos.
 - `2026-09-24T10:21:10` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante casos límite de I/O y permisos, añadiendo un manejo de excepciones más granular en `os.scandir` para asegurar que un error al listar una subcarpeta no detenga la exploración de todo el árbol de directorios.
 - `2026-09-24T10:19:47` **branding.py** (robustez ante casos límite): Se ha robustecido el manejo de rutas en `save_logo_svg` y se han añadido verificaciones de sanidad en las funciones de renderizado para evitar excepciones silenciosas ante valores de entrada malformados (NaN/Infinito).
-- `2026-09-24T10:10:41` **assistant.py** (robustez ante casos límite): Mejoré la robustez ante estados inesperados de configuración al implementar un mecanismo de validación de esquema en `_parse_config` y asegurar la integridad de las métricas durante la carga masiva en `SystemContext.ingest`, evitando que valores nulos o tipos incorrectos resulten en un contexto "vacío" pero funcionalmente inestable.
