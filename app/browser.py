@@ -275,6 +275,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     k32 = _get_kernel32()
+    # Cache local para sub-carpetas visitadas durante el escaneo de perfiles
     global_memo: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
@@ -289,6 +290,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
                     continue
                 
                 real_candidate = str(candidate.resolve(strict=True))
+                # Pasamos la memo global para evitar re-escaneo de rutas anidadas comunes
                 size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, global_memo)
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), Path(real_candidate), size))

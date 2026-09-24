@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 239
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 101 | 11 | 19 | 9 | 140 |
-| 2026-09-24 | 93 | 8 | 16 | 8 | 99 |
+| 2026-09-23 | 98 | 11 | 19 | 9 | 139 |
+| 2026-09-24 | 97 | 8 | 16 | 8 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
 - legibilidad y documentación: **46**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **36**
 - manejo de errores y validación de entradas: **36**
-- rendimiento: **27**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
+- `browser.py`: **19**
 - `healthscore.py`: **19**
-- `browser.py`: **18**
+- `assistant.py`: **18**
+- `diskreport.py`: **18**
 - `scanner.py`: **17**
-- `assistant.py`: **17**
-- `diskreport.py`: **17**
 - `safety.py`: **16**
-- `memory.py`: **15**
 - `settings.py`: **15**
 - `duplicates.py`: **15**
-- `quarantine.py`: **14**
-- `branding.py`: **12**
-- `organizer.py`: **11**
+- `memory.py`: **14**
+- `branding.py`: **13**
+- `quarantine.py`: **13**
+- `organizer.py`: **10**
 - `startup.py`: **6**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T09:41:03` **diskreport.py** (rendimiento): Optimizé la eficiencia de `_is_excluded_path` y `walk_files` evitando llamadas redundantes a `Path.resolve()` y `stat()` dentro de los bucles, reduciendo drásticamente las llamadas a I/O por archivo.
+- `2026-09-24T09:40:51` **browser.py** (rendimiento): Se implementó un mecanismo de memoización persistente dentro de `detect_profiles` para evitar el cálculo redundante de tamaños de subdirectorios compartidos, optimizando el rendimiento en estructuras de carpetas donde múltiples navegadores (como variantes de Chrome/Edge) acceden a rutas comunes.
+- `2026-09-24T09:40:20` **branding.py** (rendimiento): Se optimizó el renderizado del gradiente del escudo mediante la pre-generación de los segmentos de color en `_draw_shield_stripes` y el uso eficiente de la caché, reduciendo la carga de cómputo en cada frame de refresco de la UI.
+- `2026-09-24T09:38:50` **assistant.py** (rendimiento): Se optimizó la búsqueda de handlers en `local_answer` reemplazando la iteración de tokens por una intersección de conjuntos, reduciendo la complejidad algorítmica de O(N*M) a O(N) al detectar coincidencias mediante `set.intersection`.
 - `2026-09-24T09:29:41` **settings.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los validadores internos en `_Validators` para explicar las reglas de negocio, y extraje la lógica de validación de `_load_impl` para mejorar la legibilidad y el mantenimiento.
 - `2026-09-24T09:19:23` **quarantine.py** (legibilidad y documentación): Mejora la documentación técnica y legibilidad mediante la actualización de los docstrings en las funciones críticas de aislamiento y validación, explicando explícitamente el flujo de seguridad y las garantías de integridad.
 - `2026-09-24T09:18:41` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más descriptivos y precisos en las funciones de validación y seguridad, detallando el "porqué" de las restricciones (como el límite de 260 caracteres o la protección de rutas UNC) para asegurar que futuros cambios no comprometan la robustez actual.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T08:59:55` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` extrayendo la lógica de validación de seguridad dentro de `_is_safe_text_structure` mediante la creación de una constante descriptiva `SECURITY_PATTERNS` y un método más claro para aplicar las reglas, facilitando su auditoría.
 - `2026-09-24T08:48:59` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando una validación estricta de tipos en `_coerce_and_verify` y añadiendo un manejo de excepciones más granular en `validate`, asegurando que cualquier entrada malformada en el JSON no solo sea reemplazada, sino que mantenga la coherencia del esquema esperado antes de ser procesada por la aplicación.
 - `2026-09-24T08:48:41` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las heurísticas agregando validaciones de entrada (`None`/`is_file`) para evitar excepciones inesperadas al procesar archivos que pudieron ser eliminados o bloqueados durante el escaneo, y se consolidó el manejo de errores en `scan_directory` para asegurar que las rutas vacías o inválidas no propaguen fallos.
-- `2026-09-24T08:48:14` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_file_attrs` y `_is_file_in_use` capturando excepciones más específicas y añadiendo validaciones de tipo defensivas, previniendo errores de propagación cuando `ctypes` interactúa con el sistema operativo.
-- `2026-09-24T08:40:18` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` y `delete_reviewed` mediante una validación explícita de rutas utilizando `is_protected_path` antes de cualquier iteración, asegurando que ni la carpeta de destino ni su contenido puedan violar las restricciones de seguridad, además de encapsular mejor las verificaciones para evitar errores por condiciones de carrera (TOCTOU).
-- `2026-09-24T08:39:49` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes capturando errores de `ctypes` de forma explícita y validando la existencia de la API `EmptyWorkingSet` antes de invocarla, evitando fallos inesperados en versiones de Windows donde las funciones de PSAPI pudieran comportarse distinto o estar bloqueadas.
-- `2026-09-24T08:28:23` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones de tipo explícitas y la centralización del manejo de errores al comparar rutas, evitando excepciones inesperadas cuando el sistema de archivos deniega el acceso a un path durante la comparación de `keeper`.

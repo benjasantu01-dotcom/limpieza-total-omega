@@ -103,7 +103,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry, root: Path) -> bool:
+def _is_excluded_path(entry: os.DirEntry, root_str: str) -> bool:
     """
     Determina si una ruta debe ser excluida del análisis por razones de seguridad,
     presencia de caracteres de ofuscación, escape de la raíz o enlaces.
@@ -111,19 +111,13 @@ def _is_excluded_path(entry: os.DirEntry, root: Path) -> bool:
     try:
         if any(c in entry.name for c in SUSPICIOUS_CHARS):
             return True
-            
-        # Detectar symlinks y puntos de reparse (junctions en Windows)
         if entry.is_symlink():
             return True
-            
-        path = Path(entry.path).resolve()
-        # Impedir escape de directorio mediante enlaces o manipulación de rutas
-        if root not in path.parents and path != root:
+        # Usar string startsWith es significativamente más rápido que resolve() en cada entrada
+        if not entry.path.startswith(root_str):
             return True
-            
-        if is_protected_path(path):
+        if is_protected_path(Path(entry.path)):
             return True
-            
     except (OSError, PermissionError, AttributeError):
         return True
     return False
@@ -244,15 +238,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Recorre el árbol de directorios de forma iterativa empleando un stack LIFO para evitar
     desbordamiento de pila en estructuras profundas.
-    
-    Implementa detección de ciclos de directorios (usando inodos) y validación de seguridad
-    por cada entrada para prevenir el acceso a rutas restringidas o enlaces simbólicos malintencionados.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
+    root_str = str(root_path)
 
     visited_inodes: set[Inode] = set()
-    stack: List[Path] = [root_path]
+    stack: List[str] = [root_str]
     
     while stack:
         current_dir = stack.pop()
@@ -260,7 +252,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and _is_excluded_path(entry, root_path):
+                        if skip_protected and _is_excluded_path(entry, root_str):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
@@ -268,7 +260,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             inode: Inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(Path(entry.path))
+                                stack.append(entry.path)
                                 
                         elif entry.is_file(follow_symlinks=False):
                             yield Path(entry.path), entry.stat(follow_symlinks=False).st_size
@@ -332,10 +324,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Realiza una pasada única (O(n)) sobre el árbol de directorios para recolectar estadísticas
     agregadas.
-    
-    Mantiene un min-heap de tamaño `limit` para los archivos más grandes, logrando una complejidad
-    espacial O(k) donde k es el límite, optimizando la gestión de recursos al no mantener la lista
-    completa de archivos en memoria.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -353,7 +341,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             stat.count += 1
             
             if limit > 0 and size_bytes > 0:
-                # Mantener solo los N archivos más pesados usando un heap
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (size_bytes, path))
                 elif size_bytes > top_heap[0][0]:

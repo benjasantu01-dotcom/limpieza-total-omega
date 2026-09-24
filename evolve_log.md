@@ -952,3 +952,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-24T09:29:51` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-09-24T09:29:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T09:29:51` Corrida terminada. Total usado hoy: 224.
+- `2026-09-24T09:38:09` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-09-24T09:38:50` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó la búsqueda de handlers en `local_answer` reemplazando la iteración de tokens por una intersección de conjuntos, reduciendo la complejidad algorítmica de O(N*M) a O(N) al detectar coincidencias mediante `set.intersection`.
+- `2026-09-24T09:39:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T09:39:36` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-24T09:40:20` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el renderizado del gradiente del escudo mediante la pre-generación de los segmentos de color en `_draw_shield_stripes` y el uso eficiente de la caché, reduciendo la carga de cómputo en cada frame de refresco de la UI.
+- `2026-09-24T09:40:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T09:40:51` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se implementó un mecanismo de memoización persistente dentro de `detect_profiles` para evitar el cálculo redundante de tamaños de subdirectorios compartidos, optimizando el rendimiento en estructuras de carpetas donde múltiples navegadores (como variantes de Chrome/Edge) acceden a rutas comunes.
+- `2026-09-24T09:41:03` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la eficiencia de `_is_excluded_path` y `walk_files` evitando llamadas redundantes a `Path.resolve()` y `stat()` dentro de los bucles, reduciendo drásticamente las llamadas a I/O por archivo.
+- `2026-09-24T09:41:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T09:41:03` Corrida terminada. Total usado hoy: 228.

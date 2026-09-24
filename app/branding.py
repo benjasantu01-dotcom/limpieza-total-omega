@@ -367,22 +367,26 @@ def logo_ascii() -> str:
     """Retorna una representación ASCII del logo para logs o consola."""
     return "\n   ___  __  __ ___ ___   _\n  / _ \\|  \\/  | __/ __| /_\\\n | (_) | |\\/| | _|| (_ // _ \\\n  \\___/|_|  |_|___\\___/_/ \\_\\\n      Limpieza Total Omega\n"
 
+@lru_cache(maxsize=16)
+def _get_stripe_params(scale: float, franjas_count: int) -> Tuple[Tuple[float, float, float], ...]:
+    """Pre-calcula parámetros de franjas para evitar cálculos repetitivos en el loop de dibujo."""
+    return tuple((36.0 * scale * (1.0 if (i / (franjas_count - 1)) < 0.55 else 1.0 - (((i / (franjas_count - 1)) - 0.55) * 1.9)),
+                  i * (92.0 * scale / franjas_count),
+                  (i + 1) * (92.0 * scale / franjas_count)) for i in range(franjas_count))
+
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Renderiza franjas decorativas graduadas en el interior del escudo."""
     try:
         if not math.isfinite(scale) or scale <= 0: return
         franjas_count = max(6, int(28 * scale))
         base_y = canvas_y + 18 * scale
-        factor_y = 92 * scale / franjas_count
         center_x = canvas_x + 64 * scale
+        params = _get_stripe_params(scale, franjas_count)
         
         for seg in _get_grouped_segments(gradient_colors(franjas_count)):
-            mid_idx = (seg.start_index + seg.end_index - 1) / 2
-            progreso = mid_idx / (franjas_count - 1)
-            w = 36 * scale * (1.0 if progreso < 0.55 else 1.0 - (progreso - 0.55) * 1.9)
-            
-            canvas.create_rectangle(center_x - w, base_y + seg.start_index * factor_y, 
-                                    center_x + w, base_y + seg.end_index * factor_y, 
+            w, y_start, y_end = params[seg.start_index]
+            canvas.create_rectangle(center_x - w, base_y + y_start, 
+                                    center_x + w, base_y + y_end, 
                                     fill=seg.hex_color, outline="")
     except (TypeError, ValueError, ZeroDivisionError): pass
 
