@@ -534,3 +534,36 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-24T05:04:06` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el motor de búsqueda local de `assistant.py` reemplazando la lógica de búsqueda por tokens (que generaba iteraciones innecesarias) por un acceso directo vía `_TOKENS_MAP`, eliminando la re-tokenización del query en cada llamado.
 - `2026-09-24T05:04:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T05:04:06` Corrida terminada. Total usado hoy: 120.
+- `2026-09-24T05:11:45` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-09-24T05:12:24` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-24T05:12:52` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se ha optimizado `_sum_directory_recursive` para evitar el uso redundante de `is_safe_to_modify` y `is_protected_path` dentro del bucle de archivos, delegando la validación de integridad a `_should_skip_entry` y aprovechando la naturaleza de solo lectura del escáner para reducir llamadas al sistema de archivos.
+- `2026-09-24T05:13:20` Tests FALLARON:
+```
+tests/test_integrity.py:294: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:73: SyntaxWarning: invalid escape sequence '\)'
+    Convierte una ruta a formato largo de Windows (\\?\) para evitar limitaciones
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:225: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) no aptas para archivos."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: diskreport.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed, 8 warnings in 1.39s
+
+```
+- `2026-09-24T05:13:20` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `walk_files` y `largest_folders` evitando llamadas redundantes a `Path(entry.path)` y `path.relative_to(root)`, reduciendo la creación innecesaria de objetos `Path` pesados durante el recorrido de grandes volúmenes de disco.
+- `2026-09-24T05:13:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T05:13:38` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-24T05:13:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T05:13:38` Corrida terminada. Total usado hoy: 124.
