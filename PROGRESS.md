@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 247
+- Sin respuesta de la IA (error o límite): 248
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 63 | 10 | 12 | 7 | 100 |
-| 2026-09-24 | 123 | 10 | 20 | 12 | 147 |
+| 2026-09-23 | 61 | 10 | 12 | 7 | 98 |
+| 2026-09-24 | 124 | 10 | 20 | 12 | 150 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
 - robustez ante casos límite: **40**
 - legibilidad y documentación: **37**
-- rendimiento: **33**
-- manejo de errores y validación de entradas: **32**
+- manejo de errores y validación de entradas: **33**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **18**
 - `scanner.py`: **18**
 - `browser.py`: **17**
 - `diskreport.py`: **17**
-- `duplicates.py`: **16**
+- `healthscore.py`: **17**
 - `assistant.py`: **16**
+- `settings.py`: **15**
+- `duplicates.py`: **15**
 - `safety.py`: **14**
 - `memory.py`: **14**
-- `settings.py`: **14**
 - `branding.py`: **14**
 - `quarantine.py`: **12**
 - `organizer.py`: **8**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T13:23:28` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de configuración incluyendo un manejo explícito de `OSError` al abrir el archivo y validando que el archivo no sea un directorio (usando `is_file()` junto a `lstat`), evitando fallos silenciosos o inesperados en entornos con permisos restrictivos.
 - `2026-09-24T13:15:24` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas centralizando la validación de archivos en `_run_file_heuristics` y `scan_file`, asegurando que el acceso a metadatos mediante `_safe_stat` sea verificado para evitar errores al procesar entradas inexistentes o bloqueadas durante el escaneo.
 - `2026-09-24T13:04:38` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y `_get_process_path` reemplazando llamadas a `ctypes` que no validaban sus resultados, asegurando que `OpenProcess` devuelva un handle válido antes de operar y evitando escapes de excepciones no controladas durante la manipulación de recursos de sistema.
 - `2026-09-24T12:54:39` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_collect_candidates` mediante la captura explícita de `OSError` al realizar `entry.stat()` y se mejoró la validación inicial en `group_by_size` para evitar fallos por rutas nulas o errores de resolución, siguiendo las directrices de manejo de errores del enfoque.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T11:02:00` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del Pipeline al incluir una verificación explícita de `is_finite` dentro del bucle de procesamiento de métricas, evitando que métricas maliciosamente alteradas (NaN/Inf) puedan propagarse y corromper el cálculo de `accumulated_score` o `weighted_points`.
 - `2026-09-24T11:00:42` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` implementando una validación estricta de rutas mediante `Path.resolve()` para prevenir ataques de *path traversal* o resolución de enlaces simbólicos maliciosos, además de consolidar la lógica de exclusión para que sea más robusta ante entradas malformadas.
 - `2026-09-24T11:00:12` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_browser_path` aplicando una validación estricta de "Path Traversal" mediante `pathlib.Path.is_relative_to` (o su equivalente lógico para versiones anteriores) para garantizar que, ante cualquier intento de inyección de rutas (ej. mediante `..`), el acceso quede confinado estrictamente dentro de la jerarquía de `LOCALAPPDATA`.
-- `2026-09-24T10:52:04` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` reemplazando la verificación directa dentro de la función por un chequeo robusto utilizando `is_safe_to_modify` para evitar efectos secundarios y asegurar que el sistema de archivos no sea alterado en rutas prohibidas.
