@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 14 | 5 | 5 | 2 | 28 |
+| 2026-09-22 | 11 | 5 | 5 | 2 | 27 |
 | 2026-09-23 | 131 | 12 | 25 | 11 | 171 |
-| 2026-09-24 | 36 | 5 | 7 | 3 | 49 |
+| 2026-09-24 | 39 | 5 | 7 | 3 | 50 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **40**
 - seguridad defensiva: **39**
 - robustez ante casos límite: **37**
-- manejo de errores y validación de entradas: **37**
-- rendimiento: **34**
 - legibilidad y documentación: **34**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
-- `healthscore.py`: **18**
+- `diskreport.py`: **19**
+- `healthscore.py`: **17**
 - `browser.py`: **16**
 - `quarantine.py`: **15**
-- `duplicates.py`: **14**
-- `safety.py`: **14**
+- `safety.py`: **15**
+- `scanner.py`: **15**
+- `settings.py`: **14**
 - `assistant.py`: **14**
-- `scanner.py`: **14**
-- `settings.py`: **13**
+- `duplicates.py`: **13**
 - `memory.py`: **13**
 - `branding.py`: **11**
 - `organizer.py`: **10**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T04:22:18` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` al implementar un chequeo de integridad en `_load_impl` que valida explícitamente la estructura del diccionario resultante tras el `json.load`, asegurando que todas las claves del esquema `AppSettings` estén presentes incluso si el archivo JSON es parcial o está mal formado.
+- `2026-09-24T04:21:46` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas de archivo mediante una validación más estricta del estado del archivo antes del escaneo, asegurando que `_safe_stat` y la lógica de acceso manejen correctamente archivos que desaparecen durante la iteración o son inaccesibles, evitando así el silenciamiento de errores potencialmente importantes mediante el uso de `None` como indicador de estado inválido.
+- `2026-09-24T04:21:17` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_final_path_normalized` agregando manejo de excepciones específico y cerrando los handles de forma garantizada mediante bloques `try...finally` incluso ante fallos en la obtención de metadatos, evitando fugas de handles y errores silenciosos en la validación de reparse points.
 - `2026-09-24T04:10:55` **memory.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `trim_working_set` y `_get_process_path` reemplazando llamadas a `getattr` implícitas por validaciones explícitas de la existencia de funciones, asegurando que `ctypes` no falle inesperadamente en entornos donde `kernel32` o `psapi` no exponen los métodos esperados.
 - `2026-09-24T04:03:42` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de la persistencia de ajustes en `on_save_settings` mediante el uso de un bloque `try-except` específico al invocar `settings_mod.update`, evitando que una posible corrupción durante la escritura (ej. error de I/O al persistir el JSON) deje la aplicación en un estado inconsistente o silenciosamente fallido.
 - `2026-09-24T04:01:06` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones de tipo explícitas y manejo de errores de resolución de rutas, evitando que el proceso falle ante rutas malformadas o condiciones de carrera en el sistema de archivos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T02:19:33` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_locked` para evitar falsos positivos y posibles bloqueos de I/O en sistemas Windows, asegurando que la comprobación de acceso se realice de manera más conservadora y compatible con el enfoque de seguridad defensiva.
 - `2026-09-24T02:09:05` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo añadiendo una validación estricta de tipos y dominios en `_evaluate_rules` y `compute_score`, asegurando que el pipeline no pueda ser alterado por inyección de métricas inválidas o funciones de fábrica de mensajes maliciosas.
 - `2026-09-24T02:08:36` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `_group_paths_by_hash` centralizando la validación de archivos para evitar seguir enlaces simbólicos o puntos de reparse durante la recursión, garantizando que solo se procesen rutas que pasen estrictamente por `is_safe_to_modify` antes de cualquier operación de I/O.
-- `2026-09-24T02:00:02` **diskreport.py** (seguridad defensiva): Se ha reforzado la seguridad defensiva en `walk_files` y `_is_excluded_path` añadiendo una validación explícita para detectar puntos de reparse (junctions/reparse points) mediante `entry.is_symlink()` y los atributos de archivo, evitando así la recursión infinita o el acceso no deseado a volúmenes montados fuera del árbol de directorios de interés.
-- `2026-09-24T01:59:49` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_browser_path` añadiendo una validación explícita mediante `is_safe_to_modify` y `is_protected_path` sobre la ruta final construida, previniendo que el módulo intente siquiera procesar rutas que, aunque residan nominalmente en `LOCALAPPDATA`, hayan sido manipuladas para apuntar a zonas protegidas o fuera de scope.
-- `2026-09-24T01:59:18` **branding.py** (seguridad defensiva): Se reforzó `save_logo_svg` aplicando `ensure_safe_to_modify` para el archivo de destino, garantizando que cualquier operación de escritura sea validada explícitamente por el motor de seguridad antes de intentar acceder al sistema de archivos, reemplazando una validación booleana más laxa.

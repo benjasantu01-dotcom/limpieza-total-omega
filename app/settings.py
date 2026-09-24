@@ -287,7 +287,13 @@ def _load_impl(ruta: Path) -> AppSettings:
             
         if not _is_dict(data): return DEFAULTS.copy()
             
-        return _coerce_and_verify(validate(data))
+        validated_data = validate(data)
+        # Asegurar integridad: completar claves faltantes con DEFAULTS
+        for key, default_val in DEFAULTS.items():
+            if key not in validated_data:
+                validated_data[key] = default_val
+                
+        return _coerce_and_verify(validated_data)
     except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError):
         return DEFAULTS.copy()
 

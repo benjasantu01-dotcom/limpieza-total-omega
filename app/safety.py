@@ -527,7 +527,10 @@ def _get_final_path_normalized(path: Path) -> Optional[Path]:
         buf = ctypes.create_unicode_buffer(1024)
         if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0) > 0:
             return Path(buf.value).resolve()
-    finally: kernel32.CloseHandle(handle)
+    except (OSError, AttributeError, Exception):
+        return None
+    finally:
+        kernel32.CloseHandle(handle)
     return None
 
 def _validate_ntfs_reparse_redirection(path: Path) -> None:
