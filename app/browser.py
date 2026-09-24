@@ -215,7 +215,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not path: return 0
     try:
         p = Path(path)
-        if not p.is_absolute() or not is_safe_to_modify(p) or is_protected_path(p):
+        if not p.exists() or not p.is_absolute() or not is_safe_to_modify(p) or is_protected_path(p):
             return 0
         return _sum_directory_recursive(str(p.resolve(strict=True)), _IS_JUNCTION_FN, _get_kernel32(), {})
     except Exception:
@@ -224,7 +224,7 @@ def directory_size(path: Optional[OSPath]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_abs_str: str, is_junction_fn: JunctionChecker) -> bool:
     try:
-        if not candidate.is_dir(): return False
+        if not candidate.exists() or not candidate.is_dir(): return False
         real_candidate = str(candidate.resolve(strict=True))
         if not _is_path_inside_base(real_candidate, base_abs_str) or not is_safe_to_modify(candidate) or is_protected_path(candidate):
             return False
@@ -236,7 +236,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str, is_junction_fn: Jun
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     try:
         target = real_base.joinpath(*rel_str.split("\\"))
-        if not str(target.resolve()).startswith(str(real_base)) or not is_safe_to_modify(target) or is_protected_path(target):
+        if not target.exists() or not str(target.resolve()).startswith(str(real_base)) or not is_safe_to_modify(target) or is_protected_path(target):
             return Path()
         return target if len(str(target)) < MAX_PATH_LEN else Path()
     except Exception:

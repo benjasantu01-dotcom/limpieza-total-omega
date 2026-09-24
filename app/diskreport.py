@@ -324,12 +324,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Realiza una pasada única (O(n)) sobre el árbol de directorios para recolectar estadísticas
-    agregadas y mantener el heap de archivos más grandes.
-    
-    Args:
-        directory: Ruta raíz a escanear.
-        skip_protected: Si debe omitir rutas protegidas por `safety`.
-        limit: Tamaño máximo del min-heap (0 para desactivar).
+    agregadas y mantener el heap de archivos más grandes, manejando errores de lectura.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -337,19 +332,22 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        total_bytes += size_bytes
-        total_files += 1
-        
-        ext = path.suffix.lower() or "(sin extensión)"
-        stat = ext_stats[ext]
-        stat.total_bytes += size_bytes
-        stat.count += 1
-        
-        if limit > 0 and size_bytes > 0:
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size_bytes, path))
-            elif size_bytes > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (size_bytes, path))
+        try:
+            total_bytes += size_bytes
+            total_files += 1
+            
+            ext = path.suffix.lower() or "(sin extensión)"
+            stat = ext_stats[ext]
+            stat.total_bytes += size_bytes
+            stat.count += 1
+            
+            if limit > 0 and size_bytes > 0:
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, (size_bytes, path))
+                elif size_bytes > top_heap[0][0]:
+                    heapq.heapreplace(top_heap, (size_bytes, path))
+        except (OSError, RuntimeError, PermissionError):
+            continue
     
     return SummaryData(total_bytes, total_files, ext_stats, top_heap)
 

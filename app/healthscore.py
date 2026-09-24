@@ -191,10 +191,11 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que no existan valores no numéricos o infinitos en las métricas."""
-        return (math.isfinite(self.junk_mb) and math.isfinite(self.suspicious_count) and 
-                math.isfinite(self.suspicious_warnings) and math.isfinite(self.memory_available_percent) and 
-                math.isfinite(self.disk_free_percent) and math.isfinite(self.duplicate_mb) and 
-                math.isfinite(self.startup_count) and math.isfinite(self.quarantined_count))
+        # Se verifica explícitamente math.isnan para capturar casos de datos corruptos
+        vals = [self.junk_mb, self.suspicious_count, self.suspicious_warnings, 
+                self.memory_available_percent, self.disk_free_percent, 
+                self.duplicate_mb, self.startup_count, self.quarantined_count]
+        return all(math.isfinite(v) and not math.isnan(v) for v in vals)
 
 @dataclass
 class HealthResult:
@@ -212,14 +213,14 @@ class HealthResult:
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     """Restringe un valor numérico a un rango acotado, devolviendo min_val en caso de error."""
     val = float(value)
-    if not math.isfinite(val): return min_val
+    if not math.isfinite(val) or math.isnan(val): return min_val
     return max(min_val, min(val, max_val))
 
 def _to_float(value: Any, default: float = 0.0) -> float:
     """Convierte cualquier entrada a float de forma segura."""
     try:
         val = float(value)
-        return val if math.isfinite(val) else default
+        return val if (math.isfinite(val) and not math.isnan(val)) else default
     except (TypeError, ValueError, OverflowError): return default
 
 def grade_for_score(score: float | int) -> str:

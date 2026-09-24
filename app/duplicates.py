@@ -231,7 +231,11 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     def _scan_dir(current_dir: Path) -> None:
         try:
             with os.scandir(current_dir) as iterator:
-                for entry in iterator:
+                while True:
+                    try:
+                        entry = next(iterator)
+                    except (StopIteration, OSError):
+                        break
                     try:
                         if entry.is_dir(follow_symlinks=False):
                             path_entry = Path(entry.path)

@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 36
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 242
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 1 | 2 | 1 | 0 | 14 |
+| 2026-09-22 | 0 | 2 | 0 | 0 | 12 |
 | 2026-09-23 | 131 | 12 | 25 | 11 | 171 |
-| 2026-09-24 | 58 | 7 | 10 | 4 | 57 |
+| 2026-09-24 | 62 | 7 | 10 | 4 | 57 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **36**
+- robustez ante casos límite: **39**
 - rendimiento: **35**
-- robustez ante casos límite: **35**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **19**
-- `diskreport.py`: **18**
+- `healthscore.py`: **20**
+- `diskreport.py`: **19**
+- `browser.py`: **18**
 - `assistant.py`: **17**
-- `browser.py`: **17**
 - `scanner.py`: **17**
 - `safety.py`: **15**
 - `memory.py`: **15**
-- `quarantine.py`: **14**
-- `duplicates.py`: **13**
+- `duplicates.py`: **14**
 - `settings.py`: **13**
+- `quarantine.py`: **13**
 - `branding.py`: **12**
 - `organizer.py`: **11**
 - `startup.py`: **6**
@@ -47,6 +47,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T05:54:46` **healthscore.py** (robustez ante casos límite): Mejoré la robustez del motor ante valores atípicos (outliers) en las métricas mediante la implementación de `math.isnan` en las validaciones y una política de "fail-safe" consistente en `_clamp` para asegurar que las operaciones matemáticas no propaguen estados inválidos.
+- `2026-09-24T05:54:30` **duplicates.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `_scan_dir` para capturar `OSError` durante la iteración y el acceso a atributos de archivo, asegurando que la recolección de candidatos no aborte silenciosamente ante archivos con nombres extremadamente largos o caracteres inválidos en el sistema de archivos (Win32).
+- `2026-09-24T05:54:01` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` y `_collect_summary_data` ante el caso límite de archivos corruptos o inaccesibles que disparan excepciones durante la lectura de metadatos (como `stat`), asegurando que el bucle continúe en lugar de abortar el reporte completo.
+- `2026-09-24T05:53:32` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante casos de rutas inexistentes o inaccesibles añadiendo validaciones `exists()` en `_resolve_browser_path` y `_is_valid_cache_path` para prevenir fallos en `Path.resolve(strict=True)` cuando el sistema de archivos contiene enlaces rotos o accesos restringidos.
 - `2026-09-24T05:45:41` **branding.py** (robustez ante casos límite): Se ha robustecido el módulo `branding.py` mediante una validación de rutas más estricta en `save_logo_svg` utilizando `is_safe_to_modify` para evitar intentos de escritura en rutas protegidas, mejorando la seguridad frente a casos límite de I/O.
 - `2026-09-24T05:45:20` **assistant.py** (robustez ante casos límite): Se reforzó la robustez ante estados inesperados del sistema y configuraciones inválidas mediante la implementación de un mecanismo de validación de integridad más exhaustivo durante la ingesta de datos y el procesamiento de respuestas, evitando que una métrica mal formada o un valor fuera de rango detenga el asistente.
 - `2026-09-24T05:44:10` **settings.py** (rendimiento): Se optimizó la carga y validación de la configuración implementando una caché de nivel de instancia (`_CACHED_SETTINGS`) que evita re-parsear el archivo JSON y re-ejecutar la lógica de coerción de tipos durante lecturas repetidas en una misma ejecución, utilizando `_load_impl` solo cuando la ruta o la caché son invalidadas.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T05:04:06` **assistant.py** (rendimiento): Optimicé el motor de búsqueda local de `assistant.py` reemplazando la lógica de búsqueda por tokens (que generaba iteraciones innecesarias) por un acceso directo vía `_TOKENS_MAP`, eliminando la re-tokenización del query en cada llamado.
 - `2026-09-24T05:02:04` **scanner.py** (legibilidad y documentación): Mejoré la documentación de las funciones críticas de heurística mediante type hints descriptivos y docstrings que especifican las precondiciones de entrada y el propósito de cada regla, facilitando el mantenimiento y la auditoría del código.
 - `2026-09-24T04:53:40` **safety.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en las funciones críticas de validación de seguridad para clarificar el propósito de las comprobaciones (especialmente las relacionadas con Win32 API y TOCTOU), facilitando el mantenimiento y la auditoría exigida.
-- `2026-09-24T04:52:38` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad del módulo `quarantine.py` mediante la refactorización de `_write_temp_to_final`, extrayendo la lógica de copia y verificación de integridad en una función privada llamada `_copy_with_verification` para reducir el anidamiento y clarificar el flujo de control, manteniendo estrictamente el comportamiento original.
-- `2026-09-24T04:51:51` **organizer.py** (legibilidad y documentación): Se han refinado los docstrings en las funciones críticas de validación y recorrido para clarificar el propósito de seguridad y las restricciones impuestas, además de renombrar variables internas como `target_dir` o `entry` en contextos de bucle para mejorar la legibilidad del flujo de datos sin alterar la lógica.
-- `2026-09-24T04:42:57` **memory.py** (legibilidad y documentación): Se introdujo documentación explicativa en las funciones críticas de la API de Win32 dentro de `trim_working_set` y sus ayudantes, aclarando las restricciones de seguridad que garantizan el cumplimiento de las reglas del proyecto al manipular procesos.
-- `2026-09-24T04:42:09` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y mantenibilidad de `healthscore.py` mediante docstrings detallados en las funciones de cálculo, aclarando explícitamente el contrato de cada una y la lógica de normalización.
