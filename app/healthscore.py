@@ -235,7 +235,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                 clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                 if clean_msg:
                     findings.append(clean_msg[:200])
-            except (Exception, ValueError, TypeError):
+            except Exception:
                 continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -287,7 +287,7 @@ def summarize(result: HealthResult | None) -> List[str]:
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     # Acceso directo a items iterables para evitar re-lookup
     for area, maximo in WEIGHTS.items():
-        val = result.breakdown[area]
+        val = result.breakdown.get(area, 0)
         lines.append(f"  {area.capitalize():<12} {val:>2}/{maximo:<2} [{_render_bar(val, maximo)}]")
     
     recs = result.recommendations if result.recommendations else ["Sin recomendaciones."]

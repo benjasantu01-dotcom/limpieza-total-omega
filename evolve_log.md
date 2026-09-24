@@ -1499,3 +1499,14 @@ FAILED evolve/tests/test_modules.py::test_list_startup_entries_returns_a_list - 
 - `2026-09-24T01:19:24` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores de E/S en `_get_kernel32` y `_is_system_hidden` para evitar que fallos imprevistos en la carga de librerías del sistema detengan el escaneo de navegadores.
 - `2026-09-24T01:19:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T01:19:24` Corrida terminada. Total usado hoy: 32.
+- `2026-09-24T01:27:22` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-09-24T01:27:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T01:28:00` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado `walk_files` para manejar de forma robusta los archivos que cambian de tamaño, son bloqueados por otros procesos o desaparecen durante la iteración (TOCTOU), evitando que una excepción `OSError` inesperada detenga el escaneo completo del disco.
+- `2026-09-24T01:28:29` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-24T01:29:01` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejora la robustez del motor de cálculo ante valores de métricas que exceden las capacidades esperadas o presentan inconsistencias, añadiendo validación explícita de `nan` y `inf` en `_to_float` y asegurando que `_evaluate_rules` no colapse ante excepciones durante la generación de mensajes.
+- `2026-09-24T01:30:01` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-24T01:31:04` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-24T01:32:10` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-24T01:33:22` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-24T01:33:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T01:33:22` Corrida terminada. Total usado hoy: 36.
