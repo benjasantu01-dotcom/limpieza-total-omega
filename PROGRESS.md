@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
-- Rechazadas por tests: 22
+- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 244
+- Sin respuesta de la IA (error o límite): 247
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 22 | 6 | 6 | 3 | 29 |
+| 2026-09-22 | 19 | 5 | 6 | 3 | 29 |
 | 2026-09-23 | 131 | 12 | 25 | 11 | 171 |
-| 2026-09-24 | 31 | 4 | 6 | 3 | 44 |
+| 2026-09-24 | 32 | 4 | 6 | 3 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **41**
 - seguridad defensiva: **39**
+- legibilidad y documentación: **38**
 - robustez ante casos límite: **37**
 - rendimiento: **35**
-- manejo de errores y validación de entradas: **32**
+- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,18 +35,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **16**
 - `safety.py`: **15**
 - `scanner.py`: **15**
+- `assistant.py`: **15**
 - `quarantine.py`: **15**
 - `settings.py`: **14**
-- `assistant.py`: **14**
-- `memory.py`: **13**
 - `duplicates.py`: **13**
-- `organizer.py`: **11**
+- `memory.py`: **12**
 - `branding.py`: **11**
+- `organizer.py`: **10**
 - `startup.py`: **7**
-- `main.py`: **3**
+- `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T03:52:10` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_handler_wrapper` y los métodos `ingest` de `SystemContext` para asegurar que fallos en la ingesta o procesamiento de datos de entrada no propaguen excepciones inesperadas hacia la UI, validando explícitamente los tipos antes de la asignación.
 - `2026-09-24T02:30:24` **startup.py** (seguridad defensiva): Se ha robustecido el filtrado en `parse_registry_csv` añadiendo una validación temprana contra `is_protected_path` tanto en la ruta original como en la resuelta antes de crear cualquier objeto `StartupEntry`, impidiendo que rutas críticas del sistema lleguen a ser procesadas.
 - `2026-09-24T02:29:51` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` aplicando `ensure_safe_to_modify` antes de cualquier operación de escritura sobre el archivo principal o el respaldo, evitando así el uso de `is_safe_to_modify` que, siendo booleano, podría fallar silenciosamente en escenarios de permisos complejos donde se requiere una validación estricta que lance excepciones ante riesgos detectados.
 - `2026-09-24T02:29:08` **scanner.py** (seguridad defensiva): Se ha añadido una validación explícita para asegurar que la ruta a escanear no sea un punto de reanálisis (Junction o Symlink) antes de entrar en `os.scandir`, reforzando la seguridad defensiva contra la fuga de contexto fuera de la carpeta objetivo.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T01:49:37` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante condiciones de concurrencia y fallos de escritura mediante la incorporación de `os.fsync` previo al renombrado y validación explícita de `is_safe_to_modify` sobre el archivo de respaldo (`.bak`), asegurando que no se sobrescriban o dañen archivos críticos bajo bloqueos de sistema o interrupciones.
 - `2026-09-24T01:49:05` **scanner.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_is_safe_entry` para validar que `entry.path` no sea una ruta truncada o malformada que podría causar errores en `is_protected_path` o futuras operaciones, utilizando `Path.is_absolute()` y capturando posibles excepciones en la resolución de rutas.
 - `2026-09-24T01:48:33` **safety.py** (robustez ante casos límite): Se introdujo una verificación de "path traversal" mediante `Path.resolve()` contra la ruta normalizada antes de cualquier operación, garantizando que el acceso al sistema de archivos sea estrictamente absoluto y esté saneado ante posibles intentos de escaparse del directorio raíz definido (o del entorno de ejecución).
-- `2026-09-24T01:38:06` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una comprobación explícita mediante `PROCESS_QUERY_INFORMATION` y manejando correctamente el posible error `ERROR_INVALID_PARAMETER` (que ocurre si el proceso muere entre la apertura del handle y la llamada a `EmptyWorkingSet`), evitando así comportamientos indefinidos al cerrar handles nulos.

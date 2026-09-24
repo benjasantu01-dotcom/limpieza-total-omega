@@ -88,8 +88,8 @@ def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Calla
                 return result
             logging.error(f"Handler {func.__name__} devolvió tipo inesperado: {type(result)}")
         except Exception as e:
-            logging.error(f"Error en {func.__name__}: {e}")
-        return Answer("No pude procesar la información solicitada.")
+            logging.error(f"Error crítico en {func.__name__}: {str(e)[:50]}")
+        return Answer("Error al procesar la respuesta.")
     return wrapper
 
 class AssistantConfig(NamedTuple):
@@ -328,8 +328,11 @@ class SystemContext:
         if val is None or not spec.is_valid_type(val): return False
         float_val = _safe_float(val, -1.0)
         if float_val >= 0 and _is_metric_within_bounds(float_val, spec):
-            setattr(self, key, spec.cast_func(float_val))
-            return True
+            try:
+                setattr(self, key, spec.cast_func(float_val))
+                return True
+            except (TypeError, ValueError):
+                return False
         return False
 
     def _clean_grade(self, val: Any) -> str:

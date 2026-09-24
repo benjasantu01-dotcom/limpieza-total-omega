@@ -402,3 +402,19 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-24T03:43:51` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-24T03:43:51` Rotación — log: 1392 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T03:43:51` Corrida terminada. Total usado hoy: 88.
+- `2026-09-24T03:49:56` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-09-24T03:49:59` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-24T03:49:59` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-24T03:50:19` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-24T03:50:19` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-24T03:50:50` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-24T03:50:50` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-24T03:51:25` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T03:52:10` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_safe_handler_wrapper` y los métodos `ingest` de `SystemContext` para asegurar que fallos en la ingesta o procesamiento de datos de entrada no propaguen excepciones inesperadas hacia la UI, validando explícitamente los tipos antes de la asignación.
+- `2026-09-24T03:52:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T03:52:43` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-24T03:52:50` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-24T03:53:03` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-24T03:53:31` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-24T03:53:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T03:53:31` Corrida terminada. Total usado hoy: 92.
