@@ -296,7 +296,8 @@ class SystemContext:
 
     def get_metric(self, key: str, default: float) -> float:
         """Obtiene una métrica del contexto, aplicando un valor por defecto si no existe o es inválida."""
-        val = getattr(self, key, None)
+        if not hasattr(self, key): return default
+        val = getattr(self, key)
         if not isinstance(val, (int, float)) or not math.isfinite(val):
             return default
         return float(val)
@@ -356,12 +357,15 @@ class SystemContext:
             if self._apply_field(source, key, spec):
                 found_data = True
         
-        grade_val = _get_source_value(source, "grade")
-        if isinstance(grade_val, str):
-            clean_grade = self._clean_grade(grade_val)
-            if clean_grade:
-                self.grade = clean_grade
-                found_data = True
+        try:
+            grade_val = _get_source_value(source, "grade")
+            if isinstance(grade_val, str):
+                clean_grade = self._clean_grade(grade_val)
+                if clean_grade:
+                    self.grade = clean_grade
+                    found_data = True
+        except Exception:
+            pass
         
         # Validar integridad tras carga masiva
         if found_data and _validate_context_integrity(self):
