@@ -203,12 +203,16 @@ SYSTEM_PROMPT: Final[str] = (
 # Regex de validación
 _ENDPOINT_BASE: Final[str] = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 _TIMEOUT_SECONDS: Final[int] = 30
-_PATH_INJECTION_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:[\\/]|/|\\|\.\.|\0|[\u202e\u202d\u200e\u200f])")
-_CONTROL_CHARS_REGEX: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f\u0080-\u009f\u202b-\u202f\u200b-\u200d\uFEFF]")
-_ANSI_ESCAPE_REGEX: Final[re.Pattern] = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
-_PS_COMMAND_REGEX: Final[re.Pattern] = re.compile(r"(Get-|Remove-|Set-|Stop-|Start-)[a-zA-Z]+", re.IGNORECASE)
-_RESTRICTED_CONTENT_REGEX: Final[re.Pattern] = re.compile(r"(exec|eval|subprocess|system\s*\(|rm\s+|del\s+|cmd\.exe|powershell|reg\.exe)", re.IGNORECASE)
-_SENSITIVE_STRUCTURE_REGEX: Final[re.Pattern] = re.compile(r"(\\\\|[a-z]:\\|/etc/|\\\\UNC|C:\\Windows|System32|/proc/|/dev/)", re.IGNORECASE)
+
+SECURITY_PATTERNS: Final[list[re.Pattern]] = [
+    re.compile(r"([a-zA-Z]:[\\/]|/|\\|\.\.|\0|[\u202e\u202d\u200e\u200f])"),  # Inyección de ruta
+    re.compile(r"[\x00-\x1f\x7f\u0080-\u009f\u202b-\u202f\u200b-\u200d\uFEFF]"), # Char de control
+    re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])"),                       # ANSI
+    re.compile(r"(Get-|Remove-|Set-|Stop-|Start-)[a-zA-Z]+", re.IGNORECASE),   # Comandos PS
+    re.compile(r"(exec|eval|subprocess|system\s*\(|rm\s+|del\s+|cmd\.exe|powershell|reg\.exe)", re.IGNORECASE), # Contenido peligroso
+    re.compile(r"(\\\\|[a-z]:\\|/etc/|\\\\UNC|C:\\Windows|System32|/proc/|/dev/)", re.IGNORECASE) # Estructuras sistema
+]
+
 _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
 _MODEL_NAME_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9\.\-_]{1,64}$")
 _API_KEY_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9_\-\.]{1,128}$")
@@ -339,7 +343,8 @@ class SystemContext:
     def _clean_grade(self, val: Any) -> str:
         """Limpia el string del grado de salud eliminando caracteres no alfanuméricos."""
         if not isinstance(val, str): return ""
-        clean = _CONTROL_CHARS_REGEX.sub(" ", val)[:10].strip()
+        # Usamos SECURITY_PATTERNS[1] para limpiar caracteres de control
+        clean = SECURITY_PATTERNS[1].sub(" ", val)[:10].strip()
         return clean if _ensure_safe_text(clean) else ""
 
     def ingest(self, source: Any) -> bool:
@@ -412,19 +417,14 @@ def _is_safe_text_structure(text: str) -> bool:
     except (ValueError, TypeError, OSError):
         pass
     
-    # 2. Consolidar regex de ataque en una lista para verificación secuencial
-    security_patterns = [
-        _PATH_INJECTION_REGEX, _RESTRICTED_CONTENT_REGEX, 
-        _SENSITIVE_STRUCTURE_REGEX, _ANSI_ESCAPE_REGEX, _PS_COMMAND_REGEX
-    ]
-    
-    return not any(pattern.search(text) for pattern in security_patterns)
+    # 2. Consolidar regex de ataque usando la lista centralizada SECURITY_PATTERNS
+    return not any(pattern.search(text) for pattern in SECURITY_PATTERNS)
 
 def _ensure_safe_text(text: Any) -> bool:
     """Wrapper final para validar que cualquier texto sea seguro, corto y libre de caracteres de control."""
     if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
         return False
-    if _CONTROL_CHARS_REGEX.search(text):
+    if SECURITY_PATTERNS[1].search(text):
         return False
     return _is_safe_text_structure(text)
 
@@ -451,7 +451,7 @@ def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Formatea una métrica, limpiando caracteres prohibidos para su visualización."""
     if not isinstance(val, (int, float, str)): return "N/A"
     raw = _fmt_metric(val, unit, decimal)
-    return _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))[:32]
+    return SECURITY_PATTERNS[0].sub(" ", SECURITY_PATTERNS[1].sub(" ", raw))[:32]
 
 @lru_cache(maxsize=16)
 def _generate_context_cached(ctx: SystemContext) -> str:
@@ -570,7 +570,7 @@ _TOKENS_MAP: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
 def _sanitize_query(question: str) -> str:
     """Limpia el input del usuario eliminando caracteres prohibidos."""
     if not isinstance(question, str): return ""
-    clean = _CONTROL_CHARS_REGEX.sub(' ', question).strip()[:100]
+    clean = SECURITY_PATTERNS[1].sub(' ', question).strip()[:100]
     return clean if _ensure_safe_text(clean) else ""
 
 def local_answer(question: str, context: SystemContext) -> Answer:

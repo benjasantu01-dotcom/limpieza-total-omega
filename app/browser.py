@@ -161,6 +161,14 @@ def _should_skip_entry(
     kernel32: Optional[ctypes.WinDLL], 
     is_junction_fn: JunctionChecker
 ) -> bool:
+    """
+    Determina si una entrada del sistema de archivos debe ser ignorada.
+    
+    Args:
+        entry: Objeto DirEntry de os.scandir.
+        kernel32: Instancia de Win32 DLL para chequeos de atributos o None en no-Windows.
+        is_junction_fn: Función para detectar si la ruta es un punto de unión (junction).
+    """
     if entry.name is None or _is_excluded_file(entry.name):
         return True
     
@@ -189,6 +197,16 @@ def _sum_directory_recursive(
     memo: Dict[str, int],
     depth: int = 0
 ) -> int:
+    """
+    Calcula recursivamente el tamaño de un directorio evitando ciclos y rutas inseguras.
+    
+    Args:
+        root_abs: Ruta absoluta del directorio a escanear.
+        is_junction_fn: Callback para detectar puntos de unión (evita escaneo infinito).
+        kernel32: Objeto WinDLL opcional para verificar flags de sistema/ocultos.
+        memo: Diccionario de caché para evitar re-procesar rutas ya calculadas.
+        depth: Profundidad actual para cumplimiento de MAX_SCAN_DEPTH.
+    """
     if not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
     if root_abs in memo:
