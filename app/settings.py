@@ -88,6 +88,7 @@ MAX_SETTINGS_SIZE: Final = 1024 * 64
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
 _PATH_CACHE: dict[Path, Path] = {}
+_CACHED_SETTINGS: dict[str, AppSettings] = {}
 _BOOL_TRUE_SET: Final = frozenset(("1", "true", "si", "sí", "yes"))
 _BOOL_FALSE_SET: Final = frozenset(("0", "false", "no", "none"))
 
@@ -300,9 +301,14 @@ def _load_impl(ruta: Path) -> AppSettings:
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga los ajustes intentando leer el archivo principal o su respaldo .bak."""
     ruta = settings_path(custom_base)
+    cache_key = str(ruta)
+    if cache_key in _CACHED_SETTINGS: return _CACHED_SETTINGS[cache_key].copy()
+    
     for r in [ruta, ruta.with_suffix(".bak")]:
         try:
-            return _load_impl(r)
+            settings = _load_impl(r)
+            _CACHED_SETTINGS[cache_key] = settings
+            return settings.copy()
         except Exception:
             continue
     return DEFAULTS.copy()
@@ -343,6 +349,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             os.replace(ruta, bak_path)
         os.replace(temp_path, ruta)
         _load_impl.cache_clear()
+        _CACHED_SETTINGS.clear()
         return ruta
     except (OSError, IOError, PermissionError): 
         return None
@@ -368,6 +375,7 @@ def reset(custom_base: PathLike | None = None) -> AppSettings:
     """Restaura a valores de fábrica y limpia la caché."""
     save(DEFAULTS, custom_base)
     _load_impl.cache_clear()
+    _CACHED_SETTINGS.clear()
     return DEFAULTS.copy()
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:

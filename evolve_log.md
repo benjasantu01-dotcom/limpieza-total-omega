@@ -588,3 +588,13 @@ assert not {'replace'}
 - `2026-09-24T05:34:50` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo mediante la implementación de `os.scandir` de forma más eficiente y minimizando llamadas redundantes al sistema de archivos al reutilizar el objeto `DirEntry` ya existente durante el proceso de heurísticas.
 - `2026-09-24T05:34:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T05:34:50` Corrida terminada. Total usado hoy: 132.
+- `2026-09-24T05:42:53` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-09-24T05:42:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T05:43:32` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-24T05:44:10` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó la carga y validación de la configuración implementando una caché de nivel de instancia (`_CACHED_SETTINGS`) que evita re-parsear el archivo JSON y re-ejecutar la lógica de coerción de tipos durante lecturas repetidas en una misma ejecución, utilizando `_load_impl` solo cuando la ruta o la caché son invalidadas.
+- `2026-09-24T05:44:35` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-24T05:44:36` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T05:45:20` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante estados inesperados del sistema y configuraciones inválidas mediante la implementación de un mecanismo de validación de integridad más exhaustivo durante la ingesta de datos y el procesamiento de respuestas, evitando que una métrica mal formada o un valor fuera de rango detenga el asistente.
+- `2026-09-24T05:45:41` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha robustecido el módulo `branding.py` mediante una validación de rutas más estricta en `save_logo_svg` utilizando `is_safe_to_modify` para evitar intentos de escritura en rutas protegidas, mejorando la seguridad frente a casos límite de I/O.
+- `2026-09-24T05:45:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T05:45:41` Corrida terminada. Total usado hoy: 136.

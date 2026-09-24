@@ -363,6 +363,7 @@ class SystemContext:
                 self.grade = clean_grade
                 found_data = True
         
+        # Validar integridad tras carga masiva
         if found_data and _validate_context_integrity(self):
             self.analyzed = True
             return True
