@@ -629,3 +629,14 @@ assert not {'replace'}
 - `2026-09-24T06:15:58` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `settings.py` ante archivos corruptos o maliciosos agregando un chequeo de integridad basado en `os.stat` antes de la lectura, asegurando que solo se procesen archivos planos y no directorios ni enlaces, previniendo errores de acceso inesperados.
 - `2026-09-24T06:15:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T06:15:58` Corrida terminada. Total usado hoy: 148.
+- `2026-09-24T06:24:26` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-09-24T06:24:56` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-24T06:25:39` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad en el manejo de archivos al inyectar `is_protected_path` en `_is_safe_text_structure` para asegurar que ningún texto analizado por el asistente sea una ruta protegida del sistema, evitando así posibles intentos de manipulación de contexto mediante entradas maliciosas.
+- `2026-09-24T06:25:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T06:26:18` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado `save_logo_svg` para prevenir ataques de trayectoria (path traversal) mediante la validación estricta de la ruta destino antes de crear directorios o escribir archivos, asegurando que el destino final se mantenga dentro de los límites de seguridad esperados mediante `path.resolve()`.
+- `2026-09-24T06:26:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T06:26:22` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-24T06:26:28` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-24T06:26:52` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_resolve_browser_path` reforzando la validación de rutas mediante `pathlib` y `is_safe_to_modify` antes de cualquier resolución, evitando construcciones de rutas fuera del ámbito permitido y asegurando que las validaciones de seguridad actúen preventivamente.
+- `2026-09-24T06:26:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T06:26:52` Corrida terminada. Total usado hoy: 152.

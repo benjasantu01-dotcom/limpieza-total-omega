@@ -236,9 +236,17 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str, is_junction_fn: Jun
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     try:
         target = real_base.joinpath(*rel_str.split("\\"))
-        if not target.exists() or not str(target.resolve()).startswith(str(real_base)) or not is_safe_to_modify(target) or is_protected_path(target):
+        if not target.exists():
             return Path()
-        return target if len(str(target)) < MAX_PATH_LEN else Path()
+        
+        # Validación de seguridad defensiva antes de procesar
+        target_abs = str(target.resolve())
+        if not target_abs.startswith(str(real_base)):
+            return Path()
+        if not is_safe_to_modify(target) or is_protected_path(target):
+            return Path()
+            
+        return target if len(target_abs) < MAX_PATH_LEN else Path()
     except Exception:
         return Path()
 
