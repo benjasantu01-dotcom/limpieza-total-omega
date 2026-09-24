@@ -103,10 +103,10 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry) -> bool:
+def _is_excluded_path(entry: os.DirEntry, root: Path) -> bool:
     """
     Determina si una ruta debe ser excluida del análisis por razones de seguridad,
-    presencia de caracteres de ofuscación o si es un enlace/reparse point.
+    presencia de caracteres de ofuscación, escape de la raíz o enlaces.
     """
     try:
         if any(c in entry.name for c in SUSPICIOUS_CHARS):
@@ -116,7 +116,11 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
         if entry.is_symlink():
             return True
             
-        path = Path(entry.path)
+        path = Path(entry.path).resolve()
+        # Impedir escape de directorio mediante enlaces o manipulación de rutas
+        if root not in path.parents and path != root:
+            return True
+            
         if is_protected_path(path):
             return True
             
@@ -253,7 +257,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and _is_excluded_path(entry):
+                        if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):

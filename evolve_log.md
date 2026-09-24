@@ -640,3 +640,13 @@ assert not {'replace'}
 - `2026-09-24T06:26:52` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_resolve_browser_path` reforzando la validación de rutas mediante `pathlib` y `is_safe_to_modify` antes de cualquier resolución, evitando construcciones de rutas fuera del ámbito permitido y asegurando que las validaciones de seguridad actúen preventivamente.
 - `2026-09-24T06:26:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T06:26:52` Corrida terminada. Total usado hoy: 152.
+- `2026-09-24T06:34:36` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-09-24T06:35:08` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_excluded_path` mediante la validación explícita de que la ruta analizada sea una subruta absoluta de la raíz de escaneo original, previniendo el escape de directorio ("path traversal") mediante symlinks o manipulación de rutas durante el proceso de iteración.
+- `2026-09-24T06:35:37` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_collect_candidates` para prevenir ataques de "Time-of-Check to Time-of-Use" (TOCTOU) y errores de resolución de rutas, validando la seguridad del archivo inmediatamente antes de su procesamiento dentro del bucle de escaneo.
+- `2026-09-24T06:36:05` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_evaluate_rules` validando la integridad del pipeline mediante una comprobación de tipo más estricta antes de la ejecución y añadiendo un manejo de excepciones robusto para prevenir que una falla en una regla específica contamine el reporte final.
+- `2026-09-24T06:37:05` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-24T06:37:09` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-24T06:37:16` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-24T06:38:27` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se ha añadido un filtro de saneamiento estricto en el método `_safe_get_entry_value` para eliminar caracteres no imprimibles y se ha centralizado la validación de seguridad de rutas en `on_stage` y `on_quarantine_duplicates` para asegurar que ningún archivo se procese sin pasar previamente por `is_safe_path`, fortaleciendo la defensa ante posibles inyecciones o rutas maliciosas.
+- `2026-09-24T06:38:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T06:38:27` Corrida terminada. Total usado hoy: 156.
