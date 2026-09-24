@@ -144,7 +144,7 @@ class _Validators:
 
     @staticmethod
     def _is_reparse_point(path: Path) -> bool:
-        """Determina si una ruta es un enlace simbólico o un junction."""
+        """Determina si la ruta es un punto de reanálisis (symlink o junction)."""
         try:
             return path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction())
         except (OSError, PermissionError):
@@ -153,7 +153,7 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
-        """Verifica recursivamente que la cadena de subdirectorios sea segura."""
+        """Verifica recursivamente si la ruta y sus padres son aptos para operaciones."""
         try:
             resolved = Path(os.path.realpath(os.path.expanduser(path_str)))
             for part in resolved.parts:
@@ -165,8 +165,8 @@ class _Validators:
 
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
-        """Valida sintaxis básica y seguridad de una ruta."""
-        if not path_str or len(path_str) > 2048 or "\0" in path_str or "^" in path_str or "\033" in path_str: return False
+        """Valida que una ruta sea absoluta, no contenga caracteres prohibidos y pase el chequeo de seguridad."""
+        if not path_str or len(path_str) > 2048 or any(c in path_str for c in ("\0", "^", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
         try:
             p = Path(path_str).expanduser()
@@ -176,7 +176,7 @@ class _Validators:
 
     @staticmethod
     def bool(key: ConfigKey, val: Any) -> Optional[bool]:
-        """Normaliza valores de entrada hacia booleano estricto."""
+        """Convierte entradas (str o bool) a un booleano canónico."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -187,7 +187,7 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
-        """Convierte a entero y asegura que esté dentro del rango definido."""
+        """Convierte a int y recorta el valor dentro del rango de _NUMERIC_LIMITS."""
         if val is None: return None
         parsed_value = int(val)
         limit = _NUMERIC_LIMITS.get(key)
@@ -196,7 +196,7 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
-        """Valida que la cadena represente una ruta de sistema segura y absoluta."""
+        """Valida que el valor sea una ruta absoluta, segura y verificable."""
         if val == "": return ""
         if not isinstance(val, str): return None
         path_string = val.strip()
@@ -205,7 +205,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
-        """Valida strings contra una lista predefinida."""
+        """Valida que el string esté contenido en el set permitido para su clave."""
         val = text.lower()
         allowed = _ENUM_VALS.get(key)
         if allowed: return val if val in allowed else None
@@ -214,7 +214,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        """Realiza limpieza básica de strings y desvía la validación."""
+        """Valida strings generales mediante limpieza y desvío a validación de enums."""
         if val is None: return None
         text = str(val).strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
@@ -276,20 +276,21 @@ def validate(raw_values: Any) -> AppSettings:
         return DEFAULTS.copy()
     return config
 
+def _is_file_secure_to_read(ruta: Path) -> bool:
+    """Valida permisos y estructura de seguridad del archivo antes de la lectura."""
+    if not ruta.exists(): return False
+    st = ruta.lstat()
+    if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
+    ensure_safe_to_modify(ruta)
+    if not is_safe_to_modify(str(ruta)): return False
+    if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
+    return True
+
 @lru_cache(maxsize=4)
 def _load_impl(ruta: Path) -> AppSettings:
     """Implementación privada cacheada para leer y verificar el archivo desde disco."""
     try:
-        if not ruta.exists(): return DEFAULTS.copy()
-        
-        st = ruta.lstat()
-        if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): 
-            return DEFAULTS.copy()
-        
-        ensure_safe_to_modify(ruta)
-        if not is_safe_to_modify(str(ruta)): return DEFAULTS.copy()
-        
-        if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return DEFAULTS.copy()
+        if not _is_file_secure_to_read(ruta): return DEFAULTS.copy()
             
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)

@@ -945,3 +945,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-24T09:19:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
 - `2026-09-24T09:19:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T09:19:27` Corrida terminada. Total usado hoy: 220.
+- `2026-09-24T09:27:58` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-09-24T09:28:40` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
+- `2026-09-24T09:29:06` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
+- `2026-09-24T09:29:41` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Documenté con docstrings claros y tipado los validadores internos en `_Validators` para explicar las reglas de negocio, y extraje la lógica de validación de `_load_impl` para mejorar la legibilidad y el mantenimiento.
+- `2026-09-24T09:29:51` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-24T09:29:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T09:29:51` Corrida terminada. Total usado hoy: 224.
