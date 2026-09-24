@@ -1426,3 +1426,35 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-24T01:00:35` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé `list_items` y `purge_all` para evitar lecturas recurrentes y repetitivas del sistema de archivos mediante el uso de un cacheo local del contenido del directorio de cuarentena, reduciendo la complejidad de las operaciones masivas de O(N*M) a O(N+M).
 - `2026-09-24T01:00:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T01:00:35` Corrida terminada. Total usado hoy: 24.
+- `2026-09-24T01:06:25` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-09-24T01:06:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-09-24T01:07:33` Tests FALLARON:
+```
+d: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'app.tmp'
+  'malo.tmp'
+  
+  Full diff:
+    {
+  +     'app.tmp',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - assert 'protegida' in "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación."
+ +  where "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación." = <function describe_protection at 0x7f52fa2da520>(((PosixPath('/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7f52fa2da520> = safety.describe_protection
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error crítico en restauración: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_restore_into_a_system_pat0/Windows/System32'
+14 failed, 285 passed, 5 warnings in 1.54s
+
+```
+- `2026-09-24T01:07:33` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se implementó un cacheado más granular y eficiente en `_is_system_path_cached` y se optimizó el chequeo de permisos (`is_sensitive_file` y `is_protected_path`) para evitar múltiples llamadas al sistema de archivos mediante el uso de `frozenset` y la simplificación de lógicas de normalización en bucles críticos.
+- `2026-09-24T01:08:00` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-09-24T01:08:16` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-09-24T01:08:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T01:08:16` Corrida terminada. Total usado hoy: 28.
