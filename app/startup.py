@@ -320,14 +320,13 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             
             # Validación defensiva estricta antes de instanciar StartupEntry
             try:
-                p_cmd = Path(cmd)
-                if is_protected_path(p_cmd):
+                raw_path = Path(cmd).expanduser()
+                abs_path = raw_path.absolute()
+                
+                # Prevenir path traversal asegurando que la ruta normalizada sea coherente
+                if is_protected_path(abs_path) or ".." in str(raw_path):
                     continue
-                # Si es una ruta absoluta, resolvemos para verificar que no apunte a zona protegida
-                if p_cmd.is_absolute():
-                    resolved = p_cmd.resolve(strict=False)
-                    if is_protected_path(resolved):
-                        continue
+                    
             except (ValueError, TypeError, OSError):
                 continue
             

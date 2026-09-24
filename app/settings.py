@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import stat
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -278,11 +279,15 @@ def _load_impl(ruta: Path) -> AppSettings:
     try:
         if not ruta.exists(): return DEFAULTS.copy()
         
-        # Integridad estricta: verificar tipos de archivo antes de procesar
+        # Integridad estricta: verificar que sea un archivo regular seguro
         st = ruta.lstat()
-        if not (st.st_mode & 0o100000) or _Validators._is_reparse_point(ruta): 
+        if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): 
             return DEFAULTS.copy()
+        
+        # Pre-chequeo de seguridad: asegurar que la ruta sea modificable (no bloqueada)
+        ensure_safe_to_modify(ruta)
         if not is_safe_to_modify(str(ruta)): return DEFAULTS.copy()
+        
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return DEFAULTS.copy()
             
         with open(ruta, "r", encoding="utf-8") as f:

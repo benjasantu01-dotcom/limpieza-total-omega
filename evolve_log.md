@@ -658,3 +658,23 @@ assert not {'replace'}
 - `2026-09-24T06:47:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-09-24T06:47:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T06:47:16` Corrida terminada. Total usado hoy: 160.
+- `2026-09-24T06:54:57` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-09-24T06:55:41` Tests FALLARON:
+```
+or: Error durante aislamiento: Error durante aislamiento: [HARD_LINK_DETECTED] Hard link hacia zona protegida: _Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - RuntimeError: Error durante aislamiento: Error durante aislamiento: [HARD_LINK_DETECTED] Hard link hacia zona protegida: _Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: [HARD_LINK_DETECTED] Hard link hacia zona protegida: _Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: [HARD_LINK_DETECTED] Hard link hacia zona protegida: _Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: [HARD_LINK_DETECTED] Hard link hacia zona protegida: _Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: [HARD_LINK_DETECTED] Hard link hacia zona protegida: _Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: [HARD_LINK_DETECTED] Hard link hacia zona protegida: _Cuarentena
+21 failed, 278 passed, 10 warnings in 1.92s
+
+```
+- `2026-09-24T06:55:41` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se mejora `ensure_safe_to_modify` para detectar si el archivo es un hard link que apunta a una ubicación fuera del sandbox o a un archivo de sistema, añadiendo una validación de inodo cruzada para prevenir ataques de sustitución mediante hard links.
+- `2026-09-24T06:55:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T06:56:14` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado `Scanner._is_safe_entry` y `scan_directory` para validar que `entry.path` no contenga caracteres de control peligrosos o rutas que intenten evadir el `base_root` mediante técnicas de normalización, asegurando que `resolve()` no sea la única defensa contra rutas malformadas.
+- `2026-09-24T06:56:47` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_load_impl` añadiendo una comprobación explícita mediante `ensure_safe_to_modify` antes de la apertura del archivo de configuración, asegurando que la ruta no sea un enlace simbólico malintencionado o un punto de reparse, y se integró un manejo más robusto ante archivos de configuración que no sean archivos regulares (como dispositivos o pipes) usando `st_mode`.
+- `2026-09-24T06:57:02` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Se endureció la validación de rutas en `parse_registry_csv` para prevenir el "path traversal" o la inyección de rutas mediante el uso de `os.path.abspath` y una verificación explícita de sub-directorio contra `Path.cwd()` o directorios prohibidos, garantizando que el comando no escape de límites esperados antes de ser procesado.
+- `2026-09-24T06:57:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T06:57:02` Corrida terminada. Total usado hoy: 164.

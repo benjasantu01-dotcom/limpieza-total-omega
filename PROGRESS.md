@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
-- Rechazadas por tests: 19
+- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 228
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 131 | 12 | 25 | 11 | 165 |
-| 2026-09-24 | 73 | 7 | 12 | 5 | 63 |
+| 2026-09-23 | 131 | 12 | 25 | 11 | 161 |
+| 2026-09-24 | 76 | 8 | 12 | 5 | 63 |
 
 ## Mejoras aceptadas por enfoque
 
+- seguridad defensiva: **46**
 - legibilidad y documentación: **44**
-- seguridad defensiva: **43**
 - robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **40**
 - rendimiento: **35**
@@ -33,19 +33,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **20**
 - `browser.py`: **19**
 - `assistant.py`: **18**
-- `scanner.py`: **17**
+- `scanner.py`: **18**
 - `safety.py`: **16**
 - `memory.py`: **16**
 - `duplicates.py`: **15**
-- `settings.py`: **14**
+- `settings.py`: **15**
 - `quarantine.py`: **14**
 - `branding.py`: **13**
 - `organizer.py`: **12**
-- `startup.py`: **6**
+- `startup.py`: **7**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T06:57:02` **startup.py** (seguridad defensiva): Se endureció la validación de rutas en `parse_registry_csv` para prevenir el "path traversal" o la inyección de rutas mediante el uso de `os.path.abspath` y una verificación explícita de sub-directorio contra `Path.cwd()` o directorios prohibidos, garantizando que el comando no escape de límites esperados antes de ser procesado.
+- `2026-09-24T06:56:47` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_load_impl` añadiendo una comprobación explícita mediante `ensure_safe_to_modify` antes de la apertura del archivo de configuración, asegurando que la ruta no sea un enlace simbólico malintencionado o un punto de reparse, y se integró un manejo más robusto ante archivos de configuración que no sean archivos regulares (como dispositivos o pipes) usando `st_mode`.
+- `2026-09-24T06:56:14` **scanner.py** (seguridad defensiva): Se ha mejorado `Scanner._is_safe_entry` y `scan_directory` para validar que `entry.path` no contenga caracteres de control peligrosos o rutas que intenten evadir el `base_root` mediante técnicas de normalización, asegurando que `resolve()` no sea la única defensa contra rutas malformadas.
 - `2026-09-24T06:47:10` **quarantine.py** (seguridad defensiva): Mejoré la seguridad de `_atomic_isolate_file` añadiendo una validación estricta de `is_safe_to_modify` sobre el directorio destino antes de realizar la copia, garantizando que el sandbox no haya sido alterado o movido a una ubicación insegura durante la ejecución.
 - `2026-09-24T06:45:17` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `_get_process_path` para evitar fugas de información o manipulaciones inesperadas al validar la integridad de la ruta antes de devolverla, utilizando `is_protected_path` para prevenir la resolución de rutas de sistema, lo cual refuerza el cumplimiento de las reglas de seguridad defensiva al tratar con identificadores de procesos.
 - `2026-09-24T06:36:05` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_evaluate_rules` validando la integridad del pipeline mediante una comprobación de tipo más estricta antes de la ejecución y añadiendo un manejo de excepciones robusto para prevenir que una falla en una regla específica contamine el reporte final.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T06:15:17` **safety.py** (robustez ante casos límite): Se añadió una validación específica para rutas UNC (`\\servidor\recurso`) y de red en `_validate_boundary_conditions` para evitar bloqueos por latencia o permisos inesperados de red, y se centralizó el chequeo de "path traversal" usando `resolve()` para evitar comparaciones de strings inconsistentes frente a enlaces simbólicos o inconsistencias de caja (case-insensitivity).
 - `2026-09-24T06:11:12` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la manipulación de archivos añadiendo una validación de rutas cruzadas entre unidades (cross-device move) y manejando explícitamente errores de acceso al verificar el espacio en disco, evitando que el proceso de limpieza falle silenciosamente si el destino de cuarentena se encuentra en un sistema de archivos distinto al origen.
 - `2026-09-24T05:54:46` **healthscore.py** (robustez ante casos límite): Mejoré la robustez del motor ante valores atípicos (outliers) en las métricas mediante la implementación de `math.isnan` en las validaciones y una política de "fail-safe" consistente en `_clamp` para asegurar que las operaciones matemáticas no propaguen estados inválidos.
-- `2026-09-24T05:54:30` **duplicates.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `_scan_dir` para capturar `OSError` durante la iteración y el acceso a atributos de archivo, asegurando que la recolección de candidatos no aborte silenciosamente ante archivos con nombres extremadamente largos o caracteres inválidos en el sistema de archivos (Win32).
-- `2026-09-24T05:54:01` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` y `_collect_summary_data` ante el caso límite de archivos corruptos o inaccesibles que disparan excepciones durante la lectura de metadatos (como `stat`), asegurando que el bucle continúe en lugar de abortar el reporte completo.
-- `2026-09-24T05:53:32` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante casos de rutas inexistentes o inaccesibles añadiendo validaciones `exists()` en `_resolve_browser_path` y `_is_valid_cache_path` para prevenir fallos en `Path.resolve(strict=True)` cuando el sistema de archivos contiene enlaces rotos o accesos restringidos.

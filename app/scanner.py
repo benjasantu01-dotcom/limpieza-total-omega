@@ -151,8 +151,8 @@ class Scanner:
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Confirma que la ruta se mantiene dentro del alcance definido por el usuario."""
         try:
-            p = Path(entry_path)
-            return p.is_absolute() and str(p.resolve()).lower().startswith(self.base_root_str)
+            p = Path(entry_path).resolve()
+            return str(p).lower().startswith(self.base_root_str)
         except (OSError, RuntimeError):
             return False
 
@@ -236,11 +236,13 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     path_str: str = str(directory).strip()
     if not path_str or not _is_valid_path_structure(path_str): return []
     base_path = Path(path_str)
-    if not base_path.is_absolute() or not base_path.exists() or not base_path.is_dir(): return []
     
-    if base_path.is_symlink(): return []
+    try:
+        if not base_path.is_absolute() or not base_path.exists() or not base_path.is_dir(): return []
+        if base_path.is_symlink(): return []
+        root_input: Path = base_path.resolve()
+    except (OSError, RuntimeError): return []
     
-    root_input: Path = base_path.resolve()
     if is_protected_path(root_input): return []
     scanner = Scanner(base_root=root_input)
     directory_stack: List[str] = [str(root_input)]
