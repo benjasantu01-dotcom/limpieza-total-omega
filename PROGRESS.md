@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 241
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 95 | 11 | 18 | 9 | 139 |
-| 2026-09-24 | 98 | 8 | 16 | 8 | 102 |
+| 2026-09-23 | 92 | 11 | 18 | 9 | 138 |
+| 2026-09-24 | 99 | 8 | 17 | 8 | 104 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **46**
 - legibilidad y documentación: **46**
+- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **36**
+- rendimiento: **33**
 - robustez ante casos límite: **33**
-- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **20**
-- `browser.py`: **19**
-- `assistant.py`: **18**
 - `diskreport.py`: **18**
+- `browser.py`: **18**
+- `assistant.py`: **17**
 - `scanner.py`: **16**
 - `safety.py`: **15**
 - `duplicates.py`: **15**
 - `memory.py`: **14**
+- `quarantine.py`: **14**
 - `settings.py`: **14**
-- `branding.py`: **13**
-- `quarantine.py`: **13**
+- `branding.py`: **12**
 - `organizer.py`: **10**
 - `startup.py`: **6**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T10:00:03` **quarantine.py** (rendimiento): Se optimizó `total_quarantined_bytes` para evitar recargar el manifiesto y procesar el archivo JSON en cada llamada (especialmente crítico si se usa en bucles de UI), reutilizando la lista de ítems si ya está disponible o usando una estructura más eficiente de acceso en memoria.
 - `2026-09-24T09:49:28` **healthscore.py** (rendimiento): Optimicé el rendimiento del Pipeline al evitar la re-evaluación de constantes y mejorar la eficiencia del `is_finite` mediante el uso de una tupla de valores pre-definida, reduciendo la sobrecarga de asignación de memoria en cada ejecución.
 - `2026-09-24T09:41:03` **diskreport.py** (rendimiento): Optimizé la eficiencia de `_is_excluded_path` y `walk_files` evitando llamadas redundantes a `Path.resolve()` y `stat()` dentro de los bucles, reduciendo drásticamente las llamadas a I/O por archivo.
 - `2026-09-24T09:40:51` **browser.py** (rendimiento): Se implementó un mecanismo de memoización persistente dentro de `detect_profiles` para evitar el cálculo redundante de tamaños de subdirectorios compartidos, optimizando el rendimiento en estructuras de carpetas donde múltiples navegadores (como variantes de Chrome/Edge) acceden a rutas comunes.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T09:02:37` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `browser.py` documentando los parámetros complejos de las funciones críticas (`_sum_directory_recursive` y `_should_skip_entry`) mediante docstrings estructurados, clarificando el propósito de cada argumento y el manejo de dependencias externas.
 - `2026-09-24T09:01:44` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `branding.py` mediante la adición de docstrings estructuradas en las constantes globales y la estandarización de las descripciones en las funciones de renderizado, garantizando que el "porqué" de los cálculos visuales (especialmente las coordenadas mágicas y los factores de escala) sea evidente para futuros desarrolladores.
 - `2026-09-24T08:59:55` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` extrayendo la lógica de validación de seguridad dentro de `_is_safe_text_structure` mediante la creación de una constante descriptiva `SECURITY_PATTERNS` y un método más claro para aplicar las reglas, facilitando su auditoría.
-- `2026-09-24T08:48:59` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando una validación estricta de tipos en `_coerce_and_verify` y añadiendo un manejo de excepciones más granular en `validate`, asegurando que cualquier entrada malformada en el JSON no solo sea reemplazada, sino que mantenga la coherencia del esquema esperado antes de ser procesada por la aplicación.

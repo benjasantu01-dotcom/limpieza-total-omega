@@ -974,3 +974,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-24T09:51:27` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
 - `2026-09-24T09:51:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T09:51:27` Corrida terminada. Total usado hoy: 232.
+- `2026-09-24T09:58:29` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-09-24T09:59:18` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-24T10:00:03` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó `total_quarantined_bytes` para evitar recargar el manifiesto y procesar el archivo JSON en cada llamada (especialmente crítico si se usa en bucles de UI), reutilizando la lista de ítems si ya está disponible o usando una estructura más eficiente de acceso en memoria.
+- `2026-09-24T10:00:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-24T10:00:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T10:00:32` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-24T10:00:40` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-24T10:00:54` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-24T10:00:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T10:00:54` Corrida terminada. Total usado hoy: 236.

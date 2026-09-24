@@ -866,9 +866,11 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     return len(purged_ids)
 
 
-def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
-    """Calcula el uso total de espacio ocupado por ítems en cuarentena usando lista en memoria."""
-    return sum(item.size_bytes for item in load_manifest(base))
+def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR, items: Optional[List[QuarantineItem]] = None) -> int:
+    """Calcula el uso total de espacio ocupado por ítems en cuarentena; acepta lista precargada."""
+    if items is None:
+        items = load_manifest(base)
+    return sum(item.size_bytes for item in items)
 
 
 def summarize(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[str]:
