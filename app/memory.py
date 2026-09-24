@@ -85,19 +85,17 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """
-    Estructura Win32 utilizada por la API GlobalMemoryStatusEx.
-    """
+    """Estructura Win32 para GlobalMemoryStatusEx (reporta estado físico y virtual)."""
     _fields_: List[Tuple[str, type]] = [
-        ("dwLength", ctypes.c_ulong),
-        ("dwMemoryLoad", ctypes.c_ulong),
-        ("ullTotalPhys", ctypes.c_ulonglong),
-        ("ullAvailPhys", ctypes.c_ulonglong),
-        ("ullTotalPageFile", ctypes.c_ulonglong),
-        ("ullAvailAvailPageFile", ctypes.c_ulonglong),
-        ("ullTotalVirtual", ctypes.c_ulonglong),
-        ("ullAvailVirtual", ctypes.c_ulonglong),
-        ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+        ("dwLength", ctypes.c_ulong),              # Tamaño de la estructura en bytes
+        ("dwMemoryLoad", ctypes.c_ulong),          # % de RAM ocupada (0-100)
+        ("ullTotalPhys", ctypes.c_ulonglong),      # RAM física total
+        ("ullAvailPhys", ctypes.c_ulonglong),      # RAM física disponible
+        ("ullTotalPageFile", ctypes.c_ulonglong),  # Total de memoria de paginación
+        ("ullAvailPageFile", ctypes.c_ulonglong),  # Disponible en paginación
+        ("ullTotalVirtual", ctypes.c_ulonglong),   # Espacio virtual total
+        ("ullAvailVirtual", ctypes.c_ulonglong),   # Espacio virtual disponible
+        ("ullAvailExtendedVirtual", ctypes.c_ulonglong), # Reservado
     ]
 
 @dataclass(frozen=True)
@@ -152,7 +150,7 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     return stat
 
 def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValue:
-    """Convierte una cadena a BytesValue extrayendo solo dígitos."""
+    """Extrae dígitos de una cadena y los convierte a BytesValue de forma segura."""
     if value is None:
         return BytesValue(0)
     try:
