@@ -8,24 +8,24 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 244
+- Sin respuesta de la IA (error o límite): 245
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 69 | 11 | 15 | 7 | 102 |
-| 2026-09-24 | 118 | 10 | 19 | 11 | 142 |
+| 2026-09-23 | 66 | 11 | 14 | 7 | 102 |
+| 2026-09-24 | 121 | 10 | 19 | 11 | 143 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
-- legibilidad y documentación: **41**
 - robustez ante casos límite: **40**
+- legibilidad y documentación: **38**
 - rendimiento: **35**
-- manejo de errores y validación de entradas: **27**
+- manejo de errores y validación de entradas: **30**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,19 +33,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **18**
 - `healthscore.py`: **18**
 - `assistant.py`: **17**
-- `diskreport.py`: **16**
-- `duplicates.py`: **15**
-- `memory.py`: **14**
+- `diskreport.py`: **17**
+- `duplicates.py`: **16**
 - `safety.py`: **14**
 - `settings.py`: **14**
-- `quarantine.py`: **13**
-- `branding.py`: **13**
-- `organizer.py`: **9**
+- `branding.py`: **14**
+- `memory.py`: **13**
+- `quarantine.py`: **12**
+- `organizer.py`: **8**
 - `startup.py`: **6**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T12:54:39` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_collect_candidates` mediante la captura explícita de `OSError` al realizar `entry.stat()` y se mejoró la validación inicial en `group_by_size` para evitar fallos por rutas nulas o errores de resolución, siguiendo las directrices de manejo de errores del enfoque.
+- `2026-09-24T12:54:25` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` validando que los resultados de `entry.stat()` sean utilizables antes de procesarlos, evitando errores por archivos bloqueados o inaccesibles que antes podían causar excepciones no capturadas al acceder a `.st_size`.
+- `2026-09-24T12:53:05` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_ring` mediante la validación proactiva de parámetros y la captura de excepciones específicas, eliminando riesgos de "index out of range" o valores numéricos inválidos que podrían afectar el renderizado o la integridad de archivos.
 - `2026-09-24T12:45:44` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de datos externos en `SystemContext` mediante un chequeo de tipos más estricto y el uso de `getattr(..., None)` para evitar excepciones inesperadas al procesar configuraciones o métricas parcialmente corruptas.
 - `2026-09-24T11:30:56` **startup.py** (seguridad defensiva): Se ha mejorado `startup.py` añadiendo una comprobación explícita mediante `is_protected_path` en `entries_from_folders` para descartar directorios sospechosos antes de iniciar el escaneo recursivo, cumpliendo con la política de seguridad defensiva sobre rutas críticas.
 - `2026-09-24T11:22:05` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en `save` reemplazando el uso de `os.remove` por `os.replace` (o una lógica más robusta si fuera necesario) y, fundamentalmente, añadiendo una validación explícita de `is_safe_to_modify` para el archivo `bak_path` antes de intentar cualquier operación de renombrado, asegurando que el proceso de rotación de archivos sea coherente con las protecciones del sistema.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T10:52:04` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` reemplazando la verificación directa dentro de la función por un chequeo robusto utilizando `is_safe_to_modify` para evitar efectos secundarios y asegurar que el sistema de archivos no sea alterado en rutas prohibidas.
 - `2026-09-24T10:50:08` **settings.py** (robustez ante casos límite): Se mejoró la resiliencia en la inicialización de `SETTINGS_DIR` envolviendo la resolución de rutas en un bloque try-except para manejar casos donde el entorno del sistema operativo pueda devolver resultados inesperados o inaccesibles, evitando así que una falla en el inicio impida la carga de la aplicación.
 - `2026-09-24T10:41:39` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de las heurísticas de archivo incorporando un chequeo de existencia previo (`entry.is_file()`) y manejando explícitamente excepciones de permisos o archivos bloqueados durante la inspección de metadatos, evitando que una entrada inaccesible silencie el resto del escaneo.
-- `2026-09-24T10:40:02` **quarantine.py** (robustez ante casos límite): Se introdujo una validación robusta de espacio en disco en el proceso de aislamiento (`_ensure_disk_space`) para detectar si el sistema de archivos del destino está montado como solo lectura antes de intentar cualquier operación de escritura, previniendo errores de `OSError` no manejados durante la creación de archivos.
-- `2026-09-24T10:32:14` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` añadiendo una validación explícita para evitar que una entrada con `pid` negativo o una cadena mal formada (como un `ws` vacío o no numérico) provoque excepciones silenciosas o procesamientos incorrectos, asegurando que el parser sea resiliente a datos de entrada imprevistos.
-- `2026-09-24T10:21:10` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante casos límite de I/O y permisos, añadiendo un manejo de excepciones más granular en `os.scandir` para asegurar que un error al listar una subcarpeta no detenga la exploración de todo el árbol de directorios.

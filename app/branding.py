@@ -345,23 +345,15 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
     """Guarda el logo SVG tras validar la seguridad de la ruta destino y los límites de tamaño."""
-    if not isinstance(destination, (str, Path)): 
-        return None
-    
+    if not isinstance(destination, (str, Path)): return None
     try:
         path = Path(destination).resolve()
-        # Uso de la función booleana de seguridad antes de cualquier operación
-        if not is_safe_to_modify(path):
-            return None
-        
+        if not is_safe_to_modify(path): return None
         safe_size = max(16, min(1024, int(size)))
-        # ensure_safe_to_modify es para asegurar la intención de escritura tras pasar el filtro
         ensure_safe_to_modify(path)
-        
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(logo_svg(safe_size), encoding="utf-8")
         return path if path.exists() else None
-        
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError): 
         return None
 
@@ -390,7 +382,7 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
             canvas.create_rectangle(center_x - w, base_y + y_start, 
                                     center_x + w, base_y + y_end, 
                                     fill=seg.hex_color, outline="")
-    except (TypeError, ValueError, ZeroDivisionError): pass
+    except (TypeError, ValueError, ZeroDivisionError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Renderiza los símbolos iconográficos sobre el escudo (corte y letra Omega)."""

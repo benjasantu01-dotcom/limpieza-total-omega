@@ -196,7 +196,8 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
-        if not p: continue
+        if not p:
+            continue
         try:
             path_obj = Path(p).resolve(strict=True)
             if is_safe_to_modify(path_obj) and not path_obj.is_symlink():

@@ -1321,3 +1321,14 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-09-24T12:45:44` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de datos externos en `SystemContext` mediante un chequeo de tipos más estricto y el uso de `getattr(..., None)` para evitar excepciones inesperadas al procesar configuraciones o métricas parcialmente corruptas.
 - `2026-09-24T12:45:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T12:45:44` Corrida terminada. Total usado hoy: 300.
+- `2026-09-24T12:52:10` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-24T12:52:15` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T12:53:05` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y `draw_ring` mediante la validación proactiva de parámetros y la captura de excepciones específicas, eliminando riesgos de "index out of range" o valores numéricos inválidos que podrían afectar el renderizado o la integridad de archivos.
+- `2026-09-24T12:53:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T12:53:08` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-24T12:53:22` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-24T12:53:41` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-24T12:54:25` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` validando que los resultados de `entry.stat()` sean utilizables antes de procesarlos, evitando errores por archivos bloqueados o inaccesibles que antes podían causar excepciones no capturadas al acceder a `.st_size`.
+- `2026-09-24T12:54:39` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_collect_candidates` mediante la captura explícita de `OSError` al realizar `entry.stat()` y se mejoró la validación inicial en `group_by_size` para evitar fallos por rutas nulas o errores de resolución, siguiendo las directrices de manejo de errores del enfoque.
+- `2026-09-24T12:54:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T12:54:39` Corrida terminada. Total usado hoy: 304.
