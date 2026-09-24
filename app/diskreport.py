@@ -105,7 +105,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 def _is_excluded_path(path: Path) -> bool:
     """
-    Aplica filtros de seguridad defensiva a una entrada de directorio.
+    Determina si una ruta debe ser excluida del análisis por razones de seguridad
+    o por la presencia de caracteres de ofuscación (RTL/bidireccionales).
     """
     try:
         if any(c in path.name for c in SUSPICIOUS_CHARS):
@@ -235,6 +236,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos de forma iterativa empleando un stack LIFO.
+    Utiliza `os.scandir` para optimizar el acceso a metadatos de archivos.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -318,7 +320,10 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Realiza una pasada única (O(n)) sobre el árbol de directorios para recolectar estadísticas."""
+    """
+    Realiza una pasada única (O(n)) sobre el árbol de directorios para recolectar estadísticas
+    agregadas y mantener el heap de archivos más grandes.
+    """
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)

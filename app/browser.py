@@ -162,9 +162,9 @@ def base_directories() -> List[Path]:
 
 def _is_path_inside_base(target_abs: str, base_abs: str) -> bool:
     """
-    Confirma que 'target_abs' sea subdirectorio o hijo de 'base_abs'.
-    Implementa un mecanismo de defensa contra Path Traversal validando 
-    que la ruta real resuelta esté contenida en el base permitido.
+    Valida que la ruta 'target_abs' sea descendiente directo de 'base_abs'.
+    Previene ataques de Path Traversal asegurando que la ruta resuelta 
+    no escape del directorio raíz permitido.
     """
     if not isinstance(target_abs, str) or not isinstance(base_abs, str) or not target_abs or not base_abs:
         return False
@@ -184,9 +184,8 @@ def _is_excluded_file(name: Optional[str]) -> bool:
 
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """
-    Consulta atributos Win32 mediante bitmask.
-    Determina si un archivo/carpeta está marcado como oculto, de sistema o es
-    un punto de reanálisis (Junction), lo cual causa que sea ignorado por el escáner.
+    Consulta atributos Win32 mediante bitmask para determinar si un recurso
+    debe ser ignorado por el escáner (ocultos, sistema o puntos de reanálisis).
     """
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
@@ -207,8 +206,8 @@ def _should_skip_entry(
 ) -> bool:
     """
     Filtra entradas del sistema de archivos según políticas de seguridad.
-    Omite junctions, rutas UNC, archivos de configuración sensibles (NEVER_TOUCH)
-    y elementos marcados con atributos de sistema en el sistema de archivos.
+    Omite junctions, rutas UNC, archivos de configuración sensibles y elementos
+    marcados como ocultos o de sistema.
     """
     if entry.name is None or _is_excluded_file(entry.name):
         return True
@@ -218,7 +217,6 @@ def _should_skip_entry(
         if not path or len(path) >= MAX_PATH_LEN or any(c in path for c in '\0\r\n') or _is_unc_path(path):
             return True
         
-        # entry.is_symlink() es rápido, lo mantenemos. is_junction_fn se consulta si es necesario
         if entry.is_symlink() or is_junction_fn(path):
             return True
                 
@@ -232,9 +230,8 @@ def _should_skip_entry(
 
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
     """
-    Valida permisos y contención lógica antes de recursar una jerarquía.
-    Garantiza que la ruta sea local y no viole las restricciones de seguridad
-    de los módulos `safety.py`.
+    Valida la seguridad del nodo antes de continuar la recursión, verificando
+    que el archivo no sea un punto de reanálisis y que esté dentro del base permitido.
     """
     if not isinstance(path_obj, Path):
         return False
@@ -281,7 +278,7 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula recursivamente el peso de una carpeta utilizando memoización y un set
-    de visitados para evitar ciclos y re-evaluación de rutas.
+    de visitados para evitar ciclos y re-evaluación redundante de rutas.
     """
     if not isinstance(root_abs, str) or not root_abs or root_abs in visited:
         return 0
@@ -332,7 +329,7 @@ def directory_size(path: Optional[OSPath]) -> int:
         return 0
 
 
-def _is_valid_cache_path(candidate: Path, base_path: str, is_junction_fn: JunctionChecker) -> bool:
+def _is_valid_cache_path(candidate: Path, base_abs_str: str, is_junction_fn: JunctionChecker) -> bool:
     """
     Verifica que la carpeta candidata sea un directorio válido dentro del scope
     de seguridad, asegurando que no escape del directorio base (`LOCALAPPDATA`).
@@ -341,7 +338,7 @@ def _is_valid_cache_path(candidate: Path, base_path: str, is_junction_fn: Juncti
         if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir():
             return False
         real_candidate = str(candidate.resolve(strict=True))
-        if _is_unc_path(real_candidate) or not _is_path_inside_base(real_candidate, base_path):
+        if _is_unc_path(real_candidate) or not _is_path_inside_base(real_candidate, base_abs_str):
             return False
         # is_safe_to_modify actúa como barrera de seguridad antes de procesar el nodo.
         if not is_safe_to_modify(candidate) or is_protected_path(candidate):
@@ -353,13 +350,12 @@ def _is_valid_cache_path(candidate: Path, base_path: str, is_junction_fn: Juncti
 
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """
-    Resuelve una ruta relativa desde la base del perfil y valida su longitud.
-    Asegura que el uso de `joinpath` sea seguro frente a caracteres no permitidos.
+    Construye la ruta absoluta hacia la caché desde la base del perfil y
+    valida que el resultado sea seguro y no exceda los límites de longitud.
     """
     if not isinstance(real_base, Path) or not isinstance(rel_str, str) or any(c in rel_str for c in '\0\r\n'):
         return Path()
     try:
-        # Se verifica que la resolución mantenga la contención del base para evitar Path Traversal
         target = real_base.joinpath(*rel_str.split("\\"))
         if not str(target.resolve()).startswith(str(real_base)):
             return Path()
@@ -392,11 +388,11 @@ def detect_profiles(
             continue
         try:
             real_base_path = base.resolve(strict=True)
-            real_base_str = str(real_base_path)
+            base_abs_str = str(real_base_path)
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base_path, rel_str)
                 # Validamos cada candidato antes de llamar a la recursión.
-                if not candidate or not _is_valid_cache_path(candidate, real_base_str, _IS_JUNCTION_FN):
+                if not candidate or not _is_valid_cache_path(candidate, base_abs_str, _IS_JUNCTION_FN):
                     continue
                 
                 real_candidate = str(candidate.resolve(strict=True))
@@ -411,7 +407,7 @@ def detect_profiles(
 
 
 def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
-    """Calcula la sumatoria total de bytes de una colección de cachés, manejando casos nulos."""
+    """Calcula la sumatoria total de bytes de una colección de cachés."""
     if caches is None:
         return 0
     return sum(c.size_bytes for c in caches if isinstance(c, BrowserCache))

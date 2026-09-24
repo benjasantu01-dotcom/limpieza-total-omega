@@ -101,6 +101,10 @@ UI_FONT_BOLD: Final[str] = "bold"
 UI_FONT_HEADER_SIZE: Final[int] = 23
 UI_FONT_BODY_SIZE: Final[int] = 12
 
+# Mapeo maestro de colores.
+# - Background/Surface: Definen la jerarquía de profundidad.
+# - Accent/Success/Warning/Danger: Tokens de estado semántico.
+# - Text: Variaciones para gestión de jerarquía visual.
 _PALETTE_MAP: Final[dict[str, ColorHex]] = {
     "background": "#0a0e17", "surface": "#141b2d", "surface_alt": "#1e2740",
     "surface_hover": "#28324f", "card": "#182135", "accent": "#00f0c0",
@@ -123,6 +127,7 @@ C_WARNING: Final[ColorHex] = _PALETTE_MAP["warning"]
 C_DANGER: Final[ColorHex] = _PALETTE_MAP["danger"]
 C_SURFACE_ALT: Final[ColorHex] = _PALETTE_MAP["surface_alt"]
 
+# Escala tipográfica fija basada en la interfaz original de la aplicación.
 FONT_SIZES: Final[Mapping[str, int]] = MappingProxyType({
     "display": 46, "title": 26, "subtitle": 13, "heading": 16,
     "body": UI_FONT_BODY_SIZE, "mono": 11, "caption": 10,

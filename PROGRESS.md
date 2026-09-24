@@ -6,46 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 244
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 54 | 8 | 12 | 7 | 73 |
+| 2026-09-22 | 53 | 8 | 11 | 7 | 71 |
 | 2026-09-23 | 131 | 12 | 25 | 11 | 171 |
+| 2026-09-24 | 4 | 0 | 0 | 0 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
+- legibilidad y documentación: **41**
 - seguridad defensiva: **38**
-- legibilidad y documentación: **37**
 - robustez ante casos límite: **35**
-- rendimiento: **33**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `quarantine.py`: **17**
+- `diskreport.py`: **22**
 - `safety.py`: **17**
 - `healthscore.py`: **17**
+- `quarantine.py`: **16**
+- `duplicates.py`: **15**
 - `scanner.py`: **15**
-- `duplicates.py`: **14**
+- `browser.py`: **15**
 - `assistant.py`: **14**
 - `settings.py`: **14**
-- `browser.py`: **14**
 - `organizer.py`: **12**
 - `memory.py`: **12**
-- `branding.py`: **9**
+- `branding.py`: **10**
 - `startup.py`: **6**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T00:07:17` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad técnica del módulo mediante docstrings más precisos y la tipificación explícita de estructuras, facilitando el mantenimiento y la comprensión de la lógica de negocio, sin alterar el comportamiento.
+- `2026-09-24T00:07:03` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados en los métodos privados y la clarificación de las responsabilidades de las estructuras de datos, facilitando el mantenimiento y la comprensión de la lógica de escaneo.
+- `2026-09-24T00:06:16` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings técnicos explícitos a las funciones de filtrado y resolución de rutas, además de renombrar `real_base_str` a `base_abs_str` para mejorar la consistencia semántica en las validaciones de seguridad.
+- `2026-09-24T00:05:44` **branding.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en el bloque de constantes `_PALETTE_MAP` y `FONT_SIZES` para clarificar la jerarquía visual y el propósito de cada token, facilitando el mantenimiento del sistema de diseño (Design System) del proyecto.
 - `2026-09-23T12:54:17` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo una validación explícita mediante `path.resolve()` antes de comparar con `base_root_str`, previniendo así posibles ataques de "path traversal" donde rutas relativas con `..` podrían escapar del directorio base del escaneo.
 - `2026-09-23T12:41:34` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_get_process_path` validando que la ruta resuelta resida bajo una unidad de disco lógica, evitando el procesamiento de rutas de dispositivos o volúmenes arbitrarios que podrían evadir los chequeos de `safety.py`.
 - `2026-09-23T12:40:13` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de salud limitando el impacto de posibles errores en `message_factory` mediante un bloque `try-except` más estricto y garantizando que los mensajes no superen límites de longitud, evitando inyecciones de texto incontrolado o errores en el reporte final.
@@ -57,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-23T12:20:25` **settings.py** (robustez ante casos límite): Mejoré la robustez ante estados inconsistentes del sistema de archivos añadiendo un chequeo explícito de disponibilidad (permisos de lectura/escritura) y de integridad de las rutas en el método `settings_path`, previniendo que la app intente operar sobre puntos de montaje o volúmenes inaccesibles.
 - `2026-09-23T12:11:38` **safety.py** (robustez ante casos límite): Se ha implementado una mejora en `ensure_safe_to_modify` para detectar y prevenir el uso de rutas que contienen caracteres no imprimibles o secuencias de control ocultas que podrían ser utilizadas para ofuscar rutas críticas en Windows, fortaleciendo la validación de integridad ante casos límite de entrada.
 - `2026-09-23T12:10:26` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de entrada y condiciones de carrera en el sistema de archivos al añadir validaciones explícitas de existencia y tipo (`is_file`) antes de realizar operaciones críticas (especialmente en `_write_temp_to_final` y `restore_item`), garantizando que no se intenten manipular rutas nulas o directorios inesperados durante la transferencia atómica.
-- `2026-09-23T12:09:46` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez en `_is_file_locked` para manejar archivos inaccesibles o bloqueados por el sistema de forma más exhaustiva, evitando excepciones inesperadas que interrumpan el escaneo.
-- `2026-09-23T12:01:05` **main.py** (robustez ante casos límite): Se introdujo una comprobación de robustez en el método `_verify_disk_path` para evitar errores silenciosos o mal manejo de rutas con caracteres de control, y se añadió una validación explícita de `path.exists()` dentro del flujo crítico de `_on_disk_analysis` para evitar que la aplicación intente procesar rutas inexistentes que podrían causar excepciones no capturadas durante la recursión.
-- `2026-09-23T11:59:49` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `compute_score` ante posibles excepciones en los `scorers` (por ejemplo, errores de división inesperados) y se garantizó la integridad del reporte final mediante un manejo defensivo de los pesos calculados, evitando resultados fuera de rango si un componente de terceros inyecta métricas atípicas.
-- `2026-09-23T11:59:20` **duplicates.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la lógica de escaneo en `_collect_candidates` ante cambios dinámicos del sistema de archivos (ej. archivos eliminados o bloqueados durante la iteración) mediante la adición de un bloque `try-except` envolvente y validación de existencia `path.is_file()` previa al procesamiento del hash, evitando el quiebre de la ejecución ante condiciones de carrera (Race Conditions) comunes en escaneos de disco.
