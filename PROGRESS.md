@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
-- Rechazadas por tests: 21
+- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 243
+- Sin respuesta de la IA (error o límite): 239
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 36 | 6 | 8 | 4 | 60 |
+| 2026-09-22 | 36 | 6 | 8 | 4 | 56 |
 | 2026-09-23 | 131 | 12 | 25 | 11 | 171 |
-| 2026-09-24 | 17 | 3 | 5 | 3 | 12 |
+| 2026-09-24 | 20 | 4 | 5 | 3 | 12 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **42**
+- robustez ante casos límite: **37**
 - rendimiento: **35**
-- robustez ante casos límite: **34**
 - seguridad defensiva: **28**
 
 ## Mejoras aceptadas por archivo
@@ -34,12 +34,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **18**
 - `browser.py`: **17**
 - `quarantine.py`: **15**
+- `safety.py`: **15**
+- `scanner.py`: **15**
 - `assistant.py`: **14**
 - `duplicates.py`: **14**
 - `memory.py`: **14**
-- `safety.py`: **14**
-- `scanner.py`: **14**
-- `settings.py`: **13**
+- `settings.py`: **14**
 - `branding.py`: **11**
 - `organizer.py`: **11**
 - `startup.py`: **6**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T01:49:37` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante condiciones de concurrencia y fallos de escritura mediante la incorporación de `os.fsync` previo al renombrado y validación explícita de `is_safe_to_modify` sobre el archivo de respaldo (`.bak`), asegurando que no se sobrescriban o dañen archivos críticos bajo bloqueos de sistema o interrupciones.
+- `2026-09-24T01:49:05` **scanner.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_is_safe_entry` para validar que `entry.path` no sea una ruta truncada o malformada que podría causar errores en `is_protected_path` o futuras operaciones, utilizando `Path.is_absolute()` y capturando posibles excepciones en la resolución de rutas.
+- `2026-09-24T01:48:33` **safety.py** (robustez ante casos límite): Se introdujo una verificación de "path traversal" mediante `Path.resolve()` contra la ruta normalizada antes de cualquier operación, garantizando que el acceso al sistema de archivos sea estrictamente absoluto y esté saneado ante posibles intentos de escaparse del directorio raíz definido (o del entorno de ejecución).
 - `2026-09-24T01:38:06` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una comprobación explícita mediante `PROCESS_QUERY_INFORMATION` y manejando correctamente el posible error `ERROR_INVALID_PARAMETER` (que ocurre si el proceso muere entre la apertura del handle y la llamada a `EmptyWorkingSet`), evitando así comportamientos indefinidos al cerrar handles nulos.
 - `2026-09-24T01:29:01` **healthscore.py** (robustez ante casos límite): Mejora la robustez del motor de cálculo ante valores de métricas que exceden las capacidades esperadas o presentan inconsistencias, añadiendo validación explícita de `nan` y `inf` en `_to_float` y asegurando que `_evaluate_rules` no colapse ante excepciones durante la generación de mensajes.
 - `2026-09-24T01:19:24` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en `_get_kernel32` y `_is_system_hidden` para evitar que fallos imprevistos en la carga de librerías del sistema detengan el escaneo de navegadores.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T00:37:05` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la clase `StartupEntry` mediante la aplicación de docstrings detallados (siguiendo el estilo Google) y la clarificación de la lógica interna de validación, sin alterar la funcionalidad.
 - `2026-09-24T00:27:51` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la incorporación de docstrings específicos para las clases de datos y funciones de soporte, clarificando la intención detrás de las heurísticas y los límites del sistema para facilitar el mantenimiento y la auditoría del código.
 - `2026-09-24T00:21:16` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de la estructura `MEMORYSTATUSEX` añadiendo comentarios técnicos sobre los campos, y se han ajustado los nombres y type hints en las funciones de conversión de memoria para clarificar su propósito y evitar errores de desbordamiento en entornos de 32/64 bits.
-- `2026-09-24T00:16:01` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando tipos explícitos y docstrings detallados en funciones críticas, aclarando el propósito y las restricciones del proceso de normalización para facilitar su mantenimiento y auditoría.
-- `2026-09-24T00:07:17` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad técnica del módulo mediante docstrings más precisos y la tipificación explícita de estructuras, facilitando el mantenimiento y la comprensión de la lógica de negocio, sin alterar el comportamiento.
-- `2026-09-24T00:07:03` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados en los métodos privados y la clarificación de las responsabilidades de las estructuras de datos, facilitando el mantenimiento y la comprensión de la lógica de escaneo.

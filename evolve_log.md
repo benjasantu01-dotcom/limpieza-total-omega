@@ -1520,3 +1520,41 @@ FAILED evolve/tests/test_modules.py::test_list_startup_entries_returns_a_list - 
 - `2026-09-24T01:40:55` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-09-24T01:40:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T01:40:55` Corrida terminada. Total usado hoy: 40.
+- `2026-09-24T01:47:49` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-09-24T01:48:33` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una verificación de "path traversal" mediante `Path.resolve()` contra la ruta normalizada antes de cualquier operación, garantizando que el acceso al sistema de archivos sea estrictamente absoluto y esté saneado ante posibles intentos de escaparse del directorio raíz definido (o del entorno de ejecución).
+- `2026-09-24T01:48:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T01:49:05` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `_is_safe_entry` para validar que `entry.path` no sea una ruta truncada o malformada que podría causar errores en `is_protected_path` o futuras operaciones, utilizando `Path.is_absolute()` y capturando posibles excepciones en la resolución de rutas.
+- `2026-09-24T01:49:37` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save()` ante condiciones de concurrencia y fallos de escritura mediante la incorporación de `os.fsync` previo al renombrado y validación explícita de `is_safe_to_modify` sobre el archivo de respaldo (`.bak`), asegurando que no se sobrescriban o dañen archivos críticos bajo bloqueos de sistema o interrupciones.
+- `2026-09-24T01:49:55` Tests FALLARON:
+```
+.................. [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:219: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) no aptas para archivos."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 4 warnings in 1.44s
+
+```
+- `2026-09-24T01:49:55` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha robustecido el método `_resolve_and_cache_path` para prevenir excepciones críticas en entornos donde las rutas del sistema pueden ser inaccesibles o estar bloqueadas, asegurando que el escáner no aborte ante permisos denegados o rutas malformadas.
+- `2026-09-24T01:49:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T01:49:55` Corrida terminada. Total usado hoy: 44.

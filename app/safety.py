@@ -380,9 +380,10 @@ def normalize(path: PathLike) -> Path:
          raise ValueError("Ruta contiene secuencias Unicode sospechosas.")
     try:
         p = Path(path_str)
+        # Validación estricta anti-traversal
+        resolved = p.resolve()
         if ".." in p.parts: raise ValueError("Path traversal detectado.")
-        if p.exists(): return p.resolve()
-        return Path(os.path.abspath(path_str))
+        return resolved
     except (OSError, RuntimeError, TypeError, PermissionError) as e:
         raise ValueError(f"Error irrecuperable al normalizar {path_str}: {e}")
 

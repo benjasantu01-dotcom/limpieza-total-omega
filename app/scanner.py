@@ -146,7 +146,8 @@ class Scanner:
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Confirma que la ruta se mantiene dentro del alcance definido por el usuario."""
         try:
-            return str(Path(entry_path).resolve()).lower().startswith(self.base_root_str)
+            p = Path(entry_path)
+            return p.is_absolute() and str(p.resolve()).lower().startswith(self.base_root_str)
         except (OSError, RuntimeError):
             return False
 

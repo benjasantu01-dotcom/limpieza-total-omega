@@ -332,6 +332,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             os.fsync(f.fileno())
         if ruta.exists():
             if not is_safe_to_modify(str(ruta)) or _Validators._is_reparse_point(ruta): return None
+            # Verificamos que el archivo de respaldo también sea un objetivo seguro antes de sobrescribir
+            if bak_path.exists() and not is_safe_to_modify(str(bak_path)): return None
             os.replace(ruta, bak_path)
         os.replace(temp_path, ruta)
         _load_impl.cache_clear()
