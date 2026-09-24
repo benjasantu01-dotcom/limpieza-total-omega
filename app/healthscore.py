@@ -89,7 +89,6 @@ __all__ = [
 ]
 
 # Umbrales base para normalizar métricas a un rango de salud [0, 1]
-# Representan el punto donde la salud se considera "cero" para fines de cálculo.
 _LIMIT_JUNK_MB: Final[float] = 5000.0          
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
 _LIMIT_STARTUP_COUNT: Final[int] = 20          
@@ -192,10 +191,12 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que no existan valores no numéricos o infinitos en las métricas."""
-        vals = [self.junk_mb, self.suspicious_count, self.suspicious_warnings, 
-                self.memory_available_percent, self.disk_free_percent, 
-                self.duplicate_mb, self.startup_count, self.quarantined_count]
-        return all(math.isfinite(v) and not math.isnan(v) for v in vals)
+        return all((
+            math.isfinite(self.junk_mb), math.isfinite(self.suspicious_count), 
+            math.isfinite(self.suspicious_warnings), math.isfinite(self.memory_available_percent), 
+            math.isfinite(self.disk_free_percent), math.isfinite(self.duplicate_mb), 
+            math.isfinite(self.startup_count), math.isfinite(self.quarantined_count)
+        ))
 
 @dataclass
 class HealthResult:
@@ -230,7 +231,6 @@ def grade_for_score(score: float | int) -> str:
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta reglas heurísticas, validando tipos y sanitizando mensajes ante fallas internas."""
     for rule in rules:
-        if not isinstance(rule, RecommendationRule): continue
         try:
             if rule.check(metrics, ratio):
                 msg = str(rule.message_factory(metrics))
@@ -252,7 +252,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     accumulated_score: int = 0
     
     for entry in _PIPELINE:
-        if not isinstance(entry, PipelineEntry): continue
         try:
             area_ratio = entry.scorer(metrics)
         except (ValueError, ZeroDivisionError, TypeError):
