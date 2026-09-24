@@ -229,6 +229,7 @@ def grade_for_score(score: float | int) -> str:
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta reglas heurísticas, sanitizando mensajes antes de añadirlos al reporte."""
     for rule in rules:
+        if not isinstance(rule, RecommendationRule): continue
         if rule.check(metrics, ratio):
             try:
                 msg = str(rule.message_factory(metrics))
@@ -250,6 +251,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     accumulated_score: int = 0
     
     for entry in _PIPELINE:
+        if not isinstance(entry, PipelineEntry): continue
         try:
             area_ratio = entry.scorer(metrics)
         except (ValueError, ZeroDivisionError, TypeError):

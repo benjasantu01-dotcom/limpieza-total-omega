@@ -219,14 +219,14 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 for entry in iterator:
                     try:
                         if entry.is_dir(follow_symlinks=False):
-                            if not is_junction(Path(entry.path)):
-                                _scan_dir(Path(entry.path))
+                            path_entry = Path(entry.path)
+                            if not is_junction(path_entry) and is_safe_to_modify(path_entry):
+                                _scan_dir(path_entry)
                             continue
                         
                         if entry.path in visited_files:
                             continue
                             
-                        # Usar stat de os.DirEntry es más eficiente que Path.stat()
                         st = entry.stat(follow_symlinks=False)
                         if st.st_size < min_size:
                             continue
@@ -235,7 +235,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         if (skip_protected and is_protected_path(p_entry)) or not is_safe_to_modify(p_entry):
                             continue
                             
-                        # Las verificaciones de sistema y bloqueos son costosas, solo si el resto pasa
                         if is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
                             continue
                             
@@ -257,7 +256,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Aplica una función hash a un grupo y retorna solo aquellos con colisiones."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if path.is_file() and is_safe_to_modify(path):
+        if path.is_file() and is_safe_to_modify(path) and not path.is_symlink():
             if (digest := hash_func(path)):
                 groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
