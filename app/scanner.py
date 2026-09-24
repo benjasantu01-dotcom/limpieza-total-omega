@@ -65,13 +65,6 @@ WATCHED_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp", "deskto
 
 SYSTEM32_LOWER: Final[str] = "system32"
 
-def _is_file_accessible(path: Path) -> bool:
-    """Verifica permisos de lectura básicos sin causar excepciones en sistemas bloqueados."""
-    try:
-        return path.is_file()
-    except (OSError, PermissionError):
-        return False
-
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
     Ejecuta un stat sobre el DirEntry sin seguir enlaces (prevención de fugas de contexto).
@@ -206,13 +199,13 @@ class Scanner:
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack)
             elif self._is_relevant_extension(entry.name):
+                # Usamos el objeto DirEntry directamente para evitar llamadas redundantes
                 self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, AttributeError):
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta el conjunto registrado de heurísticas sobre el archivo detectado."""
-        if not _is_file_accessible(path): return
         for check_fn in ALL_CHECKS:
             try:
                 if (result := check_fn(path, entry, self.now_ts)):
@@ -222,7 +215,11 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un único archivo sin recorrido recursivo, validando previamente su seguridad."""
-    if not path or not _is_file_accessible(path) or is_protected_path(path): return []
+    if not path or is_protected_path(path): return []
+    try:
+        if not path.is_file(): return []
+    except (OSError, PermissionError): return []
+    
     findings: ScanResult = []
     for check_fn in ALL_CHECKS:
         try:
@@ -241,7 +238,6 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     base_path = Path(path_str)
     if not base_path.is_absolute() or not base_path.exists() or not base_path.is_dir(): return []
     
-    # Pre-validación: evitar scan si es punto de reanálisis
     if base_path.is_symlink(): return []
     
     root_input: Path = base_path.resolve()

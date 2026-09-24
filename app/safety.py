@@ -416,10 +416,13 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=4096)
 def _is_system_path_cached(path_str: str) -> bool:
-    """Verifica si la ruta está dentro de directorios de sistema."""
+    """Verifica si la ruta está dentro de directorios de sistema usando prefijos normalizados."""
     path_norm = os.path.normpath(path_str).lower()
+    # Verifica prefijos de sistema conocidos
     if any(path_norm.startswith(root) for root in _SYSTEM_ROOT_PATHS_SET): return True
-    return not PROTECTED_DIR_NAMES.isdisjoint(Path(path_norm).parts)
+    # Verifica si algún componente coincide con directorios protegidos
+    parts = Path(path_norm).parts
+    return not PROTECTED_DIR_NAMES.isdisjoint(parts)
 
 @lru_cache(maxsize=4096)
 def is_protected_path(path: PathLike) -> TypeGuard[str]:

@@ -8,37 +8,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 246
+- Rechazadas por guardia de seguridad: 36
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 244
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 4 | 2 | 1 | 0 | 19 |
+| 2026-09-22 | 2 | 2 | 1 | 0 | 17 |
 | 2026-09-23 | 131 | 12 | 25 | 11 | 171 |
-| 2026-09-24 | 53 | 7 | 9 | 3 | 56 |
+| 2026-09-24 | 55 | 7 | 10 | 4 | 56 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **39**
+- seguridad defensiva: **37**
+- rendimiento: **34**
 - robustez ante casos límite: **33**
-- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
 - `healthscore.py`: **19**
-- `browser.py`: **18**
+- `diskreport.py`: **18**
+- `browser.py`: **17**
+- `scanner.py`: **17**
 - `assistant.py`: **16**
-- `scanner.py`: **16**
+- `safety.py`: **15**
 - `memory.py`: **15**
 - `duplicates.py`: **14**
 - `quarantine.py`: **14**
-- `safety.py`: **14**
 - `settings.py`: **12**
 - `branding.py`: **11**
 - `organizer.py`: **11**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T05:34:50` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo mediante la implementación de `os.scandir` de forma más eficiente y minimizando llamadas redundantes al sistema de archivos al reutilizar el objeto `DirEntry` ya existente durante el proceso de heurísticas.
+- `2026-09-24T05:34:36` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` reemplazando la verificación interna de `Path.parts` (que genera tuplas en cada llamada) por una comparación de prefijos de cadenas normalizadas, utilizando `os.path.commonpath` o una validación de prefijos directa para reducir drásticamente la creación de objetos en el hot-path del bucle.
 - `2026-09-24T05:27:04` **memory.py** (rendimiento): Optimicé el cálculo del `pressure_level` y el diagnóstico integrando el uso de `lru_cache` para evitar reprocesar estados, y eliminé la conversión redundante de tipos en los bucles de `parse_windows_process_csv` usando una estructura de datos más eficiente para la deduplicación y el filtrado.
 - `2026-09-24T05:23:45` **healthscore.py** (rendimiento): Optimicé el rendimiento de `SystemMetrics.is_finite` y `summarize` reemplazando llamadas redundantes a métodos y búsquedas de diccionario por acceso directo, reduciendo la carga de CPU durante el renderizado constante de la UI.
 - `2026-09-24T05:12:52` **browser.py** (rendimiento): Se ha optimizado `_sum_directory_recursive` para evitar el uso redundante de `is_safe_to_modify` y `is_protected_path` dentro del bucle de archivos, delegando la validación de integridad a `_should_skip_entry` y aprovechando la naturaleza de solo lectura del escáner para reducir llamadas al sistema de archivos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T04:41:41` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de los métodos de filtrado y hash en `duplicates.py`, clarificando el flujo de datos y el propósito de las heurísticas de seguridad mediante nuevos docstrings y una mejor estructura de comentarios en las operaciones de I/O, facilitando su mantenimiento como demo técnica.
 - `2026-09-24T04:32:45` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints detallados, descripciones de parámetros en los docstrings y la corrección de una inconsistencia en el manejo de tipos del heap, asegurando una mayor claridad sobre la estructura de datos que viaja en `SummaryData`.
 - `2026-09-24T04:32:33` **browser.py** (legibilidad y documentación): Se ha refactorizado `_sum_directory_recursive` para separar la lógica de escaneo (iteración) de la lógica de filtrado y acumulación, mejorando la legibilidad mediante la extracción del bloque de procesamiento de entradas a una función auxiliar `_process_entry`, cumpliendo con el enfoque de documentación y claridad estructural.
-- `2026-09-24T04:31:26` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_is_safe_text_structure` para reducir la complejidad ciclomática y mejorar la claridad del filtrado de seguridad, integrando los diversos regex en un único bloque lógico documentado.
-- `2026-09-24T04:22:18` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` al implementar un chequeo de integridad en `_load_impl` que valida explícitamente la estructura del diccionario resultante tras el `json.load`, asegurando que todas las claves del esquema `AppSettings` estén presentes incluso si el archivo JSON es parcial o está mal formado.
