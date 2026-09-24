@@ -72,7 +72,7 @@ class StartupEntry:
     """
     Representa una entrada de inicio (archivo en carpeta o clave de registro).
     
-    Atributos:
+    Attributes:
         name: Nombre descriptivo del programa.
         command: Cadena cruda extraída del sistema (ej. ruta o comando con args).
         source: Origen de la entrada (ej. 'registro' o 'carpeta').
@@ -86,7 +86,7 @@ class StartupEntry:
 
     @property
     def is_valid(self) -> bool:
-        """Valida si la entrada es estructuralmente segura contra ataques por inyección de metacaracteres."""
+        """Determina si la estructura del comando es segura y libre de caracteres maliciosos."""
         if not self.command or self._is_path_suspicious(self.command):
             return False
         if self._is_reserved_device_name(self.command):
@@ -103,26 +103,31 @@ class StartupEntry:
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:
-        """Detecta caracteres no permitidos en rutas de Windows o rutas UNC riesgosas."""
+        """Verifica la presencia de caracteres no permitidos en el sistema de archivos de Windows."""
         return any(c in path_string for c in SUSPICIOUS_CHARS) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Verifica la extensión del archivo y descarta enlaces simbólicos para evitar bucles de lectura."""
+        """Valida que el archivo posea una extensión ejecutable permitida y no sea un enlace simbólico."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Elimina caracteres de control ASCII (0-31) que no pertenecen a nombres de archivo válidos."""
+        """Limpia la cadena de comando eliminando caracteres de control no imprimibles."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae una ruta entre comillas de una línea de comando compleja.
-        Retorna vacío si no se hallan comillas, si la ruta es sospechosa o está protegida.
+        Extrae la ruta de un ejecutable que se encuentra encapsulada entre comillas.
+        
+        Args:
+            raw_command: La cadena de texto del comando original.
+            
+        Returns:
+            La ruta extraída y validada contra protecciones, o una cadena vacía en caso contrario.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -148,7 +153,7 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Comprueba existencia y seguridad de acceso para una ruta ya normalizada."""
+        """Verifica que el archivo exista en disco, sea accesible y no esté protegido por seguridad."""
         try:
             if not p.exists():
                 return False
@@ -160,8 +165,13 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
-        Normaliza y resuelve la ruta absoluta, aplicando caché de I/O para optimización.
-        Realiza chequeos de seguridad antes de persistir la validación en caché.
+        Resuelve una ruta a su forma absoluta y utiliza caché para evitar consultas redundantes al I/O.
+        
+        Args:
+            path_string: La ruta o comando a normalizar.
+            
+        Returns:
+            Ruta absoluta resuelta si es válida y segura, de lo contrario devuelve cadena vacía.
         """
         if not isinstance(path_string, str) or not self.is_valid:
             return ""
@@ -178,7 +188,6 @@ class StartupEntry:
         
         try:
             p: Path = Path(norm)
-            # Seguridad adicional: verificar que la ruta normalizada sea absoluta antes de resolver
             if not p.is_absolute():
                 _EXISTS_CACHE[path_string] = False
                 return ""
@@ -197,7 +206,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Segmenta la línea de comando para identificar la ruta ejecutable principal."""
+        """Analiza la línea de comando para aislar la ruta del ejecutable principal."""
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -214,7 +223,12 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Retorna la ruta absoluta del ejecutable, usando memoización interna."""
+        """
+        Retorna la ruta absoluta del ejecutable.
+        
+        Utiliza una estrategia de memoización interna para asegurar que la resolución
+        de la ruta solo ocurra una vez por instancia.
+        """
         if self._checked_exists:
             return self._exec_cache or ""
             
@@ -283,7 +297,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f = io.StringIO(csv_text.strip())
         reader = csv.DictReader(f)
         
-        # Validar que los campos existan y haya datos
         if not reader.fieldnames or len(reader.fieldnames) < 2:
             return []
             
@@ -307,10 +320,8 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             
             try:
                 p_cmd = Path(cmd)
-                # Validar seguridad de la ruta antes de añadirla
                 if is_protected_path(p_cmd):
                     continue
-                # Resolvemos para verificar si la ruta normalizada viola protecciones
                 resolved = p_cmd.resolve(strict=False)
                 if is_protected_path(resolved):
                     continue

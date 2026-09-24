@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 38
-- Sin cambios (nada sustancial que mejorar): 18
+- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 39
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 51 | 6 | 11 | 6 | 68 |
+| 2026-09-22 | 49 | 6 | 11 | 4 | 68 |
 | 2026-09-23 | 131 | 12 | 25 | 11 | 171 |
-| 2026-09-24 | 7 | 0 | 2 | 1 | 2 |
+| 2026-09-24 | 8 | 1 | 3 | 2 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **42**
 - seguridad defensiva: **38**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **32**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `healthscore.py`: **18**
+- `healthscore.py`: **17**
 - `quarantine.py`: **16**
 - `safety.py`: **16**
 - `scanner.py`: **16**
-- `duplicates.py`: **15**
 - `browser.py`: **15**
 - `assistant.py`: **14**
+- `duplicates.py`: **14**
 - `settings.py`: **14**
 - `memory.py`: **13**
 - `organizer.py`: **12**
 - `branding.py`: **10**
-- `startup.py`: **6**
+- `startup.py`: **7**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T00:37:05` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la clase `StartupEntry` mediante la aplicación de docstrings detallados (siguiendo el estilo Google) y la clarificación de la lógica interna de validación, sin alterar la funcionalidad.
 - `2026-09-24T00:27:51` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la incorporación de docstrings específicos para las clases de datos y funciones de soporte, clarificando la intención detrás de las heurísticas y los límites del sistema para facilitar el mantenimiento y la auditoría del código.
 - `2026-09-24T00:21:16` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de la estructura `MEMORYSTATUSEX` añadiendo comentarios técnicos sobre los campos, y se han ajustado los nombres y type hints en las funciones de conversión de memoria para clarificar su propósito y evitar errores de desbordamiento en entornos de 32/64 bits.
 - `2026-09-24T00:16:01` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando tipos explícitos y docstrings detallados en funciones críticas, aclarando el propósito y las restricciones del proceso de normalización para facilitar su mantenimiento y auditoría.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-23T12:32:22` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` agregando la validación explícita de `is_protected_path` sobre la ruta completa de cada entrada escaneada, garantizando que ninguna carpeta protegida sea accedida durante el escaneo recursivo incluso si los permisos de SO permiten lectura.
 - `2026-09-23T12:31:25` **browser.py** (seguridad defensiva): Se ha mejorado la defensa contra el ataque de "Path Traversal" en `_resolve_browser_path` mediante la validación explícita de que cada componente de la ruta resultante se mantenga dentro de `real_base` tras la resolución, previniendo inyecciones de `..` en las rutas relativas.
 - `2026-09-23T12:30:50` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia y el tipo de directorio padre mediante `is_protected_path` antes de cualquier operación de escritura, asegurando que no se pueda manipular el sistema de archivos fuera de las áreas permitidas.
-- `2026-09-23T12:22:04` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `SystemContext.ingest` validando el tipo de `source` y evitando la carga de atributos potencialmente peligrosos, además de centralizar la validación de integridad mediante una llamada a `_validate_context_integrity` que protege el estado interno ante datos malformados.
