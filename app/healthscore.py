@@ -285,8 +285,9 @@ def summarize(result: HealthResult | None) -> List[str]:
         return ["Error: Informe de salud no disponible."]
     
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+    # Acceso directo a items iterables para evitar re-lookup
     for area, maximo in WEIGHTS.items():
-        val = result.breakdown.get(area, 0)
+        val = result.breakdown[area]
         lines.append(f"  {area.capitalize():<12} {val:>2}/{maximo:<2} [{_render_bar(val, maximo)}]")
     
     recs = result.recommendations if result.recommendations else ["Sin recomendaciones."]

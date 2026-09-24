@@ -1405,3 +1405,12 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-24T00:38:17` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Optimicé el cálculo del gradiente de la barra de progreso utilizando `_get_grouped_segments` para evitar realizar llamadas repetitivas al canvas para píxeles contiguos del mismo color, reduciendo significativamente la carga de renderizado.
 - `2026-09-24T00:38:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T00:38:17` Corrida terminada. Total usado hoy: 16.
+- `2026-09-24T00:46:02` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-09-24T00:46:35` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de directorios sustituyendo el paso de `visited` por parámetro (que solo prevenía ciclos en una rama) por una estrategia global en `global_memo` para evitar re-escaneos redundantes de subdirectorios compartidos entre navegadores, reduciendo drásticamente las llamadas a `os.scandir` en escaneos de perfiles múltiples.
+- `2026-09-24T00:47:04` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-24T00:47:36` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé la recolección de candidatos en `_collect_candidates` para evitar llamadas redundantes a `stat()` y `is_safe_to_modify()` mediante el uso de `os.scandir` (que ya expone los atributos del sistema de archivos en Windows), reduciendo significativamente las llamadas al sistema y mejorando la velocidad de escaneo.
+- `2026-09-24T00:47:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T00:47:43` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-24T00:48:05` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del Pipeline reemplazando `dict.get()` y iteraciones redundantes en `summarize` y `compute_score` por acceso directo y pre-cálculo de estructuras, minimizando llamadas a funciones dentro de los bucles críticos.
+- `2026-09-24T00:48:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T00:48:05` Corrida terminada. Total usado hoy: 20.

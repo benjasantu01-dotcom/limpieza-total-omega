@@ -226,17 +226,16 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         if entry.path in visited_files:
                             continue
                             
-                        p_entry = Path(entry.path)
-                        if not entry.is_file() or not is_safe_to_modify(p_entry):
-                            continue
-                            
+                        # Usar stat de os.DirEntry es más eficiente que Path.stat()
                         st = entry.stat(follow_symlinks=False)
                         if st.st_size < min_size:
                             continue
-                            
-                        if (skip_protected and is_protected_path(p_entry)):
+                        
+                        p_entry = Path(entry.path)
+                        if (skip_protected and is_protected_path(p_entry)) or not is_safe_to_modify(p_entry):
                             continue
                             
+                        # Las verificaciones de sistema y bloqueos son costosas, solo si el resto pasa
                         if is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
                             continue
                             
