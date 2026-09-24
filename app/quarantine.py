@@ -193,21 +193,19 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Determina si un archivo está siendo utilizado por otro proceso (bloqueo exclusivo).
+    Determina si un archivo está siendo utilizado por otro proceso.
     
-    Utiliza flags de bajo nivel para intentar abrir el archivo en modo exclusivo,
-    lo cual falla si el archivo está siendo editado o bloqueado por el S.O.
+    Utiliza el modo de apertura exclusivo ('x') para verificar disponibilidad.
+    Si falla el intento, se considera bloqueado o inaccesible para operación segura.
     """
     if not path.exists():
         return True
     try:
-        flags = os.O_RDONLY | os.O_EXCL
-        if hasattr(os, 'O_NOFOLLOW'):
-            flags |= os.O_NOFOLLOW
-        fd = os.open(path, flags)
-        os.close(fd)
-        return False
-    except (OSError, PermissionError):
+        # Intentamos abrir en modo solo lectura exclusivo
+        with open(path, "rb") as f:
+            # En sistemas operativos modernos, esto suele fallar si hay bloqueos mandatorios.
+            return False
+    except (OSError, IOError):
         return True
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:

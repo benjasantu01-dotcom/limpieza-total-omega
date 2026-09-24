@@ -269,6 +269,7 @@ def _is_volume_readonly(path_str: str) -> bool:
         root = os.path.splitdrive(path_str)[0] + "\\"
         flags = ctypes.c_ulong()
         if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0):
+            # FILE_READ_ONLY_VOLUME es 0x80000
             return bool(flags.value & 0x80000)
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         pass
