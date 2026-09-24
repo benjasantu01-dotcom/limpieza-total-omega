@@ -272,11 +272,10 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
                         _, ext = os.path.splitext(entry.name)
                         if ext.lower() in EXECUTABLE_EXTS:
                             p = Path(entry.path)
-                            if not p.is_symlink() and not is_protected_path(p):
+                            if not is_protected_path(p):
                                 name = os.path.splitext(entry.name)[0]
-                                clean_name = "".join(c for c in name if ord(c) >= 32)
                                 found_entries.append(StartupEntry(
-                                    name=clean_name,
+                                    name="".join(c for c in name if ord(c) >= 32),
                                     command=entry.path,
                                     source="carpeta"
                                 ))

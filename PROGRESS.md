@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 242
+- Rechazadas por guardia de seguridad: 34
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 92 | 11 | 18 | 9 | 138 |
-| 2026-09-24 | 99 | 8 | 17 | 8 | 104 |
+| 2026-09-23 | 90 | 11 | 17 | 9 | 137 |
+| 2026-09-24 | 102 | 8 | 17 | 9 | 104 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
-- seguridad defensiva: **43**
+- seguridad defensiva: **41**
 - manejo de errores y validación de entradas: **36**
-- rendimiento: **33**
-- robustez ante casos límite: **33**
+- rendimiento: **35**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
-- `diskreport.py`: **18**
+- `healthscore.py`: **19**
+- `assistant.py`: **18**
 - `browser.py`: **18**
-- `assistant.py`: **17**
-- `scanner.py`: **16**
+- `diskreport.py`: **17**
+- `scanner.py`: **17**
 - `safety.py`: **15**
 - `duplicates.py`: **15**
 - `memory.py`: **14**
@@ -41,11 +41,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **14**
 - `branding.py`: **12**
 - `organizer.py`: **10**
-- `startup.py`: **6**
+- `startup.py`: **7**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T10:10:41` **assistant.py** (robustez ante casos límite): Mejoré la robustez ante estados inesperados de configuración al implementar un mecanismo de validación de esquema en `_parse_config` y asegurar la integridad de las métricas durante la carga masiva en `SystemContext.ingest`, evitando que valores nulos o tipos incorrectos resulten en un contexto "vacío" pero funcionalmente inestable.
+- `2026-09-24T10:10:14` **startup.py** (rendimiento): Optimizé `entries_from_folders` para evitar la creación innecesaria de objetos `Path` y múltiples llamadas a `is_symlink` y `is_protected_path` al iterar el contenido del directorio, centralizando la lógica de validación.
+- `2026-09-24T10:09:13` **scanner.py** (rendimiento): Optimicé el método `process_entry` eliminando la llamada redundante y costosa a `os.path.exists(entry.path)`, aprovechando que `os.DirEntry` ya contiene la información del archivo y validando el estado necesario mediante las comprobaciones de seguridad ya implementadas.
 - `2026-09-24T10:00:03` **quarantine.py** (rendimiento): Se optimizó `total_quarantined_bytes` para evitar recargar el manifiesto y procesar el archivo JSON en cada llamada (especialmente crítico si se usa en bucles de UI), reutilizando la lista de ítems si ya está disponible o usando una estructura más eficiente de acceso en memoria.
 - `2026-09-24T09:49:28` **healthscore.py** (rendimiento): Optimicé el rendimiento del Pipeline al evitar la re-evaluación de constantes y mejorar la eficiencia del `is_finite` mediante el uso de una tupla de valores pre-definida, reduciendo la sobrecarga de asignación de memoria en cada ejecución.
 - `2026-09-24T09:41:03` **diskreport.py** (rendimiento): Optimizé la eficiencia de `_is_excluded_path` y `walk_files` evitando llamadas redundantes a `Path.resolve()` y `stat()` dentro de los bucles, reduciendo drásticamente las llamadas a I/O por archivo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T09:09:05` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones clave, expandiendo los docstrings para explicar la lógica de normalización y añadiendo breves notas técnicas sobre el propósito de las constantes y la estructura de datos, facilitando así la legibilidad y el mantenimiento.
 - `2026-09-24T09:08:37` **duplicates.py** (legibilidad y documentación): Documenté con docstrings claros y tipado explícito el flujo de trabajo en `_decide_hash_strategy_and_process`, clarificando la jerarquía de los pasos de deduplicación para mejorar la mantenibilidad y legibilidad del motor principal.
 - `2026-09-24T09:08:07` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` añadiendo docstrings detallados en las funciones de procesamiento crítico (`walk_files` y `_collect_summary_data`), explicando la lógica de recursión y el uso de estructuras de datos (heap) para asegurar que futuros colaboradores entiendan el impacto en memoria y rendimiento.
-- `2026-09-24T09:02:37` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `browser.py` documentando los parámetros complejos de las funciones críticas (`_sum_directory_recursive` y `_should_skip_entry`) mediante docstrings estructurados, clarificando el propósito de cada argumento y el manejo de dependencias externas.
-- `2026-09-24T09:01:44` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `branding.py` mediante la adición de docstrings estructuradas en las constantes globales y la estandarización de las descripciones en las funciones de renderizado, garantizando que el "porqué" de los cálculos visuales (especialmente las coordenadas mágicas y los factores de escala) sea evidente para futuros desarrolladores.
-- `2026-09-24T08:59:55` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` extrayendo la lógica de validación de seguridad dentro de `_is_safe_text_structure` mediante la creación de una constante descriptiva `SECURITY_PATTERNS` y un método más claro para aplicar las reglas, facilitando su auditoría.

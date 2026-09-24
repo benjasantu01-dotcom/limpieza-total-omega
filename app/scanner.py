@@ -199,9 +199,7 @@ class Scanner:
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack)
             elif self._is_relevant_extension(entry.name):
-                # Validar existencia antes de procesar para evitar carreras de archivos (Race condition)
-                if os.path.exists(entry.path):
-                    self._run_file_heuristics(Path(entry.path), entry)
+                self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, AttributeError):
             pass
 

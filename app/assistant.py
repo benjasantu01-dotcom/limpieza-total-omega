@@ -343,7 +343,6 @@ class SystemContext:
     def _clean_grade(self, val: Any) -> str:
         """Limpia el string del grado de salud eliminando caracteres no alfanuméricos."""
         if not isinstance(val, str): return ""
-        # Usamos SECURITY_PATTERNS[1] para limpiar caracteres de control
         clean = SECURITY_PATTERNS[1].sub(" ", val)[:10].strip()
         return clean if _ensure_safe_text(clean) else ""
 
@@ -372,7 +371,6 @@ class SystemContext:
         except Exception:
             pass
         
-        # Validar integridad tras carga masiva
         if found_data and _validate_context_integrity(self):
             self.analyzed = True
             return True
@@ -407,7 +405,6 @@ def _is_safe_text_structure(text: str) -> bool:
     if not text: return True
     if any(ord(c) < 32 and c not in '\n\r\t' for c in text): return False
     
-    # 1. Validar ausencia de rutas protegidas o absolutas
     if is_protected_path(text): return False
     if text.startswith(("\\\\", "//", "UNC")): return False
     try:
@@ -417,7 +414,6 @@ def _is_safe_text_structure(text: str) -> bool:
     except (ValueError, TypeError, OSError):
         pass
     
-    # 2. Consolidar regex de ataque usando la lista centralizada SECURITY_PATTERNS
     return not any(pattern.search(text) for pattern in SECURITY_PATTERNS)
 
 def _ensure_safe_text(text: Any) -> bool:
@@ -587,7 +583,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     if not q_sanitized:
         return Answer("Entrada no válida.")
     
-    # Búsqueda optimizada por intersección de conjuntos
     user_tokens = set(_TOKEN_REGEX.findall(q_sanitized.lower()))
     matches = user_tokens.intersection(_TOKENS_MAP.keys())
     
@@ -608,18 +603,21 @@ def available(base: Union[str, Path, None] = None) -> bool:
         return False
 
 def _parse_config(raw_cfg: Any) -> AssistantConfig:
-    """Parsea el diccionario de configuración externa de manera segura."""
+    """Parsea el diccionario de configuración externa de manera segura con esquema predeterminado."""
     default = AssistantConfig("", "gemini-3.1-flash-lite", True)
     if not isinstance(raw_cfg, dict):
         return default
-    try:
-        api_key = str(raw_cfg.get("asistente_api_key", ""))
-        model = str(raw_cfg.get("asistente_modelo", "gemini-3.1-flash-lite"))
-        metrics_val = raw_cfg.get("asistente_enviar_metricas")
-        allow_metrics = True if metrics_val is None else bool(metrics_val)
-        return AssistantConfig(api_key, model, allow_metrics)
-    except (ValueError, TypeError, AttributeError):
-        return default
+    
+    # Validar tipos de las claves esperadas
+    api_key = raw_cfg.get("asistente_api_key")
+    model = raw_cfg.get("asistente_modelo")
+    metrics_val = raw_cfg.get("asistente_enviar_metricas")
+    
+    return AssistantConfig(
+        api_key=str(api_key) if isinstance(api_key, str) else "",
+        model=str(model) if isinstance(model, str) else "gemini-3.1-flash-lite",
+        allow_metrics=bool(metrics_val) if isinstance(metrics_val, bool) else True
+    )
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa la pregunta y el contexto en un JSON listo para ser enviado a la API."""

@@ -984,3 +984,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-24T10:00:54` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-24T10:00:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T10:00:54` Corrida terminada. Total usado hoy: 236.
+- `2026-09-24T10:08:43` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-09-24T10:09:13` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el método `process_entry` eliminando la llamada redundante y costosa a `os.path.exists(entry.path)`, aprovechando que `os.DirEntry` ya contiene la información del archivo y validando el estado necesario mediante las comprobaciones de seguridad ya implementadas.
+- `2026-09-24T10:09:44` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de la carga de configuración reemplazando las múltiples llamadas a `load()` en el bucle de validación y consultas por una gestión de caché más eficiente, eliminando lecturas de disco redundantes y procesamientos innecesarios en las funciones `assistant_enabled` y `describe`.
+- `2026-09-24T10:10:14` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimizé `entries_from_folders` para evitar la creación innecesaria de objetos `Path` y múltiples llamadas a `is_symlink` y `is_protected_path` al iterar el contenido del directorio, centralizando la lógica de validación.
+- `2026-09-24T10:10:41` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez ante estados inesperados de configuración al implementar un mecanismo de validación de esquema en `_parse_config` y asegurar la integridad de las métricas durante la carga masiva en `SystemContext.ingest`, evitando que valores nulos o tipos incorrectos resulten en un contexto "vacío" pero funcionalmente inestable.
+- `2026-09-24T10:10:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T10:10:41` Corrida terminada. Total usado hoy: 240.
