@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 37
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 247
+- Rechazadas por guardia de seguridad: 36
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 248
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 19 | 5 | 6 | 3 | 29 |
+| 2026-09-22 | 17 | 5 | 5 | 2 | 29 |
 | 2026-09-23 | 131 | 12 | 25 | 11 | 171 |
-| 2026-09-24 | 32 | 4 | 6 | 3 | 47 |
+| 2026-09-24 | 35 | 4 | 6 | 3 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **39**
-- legibilidad y documentación: **38**
 - robustez ante casos límite: **37**
+- legibilidad y documentación: **36**
+- manejo de errores y validación de entradas: **36**
 - rendimiento: **35**
-- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `healthscore.py`: **18**
 - `browser.py`: **16**
-- `safety.py`: **15**
-- `scanner.py`: **15**
 - `assistant.py`: **15**
 - `quarantine.py`: **15**
 - `settings.py`: **14**
-- `duplicates.py`: **13**
+- `duplicates.py`: **14**
+- `safety.py`: **14**
+- `scanner.py`: **14**
 - `memory.py`: **12**
 - `branding.py`: **11**
 - `organizer.py`: **10**
 - `startup.py`: **7**
-- `main.py`: **2**
+- `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T04:03:42` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de la persistencia de ajustes en `on_save_settings` mediante el uso de un bloque `try-except` específico al invocar `settings_mod.update`, evitando que una posible corrupción durante la escritura (ej. error de I/O al persistir el JSON) deje la aplicación en un estado inconsistente o silenciosamente fallido.
+- `2026-09-24T04:01:06` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones de tipo explícitas y manejo de errores de resolución de rutas, evitando que el proceso falle ante rutas malformadas o condiciones de carrera en el sistema de archivos.
+- `2026-09-24T04:00:36` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` capturando excepciones específicas en la resolución de rutas relativas y en la iteración del sistema de archivos, previniendo fallos ante nombres de archivo mal formados o cambios de estado durante el escaneo.
 - `2026-09-24T03:52:10` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_handler_wrapper` y los métodos `ingest` de `SystemContext` para asegurar que fallos en la ingesta o procesamiento de datos de entrada no propaguen excepciones inesperadas hacia la UI, validando explícitamente los tipos antes de la asignación.
 - `2026-09-24T02:30:24` **startup.py** (seguridad defensiva): Se ha robustecido el filtrado en `parse_registry_csv` añadiendo una validación temprana contra `is_protected_path` tanto en la ruta original como en la resuelta antes de crear cualquier objeto `StartupEntry`, impidiendo que rutas críticas del sistema lleguen a ser procesadas.
 - `2026-09-24T02:29:51` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` aplicando `ensure_safe_to_modify` antes de cualquier operación de escritura sobre el archivo principal o el respaldo, evitando así el uso de `is_safe_to_modify` que, siendo booleano, podría fallar silenciosamente en escenarios de permisos complejos donde se requiere una validación estricta que lance excepciones ante riesgos detectados.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T01:59:49` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_browser_path` añadiendo una validación explícita mediante `is_safe_to_modify` y `is_protected_path` sobre la ruta final construida, previniendo que el módulo intente siquiera procesar rutas que, aunque residan nominalmente en `LOCALAPPDATA`, hayan sido manipuladas para apuntar a zonas protegidas o fuera de scope.
 - `2026-09-24T01:59:18` **branding.py** (seguridad defensiva): Se reforzó `save_logo_svg` aplicando `ensure_safe_to_modify` para el archivo de destino, garantizando que cualquier operación de escritura sea validada explícitamente por el motor de seguridad antes de intentar acceder al sistema de archivos, reemplazando una validación booleana más laxa.
 - `2026-09-24T01:58:39` **assistant.py** (seguridad defensiva): Se endureció la validación de seguridad `_is_safe_text_structure` añadiendo una comprobación explícita para evitar que se filtren rutas de red UNC (que empiezan con `\\`), reforzando el cumplimiento de la política de no exponer estructuras de archivos sensibles.
-- `2026-09-24T01:49:37` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante condiciones de concurrencia y fallos de escritura mediante la incorporación de `os.fsync` previo al renombrado y validación explícita de `is_safe_to_modify` sobre el archivo de respaldo (`.bak`), asegurando que no se sobrescriban o dañen archivos críticos bajo bloqueos de sistema o interrupciones.
-- `2026-09-24T01:49:05` **scanner.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_is_safe_entry` para validar que `entry.path` no sea una ruta truncada o malformada que podría causar errores en `is_protected_path` o futuras operaciones, utilizando `Path.is_absolute()` y capturando posibles excepciones en la resolución de rutas.
-- `2026-09-24T01:48:33` **safety.py** (robustez ante casos límite): Se introdujo una verificación de "path traversal" mediante `Path.resolve()` contra la ruta normalizada antes de cualquier operación, garantizando que el acceso al sistema de archivos sea estrictamente absoluto y esté saneado ante posibles intentos de escaparse del directorio raíz definido (o del entorno de ejecución).

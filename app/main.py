@@ -1960,17 +1960,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     return
 
             def task() -> None:
-                self.settings = settings_mod.update(propuestos)
-                ruta = settings_mod.settings_path()
-                self.log_lines(
-                    [f"Ajustes guardados en: {ruta}", ""] + settings_mod.describe(),
-                    "Ajustes",
-                )
-                self.set_status("Ajustes guardados.")
+                try:
+                    self.settings = settings_mod.update(propuestos)
+                    ruta = settings_mod.settings_path()
+                    self.log_lines(
+                        [f"Ajustes guardados en: {ruta}", ""] + settings_mod.describe(),
+                        "Ajustes",
+                    )
+                    self.set_status("Ajustes guardados.")
+                except Exception as e:
+                    self.log(f"Error al escribir ajustes: {e}", "Ajustes")
+                    logging.error("Fallo persistencia ajustes: %s", e)
 
             self.run_async(task)
         except Exception as e:
-            logging.error("Error al recopilar/guardar ajustes: %s", e)
+            logging.error("Error al recopilar ajustes: %s", e)
 
     @validated_ui_operation
     def on_show_settings(self) -> None:

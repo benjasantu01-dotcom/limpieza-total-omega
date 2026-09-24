@@ -313,7 +313,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     Algoritmo de selección de 'keeper': elige la instancia más antigua.
     En caso de empate en fecha, prefiere la ruta más corta.
     """
-    if not group or not group.paths:
+    if not group or not isinstance(group, DuplicateGroup) or not group.paths:
         return None
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
@@ -331,7 +331,10 @@ def format_group(group: DuplicateGroup) -> List[str]:
         return ["Error: Grupo inválido o vacío"]
         
     keeper = suggest_keeper(group)
-    keeper_resolved = keeper.resolve() if keeper else None
+    try:
+        keeper_resolved = keeper.resolve(strict=True) if keeper else None
+    except (OSError, RuntimeError):
+        keeper_resolved = None
     
     mb_t, mb_w = round(group.size_bytes / 1048576, 2), round(group.wasted_bytes / 1048576, 2)
     lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
@@ -343,9 +346,9 @@ def format_group(group: DuplicateGroup) -> List[str]:
             if not is_safe_to_modify(path):
                 lines.append(f"   [inaccesible] {path}")
             else:
-                is_keeper = (keeper_resolved is not None and path.resolve() == keeper_resolved)
+                is_keeper = (keeper_resolved is not None and path.resolve(strict=True) == keeper_resolved)
                 label = 'conservar' if is_keeper else 'duplicado'
                 lines.append(f"   [{label}] {path}")
-        except (OSError, PermissionError):
+        except (OSError, RuntimeError):
             lines.append(f"   [error de acceso] {path}")
     return lines

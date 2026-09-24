@@ -306,7 +306,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
                 top_level = root / rel.parts[0]
                 folder_total_bytes[top_level] += size_bytes
                 folder_file_counts[top_level] += 1
-        except (ValueError, IndexError):
+        except (ValueError, OSError, RuntimeError):
             continue
 
     results = [FolderUsage(p, folder_total_bytes[p], folder_file_counts[p]) for p in folder_total_bytes]

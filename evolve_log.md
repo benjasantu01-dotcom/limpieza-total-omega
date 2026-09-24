@@ -418,3 +418,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-24T03:53:31` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-24T03:53:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T03:53:31` Corrida terminada. Total usado hoy: 92.
+- `2026-09-24T04:00:05` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-09-24T04:00:36` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` capturando excepciones específicas en la resolución de rutas relativas y en la iteración del sistema de archivos, previniendo fallos ante nombres de archivo mal formados o cambios de estado durante el escaneo.
+- `2026-09-24T04:00:36` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T04:01:06` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones de tipo explícitas y manejo de errores de resolución de rutas, evitando que el proceso falle ante rutas malformadas o condiciones de carrera en el sistema de archivos.
+- `2026-09-24T04:01:32` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-24T04:01:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T04:02:36` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-24T04:03:42` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la persistencia de ajustes en `on_save_settings` mediante el uso de un bloque `try-except` específico al invocar `settings_mod.update`, evitando que una posible corrupción durante la escritura (ej. error de I/O al persistir el JSON) deje la aplicación en un estado inconsistente o silenciosamente fallido.
+- `2026-09-24T04:03:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T04:03:42` Corrida terminada. Total usado hoy: 96.
