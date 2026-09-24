@@ -318,13 +318,16 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             if not name or not cmd or cmd.startswith(r"\\") or cmd in seen_commands or name.upper().startswith("PS"):
                 continue
             
+            # Validación defensiva estricta antes de instanciar StartupEntry
             try:
                 p_cmd = Path(cmd)
                 if is_protected_path(p_cmd):
                     continue
-                resolved = p_cmd.resolve(strict=False)
-                if is_protected_path(resolved):
-                    continue
+                # Si es una ruta absoluta, resolvemos para verificar que no apunte a zona protegida
+                if p_cmd.is_absolute():
+                    resolved = p_cmd.resolve(strict=False)
+                    if is_protected_path(resolved):
+                        continue
             except (ValueError, TypeError, OSError):
                 continue
             

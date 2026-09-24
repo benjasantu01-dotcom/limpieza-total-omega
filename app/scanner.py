@@ -227,6 +227,10 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if not path_str or not _is_valid_path_structure(path_str): return []
     base_path = Path(path_str)
     if not base_path.is_absolute() or not base_path.exists() or not base_path.is_dir(): return []
+    
+    # Pre-validación: evitar scan si es punto de reanálisis
+    if base_path.is_symlink() or base_path.is_junction(): return []
+    
     root_input: Path = base_path.resolve()
     if is_protected_path(root_input): return []
     scanner = Scanner(base_root=root_input)
