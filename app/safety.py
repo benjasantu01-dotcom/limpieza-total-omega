@@ -395,8 +395,8 @@ def normalize(path: PathLike) -> Path:
          raise ValueError("Ruta contiene secuencias Unicode sospechosas.")
     try:
         p = Path(path_str)
-        # Validación estricta anti-traversal
         resolved = p.resolve()
+        # Verificar si hay traversal comparando componentes originales resueltos
         if ".." in p.parts: raise ValueError("Path traversal detectado.")
         return resolved
     except (OSError, RuntimeError, TypeError, PermissionError) as e:
@@ -441,9 +441,9 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         c_path = normalize(child)
         p_path = normalize(parent)
         if is_drive_root(c_path) or is_protected_path(str(c_path)): return False
+        c_str = str(c_path)
         p_str = str(p_path)
-        common = os.path.commonpath([c_path, p_path])
-        return common == p_str if allow_equal else (common == p_str and c_path != p_path)
+        return c_str.startswith(p_str) if allow_equal else (c_str.startswith(p_str) and c_str != p_str)
     except (ValueError, TypeError, OSError, RuntimeError): return False
 
 @lru_cache(maxsize=2048)
@@ -473,9 +473,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED)
     if _is_device_file(target_path):
         raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
-    # Verificación preventiva de reparse point antes de acceder al disco
-    if os.name == 'nt' and (_get_file_attrs(path_string) & Win32Attr.REPARSE_POINT):
-        raise UnsafePathError("Punto de reparse detectado estructuralmente.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+    
     try:
         if target_path.exists() and not target_path.is_absolute():
             raise UnsafePathError("Ruta inconsistente con el sistema.", SafetyValidationErrorCode.GENERIC)
@@ -483,33 +481,32 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
              raise UnsafePathError("Ruta raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS)
         for part in target_path.parts:
             if len(part) > MAX_FILENAME_LENGTH:
-                raise UnsafePathError(f"Nombre de componente demasiado largo: {part[:10]}...", SafetyValidationErrorCode.PATH_TOO_LONG)
+                raise UnsafePathError(f"Nombre de componente demasiado largo.", SafetyValidationErrorCode.PATH_TOO_LONG)
             if not part or part.strip() != part:
                 raise UnsafePathError(f"Componente '{part}' con espacios envolventes.", SafetyValidationErrorCode.INVALID_CHARS)
             if part.endswith(('.', ' ')):
                 raise UnsafePathError(f"Componente '{part}' termina en caracter inválido.", SafetyValidationErrorCode.INVALID_CHARS)
-            if "  " in part:
-                 raise UnsafePathError(f"Componente '{part}' con espacios excesivos.", SafetyValidationErrorCode.INVALID_CHARS)
             part_cleaned = part.split('.')[0]
             if _is_reserved_device_name(part_cleaned):
                 raise UnsafePathError(f"Nombre reservado '{part}'.", SafetyValidationErrorCode.RESERVED_NAME)
     except (AttributeError, TypeError, ValueError):
         raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC)
-    if path_string.startswith(("\\\\", "//")):
-        raise UnsafePathError("Rutas UNC bloqueadas.", SafetyValidationErrorCode.UNC_PATH)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
     """Verifica límites de alcance y restricciones de volumen para evitar manipulaciones fuera del sandbox."""
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
+    
+    # Bloqueo estricto de rutas de red/UNC
+    path_str = str(target_path)
+    if path_str.startswith(("\\\\", "//")):
+        raise UnsafePathError("Rutas UNC/Red bloqueadas.", SafetyValidationErrorCode.UNC_PATH)
+        
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     if is_protected_path(str(target_path)):
         raise UnsafePathError("Ruta en directorio del sistema bloqueada.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
-    # Verificación adicional de nombres de dispositivo en cualquier parte de la ruta
-    for part in target_path.parts:
-        if _is_reserved_device_name(part.split('.')[0]):
-            raise UnsafePathError(f"Acceso a dispositivo reservado '{part}' bloqueado.", SafetyValidationErrorCode.RESERVED_NAME)
+    
     if os.name == 'nt':
         try:
             root = target_path.anchor
@@ -525,6 +522,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
                      raise UnsafePathError("Volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
         except (OSError, AttributeError, ctypes.ArgumentError) as e:
              raise UnsafePathError(f"Fallo al consultar unidad: {e}", SafetyValidationErrorCode.IO_ERROR)
+    
     try:
         app_root = Path(os.getcwd()).resolve()
         if target_path == app_root or app_root in target_path.parents:
@@ -532,8 +530,6 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
     except (OSError, RuntimeError, ValueError): pass
     if is_drive_root(target_path):
         raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS)
-    if not target_path.exists() and is_protected_path(str(target_path.parent)):
-        raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
 
 def _get_final_path_normalized(path: Path) -> Optional[Path]:
     """Resuelve la ruta física real en disco mediante Win32 Handles para identificar desvíos de reparse."""

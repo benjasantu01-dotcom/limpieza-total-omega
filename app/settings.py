@@ -276,12 +276,14 @@ def validate(raw_values: Any) -> AppSettings:
 def _load_impl(ruta: Path) -> AppSettings:
     """Implementación privada cacheada para leer y verificar el archivo desde disco."""
     try:
-        if not ruta.exists() or not ruta.is_file() or _Validators._is_reparse_point(ruta): return DEFAULTS.copy()
-        if not is_safe_to_modify(str(ruta)): return DEFAULTS.copy()
+        if not ruta.exists(): return DEFAULTS.copy()
         
-        stat = ruta.stat()
-        if not os.access(ruta, os.R_OK) or stat.st_size == 0 or stat.st_size > MAX_SETTINGS_SIZE:
+        # Integridad estricta: verificar tipos de archivo antes de procesar
+        st = ruta.lstat()
+        if not (st.st_mode & 0o100000) or _Validators._is_reparse_point(ruta): 
             return DEFAULTS.copy()
+        if not is_safe_to_modify(str(ruta)): return DEFAULTS.copy()
+        if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return DEFAULTS.copy()
             
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -289,7 +291,6 @@ def _load_impl(ruta: Path) -> AppSettings:
         if not _is_dict(data): return DEFAULTS.copy()
             
         validated_data = validate(data)
-        # Asegurar integridad: completar claves faltantes con DEFAULTS
         for key, default_val in DEFAULTS.items():
             if key not in validated_data:
                 validated_data[key] = default_val

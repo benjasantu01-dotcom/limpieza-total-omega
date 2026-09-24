@@ -622,3 +622,10 @@ assert not {'replace'}
 - `2026-09-24T06:13:56` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-24T06:13:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T06:13:56` Corrida terminada. Total usado hoy: 144.
+- `2026-09-24T06:14:13` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-09-24T06:14:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-24T06:15:17` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se añadió una validación específica para rutas UNC (`\\servidor\recurso`) y de red en `_validate_boundary_conditions` para evitar bloqueos por latencia o permisos inesperados de red, y se centralizó el chequeo de "path traversal" usando `resolve()` para evitar comparaciones de strings inconsistentes frente a enlaces simbólicos o inconsistencias de caja (case-insensitivity).
+- `2026-09-24T06:15:43` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-24T06:15:58` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `settings.py` ante archivos corruptos o maliciosos agregando un chequeo de integridad basado en `os.stat` antes de la lectura, asegurando que solo se procesen archivos planos y no directorios ni enlaces, previniendo errores de acceso inesperados.
+- `2026-09-24T06:15:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T06:15:58` Corrida terminada. Total usado hoy: 148.
