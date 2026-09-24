@@ -69,7 +69,10 @@ DRIVE_CDROM: Final[int] = 5
 DRIVE_RAMDISK: Final[int] = 6
 
 def _to_long_path(path_str: str) -> str:
-    """Normaliza rutas para la API de Windows mediante el prefijo \\?\\ para superar límites de MAX_PATH."""
+    """
+    Convierte una ruta a formato largo de Windows (\\?\) para evitar limitaciones 
+    de MAX_PATH y permitir el acceso a rutas profundas o con espacios finales.
+    """
     if os.name == 'nt' and not path_str.startswith("\\\\?\\"):
         if path_str.startswith("\\\\"): return "\\\\?\\UNC" + path_str[1:]
         return "\\\\?\\" + path_str
@@ -77,7 +80,7 @@ def _to_long_path(path_str: str) -> str:
 
 @lru_cache(maxsize=1024)
 def _get_file_attrs(path_str: str) -> int:
-    """Consulta centralizada de atributos Win32 para reducir syscalls."""
+    """Consulta centralizada de atributos Win32 mediante GetFileAttributesW para reducir syscalls."""
     if os.name != 'nt': return 0
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
@@ -205,7 +208,10 @@ def is_running_as_admin() -> bool:
         return False
 
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
-    """Detecta caracteres prohibidos en rutas Windows, secuencias de control RTL o nulos."""
+    """
+    Detecta caracteres prohibidos en rutas Windows, secuencias de control RTL o nulos.
+    Crucial para evitar ataques de inyección de rutas mediante caracteres invisibles.
+    """
     if not isinstance(path_str, str) or not path_str: return True
     # Detecta caracteres de control no imprimibles y marcas de formato bidireccional (RTL/LTR)
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str))
@@ -248,7 +254,10 @@ def _is_offline(path_str: str) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
-    """Verifica bloqueos mediante intento de apertura con acceso de solo lectura y compartido."""
+    """
+    Verifica bloqueos mediante intento de apertura con acceso de solo lectura y compartido.
+    Si falla el CreateFile, el archivo está bloqueado por otro proceso a nivel kernel.
+    """
     if os.name != 'nt' or not isinstance(path_str, str) or not os.path.isabs(path_str):
         return False
     try:
@@ -334,7 +343,11 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
             raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
 
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
-    """Verifica metadatos en disco y compara con estado inicial para prevenir ataques TOCTOU."""
+    """
+    Verifica metadatos en disco y compara con estado inicial para prevenir ataques TOCTOU 
+    (Time-of-Check Time-of-Use). Asegura que el archivo no haya sido reemplazado por 
+    un enlace simbólico o un archivo diferente durante la ejecución.
+    """
     if not os.access(path, os.R_OK):
         raise UnsafePathError(f"Acceso de lectura denegado a {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     try:
@@ -342,6 +355,7 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     except (PermissionError, OSError, FileNotFoundError) as e:
         raise UnsafePathError(f"Acceso denegado o archivo perdido ({e}): {path.name}", SafetyValidationErrorCode.IO_ERROR)
     
+    # Compara el identificador único del dispositivo y del inodo/índice de archivo
     if getattr(current_stat, 'st_dev', 0) != initial_stat.st_dev or getattr(current_stat, 'st_ino', 0) != initial_stat.st_ino:
         raise UnsafePathError(f"Consistencia fallida (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
     
@@ -439,7 +453,7 @@ def is_sensitive_file(path: PathLike) -> bool:
     except (TypeError, ValueError, OSError): return True 
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
-    """Realiza una validación puramente estructural de la ruta."""
+    """Realiza una validación puramente estructural de la ruta para prevenir inyecciones básicas."""
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
     if ".." in path_string.split(os.sep):
@@ -482,7 +496,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Rutas UNC bloqueadas.", SafetyValidationErrorCode.UNC_PATH)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
-    """Verifica límites de alcance y restricciones de volumen."""
+    """Verifica límites de alcance y restricciones de volumen para evitar manipulaciones fuera del sandbox."""
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
@@ -519,7 +533,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
         raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
 
 def _get_final_path_normalized(path: Path) -> Optional[Path]:
-    """Resuelve la ruta física real en disco mediante Win32 Handles."""
+    """Resuelve la ruta física real en disco mediante Win32 Handles para identificar desvíos de reparse."""
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, 0, None, 3, 0x02000000, None)
     if handle == -1: return None
@@ -534,7 +548,7 @@ def _get_final_path_normalized(path: Path) -> Optional[Path]:
     return None
 
 def _validate_ntfs_reparse_redirection(path: Path) -> None:
-    """Asegura que la ruta no sea un proxy hacia otro volumen o unidad."""
+    """Asegura que la ruta no sea un proxy hacia otro volumen o unidad mediante Junctions."""
     if not path.exists(): return
     if _is_reparse_point(str(path.parent)):
         raise UnsafePathError("Directorio padre es un punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
@@ -547,7 +561,9 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
-    Valida integridad y seguridad de una ruta.
+    Valida integridad y seguridad de una ruta. Esta es la función central para operaciones
+    de escritura/destrucción. Verifica estructuralmente, verifica límites de sandbox y
+    ejecuta comprobaciones de integridad en disco para prevenir manipulaciones maliciosas.
     """
     if path is None or (not isinstance(path, (str, os.PathLike))):
         raise UnsafePathError("Entrada de ruta inválida o nula.", SafetyValidationErrorCode.GENERIC)
@@ -585,7 +601,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
     """
-    Wrapper booleano para validar seguridad sin lanzar excepciones.
+    Wrapper booleano para validar seguridad sin lanzar excepciones. 
+    Uso recomendado en bucles de filtrado.
     """
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)

@@ -533,6 +533,26 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
         raise FileExistsError(f"El destino ya existe: {destination}")
 
 
+def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> None:
+    """Ejecuta la copia binaria y verifica la integridad del archivo resultante."""
+    with open(source, "rb") as f_src:
+        stat_src = os.fstat(f_src.fileno())
+        if not (stat_src.st_mode & 0o100000):
+            raise OSError("El archivo origen no es un archivo regular.")
+
+        with open(temp_dest, "wb") as f_dst:
+            shutil.copyfileobj(f_src, f_dst)
+            f_dst.flush()
+            os.fsync(f_dst.fileno())
+            
+    if temp_dest.stat().st_size != stat_src.st_size:
+        raise OSError("Falla de integridad: tamaño mismatch tras copia.")
+        
+    final_hash = _get_sha256(temp_dest)
+    if not final_hash or final_hash != source_hash:
+        raise OSError("Falla crítica: el hash del archivo copiado no coincide.")
+
+
 def _write_temp_to_final(source: Path, destination: Path) -> str:
     """
     Copia física segura al sandbox mediante un archivo temporal y reemplazo atómico.
@@ -547,26 +567,11 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     temp_dest = destination.with_suffix(".tmp")
     
     try:
-        with open(source, "rb") as f_src:
-            stat_src = os.fstat(f_src.fileno())
-            if not (stat_src.st_mode & 0o100000):
-                raise OSError("El archivo origen no es un archivo regular.")
-
-            with open(temp_dest, "wb") as f_dst:
-                shutil.copyfileobj(f_src, f_dst)
-                f_dst.flush()
-                os.fsync(f_dst.fileno())
-                
-        if temp_dest.stat().st_size != stat_src.st_size:
-            raise OSError("Falla de integridad: tamaño mismatch tras copia.")
-            
-        final_hash = _get_sha256(temp_dest)
-        if not final_hash or final_hash != source_hash:
-            raise OSError("Falla crítica: el hash del archivo copiado no coincide.")
+        _copy_with_verification(source, temp_dest, source_hash)
             
         os.replace(temp_dest, destination)
         ensure_safe_to_modify(destination, allow_sensitive=True)
-        return final_hash
+        return source_hash
             
     except Exception as e:
         if temp_dest.exists():

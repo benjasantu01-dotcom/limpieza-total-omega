@@ -149,11 +149,11 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Coordina validaciones de seguridad para operaciones de E/S.
+    Coordina validaciones de seguridad exhaustivas para operaciones de E/S.
     
-    Verifica: Existencia del archivo, permisos de acceso (RW), 
-    restricciones por seguridad (protected_path), prevención de 
-    movimientos recursivos y exclusión de archivos en uso (locks).
+    Verifica la existencia física, permisos, que la ruta no sea protegida,
+    que no haya riesgo de recursión en el movimiento, y que el archivo no esté 
+    siendo bloqueado por otro proceso del sistema operativo.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if not src.exists() or not src.is_file() or not is_safe_to_modify(src): return False
@@ -188,14 +188,14 @@ def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result) -> bool:
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
     """
-    Realiza un recorrido recursivo controlado del sistema de archivos.
+    Realiza un recorrido recursivo del sistema de archivos con límites de seguridad.
     
     Args:
-        current_dir: Directorio base del escaneo actual.
+        current_dir: Directorio base del escaneo.
         found: Lista acumuladora de objetos JunkFile hallados.
-        depth: Profundidad actual (limitado a 50 para evitar bucles infinitos).
+        depth: Profundidad de recursión (limitado a 50 para evitar desbordamiento).
         protected_cache: Caché de rutas bloqueadas para optimización.
-        visited: Registro de rutas resueltas ya visitadas para evitar ciclos.
+        visited: Registro de rutas resueltas para detección de ciclos.
     """
     if depth > 50 or not current_dir.exists(): return
     try:
@@ -203,16 +203,16 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         if resolved_dir in visited: return
         visited.add(resolved_dir)
         
-        with os.scandir(current_dir) as it:
-            for entry in it:
+        with os.scandir(current_dir) as iterator:
+            for item in iterator:
                 try:
-                    if entry.is_dir(follow_symlinks=False):
-                        if _should_scan_directory(entry, protected_cache):
-                            _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
-                    elif entry.is_file(follow_symlinks=False):
-                        stats = entry.stat(follow_symlinks=False)
-                        if _is_valid_junk_entry(entry, stats):
-                            found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
+                    if item.is_dir(follow_symlinks=False):
+                        if _should_scan_directory(item, protected_cache):
+                            _process_directory(Path(item.path), found, depth + 1, protected_cache, visited)
+                    elif item.is_file(follow_symlinks=False):
+                        stats = item.stat(follow_symlinks=False)
+                        if _is_valid_junk_entry(item, stats):
+                            found.append(JunkFile(Path(item.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (OSError, PermissionError): continue
     except (OSError, PermissionError, RuntimeError): pass
 
