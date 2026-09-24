@@ -150,10 +150,6 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Coordina validaciones de seguridad exhaustivas para operaciones de E/S.
-    
-    Verifica la existencia física, permisos, que la ruta no sea protegida,
-    que no haya riesgo de recursión en el movimiento, y que el archivo no esté 
-    siendo bloqueado por otro proceso del sistema operativo.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if not src.exists() or not src.is_file() or not is_safe_to_modify(src): return False
@@ -162,7 +158,9 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     try:
         target_dir = dest.parent if dest.exists() else dest
         if not target_dir.exists() or not target_dir.is_dir(): return False
-        if is_protected_path(target_dir) or _is_unc_path(target_dir) or src.drive != target_dir.drive: return False
+        if is_protected_path(target_dir) or _is_unc_path(target_dir): return False
+        # Verificación de unidad: shutil.move no puede mover entre dispositivos automáticamente
+        if src.drive != target_dir.drive: return False
         if _is_recursive_violation(src, dest): return False
         if not os.access(target_dir, os.W_OK) or not os.access(src, os.R_OK): return False
         stats = src.stat()
@@ -187,16 +185,7 @@ def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result) -> bool:
             is_valid_junk_extension(entry.name))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
-    """
-    Realiza un recorrido recursivo del sistema de archivos con límites de seguridad.
-    
-    Args:
-        current_dir: Directorio base del escaneo.
-        found: Lista acumuladora de objetos JunkFile hallados.
-        depth: Profundidad de recursión (limitado a 50 para evitar desbordamiento).
-        protected_cache: Caché de rutas bloqueadas para optimización.
-        visited: Registro de rutas resueltas para detección de ciclos.
-    """
+    """Realiza un recorrido recursivo del sistema de archivos con límites de seguridad."""
     if depth > 50 or not current_dir.exists(): return
     try:
         resolved_dir = current_dir.resolve()
@@ -259,6 +248,7 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Valida disponibilidad de espacio en disco y gestiona colisiones de nombres."""
     try:
+        # Uso de try/except para manejar posibles errores al consultar espacio en unidades externas
         usage = shutil.disk_usage(dest_base.anchor)
         if usage.free < (junk_file.size_bytes + 52428800): return None
     except (OSError, FileNotFoundError, AttributeError): return None
