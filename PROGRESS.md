@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 243
 
@@ -16,17 +16,17 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 38 | 6 | 8 | 4 | 62 |
+| 2026-09-22 | 36 | 6 | 8 | 4 | 60 |
 | 2026-09-23 | 131 | 12 | 25 | 11 | 171 |
-| 2026-09-24 | 16 | 3 | 4 | 3 | 10 |
+| 2026-09-24 | 17 | 3 | 5 | 3 | 12 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **35**
-- robustez ante casos límite: **33**
-- seguridad defensiva: **30**
+- robustez ante casos límite: **34**
+- seguridad defensiva: **28**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,19 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **18**
 - `browser.py`: **17**
 - `quarantine.py`: **15**
-- `settings.py`: **14**
 - `assistant.py`: **14**
 - `duplicates.py`: **14**
+- `memory.py`: **14**
 - `safety.py`: **14**
 - `scanner.py`: **14**
-- `memory.py`: **13**
+- `settings.py`: **13**
 - `branding.py`: **11**
 - `organizer.py`: **11**
-- `startup.py`: **7**
+- `startup.py`: **6**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T01:38:06` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una comprobación explícita mediante `PROCESS_QUERY_INFORMATION` y manejando correctamente el posible error `ERROR_INVALID_PARAMETER` (que ocurre si el proceso muere entre la apertura del handle y la llamada a `EmptyWorkingSet`), evitando así comportamientos indefinidos al cerrar handles nulos.
 - `2026-09-24T01:29:01` **healthscore.py** (robustez ante casos límite): Mejora la robustez del motor de cálculo ante valores de métricas que exceden las capacidades esperadas o presentan inconsistencias, añadiendo validación explícita de `nan` y `inf` en `_to_float` y asegurando que `_evaluate_rules` no colapse ante excepciones durante la generación de mensajes.
 - `2026-09-24T01:19:24` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en `_get_kernel32` y `_is_system_hidden` para evitar que fallos imprevistos en la carga de librerías del sistema detengan el escaneo de navegadores.
 - `2026-09-24T01:19:07` **branding.py** (robustez ante casos límite): Se introdujo una validación defensiva en `save_logo_svg` para prevenir el desbordamiento de memoria ante intentos de renderizado con tamaños extremos, garantizando que el parámetro `size` se mantenga dentro de un rango físico razonable antes de cualquier operación de I/O.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T00:16:01` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando tipos explícitos y docstrings detallados en funciones críticas, aclarando el propósito y las restricciones del proceso de normalización para facilitar su mantenimiento y auditoría.
 - `2026-09-24T00:07:17` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad técnica del módulo mediante docstrings más precisos y la tipificación explícita de estructuras, facilitando el mantenimiento y la comprensión de la lógica de negocio, sin alterar el comportamiento.
 - `2026-09-24T00:07:03` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados en los métodos privados y la clarificación de las responsabilidades de las estructuras de datos, facilitando el mantenimiento y la comprensión de la lógica de escaneo.
-- `2026-09-24T00:06:16` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings técnicos explícitos a las funciones de filtrado y resolución de rutas, además de renombrar `real_base_str` a `base_abs_str` para mejorar la consistencia semántica en las validaciones de seguridad.

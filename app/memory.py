@@ -51,11 +51,13 @@ MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB
 # Máscaras de acceso Win32 para operaciones seguras en procesos:
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x100
-SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
+PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
+SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION
 
 STILL_ACTIVE_EXIT_CODE: Final[int] = 259
 SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
 ERROR_ACCESS_DENIED: Final[int] = 5
+ERROR_INVALID_PARAMETER: Final[int] = 87
 
 PS_QUERY_CMD: Final[List[str]] = [
     'powershell', '-NoProfile', '-NonInteractive', '-Command', 
@@ -318,7 +320,6 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[Path]:
     try:
         if psapi.GetModuleFileNameExW(proc_handle, None, buf, 260) > 0:
             path_str = buf.value
-            # Validación defensiva: solo aceptar rutas que parezcan unidades locales (ej. C:\...)
             if not (len(path_str) >= 3 and path_str[1] == ":" and path_str[2] == "\\"): return None
             if any(ord(c) < 32 for c in path_str): return None
             p = Path(path_str).resolve(strict=False)
@@ -353,7 +354,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not is_safe: return False, err or "Verificación de seguridad fallida."
         psapi = getattr(ctypes.windll, "psapi", None)
         if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "Función no disponible."
-        if not psapi.EmptyWorkingSet(proc_handle): return False, "El sistema denegó la operación."
+        if not psapi.EmptyWorkingSet(proc_handle): 
+            if kernel32.GetLastError() == ERROR_INVALID_PARAMETER:
+                return False, "El proceso ya no existe."
+            return False, "El sistema denegó la operación."
         return True, f"Working set liberado. {TRIM_WARNING}"
     finally:
         kernel32.CloseHandle(proc_handle)

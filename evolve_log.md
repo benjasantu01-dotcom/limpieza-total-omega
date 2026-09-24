@@ -1510,3 +1510,13 @@ FAILED evolve/tests/test_modules.py::test_list_startup_entries_returns_a_list - 
 - `2026-09-24T01:33:22` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-09-24T01:33:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T01:33:22` Corrida terminada. Total usado hoy: 36.
+- `2026-09-24T01:37:32` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-09-24T01:38:06` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `trim_working_set` añadiendo una comprobación explícita mediante `PROCESS_QUERY_INFORMATION` y manejando correctamente el posible error `ERROR_INVALID_PARAMETER` (que ocurre si el proceso muere entre la apertura del handle y la llamada a `EmptyWorkingSet`), evitando así comportamientos indefinidos al cerrar handles nulos.
+- `2026-09-24T01:38:34` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-24T01:38:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T01:39:02` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-24T01:39:44` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-24T01:40:33` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-24T01:40:55` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-24T01:40:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T01:40:55` Corrida terminada. Total usado hoy: 40.
