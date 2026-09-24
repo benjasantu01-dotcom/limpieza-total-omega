@@ -8,37 +8,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 254
+- Sin respuesta de la IA (error o límite): 253
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 56 | 8 | 11 | 7 | 98 |
-| 2026-09-24 | 126 | 10 | 20 | 12 | 156 |
+| 2026-09-23 | 54 | 8 | 11 | 7 | 96 |
+| 2026-09-24 | 128 | 10 | 21 | 12 | 157 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
-- robustez ante casos límite: **39**
-- legibilidad y documentación: **39**
+- legibilidad y documentación: **41**
+- robustez ante casos límite: **37**
 - manejo de errores y validación de entradas: **33**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
-- `browser.py`: **17**
+- `scanner.py`: **18**
 - `healthscore.py`: **17**
-- `scanner.py`: **17**
+- `diskreport.py`: **17**
+- `browser.py`: **16**
 - `settings.py`: **15**
 - `assistant.py`: **15**
 - `duplicates.py`: **15**
+- `safety.py`: **14**
 - `memory.py`: **14**
 - `branding.py`: **14**
-- `safety.py`: **13**
 - `quarantine.py`: **12**
 - `organizer.py`: **7**
 - `startup.py`: **6**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T13:55:22` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de heurística y métodos de la clase `Scanner`, aclarando la lógica de validación y el propósito de cada verificación para facilitar el mantenimiento y la auditoría.
+- `2026-09-24T13:54:56` **safety.py** (legibilidad y documentación): Se introdujo un `Enum` explícito `SafetyAction` para tipificar y documentar el propósito de las validaciones, sustituyendo comentarios dispersos y mejorando la legibilidad de la lógica de negocio al distinguir claramente entre validaciones de "lectura" y "escritura/destrucción".
 - `2026-09-24T13:46:30` **quarantine.py** (legibilidad y documentación): Mejoré la documentación de las funciones de entrada/salida y validación de seguridad mediante docstrings descriptivos, añadiendo detalles sobre las precondiciones y el comportamiento de las excepciones para mejorar la mantenibilidad y legibilidad técnica.
 - `2026-09-24T13:35:26` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en las colecciones internas, la clarificación de docstrings mediante el uso de parámetros tipados y la descripción detallada de las estructuras de control, facilitando la mantenibilidad a largo plazo sin alterar la lógica.
 - `2026-09-24T13:23:28` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de configuración incluyendo un manejo explícito de `OSError` al abrir el archivo y validando que el archivo no sea un directorio (usando `is_file()` junto a `lstat`), evitando fallos silenciosos o inesperados en entornos con permisos restrictivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T11:22:05` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en `save` reemplazando el uso de `os.remove` por `os.replace` (o una lógica más robusta si fuera necesario) y, fundamentalmente, añadiendo una validación explícita de `is_safe_to_modify` para el archivo `bak_path` antes de intentar cualquier operación de renombrado, asegurando que el proceso de rotación de archivos sea coherente con las protecciones del sistema.
 - `2026-09-24T11:21:48` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_run_file_heuristics` y `scan_file` para evitar que una heurística mal implementada (ej. un `check_fn` que acceda al disco de forma inesperada o lance una excepción no capturada) comprometa el bucle de escaneo, centralizando el manejo de errores y validando la integridad del resultado antes de añadirlo a la lista.
 - `2026-09-24T11:21:21` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para evitar que `ensure_safe_to_modify` procese archivos que residen en rutas con puntos de reparse (reparse points) en cualquiera de sus segmentos de directorio superiores, previniendo así posibles escapes del sandbox o inconsistencias en la resolución de rutas mediante la verificación de `path.parents`.
-- `2026-09-24T11:13:09` **memory.py** (seguridad defensiva): Se endureció la seguridad en `trim_working_set` al evitar el uso de `OpenProcess` con permisos innecesarios de `PROCESS_SET_QUOTA` (que permite modificar cuotas del proceso) y limitando el acceso estrictamente a `PROCESS_QUERY_LIMITED_INFORMATION` para la validación previa, reduciendo la superficie de ataque al operar sobre procesos ajenos.
-- `2026-09-24T11:02:00` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del Pipeline al incluir una verificación explícita de `is_finite` dentro del bucle de procesamiento de métricas, evitando que métricas maliciosamente alteradas (NaN/Inf) puedan propagarse y corromper el cálculo de `accumulated_score` o `weighted_points`.

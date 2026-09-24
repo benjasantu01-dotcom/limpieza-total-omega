@@ -87,7 +87,8 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Detecta si el nombre del archivo contiene extensiones anidadas sospechosas.
+    Analiza si el nombre del archivo termina con una combinación de extensiones contradictorias
+    (ej. .pdf.exe), técnica común para engañar al usuario sobre el tipo de archivo real.
     """
     if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -95,7 +96,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Evalúa la frescura de un archivo ejecutable en directorios críticos de usuario.
+    Verifica la antigüedad de un ejecutable en carpetas de alto riesgo (descargas, temporal).
+    El criterio es que archivos muy recientes requieren mayor atención del usuario.
     """
     if not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
@@ -107,7 +109,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Detecta ejecutables que intentan suplantar procesos críticos fuera de 'System32'.
+    Identifica archivos con nombres de procesos críticos del sistema que se encuentran 
+    ubicados fuera de System32, lo cual es un indicador clásico de persistencia maliciosa.
     """
     if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         path_str = str(path).lower()
@@ -117,7 +120,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Identifica archivos con tamaño 0 bytes que suelen ser marcadores de procesos maliciosos.
+    Detecta archivos de tamaño 0 bytes con extensiones ejecutables. Estos archivos 
+    raramente son útiles y suelen ser remanentes de errores de despliegue o malware.
     """
     stats = _safe_stat(entry) if entry else None
     if stats and hasattr(stats, 'st_size') and stats.st_size == 0:
@@ -164,7 +168,13 @@ class Scanner:
         return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida que la entrada de sistema cumple con todas las políticas de seguridad actuales."""
+        """
+        Valida que una entrada del sistema sea procesable bajo las políticas de seguridad:
+        - Estructura de ruta válida.
+        - No está en la lista negra (protected paths).
+        - No es un punto de reanálisis ni un enlace simbólico (anti-bucle).
+        - Se mantiene dentro de la raíz del escaneo.
+        """
         if not entry or not entry.path or not entry.name:
             return False
         if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
@@ -227,7 +237,11 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Punto de entrada principal para escaneo recursivo de una jerarquía de directorios."""
+    """
+    Punto de entrada principal para escaneo recursivo de una jerarquía de directorios.
+    Implementa una pila LIFO para procesar el árbol de directorios manteniendo el
+    estado de seguridad y evitando duplicidad de rutas.
+    """
     if directory is None: return []
     path_str: str = str(directory).strip()
     if not path_str or not _is_valid_path_structure(path_str): return []

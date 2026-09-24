@@ -20,6 +20,11 @@ import unicodedata
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result], bool]
 
+class SafetyAction(Enum):
+    """Define la criticidad de la operación para ajustar el rigor de la validación."""
+    READ = auto()      # Listado, escaneo, análisis
+    MODIFY = auto()    # Mover, renombrar, borrar, editar
+
 class FileMetadata(TypedDict):
     """Representación de los atributos de archivo necesarios para evaluaciones de seguridad."""
     is_reparse: bool
@@ -563,9 +568,9 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
-    Valida integridad y seguridad de una ruta. Esta es la función central para operaciones
-    de escritura/destrucción. Verifica estructuralmente, verifica límites de sandbox y
-    ejecuta comprobaciones de integridad en disco para prevenir manipulaciones maliciosas.
+    Valida integridad y seguridad de una ruta para operaciones de modificación (SafetyAction.MODIFY).
+    Verifica estructuralmente, verifica límites de sandbox y ejecuta comprobaciones de 
+    integridad en disco para prevenir manipulaciones maliciosas.
     """
     if path is None or (not isinstance(path, (str, os.PathLike))):
         raise UnsafePathError("Entrada de ruta inválida o nula.", SafetyValidationErrorCode.GENERIC)
@@ -603,7 +608,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
     """
-    Wrapper booleano para validar seguridad sin lanzar excepciones. 
+    Wrapper booleano para validar seguridad en el contexto de modificación (MODIFY).
     Uso recomendado en bucles de filtrado.
     """
     try:
@@ -613,7 +618,7 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
     """
-    Filtra una colección de rutas, devolviendo solo aquellas consideradas seguras.
+    Filtra una colección de rutas, devolviendo solo aquellas consideradas seguras para modificar.
     """
     results = []
     for p in paths:
