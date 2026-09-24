@@ -267,6 +267,19 @@ def _get_entry_size(entry: os.DirEntry) -> int:
         return 0
 
 
+def _process_entry(
+    entry: os.DirEntry, 
+    depth: int, 
+    junction_fn: JunctionChecker, 
+    kernel32: Optional[ctypes.WinDLL], 
+    memo: Dict[str, int]
+) -> int:
+    """Helper auxiliar que encapsula la lógica de navegación y cálculo por entrada."""
+    if entry.is_dir(follow_symlinks=False):
+        return _sum_directory_recursive(entry.path, junction_fn, kernel32, memo, depth + 1)
+    return _get_entry_size(entry)
+
+
 def _sum_directory_recursive(
     root_abs: str, 
     is_junction_fn: JunctionChecker, 
@@ -278,9 +291,7 @@ def _sum_directory_recursive(
     Calcula recursivamente el peso de una carpeta utilizando memoización global
     para evitar re-evaluación redundante de subdirectorios compartidos.
     """
-    if not isinstance(root_abs, str) or not root_abs:
-        return 0
-    if depth > MAX_SCAN_DEPTH:
+    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
     
     if root_abs in memo:
@@ -290,16 +301,10 @@ def _sum_directory_recursive(
     try:
         with os.scandir(root_abs) as it:
             for entry in it:
+                if _should_skip_entry(entry, kernel32, is_junction_fn):
+                    continue
                 try:
-                    if _should_skip_entry(entry, kernel32, is_junction_fn):
-                        continue
-                    
-                    if entry.is_dir(follow_symlinks=False):
-                        total_bytes += _sum_directory_recursive(
-                            entry.path, is_junction_fn, kernel32, memo, depth + 1
-                        )
-                    else:
-                        total_bytes += _get_entry_size(entry)
+                    total_bytes += _process_entry(entry, depth, is_junction_fn, kernel32, memo)
                 except (OSError, PermissionError):
                     continue
         

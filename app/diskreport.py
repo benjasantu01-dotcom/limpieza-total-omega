@@ -67,7 +67,7 @@ class SummaryData(NamedTuple):
         total_bytes: Suma total de bytes de archivos accesibles.
         total_files: Cantidad total de archivos procesados.
         ext_stats: Mapeo de extensiones a objetos ExtStats con acumulados.
-        top_files: Min-heap conteniendo los N archivos más grandes encontrados (tupla: size, path).
+        top_files: Lista de tuplas (size, path) representando el min-heap de archivos.
     """
     total_bytes: int
     total_files: int
@@ -325,6 +325,11 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Realiza una pasada única (O(n)) sobre el árbol de directorios para recolectar estadísticas
     agregadas y mantener el heap de archivos más grandes.
+    
+    Args:
+        directory: Ruta raíz a escanear.
+        skip_protected: Si debe omitir rutas protegidas por `safety`.
+        limit: Tamaño máximo del min-heap (0 para desactivar).
     """
     total_bytes: int = 0
     total_files: int = 0

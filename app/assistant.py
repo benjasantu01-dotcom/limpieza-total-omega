@@ -397,23 +397,22 @@ def _is_safe_text_structure(text: str) -> bool:
     if not text: return True
     if any(ord(c) < 32 and c not in '\n\r\t' for c in text): return False
     
-    # Prevenir rutas de red UNC y rutas absolutas
+    # 1. Validar ausencia de rutas absolutas o de red peligrosas
     if text.startswith(("\\\\", "//", "UNC")): return False
-    
     try:
         p = Path(text)
-        if p.is_absolute(): return False
-        if text.startswith(("./", "../", "..\\", "C:", "D:", "/")): return False
+        if p.is_absolute() or text.startswith(("./", "../", "..\\", "C:", "D:", "/")):
+            return False
     except (ValueError, TypeError, OSError):
         pass
     
-    return not (
-        _PATH_INJECTION_REGEX.search(text) or 
-        _RESTRICTED_CONTENT_REGEX.search(text) or 
-        _SENSITIVE_STRUCTURE_REGEX.search(text) or
-        _ANSI_ESCAPE_REGEX.search(text) or
-        _PS_COMMAND_REGEX.search(text)
-    )
+    # 2. Consolidar regex de ataque en una lista para verificación secuencial
+    security_patterns = [
+        _PATH_INJECTION_REGEX, _RESTRICTED_CONTENT_REGEX, 
+        _SENSITIVE_STRUCTURE_REGEX, _ANSI_ESCAPE_REGEX, _PS_COMMAND_REGEX
+    ]
+    
+    return not any(pattern.search(text) for pattern in security_patterns)
 
 def _ensure_safe_text(text: Any) -> bool:
     """Wrapper final para validar que cualquier texto sea seguro, corto y libre de caracteres de control."""
