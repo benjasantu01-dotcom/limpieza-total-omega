@@ -148,9 +148,7 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
     return not (is_protected_path(src) or is_protected_path(dest))
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """
-    Coordina validaciones de seguridad exhaustivas para operaciones de E/S.
-    """
+    """Coordina validaciones de seguridad exhaustivas para operaciones de E/S."""
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if not src.exists() or not src.is_file() or not is_safe_to_modify(src): return False
     if not _validate_path_security(src, dest): return False
@@ -159,7 +157,6 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         target_dir = dest.parent if dest.exists() else dest
         if not target_dir.exists() or not target_dir.is_dir(): return False
         if is_protected_path(target_dir) or _is_unc_path(target_dir): return False
-        # Verificación de unidad: shutil.move no puede mover entre dispositivos automáticamente
         if src.drive != target_dir.drive: return False
         if _is_recursive_violation(src, dest): return False
         if not os.access(target_dir, os.W_OK) or not os.access(src, os.R_OK): return False
@@ -229,12 +226,15 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         dest_base = Path(review_dir).expanduser()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve()
+        # Validación de seguridad: no operar si el destino es crítico
+        if is_protected_path(dest_res): return None
     except (OSError, RuntimeError, PermissionError): return None
     
     for junk_file in files:
         try:
             if not _is_safe_to_move(junk_file, dest_res): continue
             target_path = _can_move_file(junk_file, dest_res)
+            # Doble check previo a la ejecución crítica
             if target_path and junk_file.path.exists() and is_safe_to_modify(junk_file.path):
                 ensure_safe_to_modify(junk_file.path)
                 shutil.move(str(junk_file.path), str(target_path))
@@ -248,7 +248,6 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Valida disponibilidad de espacio en disco y gestiona colisiones de nombres."""
     try:
-        # Uso de try/except para manejar posibles errores al consultar espacio en unidades externas
         usage = shutil.disk_usage(dest_base.anchor)
         if usage.free < (junk_file.size_bytes + 52428800): return None
     except (OSError, FileNotFoundError, AttributeError): return None
@@ -260,7 +259,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """Elimina permanentemente los archivos en cuarentena."""
     try:
         dest = Path(review_dir).expanduser().resolve()
-        if not dest.is_dir() or not is_safe_to_modify(dest): return 0
+        if not dest.is_dir() or is_protected_path(dest) or not is_safe_to_modify(dest): return 0
         count = 0
         for item in dest.iterdir():
             if item.is_file() and is_safe_to_modify(item):

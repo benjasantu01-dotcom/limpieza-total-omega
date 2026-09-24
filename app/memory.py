@@ -275,11 +275,12 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[Path]:
     if not proc_handle: return None
     psapi = ctypes.windll.psapi
     buf = ctypes.create_unicode_buffer(260)
-    if psapi.GetModuleFileNameExW(proc_handle, None, buf, 260) > 0:
-        p = Path(buf.value).resolve(strict=False)
-        # Seguridad: validamos que no sea ruta de sistema antes de retornar
-        if p.is_absolute() and not is_protected_path(str(p)):
-            return p
+    try:
+        if psapi.GetModuleFileNameExW(proc_handle, None, buf, 260) > 0:
+            p = Path(buf.value).resolve(strict=False)
+            if p.is_absolute() and not is_protected_path(str(p)):
+                return p
+    except (ctypes.ArgumentError, OSError): pass
     return None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]:
@@ -298,13 +299,17 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     try: target_pid = int(pid)
     except (ValueError, TypeError): return False, "PID no válido."
     if _is_system_process(target_pid): return False, "Proceso crítico protegido."
+    
+    psapi = ctypes.windll.psapi
+    if not hasattr(psapi, "EmptyWorkingSet"): return False, "Función no disponible."
+
     kernel32 = ctypes.windll.kernel32
     proc_handle = wintypes.HANDLE(kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid))
     if not proc_handle: return False, "Acceso denegado."
     try:
         is_safe, err = _is_safe_to_trim(proc_handle)
         if not is_safe: return False, err or "Verificación fallida."
-        if not ctypes.windll.psapi.EmptyWorkingSet(proc_handle):
+        if not psapi.EmptyWorkingSet(proc_handle):
             return False, "Operación denegada."
         return True, f"Working set liberado. {TRIM_WARNING}"
     finally: kernel32.CloseHandle(proc_handle)
