@@ -549,8 +549,11 @@ def _get_final_path_normalized(path: Path) -> Optional[Path]:
 def _validate_ntfs_reparse_redirection(path: Path) -> None:
     """Asegura que la ruta no sea un proxy hacia otro volumen o unidad mediante Junctions."""
     if not path.exists(): return
-    if _is_reparse_point(str(path.parent)):
-        raise UnsafePathError("Directorio padre es un punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+    # Validar que ningún padre sea un punto de reparse
+    for parent in path.parents:
+        if _is_reparse_point(str(parent)):
+            raise UnsafePathError("Segmento de ruta contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+            
     final_path = _get_final_path_normalized(path)
     if final_path:
         if final_path.drive != path.resolve().drive:

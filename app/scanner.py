@@ -207,8 +207,9 @@ class Scanner:
         """Ejecuta el conjunto registrado de heurísticas sobre el archivo detectado."""
         for check_fn in ALL_CHECKS:
             try:
-                if (result := check_fn(path, entry, self.now_ts)):
-                    self.results.append(result)
+                res = check_fn(path, entry, self.now_ts)
+                if isinstance(res, Suspicion):
+                    self.results.append(res)
             except Exception as e:
                 logger.debug(f"Error en heurística {check_fn.__name__} para {path}: {e}")
 
@@ -222,8 +223,9 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     findings: ScanResult = []
     for check_fn in ALL_CHECKS:
         try:
-            if (result := check_fn(path, entry, now_ts)):
-                findings.append(result)
+            res = check_fn(path, entry, now_ts)
+            if isinstance(res, Suspicion):
+                findings.append(res)
         except Exception as e:
             logger.error(f"Error inesperado en {check_fn.__name__}: {e}")
             continue

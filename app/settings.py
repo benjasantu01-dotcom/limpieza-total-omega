@@ -376,7 +376,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         return None
     finally:
         if temp_path.exists():
-            try: os.remove(temp_path)
+            try: 
+                # Reemplazo seguro mediante intento de borrado validado
+                if is_safe_to_modify(str(temp_path)): os.remove(temp_path)
             except (OSError, PermissionError): pass
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:

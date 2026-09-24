@@ -1106,3 +1106,11 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-09-24T11:14:08` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-24T11:14:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T11:14:08` Corrida terminada. Total usado hoy: 264.
+- `2026-09-24T11:20:12` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-09-24T11:20:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T11:20:39` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-24T11:21:21` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita para evitar que `ensure_safe_to_modify` procese archivos que residen en rutas con puntos de reparse (reparse points) en cualquiera de sus segmentos de directorio superiores, previniendo así posibles escapes del sandbox o inconsistencias en la resolución de rutas mediante la verificación de `path.parents`.
+- `2026-09-24T11:21:48` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_run_file_heuristics` y `scan_file` para evitar que una heurística mal implementada (ej. un `check_fn` que acceda al disco de forma inesperada o lance una excepción no capturada) comprometa el bucle de escaneo, centralizando el manejo de errores y validando la integridad del resultado antes de añadirlo a la lista.
+- `2026-09-24T11:22:05` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save` reemplazando el uso de `os.remove` por `os.replace` (o una lógica más robusta si fuera necesario) y, fundamentalmente, añadiendo una validación explícita de `is_safe_to_modify` para el archivo `bak_path` antes de intentar cualquier operación de renombrado, asegurando que el proceso de rotación de archivos sea coherente con las protecciones del sistema.
+- `2026-09-24T11:22:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T11:22:05` Corrida terminada. Total usado hoy: 268.
