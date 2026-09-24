@@ -260,6 +260,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         if entry.rules:
             _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
         
+        if not math.isfinite(area_ratio):
+            area_ratio = 0.0
+            
         weighted_points = int(_clamp(area_ratio, 0.0, 1.0) * entry.weight + 0.5)
         metric_breakdown[entry.area] = weighted_points
         accumulated_score += weighted_points

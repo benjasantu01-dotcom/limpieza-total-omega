@@ -103,7 +103,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry, root_str: str) -> bool:
+def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """
     Determina si una ruta debe ser excluida del análisis por razones de seguridad,
     presencia de caracteres de ofuscación, escape de la raíz o enlaces.
@@ -113,12 +113,15 @@ def _is_excluded_path(entry: os.DirEntry, root_str: str) -> bool:
             return True
         if entry.is_symlink():
             return True
-        # Usar string startsWith es significativamente más rápido que resolve() en cada entrada
-        if not entry.path.startswith(root_str):
+        
+        # Validar que la ruta real está contenida en la raíz para evitar escape
+        resolved_entry = Path(entry.path).resolve()
+        if root_path not in resolved_entry.parents and resolved_entry != root_path:
             return True
-        if is_protected_path(Path(entry.path)):
+            
+        if is_protected_path(resolved_entry):
             return True
-    except (OSError, PermissionError, AttributeError):
+    except (OSError, PermissionError, AttributeError, RuntimeError):
         return True
     return False
 
@@ -241,10 +244,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     root_path = _validate_root(directory)
     if root_path is None: return
-    root_str = str(root_path)
 
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [root_str]
+    stack: List[Path] = [root_path]
     
     while stack:
         current_dir = stack.pop()
@@ -252,7 +254,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and _is_excluded_path(entry, root_str):
+                        if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
@@ -260,7 +262,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             inode: Inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(entry.path)
+                                stack.append(Path(entry.path))
                                 
                         elif entry.is_file(follow_symlinks=False):
                             yield Path(entry.path), entry.stat(follow_symlinks=False).st_size

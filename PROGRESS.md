@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 236
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 84 | 11 | 16 | 9 | 128 |
-| 2026-09-24 | 109 | 10 | 18 | 11 | 108 |
+| 2026-09-23 | 84 | 11 | 16 | 9 | 124 |
+| 2026-09-24 | 112 | 10 | 18 | 11 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - robustez ante casos límite: **40**
+- seguridad defensiva: **39**
 - manejo de errores y validación de entradas: **36**
-- seguridad defensiva: **36**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **19**
+- `healthscore.py`: **20**
+- `browser.py`: **19**
 - `assistant.py`: **18**
+- `diskreport.py`: **18**
 - `scanner.py`: **18**
-- `browser.py`: **18**
-- `diskreport.py`: **17**
 - `duplicates.py`: **16**
 - `branding.py`: **14**
 - `memory.py`: **14**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T11:02:00` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del Pipeline al incluir una verificación explícita de `is_finite` dentro del bucle de procesamiento de métricas, evitando que métricas maliciosamente alteradas (NaN/Inf) puedan propagarse y corromper el cálculo de `accumulated_score` o `weighted_points`.
+- `2026-09-24T11:00:42` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` implementando una validación estricta de rutas mediante `Path.resolve()` para prevenir ataques de *path traversal* o resolución de enlaces simbólicos maliciosos, además de consolidar la lógica de exclusión para que sea más robusta ante entradas malformadas.
+- `2026-09-24T11:00:12` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_browser_path` aplicando una validación estricta de "Path Traversal" mediante `pathlib.Path.is_relative_to` (o su equivalente lógico para versiones anteriores) para garantizar que, ante cualquier intento de inyección de rutas (ej. mediante `..`), el acceso quede confinado estrictamente dentro de la jerarquía de `LOCALAPPDATA`.
 - `2026-09-24T10:52:04` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` reemplazando la verificación directa dentro de la función por un chequeo robusto utilizando `is_safe_to_modify` para evitar efectos secundarios y asegurar que el sistema de archivos no sea alterado en rutas prohibidas.
 - `2026-09-24T10:50:08` **settings.py** (robustez ante casos límite): Se mejoró la resiliencia en la inicialización de `SETTINGS_DIR` envolviendo la resolución de rutas en un bloque try-except para manejar casos donde el entorno del sistema operativo pueda devolver resultados inesperados o inaccesibles, evitando así que una falla en el inicio impida la carga de la aplicación.
 - `2026-09-24T10:41:39` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de las heurísticas de archivo incorporando un chequeo de existencia previo (`entry.is_file()`) y manejando explícitamente excepciones de permisos o archivos bloqueados durante la inspección de metadatos, evitando que una entrada inaccesible silencie el resto del escaneo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T10:09:13` **scanner.py** (rendimiento): Optimicé el método `process_entry` eliminando la llamada redundante y costosa a `os.path.exists(entry.path)`, aprovechando que `os.DirEntry` ya contiene la información del archivo y validando el estado necesario mediante las comprobaciones de seguridad ya implementadas.
 - `2026-09-24T10:00:03` **quarantine.py** (rendimiento): Se optimizó `total_quarantined_bytes` para evitar recargar el manifiesto y procesar el archivo JSON en cada llamada (especialmente crítico si se usa en bucles de UI), reutilizando la lista de ítems si ya está disponible o usando una estructura más eficiente de acceso en memoria.
 - `2026-09-24T09:49:28` **healthscore.py** (rendimiento): Optimicé el rendimiento del Pipeline al evitar la re-evaluación de constantes y mejorar la eficiencia del `is_finite` mediante el uso de una tupla de valores pre-definida, reduciendo la sobrecarga de asignación de memoria en cada ejecución.
-- `2026-09-24T09:41:03` **diskreport.py** (rendimiento): Optimizé la eficiencia de `_is_excluded_path` y `walk_files` evitando llamadas redundantes a `Path.resolve()` y `stat()` dentro de los bucles, reduciendo drásticamente las llamadas a I/O por archivo.
-- `2026-09-24T09:40:51` **browser.py** (rendimiento): Se implementó un mecanismo de memoización persistente dentro de `detect_profiles` para evitar el cálculo redundante de tamaños de subdirectorios compartidos, optimizando el rendimiento en estructuras de carpetas donde múltiples navegadores (como variantes de Chrome/Edge) acceden a rutas comunes.
-- `2026-09-24T09:40:20` **branding.py** (rendimiento): Se optimizó el renderizado del gradiente del escudo mediante la pre-generación de los segmentos de color en `_draw_shield_stripes` y el uso eficiente de la caché, reduciendo la carga de cómputo en cada frame de refresco de la UI.

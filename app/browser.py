@@ -256,17 +256,17 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     if not isinstance(real_base, Path) or not isinstance(rel_str, str):
         return Path()
     try:
-        target = real_base.joinpath(*rel_str.split("\\"))
-        if not target.exists():
+        # Prevención contra path traversal: normalizar siempre la unión
+        target = (real_base.joinpath(*rel_str.split("\\"))).resolve()
+        
+        # Validar que el destino resuelto sea subdirectorio de real_base
+        if not str(target).startswith(str(real_base)):
             return Path()
         
-        target_abs = str(target.resolve())
-        if not target_abs.startswith(str(real_base)):
-            return Path()
-        if not is_safe_to_modify(target) or is_protected_path(target):
+        if not target.exists() or not is_safe_to_modify(target) or is_protected_path(target):
             return Path()
             
-        return target if len(target_abs) < MAX_PATH_LEN else Path()
+        return target if len(str(target)) < MAX_PATH_LEN else Path()
     except Exception:
         return Path()
 
