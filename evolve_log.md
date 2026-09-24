@@ -428,3 +428,38 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-24T04:03:42` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la persistencia de ajustes en `on_save_settings` mediante el uso de un bloque `try-except` específico al invocar `settings_mod.update`, evitando que una posible corrupción durante la escritura (ej. error de I/O al persistir el JSON) deje la aplicación en un estado inconsistente o silenciosamente fallido.
 - `2026-09-24T04:03:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T04:03:42` Corrida terminada. Total usado hoy: 96.
+- `2026-09-24T04:10:19` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-09-24T04:10:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T04:10:55` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora el manejo de errores en `trim_working_set` y `_get_process_path` reemplazando llamadas a `getattr` implícitas por validaciones explícitas de la existencia de funciones, asegurando que `ctypes` no falle inesperadamente en entornos donde `kernel32` o `psapi` no exponen los métodos esperados.
+- `2026-09-24T04:11:21` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-24T04:12:04` Tests FALLARON:
+```
+PathError("Ruta de restauración insegura.")
+    
+            os.replace(str(stored_file), str(destination))
+            remaining = [i for i in items if i.item_id != item_id]
+            save_manifest(remaining, base)
+            return destination
+        except Exception as e:
+>           raise RuntimeError(f"Error crítico en proceso de restauración: {e}")
+E           RuntimeError: Error crítico en proceso de restauración: [GENERIC] Destino de restauración protegido por sistema.
+
+app/quarantine.py:766: RuntimeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:219: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) no aptas para archivos."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error crítico en proceso de restauración: [GENERIC] Destino de restauración protegido por sistema.
+1 failed, 298 passed, 4 warnings in 1.17s
+
+```
+- `2026-09-24T04:12:04` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se introdujo una gestión de errores más robusta y específica en las funciones críticas de persistencia del manifiesto (`save_manifest`) y restauración (`restore_item`), reemplazando excepciones genéricas por chequeos de pre-condiciones más claros y mensajes de error informativos, manteniendo la integridad del estado.
+- `2026-09-24T04:12:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-09-24T04:12:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T04:12:11` Corrida terminada. Total usado hoy: 100.

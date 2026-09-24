@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 36
+- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Rechazadas por tests: 22
+- Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 248
 
@@ -16,37 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 17 | 5 | 5 | 2 | 29 |
+| 2026-09-22 | 14 | 5 | 5 | 2 | 28 |
 | 2026-09-23 | 131 | 12 | 25 | 11 | 171 |
-| 2026-09-24 | 35 | 4 | 6 | 3 | 48 |
+| 2026-09-24 | 36 | 5 | 7 | 3 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **39**
 - robustez ante casos límite: **37**
-- legibilidad y documentación: **36**
-- manejo de errores y validación de entradas: **36**
-- rendimiento: **35**
+- manejo de errores y validación de entradas: **37**
+- rendimiento: **34**
+- legibilidad y documentación: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `healthscore.py`: **18**
 - `browser.py`: **16**
-- `assistant.py`: **15**
 - `quarantine.py`: **15**
-- `settings.py`: **14**
 - `duplicates.py`: **14**
 - `safety.py`: **14**
+- `assistant.py`: **14**
 - `scanner.py`: **14**
-- `memory.py`: **12**
+- `settings.py`: **13**
+- `memory.py`: **13**
 - `branding.py`: **11**
 - `organizer.py`: **10**
-- `startup.py`: **7**
+- `startup.py`: **6**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T04:10:55` **memory.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `trim_working_set` y `_get_process_path` reemplazando llamadas a `getattr` implícitas por validaciones explícitas de la existencia de funciones, asegurando que `ctypes` no falle inesperadamente en entornos donde `kernel32` o `psapi` no exponen los métodos esperados.
 - `2026-09-24T04:03:42` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de la persistencia de ajustes en `on_save_settings` mediante el uso de un bloque `try-except` específico al invocar `settings_mod.update`, evitando que una posible corrupción durante la escritura (ej. error de I/O al persistir el JSON) deje la aplicación en un estado inconsistente o silenciosamente fallido.
 - `2026-09-24T04:01:06` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones de tipo explícitas y manejo de errores de resolución de rutas, evitando que el proceso falle ante rutas malformadas o condiciones de carrera en el sistema de archivos.
 - `2026-09-24T04:00:36` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` capturando excepciones específicas en la resolución de rutas relativas y en la iteración del sistema de archivos, previniendo fallos ante nombres de archivo mal formados o cambios de estado durante el escaneo.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T02:00:02` **diskreport.py** (seguridad defensiva): Se ha reforzado la seguridad defensiva en `walk_files` y `_is_excluded_path` añadiendo una validación explícita para detectar puntos de reparse (junctions/reparse points) mediante `entry.is_symlink()` y los atributos de archivo, evitando así la recursión infinita o el acceso no deseado a volúmenes montados fuera del árbol de directorios de interés.
 - `2026-09-24T01:59:49` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_browser_path` añadiendo una validación explícita mediante `is_safe_to_modify` y `is_protected_path` sobre la ruta final construida, previniendo que el módulo intente siquiera procesar rutas que, aunque residan nominalmente en `LOCALAPPDATA`, hayan sido manipuladas para apuntar a zonas protegidas o fuera de scope.
 - `2026-09-24T01:59:18` **branding.py** (seguridad defensiva): Se reforzó `save_logo_svg` aplicando `ensure_safe_to_modify` para el archivo de destino, garantizando que cualquier operación de escritura sea validada explícitamente por el motor de seguridad antes de intentar acceder al sistema de archivos, reemplazando una validación booleana más laxa.
-- `2026-09-24T01:58:39` **assistant.py** (seguridad defensiva): Se endureció la validación de seguridad `_is_safe_text_structure` añadiendo una comprobación explícita para evitar que se filtren rutas de red UNC (que empiezan con `\\`), reforzando el cumplimiento de la política de no exponer estructuras de archivos sensibles.
