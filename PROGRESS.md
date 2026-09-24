@@ -7,38 +7,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **187** (37.1% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 33
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 245
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 31
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 247
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 66 | 11 | 14 | 7 | 102 |
-| 2026-09-24 | 121 | 10 | 19 | 11 | 143 |
+| 2026-09-23 | 65 | 10 | 12 | 7 | 102 |
+| 2026-09-24 | 122 | 10 | 19 | 12 | 145 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
 - robustez ante casos límite: **40**
-- legibilidad y documentación: **38**
+- legibilidad y documentación: **37**
 - rendimiento: **35**
-- manejo de errores y validación de entradas: **30**
+- manejo de errores y validación de entradas: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **18**
 - `browser.py`: **18**
 - `healthscore.py`: **18**
 - `assistant.py`: **17**
+- `scanner.py`: **17**
 - `diskreport.py`: **17**
 - `duplicates.py`: **16**
 - `safety.py`: **14**
+- `memory.py`: **14**
 - `settings.py`: **14**
 - `branding.py`: **14**
-- `memory.py`: **13**
 - `quarantine.py`: **12**
 - `organizer.py`: **8**
 - `startup.py`: **6**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T13:04:38` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y `_get_process_path` reemplazando llamadas a `ctypes` que no validaban sus resultados, asegurando que `OpenProcess` devuelva un handle válido antes de operar y evitando escapes de excepciones no controladas durante la manipulación de recursos de sistema.
 - `2026-09-24T12:54:39` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_collect_candidates` mediante la captura explícita de `OSError` al realizar `entry.stat()` y se mejoró la validación inicial en `group_by_size` para evitar fallos por rutas nulas o errores de resolución, siguiendo las directrices de manejo de errores del enfoque.
 - `2026-09-24T12:54:25` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` validando que los resultados de `entry.stat()` sean utilizables antes de procesarlos, evitando errores por archivos bloqueados o inaccesibles que antes podían causar excepciones no capturadas al acceder a `.st_size`.
 - `2026-09-24T12:53:05` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_ring` mediante la validación proactiva de parámetros y la captura de excepciones específicas, eliminando riesgos de "index out of range" o valores numéricos inválidos que podrían afectar el renderizado o la integridad de archivos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T11:00:12` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_browser_path` aplicando una validación estricta de "Path Traversal" mediante `pathlib.Path.is_relative_to` (o su equivalente lógico para versiones anteriores) para garantizar que, ante cualquier intento de inyección de rutas (ej. mediante `..`), el acceso quede confinado estrictamente dentro de la jerarquía de `LOCALAPPDATA`.
 - `2026-09-24T10:52:04` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` reemplazando la verificación directa dentro de la función por un chequeo robusto utilizando `is_safe_to_modify` para evitar efectos secundarios y asegurar que el sistema de archivos no sea alterado en rutas prohibidas.
 - `2026-09-24T10:50:08` **settings.py** (robustez ante casos límite): Se mejoró la resiliencia en la inicialización de `SETTINGS_DIR` envolviendo la resolución de rutas en un bloque try-except para manejar casos donde el entorno del sistema operativo pueda devolver resultados inesperados o inaccesibles, evitando así que una falla en el inicio impida la carga de la aplicación.
-- `2026-09-24T10:41:39` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de las heurísticas de archivo incorporando un chequeo de existencia previo (`entry.is_file()`) y manejando explícitamente excepciones de permisos o archivos bloqueados durante la inspección de metadatos, evitando que una entrada inaccesible silencie el resto del escaneo.

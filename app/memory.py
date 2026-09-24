@@ -37,7 +37,8 @@ from safety import is_protected_path, is_safe_to_modify
 if TYPE_CHECKING:
     from ctypes import wintypes
 else:
-    wintypes = None
+    class wintypes:
+        HANDLE = ctypes.c_void_p
 
 # Tipos semánticos para evitar confusión de unidades en cálculos aritméticos:
 BytesValue = NewType("BytesValue", int)
@@ -181,10 +182,6 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     available = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))
     return MemorySnapshot(total=total, available=BytesValue(min(available, total)), cached=metrics.get("Cached", BytesValue(0)))
 
-def _extract_numeric_val(text: str) -> int:
-    """Extrae solo dígitos de una cadena para conversión segura."""
-    return int("".join(c for c in text if c.isdigit()) or 0)
-
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """Procesa el CSV de PowerShell y retorna los N procesos con mayor consumo."""
     if not raw_csv_text: return []
@@ -280,9 +277,9 @@ def _get_process_path(pid: int) -> Optional[Path]:
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
     if not handle: return None
-    psapi = ctypes.windll.psapi
-    buf = ctypes.create_unicode_buffer(260)
     try:
+        psapi = ctypes.windll.psapi
+        buf = ctypes.create_unicode_buffer(260)
         if psapi.GetModuleFileNameExW(handle, None, buf, 260) > 0:
             p = Path(buf.value).resolve(strict=False)
             if p.is_absolute() and not is_protected_path(str(p)):
@@ -312,7 +309,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not is_safe: return False, err or "Verificación fallida."
 
     kernel32 = ctypes.windll.kernel32
-    proc_handle = wintypes.HANDLE(kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid))
+    proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
     if not proc_handle: return False, "Acceso denegado al proceso."
     try:
         if not psapi.EmptyWorkingSet(proc_handle):
