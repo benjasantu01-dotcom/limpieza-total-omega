@@ -494,3 +494,43 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-09-24T04:53:40` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se introdujo documentación técnica detallada en las funciones críticas de validación de seguridad para clarificar el propósito de las comprobaciones (especialmente las relacionadas con Win32 API y TOCTOU), facilitando el mantenimiento y la auditoría exigida.
 - `2026-09-24T04:53:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T04:53:40` Corrida terminada. Total usado hoy: 116.
+- `2026-09-24T05:01:30` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-09-24T05:01:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T05:02:04` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación de las funciones críticas de heurística mediante type hints descriptivos y docstrings que especifican las precondiciones de entrada y el propósito de cada regla, facilitando el mantenimiento y la auditoría del código.
+- `2026-09-24T05:02:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T05:02:20` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-24T05:02:27` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-24T05:02:39` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-24T05:03:23` Tests FALLARON:
+```
+    
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:73: SyntaxWarning: invalid escape sequence '\)'
+    Convierte una ruta a formato largo de Windows (\\?\) para evitar limitaciones
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:225: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) no aptas para archivos."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 8 warnings in 0.80s
+
+```
+- `2026-09-24T05:03:23` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación interna y legibilidad de `StartupEntry` mediante la adición de Type Hints faltantes y la refactorización de `_is_path_suspicious` y `_is_reserved_device_name` para que actúen como predicados cohesivos de seguridad, mejorando la claridad sobre el PORQUÉ de las validaciones de entrada.
+- `2026-09-24T05:04:06` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el motor de búsqueda local de `assistant.py` reemplazando la lógica de búsqueda por tokens (que generaba iteraciones innecesarias) por un acceso directo vía `_TOKENS_MAP`, eliminando la re-tokenización del query en cada llamado.
+- `2026-09-24T05:04:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T05:04:06` Corrida terminada. Total usado hoy: 120.

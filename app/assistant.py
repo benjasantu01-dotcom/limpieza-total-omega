@@ -583,8 +583,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     
     # Búsqueda directa optimizada
     for word in _TOKEN_REGEX.findall(q_sanitized.lower()):
-        handler = _TOKENS_MAP.get(word)
-        if handler:
+        if handler := _TOKENS_MAP.get(word):
             return handler(context, question)
             
     cuerpo = _format_problem_message(

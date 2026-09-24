@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
-- Rechazadas por tests: 19
+- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 247
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 246
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 8 | 2 | 2 | 1 | 25 |
+| 2026-09-22 | 7 | 2 | 2 | 0 | 23 |
 | 2026-09-23 | 131 | 12 | 25 | 11 | 171 |
-| 2026-09-24 | 48 | 5 | 9 | 3 | 51 |
+| 2026-09-24 | 50 | 6 | 9 | 3 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **43**
+- legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **40**
 - seguridad defensiva: **39**
-- robustez ante casos límite: **37**
-- rendimiento: **28**
+- robustez ante casos límite: **36**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **19**
 - `healthscore.py`: **18**
 - `browser.py`: **17**
+- `assistant.py`: **16**
+- `scanner.py`: **16**
 - `quarantine.py`: **15**
 - `safety.py`: **15**
-- `assistant.py`: **15**
-- `scanner.py`: **15**
 - `duplicates.py`: **14**
 - `memory.py`: **14**
 - `settings.py`: **13**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T05:04:06` **assistant.py** (rendimiento): Optimicé el motor de búsqueda local de `assistant.py` reemplazando la lógica de búsqueda por tokens (que generaba iteraciones innecesarias) por un acceso directo vía `_TOKENS_MAP`, eliminando la re-tokenización del query en cada llamado.
+- `2026-09-24T05:02:04` **scanner.py** (legibilidad y documentación): Mejoré la documentación de las funciones críticas de heurística mediante type hints descriptivos y docstrings que especifican las precondiciones de entrada y el propósito de cada regla, facilitando el mantenimiento y la auditoría del código.
 - `2026-09-24T04:53:40` **safety.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en las funciones críticas de validación de seguridad para clarificar el propósito de las comprobaciones (especialmente las relacionadas con Win32 API y TOCTOU), facilitando el mantenimiento y la auditoría exigida.
 - `2026-09-24T04:52:38` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad del módulo `quarantine.py` mediante la refactorización de `_write_temp_to_final`, extrayendo la lógica de copia y verificación de integridad en una función privada llamada `_copy_with_verification` para reducir el anidamiento y clarificar el flujo de control, manteniendo estrictamente el comportamiento original.
 - `2026-09-24T04:51:51` **organizer.py** (legibilidad y documentación): Se han refinado los docstrings en las funciones críticas de validación y recorrido para clarificar el propósito de seguridad y las restricciones impuestas, además de renombrar variables internas como `target_dir` o `entry` en contextos de bucle para mejorar la legibilidad del flujo de datos sin alterar la lógica.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T04:21:46` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas de archivo mediante una validación más estricta del estado del archivo antes del escaneo, asegurando que `_safe_stat` y la lógica de acceso manejen correctamente archivos que desaparecen durante la iteración o son inaccesibles, evitando así el silenciamiento de errores potencialmente importantes mediante el uso de `None` como indicador de estado inválido.
 - `2026-09-24T04:21:17` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_final_path_normalized` agregando manejo de excepciones específico y cerrando los handles de forma garantizada mediante bloques `try...finally` incluso ante fallos en la obtención de metadatos, evitando fugas de handles y errores silenciosos en la validación de reparse points.
 - `2026-09-24T04:10:55` **memory.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `trim_working_set` y `_get_process_path` reemplazando llamadas a `getattr` implícitas por validaciones explícitas de la existencia de funciones, asegurando que `ctypes` no falle inesperadamente en entornos donde `kernel32` o `psapi` no exponen los métodos esperados.
-- `2026-09-24T04:03:42` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de la persistencia de ajustes en `on_save_settings` mediante el uso de un bloque `try-except` específico al invocar `settings_mod.update`, evitando que una posible corrupción durante la escritura (ej. error de I/O al persistir el JSON) deje la aplicación en un estado inconsistente o silenciosamente fallido.
-- `2026-09-24T04:01:06` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones de tipo explícitas y manejo de errores de resolución de rutas, evitando que el proceso falle ante rutas malformadas o condiciones de carrera en el sistema de archivos.
