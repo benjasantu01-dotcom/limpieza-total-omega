@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 33
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 243
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 244
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 87 | 11 | 16 | 9 | 137 |
-| 2026-09-24 | 104 | 8 | 17 | 9 | 106 |
+| 2026-09-23 | 84 | 11 | 16 | 9 | 136 |
+| 2026-09-24 | 105 | 8 | 17 | 10 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
-- seguridad defensiva: **38**
+- robustez ante casos límite: **37**
 - manejo de errores y validación de entradas: **36**
-- robustez ante casos límite: **36**
 - rendimiento: **35**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,17 +35,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **17**
 - `scanner.py`: **17**
 - `duplicates.py`: **16**
-- `safety.py`: **15**
-- `settings.py`: **14**
+- `memory.py`: **14**
+- `safety.py`: **14**
 - `branding.py`: **13**
-- `memory.py`: **13**
 - `quarantine.py`: **13**
+- `settings.py`: **13**
 - `organizer.py`: **9**
-- `startup.py`: **7**
+- `startup.py`: **6**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T10:32:14` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` añadiendo una validación explícita para evitar que una entrada con `pid` negativo o una cadena mal formada (como un `ws` vacío o no numérico) provoque excepciones silenciosas o procesamientos incorrectos, asegurando que el parser sea resiliente a datos de entrada imprevistos.
 - `2026-09-24T10:21:10` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante casos límite de I/O y permisos, añadiendo un manejo de excepciones más granular en `os.scandir` para asegurar que un error al listar una subcarpeta no detenga la exploración de todo el árbol de directorios.
 - `2026-09-24T10:19:47` **branding.py** (robustez ante casos límite): Se ha robustecido el manejo de rutas en `save_logo_svg` y se han añadido verificaciones de sanidad en las funciones de renderizado para evitar excepciones silenciosas ante valores de entrada malformados (NaN/Infinito).
 - `2026-09-24T10:10:41` **assistant.py** (robustez ante casos límite): Mejoré la robustez ante estados inesperados de configuración al implementar un mecanismo de validación de esquema en `_parse_config` y asegurar la integridad de las métricas durante la carga masiva en `SystemContext.ingest`, evitando que valores nulos o tipos incorrectos resulten en un contexto "vacío" pero funcionalmente inestable.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T09:29:41` **settings.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los validadores internos en `_Validators` para explicar las reglas de negocio, y extraje la lógica de validación de `_load_impl` para mejorar la legibilidad y el mantenimiento.
 - `2026-09-24T09:19:23` **quarantine.py** (legibilidad y documentación): Mejora la documentación técnica y legibilidad mediante la actualización de los docstrings en las funciones críticas de aislamiento y validación, explicando explícitamente el flujo de seguridad y las garantías de integridad.
 - `2026-09-24T09:18:41` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más descriptivos y precisos en las funciones de validación y seguridad, detallando el "porqué" de las restricciones (como el límite de 260 caracteres o la protección de rutas UNC) para asegurar que futuros cambios no comprometan la robustez actual.
-- `2026-09-24T09:09:05` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones clave, expandiendo los docstrings para explicar la lógica de normalización y añadiendo breves notas técnicas sobre el propósito de las constantes y la estructura de datos, facilitando así la legibilidad y el mantenimiento.

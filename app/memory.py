@@ -192,7 +192,10 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         parts = line.split(",", 2)
         if len(parts) < 3: continue
         try:
-            pid, ws = _extract_numeric_val(parts[1]), _extract_numeric_val(parts[2])
+            pid_raw = "".join(c for c in parts[1] if c.isdigit())
+            ws_raw = "".join(c for c in parts[2] if c.isdigit())
+            if not pid_raw or not ws_raw: continue
+            pid, ws = int(pid_raw), int(ws_raw)
             if pid > 0 and pid not in seen_pids and ws < MAX_VALID_PROCESS_MEM:
                 seen_pids.add(pid)
                 results.append(ProcessMemory(parts[0].strip("'\" "), pid, BytesValue(ws)))
