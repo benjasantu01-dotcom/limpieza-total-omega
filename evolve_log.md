@@ -650,3 +650,11 @@ assert not {'replace'}
 - `2026-09-24T06:38:27` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se ha añadido un filtro de saneamiento estricto en el método `_safe_get_entry_value` para eliminar caracteres no imprimibles y se ha centralizado la validación de seguridad de rutas en `on_stage` y `on_quarantine_duplicates` para asegurar que ningún archivo se procese sin pasar previamente por `is_safe_path`, fortaleciendo la defensa ante posibles inyecciones o rutas maliciosas.
 - `2026-09-24T06:38:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T06:38:27` Corrida terminada. Total usado hoy: 156.
+- `2026-09-24T06:44:46` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-09-24T06:45:17` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `_get_process_path` para evitar fugas de información o manipulaciones inesperadas al validar la integridad de la ruta antes de devolverla, utilizando `is_protected_path` para prevenir la resolución de rutas de sistema, lo cual refuerza el cumplimiento de las reglas de seguridad defensiva al tratar con identificadores de procesos.
+- `2026-09-24T06:45:42` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-24T06:46:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T06:47:10` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad de `_atomic_isolate_file` añadiendo una validación estricta de `is_safe_to_modify` sobre el directorio destino antes de realizar la copia, garantizando que el sandbox no haya sido alterado o movido a una ubicación insegura durante la ejecución.
+- `2026-09-24T06:47:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-24T06:47:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T06:47:16` Corrida terminada. Total usado hoy: 160.

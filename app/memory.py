@@ -154,7 +154,6 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
 def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValue:
     """Extrae dígitos de una cadena y los convierte a BytesValue de forma segura."""
     if not value: return BytesValue(0)
-    # Optimización: buscar solo el bloque numérico inicial si es posible
     clean_val = "".join(c for c in value if c.isdigit())
     return BytesValue(int(clean_val) * multiplier) if clean_val else BytesValue(0)
 
@@ -278,13 +277,15 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[Path]:
     buf = ctypes.create_unicode_buffer(260)
     if psapi.GetModuleFileNameExW(proc_handle, None, buf, 260) > 0:
         p = Path(buf.value).resolve(strict=False)
-        return p if p.is_absolute() else None
+        # Seguridad: validamos que no sea ruta de sistema antes de retornar
+        if p.is_absolute() and not is_protected_path(str(p)):
+            return p
     return None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]:
     """Verifica si un proceso es candidato seguro para llamar a EmptyWorkingSet."""
     exec_path = _get_process_path(proc_handle)
-    if not exec_path or is_protected_path(str(exec_path)) or not is_safe_to_modify(str(exec_path)):
+    if not exec_path or not is_safe_to_modify(str(exec_path)):
         return False, "Acceso no autorizado o ruta protegida."
     exit_code = ctypes.c_ulong()
     if not ctypes.windll.kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
