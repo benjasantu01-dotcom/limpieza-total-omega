@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 36
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 248
 
@@ -16,30 +16,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 10 | 4 | 4 | 2 | 26 |
+| 2026-09-22 | 8 | 4 | 2 | 2 | 26 |
 | 2026-09-23 | 131 | 12 | 25 | 11 | 171 |
-| 2026-09-24 | 42 | 5 | 7 | 3 | 51 |
+| 2026-09-24 | 45 | 5 | 8 | 3 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **40**
+- legibilidad y documentación: **40**
 - seguridad defensiva: **39**
 - robustez ante casos límite: **37**
-- legibilidad y documentación: **37**
-- rendimiento: **30**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
+- `healthscore.py`: **18**
 - `browser.py`: **17**
-- `healthscore.py`: **17**
-- `safety.py`: **15**
 - `assistant.py`: **15**
 - `scanner.py`: **15**
-- `settings.py`: **14**
 - `quarantine.py`: **14**
-- `duplicates.py`: **13**
-- `memory.py`: **13**
+- `safety.py`: **14**
+- `duplicates.py`: **14**
+- `memory.py`: **14**
+- `settings.py`: **13**
 - `branding.py`: **11**
 - `organizer.py`: **10**
 - `startup.py`: **6**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T04:42:57` **memory.py** (legibilidad y documentación): Se introdujo documentación explicativa en las funciones críticas de la API de Win32 dentro de `trim_working_set` y sus ayudantes, aclarando las restricciones de seguridad que garantizan el cumplimiento de las reglas del proyecto al manipular procesos.
+- `2026-09-24T04:42:09` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y mantenibilidad de `healthscore.py` mediante docstrings detallados en las funciones de cálculo, aclarando explícitamente el contrato de cada una y la lógica de normalización.
+- `2026-09-24T04:41:41` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de los métodos de filtrado y hash en `duplicates.py`, clarificando el flujo de datos y el propósito de las heurísticas de seguridad mediante nuevos docstrings y una mejor estructura de comentarios en las operaciones de I/O, facilitando su mantenimiento como demo técnica.
 - `2026-09-24T04:32:45` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints detallados, descripciones de parámetros en los docstrings y la corrección de una inconsistencia en el manejo de tipos del heap, asegurando una mayor claridad sobre la estructura de datos que viaja en `SummaryData`.
 - `2026-09-24T04:32:33` **browser.py** (legibilidad y documentación): Se ha refactorizado `_sum_directory_recursive` para separar la lógica de escaneo (iteración) de la lógica de filtrado y acumulación, mejorando la legibilidad mediante la extracción del bloque de procesamiento de entradas a una función auxiliar `_process_entry`, cumpliendo con el enfoque de documentación y claridad estructural.
 - `2026-09-24T04:31:26` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_is_safe_text_structure` para reducir la complejidad ciclomática y mejorar la claridad del filtrado de seguridad, integrando los diversos regex en un único bloque lógico documentado.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T04:00:36` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` capturando excepciones específicas en la resolución de rutas relativas y en la iteración del sistema de archivos, previniendo fallos ante nombres de archivo mal formados o cambios de estado durante el escaneo.
 - `2026-09-24T03:52:10` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_handler_wrapper` y los métodos `ingest` de `SystemContext` para asegurar que fallos en la ingesta o procesamiento de datos de entrada no propaguen excepciones inesperadas hacia la UI, validando explícitamente los tipos antes de la asignación.
 - `2026-09-24T02:30:24` **startup.py** (seguridad defensiva): Se ha robustecido el filtrado en `parse_registry_csv` añadiendo una validación temprana contra `is_protected_path` tanto en la ruta original como en la resuelta antes de crear cualquier objeto `StartupEntry`, impidiendo que rutas críticas del sistema lleguen a ser procesadas.
-- `2026-09-24T02:29:51` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` aplicando `ensure_safe_to_modify` antes de cualquier operación de escritura sobre el archivo principal o el respaldo, evitando así el uso de `is_safe_to_modify` que, siendo booleano, podría fallar silenciosamente en escenarios de permisos complejos donde se requiere una validación estricta que lance excepciones ante riesgos detectados.
-- `2026-09-24T02:29:08` **scanner.py** (seguridad defensiva): Se ha añadido una validación explícita para asegurar que la ruta a escanear no sea un punto de reanálisis (Junction o Symlink) antes de entrar en `os.scandir`, reforzando la seguridad defensiva contra la fuga de contexto fuera de la carpeta objetivo.
-- `2026-09-24T02:20:36` **safety.py** (seguridad defensiva): Se ha implementado una protección adicional en `ensure_safe_to_modify` para detectar si el sistema de archivos actual es de solo lectura a nivel de volumen (`DRIVE_REMOTE` o `DRIVE_CDROM` ya estaban cubiertos, pero se añade un chequeo explícito mediante el flag `FILE_READ_ONLY_VOLUME` de la API de Windows) antes de permitir cualquier operación de modificación, reforzando la integridad del disco ante cambios accidentales.

@@ -123,28 +123,28 @@ if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula salud de archivos basura: penaliza volúmenes superiores al límite."""
+    """Normaliza salud de basura: 1.0 es 0MB, 0.0 es el límite definido."""
     return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula salud de seguridad: evalúa amenazas directas y advertencias heurísticas."""
+    """Normaliza salud de seguridad: penaliza hallazgos (5%) y advertencias (25%) por unidad."""
     penalization = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
     return _clamp(1.0 - _clamp(penalization, 0.0, 1.0))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula salud de memoria: normaliza según el % de RAM libre disponible."""
+    """Normaliza salud de memoria: ratio basado en % de RAM disponible sobre el umbral."""
     return _clamp(float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula salud de disco: normaliza según el % de espacio libre disponible."""
+    """Normaliza salud de disco: ratio basado en % de espacio libre sobre el umbral."""
     return _clamp(float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula salud de almacenamiento: penaliza el tamaño de archivos redundantes."""
+    """Normaliza salud de almacenamiento duplicado: 1.0 es 0MB, 0.0 es el límite definido."""
     return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
-    """Calcula salud de arranque: penaliza programas excesivos en el inicio."""
+    """Normaliza salud de arranque: penaliza linealmente por cada programa extra."""
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
 _PIPELINE: Final[List[PipelineEntry]] = [

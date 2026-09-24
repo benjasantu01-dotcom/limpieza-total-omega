@@ -329,7 +329,11 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]:
-    """Verifica si un proceso es candidato seguro para llamar a EmptyWorkingSet."""
+    """
+    Verifica si un proceso es candidato seguro para llamar a EmptyWorkingSet.
+    La seguridad se valida contrastando la ruta del ejecutable contra la lista
+    de protección del sistema definida en `safety.py`.
+    """
     exec_path = _get_process_path(proc_handle)
     if not exec_path or is_protected_path(str(exec_path)) or not is_safe_to_modify(str(exec_path)):
         return False, "Acceso no autorizado o ruta protegida del sistema."
@@ -340,7 +344,10 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]
     return (exit_code.value == STILL_ACTIVE_EXIT_CODE), None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Ejecuta la API EmptyWorkingSet tras validar la seguridad del proceso."""
+    """
+    Ejecuta la API nativa `EmptyWorkingSet` de Win32 tras validar la seguridad
+    del proceso objetivo mediante `OpenProcess` con máscaras de acceso reducidas.
+    """
     if not _is_windows: return False, "Operación solo soportada en Windows."
     try:
         target_pid = int(pid)
@@ -354,6 +361,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not is_safe: return False, err or "Verificación de seguridad fallida."
         psapi = ctypes.windll.psapi
         if not hasattr(psapi, "EmptyWorkingSet"): return False, "Función de sistema no disponible."
+        # Se invoca EmptyWorkingSet para reducir el conjunto de trabajo sin cerrar el proceso.
         if not psapi.EmptyWorkingSet(proc_handle): 
             if kernel32.GetLastError() == ERROR_INVALID_PARAMETER:
                 return False, "El proceso ya no existe."
