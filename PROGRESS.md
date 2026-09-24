@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 39
+- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Rechazadas por tests: 21
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 242
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 43 | 6 | 10 | 4 | 63 |
+| 2026-09-22 | 41 | 6 | 9 | 4 | 62 |
 | 2026-09-23 | 131 | 12 | 25 | 11 | 171 |
-| 2026-09-24 | 12 | 2 | 4 | 2 | 8 |
+| 2026-09-24 | 15 | 3 | 4 | 2 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **42**
-- seguridad defensiva: **35**
 - rendimiento: **35**
-- robustez ante casos límite: **29**
+- seguridad defensiva: **33**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `healthscore.py`: **18**
+- `browser.py`: **17**
+- `healthscore.py`: **17**
 - `quarantine.py`: **16**
-- `browser.py`: **16**
 - `safety.py`: **15**
 - `scanner.py`: **15**
 - `settings.py`: **14**
+- `assistant.py`: **14**
 - `duplicates.py`: **14**
-- `assistant.py`: **13**
 - `memory.py`: **13**
-- `organizer.py`: **12**
-- `branding.py`: **10**
+- `branding.py`: **11**
+- `organizer.py`: **11**
 - `startup.py`: **7**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T01:19:24` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en `_get_kernel32` y `_is_system_hidden` para evitar que fallos imprevistos en la carga de librerías del sistema detengan el escaneo de navegadores.
+- `2026-09-24T01:19:07` **branding.py** (robustez ante casos límite): Se introdujo una validación defensiva en `save_logo_svg` para prevenir el desbordamiento de memoria ante intentos de renderizado con tamaños extremos, garantizando que el parámetro `size` se mantenga dentro de un rango físico razonable antes de cualquier operación de I/O.
+- `2026-09-24T01:18:28` **assistant.py** (robustez ante casos límite): Se ha robustecido el motor local ante datos inesperados en el contexto (métricas `NaN` o `inf`) al procesar los `active_problems`, garantizando que la app no falle al intentar formatear mensajes con valores no numéricos.
 - `2026-09-24T01:00:35` **quarantine.py** (rendimiento): Optimicé `list_items` y `purge_all` para evitar lecturas recurrentes y repetitivas del sistema de archivos mediante el uso de un cacheo local del contenido del directorio de cuarentena, reduciendo la complejidad de las operaciones masivas de O(N*M) a O(N+M).
 - `2026-09-24T00:48:05` **healthscore.py** (rendimiento): Optimicé el rendimiento del Pipeline reemplazando `dict.get()` y iteraciones redundantes en `summarize` y `compute_score` por acceso directo y pre-cálculo de estructuras, minimizando llamadas a funciones dentro de los bucles críticos.
 - `2026-09-24T00:47:36` **duplicates.py** (rendimiento): Optimizé la recolección de candidatos en `_collect_candidates` para evitar llamadas redundantes a `stat()` y `is_safe_to_modify()` mediante el uso de `os.scandir` (que ya expone los atributos del sistema de archivos en Windows), reduciendo significativamente las llamadas al sistema y mejorando la velocidad de escaneo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T00:07:03` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados en los métodos privados y la clarificación de las responsabilidades de las estructuras de datos, facilitando el mantenimiento y la comprensión de la lógica de escaneo.
 - `2026-09-24T00:06:16` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings técnicos explícitos a las funciones de filtrado y resolución de rutas, además de renombrar `real_base_str` a `base_abs_str` para mejorar la consistencia semántica en las validaciones de seguridad.
 - `2026-09-24T00:05:44` **branding.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en el bloque de constantes `_PALETTE_MAP` y `FONT_SIZES` para clarificar la jerarquía visual y el propósito de cada token, facilitando el mantenimiento del sistema de diseño (Design System) del proyecto.
-- `2026-09-23T12:54:17` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo una validación explícita mediante `path.resolve()` antes de comparar con `base_root_str`, previniendo así posibles ataques de "path traversal" donde rutas relativas con `..` podrían escapar del directorio base del escaneo.
-- `2026-09-23T12:41:34` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_get_process_path` validando que la ruta resuelta resida bajo una unidad de disco lógica, evitando el procesamiento de rutas de dispositivos o volúmenes arbitrarios que podrían evadir los chequeos de `safety.py`.
-- `2026-09-23T12:40:13` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de salud limitando el impacto de posibles errores en `message_factory` mediante un bloque `try-except` más estricto y garantizando que los mensajes no superen límites de longitud, evitando inyecciones de texto incontrolado o errores en el reporte final.

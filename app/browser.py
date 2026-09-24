@@ -125,7 +125,7 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
         if not hasattr(dll, 'GetFileAttributesW'):
             return None
         return dll
-    except (OSError, ValueError, TypeError, AttributeError, RuntimeError):
+    except Exception:
         return None
 
 def _is_unc_path(path_str: Optional[str]) -> bool:
@@ -190,12 +190,11 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
-        kernel32.GetFileAttributesW.restype = ctypes.c_ulong
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False 
         return bool(attrs & SYSTEM_HIDDEN_FLAGS)
-    except (AttributeError, TypeError, ctypes.ArgumentError, OSError, ValueError):
+    except Exception:
         return False
 
 

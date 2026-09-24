@@ -1458,3 +1458,44 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-09-24T01:08:16` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
 - `2026-09-24T01:08:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T01:08:16` Corrida terminada. Total usado hoy: 28.
+- `2026-09-24T01:17:11` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-09-24T01:17:44` Tests FALLARON:
+```
+L_SCAN_CACHE is not None:
+            return _FULL_SCAN_CACHE
+    
+        seen: Set[Tuple[str, str]] = set()
+        unique: List[StartupEntry] = []
+    
+        for entry in itertools.chain(entries_from_folders(), entries_from_registry()):
+            key = (entry.name.lower(), entry.command.lower())
+            if key not in seen:
+                seen.add(key)
+                unique.append(entry)
+    
+        _FULL_SCAN_CACHE = unique
+>       return unique_entries
+               ^^^^^^^^^^^^^^
+E       NameError: name 'unique_entries' is not defined
+
+app/startup.py:374: NameError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:219: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) no aptas para archivos."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_list_startup_entries_returns_a_list - NameError: name 'unique_entries' is not defined
+1 failed, 298 passed, 4 warnings in 1.44s
+
+```
+- `2026-09-24T01:17:44` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé `list_startup_entries` eliminando la recreación innecesaria de objetos y mejorando la eficiencia del bucle de consolidación al usar un conjunto de tuplas directamente sobre los datos crudos antes de filtrar.
+- `2026-09-24T01:18:28` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se ha robustecido el motor local ante datos inesperados en el contexto (métricas `NaN` o `inf`) al procesar los `active_problems`, garantizando que la app no falle al intentar formatear mensajes con valores no numéricos.
+- `2026-09-24T01:19:07` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se introdujo una validación defensiva en `save_logo_svg` para prevenir el desbordamiento de memoria ante intentos de renderizado con tamaños extremos, garantizando que el parámetro `size` se mantenga dentro de un rango físico razonable antes de cualquier operación de I/O.
+- `2026-09-24T01:19:24` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores de E/S en `_get_kernel32` y `_is_system_hidden` para evitar que fallos imprevistos en la carga de librerías del sistema detengan el escaneo de navegadores.
+- `2026-09-24T01:19:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T01:19:24` Corrida terminada. Total usado hoy: 32.

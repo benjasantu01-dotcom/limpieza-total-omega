@@ -140,7 +140,7 @@ class ProblemCriterion(NamedTuple):
         """
         val: float = ctx.get_metric(self.metric_key, DEFAULT_METRIC_VAL)
         
-        if val < 0 or not self._evaluate_metric(val):
+        if val < 0 or not math.isfinite(val) or not self._evaluate_metric(val):
             return None
             
         try:

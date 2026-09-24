@@ -102,9 +102,6 @@ UI_FONT_HEADER_SIZE: Final[int] = 23
 UI_FONT_BODY_SIZE: Final[int] = 12
 
 # Mapeo maestro de colores.
-# - Background/Surface: Definen la jerarquía de profundidad.
-# - Accent/Success/Warning/Danger: Tokens de estado semántico.
-# - Text: Variaciones para gestión de jerarquía visual.
 _PALETTE_MAP: Final[dict[str, ColorHex]] = {
     "background": "#0a0e17", "surface": "#141b2d", "surface_alt": "#1e2740",
     "surface_hover": "#28324f", "card": "#182135", "accent": "#00f0c0",
@@ -343,21 +340,22 @@ def logo_svg(size: int = 128) -> str:
   <text x="64" y="98" font-family="{UI_FONT_FAMILY}" font-size="26" font-weight="{UI_FONT_BOLD}" fill="{C_BACKGROUND}" text-anchor="middle">&#937;</text>
 </svg>"""
 
-def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
-    """Guarda el logo SVG tras validar la seguridad de la ruta destino."""
+def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
+    """Guarda el logo SVG tras validar la seguridad de la ruta destino y los límites de tamaño."""
     if not isinstance(destination, (str, Path)): 
         return None
+    
+    # Prevenir desbordamiento de memoria ante intentos de renderizado extremo
+    safe_size = max(16, min(1024, int(size)))
         
     try:
         path = Path(destination)
-        # Validación de seguridad defensiva: no modificar áreas protegidas
         if is_protected_path(path) or not is_safe_to_modify(path):
             return None
         
         target = path.resolve()
         parent = target.parent
         
-        # Validar carpeta padre antes de crearla
         if is_protected_path(parent):
             return None
             
@@ -366,7 +364,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         elif not parent.is_dir():
             return None
             
-        target.write_text(logo_svg(), encoding="utf-8")
+        target.write_text(logo_svg(safe_size), encoding="utf-8")
         return target if target.exists() else None
         
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError): 
