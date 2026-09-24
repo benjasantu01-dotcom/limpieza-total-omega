@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 241
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 244
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 72 | 11 | 15 | 8 | 102 |
-| 2026-09-24 | 117 | 10 | 19 | 11 | 139 |
+| 2026-09-23 | 69 | 11 | 15 | 7 | 102 |
+| 2026-09-24 | 118 | 10 | 19 | 11 | 142 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
 - seguridad defensiva: **44**
+- legibilidad y documentación: **41**
 - robustez ante casos límite: **40**
 - rendimiento: **35**
-- manejo de errores y validación de entradas: **26**
+- manejo de errores y validación de entradas: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **19**
 - `scanner.py`: **18**
 - `browser.py`: **18**
-- `diskreport.py`: **17**
-- `duplicates.py`: **16**
-- `assistant.py`: **16**
+- `healthscore.py`: **18**
+- `assistant.py`: **17**
+- `diskreport.py`: **16**
+- `duplicates.py`: **15**
 - `memory.py`: **14**
 - `safety.py`: **14**
 - `settings.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T12:45:44` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de datos externos en `SystemContext` mediante un chequeo de tipos más estricto y el uso de `getattr(..., None)` para evitar excepciones inesperadas al procesar configuraciones o métricas parcialmente corruptas.
 - `2026-09-24T11:30:56` **startup.py** (seguridad defensiva): Se ha mejorado `startup.py` añadiendo una comprobación explícita mediante `is_protected_path` en `entries_from_folders` para descartar directorios sospechosos antes de iniciar el escaneo recursivo, cumpliendo con la política de seguridad defensiva sobre rutas críticas.
 - `2026-09-24T11:22:05` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en `save` reemplazando el uso de `os.remove` por `os.replace` (o una lógica más robusta si fuera necesario) y, fundamentalmente, añadiendo una validación explícita de `is_safe_to_modify` para el archivo `bak_path` antes de intentar cualquier operación de renombrado, asegurando que el proceso de rotación de archivos sea coherente con las protecciones del sistema.
 - `2026-09-24T11:21:48` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_run_file_heuristics` y `scan_file` para evitar que una heurística mal implementada (ej. un `check_fn` que acceda al disco de forma inesperada o lance una excepción no capturada) comprometa el bucle de escaneo, centralizando el manejo de errores y validando la integridad del resultado antes de añadirlo a la lista.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T10:40:02` **quarantine.py** (robustez ante casos límite): Se introdujo una validación robusta de espacio en disco en el proceso de aislamiento (`_ensure_disk_space`) para detectar si el sistema de archivos del destino está montado como solo lectura antes de intentar cualquier operación de escritura, previniendo errores de `OSError` no manejados durante la creación de archivos.
 - `2026-09-24T10:32:14` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` añadiendo una validación explícita para evitar que una entrada con `pid` negativo o una cadena mal formada (como un `ws` vacío o no numérico) provoque excepciones silenciosas o procesamientos incorrectos, asegurando que el parser sea resiliente a datos de entrada imprevistos.
 - `2026-09-24T10:21:10` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante casos límite de I/O y permisos, añadiendo un manejo de excepciones más granular en `os.scandir` para asegurar que un error al listar una subcarpeta no detenga la exploración de todo el árbol de directorios.
-- `2026-09-24T10:19:47` **branding.py** (robustez ante casos límite): Se ha robustecido el manejo de rutas en `save_logo_svg` y se han añadido verificaciones de sanidad en las funciones de renderizado para evitar excepciones silenciosas ante valores de entrada malformados (NaN/Infinito).

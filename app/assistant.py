@@ -300,9 +300,8 @@ class SystemContext:
 
     def get_metric(self, key: str, default: float) -> float:
         """Obtiene una métrica del contexto, aplicando un valor por defecto si no existe o es inválida."""
-        if not hasattr(self, key): return default
-        val = getattr(self, key)
-        if not isinstance(val, (int, float)) or not math.isfinite(val):
+        val = getattr(self, key, None)
+        if val is None or not isinstance(val, (int, float)) or not math.isfinite(val):
             return default
         return float(val)
 
