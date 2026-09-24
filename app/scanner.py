@@ -199,8 +199,9 @@ class Scanner:
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack)
             elif self._is_relevant_extension(entry.name):
-                # Usamos el objeto DirEntry directamente para evitar llamadas redundantes
-                self._run_file_heuristics(Path(entry.path), entry)
+                # Validar existencia antes de procesar para evitar carreras de archivos (Race condition)
+                if os.path.exists(entry.path):
+                    self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, AttributeError):
             pass
 
@@ -235,18 +236,18 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if directory is None: return []
     path_str: str = str(directory).strip()
     if not path_str or not _is_valid_path_structure(path_str): return []
-    base_path = Path(path_str)
     
     try:
-        if not base_path.is_absolute() or not base_path.exists() or not base_path.is_dir(): return []
-        if base_path.is_symlink(): return []
-        root_input: Path = base_path.resolve()
-    except (OSError, RuntimeError): return []
+        base_path = Path(path_str).resolve()
+        if not base_path.exists() or not base_path.is_dir() or base_path.is_symlink():
+            return []
+    except (OSError, RuntimeError): 
+        return []
     
-    if is_protected_path(root_input): return []
-    scanner = Scanner(base_root=root_input)
-    directory_stack: List[str] = [str(root_input)]
-    scanner.seen.add(str(root_input).lower())
+    if is_protected_path(base_path): return []
+    scanner = Scanner(base_root=base_path)
+    directory_stack: List[str] = [str(base_path)]
+    scanner.seen.add(str(base_path).lower())
     while directory_stack:
         current_dir = directory_stack.pop()
         try:

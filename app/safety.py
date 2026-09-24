@@ -81,11 +81,11 @@ def _to_long_path(path_str: str) -> str:
 @lru_cache(maxsize=1024)
 def _get_file_attrs(path_str: str) -> int:
     """Consulta centralizada de atributos Win32 mediante GetFileAttributesW para reducir syscalls."""
-    if os.name != 'nt': return 0
+    if os.name != 'nt' or not path_str: return 0
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         return attrs if attrs != 0xFFFFFFFF else 0
-    except (AttributeError, OSError, ctypes.ArgumentError):
+    except (AttributeError, OSError, ctypes.ArgumentError, TypeError):
         return 0
 
 class SafetyValidationErrorCode(IntEnum):
@@ -266,7 +266,7 @@ def _is_file_in_use(path_str: str) -> bool:
         if handle == -1: 
             return True
         kernel32.CloseHandle(handle)
-    except (OSError, PermissionError, AttributeError, ctypes.ArgumentError, Exception):
+    except (OSError, PermissionError, AttributeError, ctypes.ArgumentError, TypeError, Exception):
         return True
     return False
 

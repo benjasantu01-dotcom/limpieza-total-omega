@@ -266,11 +266,14 @@ def validate(raw_values: Any) -> AppSettings:
     if not _is_dict(raw_values): return DEFAULTS.copy()
     
     config = DEFAULTS.copy()
-    for key_str, raw_val in raw_values.items():
-        if (key_enum := _KEY_TO_ENUM.get(key_str)):
-            validated_val = _VALIDATOR_MAP[key_enum].func(key_enum, raw_val)
-            if validated_val is not None:
-                config[key_enum.value] = validated_val
+    try:
+        for key_str, raw_val in raw_values.items():
+            if (key_enum := _KEY_TO_ENUM.get(key_str)):
+                validated_val = _VALIDATOR_MAP[key_enum].func(key_enum, raw_val)
+                if validated_val is not None:
+                    config[key_enum.value] = validated_val
+    except Exception:
+        return DEFAULTS.copy()
     return config
 
 @lru_cache(maxsize=4)
@@ -279,12 +282,10 @@ def _load_impl(ruta: Path) -> AppSettings:
     try:
         if not ruta.exists(): return DEFAULTS.copy()
         
-        # Integridad estricta: verificar que sea un archivo regular seguro
         st = ruta.lstat()
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): 
             return DEFAULTS.copy()
         
-        # Pre-chequeo de seguridad: asegurar que la ruta sea modificable (no bloqueada)
         ensure_safe_to_modify(ruta)
         if not is_safe_to_modify(str(ruta)): return DEFAULTS.copy()
         
@@ -321,11 +322,17 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Aplica consistencia forzada de tipos y reglas de negocio post-validación."""
-    final = {k: settings.get(k, v) for k, v in DEFAULTS.items()}
-    
-    if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
-        final["asistente_activado"] = False
-    return final
+    try:
+        final = {k: settings.get(k, v) for k, v in DEFAULTS.items()}
+        # Verificación explícita de tipos críticos post-coerción
+        if not isinstance(final["asistente_activado"], bool): final["asistente_activado"] = False
+        if not isinstance(final["duplicados_tamano_minimo_kb"], int): final["duplicados_tamano_minimo_kb"] = 64
+        
+        if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
+            final["asistente_activado"] = False
+        return final
+    except Exception:
+        return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """Guarda los ajustes usando escritura atómica: temp -> rename, con validación previa."""
