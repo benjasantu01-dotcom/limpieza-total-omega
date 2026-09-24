@@ -103,20 +103,23 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(path: Path) -> bool:
+def _is_excluded_path(entry: os.DirEntry) -> bool:
     """
-    Determina si una ruta debe ser excluida del análisis por razones de seguridad
-    o por la presencia de caracteres de ofuscación (RTL/bidireccionales).
+    Determina si una ruta debe ser excluida del análisis por razones de seguridad,
+    presencia de caracteres de ofuscación o si es un enlace/reparse point.
     """
     try:
-        if any(c in path.name for c in SUSPICIOUS_CHARS):
+        if any(c in entry.name for c in SUSPICIOUS_CHARS):
             return True
             
+        # Detectar symlinks y puntos de reparse (junctions en Windows)
+        if entry.is_symlink():
+            return True
+            
+        path = Path(entry.path)
         if is_protected_path(path):
             return True
             
-        if path.is_symlink():
-            return True
     except (OSError, PermissionError, AttributeError):
         return True
     return False
@@ -250,19 +253,18 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        path_obj = Path(entry.path)
-                        if skip_protected and _is_excluded_path(path_obj):
+                        if skip_protected and _is_excluded_path(entry):
                             continue
                         
-                        st = entry.stat(follow_symlinks=False)
                         if entry.is_dir(follow_symlinks=False):
+                            st = entry.stat(follow_symlinks=False)
                             inode: Inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(path_obj)
+                                stack.append(Path(entry.path))
                                 
                         elif entry.is_file(follow_symlinks=False):
-                            yield path_obj, st.st_size
+                            yield Path(entry.path), entry.stat(follow_symlinks=False).st_size
                             
                     except (PermissionError, OSError):
                         continue

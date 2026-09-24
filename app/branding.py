@@ -345,27 +345,19 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     if not isinstance(destination, (str, Path)): 
         return None
     
-    # Prevenir desbordamiento de memoria ante intentos de renderizado extremo
     safe_size = max(16, min(1024, int(size)))
         
     try:
         path = Path(destination)
-        if is_protected_path(path) or not is_safe_to_modify(path):
-            return None
+        # Se requiere validación estricta de escritura
+        ensure_safe_to_modify(path)
         
-        target = path.resolve()
-        parent = target.parent
-        
-        if is_protected_path(parent):
-            return None
-            
+        parent = path.resolve().parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
-        elif not parent.is_dir():
-            return None
             
-        target.write_text(logo_svg(safe_size), encoding="utf-8")
-        return target if target.exists() else None
+        path.write_text(logo_svg(safe_size), encoding="utf-8")
+        return path if path.exists() else None
         
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError): 
         return None

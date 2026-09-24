@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 239
+- Sin respuesta de la IA (error o límite): 235
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-22 | 36 | 6 | 8 | 4 | 56 |
+| 2026-09-22 | 36 | 6 | 8 | 4 | 52 |
 | 2026-09-23 | 131 | 12 | 25 | 11 | 171 |
-| 2026-09-24 | 20 | 4 | 5 | 3 | 12 |
+| 2026-09-24 | 24 | 4 | 5 | 3 | 12 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,27 +26,31 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **37**
 - rendimiento: **35**
-- seguridad defensiva: **28**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
+- `browser.py`: **18**
 - `healthscore.py`: **18**
-- `browser.py`: **17**
+- `assistant.py`: **15**
 - `quarantine.py`: **15**
 - `safety.py`: **15**
 - `scanner.py`: **15**
-- `assistant.py`: **14**
 - `duplicates.py`: **14**
 - `memory.py`: **14**
 - `settings.py`: **14**
-- `branding.py`: **11**
+- `branding.py`: **12**
 - `organizer.py`: **11**
 - `startup.py`: **6**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T02:00:02` **diskreport.py** (seguridad defensiva): Se ha reforzado la seguridad defensiva en `walk_files` y `_is_excluded_path` añadiendo una validación explícita para detectar puntos de reparse (junctions/reparse points) mediante `entry.is_symlink()` y los atributos de archivo, evitando así la recursión infinita o el acceso no deseado a volúmenes montados fuera del árbol de directorios de interés.
+- `2026-09-24T01:59:49` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_browser_path` añadiendo una validación explícita mediante `is_safe_to_modify` y `is_protected_path` sobre la ruta final construida, previniendo que el módulo intente siquiera procesar rutas que, aunque residan nominalmente en `LOCALAPPDATA`, hayan sido manipuladas para apuntar a zonas protegidas o fuera de scope.
+- `2026-09-24T01:59:18` **branding.py** (seguridad defensiva): Se reforzó `save_logo_svg` aplicando `ensure_safe_to_modify` para el archivo de destino, garantizando que cualquier operación de escritura sea validada explícitamente por el motor de seguridad antes de intentar acceder al sistema de archivos, reemplazando una validación booleana más laxa.
+- `2026-09-24T01:58:39` **assistant.py** (seguridad defensiva): Se endureció la validación de seguridad `_is_safe_text_structure` añadiendo una comprobación explícita para evitar que se filtren rutas de red UNC (que empiezan con `\\`), reforzando el cumplimiento de la política de no exponer estructuras de archivos sensibles.
 - `2026-09-24T01:49:37` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante condiciones de concurrencia y fallos de escritura mediante la incorporación de `os.fsync` previo al renombrado y validación explícita de `is_safe_to_modify` sobre el archivo de respaldo (`.bak`), asegurando que no se sobrescriban o dañen archivos críticos bajo bloqueos de sistema o interrupciones.
 - `2026-09-24T01:49:05` **scanner.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_is_safe_entry` para validar que `entry.path` no sea una ruta truncada o malformada que podría causar errores en `is_protected_path` o futuras operaciones, utilizando `Path.is_absolute()` y capturando posibles excepciones en la resolución de rutas.
 - `2026-09-24T01:48:33` **safety.py** (robustez ante casos límite): Se introdujo una verificación de "path traversal" mediante `Path.resolve()` contra la ruta normalizada antes de cualquier operación, garantizando que el acceso al sistema de archivos sea estrictamente absoluto y esté saneado ante posibles intentos de escaparse del directorio raíz definido (o del entorno de ejecución).
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T01:00:35` **quarantine.py** (rendimiento): Optimicé `list_items` y `purge_all` para evitar lecturas recurrentes y repetitivas del sistema de archivos mediante el uso de un cacheo local del contenido del directorio de cuarentena, reduciendo la complejidad de las operaciones masivas de O(N*M) a O(N+M).
 - `2026-09-24T00:48:05` **healthscore.py** (rendimiento): Optimicé el rendimiento del Pipeline reemplazando `dict.get()` y iteraciones redundantes en `summarize` y `compute_score` por acceso directo y pre-cálculo de estructuras, minimizando llamadas a funciones dentro de los bucles críticos.
 - `2026-09-24T00:47:36` **duplicates.py** (rendimiento): Optimizé la recolección de candidatos en `_collect_candidates` para evitar llamadas redundantes a `stat()` y `is_safe_to_modify()` mediante el uso de `os.scandir` (que ya expone los atributos del sistema de archivos en Windows), reduciendo significativamente las llamadas al sistema y mejorando la velocidad de escaneo.
-- `2026-09-24T00:46:35` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios sustituyendo el paso de `visited` por parámetro (que solo prevenía ciclos en una rama) por una estrategia global en `global_memo` para evitar re-escaneos redundantes de subdirectorios compartidos entre navegadores, reduciendo drásticamente las llamadas a `os.scandir` en escaneos de perfiles múltiples.
-- `2026-09-24T00:37:05` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la clase `StartupEntry` mediante la aplicación de docstrings detallados (siguiendo el estilo Google) y la clarificación de la lógica interna de validación, sin alterar la funcionalidad.
-- `2026-09-24T00:27:51` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la incorporación de docstrings específicos para las clases de datos y funciones de soporte, clarificando la intención detrás de las heurísticas y los límites del sistema para facilitar el mantenimiento y la auditoría del código.
-- `2026-09-24T00:21:16` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de la estructura `MEMORYSTATUSEX` añadiendo comentarios técnicos sobre los campos, y se han ajustado los nombres y type hints en las funciones de conversión de memoria para clarificar su propósito y evitar errores de desbordamiento en entornos de 32/64 bits.

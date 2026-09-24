@@ -354,7 +354,10 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
         return Path()
     try:
         target = real_base.joinpath(*rel_str.split("\\"))
+        # Validación de seguridad: debe ser una ruta local, dentro del base, y no protegida.
         if not str(target.resolve()).startswith(str(real_base)):
+            return Path()
+        if not is_safe_to_modify(target) or is_protected_path(target):
             return Path()
         return target if len(str(target)) < MAX_PATH_LEN else Path()
     except (TypeError, ValueError, OSError):

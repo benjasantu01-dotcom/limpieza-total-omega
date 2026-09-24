@@ -394,6 +394,9 @@ def _is_safe_text_structure(text: str) -> bool:
     if not text: return True
     if any(ord(c) < 32 and c not in '\n\r\t' for c in text): return False
     
+    # Prevenir rutas de red UNC y rutas absolutas
+    if text.startswith(("\\\\", "//", "UNC")): return False
+    
     try:
         p = Path(text)
         if p.is_absolute(): return False
