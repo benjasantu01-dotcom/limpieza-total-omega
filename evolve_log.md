@@ -927,3 +927,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-24T09:02:37` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `browser.py` documentando los parámetros complejos de las funciones críticas (`_sum_directory_recursive` y `_should_skip_entry`) mediante docstrings estructurados, clarificando el propósito de cada argumento y el manejo de dependencias externas.
 - `2026-09-24T09:02:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T09:02:37` Corrida terminada. Total usado hoy: 212.
+- `2026-09-24T09:07:32` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-09-24T09:07:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T09:08:07` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `diskreport.py` añadiendo docstrings detallados en las funciones de procesamiento crítico (`walk_files` y `_collect_summary_data`), explicando la lógica de recursión y el uso de estructuras de datos (heap) para asegurar que futuros colaboradores entiendan el impacto en memoria y rendimiento.
+- `2026-09-24T09:08:37` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Documenté con docstrings claros y tipado explícito el flujo de trabajo en `_decide_hash_strategy_and_process`, clarificando la jerarquía de los pasos de deduplicación para mejorar la mantenibilidad y legibilidad del motor principal.
+- `2026-09-24T09:09:05` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones clave, expandiendo los docstrings para explicar la lógica de normalización y añadiendo breves notas técnicas sobre el propósito de las constantes y la estructura de datos, facilitando así la legibilidad y el mantenimiento.
+- `2026-09-24T09:09:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T09:10:10` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-24T09:10:17` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-24T09:10:30` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-24T09:10:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T09:10:30` Corrida terminada. Total usado hoy: 216.

@@ -89,6 +89,7 @@ __all__ = [
 ]
 
 # Umbrales base para normalizar métricas a un rango de salud [0, 1]
+# Representan el punto donde la salud se considera "cero" para fines de cálculo.
 _LIMIT_JUNK_MB: Final[float] = 5000.0          
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
 _LIMIT_STARTUP_COUNT: Final[int] = 20          
@@ -123,7 +124,7 @@ if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Normaliza salud de basura: 1.0 es 0MB, 0.0 es el límite definido."""
+    """Normaliza salud de basura: calcula la relación lineal entre el tamaño hallado y el límite."""
     return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
@@ -140,11 +141,11 @@ def score_disk(free_percent: float | int) -> NormalizedRatio:
     return _clamp(float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Normaliza salud de almacenamiento duplicado: 1.0 es 0MB, 0.0 es el límite definido."""
+    """Normaliza salud de duplicados: determina el ratio de desperdicio basado en límites definidos."""
     return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
-    """Normaliza salud de arranque: penaliza linealmente por cada programa extra."""
+    """Normaliza salud de arranque: penaliza linealmente por cada programa detectado."""
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
 _PIPELINE: Final[List[PipelineEntry]] = [
@@ -191,7 +192,6 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que no existan valores no numéricos o infinitos en las métricas."""
-        # Se verifica explícitamente math.isnan para capturar casos de datos corruptos
         vals = [self.junk_mb, self.suspicious_count, self.suspicious_warnings, 
                 self.memory_available_percent, self.disk_free_percent, 
                 self.duplicate_mb, self.startup_count, self.quarantined_count]
@@ -241,7 +241,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Pipeline de evaluación: procesa métricas, calcula pesos y genera recomendaciones."""
+    """Pipeline principal: procesa métricas, calcula pesos y genera recomendaciones."""
     if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
     
@@ -288,7 +288,6 @@ def summarize(result: HealthResult | None) -> List[str]:
         return ["Error: Informe de salud no disponible."]
     
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-    # Acceso directo a items iterables pre-calculados
     bd = result.breakdown
     for area, maximo in WEIGHTS.items():
         val = bd.get(area, 0)

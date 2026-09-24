@@ -242,8 +242,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre el sistema de archivos de forma iterativa empleando un stack LIFO.
-    Utiliza `os.scandir` para optimizar el acceso a metadatos de archivos.
+    Recorre el árbol de directorios de forma iterativa empleando un stack LIFO para evitar
+    desbordamiento de pila en estructuras profundas.
+    
+    Implementa detección de ciclos de directorios (usando inodos) y validación de seguridad
+    por cada entrada para prevenir el acceso a rutas restringidas o enlaces simbólicos malintencionados.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -328,7 +331,11 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Realiza una pasada única (O(n)) sobre el árbol de directorios para recolectar estadísticas
-    agregadas y mantener el heap de archivos más grandes, manejando errores de lectura.
+    agregadas.
+    
+    Mantiene un min-heap de tamaño `limit` para los archivos más grandes, logrando una complejidad
+    espacial O(k) donde k es el límite, optimizando la gestión de recursos al no mantener la lista
+    completa de archivos en memoria.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -346,6 +353,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             stat.count += 1
             
             if limit > 0 and size_bytes > 0:
+                # Mantener solo los N archivos más pesados usando un heap
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (size_bytes, path))
                 elif size_bytes > top_heap[0][0]:
