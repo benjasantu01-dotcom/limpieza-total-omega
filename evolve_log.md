@@ -885,3 +885,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-24T08:19:55` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-24T08:19:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T08:19:55` Corrida terminada. Total usado hoy: 196.
+- `2026-09-24T08:26:44` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-09-24T08:27:14` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_path_inside_base` y `_resolve_browser_path` añadiendo validación explícita para evitar errores de tipo `None` o `Path` vacío en operaciones críticas, asegurando que la lógica de seguridad no se vea vulnerada por entradas inesperadas.
+- `2026-09-24T08:27:43` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-24T08:27:44` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T08:27:47` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-24T08:28:23` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones de tipo explícitas y la centralización del manejo de errores al comparar rutas, evitando excepciones inesperadas cuando el sistema de archivos deniega el acceso a un path durante la comparación de `keeper`.
+- `2026-09-24T08:28:37` ➖ Sin cambios en healthscore.py (enfoque: manejo de errores y validación de entradas). Motivo: Se reforzó la robustez de `compute_score` agregando una validación explícita de `metrics` mediante `metrics.is_finite` antes de procesar el pipeline, asegurando que los cálculos aritméticos no operen sobre datos corruptos o valores `NaN`.
+- `2026-09-24T08:28:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T08:28:37` Corrida terminada. Total usado hoy: 200.

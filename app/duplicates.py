@@ -320,7 +320,7 @@ def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     (mtime, longitud_de_la_ruta). Se prefiere el archivo más antiguo.
     """
     try:
-        if not path.exists():
+        if not path.exists() or not is_safe_to_modify(path):
             return None
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
@@ -333,12 +333,12 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     Selecciona el 'keeper' (archivo que NO se debe borrar) basado en la
     antigüedad del archivo y, como criterio de desempate, la ruta más corta.
     """
-    if not group or not isinstance(group, DuplicateGroup) or not group.paths:
+    if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        if isinstance(p, Path) and p.exists() and is_safe_to_modify(p):
+        if isinstance(p, Path):
             if score := _calculate_keeper_heuristic(p):
                 candidates.append((score, p))
             
@@ -347,14 +347,16 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Convierte un grupo de duplicados a una representación amigable para la UI."""
-    if not group or not isinstance(group, DuplicateGroup) or not group.paths:
+    if not isinstance(group, DuplicateGroup) or not group.paths:
         return ["Error: Grupo inválido o vacío"]
         
     keeper = suggest_keeper(group)
-    try:
-        keeper_resolved = keeper.resolve(strict=True) if keeper else None
-    except (OSError, RuntimeError):
-        keeper_resolved = None
+    keeper_resolved = None
+    if keeper:
+        try:
+            keeper_resolved = keeper.resolve(strict=True)
+        except (OSError, RuntimeError):
+            pass
     
     mb_t, mb_w = round(group.size_bytes / 1048576, 2), round(group.wasted_bytes / 1048576, 2)
     lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
@@ -366,7 +368,8 @@ def format_group(group: DuplicateGroup) -> List[str]:
             if not is_safe_to_modify(path):
                 lines.append(f"   [inaccesible] {path}")
             else:
-                is_keeper = (keeper_resolved is not None and path.resolve(strict=True) == keeper_resolved)
+                path_resolved = path.resolve(strict=True)
+                is_keeper = (keeper_resolved is not None and path_resolved == keeper_resolved)
                 label = 'conservar' if is_keeper else 'duplicado'
                 lines.append(f"   [{label}] {path}")
         except (OSError, RuntimeError):

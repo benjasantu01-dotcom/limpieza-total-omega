@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 242
+- Rechazadas por guardia de seguridad: 35
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 115 | 11 | 24 | 10 | 148 |
-| 2026-09-24 | 77 | 8 | 12 | 5 | 94 |
+| 2026-09-23 | 114 | 11 | 23 | 10 | 146 |
+| 2026-09-24 | 79 | 8 | 12 | 6 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
 - robustez ante casos límite: **42**
-- legibilidad y documentación: **40**
+- legibilidad y documentación: **39**
 - rendimiento: **35**
-- manejo de errores y validación de entradas: **29**
+- manejo de errores y validación de entradas: **31**
 
 ## Mejoras aceptadas por archivo
 
+- `browser.py`: **19**
 - `healthscore.py`: **19**
-- `browser.py`: **18**
 - `diskreport.py`: **18**
 - `scanner.py`: **17**
 - `assistant.py`: **17**
+- `duplicates.py`: **15**
 - `memory.py`: **15**
 - `safety.py`: **15**
 - `settings.py`: **14**
-- `duplicates.py`: **14**
 - `quarantine.py`: **14**
 - `branding.py`: **12**
-- `organizer.py`: **11**
+- `organizer.py`: **10**
 - `startup.py`: **6**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-24T08:28:23` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones de tipo explícitas y la centralización del manejo de errores al comparar rutas, evitando excepciones inesperadas cuando el sistema de archivos deniega el acceso a un path durante la comparación de `keeper`.
+- `2026-09-24T08:27:14` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_path_inside_base` y `_resolve_browser_path` añadiendo validación explícita para evitar errores de tipo `None` o `Path` vacío en operaciones críticas, asegurando que la lógica de seguridad no se vea vulnerada por entradas inesperadas.
 - `2026-09-24T08:19:31` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ProblemCriterion.format_if_triggered` y `SystemContext.ingest` para prevenir excepciones ante datos malformados, capturando errores de formato de forma explícita y validando la existencia de la clave antes de operar, cumpliendo con el enfoque de manejo de errores y validación.
 - `2026-09-24T06:57:02` **startup.py** (seguridad defensiva): Se endureció la validación de rutas en `parse_registry_csv` para prevenir el "path traversal" o la inyección de rutas mediante el uso de `os.path.abspath` y una verificación explícita de sub-directorio contra `Path.cwd()` o directorios prohibidos, garantizando que el comando no escape de límites esperados antes de ser procesado.
 - `2026-09-24T06:56:47` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_load_impl` añadiendo una comprobación explícita mediante `ensure_safe_to_modify` antes de la apertura del archivo de configuración, asegurando que la ruta no sea un enlace simbólico malintencionado o un punto de reparse, y se integró un manejo más robusto ante archivos de configuración que no sean archivos regulares (como dispositivos o pipes) usando `st_mode`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T06:26:18` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir ataques de trayectoria (path traversal) mediante la validación estricta de la ruta destino antes de crear directorios o escribir archivos, asegurando que el destino final se mantenga dentro de los límites de seguridad esperados mediante `path.resolve()`.
 - `2026-09-24T06:25:39` **assistant.py** (seguridad defensiva): Mejoré la seguridad en el manejo de archivos al inyectar `is_protected_path` en `_is_safe_text_structure` para asegurar que ningún texto analizado por el asistente sea una ruta protegida del sistema, evitando así posibles intentos de manipulación de contexto mediante entradas maliciosas.
 - `2026-09-24T06:15:58` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante archivos corruptos o maliciosos agregando un chequeo de integridad basado en `os.stat` antes de la lectura, asegurando que solo se procesen archivos planos y no directorios ni enlaces, previniendo errores de acceso inesperados.
-- `2026-09-24T06:15:17` **safety.py** (robustez ante casos límite): Se añadió una validación específica para rutas UNC (`\\servidor\recurso`) y de red en `_validate_boundary_conditions` para evitar bloqueos por latencia o permisos inesperados de red, y se centralizó el chequeo de "path traversal" usando `resolve()` para evitar comparaciones de strings inconsistentes frente a enlaces simbólicos o inconsistencias de caja (case-insensitivity).
-- `2026-09-24T06:11:12` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la manipulación de archivos añadiendo una validación de rutas cruzadas entre unidades (cross-device move) y manejando explícitamente errores de acceso al verificar el espacio en disco, evitando que el proceso de limpieza falle silenciosamente si el destino de cuarentena se encuentra en un sistema de archivos distinto al origen.

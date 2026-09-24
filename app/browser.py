@@ -223,6 +223,7 @@ def directory_size(path: Optional[OSPath]) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_abs_str: str, is_junction_fn: JunctionChecker) -> bool:
+    if not isinstance(candidate, Path): return False
     try:
         if not candidate.exists() or not candidate.is_dir(): return False
         real_candidate = str(candidate.resolve(strict=True))
@@ -234,12 +235,13 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str, is_junction_fn: Jun
 
 
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
+    if not isinstance(real_base, Path) or not isinstance(rel_str, str):
+        return Path()
     try:
         target = real_base.joinpath(*rel_str.split("\\"))
         if not target.exists():
             return Path()
         
-        # Validación de seguridad defensiva antes de procesar
         target_abs = str(target.resolve())
         if not target_abs.startswith(str(real_base)):
             return Path()
@@ -259,6 +261,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     found: List[BrowserCache] = []
     
     for base in raw_bases:
+        if not isinstance(base, Path): continue
         try:
             real_base_path = base.resolve(strict=True)
             base_abs_str = str(real_base_path)
