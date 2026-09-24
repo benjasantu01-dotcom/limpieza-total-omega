@@ -498,11 +498,20 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
 
 
 def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
-    """Verifica disponibilidad de espacio en disco con un margen de seguridad."""
+    """Verifica disponibilidad de espacio y capacidad de escritura."""
     if not dest_dir.exists():
         raise FileNotFoundError(f"Directorio inexistente: {dest_dir}")
     if not os.access(dest_dir, os.W_OK):
         raise PermissionError(f"Sin permisos de escritura: {dest_dir}")
+    
+    # Intento de validación de sistema de archivos de solo lectura
+    test_file = dest_dir / f".test_{uuid.uuid4().hex}"
+    try:
+        test_file.touch()
+        test_file.unlink()
+    except OSError:
+        raise OSError("Sistema de archivos del destino marcado como solo lectura.")
+
     usage = shutil.disk_usage(dest_dir)
     margin = max(int(required_size * 0.05), 5 * 1024 * 1024)
     if usage.free < (required_size + margin):

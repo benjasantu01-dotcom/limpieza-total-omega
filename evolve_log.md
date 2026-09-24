@@ -1013,3 +1013,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-24T10:32:25` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-09-24T10:32:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T10:32:25` Corrida terminada. Total usado hoy: 248.
+- `2026-09-24T10:39:20` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-09-24T10:40:02` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta de espacio en disco en el proceso de aislamiento (`_ensure_disk_space`) para detectar si el sistema de archivos del destino está montado como solo lectura antes de intentar cualquier operación de escritura, previniendo errores de `OSError` no manejados durante la creación de archivos.
+- `2026-09-24T10:40:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T10:40:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-24T10:41:27` ➖ Sin cambios en safety.py (enfoque: robustez ante casos límite). Motivo: Se ha añadido una validación estricta en `ensure_safe_to_modify` para detectar rutas que contienen componentes con espacios en blanco o puntos finales, los cuales son vectores comunes para eludir filtros de seguridad en Windows o causar comportamientos inesperados en las APIs de manejo de archivos.
+- `2026-09-24T10:41:39` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de las heurísticas de archivo incorporando un chequeo de existencia previo (`entry.is_file()`) y manejando explícitamente excepciones de permisos o archivos bloqueados durante la inspección de metadatos, evitando que una entrada inaccesible silencie el resto del escaneo.
+- `2026-09-24T10:41:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T10:41:39` Corrida terminada. Total usado hoy: 252.
