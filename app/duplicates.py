@@ -246,7 +246,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         if entry.path in visited_files:
                             continue
                             
-                        # Validación defensiva extra: comprobamos seguridad antes de stat
                         p_entry = Path(entry.path)
                         if not is_safe_to_modify(p_entry) or (skip_protected and is_protected_path(p_entry)):
                             continue
@@ -257,10 +256,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             
                         size_to_paths_map[st.st_size].append(p_entry)
                         visited_files.add(entry.path)
-                    except (FileNotFoundError, OSError, PermissionError):
+                    except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
-            return
+            pass
 
     for item in directories:
         if (root := _resolve_and_verify_root(item)):
@@ -282,24 +281,16 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
     Ejecuta el pipeline de hashing jerárquico para confirmar duplicados.
-    
-    Flujo:
-    1. Si size <= 64KB: Usa hash completo directamente.
-    2. Si size > 64KB: Usa hash parcial (64KB) para reducir I/O. Los 
-       candidatos que colisionan en hash parcial pasan a hash completo.
     """
     if not paths or size < 0:
         return []
 
-    # Estrategia de performance: evitar lectura completa de archivos grandes
     if size <= PARTIAL_READ_BYTES:
         final_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, hash_file)
     else:
-        # Pre-filtro: reducir el conjunto de trabajo mediante bloques iniciales
         partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
         final_groups = {}
         for candidate_subset in partial_groups.values():
-            # Validación pesada: verificar solo los candidatos que ya colisionaron
             full_hash_groups: Dict[str, List[Path]] = _group_paths_by_hash(candidate_subset, hash_file)
             final_groups.update(full_hash_groups)
             

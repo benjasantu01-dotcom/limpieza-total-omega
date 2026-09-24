@@ -348,14 +348,14 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     if not isinstance(destination, (str, Path)): 
         return None
     
-    path = Path(destination).resolve()
-    if not is_safe_to_modify(path):
-        return None
-    
-    safe_size = max(16, min(1024, int(size)))
-        
     try:
+        path = Path(destination).resolve()
+        if is_protected_path(path) or not is_safe_to_modify(path):
+            return None
+        
+        safe_size = max(16, min(1024, int(size)))
         ensure_safe_to_modify(path)
+        
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(logo_svg(safe_size), encoding="utf-8")
         return path if path.exists() else None

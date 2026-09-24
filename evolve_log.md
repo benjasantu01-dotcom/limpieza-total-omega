@@ -991,3 +991,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-24T10:10:41` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez ante estados inesperados de configuración al implementar un mecanismo de validación de esquema en `_parse_config` y asegurar la integridad de las métricas durante la carga masiva en `SystemContext.ingest`, evitando que valores nulos o tipos incorrectos resulten en un contexto "vacío" pero funcionalmente inestable.
 - `2026-09-24T10:10:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-24T10:10:41` Corrida terminada. Total usado hoy: 240.
+- `2026-09-24T10:18:58` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-09-24T10:19:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T10:19:47` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de rutas en `save_logo_svg` y se han añadido verificaciones de sanidad en las funciones de renderizado para evitar excepciones silenciosas ante valores de entrada malformados (NaN/Infinito).
+- `2026-09-24T10:20:15` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-24T10:20:53` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-09-24T10:20:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-24T10:21:10` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_collect_candidates` ante casos límite de I/O y permisos, añadiendo un manejo de excepciones más granular en `os.scandir` para asegurar que un error al listar una subcarpeta no detenga la exploración de todo el árbol de directorios.
+- `2026-09-24T10:21:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-24T10:21:10` Corrida terminada. Total usado hoy: 244.
