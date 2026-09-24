@@ -52,7 +52,9 @@ MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x100
 PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
-SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION
+# Abrimos solo para lectura inicialmente; la modificación se abre aparte
+SAFE_VALIDATION_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION 
+TRIM_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
 
 STILL_ACTIVE_EXIT_CODE: Final[int] = 259
 SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
@@ -273,28 +275,28 @@ def _is_system_process(pid: int) -> bool:
     """Verifica si el PID corresponde a un proceso crítico del SO o a la app actual."""
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
-def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[Path]:
-    """Resuelve la ruta completa del ejecutable asociado a un handle de proceso."""
-    if not proc_handle: return None
+def _get_process_path(pid: int) -> Optional[Path]:
+    """Resuelve la ruta completa del ejecutable asociado a un proceso."""
+    kernel32 = ctypes.windll.kernel32
+    handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
+    if not handle: return None
     psapi = ctypes.windll.psapi
     buf = ctypes.create_unicode_buffer(260)
     try:
-        if psapi.GetModuleFileNameExW(proc_handle, None, buf, 260) > 0:
+        if psapi.GetModuleFileNameExW(handle, None, buf, 260) > 0:
             p = Path(buf.value).resolve(strict=False)
             if p.is_absolute() and not is_protected_path(str(p)):
                 return p
     except (ctypes.ArgumentError, OSError): pass
+    finally: kernel32.CloseHandle(handle)
     return None
 
-def _is_safe_to_trim(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]:
+def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     """Verifica si un proceso es candidato seguro para llamar a EmptyWorkingSet."""
-    exec_path = _get_process_path(proc_handle)
+    exec_path = _get_process_path(pid)
     if not exec_path or not is_safe_to_modify(str(exec_path)):
         return False, "Acceso no autorizado o ruta protegida."
-    exit_code = ctypes.c_ulong()
-    if not ctypes.windll.kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
-        return False, "Imposible verificar estado."
-    return (exit_code.value == STILL_ACTIVE_EXIT_CODE), None
+    return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Ejecuta la API nativa `EmptyWorkingSet` de Win32."""
@@ -306,13 +308,14 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = ctypes.windll.psapi
     if not hasattr(psapi, "EmptyWorkingSet"): return False, "Función no disponible."
 
+    is_safe, err = _is_safe_to_trim(target_pid)
+    if not is_safe: return False, err or "Verificación fallida."
+
     kernel32 = ctypes.windll.kernel32
-    proc_handle = wintypes.HANDLE(kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid))
-    if not proc_handle: return False, "Acceso denegado."
+    proc_handle = wintypes.HANDLE(kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid))
+    if not proc_handle: return False, "Acceso denegado al proceso."
     try:
-        is_safe, err = _is_safe_to_trim(proc_handle)
-        if not is_safe: return False, err or "Verificación fallida."
         if not psapi.EmptyWorkingSet(proc_handle):
-            return False, "Operación denegada."
+            return False, "Operación denegada por el sistema."
         return True, f"Working set liberado. {TRIM_WARNING}"
     finally: kernel32.CloseHandle(proc_handle)
