@@ -234,23 +234,24 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        p_entry = Path(entry.path)
+                        # Validar seguridad antes de cualquier operación de stat o recursión
+                        if not is_safe_to_modify(p_entry):
+                            continue
+                            
                         if entry.is_dir(follow_symlinks=False):
-                            path_entry = Path(entry.path)
-                            if not is_junction(path_entry) and is_safe_to_modify(path_entry):
-                                _scan_dir(path_entry)
+                            if not is_junction(p_entry):
+                                _scan_dir(p_entry)
                             continue
                         
                         if entry.path in visited_files:
                             continue
                         
-                        # Captura del stat protegida por excepciones por si el archivo es eliminado
-                        # o los permisos cambian mientras se recorre el directorio.
                         st = entry.stat(follow_symlinks=False)
                         if st.st_size < min_size:
                             continue
                             
-                        p_entry = Path(entry.path)
-                        if not is_safe_to_modify(p_entry) or (skip_protected and is_protected_path(p_entry)):
+                        if (skip_protected and is_protected_path(p_entry)):
                             continue
                         if is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
                             continue

@@ -236,6 +236,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
+        
+        if skip_protected and is_protected_path(current_dir):
+            continue
+
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:

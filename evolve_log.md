@@ -884,3 +884,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-25T04:54:32` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-09-25T04:54:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T04:54:32` Corrida terminada. Total usado hoy: 116.
+- `2026-09-25T05:02:12` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-09-25T05:02:39` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-09-25T05:03:07` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `walk_files` implementando un chequeo de `is_protected_path` sobre `current_dir` antes de intentar iterar su contenido, previniendo así el acceso a subdirectorios protegidos que pudieran haberse omitido accidentalmente en el filtrado de entradas individuales.
+- `2026-09-25T05:03:34` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_collect_candidates` asegurando que la validación de `is_safe_to_modify` ocurra inmediatamente después de obtener la ruta de `entry.path` y antes de cualquier acceso posterior, previniendo el procesamiento de archivos que podrían haber sido movidos o reemplazados por enlaces simbólicos durante la iteración.
+- `2026-09-25T05:03:47` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_evaluate_rules` encapsulando la ejecución de `message_factory` en un bloque `try-except` más robusto y validando la integridad del resultado antes de procesarlo, previniendo que una fábrica de mensajes maliciosa o corrupta rompa el flujo de cálculo.
+- `2026-09-25T05:03:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T05:03:47` Corrida terminada. Total usado hoy: 120.
