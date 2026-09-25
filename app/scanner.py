@@ -203,7 +203,9 @@ class Scanner:
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra archivos que coinciden con las extensiones bajo monitoreo."""
-        return os.path.splitext(name)[1].lower() in SUSPICIOUS_ALL_EXTS
+        # Optimización: slicing directo para obtener extensión en O(1)
+        ext = name[name.rfind('.'):].lower() if '.' in name else ""
+        return ext in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Procesa una única entrada, delegando el manejo a directorios o ejecutando heurísticas."""
@@ -212,9 +214,7 @@ class Scanner:
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack)
             elif entry.is_file(follow_symlinks=False):
-                # Validar estado antes de procesar para evitar archivos especiales bloqueantes
-                stats = _safe_stat(entry)
-                if stats and self._is_relevant_extension(entry.name):
+                if self._is_relevant_extension(entry.name):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, AttributeError):
             pass

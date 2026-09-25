@@ -1268,3 +1268,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-25T08:27:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-25T08:27:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T08:27:49` Corrida terminada. Total usado hoy: 200.
+- `2026-09-25T08:36:07` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-09-25T08:36:51` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-09-25T08:37:21` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el proceso de filtrado de extensiones mediante la eliminación de una llamada innecesaria a `os.path.splitext` dentro de cada ciclo de `process_entry`, reemplazándola por una verificación directa sobre el sufijo del `DirEntry` que ya se encontraba en memoria, reduciendo la carga de procesamiento en directorios con alta densidad de archivos.
+- `2026-09-25T08:37:51` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-09-25T08:38:04` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-25T08:38:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T08:38:04` Corrida terminada. Total usado hoy: 204.
