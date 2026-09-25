@@ -1244,3 +1244,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-25T07:57:35` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Documenté el propósito de los validadores y el flujo de persistencia en `settings.py` mediante docstrings detallados, clarificando la lógica de "fallback a valores de fábrica" para mejorar la legibilidad y mantenibilidad del módulo.
 - `2026-09-25T07:57:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T07:57:35` Corrida terminada. Total usado hoy: 188.
+- `2026-09-25T08:05:33` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-09-25T08:06:06` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `parse_registry_csv`, extrayendo la lógica de filtrado y validación de una entrada de registro a un método privado `_is_valid_registry_entry`, lo que reduce la carga cognitiva del bucle principal y asegura un manejo de errores más robusto.
+- `2026-09-25T08:06:52` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé `local_answer` para realizar una única pasada sobre los tokens del usuario usando un conjunto (`set`) para la búsqueda de disparadores, eliminando el riesgo de iteraciones múltiples y mejorando la eficiencia de resolución en el bucle principal.
+- `2026-09-25T08:07:26` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-25T08:07:37` ➖ Sin cambios en browser.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de la detección de tamaños al reutilizar el objeto `kernel32` (WinDLL) durante toda la ejecución de `detect_profiles`, evitando la sobrecarga de múltiples llamadas a `ctypes.WinDLL` y validaciones repetidas en cada rama del árbol de archivos.
+- `2026-09-25T08:07:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T08:07:37` Corrida terminada. Total usado hoy: 192.

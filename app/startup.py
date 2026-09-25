@@ -286,6 +286,17 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
     return found_entries
 
 
+def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
+    """Valida si una entrada del registro debe ser procesada y almacenada."""
+    if not name or not cmd or cmd.startswith(r"\\") or cmd in seen or name.upper().startswith("PS"):
+        return False
+    try:
+        p_candidate = Path(cmd).expanduser()
+        return not (is_protected_path(p_candidate) or ".." in str(p_candidate))
+    except (ValueError, TypeError, OSError):
+        return False
+
+
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
     """Convierte la salida CSV de PowerShell en objetos de datos seguros."""
     if not isinstance(csv_text, str) or not csv_text.strip():
@@ -316,20 +327,9 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             name = "".join(c for c in str(val_name) if ord(c) >= 32).strip()
             cmd = "".join(c for c in str(val_cmd) if ord(c) >= 32).strip()
             
-            if not name or not cmd or cmd.startswith(r"\\") or cmd in seen_commands or name.upper().startswith("PS"):
-                continue
-            
-            try:
-                # Verificación explícita de seguridad antes de procesar
-                p_candidate = Path(cmd).expanduser()
-                if is_protected_path(p_candidate) or ".." in str(p_candidate):
-                    continue
-                    
-            except (ValueError, TypeError, OSError):
-                continue
-            
-            seen_commands.add(cmd)
-            parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
+            if _is_valid_registry_entry(name, cmd, seen_commands):
+                seen_commands.add(cmd)
+                parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
             
     except (csv.Error, OSError, ValueError, TypeError):
         return []
