@@ -260,21 +260,23 @@ def _is_offline(path_str: str) -> bool:
     return bool(_get_file_attrs(path_str) & Win32Attr.OFFLINE)
 
 @lru_cache(maxsize=1024)
-def _is_file_in_use(path_str: str) -> bool:
+def _is_file_locked_by_other_process(path_str: str) -> bool:
     """
-    Intenta abrir un handle en modo compartido para detectar bloqueos exclusivos de otros procesos.
-    Si CreateFileW retorna -1 (INVALID_HANDLE_VALUE), el archivo está bloqueado por el sistema/kernel.
+    Verifica concurrencia usando Win32 API.
+    Abre con GENERIC_READ y acceso compartido. Si falla con acceso denegado, está en uso exclusivo.
     """
-    if os.name != 'nt' or not isinstance(path_str, str) or not os.path.isabs(path_str):
-        return False
+    if os.name != 'nt': return False
     try:
         kernel32 = ctypes.windll.kernel32
-        handle = kernel32.CreateFileW(_to_long_path(path_str), 0x80000000, 0x00000007, None, 3, 0x00000080, None)
-        if handle == -1: 
-            return True
+        handle = kernel32.CreateFileW(
+            _to_long_path(path_str),
+            0x80000000, # GENERIC_READ
+            0x00000001 | 0x00000002 | 0x00000004, # FILE_SHARE_READ|WRITE|DELETE
+            None, 3, 0x00000080, None
+        )
+        if handle == -1: return True
         kernel32.CloseHandle(handle)
-    except (OSError, PermissionError, AttributeError, ctypes.ArgumentError, TypeError, Exception):
-        return True
+    except Exception: return True
     return False
 
 @lru_cache(maxsize=128)
@@ -311,7 +313,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _IntegrityCheck(ProtectionReason.KERNEL_LOCKED, lambda p, _: _is_kernel_managed(p)),
     _IntegrityCheck(ProtectionReason.READ_ONLY, lambda _, st: not bool(st.st_mode & stat.S_IWRITE)),
     _IntegrityCheck(ProtectionReason.VOLUME_READ_ONLY, lambda p, _: _is_volume_readonly(str(p))),
-    _IntegrityCheck(ProtectionReason.IN_USE, lambda p, _: _is_file_in_use(str(p))),
+    _IntegrityCheck(ProtectionReason.IN_USE, lambda p, _: _is_file_locked_by_other_process(str(p))),
     _IntegrityCheck(ProtectionReason.SYSTEM_HIDDEN, lambda p, _: _is_system_or_hidden(str(p))),
     _IntegrityCheck(ProtectionReason.OFFLINE, lambda p, _: _is_offline(str(p))),
     _IntegrityCheck(ProtectionReason.ENCRYPTED_OR_COMPRESSED, lambda p, _: _is_encrypted_or_compressed_or_sparse(str(p))),
@@ -646,7 +648,7 @@ def describe_protection(path: PathLike) -> str:
             if os.path.ismount(p): return f"'{p}' es un punto de montaje."
             if _is_readonly(str(p)): return f"'{p}' es solo lectura."
             if _is_volume_readonly(str(p)): return f"'{p}' pertenece a un volumen de solo lectura."
-            if _is_file_in_use(str(p)): return f"'{p}' en uso."
+            if _is_file_locked_by_other_process(str(p)): return f"'{p}' en uso."
             if _is_encrypted_or_compressed_or_sparse(str(p)): return f"'{p}' archivo cifrado, comprimido o disperso."
             if _is_offline(str(p)): return f"'{p}' archivo offline/nube."
             if _is_system_or_hidden(str(p)): return f"'{p}' atributo oculto/sistema/temporal."

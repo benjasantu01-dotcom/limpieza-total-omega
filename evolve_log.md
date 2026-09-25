@@ -823,3 +823,26 @@ FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - Nam
 - `2026-09-25T04:34:17` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-09-25T04:34:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T04:34:17` Corrida terminada. Total usado hoy: 108.
+- `2026-09-25T04:41:55` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-09-25T04:42:39` Tests FALLARON:
+```
+Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - AttributeError: module 'os' has no attribute 'O_BINARY'
+9 failed, 290 passed, 4 warnings in 1.63s
+
+```
+- `2026-09-25T04:42:39` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `_is_file_locked` para evitar falsos positivos y errores inesperados durante el chequeo de bloqueo, utilizando un manejo de excepciones más granular y asegurando el cierre del descriptor de archivo independientemente del resultado.
+- `2026-09-25T04:42:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-25T04:43:39` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se implementó la detección de concurrencia mediante `is_file_locked_by_other_process` usando `CreateFileW` con acceso compartido explícito, lo cual es más robusto para identificar archivos en uso por el sistema o procesos bloqueantes antes de intentar cualquier operación de escritura.
+- `2026-09-25T04:43:50` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de las heurísticas de archivo añadiendo un manejo de excepciones local en `_safe_stat` y validaciones adicionales en `check_recent_executable_in_downloads` para prevenir fallos silenciosos al procesar archivos cuyo `st_mtime` es inaccesible o inexistente debido a restricciones de acceso al sistema de archivos (CASES: permisos denegados o archivos temporales bloqueados).
+- `2026-09-25T04:43:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T04:43:50` Corrida terminada. Total usado hoy: 112.

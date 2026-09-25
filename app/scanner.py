@@ -102,9 +102,13 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     stats = _safe_stat(entry) if entry else None
-    if stats and hasattr(stats, 'st_mtime'):
-        if (now_ts - stats.st_mtime) < (LIMITS.recent_hours * 3600):
-            return Suspicion(path, f"Ejecutable reciente detectado (<{LIMITS.recent_hours}h)", "info")
+    if stats:
+        try:
+            mtime = stats.st_mtime
+            if (now_ts - mtime) < (LIMITS.recent_hours * 3600):
+                return Suspicion(path, f"Ejecutable reciente detectado (<{LIMITS.recent_hours}h)", "info")
+        except (AttributeError, ValueError):
+            return None
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
@@ -124,8 +128,12 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: fl
     Riesgo: Puede ser un intento de bypass de AV o una descarga incompleta/corrupta.
     """
     stats = _safe_stat(entry) if entry else None
-    if stats and hasattr(stats, 'st_size') and stats.st_size == 0:
-        return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
+    if stats:
+        try:
+            if stats.st_size == 0:
+                return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
+        except (AttributeError, ValueError):
+            return None
     return None
 
 # Registro centralizado de reglas heurísticas
