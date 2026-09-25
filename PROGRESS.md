@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 1 | 0 | 0 | 1 | 48 |
+| 2026-09-23 | 0 | 0 | 0 | 0 | 46 |
 | 2026-09-24 | 128 | 10 | 21 | 12 | 179 |
-| 2026-09-25 | 44 | 4 | 9 | 1 | 46 |
+| 2026-09-25 | 45 | 4 | 9 | 2 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **40**
-- seguridad defensiva: **38**
+- seguridad defensiva: **37**
+- robustez ante casos límite: **34**
 - manejo de errores y validación de entradas: **34**
-- robustez ante casos límite: **33**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **18**
+- `scanner.py`: **17**
 - `diskreport.py`: **16**
 - `assistant.py`: **16**
 - `browser.py`: **15**
+- `healthscore.py`: **15**
 - `memory.py`: **15**
 - `settings.py`: **15**
 - `duplicates.py`: **14**
-- `healthscore.py`: **14**
 - `branding.py`: **13**
 - `safety.py`: **13**
 - `quarantine.py`: **12**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T04:32:10` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics.validate` y `compute_score` ante valores extremos o métricas no inicializadas, asegurando que el motor de puntuación nunca colapse ante datos corruptos o fuera de rango.
 - `2026-09-25T04:23:14` **duplicates.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores en `_collect_candidates` y `group_by_size` para manejar la posibilidad de que archivos cambien o desaparezcan entre la llamada a `os.scandir` y el acceso `stat()`, evitando que una excepción de sistema interrumpa todo el proceso de escaneo.
 - `2026-09-25T04:23:03` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en `entry.stat()` y `entry.is_dir()`, asegurando que un único permiso denegado no detenga el escaneo completo de una unidad.
 - `2026-09-25T04:22:05` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y condiciones de carrera en el sistema de archivos mediante una validación estricta de la ruta, un chequeo de tipos preventivo y una gestión de excepciones más granular.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T03:42:05` **branding.py** (rendimiento): Se optimizó el acceso a la paleta mediante la eliminación de búsquedas de diccionario en tiempo de ejecución (`_PALETTE_MAP.get`) dentro de funciones críticas y repetitivas, reemplazándolas por constantes tipadas (`Final`), lo que reduce la carga de procesamiento en cada llamada a `color()`, `severity_color()` y `grade_color()`.
 - `2026-09-25T03:41:28` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la búsqueda de coincidencias mediante `set.intersection` (que es ineficiente al ser lineal respecto al número de tokens y palabras clave) por una búsqueda directa de O(1) usando los tokens del usuario como índices, además de consolidar la lógica de selección en una sola pasada.
 - `2026-09-25T03:31:55` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de heurística añadiendo docstrings que explican el contexto de seguridad de cada regla, se ha tipado explícitamente el retorno de los métodos de la clase `Scanner` y se ha normalizado la gestión de excepciones para mejorar la mantenibilidad del código bajo el enfoque de legibilidad.
-- `2026-09-25T03:31:23` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la actualización de los docstrings en las funciones críticas de validación de `safety.py`, clarificando los motivos técnicos (TOCTOU, Win32 API, integridad) detrás de cada chequeo para facilitar el mantenimiento y la auditoría.

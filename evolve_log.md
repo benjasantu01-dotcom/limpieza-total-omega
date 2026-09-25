@@ -814,3 +814,12 @@ FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - Nam
 - `2026-09-25T04:23:14` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una gestión robusta de errores en `_collect_candidates` y `group_by_size` para manejar la posibilidad de que archivos cambien o desaparezcan entre la llamada a `os.scandir` y el acceso `stat()`, evitando que una excepción de sistema interrumpa todo el proceso de escaneo.
 - `2026-09-25T04:23:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T04:23:14` Corrida terminada. Total usado hoy: 104.
+- `2026-09-25T04:31:39` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-09-25T04:32:10` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics.validate` y `compute_score` ante valores extremos o métricas no inicializadas, asegurando que el motor de puntuación nunca colapse ante datos corruptos o fuera de rango.
+- `2026-09-25T04:33:19` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una comprobación robusta mediante `is_safe_disk_operation` en `on_trim_process` y se consolidó la validación de seguridad de rutas en `on_restore_quarantine`, mitigando riesgos al procesar entradas de usuario (PIDs y IDs) que podrían apuntar a recursos no previstos o bloqueados.
+- `2026-09-25T04:33:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T04:33:35` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-25T04:34:08` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-25T04:34:17` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-25T04:34:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T04:34:17` Corrida terminada. Total usado hoy: 108.
