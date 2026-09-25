@@ -201,9 +201,7 @@ def _is_file_locked(path: Path) -> bool:
     if not path.exists():
         return True
     try:
-        # Abrir en modo lectura exclusiva para testear bloqueo
         with open(path, "rb") as f:
-            # En Windows, intentar obtener acceso de escritura para confirmar si es bloqueante
             try:
                 os.dup(f.fileno())
             except OSError:
@@ -221,7 +219,6 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
             return False
         resolved = path.resolve()
         
-        # Validaciones de seguridad pre-borrado
         is_valid_target = (
             resolved.exists() and 
             resolved.is_file() and 
@@ -232,16 +229,13 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
         if not is_valid_target:
             return False
             
-        # Validación opcional de integridad
         if expected_hash and _get_sha256(resolved) != expected_hash:
             return False
 
-        # El borrado requiere confirmación de seguridad explícita (lanza excepción si falla)
         ensure_safe_to_modify(resolved)
         
         if not _is_file_locked(resolved):
             path.unlink()
-            # Sincronización de sistema de archivos para asegurar persistencia
             try:
                 dir_fd = os.open(str(path.parent), os.O_RDONLY)
                 try: os.fsync(dir_fd)
@@ -316,7 +310,6 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         if is_protected_path(path):
             raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
         
-        # Validar via ensure antes de crear
         ensure_safe_to_modify(path)
         
         try:
@@ -648,6 +641,14 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Ejecuta el flujo completo de aislamiento, integrando validación y persistencia.
+
+    Args:
+        source: Ruta del archivo a poner en cuarentena.
+        reason: Motivo por el cual se aísla el archivo.
+        base: Directorio base de cuarentena.
+
+    Returns:
+        El objeto QuarantineItem creado.
     """
     if source is None:
         raise ValueError("Ruta de origen nula o vacía.")
@@ -723,6 +724,13 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Restaura un ítem al origen tras validar integridad y permisos de destino.
+
+    Args:
+        item_id: Identificador único del ítem en el manifiesto.
+        base: Directorio base de cuarentena.
+
+    Returns:
+        La ruta original restaurada.
     """
     if not isinstance(item_id, str) or not item_id.strip():
         raise ValueError("ID de ítem inválido.")
@@ -810,7 +818,6 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
     """
     if not file_path.exists() or not file_path.is_file() or file_path.is_symlink() or is_protected_path(file_path):
         return False
-    # Verificación explícita de seguridad global antes de purgar
     if not is_safe_to_modify(file_path):
         return False
     return (

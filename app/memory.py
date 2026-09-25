@@ -40,7 +40,7 @@ else:
     class wintypes:
         HANDLE = ctypes.c_void_p
 
-# Tipos semánticos para evitar confusión de unidades en cálculos aritméticos:
+# Tipos semánticos para prevenir errores de lógica al operar con diferentes unidades.
 BytesValue = NewType("BytesValue", int)
 MegabytesValue = NewType("MegabytesValue", float)
 
@@ -49,11 +49,11 @@ BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
-# Máscaras de acceso Win32 para operaciones seguras en procesos:
+# Máscaras de acceso Win32:
+# QUERY_LIMITED_INFORMATION es suficiente para métricas; SET_QUOTA es requerido para modificar el working set.
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x100
 PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
-# Abrimos solo para lectura inicialmente; la modificación se abre aparte
 SAFE_VALIDATION_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION 
 TRIM_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
 

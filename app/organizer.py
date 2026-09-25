@@ -231,21 +231,28 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     que ninguna ruta sea crítica y que exista espacio en disco.
     """
     if not files: return None
+    
+    # Pre-validación de seguridad del directorio de destino
     try:
         dest_base = Path(review_dir).expanduser()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve()
+        
+        # El directorio base nunca debe ser una ruta protegida del sistema
         if is_protected_path(dest_res): return None
     except (OSError, RuntimeError, PermissionError): return None
     
     for junk_file in files:
-        try:
-            if not _is_safe_to_move(junk_file, dest_res): continue
-            target_path = _can_move_file(junk_file, dest_res)
-            if target_path and junk_file.path.exists() and is_safe_to_modify(junk_file.path):
+        # Validación individual por archivo para asegurar integridad en el movimiento
+        if not _is_safe_to_move(junk_file, dest_res): continue
+        
+        target_path: Optional[Path] = _can_move_file(junk_file, dest_res)
+        if target_path and junk_file.path.exists() and is_safe_to_modify(junk_file.path):
+            try:
                 ensure_safe_to_modify(junk_file.path)
                 shutil.move(str(junk_file.path), str(target_path))
-        except (OSError, shutil.Error, PermissionError): continue
+            except (OSError, shutil.Error, PermissionError): continue
+            
     return dest_res
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
