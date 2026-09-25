@@ -188,6 +188,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
 
     def process_generator() -> Iterator[ProcessMemory]:
         for line in raw_csv_text.splitlines():
+            line = line.strip()
             if not line: continue
             parts = line.split(",", 2)
             if len(parts) == 3:
@@ -197,7 +198,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
                     if pid_val > 0 and pid_val not in seen_pids and ws_val < MAX_VALID_PROCESS_MEM:
                         seen_pids.add(pid_val)
                         yield ProcessMemory(parts[0].strip("'\" "), pid_val, BytesValue(ws_val))
-                except ValueError: 
+                except (ValueError, TypeError): 
                     continue
 
     return sorted(process_generator(), key=lambda p: p.working_set, reverse=True)[:limit]

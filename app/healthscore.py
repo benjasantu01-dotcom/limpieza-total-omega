@@ -163,6 +163,9 @@ _PIPELINE: Final[List[PipelineEntry]] = [
                   [RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW)]),
 ]
 
+if len(_PIPELINE) != len(WEIGHTS):
+    raise RuntimeError("Desalineación crítica entre el Pipeline de evaluación y los pesos definidos.")
+
 @dataclass
 class SystemMetrics:
     """Contenedor de datos crudos (inputs) para el motor de salud."""
@@ -281,7 +284,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         if entry.rules:
             _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
         
-        weighted_points = int(area_ratio * entry.weight + 0.5)
+        weighted_points = int(round(area_ratio * entry.weight))
         metric_breakdown[entry.area] = weighted_points
         accumulated_score += weighted_points
             

@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 15
+- Rechazadas por guardia de seguridad: 31
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 261
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 101 | 6 | 16 | 9 | 164 |
-| 2026-09-25 | 81 | 8 | 16 | 6 | 97 |
+| 2026-09-24 | 98 | 6 | 15 | 9 | 164 |
+| 2026-09-25 | 84 | 8 | 16 | 7 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **30**
+- seguridad defensiva: **36**
+- robustez ante casos límite: **33**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **20**
+- `scanner.py`: **19**
 - `assistant.py`: **18**
 - `diskreport.py`: **18**
-- `safety.py`: **16**
-- `settings.py`: **16**
-- `memory.py`: **16**
-- `healthscore.py`: **14**
+- `memory.py`: **17**
+- `safety.py`: **15**
+- `settings.py`: **15**
+- `healthscore.py`: **15**
+- `duplicates.py`: **13**
 - `quarantine.py`: **13**
-- `duplicates.py`: **12**
 - `browser.py`: **12**
 - `branding.py`: **12**
 - `organizer.py`: **7**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T08:59:04` **memory.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la lógica de procesamiento de procesos al añadir un manejo robusto ante errores de lectura parcial en `parse_windows_process_csv`, evitando que una línea mal formada interrumpa el análisis completo de la lista de procesos.
+- `2026-09-25T08:57:32` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de pesos al añadir una validación de `len(WEIGHTS)` frente al `_PIPELINE` para evitar divisiones o errores de índice silenciosos si se añaden categorías, y se encapsuló `compute_score` para manejar el caso de `metrics` con valores atípicos extremos mediante una sanitización previa más estricta dentro del `Pipeline`.
+- `2026-09-25T08:57:02` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez ante errores de I/O en `_scan_dir` y `_calculate_keeper_heuristic` envolviendo las llamadas de acceso a disco en bloques `try-except` más precisos, asegurando que la recolección de candidatos no falle silenciosamente ni aborte ante archivos inaccesibles o permisos denegados.
 - `2026-09-25T08:48:18` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` y `_is_excluded_path` añadiendo validaciones explícitas contra rutas que no existen (posibles enlaces rotos o archivos borrados durante la enumeración) y mejorando el manejo de `PermissionError` para evitar interrupciones silenciosas del análisis ante archivos bloqueados.
 - `2026-09-25T08:47:02` **assistant.py** (robustez ante casos límite): Se reforzó `_get_source_value` para prevenir posibles errores de acceso a atributos en objetos complejos mediante un chequeo estricto de tipo y la exclusión explícita de métodos especiales y atributos privados, garantizando robustez ante configuraciones inesperadas.
 - `2026-09-25T08:37:21` **scanner.py** (rendimiento): Se optimizó el proceso de filtrado de extensiones mediante la eliminación de una llamada innecesaria a `os.path.splitext` dentro de cada ciclo de `process_entry`, reemplazándola por una verificación directa sobre el sufijo del `DirEntry` que ya se encontraba en memoria, reduciendo la carga de procesamiento en directorios con alta densidad de archivos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T07:57:02` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de las heurísticas en `scanner.py`, añadiendo *docstrings* detallados que explican la lógica subyacente y la justificación de los riesgos evaluados en cada función de chequeo.
 - `2026-09-25T07:56:31` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la adición de docstrings técnicos detallados en las funciones de validación de integridad (`_evaluate_security_rules`, `_check_file_integrity`, `_validate_ntfs_reparse_redirection`), clarificando el propósito de los chequeos de bajo nivel y la importancia del contexto de seguridad, sin alterar la lógica de ejecución.
 - `2026-09-25T07:52:36` **quarantine.py** (legibilidad y documentación): Se han enriquecido las docstrings en `quarantine.py` para detallar los efectos secundarios, las excepciones que pueden ser lanzadas y las garantías de seguridad de las funciones críticas, facilitando su comprensión para el equipo y asegurando el enfoque en legibilidad y documentación técnica.
-- `2026-09-25T07:50:17` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos con parámetros y retornos (formato Google) en las funciones críticas de E/S y procesamiento, facilitando el mantenimiento y la comprensión de las restricciones de seguridad implementadas.
-- `2026-09-25T07:48:19` **memory.py** (legibilidad y documentación): Se mejoró la legibilidad y mantenibilidad del módulo `memory.py` mediante la refactorización de `parse_windows_process_csv` para usar una función generadora tipada y nombres más claros, y se documentaron con Type Hints y docstrings las funciones de bajo nivel que interactúan con la API de Windows.
-- `2026-09-25T07:41:38` **healthscore.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con campos `@param` y `@return` en las funciones del núcleo, se reemplazaron las tuplas simples por `NamedTuple` con documentación explícita donde era necesario y se mejoró la legibilidad de la lógica de evaluación con tipos más claros, facilitando el mantenimiento y la comprensión del Pipeline sin alterar el comportamiento.

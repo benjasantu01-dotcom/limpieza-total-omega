@@ -235,27 +235,21 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 for entry in iterator:
                     try:
                         p_entry = Path(entry.path)
-                        # Validar seguridad antes de cualquier operación de stat o recursión
                         if not is_safe_to_modify(p_entry):
                             continue
-                            
                         if entry.is_dir(follow_symlinks=False):
                             if not is_junction(p_entry):
                                 _scan_dir(p_entry)
                             continue
-                        
                         if entry.path in visited_files:
                             continue
-                        
                         st = entry.stat(follow_symlinks=False)
                         if st.st_size < min_size:
                             continue
-                            
                         if (skip_protected and is_protected_path(p_entry)):
                             continue
                         if is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
                             continue
-                            
                         size_to_paths_map[st.st_size].append(p_entry)
                         visited_files.add(entry.path)
                     except (OSError, PermissionError):
@@ -320,7 +314,7 @@ def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     (mtime, longitud_de_la_ruta). Se prefiere el archivo más antiguo.
     """
     try:
-        if not path.exists() or not is_safe_to_modify(path):
+        if not path.is_file() or not is_safe_to_modify(path):
             return None
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
