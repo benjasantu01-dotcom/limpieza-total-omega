@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 262
+- Sin respuesta de la IA (error o límite): 261
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 102 | 6 | 16 | 9 | 167 |
-| 2026-09-25 | 79 | 8 | 16 | 6 | 95 |
+| 2026-09-24 | 101 | 6 | 16 | 9 | 164 |
+| 2026-09-25 | 81 | 8 | 16 | 6 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **40**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **30**
 - rendimiento: **29**
-- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **20**
-- `assistant.py`: **17**
-- `diskreport.py`: **17**
+- `assistant.py`: **18**
+- `diskreport.py`: **18**
 - `safety.py`: **16**
 - `settings.py`: **16**
 - `memory.py`: **16**
-- `quarantine.py`: **14**
 - `healthscore.py`: **14**
+- `quarantine.py`: **13**
 - `duplicates.py`: **12**
 - `browser.py`: **12**
 - `branding.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T08:48:18` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` y `_is_excluded_path` añadiendo validaciones explícitas contra rutas que no existen (posibles enlaces rotos o archivos borrados durante la enumeración) y mejorando el manejo de `PermissionError` para evitar interrupciones silenciosas del análisis ante archivos bloqueados.
+- `2026-09-25T08:47:02` **assistant.py** (robustez ante casos límite): Se reforzó `_get_source_value` para prevenir posibles errores de acceso a atributos en objetos complejos mediante un chequeo estricto de tipo y la exclusión explícita de métodos especiales y atributos privados, garantizando robustez ante configuraciones inesperadas.
 - `2026-09-25T08:37:21` **scanner.py** (rendimiento): Se optimizó el proceso de filtrado de extensiones mediante la eliminación de una llamada innecesaria a `os.path.splitext` dentro de cada ciclo de `process_entry`, reemplazándola por una verificación directa sobre el sufijo del `DirEntry` que ya se encontraba en memoria, reduciendo la carga de procesamiento en directorios con alta densidad de archivos.
 - `2026-09-25T08:27:39` **quarantine.py** (rendimiento): Optimizé `list_items` para reducir drásticamente las llamadas a disco mediante la creación de un conjunto (set) de nombres de archivos existentes, evitando así realizar búsquedas lineales costosas dentro del bucle de validación de cada ítem del manifiesto.
 - `2026-09-25T08:26:32` **memory.py** (rendimiento): Se optimizó el rendimiento de `parse_windows_process_csv` reemplazando la creación de una lista intermedia mediante `splitlines()` por un generador que procesa línea por línea, evitando duplicados innecesarios en memoria y mejorando la eficiencia durante la iteración sobre los resultados de `Get-Process`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T07:50:17` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos con parámetros y retornos (formato Google) en las funciones críticas de E/S y procesamiento, facilitando el mantenimiento y la comprensión de las restricciones de seguridad implementadas.
 - `2026-09-25T07:48:19` **memory.py** (legibilidad y documentación): Se mejoró la legibilidad y mantenibilidad del módulo `memory.py` mediante la refactorización de `parse_windows_process_csv` para usar una función generadora tipada y nombres más claros, y se documentaron con Type Hints y docstrings las funciones de bajo nivel que interactúan con la API de Windows.
 - `2026-09-25T07:41:38` **healthscore.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con campos `@param` y `@return` en las funciones del núcleo, se reemplazaron las tuplas simples por `NamedTuple` con documentación explícita donde era necesario y se mejoró la legibilidad de la lógica de evaluación con tipos más claros, facilitando el mantenimiento y la comprensión del Pipeline sin alterar el comportamiento.
-- `2026-09-25T07:37:04` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones críticas, aclarando el propósito y las restricciones de seguridad que aseguran que el módulo permanezca como estrictamente de solo lectura.
-- `2026-09-25T07:31:46` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de los módulos y funciones de dibujo mediante docstrings más precisos, y se han añadido sugerencias de tipos más específicas (como el uso de `Final` y alias de tipo) para mejorar la claridad del contrato de interfaz y la legibilidad del código.

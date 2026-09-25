@@ -113,8 +113,12 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if entry.is_symlink():
             return True
         
-        # Uso de resolve solo en caso necesario, entry.path provee acceso rápido
-        if is_protected_path(Path(entry.path)):
+        # Validar existencia antes de procesar para evitar race conditions
+        entry_path = Path(entry.path)
+        if not entry_path.exists():
+            return True
+        
+        if is_protected_path(entry_path):
             return True
     except (OSError, PermissionError, AttributeError, RuntimeError):
         return True

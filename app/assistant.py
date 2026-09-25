@@ -433,9 +433,14 @@ def _get_source_value(source: Any, key: str) -> Any:
     if not isinstance(key, str) or key.startswith("_"): return None
     try:
         if isinstance(source, dict):
-            return source.get(key)
-        val = getattr(source, key, None)
-        return None if callable(val) or key.startswith("__") else val
+            val = source.get(key)
+        else:
+            val = getattr(source, key, None)
+        
+        # Excluir explícitamente métodos, objetos invocables y atributos internos/privados
+        if callable(val) or (isinstance(key, str) and (key.startswith("__") or key.startswith("_"))):
+            return None
+        return val
     except Exception:
         return None
 

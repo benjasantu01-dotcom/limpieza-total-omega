@@ -1275,3 +1275,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-25T08:38:04` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-09-25T08:38:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T08:38:04` Corrida terminada. Total usado hoy: 204.
+- `2026-09-25T08:46:17` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-09-25T08:47:02` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó `_get_source_value` para prevenir posibles errores de acceso a atributos en objetos complejos mediante un chequeo estricto de tipo y la exclusión explícita de métodos especiales y atributos privados, garantizando robustez ante configuraciones inesperadas.
+- `2026-09-25T08:47:37` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-25T08:48:04` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-25T08:48:18` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `walk_files` y `_is_excluded_path` añadiendo validaciones explícitas contra rutas que no existen (posibles enlaces rotos o archivos borrados durante la enumeración) y mejorando el manejo de `PermissionError` para evitar interrupciones silenciosas del análisis ante archivos bloqueados.
+- `2026-09-25T08:48:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T08:48:18` Corrida terminada. Total usado hoy: 208.
