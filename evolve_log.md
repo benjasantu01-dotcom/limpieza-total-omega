@@ -577,3 +577,42 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-25T14:15:21` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_kernel_managed` para prevenir el acceso a archivos de paginación o hibernación en cualquier unidad, no solo en la raíz, protegiendo al sistema de posibles corrupciones o bloqueos de acceso durante operaciones de escaneo.
 - `2026-09-25T14:15:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T14:15:21` Corrida terminada. Total usado hoy: 336.
+- `2026-09-25T14:22:54` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-25T14:23:27` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `Scanner._is_safe_entry` al añadir una validación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier procesamiento, garantizando que incluso si una entrada parece válida, se mantenga bajo el control centralizado de `safety.py`.
+- `2026-09-25T14:24:09` Tests FALLARON:
+```
+ assert 15 == 33
+ +  where 15 = <function get at 0x7f0f1a5a4680>('top_procesos', PosixPath('/tmp/pytest-of-runner/pytest-2/test_get_reads_a_single_value0'))
+ +    where <function get at 0x7f0f1a5a4680> = settings.get
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - AssertionError: assert '' == 'del-archivo'
+  
+  - del-archivo
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AssertionError: assert False is True
+ +  where False = <function assistant_enabled at 0x7f0f1a5a47c0>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_enabled_requires_both_the0'))
+ +    where <function assistant_enabled at 0x7f0f1a5a47c0> = settings.assistant_enabled
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /home/runner/LimpiezaTotalOmega/config.json\n\n  Apariencia\n    Tema: oscuro\n   ...is en paralelo: sí\n\n  Asistente IA\n    Activado: no\n    Clave: no configurada\n    Modelo: gemini-3.1-flash-lite\n'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C
+    Basura: 2400 MB
+  ?         ++++
+    Sospechosos: 3
+    RAM disponible: 11%
+    Disco libre: 6%
+    Duplicados: 900 MB
+    Inicio: 19 items
+10 failed, 289 passed, 4 warnings in 1.67s
+
+```
+- `2026-09-25T14:24:09` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad del módulo `settings.py` implementando una validación estricta del estado de los archivos antes de su escritura, verificando explícitamente que no se trate de enlaces simbólicos o puntos de reparseo mediante `lstat` y flags de sistema, garantizando que el proceso de guardado atómico no sea vulnerable a manipulaciones de rutas mediante enlaces.
+- `2026-09-25T14:24:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T14:24:42` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Se endureció la validación en `_is_valid_registry_entry` incorporando `is_protected_path` directamente sobre la ruta expandida del comando antes de procesarla, asegurando que ninguna clave de registro apunte a áreas restringidas del sistema incluso si el nombre parece inofensivo.
+- `2026-09-25T14:24:42` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-25T14:24:42` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-25T14:25:02` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-25T14:25:02` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-25T14:25:32` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-25T14:25:32` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-25T14:25:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T14:25:32` Corrida terminada. Total usado hoy: 340.

@@ -170,7 +170,7 @@ class Scanner:
             return False
         if not self._is_inside_base_root(entry.path.lower()):
             return False
-        if self._is_reparse_point(entry) or is_protected_path(Path(entry.path)):
+        if self._is_reparse_point(entry) or is_protected_path(Path(entry.path).resolve()):
             return False
         return not entry.is_symlink()
 
@@ -209,7 +209,7 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un único archivo contra las heurísticas definidas."""
-    if not isinstance(path, Path) or is_protected_path(path): return []
+    if not isinstance(path, Path) or is_protected_path(path.resolve()): return []
     try:
         if not path.is_file(): return []
     except (OSError, PermissionError): return []
