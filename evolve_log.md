@@ -487,3 +487,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-25T12:55:30` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé `purge_all` para evitar búsquedas lineales costosas dentro del bucle de borrado utilizando un `set` y un acceso directo a la lógica de validación, mejorando el rendimiento en directorios con gran cantidad de archivos aislados.
 - `2026-09-25T12:55:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T12:55:30` Corrida terminada. Total usado hoy: 304.
+- `2026-09-25T13:01:16` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-25T13:01:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T13:01:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-09-25T13:02:20` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-09-25T13:02:46` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el método `_is_relevant_extension` reemplazando la búsqueda lineal con `rfind` por una división de `os.path.splitext` que es más eficiente y robusta, y evité el llamado innecesario a `_is_safe_entry` dentro del loop de `process_entry` moviendo la validación de extensiones antes de las comprobaciones de seguridad más costosas.
+- `2026-09-25T13:03:05` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la validación de la configuración centralizando la creación de los validadores y evitando el uso repetido de `_build_validator_map()` mediante el caché `@lru_cache`, reduciendo drásticamente la sobrecarga de CPU en llamadas recurrentes a `validate` y `update`.
+- `2026-09-25T13:03:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T13:03:05` Corrida terminada. Total usado hoy: 308.

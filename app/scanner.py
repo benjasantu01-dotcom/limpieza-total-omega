@@ -182,17 +182,17 @@ class Scanner:
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra si la extensión del archivo es de interés para el motor heurístico."""
-        ext = name[name.rfind('.'):].lower() if '.' in name else ""
-        return ext in SUSPICIOUS_ALL_EXTS
+        _, ext = os.path.splitext(name)
+        return ext.lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Procesa una entrada individual (directorio o archivo)."""
-        if not self._is_safe_entry(entry): return
         try:
             if entry.is_dir(follow_symlinks=False):
-                self._handle_directory(entry, directory_stack)
+                if self._is_safe_entry(entry):
+                    self._handle_directory(entry, directory_stack)
             elif entry.is_file(follow_symlinks=False):
-                if self._is_relevant_extension(entry.name):
+                if self._is_relevant_extension(entry.name) and self._is_safe_entry(entry):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, AttributeError):
             pass

@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 265
+- Sin respuesta de la IA (error o límite): 266
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 62 | 3 | 10 | 8 | 117 |
-| 2026-09-25 | 115 | 11 | 22 | 8 | 148 |
+| 2026-09-24 | 58 | 3 | 10 | 8 | 117 |
+| 2026-09-25 | 117 | 11 | 23 | 8 | 149 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **40**
-- seguridad defensiva: **38**
+- seguridad defensiva: **34**
+- rendimiento: **29**
 - robustez ante casos límite: **29**
-- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
-- `scanner.py`: **18**
+- `scanner.py`: **19**
+- `diskreport.py`: **18**
 - `memory.py`: **17**
-- `settings.py`: **16**
+- `settings.py`: **17**
 - `healthscore.py`: **15**
 - `quarantine.py`: **15**
 - `assistant.py`: **15**
-- `branding.py`: **13**
 - `safety.py`: **13**
-- `duplicates.py`: **12**
-- `browser.py`: **9**
+- `branding.py`: **12**
+- `duplicates.py`: **11**
+- `browser.py`: **8**
 - `organizer.py`: **8**
 - `startup.py`: **5**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T13:03:05` **settings.py** (rendimiento): Optimizé la validación de la configuración centralizando la creación de los validadores y evitando el uso repetido de `_build_validator_map()` mediante el caché `@lru_cache`, reduciendo drásticamente la sobrecarga de CPU en llamadas recurrentes a `validate` y `update`.
+- `2026-09-25T13:02:46` **scanner.py** (rendimiento): Optimicé el método `_is_relevant_extension` reemplazando la búsqueda lineal con `rfind` por una división de `os.path.splitext` que es más eficiente y robusta, y evité el llamado innecesario a `_is_safe_entry` dentro del loop de `process_entry` moviendo la validación de extensiones antes de las comprobaciones de seguridad más costosas.
 - `2026-09-25T12:55:30` **quarantine.py** (rendimiento): Optimicé `purge_all` para evitar búsquedas lineales costosas dentro del bucle de borrado utilizando un `set` y un acceso directo a la lógica de validación, mejorando el rendimiento en directorios con gran cantidad de archivos aislados.
 - `2026-09-25T12:55:00` **organizer.py** (rendimiento): Optimicé el método `is_valid_junk_extension` reemplazando la creación dinámica de una tupla mediante `os.path.splitext` en cada iteración del escáner por una comprobación de sufijo directa sobre el nombre del archivo, reduciendo el overhead de llamadas al sistema y la creación de objetos innecesarios en el bucle principal.
 - `2026-09-25T12:42:33` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global en `compute_score` y la legibilidad en `summarize` reemplazando iteraciones redundantes y búsquedas lineales en diccionarios por accesos directos y comprensión de listas, reduciendo el overhead computacional.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T12:02:02` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en las funciones internas de escaneo y una clarificación detallada en el docstring de `_collect_candidates` sobre el manejo de estados de recursión para facilitar su mantenimiento.
 - `2026-09-25T12:01:46` **diskreport.py** (legibilidad y documentación): Mejore la claridad y mantenibilidad del código documentando la lógica de filtrado en `walk_files` y `_is_excluded_path`, e incorporando type hints más precisos que facilitan la comprensión del flujo de datos en el análisis de disco.
 - `2026-09-25T12:00:44` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de renderizado mediante docstrings estandarizados que describen los parámetros y el comportamiento ante entradas inválidas, facilitando la comprensión del flujo de datos en componentes críticos de la UI.
-- `2026-09-25T11:51:22` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_load_impl()` capturando explícitamente `json.JSONDecodeError` y `UnicodeDecodeError` durante la carga, y añadiendo una validación de éxito tras `os.replace` para asegurar que el archivo de configuración no quede en un estado inconsistente tras un fallo de escritura parcial.
-- `2026-09-25T11:41:42` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` y `_check_file_integrity` capturando errores de acceso específicos y validando explícitamente los atributos de los objetos devueltos por `os.stat` para prevenir errores de tipo durante la inspección de integridad.

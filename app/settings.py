@@ -256,8 +256,6 @@ def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
         
     return MappingProxyType(mapping)
 
-_VALIDATOR_MAP: Final = _build_validator_map()
-
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Calcula la ruta absoluta del archivo de configuración, asegurando que la carpeta padre sea escribible."""
     if custom_base is None: base_path = SETTINGS_DIR
