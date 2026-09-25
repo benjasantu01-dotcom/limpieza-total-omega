@@ -116,7 +116,8 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         
         # Validar que la ruta real está contenida en la raíz para evitar escape
         resolved_entry = Path(entry.path).resolve()
-        if root_path not in resolved_entry.parents and resolved_entry != root_path:
+        # Verificar que la entrada sea hija de la raíz o la raíz misma
+        if not (resolved_entry == root_path or root_path in resolved_entry.parents):
             return True
             
         if is_protected_path(resolved_entry):
