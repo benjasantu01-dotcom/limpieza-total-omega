@@ -169,11 +169,7 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida que una entrada del sistema sea procesable bajo las políticas de seguridad:
-        - Estructura de ruta válida.
-        - No está en la lista negra (protected paths).
-        - No es un punto de reanálisis ni un enlace simbólico (anti-bucle).
-        - Se mantiene dentro de la raíz del escaneo.
+        Valida que una entrada del sistema sea procesable bajo las políticas de seguridad.
         """
         if not entry or not entry.path or not entry.name:
             return False
@@ -211,6 +207,7 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta el conjunto registrado de heurísticas sobre el archivo detectado."""
+        if not path: return
         for check_fn in ALL_CHECKS:
             try:
                 res = check_fn(path, entry, self.now_ts)
@@ -221,7 +218,8 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un único archivo sin recorrido recursivo, validando previamente su seguridad."""
-    if not path or is_protected_path(path): return []
+    if not isinstance(path, Path): return []
+    if is_protected_path(path): return []
     try:
         if not path.is_file(): return []
     except (OSError, PermissionError): return []
@@ -239,21 +237,19 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
     Punto de entrada principal para escaneo recursivo de una jerarquía de directorios.
-    Implementa una pila LIFO para procesar el árbol de directorios manteniendo el
-    estado de seguridad y evitando duplicidad de rutas.
     """
     if directory is None: return []
-    path_str: str = str(directory).strip()
+    path_str = str(directory).strip()
     if not path_str or not _is_valid_path_structure(path_str): return []
     
     try:
         base_path = Path(path_str).resolve()
         if not base_path.exists() or not base_path.is_dir() or base_path.is_symlink():
             return []
+        if is_protected_path(base_path): return []
     except (OSError, RuntimeError): 
         return []
     
-    if is_protected_path(base_path): return []
     scanner = Scanner(base_root=base_path)
     directory_stack: List[str] = [str(base_path)]
     scanner.seen.add(str(base_path).lower())
