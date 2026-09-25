@@ -710,13 +710,15 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
         
-        actual_files = {f.name: f for f in base_path.iterdir() if f.is_file()}
+        # Optimización: Set de nombres para búsqueda O(1) en el bucle
+        actual_files = {f.name for f in base_path.iterdir() if f.is_file()}
         
         valid_items: List[QuarantineItem] = []
         for i in items:
-            f_path = actual_files.get(i.stored_name)
-            if f_path and i._validate_integrity(f_path):
-                valid_items.append(i)
+            if i.stored_name in actual_files:
+                f_path = base_path / i.stored_name
+                if i._validate_integrity(f_path):
+                    valid_items.append(i)
             
         if len(valid_items) != len(items):
             save_manifest(valid_items, base)

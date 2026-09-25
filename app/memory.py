@@ -188,6 +188,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
 
     def process_generator() -> Iterator[ProcessMemory]:
         for line in raw_csv_text.splitlines():
+            if not line: continue
             parts = line.split(",", 2)
             if len(parts) == 3:
                 try:

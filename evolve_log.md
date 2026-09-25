@@ -1261,3 +1261,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-25T08:19:36` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-25T08:19:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T08:19:36` Corrida terminada. Total usado hoy: 196.
+- `2026-09-25T08:25:57` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-09-25T08:26:32` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento de `parse_windows_process_csv` reemplazando la creación de una lista intermedia mediante `splitlines()` por un generador que procesa línea por línea, evitando duplicados innecesarios en memoria y mejorando la eficiencia durante la iteración sobre los resultados de `Get-Process`.
+- `2026-09-25T08:26:57` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-25T08:27:39` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé `list_items` para reducir drásticamente las llamadas a disco mediante la creación de un conjunto (set) de nombres de archivos existentes, evitando así realizar búsquedas lineales costosas dentro del bucle de validación de cada ítem del manifiesto.
+- `2026-09-25T08:27:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-25T08:27:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T08:27:49` Corrida terminada. Total usado hoy: 200.
