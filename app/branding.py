@@ -367,7 +367,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         path = Path(destination).resolve()
         
         # Defensa: validación jerárquica para evitar rutas protegidas de sistema
-        if not is_safe_to_modify(path):
+        if is_protected_path(path) or not is_safe_to_modify(path):
             return None
             
         safe_size = max(16, min(1024, int(size)))

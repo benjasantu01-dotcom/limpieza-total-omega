@@ -495,3 +495,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-25T13:03:05` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la validación de la configuración centralizando la creación de los validadores y evitando el uso repetido de `_build_validator_map()` mediante el caché `@lru_cache`, reduciendo drásticamente la sobrecarga de CPU en llamadas recurrentes a `validate` y `update`.
 - `2026-09-25T13:03:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T13:03:05` Corrida terminada. Total usado hoy: 308.
+- `2026-09-25T13:11:29` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-25T13:11:56` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-25T13:11:58` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T13:12:44` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Reforcé la robustez del sistema ante datos inesperados en el `SystemContext` añadiendo validaciones de tipo explícitas en `ingest` y protegiendo el decorador contra métodos no aptos o valores `None` durante la evaluación de criterios.
+- `2026-09-25T13:13:26` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos al añadir una verificación explícita de `is_protected_path` antes de intentar cualquier operación, asegurando que incluso ante fallos en la resolución de rutas la aplicación no intente escribir en directorios críticos.
+- `2026-09-25T13:13:39` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). He mejorado la robustez ante errores de acceso a disco en la función `_sum_directory_recursive` mediante el uso de `os.scandir` como gestor de contexto en un bloque `try-except` más granular, asegurando que si un subdirectorio lanza una excepción de acceso denegado (muy común en cachés de navegadores), el proceso continúe con el resto del escaneo en lugar de abortar silenciosamente o truncar el conteo.
+- `2026-09-25T13:13:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T13:13:39` Corrida terminada. Total usado hoy: 312.

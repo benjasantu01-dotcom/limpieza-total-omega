@@ -224,21 +224,26 @@ def _sum_directory_recursive(
     total_bytes: int = 0
     try:
         with os.scandir(root_abs) as it:
-            for entry in it:
-                if _should_skip_entry(entry, kernel32, is_junction_fn):
-                    continue
+            while True:
                 try:
+                    entry = next(it, None)
+                    if entry is None:
+                        break
+                    
+                    if _should_skip_entry(entry, kernel32, is_junction_fn):
+                        continue
+                        
                     if entry.is_dir(follow_symlinks=False):
                         total_bytes += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, depth + 1)
                     else:
                         total_bytes += _get_entry_size(entry)
                 except (OSError, PermissionError):
                     continue
-        
-        memo[root_abs] = total_bytes
-        return total_bytes
     except (OSError, PermissionError, RuntimeError):
         return 0
+        
+    memo[root_abs] = total_bytes
+    return total_bytes
 
 
 def directory_size(path: Optional[OSPath]) -> int:

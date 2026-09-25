@@ -81,7 +81,8 @@ def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Calla
     """
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
-        if ctx.is_empty: return Answer("Primero analizá el sistema.")
+        if not isinstance(ctx, SystemContext) or ctx.is_empty: 
+            return Answer("Primero analizá el sistema.")
         try:
             result = func(ctx, q)
             if isinstance(result, Answer):
@@ -126,7 +127,7 @@ class ProblemCriterion(NamedTuple):
         """Compara el valor de la métrica contra el umbral usando operadores estándar."""
         ops = {"<": operator.lt, ">": operator.gt}
         op_func = ops.get(self.operator)
-        return op_func(val, self.threshold) if op_func else False
+        return op_func(val, self.threshold) if op_func and math.isfinite(val) else False
 
     def is_triggered_by(self, ctx: SystemContext) -> bool:
         """Evalúa si una métrica específica en el contexto excede el umbral de riesgo definido."""
@@ -335,9 +336,12 @@ class SystemContext:
         """Valida y asigna un valor individual al campo correspondiente si cumple el contrato MetricSpec."""
         val = _get_source_value(source, key)
         if val is None or not spec.is_valid_type(val): return False
-        float_val = _safe_float(val, -1.0)
-        if float_val >= 0 and _is_metric_within_bounds(float_val, spec):
+        
+        # Casting seguro según el tipo esperado en MetricSpec
+        if isinstance(spec.cast_func, type):
             try:
+                float_val = float(val)
+                if not _is_metric_within_bounds(float_val, spec): return False
                 setattr(self, key, spec.cast_func(float_val))
                 return True
             except (TypeError, ValueError):
@@ -370,13 +374,13 @@ class SystemContext:
             if isinstance(grade_val, str):
                 clean_grade = self._clean_grade(grade_val)
                 if clean_grade:
-                    self.grade = clean_grade
+                    object.__setattr__(self, 'grade', clean_grade)
                     found_data = True
         except Exception:
             pass
         
         if found_data and _validate_context_integrity(self):
-            self.analyzed = True
+            object.__setattr__(self, 'analyzed', True)
             return True
         return False
 
