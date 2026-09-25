@@ -206,10 +206,12 @@ _TIMEOUT_SECONDS: Final[int] = 30
 
 _REGEX_INYECCION: Final[re.Pattern] = re.compile(r"([a-zA-Z]:[\\/]|/|\\|\.\.|\0|[\u202e\u202d\u200e\u200f])")
 _REGEX_CONTROL: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f\u0080-\u009f\u202b-\u202f\u200b-\u200d\uFEFF]")
+_REGEX_PATH_TRAVERSAL: Final[re.Pattern] = re.compile(r"(\.\.[\\/])|([\\/]\.\.)", re.IGNORECASE)
 
 SECURITY_PATTERNS: Final[list[re.Pattern]] = [
     _REGEX_INYECCION,
     _REGEX_CONTROL,
+    _REGEX_PATH_TRAVERSAL,
     re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])"),                       # ANSI
     re.compile(r"(Get-|Remove-|Set-|Stop-|Start-)[a-zA-Z]+", re.IGNORECASE),   # Comandos PS
     re.compile(r"(exec|eval|subprocess|system\s*\(|rm\s+|del\s+|cmd\.exe|powershell|reg\.exe)", re.IGNORECASE), # Contenido peligroso

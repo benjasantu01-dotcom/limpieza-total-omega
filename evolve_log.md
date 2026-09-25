@@ -846,3 +846,41 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-25T04:43:50` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de las heurísticas de archivo añadiendo un manejo de excepciones local en `_safe_stat` y validaciones adicionales en `check_recent_executable_in_downloads` para prevenir fallos silenciosos al procesar archivos cuyo `st_mtime` es inaccesible o inexistente debido a restricciones de acceso al sistema de archivos (CASES: permisos denegados o archivos temporales bloqueados).
 - `2026-09-25T04:43:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T04:43:50` Corrida terminada. Total usado hoy: 112.
+- `2026-09-25T04:52:01` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-09-25T04:52:32` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `save` ante condiciones de carrera y fallos parciales durante la escritura, asegurando que `_load_impl` no devuelva una configuración corrupta si `os.fsync` o la escritura fallan, y mejorando la limpieza de archivos temporales mediante un manejo de excepciones más granular.
+- `2026-09-25T04:53:02` Tests FALLARON:
+```
+...................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:232: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 4 warnings in 1.22s
+
+```
+- `2026-09-25T04:53:02` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha añadido un chequeo de existencia de archivos en `_validate_file_access` que utiliza un bloque `try-except` más robusto para manejar casos de archivos bloqueados, permisos denegados o rutas inaccesibles durante la resolución del `StartupEntry`, evitando que el escáner aborte ante errores de sistema comunes en Windows.
+- `2026-09-25T04:53:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T04:54:15` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva al añadir `_REGEX_PATH_TRAVERSAL` para detectar intentos de escape de directorio mediante `..` incluso si están ofuscados, y apliqué este nuevo chequeo de forma explícita en `_is_safe_text_structure`.
+- `2026-09-25T04:54:32` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-25T04:54:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T04:54:32` Corrida terminada. Total usado hoy: 116.
