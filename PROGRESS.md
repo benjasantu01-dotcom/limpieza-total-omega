@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 265
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 264
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 76 | 3 | 12 | 9 | 124 |
-| 2026-09-25 | 102 | 10 | 19 | 8 | 141 |
+| 2026-09-24 | 75 | 3 | 11 | 8 | 123 |
+| 2026-09-25 | 105 | 10 | 20 | 8 | 141 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - seguridad defensiva: **39**
 - robustez ante casos límite: **38**
-- legibilidad y documentación: **32**
-- rendimiento: **26**
+- legibilidad y documentación: **35**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **19**
 - `scanner.py`: **18**
-- `diskreport.py`: **18**
-- `memory.py`: **17**
 - `settings.py`: **17**
 - `assistant.py`: **16**
+- `memory.py`: **16**
 - `safety.py`: **15**
+- `branding.py`: **14**
 - `healthscore.py`: **14**
 - `quarantine.py`: **14**
-- `branding.py`: **13**
-- `duplicates.py`: **12**
+- `duplicates.py`: **13**
 - `browser.py`: **10**
 - `organizer.py`: **7**
 - `startup.py`: **5**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T12:02:02` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en las funciones internas de escaneo y una clarificación detallada en el docstring de `_collect_candidates` sobre el manejo de estados de recursión para facilitar su mantenimiento.
+- `2026-09-25T12:01:46` **diskreport.py** (legibilidad y documentación): Mejore la claridad y mantenibilidad del código documentando la lógica de filtrado en `walk_files` y `_is_excluded_path`, e incorporando type hints más precisos que facilitan la comprensión del flujo de datos en el análisis de disco.
+- `2026-09-25T12:00:44` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de renderizado mediante docstrings estandarizados que describen los parámetros y el comportamiento ante entradas inválidas, facilitando la comprensión del flujo de datos en componentes críticos de la UI.
 - `2026-09-25T11:51:22` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_load_impl()` capturando explícitamente `json.JSONDecodeError` y `UnicodeDecodeError` durante la carga, y añadiendo una validación de éxito tras `os.replace` para asegurar que el archivo de configuración no quede en un estado inconsistente tras un fallo de escritura parcial.
 - `2026-09-25T11:41:42` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` y `_check_file_integrity` capturando errores de acceso específicos y validando explícitamente los atributos de los objetos devueltos por `os.stat` para prevenir errores de tipo durante la inspección de integridad.
 - `2026-09-25T11:40:48` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_manifest` mediante la captura explícita de excepciones durante la serialización y la implementación de un mecanismo de limpieza de recursos (`finally`) para asegurar que el archivo temporal siempre sea eliminado en caso de error, evitando dejar basura en el disco o estados inconsistentes.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T09:58:30` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la escritura atómica del archivo de configuración, sustituyendo el chequeo genérico por `ensure_safe_to_modify` por una validación explícita mediante `is_safe_to_modify` antes de la operación de reemplazo, evitando excepciones no controladas y asegurando que la ruta destino no sea un punto de reanálisis antes de realizar el movimiento.
 - `2026-09-25T09:41:49` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_path` validando explícitamente el tamaño del búfer de caracteres de `GetModuleFileNameExW` antes de intentar crear un objeto `Path` y normalizarlo, evitando así posibles desbordamientos o rutas malformadas.
 - `2026-09-25T09:28:33` **diskreport.py** (seguridad defensiva): Se ha robustecido `_is_excluded_path` añadiendo una comprobación explícita mediante `path.is_relative_to(root_path)` para prevenir ataques de Directory Traversal que pudieran intentar escapar de la raíz de escaneo, asegurando que solo se analicen archivos contenidos estrictamente dentro de la jerarquía permitida.
-- `2026-09-25T09:27:39` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la validación implícita por una verificación explícita mediante `is_safe_to_modify` antes de cualquier operación de I/O, garantizando que el acceso al sistema de archivos sea siempre validado contra las reglas de seguridad antes de intentar crear directorios o escribir archivos.
-- `2026-09-25T09:19:17` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante errores de concurrencia y corrupción de archivos mediante la implementación de una validación más estricta en `_is_file_secure_to_read` (verificando que el archivo sea un archivo regular y no un link simbólico de forma explícita) y asegurando que las operaciones de lectura y escritura manejen correctamente situaciones de disco lleno o permisos denegados sin dejar estados inconsistentes en la caché.
-- `2026-09-25T09:17:18` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `check_recent_executable_in_downloads` y `process_entry`, añadiendo validaciones específicas para manejar correctamente archivos inaccesibles o eliminados durante el recorrido y evitando fallos innecesarios en la comparación de fechas.

@@ -410,3 +410,12 @@ assert not True
 - `2026-09-25T11:52:23` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemContext.is_valid_structure
 - `2026-09-25T11:52:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T11:52:23` Corrida terminada. Total usado hoy: 280.
+- `2026-09-25T12:00:04` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-09-25T12:00:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T12:00:44` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de las funciones de renderizado mediante docstrings estandarizados que describen los parámetros y el comportamiento ante entradas inválidas, facilitando la comprensión del flujo de datos en componentes críticos de la UI.
+- `2026-09-25T12:00:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T12:01:18` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: FileAttributes
+- `2026-09-25T12:01:46` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejore la claridad y mantenibilidad del código documentando la lógica de filtrado en `walk_files` y `_is_excluded_path`, e incorporando type hints más precisos que facilitan la comprensión del flujo de datos en el análisis de disco.
+- `2026-09-25T12:02:02` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de Type Hints en las funciones internas de escaneo y una clarificación detallada en el docstring de `_collect_candidates` sobre el manejo de estados de recursión para facilitar su mantenimiento.
+- `2026-09-25T12:02:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T12:02:02` Corrida terminada. Total usado hoy: 284.

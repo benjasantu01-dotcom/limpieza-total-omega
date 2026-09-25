@@ -224,7 +224,10 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Exploración recursiva profunda para recolectar candidatos aptos para deduplicación.
-    Evita redundancias usando un set de rutas visitadas.
+    
+    Utiliza una función interna `_scan_dir` para recorrer el árbol de directorios, 
+    gestionando la evitación de bucles mediante un `visited_files` (set de strings) 
+    y validando cada entrada contra `safety.py`. No sigue junctions ni symlinks.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     visited_files: set[str] = set()

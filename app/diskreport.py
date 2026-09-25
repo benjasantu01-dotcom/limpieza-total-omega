@@ -105,23 +105,31 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """
     Evalúa mediante heurística de seguridad si una entrada de sistema debe omitirse.
-    Detecta ofuscación, enlaces simbólicos, escapes de directorio o rutas protegidas.
+    
+    El filtrado ocurre en tres niveles:
+    1. Ofuscación de nombres (caracteres RTL/especiales).
+    2. Integridad de estructura (enlaces simbólicos y escapes de directorio).
+    3. Política de seguridad global (is_protected_path).
     """
     try:
+        # 1. Detección de ofuscación
         if any(c in entry.name for c in SUSPICIOUS_CHARS):
             return True
+            
+        # 2. Detección de enlaces y escapes de ruta
         if entry.is_symlink():
             return True
         
         entry_path = Path(entry.path).resolve()
         
-        # Prevenir Directory Traversal: asegurar que la ruta esté dentro de la raíz
+        # Prevenir Directory Traversal fuera de la raíz de análisis
         if not entry_path.is_relative_to(root_path):
             return True
 
         if not entry_path.exists():
             return True
         
+        # 3. Verificación de exclusión definida por seguridad
         if is_protected_path(entry_path):
             return True
     except (OSError, PermissionError, AttributeError, RuntimeError, ValueError):
@@ -230,8 +238,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador iterativo que recorre el sistema de archivos evitando bucles de inodos.
-    Optimizado: evita resoluciones innecesarias dentro del ciclo principal.
+    Generador iterativo que recorre el árbol de directorios de forma segura.
+    
+    Mantiene un set de inodos visitados para evitar recursión infinita en casos de 
+    puntos de reparse o ciclos en el sistema de archivos. Cada archivo detectado 
+    es validado contra la política de seguridad centralizada antes de su inclusión.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -246,10 +257,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Filtrado rápido con comprobación de seguridad integrada
+                        # Filtrado según políticas de seguridad (skip_protected)
                         if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
+                        # Manejo de subdirectorios: se añade a la pila si es nuevo
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode: Inode = (st.st_dev, st.st_ino)
@@ -257,6 +269,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(Path(entry.path))
                                 
+                        # Manejo de archivos: emisión de tupla (Ruta, Tamaño en bytes)
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size >= 0:

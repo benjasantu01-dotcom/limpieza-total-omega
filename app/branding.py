@@ -351,7 +351,16 @@ def logo_svg(size: int = 128) -> str:
 </svg>"""
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
-    """Guarda el logo SVG en disco tras validar la seguridad de la ruta destino."""
+    """
+    Guarda el logo SVG en disco tras validar la seguridad de la ruta destino.
+    
+    Args:
+        destination: Ruta donde guardar el archivo.
+        size: Tamaño en píxeles del logo (se ajusta entre 16 y 1024).
+        
+    Returns:
+        Path del archivo guardado si tuvo éxito, None en caso contrario.
+    """
     if not isinstance(destination, (str, Path)):
         return None
     try:
@@ -382,7 +391,10 @@ def _get_stripe_params(scale: float, franjas_count: int) -> Tuple[Tuple[float, f
                   (i + 1) * (92.0 * scale / franjas_count)) for i in range(franjas_count))
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza franjas decorativas graduadas en el interior del escudo."""
+    """
+    Renderiza franjas decorativas graduadas en el interior del escudo.
+    Captura excepciones de tipo gráfico para mantener la estabilidad del hilo.
+    """
     try:
         if not math.isfinite(scale) or scale <= 0: return
         franjas_count = max(6, int(28 * scale))
@@ -430,7 +442,16 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una barra horizontal decorativa con gradiente lineal sobre el lienzo."""
+    """
+    Dibuja una barra horizontal decorativa con gradiente lineal sobre el lienzo.
+    
+    Args:
+        canvas: Objeto de dibujo.
+        width: Ancho total en píxeles.
+        height: Grosor de la línea.
+        canvas_x/y: Coordenadas de origen.
+        stops: Colores para la interpolación del gradiente.
+    """
     try:
         w_val = max(1, int(width))
         h_val = max(1, int(height))
@@ -441,7 +462,10 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, 
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, 
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Renderiza un gráfico circular de progreso (anillo) en las coordenadas especificadas."""
+    """
+    Renderiza un gráfico circular de progreso (anillo) en las coordenadas especificadas.
+    Gestiona internamente valores fuera de rango para evitar errores de renderizado.
+    """
     if percent is None or not isinstance(percent, (int, float)): return
     try:
         val = float(percent)
