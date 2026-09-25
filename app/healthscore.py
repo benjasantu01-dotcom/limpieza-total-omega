@@ -89,11 +89,11 @@ __all__ = [
 ]
 
 # Umbrales base para normalizar métricas a un rango de salud [0, 1]
-_LIMIT_JUNK_MB: Final[float] = 5000.0          
-_LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
-_LIMIT_STARTUP_COUNT: Final[int] = 20          
-_LIMIT_RAM_PERCENT: Final[float] = 35.0        
-_LIMIT_DISK_PERCENT: Final[float] = 25.0       
+_LIMIT_JUNK_MB: Final[float] = 5000.0          # Límite a partir del cual la salud de archivos basura llega a 0
+_LIMIT_DUPLICATE_MB: Final[float] = 2000.0     # Límite de MB duplicados considerados inaceptables
+_LIMIT_STARTUP_COUNT: Final[int] = 20          # Cantidad máxima de programas de inicio permitidos antes de penalizar
+_LIMIT_RAM_PERCENT: Final[float] = 35.0        # Porcentaje de RAM libre mínimo deseado
+_LIMIT_DISK_PERCENT: Final[float] = 25.0       # Porcentaje de espacio en disco libre mínimo deseado
 
 def _safe_inv(val: float, fallback: float = 1.0) -> float:
     """Calcula el inverso multiplicativo para normalización, evitando divisiones por cero."""
