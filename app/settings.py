@@ -381,7 +381,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         os.replace(temp_path, ruta)
         
         if not ruta.exists() or ruta.stat().st_size == 0:
-            raise IOError("Error de persistencia: El archivo resultante está corrupto o vacío.")
+            raise IOError("Error de persistencia: El archivo resultante está vacío.")
             
         _load_impl.cache_clear()
         _CACHED_SETTINGS.clear()

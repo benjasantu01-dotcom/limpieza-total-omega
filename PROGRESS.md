@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 266
+- Sin respuesta de la IA (error o límite): 265
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 52 | 2 | 9 | 7 | 114 |
-| 2026-09-25 | 124 | 11 | 25 | 8 | 152 |
+| 2026-09-24 | 52 | 2 | 9 | 7 | 110 |
+| 2026-09-25 | 125 | 11 | 25 | 8 | 155 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **40**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **37**
 - rendimiento: **29**
 - seguridad defensiva: **28**
 
@@ -31,9 +31,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **19**
 - `scanner.py`: **18**
+- `settings.py`: **17**
 - `assistant.py`: **16**
 - `memory.py`: **16**
-- `settings.py`: **16**
 - `healthscore.py`: **15**
 - `quarantine.py`: **15**
 - `safety.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T13:45:03` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de guardado atómico en `save()` incorporando una verificación de integridad tras la escritura (`os.fsync`) y un manejo de errores más estricto ante fallos del sistema de archivos, asegurando que si la escritura falla durante la operación de reemplazo, no se pierda el archivo original ni se corrompa la configuración.
 - `2026-09-25T13:33:49` **quarantine.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de concurrencia y bloqueos de sistema en `quarantine_file` añadiendo una pausa estratégica (reintento) al verificar el borrado del archivo origen, asegurando que el sistema haya liberado el descriptor de archivo tras la operación de copia.
 - `2026-09-25T13:33:03` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar archivos inaccesibles o bloqueados por el sistema de forma más elegante, añadiendo una comprobación adicional mediante `os.access` y capturando errores específicos de acceso durante la apertura, evitando así que el escáner aborte ante archivos en uso.
 - `2026-09-25T13:25:18` **healthscore.py** (robustez ante casos límite): Se introdujo una validación defensiva en la función `summarize` para evitar un `NameError` ante entradas no válidas y se protegió la lógica de renderizado de barras contra desbordamientos mediante la normalización de pesos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T12:42:33` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global en `compute_score` y la legibilidad en `summarize` reemplazando iteraciones redundantes y búsquedas lineales en diccionarios por accesos directos y comprensión de listas, reduciendo el overhead computacional.
 - `2026-09-25T12:41:50` **diskreport.py** (rendimiento): Optimizamos `_collect_summary_data` para reducir drásticamente la sobrecarga de consultas al sistema de archivos al centralizar el uso de `path.suffix` y mejorar la gestión del diccionario `ext_stats`, evitando búsquedas repetitivas y llamadas a métodos innecesarias dentro del bucle crítico de escaneo.
 - `2026-09-25T12:32:36` **assistant.py** (rendimiento): Se optimizó el proceso de inferencia local del asistente convirtiendo `_TOKENS_MAP` en un `dict` con claves más específicas y pre-procesando la consulta para realizar búsquedas directas de tiempo constante O(1) en lugar de iterar sobre todos los tokens de la pregunta, reduciendo la carga de CPU ante consultas largas.
-- `2026-09-25T12:31:27` **settings.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de bajo nivel y validación para clarificar la lógica de seguridad y el manejo de tipos, facilitando el mantenimiento y la auditoría del código.
