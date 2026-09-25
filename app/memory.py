@@ -31,7 +31,7 @@ import time
 from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, Final, Set, NewType
+from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, Final, Set, NewType, Iterator
 from safety import is_protected_path, is_safe_to_modify
 
 if TYPE_CHECKING:
@@ -50,7 +50,6 @@ BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
 # Máscaras de acceso Win32:
-# QUERY_LIMITED_INFORMATION es suficiente para métricas; SET_QUOTA es requerido para modificar el working set.
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x100
 PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
@@ -92,15 +91,15 @@ TRIM_WARNING: Final[str] = (
 class MEMORYSTATUSEX(ctypes.Structure):
     """Estructura Win32 para GlobalMemoryStatusEx (reporta estado físico y virtual)."""
     _fields_: List[Tuple[str, type]] = [
-        ("dwLength", ctypes.c_ulong),              # Tamaño de la estructura en bytes
-        ("dwMemoryLoad", ctypes.c_ulong),          # % de RAM ocupada (0-100)
-        ("ullTotalPhys", ctypes.c_ulonglong),      # RAM física total
-        ("ullAvailPhys", ctypes.c_ulonglong),      # RAM física disponible
-        ("ullTotalPageFile", ctypes.c_ulonglong),  # Total de memoria de paginación
-        ("ullAvailPageFile", ctypes.c_ulonglong),  # Disponible en paginación
-        ("ullTotalVirtual", ctypes.c_ulonglong),   # Espacio virtual total
-        ("ullAvailVirtual", ctypes.c_ulonglong),   # Espacio virtual disponible
-        ("ullAvailExtendedVirtual", ctypes.c_ulonglong), # Reservado
+        ("dwLength", ctypes.c_ulong),
+        ("dwMemoryLoad", ctypes.c_ulong),
+        ("ullTotalPhys", ctypes.c_ulonglong),
+        ("ullAvailPhys", ctypes.c_ulonglong),
+        ("ullTotalPageFile", ctypes.c_ulonglong),
+        ("ullAvailPageFile", ctypes.c_ulonglong),
+        ("ullTotalVirtual", ctypes.c_ulonglong),
+        ("ullAvailVirtual", ctypes.c_ulonglong),
+        ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
     ]
 
 @dataclass(frozen=True)
@@ -186,18 +185,21 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     """Procesa el CSV de PowerShell y retorna los N procesos con mayor consumo."""
     if not raw_csv_text: return []
     seen_pids: Set[int] = set()
-    def _gen_processes():
+
+    def process_generator() -> Iterator[ProcessMemory]:
         for line in raw_csv_text.splitlines():
             parts = line.split(",", 2)
             if len(parts) == 3:
                 try:
-                    pid = int("".join(c for c in parts[1] if c.isdigit()))
-                    ws = int("".join(c for c in parts[2] if c.isdigit()))
-                    if pid > 0 and pid not in seen_pids and ws < MAX_VALID_PROCESS_MEM:
-                        seen_pids.add(pid)
-                        yield ProcessMemory(parts[0].strip("'\" "), pid, BytesValue(ws))
-                except ValueError: continue
-    return sorted(_gen_processes(), key=lambda p: p.working_set, reverse=True)[:limit]
+                    pid_val = int("".join(c for c in parts[1] if c.isdigit()))
+                    ws_val = int("".join(c for c in parts[2] if c.isdigit()))
+                    if pid_val > 0 and pid_val not in seen_pids and ws_val < MAX_VALID_PROCESS_MEM:
+                        seen_pids.add(pid_val)
+                        yield ProcessMemory(parts[0].strip("'\" "), pid_val, BytesValue(ws_val))
+                except ValueError: 
+                    continue
+
+    return sorted(process_generator(), key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Invoca GlobalMemoryStatusEx para obtener métricas físicas del sistema (Win32 API)."""
@@ -271,7 +273,7 @@ def _is_system_process(pid: int) -> bool:
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _get_process_path(pid: int) -> Optional[Path]:
-    """Resuelve la ruta completa del ejecutable asociado a un proceso."""
+    """Resuelve la ruta completa del ejecutable asociado a un proceso mediante Win32 API."""
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
     if not handle: return None
