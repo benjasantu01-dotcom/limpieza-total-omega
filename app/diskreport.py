@@ -113,14 +113,18 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if entry.is_symlink():
             return True
         
-        # Validar existencia antes de procesar para evitar race conditions
-        entry_path = Path(entry.path)
+        entry_path = Path(entry.path).resolve()
+        
+        # Prevenir Directory Traversal: asegurar que la ruta esté dentro de la raíz
+        if not entry_path.is_relative_to(root_path):
+            return True
+
         if not entry_path.exists():
             return True
         
         if is_protected_path(entry_path):
             return True
-    except (OSError, PermissionError, AttributeError, RuntimeError):
+    except (OSError, PermissionError, AttributeError, RuntimeError, ValueError):
         return True
     return False
 
@@ -242,7 +246,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Filtrado rápido sin resolver la ruta
+                        # Filtrado rápido con comprobación de seguridad integrada
                         if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         

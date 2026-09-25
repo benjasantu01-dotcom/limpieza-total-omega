@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 256
+- Sin respuesta de la IA (error o límite): 253
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 97 | 6 | 15 | 9 | 157 |
-| 2026-09-25 | 89 | 8 | 17 | 7 | 99 |
+| 2026-09-24 | 97 | 6 | 15 | 9 | 153 |
+| 2026-09-25 | 91 | 9 | 17 | 7 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **42**
 - robustez ante casos límite: **38**
-- seguridad defensiva: **35**
+- seguridad defensiva: **37**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **20**
+- `diskreport.py`: **19**
 - `assistant.py`: **18**
-- `diskreport.py`: **18**
 - `memory.py`: **17**
 - `safety.py`: **16**
 - `settings.py`: **16**
 - `healthscore.py`: **15**
 - `quarantine.py`: **14**
 - `duplicates.py`: **13**
+- `branding.py`: **13**
 - `browser.py`: **12**
-- `branding.py`: **12**
 - `organizer.py`: **8**
 - `startup.py`: **5**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T09:28:33` **diskreport.py** (seguridad defensiva): Se ha robustecido `_is_excluded_path` añadiendo una comprobación explícita mediante `path.is_relative_to(root_path)` para prevenir ataques de Directory Traversal que pudieran intentar escapar de la raíz de escaneo, asegurando que solo se analicen archivos contenidos estrictamente dentro de la jerarquía permitida.
+- `2026-09-25T09:27:39` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la validación implícita por una verificación explícita mediante `is_safe_to_modify` antes de cualquier operación de I/O, garantizando que el acceso al sistema de archivos sea siempre validado contra las reglas de seguridad antes de intentar crear directorios o escribir archivos.
 - `2026-09-25T09:19:17` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante errores de concurrencia y corrupción de archivos mediante la implementación de una validación más estricta en `_is_file_secure_to_read` (verificando que el archivo sea un archivo regular y no un link simbólico de forma explícita) y asegurando que las operaciones de lectura y escritura manejen correctamente situaciones de disco lleno o permisos denegados sin dejar estados inconsistentes en la caché.
 - `2026-09-25T09:17:18` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `check_recent_executable_in_downloads` y `process_entry`, añadiendo validaciones específicas para manejar correctamente archivos inaccesibles o eliminados durante el recorrido y evitando fallos innecesarios en la comparación de fechas.
 - `2026-09-25T09:08:38` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_is_unc_path` en `_validate_structural_safety` para detectar rutas UNC mediante la inspección directa del prefijo de cadena antes de cualquier resolución de sistema, evitando errores de I/O en entornos donde el acceso a red está bloqueado o es inestable.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T08:37:21` **scanner.py** (rendimiento): Se optimizó el proceso de filtrado de extensiones mediante la eliminación de una llamada innecesaria a `os.path.splitext` dentro de cada ciclo de `process_entry`, reemplazándola por una verificación directa sobre el sufijo del `DirEntry` que ya se encontraba en memoria, reduciendo la carga de procesamiento en directorios con alta densidad de archivos.
 - `2026-09-25T08:27:39` **quarantine.py** (rendimiento): Optimizé `list_items` para reducir drásticamente las llamadas a disco mediante la creación de un conjunto (set) de nombres de archivos existentes, evitando así realizar búsquedas lineales costosas dentro del bucle de validación de cada ítem del manifiesto.
 - `2026-09-25T08:26:32` **memory.py** (rendimiento): Se optimizó el rendimiento de `parse_windows_process_csv` reemplazando la creación de una lista intermedia mediante `splitlines()` por un generador que procesa línea por línea, evitando duplicados innecesarios en memoria y mejorando la eficiencia durante la iteración sobre los resultados de `Get-Process`.
-- `2026-09-25T08:16:16` **diskreport.py** (rendimiento): Optimizé `walk_files` eliminando llamadas redundantes a `Path(entry.path).resolve()` dentro del loop, utilizando `entry.path` directamente para obtener estadísticas y verificar el árbol, reduciendo drásticamente las syscalls y mejorando el rendimiento en discos mecánicos o directorios profundos.
-- `2026-09-25T08:06:52` **assistant.py** (rendimiento): Optimizé `local_answer` para realizar una única pasada sobre los tokens del usuario usando un conjunto (`set`) para la búsqueda de disparadores, eliminando el riesgo de iteraciones múltiples y mejorando la eficiencia de resolución en el bucle principal.

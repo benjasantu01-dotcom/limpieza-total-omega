@@ -1311,3 +1311,41 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-25T09:21:10` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-25T09:21:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T09:21:10` Corrida terminada. Total usado hoy: 220.
+- `2026-09-25T09:27:02` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-09-25T09:27:39` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la validación implícita por una verificación explícita mediante `is_safe_to_modify` antes de cualquier operación de I/O, garantizando que el acceso al sistema de archivos sea siempre validado contra las reglas de seguridad antes de intentar crear directorios o escribir archivos.
+- `2026-09-25T09:28:05` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-09-25T09:28:33` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha robustecido `_is_excluded_path` añadiendo una comprobación explícita mediante `path.is_relative_to(root_path)` para prevenir ataques de Directory Traversal que pudieran intentar escapar de la raíz de escaneo, asegurando que solo se analicen archivos contenidos estrictamente dentro de la jerarquía permitida.
+- `2026-09-25T09:28:45` Tests FALLARON:
+```
+egrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:236: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size - assert [] == [1, 2]
+  
+  Right contains 2 more items, first extra item: 1
+  
+  Full diff:
+  + []
+  - [
+  -     1,
+  -     2,
+  - ]
+FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning - AssertionError: assert None != None
+ +  where None = <function hash_file at 0x7f8a0e265300>(PosixPath('/tmp/pytest-of-runner/pytest-3/test_partial_hash_only_reads_t0/a'))
+ +    where <function hash_file at 0x7f8a0e265300> = duplicates.hash_file
+ +  and   None = <function hash_file at 0x7f8a0e265300>(PosixPath('/tmp/pytest-of-runner/pytest-3/test_partial_hash_only_reads_t0/b'))
+ +    where <function hash_file at 0x7f8a0e265300> = duplicates.hash_file
+4 failed, 295 passed, 4 warnings in 1.44s
+
+```
+- `2026-09-25T09:28:45` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `_collect_candidates` y `_group_paths_by_hash` reemplazando chequeos redundantes o inseguros por validaciones centralizadas a través de `is_safe_to_modify`, asegurando que ninguna ruta pase al pipeline de procesamiento sin ser verificada contra la lista de protegidos.
+- `2026-09-25T09:28:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T09:28:45` Corrida terminada. Total usado hoy: 224.
