@@ -122,11 +122,12 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
-    """Intenta abrir el archivo en modo binario compartido para verificar uso exclusivo por otro proceso."""
+    """Intenta validar acceso exclusivo al archivo. Retorna True si está bloqueado o inaccesible."""
+    if not os.access(path, os.R_OK): return True
     try:
         if path.stat().st_size == 0: return False
         with open(path, 'rb') as f:
-            f.peek(1)
+            f.read(1)
         return False
     except (OSError, PermissionError, IOError):
         return True

@@ -516,3 +516,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-25T13:28:31` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-09-25T13:28:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T13:28:31` Corrida terminada. Total usado hoy: 316.
+- `2026-09-25T13:31:54` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-25T13:31:59` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T13:32:32` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-25T13:32:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T13:33:03` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_file_locked` para manejar archivos inaccesibles o bloqueados por el sistema de forma más elegante, añadiendo una comprobación adicional mediante `os.access` y capturando errores específicos de acceso durante la apertura, evitando así que el escáner aborte ante archivos en uso.
+- `2026-09-25T13:33:49` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la resiliencia ante errores de concurrencia y bloqueos de sistema en `quarantine_file` añadiendo una pausa estratégica (reintento) al verificar el borrado del archivo origen, asegurando que el sistema haya liberado el descriptor de archivo tras la operación de copia.
+- `2026-09-25T13:33:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-25T13:33:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T13:33:54` Corrida terminada. Total usado hoy: 320.

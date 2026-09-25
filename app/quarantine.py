@@ -25,6 +25,7 @@ import uuid
 import hashlib
 import tempfile
 import ctypes
+import time
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
@@ -686,17 +687,23 @@ def quarantine_file(
     try:
         file_hash = _atomic_isolate_file(source_path, destination, original_size)
         
-        if not source_path.exists():
-            raise RuntimeError("El archivo origen ha desaparecido inesperadamente.")
+        # Pequeño reintento por posibles locks de sistema tras operaciones I/O intensivas
+        retries = 3
+        while retries > 0:
+            if not source_path.exists():
+                break
+            try:
+                source_path.unlink()
+                break
+            except OSError:
+                retries -= 1
+                time.sleep(0.1)
+                if retries == 0:
+                    raise RuntimeError("El archivo origen sigue bloqueado por el sistema.")
         
         item = _register_quarantine_item(destination, source_path, file_hash, reason, original_size, base)
         if not item.verify_integrity(destination):
             raise RuntimeError("Integridad post-registro fallida.")
-        
-        try:
-            source_path.unlink()
-        except OSError as e:
-            raise RuntimeError(f"Archivo aislado, pero falló el borrado del origen: {e}")
             
         return item
     except Exception as e:
