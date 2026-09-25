@@ -242,7 +242,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         
                         if entry.path in visited_files:
                             continue
-                            
+                        
+                        # Captura del stat protegida por excepciones por si el archivo es eliminado
+                        # o los permisos cambian mientras se recorre el directorio.
                         st = entry.stat(follow_symlinks=False)
                         if st.st_size < min_size:
                             continue

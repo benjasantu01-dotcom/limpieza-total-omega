@@ -243,6 +243,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
+                        # Manejo granular de tipos de archivo para evitar errores por bloqueo
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode: Inode = (st.st_dev, st.st_ino)

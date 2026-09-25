@@ -805,3 +805,12 @@ FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - Nam
 - `2026-09-25T04:13:19` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext` ante valores numéricos extremos o inválidos inyectados por fuentes externas, implementando `math.isfinite` en todas las validaciones de `ingest` y asegurando que `get_metric` devuelva el valor por defecto si una métrica, aunque existente, es `NaN` o `Inf`.
 - `2026-09-25T04:13:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T04:13:19` Corrida terminada. Total usado hoy: 100.
+- `2026-09-25T04:21:28` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-09-25T04:22:05` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de entrada y condiciones de carrera en el sistema de archivos mediante una validación estricta de la ruta, un chequeo de tipos preventivo y una gestión de excepciones más granular.
+- `2026-09-25T04:22:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T04:22:32` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-25T04:22:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T04:23:03` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en `entry.stat()` y `entry.is_dir()`, asegurando que un único permiso denegado no detenga el escaneo completo de una unidad.
+- `2026-09-25T04:23:14` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una gestión robusta de errores en `_collect_candidates` y `group_by_size` para manejar la posibilidad de que archivos cambien o desaparezcan entre la llamada a `os.scandir` y el acceso `stat()`, evitando que una excepción de sistema interrumpa todo el proceso de escaneo.
+- `2026-09-25T04:23:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T04:23:14` Corrida terminada. Total usado hoy: 104.
