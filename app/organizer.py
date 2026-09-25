@@ -87,7 +87,8 @@ class JunkFile:
 
 def is_valid_junk_extension(filename: str) -> bool:
     """Comprueba si el sufijo de un nombre de archivo coincide con una extensión basura."""
-    return os.path.splitext(filename)[1].lower() in JUNK_EXTENSIONS
+    name_lower = filename.lower()
+    return any(name_lower.endswith(ext) for ext in JUNK_EXTENSIONS)
 
 def _get_win_attributes(entry: os.DirEntry) -> int:
     """Extrae la máscara de bits de atributos Win32 (System/Hidden/Junction) usando stat directo."""

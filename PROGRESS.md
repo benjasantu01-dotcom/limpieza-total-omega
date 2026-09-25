@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 64 | 3 | 10 | 8 | 119 |
-| 2026-09-25 | 113 | 11 | 22 | 8 | 146 |
+| 2026-09-24 | 62 | 3 | 10 | 8 | 117 |
+| 2026-09-25 | 115 | 11 | 22 | 8 | 148 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **40**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **30**
-- rendimiento: **25**
+- seguridad defensiva: **38**
+- robustez ante casos límite: **29**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
 - `scanner.py`: **18**
-- `settings.py`: **17**
 - `memory.py`: **17**
-- `assistant.py`: **16**
+- `settings.py`: **16**
 - `healthscore.py`: **15**
-- `quarantine.py`: **14**
+- `quarantine.py`: **15**
+- `assistant.py`: **15**
 - `branding.py`: **13**
 - `safety.py`: **13**
 - `duplicates.py`: **12**
 - `browser.py`: **9**
-- `organizer.py`: **7**
+- `organizer.py`: **8**
 - `startup.py`: **5**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T12:55:30` **quarantine.py** (rendimiento): Optimicé `purge_all` para evitar búsquedas lineales costosas dentro del bucle de borrado utilizando un `set` y un acceso directo a la lógica de validación, mejorando el rendimiento en directorios con gran cantidad de archivos aislados.
+- `2026-09-25T12:55:00` **organizer.py** (rendimiento): Optimicé el método `is_valid_junk_extension` reemplazando la creación dinámica de una tupla mediante `os.path.splitext` en cada iteración del escáner por una comprobación de sufijo directa sobre el nombre del archivo, reduciendo el overhead de llamadas al sistema y la creación de objetos innecesarios en el bucle principal.
 - `2026-09-25T12:42:33` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global en `compute_score` y la legibilidad en `summarize` reemplazando iteraciones redundantes y búsquedas lineales en diccionarios por accesos directos y comprensión de listas, reduciendo el overhead computacional.
 - `2026-09-25T12:41:50` **diskreport.py** (rendimiento): Optimizamos `_collect_summary_data` para reducir drásticamente la sobrecarga de consultas al sistema de archivos al centralizar el uso de `path.suffix` y mejorar la gestión del diccionario `ext_stats`, evitando búsquedas repetitivas y llamadas a métodos innecesarias dentro del bucle crítico de escaneo.
 - `2026-09-25T12:32:36` **assistant.py** (rendimiento): Se optimizó el proceso de inferencia local del asistente convirtiendo `_TOKENS_MAP` en un `dict` con claves más específicas y pre-procesando la consulta para realizar búsquedas directas de tiempo constante O(1) en lugar de iterar sobre todos los tokens de la pregunta, reduciendo la carga de CPU ante consultas largas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T12:00:44` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de renderizado mediante docstrings estandarizados que describen los parámetros y el comportamiento ante entradas inválidas, facilitando la comprensión del flujo de datos en componentes críticos de la UI.
 - `2026-09-25T11:51:22` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_load_impl()` capturando explícitamente `json.JSONDecodeError` y `UnicodeDecodeError` durante la carga, y añadiendo una validación de éxito tras `os.replace` para asegurar que el archivo de configuración no quede en un estado inconsistente tras un fallo de escritura parcial.
 - `2026-09-25T11:41:42` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` y `_check_file_integrity` capturando errores de acceso específicos y validando explícitamente los atributos de los objetos devueltos por `os.stat` para prevenir errores de tipo durante la inspección de integridad.
-- `2026-09-25T11:40:48` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_manifest` mediante la captura explícita de excepciones durante la serialización y la implementación de un mecanismo de limpieza de recursos (`finally`) para asegurar que el archivo temporal siempre sea eliminado en caso de error, evitando dejar basura en el disco o estados inconsistentes.
-- `2026-09-25T11:32:12` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_windows_process_csv` y `_get_process_path` mediante la captura explícita de excepciones de bajo nivel y la validación estricta de parámetros para evitar cierres inesperados al procesar datos del sistema.
