@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 251
+- Sin respuesta de la IA (error o límite): 250
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 97 | 6 | 15 | 9 | 145 |
-| 2026-09-25 | 92 | 10 | 17 | 7 | 106 |
+| 2026-09-24 | 97 | 6 | 15 | 9 | 141 |
+| 2026-09-25 | 93 | 10 | 17 | 7 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **42**
+- seguridad defensiva: **39**
 - robustez ante casos límite: **38**
-- seguridad defensiva: **38**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
@@ -33,8 +33,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **19**
 - `assistant.py`: **18**
 - `memory.py`: **18**
+- `settings.py`: **17**
 - `safety.py`: **16**
-- `settings.py`: **16**
 - `healthscore.py`: **15**
 - `quarantine.py`: **14**
 - `duplicates.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T09:58:30` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la escritura atómica del archivo de configuración, sustituyendo el chequeo genérico por `ensure_safe_to_modify` por una validación explícita mediante `is_safe_to_modify` antes de la operación de reemplazo, evitando excepciones no controladas y asegurando que la ruta destino no sea un punto de reanálisis antes de realizar el movimiento.
 - `2026-09-25T09:41:49` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_path` validando explícitamente el tamaño del búfer de caracteres de `GetModuleFileNameExW` antes de intentar crear un objeto `Path` y normalizarlo, evitando así posibles desbordamientos o rutas malformadas.
 - `2026-09-25T09:28:33` **diskreport.py** (seguridad defensiva): Se ha robustecido `_is_excluded_path` añadiendo una comprobación explícita mediante `path.is_relative_to(root_path)` para prevenir ataques de Directory Traversal que pudieran intentar escapar de la raíz de escaneo, asegurando que solo se analicen archivos contenidos estrictamente dentro de la jerarquía permitida.
 - `2026-09-25T09:27:39` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la validación implícita por una verificación explícita mediante `is_safe_to_modify` antes de cualquier operación de I/O, garantizando que el acceso al sistema de archivos sea siempre validado contra las reglas de seguridad antes de intentar crear directorios o escribir archivos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T08:48:18` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` y `_is_excluded_path` añadiendo validaciones explícitas contra rutas que no existen (posibles enlaces rotos o archivos borrados durante la enumeración) y mejorando el manejo de `PermissionError` para evitar interrupciones silenciosas del análisis ante archivos bloqueados.
 - `2026-09-25T08:47:02` **assistant.py** (robustez ante casos límite): Se reforzó `_get_source_value` para prevenir posibles errores de acceso a atributos en objetos complejos mediante un chequeo estricto de tipo y la exclusión explícita de métodos especiales y atributos privados, garantizando robustez ante configuraciones inesperadas.
 - `2026-09-25T08:37:21` **scanner.py** (rendimiento): Se optimizó el proceso de filtrado de extensiones mediante la eliminación de una llamada innecesaria a `os.path.splitext` dentro de cada ciclo de `process_entry`, reemplazándola por una verificación directa sobre el sufijo del `DirEntry` que ya se encontraba en memoria, reduciendo la carga de procesamiento en directorios con alta densidad de archivos.
-- `2026-09-25T08:27:39` **quarantine.py** (rendimiento): Optimizé `list_items` para reducir drásticamente las llamadas a disco mediante la creación de un conjunto (set) de nombres de archivos existentes, evitando así realizar búsquedas lineales costosas dentro del bucle de validación de cada ítem del manifiesto.
