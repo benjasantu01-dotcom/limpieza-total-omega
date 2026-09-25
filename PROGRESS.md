@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **178** (35.3% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 265
 
@@ -16,26 +16,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 77 | 4 | 12 | 9 | 126 |
-| 2026-09-25 | 101 | 10 | 18 | 8 | 139 |
+| 2026-09-24 | 76 | 3 | 12 | 9 | 124 |
+| 2026-09-25 | 102 | 10 | 19 | 8 | 141 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **42**
+- manejo de errores y validación de entradas: **43**
 - seguridad defensiva: **39**
 - robustez ante casos límite: **38**
 - legibilidad y documentación: **32**
-- rendimiento: **27**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **18**
 - `diskreport.py`: **18**
 - `memory.py`: **17**
-- `settings.py`: **16**
+- `settings.py`: **17**
 - `assistant.py`: **16**
-- `healthscore.py`: **15**
 - `safety.py`: **15**
+- `healthscore.py`: **14**
 - `quarantine.py`: **14**
 - `branding.py`: **13**
 - `duplicates.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T11:51:22` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_load_impl()` capturando explícitamente `json.JSONDecodeError` y `UnicodeDecodeError` durante la carga, y añadiendo una validación de éxito tras `os.replace` para asegurar que el archivo de configuración no quede en un estado inconsistente tras un fallo de escritura parcial.
 - `2026-09-25T11:41:42` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` y `_check_file_integrity` capturando errores de acceso específicos y validando explícitamente los atributos de los objetos devueltos por `os.stat` para prevenir errores de tipo durante la inspección de integridad.
 - `2026-09-25T11:40:48` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_manifest` mediante la captura explícita de excepciones durante la serialización y la implementación de un mecanismo de limpieza de recursos (`finally`) para asegurar que el archivo temporal siempre sea eliminado en caso de error, evitando dejar basura en el disco o estados inconsistentes.
 - `2026-09-25T11:32:12` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_windows_process_csv` y `_get_process_path` mediante la captura explícita de excepciones de bajo nivel y la validación estricta de parámetros para evitar cierres inesperados al procesar datos del sistema.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T09:27:39` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la validación implícita por una verificación explícita mediante `is_safe_to_modify` antes de cualquier operación de I/O, garantizando que el acceso al sistema de archivos sea siempre validado contra las reglas de seguridad antes de intentar crear directorios o escribir archivos.
 - `2026-09-25T09:19:17` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante errores de concurrencia y corrupción de archivos mediante la implementación de una validación más estricta en `_is_file_secure_to_read` (verificando que el archivo sea un archivo regular y no un link simbólico de forma explícita) y asegurando que las operaciones de lectura y escritura manejen correctamente situaciones de disco lleno o permisos denegados sin dejar estados inconsistentes en la caché.
 - `2026-09-25T09:17:18` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `check_recent_executable_in_downloads` y `process_entry`, añadiendo validaciones específicas para manejar correctamente archivos inaccesibles o eliminados durante el recorrido y evitando fallos innecesarios en la comparación de fechas.
-- `2026-09-25T09:08:38` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_is_unc_path` en `_validate_structural_safety` para detectar rutas UNC mediante la inspección directa del prefijo de cadena antes de cualquier resolución de sistema, evitando errores de I/O en entornos donde el acceso a red está bloqueado o es inestable.

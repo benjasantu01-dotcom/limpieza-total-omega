@@ -378,6 +378,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             os.replace(ruta, bak_path)
         
         os.replace(temp_path, ruta)
+        
+        # Verificación de integridad tras el reemplazo
+        if not ruta.exists() or ruta.stat().st_size == 0:
+            raise IOError("Error de persistencia: El archivo resultante está corrupto o vacío.")
+            
         _load_impl.cache_clear()
         _CACHED_SETTINGS.clear()
         return ruta

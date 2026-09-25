@@ -402,3 +402,11 @@ assert not True
 - `2026-09-25T11:41:42` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_get_path_stat_robust` y `_check_file_integrity` capturando errores de acceso específicos y validando explícitamente los atributos de los objetos devueltos por `os.stat` para prevenir errores de tipo durante la inspección de integridad.
 - `2026-09-25T11:41:42` Rotación — log: 1235 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T11:41:42` Corrida terminada. Total usado hoy: 276.
+- `2026-09-25T11:49:50` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-09-25T11:50:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T11:50:51` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-25T11:51:22` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` y `_load_impl()` capturando explícitamente `json.JSONDecodeError` y `UnicodeDecodeError` durante la carga, y añadiendo una validación de éxito tras `os.replace` para asegurar que el archivo de configuración no quede en un estado inconsistente tras un fallo de escritura parcial.
+- `2026-09-25T11:51:58` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-25T11:52:23` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemContext.is_valid_structure
+- `2026-09-25T11:52:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T11:52:23` Corrida terminada. Total usado hoy: 280.
