@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 30
+- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 261
+- Sin respuesta de la IA (error o límite): 258
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 45 | 5 | 8 | 3 | 77 |
+| 2026-09-23 | 45 | 5 | 8 | 3 | 73 |
 | 2026-09-24 | 128 | 10 | 21 | 12 | 179 |
-| 2026-09-25 | 9 | 1 | 1 | 0 | 5 |
+| 2026-09-25 | 10 | 2 | 2 | 0 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **43**
+- seguridad defensiva: **44**
 - legibilidad y documentación: **41**
 - robustez ante casos límite: **38**
 - manejo de errores y validación de entradas: **33**
@@ -38,8 +38,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **15**
 - `duplicates.py`: **15**
 - `settings.py`: **15**
+- `memory.py`: **15**
 - `safety.py`: **14**
-- `memory.py`: **14**
 - `quarantine.py`: **11**
 - `startup.py`: **6**
 - `organizer.py`: **6**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T00:47:54` **memory.py** (seguridad defensiva): Se ha mejorado `_get_process_path` para prevenir la resolución de rutas maliciosas o inexistentes, asegurando que la validación de seguridad mediante `is_protected_path` se realice sobre rutas normalizadas y absolutas antes de permitir cualquier operación de trim.
 - `2026-09-25T00:38:08` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del sistema de `SystemMetrics` y la evaluación del `Pipeline` agregando validaciones defensivas contra estados nulos o no finitos en los inputs, garantizando que el motor de puntuación no colapse ante datos de entrada corrompidos o mal formateados durante su procesamiento.
 - `2026-09-25T00:37:08` **diskreport.py** (seguridad defensiva): Se ha robustecido el escaneo defensivo en `_is_excluded_path` añadiendo una verificación explícita mediante `path.resolve()` antes de comparar con `root_path`, asegurando que ninguna resolución de rutas (incluyendo posibles trucos de sistema de archivos o enlaces) permita que el escáner acceda a directorios fuera del alcance definido por el usuario (Path Traversal).
 - `2026-09-25T00:29:23` **browser.py** (seguridad defensiva): Se ha implementado una validación de seguridad defensiva en `_sum_directory_recursive` mediante el uso de `is_safe_to_modify` antes de entrar en cada subdirectorio, garantizando que el escaneo no acceda a rutas que hayan sido marcadas como restringidas dinámicamente o que no cumplan con los criterios de seguridad del proyecto.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T13:46:30` **quarantine.py** (legibilidad y documentación): Mejoré la documentación de las funciones de entrada/salida y validación de seguridad mediante docstrings descriptivos, añadiendo detalles sobre las precondiciones y el comportamiento de las excepciones para mejorar la mantenibilidad y legibilidad técnica.
 - `2026-09-24T13:35:26` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en las colecciones internas, la clarificación de docstrings mediante el uso de parámetros tipados y la descripción detallada de las estructuras de control, facilitando la mantenibilidad a largo plazo sin alterar la lógica.
 - `2026-09-24T13:23:28` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de configuración incluyendo un manejo explícito de `OSError` al abrir el archivo y validando que el archivo no sea un directorio (usando `is_file()` junto a `lstat`), evitando fallos silenciosos o inesperados en entornos con permisos restrictivos.
-- `2026-09-24T13:15:24` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas centralizando la validación de archivos en `_run_file_heuristics` y `scan_file`, asegurando que el acceso a metadatos mediante `_safe_stat` sea verificado para evitar errores al procesar entradas inexistentes o bloqueadas durante el escaneo.

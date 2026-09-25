@@ -402,3 +402,38 @@ assert not {'replace'}
 - `2026-09-25T00:41:30` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-09-25T00:41:30` Rotación — log: 1250 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T00:41:30` Corrida terminada. Total usado hoy: 16.
+- `2026-09-25T00:47:24` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-09-25T00:47:54` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado `_get_process_path` para prevenir la resolución de rutas maliciosas o inexistentes, asegurando que la validación de seguridad mediante `is_protected_path` se realice sobre rutas normalizadas y absolutas antes de permitir cualquier operación de trim.
+- `2026-09-25T00:47:54` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T00:48:24` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-25T00:49:04` Tests FALLARON:
+```
+^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE UnsafePathError
+
+evolve/tests/test_safety.py:255: Failed
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:78: SyntaxWarning: invalid escape sequence '\)'
+    Convierte una ruta a formato largo de Windows (\\?\) para evitar limitaciones
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:230: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) no aptas para archivos."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+1 failed, 298 passed, 8 warnings in 1.37s
+
+```
+- `2026-09-25T00:49:04` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad de `purge_all` y `purge_item` reemplazando llamadas a `_safe_unlink` (que internamente hace chequeos redundantes y potencialmente fallidos si no se manejan bien los permisos) por una validación estricta del sandbox antes de proceder al borrado, asegurando que solo se toque contenido que reside físicamente bajo la ruta base de cuarentena validada.
+- `2026-09-25T00:49:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-25T00:49:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T00:49:08` Corrida terminada. Total usado hoy: 20.
