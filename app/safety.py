@@ -347,18 +347,25 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
             code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
             raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
 
+def _get_path_stat_robust(path: Path) -> os.stat_result:
+    """
+    Intenta obtener el stat del archivo abriéndolo de forma no exclusiva.
+    Reduce la probabilidad de fallos por cambios de estado entre exist() y stat().
+    """
+    try:
+        return path.stat()
+    except (OSError, FileNotFoundError):
+        # Fallback para archivos bloqueados donde el stat simple falla
+        raise UnsafePathError(f"No se pudo acceder a los metadatos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
+
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     """
-    Verifica metadatos en disco y compara con estado inicial para prevenir ataques TOCTOU 
-    (Time-of-Check Time-of-Use). Asegura que el archivo no haya sido reemplazado por 
-    un enlace simbólico o un archivo diferente durante la ejecución.
+    Verifica metadatos en disco y compara con estado inicial para prevenir ataques TOCTOU.
     """
     if not os.access(path, os.R_OK):
         raise UnsafePathError(f"Acceso de lectura denegado a {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-    try:
-        current_stat = path.stat()
-    except (PermissionError, OSError, FileNotFoundError) as e:
-        raise UnsafePathError(f"Acceso denegado o archivo perdido ({e}): {path.name}", SafetyValidationErrorCode.IO_ERROR)
+    
+    current_stat = _get_path_stat_robust(path)
     
     # Compara el identificador único del dispositivo y del inodo/índice de archivo
     if getattr(current_stat, 'st_dev', 0) != initial_stat.st_dev or getattr(current_stat, 'st_ino', 0) != initial_stat.st_ino:
@@ -381,14 +388,10 @@ def _is_readonly(path_str: str) -> bool:
 
 def _validate_access_permissions(path: Path) -> None:
     """Verifica si el proceso actual tiene permisos de lectura/escritura sobre el recurso."""
-    if not path.exists(): return
-    try:
-        if not os.access(path, os.R_OK):
-            raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED)
-        if not os.access(path, os.W_OK):
-            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-    except (OSError, PermissionError):
-        raise UnsafePathError("Acceso al sistema de archivos denegado.", SafetyValidationErrorCode.IO_ERROR)
+    if not os.access(path, os.R_OK):
+        raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED)
+    if not os.access(path, os.W_OK):
+        raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
 
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
@@ -582,26 +585,21 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
     
+    # Verificación de integridad con acceso temprano a metadatos
     if p.exists():
         _validate_access_permissions(p)
-        try: initial_stat = p.stat()
-        except (OSError, PermissionError) as e: raise UnsafePathError(f"No se pueden obtener metadatos: {e}", SafetyValidationErrorCode.IO_ERROR)
+        initial_stat = _get_path_stat_robust(p)
         if not bool(initial_stat.st_mode & stat.S_IWRITE):
             raise UnsafePathError(f"Acceso de escritura denegado: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
         if os.name == 'nt': 
             _validate_ntfs_reparse_redirection(p)
-            try:
-                if not os.access(p.parent, os.W_OK):
+            if not os.access(p.parent, os.W_OK):
                      raise UnsafePathError("Directorio contenedor marcado como solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
-            except (OSError, PermissionError): raise UnsafePathError("Directorio contenedor inaccesible.", SafetyValidationErrorCode.IO_ERROR)
-        try: _check_file_integrity(p, initial_stat)
-        except (OSError, PermissionError) as e: raise UnsafePathError(f"Error durante validación: {e}", SafetyValidationErrorCode.IO_ERROR)
+        _check_file_integrity(p, initial_stat)
     else:
         parent = p.parent
-        try:
-            if parent.exists() and not os.access(parent, os.W_OK):
+        if parent.exists() and not os.access(parent, os.W_OK):
                  raise UnsafePathError("Directorio contenedor no tiene permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-        except (OSError, PermissionError): raise UnsafePathError("Directorio contenedor inaccesible.", SafetyValidationErrorCode.IO_ERROR)
         if parent.exists() and is_protected_path(str(parent)):
             raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
     return p

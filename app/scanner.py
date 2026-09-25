@@ -216,8 +216,8 @@ class Scanner:
                 res = check_fn(path, entry, self.now_ts)
                 if isinstance(res, Suspicion):
                     self.results.append(res)
-            except Exception as e:
-                logger.debug(f"Error silencioso en heurística {check_fn.__name__}: {e}")
+            except Exception:
+                continue
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un único archivo sin recorrido recursivo, validando previamente su seguridad."""
@@ -232,8 +232,8 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
             res = check_fn(path, entry, now_ts)
             if isinstance(res, Suspicion):
                 findings.append(res)
-        except Exception as e:
-            logger.error(f"Error procesando {path.name} con {check_fn.__name__}: {e}")
+        except Exception:
+            continue
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:

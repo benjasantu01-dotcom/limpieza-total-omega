@@ -366,11 +366,12 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.write(serialized)
             f.flush()
             os.fsync(f.fileno())
+        
         if ruta.exists():
             ensure_safe_to_modify(ruta)
-            if bak_path.exists():
-                ensure_safe_to_modify(bak_path)
+            if bak_path.exists(): ensure_safe_to_modify(bak_path)
             os.replace(ruta, bak_path)
+        
         os.replace(temp_path, ruta)
         _load_impl.cache_clear()
         _CACHED_SETTINGS.clear()
@@ -380,7 +381,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     finally:
         if temp_path.exists():
             try: 
-                # Reemplazo seguro mediante intento de borrado validado
                 if is_safe_to_modify(str(temp_path)): os.remove(temp_path)
             except (OSError, PermissionError): pass
 
