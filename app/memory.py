@@ -282,7 +282,6 @@ def _get_process_path(pid: int) -> Optional[Path]:
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             p = Path(buf.value).resolve(strict=False)
-            # Validación defensiva: debe existir, ser absoluta y no estar protegida
             if p.is_file() and p.is_absolute() and not is_protected_path(str(p)):
                 return p
     except (ctypes.ArgumentError, OSError, ValueError): 
@@ -298,23 +297,31 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Ejecuta la API nativa `EmptyWorkingSet` de Win32."""
+    """Ejecuta la API nativa `EmptyWorkingSet` de Win32 con validaciones estrictas."""
     if not _is_windows: return False, "Solo soportado en Windows."
     try: target_pid = int(pid)
     except (ValueError, TypeError): return False, "PID no válido."
-    if _is_system_process(target_pid): return False, "Proceso crítico protegido."
+    
+    if _is_system_process(target_pid): 
+        return False, "Proceso crítico protegido."
     
     psapi = ctypes.windll.psapi
-    if not hasattr(psapi, "EmptyWorkingSet"): return False, "Función no disponible."
+    if not hasattr(psapi, "EmptyWorkingSet"): 
+        return False, "Función no disponible."
 
     is_safe, err = _is_safe_to_trim(target_pid)
     if not is_safe: return False, err or "Verificación fallida."
 
     kernel32 = ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
-    if not proc_handle: return False, "Acceso denegado al proceso."
+    if not proc_handle: 
+        if ctypes.GetLastError() == ERROR_ACCESS_DENIED:
+            return False, "Acceso denegado: requiere privilegios elevados."
+        return False, "No se pudo abrir el proceso para modificación."
+    
     try:
         if not psapi.EmptyWorkingSet(proc_handle):
             return False, "Operación denegada por el sistema."
         return True, f"Working set liberado. {TRIM_WARNING}"
-    finally: kernel32.CloseHandle(proc_handle)
+    finally: 
+        kernel32.CloseHandle(proc_handle)

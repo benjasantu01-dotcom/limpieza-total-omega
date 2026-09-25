@@ -693,3 +693,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-25T02:31:03` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y `summarize` implementando una validación temprana y un manejo de errores más exhaustivo en los cálculos del pipeline, asegurando que cualquier entrada nula o malformada resulte en un estado de error manejable en lugar de una excepción no capturada.
 - `2026-09-25T02:31:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T02:31:03` Corrida terminada. Total usado hoy: 60.
+- `2026-09-25T02:39:34` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-09-25T02:40:36` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-25T02:41:39` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-25T02:42:45` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-25T02:43:57` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-25T02:44:42` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y sus ayudantes al implementar una validación de seguridad estricta y manejo de errores específico, asegurando que cualquier fallo en la apertura de procesos (como acceso denegado a nivel de sistema) sea capturado explícitamente sin depender de comportamientos indeterminados de la API de Windows.
+- `2026-09-25T02:44:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T02:45:11` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-25T02:45:38` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load_manifest` y `save_manifest` mediante el manejo explícito de errores de E/S y la validación de integridad antes del parseo JSON, evitando estados corruptos y asegurando que las excepciones se gestionen sin abortar el flujo principal de la aplicación.
+- `2026-09-25T02:45:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T02:45:38` Corrida terminada. Total usado hoy: 64.
