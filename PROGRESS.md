@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Mejoras aceptadas: **171** (33.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 273
 
@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 30 | 3 | 5 | 3 | 57 |
+| 2026-09-23 | 27 | 3 | 4 | 3 | 57 |
 | 2026-09-24 | 128 | 10 | 21 | 12 | 179 |
-| 2026-09-25 | 12 | 3 | 3 | 1 | 37 |
+| 2026-09-25 | 16 | 3 | 3 | 1 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
 - robustez ante casos límite: **38**
-- legibilidad y documentación: **36**
+- legibilidad y documentación: **33**
+- manejo de errores y validación de entradas: **28**
 - rendimiento: **27**
-- manejo de errores y validación de entradas: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **17**
+- `browser.py`: **16**
+- `diskreport.py`: **16**
+- `healthscore.py`: **16**
 - `settings.py`: **15**
 - `assistant.py`: **15**
-- `browser.py`: **15**
-- `diskreport.py`: **15**
-- `healthscore.py`: **15**
-- `duplicates.py`: **14**
+- `duplicates.py`: **15**
 - `memory.py`: **14**
-- `safety.py`: **13**
 - `branding.py`: **13**
-- `quarantine.py`: **11**
-- `organizer.py`: **6**
+- `safety.py`: **12**
+- `quarantine.py`: **10**
+- `organizer.py`: **5**
 - `startup.py`: **5**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T02:31:03` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` implementando una validación temprana y un manejo de errores más exhaustivo en los cálculos del pipeline, asegurando que cualquier entrada nula o malformada resulte en un estado de error manejable en lugar de una excepción no capturada.
+- `2026-09-25T02:30:50` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos, integrando una validación de tipo más estricta sobre la entrada `path` y asegurando que cualquier fallo en `os.open` o lectura de bytes retorne `None` en lugar de propagar excepciones, manteniendo la integridad del flujo de procesamiento.
+- `2026-09-25T02:30:23` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros numéricos (`limit`) mediante un helper común y asegurando que las rutas de entrada sean normalizadas antes de cualquier procesamiento para evitar excepciones inesperadas en `pathlib`.
+- `2026-09-25T02:29:53` **browser.py** (manejo de errores y validación de entradas): Se reforzó la validación de los parámetros de entrada y el manejo de excepciones en las funciones de escaneo (`_sum_directory_recursive` y `directory_size`) para prevenir errores de ejecución ante rutas inexistentes o inaccesibles, asegurando que el módulo sea robusto frente a cambios en el entorno del usuario.
 - `2026-09-25T02:22:08` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la robustez del método `ingest` en `SystemContext` mediante la validación explícita de la integridad del objeto de datos antes de iterar, evitando excepciones durante el procesamiento de entradas malformadas o tipos de datos inesperados.
 - `2026-09-25T00:59:30` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_file_secure_to_read` al reemplazar una verificación de existencia simple por el uso de `path.resolve()` antes de realizar chequeos, evitando así vulnerabilidades por rutas relativas o cambios en el estado del sistema de archivos entre la comprobación y la apertura (TOCTOU).
 - `2026-09-25T00:47:54` **memory.py** (seguridad defensiva): Se ha mejorado `_get_process_path` para prevenir la resolución de rutas maliciosas o inexistentes, asegurando que la validación de seguridad mediante `is_protected_path` se realice sobre rutas normalizadas y absolutas antes de permitir cualquier operación de trim.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T00:17:47` **scanner.py** (robustez ante casos límite): Se ha robustecido el manejo de estados de archivo inaccesibles dentro de `Scanner._run_file_heuristics` y `scan_file`, asegurando que el motor de escaneo no se detenga ante archivos bloqueados por el sistema operativo o con permisos restringidos durante la ejecución de las heurísticas.
 - `2026-09-25T00:17:16` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera y manejo de errores en `ensure_safe_to_modify` al centralizar la verificación de acceso a archivos mediante una apertura controlada con permisos mínimos (no destructivos), evitando `p.exists()` seguido de `p.stat()` que es susceptible a cambios temporales.
 - `2026-09-25T00:11:58` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_locked` para que maneje excepciones de acceso denegado de forma más precisa, evitando el cierre prematuro de recursos y mejorando el manejo de estados de archivo volátiles comunes en entornos con antivirus o indexadores activos.
-- `2026-09-25T00:10:07` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_get_process_path` para evitar fallos cuando el proceso ha terminado prematuramente (Race Condition) o cuando el buffer de ruta es insuficiente, asegurando que la captura de errores (`WinError` de ctypes) no rompa la ejecución del hilo principal.
-- `2026-09-24T13:55:22` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de heurística y métodos de la clase `Scanner`, aclarando la lógica de validación y el propósito de cada verificación para facilitar el mantenimiento y la auditoría.
-- `2026-09-24T13:54:56` **safety.py** (legibilidad y documentación): Se introdujo un `Enum` explícito `SafetyAction` para tipificar y documentar el propósito de las validaciones, sustituyendo comentarios dispersos y mejorando la legibilidad de la lógica de negocio al distinguir claramente entre validaciones de "lectura" y "escritura/destrucción".
-- `2026-09-24T13:46:30` **quarantine.py** (legibilidad y documentación): Mejoré la documentación de las funciones de entrada/salida y validación de seguridad mediante docstrings descriptivos, añadiendo detalles sobre las precondiciones y el comportamiento de las excepciones para mejorar la mantenibilidad y legibilidad técnica.

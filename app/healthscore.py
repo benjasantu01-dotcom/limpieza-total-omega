@@ -254,7 +254,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in _PIPELINE:
         try:
             area_ratio = entry.scorer(metrics)
-        except (ValueError, ZeroDivisionError, TypeError):
+        except Exception:
             area_ratio = 0.0
             
         if not math.isfinite(area_ratio):
