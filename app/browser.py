@@ -212,6 +212,10 @@ def _sum_directory_recursive(
     if root_abs in memo:
         return memo[root_abs]
 
+    # Validar seguridad antes de procesar el directorio
+    if not is_safe_to_modify(Path(root_abs)) or is_protected_path(Path(root_abs)):
+        return 0
+
     total_bytes: int = 0
     try:
         with os.scandir(root_abs) as it:

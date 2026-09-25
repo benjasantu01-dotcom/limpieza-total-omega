@@ -1608,3 +1608,34 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-09-25T00:18:03` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez del archivo ante condiciones de carrera y fallos de E/S mediante la implementación de `os.replace` para el guardado atómico junto con un manejo de excepciones más granular, asegurando que las operaciones críticas sobre el sistema de archivos no dejen el estado en un punto inconsistente si ocurren errores de concurrencia.
 - `2026-09-25T00:18:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T00:18:03` Corrida terminada. Total usado hoy: 8.
+- `2026-09-25T00:26:27` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-09-25T00:26:58` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-25T00:27:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T00:27:49` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-25T00:28:36` Tests FALLARON:
+```
+ests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:78: SyntaxWarning: invalid escape sequence '\)'
+    Convierte una ruta a formato largo de Windows (\\?\) para evitar limitaciones
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:230: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) no aptas para archivos."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_assistant_module_cannot_delete_or_move_anything - AssertionError: el asistente solo aconseja, no ejecuta: {'replace'}
+assert not ({'Answer', 'AssistantConfig', 'MetricSpec', 'Path', 'ProblemCriterion', 'Request', ...} & {'delete_reviewed', 'move', 'purge_all', 'purge_item', 'quarantine_file', 'remove', ...})
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: assistant.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+2 failed, 297 passed, 8 warnings in 1.77s
+
+```
+- `2026-09-25T00:28:36` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Reforcé la seguridad de `_is_safe_text_structure` implementando una validación estricta que rechaza cadenas que contengan patrones de *path traversal* (`..`) o inyecciones de comandos incluso cuando están ocultas tras caracteres de control, asegurando que el input del usuario nunca pueda ser interpretado como una ruta o comando ejecutable.
+- `2026-09-25T00:29:11` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` al aplicar el principio de "defensa en profundidad" mediante la validación estricta de la ruta destino antes de cualquier operación de escritura, asegurando que el proceso de guardado no ocurra si la ruta es protegida o inválida.
+- `2026-09-25T00:29:23` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha implementado una validación de seguridad defensiva en `_sum_directory_recursive` mediante el uso de `is_safe_to_modify` antes de entrar en cada subdirectorio, garantizando que el escaneo no acceda a rutas que hayan sido marcadas como restringidas dinámicamente o que no cumplan con los criterios de seguridad del proyecto.
+- `2026-09-25T00:29:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T00:29:23` Corrida terminada. Total usado hoy: 12.
