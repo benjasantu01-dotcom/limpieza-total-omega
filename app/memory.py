@@ -279,12 +279,15 @@ def _get_process_path(pid: int) -> Optional[Path]:
     if not handle: return None
     try:
         psapi = ctypes.windll.psapi
-        buf = ctypes.create_unicode_buffer(260)
-        if psapi.GetModuleFileNameExW(handle, None, buf, 260) > 0:
+        # Max path length: 32767 chars en versiones modernas, pero usamos 1024 para seguridad
+        buf = ctypes.create_unicode_buffer(1024)
+        if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             p = Path(buf.value).resolve(strict=False)
             if p.is_absolute() and not is_protected_path(str(p)):
                 return p
-    except (ctypes.ArgumentError, OSError): pass
+    except (ctypes.ArgumentError, OSError, ValueError): 
+        # Captura errores de acceso, procesos que terminaron o problemas de codificación
+        pass
     finally: kernel32.CloseHandle(handle)
     return None
 

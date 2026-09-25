@@ -197,14 +197,17 @@ def _get_sha256(path: Path) -> str:
 def _is_file_locked(path: Path) -> bool:
     """
     Determina si un archivo está siendo bloqueado por otro proceso.
-    
-    Técnica: Intenta abrir el archivo en modo binario; si el SO deniega el acceso
-    por concurrencia, se asume el estado de "bloqueado".
     """
     if not path.exists():
         return True
     try:
+        # Abrir en modo lectura exclusiva para testear bloqueo
         with open(path, "rb") as f:
+            # En Windows, intentar obtener acceso de escritura para confirmar si es bloqueante
+            try:
+                os.dup(f.fileno())
+            except OSError:
+                return True
             return False
     except (OSError, IOError):
         return True
@@ -212,13 +215,6 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
     """
     Elimina un archivo tras validar seguridad y opcionalmente su integridad.
-    
-    Args:
-        path: Ruta a eliminar.
-        expected_hash: Hash opcional para evitar borrado de archivos sustituidos.
-
-    Returns:
-        True si la eliminación fue exitosa, False de lo contrario.
     """
     try:
         if not path.exists():
@@ -260,8 +256,6 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
 def _check_path_syntax_integrity(path: Path) -> None:
     """
     Previene ataques de 'Path Traversal' validando profundidad y caracteres.
-    
-    Lanza UnsafePathError si la ruta es sospechosa o viola restricciones de sistema.
     """
     path_str = str(path)
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
@@ -312,9 +306,6 @@ def _ensure_path_ownership(path: Path) -> None:
 def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Resuelve y prepara el directorio de cuarentena (sandbox).
-    
-    Asegura que el directorio exista, no esté en una ruta protegida y cumpla
-    con las validaciones de seguridad de propiedad del sistema.
     """
     if not base:
         raise ValueError("El directorio base no puede estar vacío.")
@@ -657,12 +648,6 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Ejecuta el flujo completo de aislamiento, integrando validación y persistencia.
-    
-    Este método realiza el aislamiento en cuatro etapas:
-    1. Validación previa de la elegibilidad del origen.
-    2. Preparación y verificación de seguridad del sandbox destino.
-    3. Transferencia atómica con verificación post-escritura (SHA-256).
-    4. Registro final del estado en el manifiesto JSON.
     """
     if source is None:
         raise ValueError("Ruta de origen nula o vacía.")
@@ -738,9 +723,6 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Restaura un ítem al origen tras validar integridad y permisos de destino.
-    
-    Verifica que el destino original sea seguro y no exista, asegurando
-    la integridad del archivo restaurado mediante su hash SHA-256 original.
     """
     if not isinstance(item_id, str) or not item_id.strip():
         raise ValueError("ID de ítem inválido.")
