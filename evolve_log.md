@@ -566,3 +566,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-25T14:06:17` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
 - `2026-09-25T14:06:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T14:06:17` Corrida terminada. Total usado hoy: 332.
+- `2026-09-25T14:12:41` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-25T14:12:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T14:12:50` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-25T14:12:56` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-25T14:13:11` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-25T14:13:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T14:14:25` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_copy_with_verification` y `_write_temp_to_final` para garantizar que la copia de archivos no sea vulnerable a condiciones de carrera o ataques de enlace simbólico, asegurando que el descriptor de archivo operado sea siempre un archivo regular y que la ruta de destino no sea manipulada entre la validación y la escritura.
+- `2026-09-25T14:14:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-25T14:15:21` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_kernel_managed` para prevenir el acceso a archivos de paginación o hibernación en cualquier unidad, no solo en la raíz, protegiendo al sistema de posibles corrupciones o bloqueos de acceso durante operaciones de escaneo.
+- `2026-09-25T14:15:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T14:15:21` Corrida terminada. Total usado hoy: 336.

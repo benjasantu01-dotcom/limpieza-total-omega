@@ -300,7 +300,7 @@ def _is_directory_junction(path_str: str) -> bool:
     return bool(attrs & Win32Attr.DIRECTORY and attrs & Win32Attr.REPARSE_POINT)
 
 def _is_kernel_managed(path: Path) -> bool:
-    """Identifica archivos del sistema crítico que el kernel mantiene bloqueados siempre."""
+    """Identifica archivos del sistema crítico que el kernel mantiene bloqueados siempre, sin importar ubicación."""
     return path.name.lower() in ("pagefile.sys", "hiberfil.sys", "swapfile.sys")
 
 @lru_cache(maxsize=1024)

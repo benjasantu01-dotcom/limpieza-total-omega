@@ -534,22 +534,31 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
 
 def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> None:
     """Ejecuta la copia binaria y verifica la integridad del archivo resultante."""
-    with open(source, "rb") as f_src:
-        stat_src = os.fstat(f_src.fileno())
-        if not (stat_src.st_mode & 0o100000):
-            raise OSError("El archivo origen no es un archivo regular.")
+    # Abrir origen con O_NOFOLLOW para prevenir race conditions sobre enlaces simbólicos
+    try:
+        fd_src = os.open(str(source), os.O_RDONLY | os.O_NOFOLLOW)
+    except OSError as e:
+        raise OSError(f"No se pudo abrir el origen de forma segura: {e}")
 
-        with open(temp_dest, "wb") as f_dst:
-            shutil.copyfileobj(f_src, f_dst)
-            f_dst.flush()
-            os.fsync(f_dst.fileno())
+    try:
+        with os.fdopen(fd_src, "rb") as f_src:
+            stat_src = os.fstat(f_src.fileno())
+            if not (stat_src.st_mode & 0o100000):
+                raise OSError("El archivo origen no es un archivo regular.")
+
+            with open(temp_dest, "wb") as f_dst:
+                shutil.copyfileobj(f_src, f_dst)
+                f_dst.flush()
+                os.fsync(f_dst.fileno())
+                
+        if temp_dest.stat().st_size != stat_src.st_size:
+            raise OSError("Falla de integridad: tamaño mismatch tras copia.")
             
-    if temp_dest.stat().st_size != stat_src.st_size:
-        raise OSError("Falla de integridad: tamaño mismatch tras copia.")
-        
-    final_hash = _get_sha256(temp_dest)
-    if not final_hash or final_hash != source_hash:
-        raise OSError("Falla crítica: el hash del archivo copiado no coincide.")
+        final_hash = _get_sha256(temp_dest)
+        if not final_hash or final_hash != source_hash:
+            raise OSError("Falla crítica: el hash del archivo copiado no coincide.")
+    finally:
+        pass
 
 
 def _write_temp_to_final(source: Path, destination: Path) -> str:
@@ -566,7 +575,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     ensure_safe_to_modify(destination.parent)
 
     source_hash = _get_sha256(source)
-    temp_dest = destination.with_suffix(".tmp")
+    temp_dest = destination.with_suffix(f".{uuid.uuid4().hex[:8]}.tmp")
     
     try:
         _copy_with_verification(source, temp_dest, source_hash)
