@@ -282,7 +282,8 @@ def _get_process_path(pid: int) -> Optional[Path]:
     try:
         psapi = ctypes.windll.psapi
         buf = ctypes.create_unicode_buffer(1024)
-        if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
+        length = psapi.GetModuleFileNameExW(handle, None, buf, 1024)
+        if length > 0 and length < 1024:
             p = Path(buf.value).resolve(strict=False)
             if p.is_file() and p.is_absolute() and not is_protected_path(str(p)):
                 return p

@@ -1349,3 +1349,41 @@ FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning 
 - `2026-09-25T09:28:45` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `_collect_candidates` y `_group_paths_by_hash` reemplazando chequeos redundantes o inseguros por validaciones centralizadas a través de `is_safe_to_modify`, asegurando que ninguna ruta pase al pipeline de procesamiento sin ser verificada contra la lista de protegidos.
 - `2026-09-25T09:28:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T09:28:45` Corrida terminada. Total usado hoy: 224.
+- `2026-09-25T09:37:13` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-09-25T09:37:43` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-09-25T09:38:43` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-25T09:39:46` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-25T09:40:52` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-25T09:41:05` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-25T09:41:49` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_get_process_path` validando explícitamente el tamaño del búfer de caracteres de `GetModuleFileNameExW` antes de intentar crear un objeto `Path` y normalizarlo, evitando así posibles desbordamientos o rutas malformadas.
+- `2026-09-25T09:42:03` Tests FALLARON:
+```
+r=str(revision))
+    
+>       assert not archivo.exists(), "el archivo debe salir de su lugar original"
+E       AssertionError: el archivo debe salir de su lugar original
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-2/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+
+evolve/tests/test_basic.py:144: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:236: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AssertionError: el archivo debe salir de su lugar original
+assert not True
+ +  where True = exists()
+ +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-2/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+1 failed, 298 passed, 4 warnings in 1.39s
+
+```
+- `2026-09-25T09:42:03` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se ha robustecido `_is_file_locked` para evitar falsos positivos y errores de acceso al usar un modo de apertura de lectura más cauteloso (RB), y se añadió una verificación de estado de archivo en `_is_safe_for_disk_op` para prevenir operaciones sobre archivos marcados como "Hidden" o "System" que hubieran escapado de las validaciones de `scandir`.
+- `2026-09-25T09:42:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T09:42:03` Corrida terminada. Total usado hoy: 228.
