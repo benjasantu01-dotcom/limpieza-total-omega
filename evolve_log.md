@@ -1159,3 +1159,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-25T07:06:46` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` reemplazando validaciones implícitas por un manejo de errores más explícito, asegurando que `ensure_safe_to_modify` se utilice correctamente para prevenir operaciones sobre rutas protegidas y evitando el uso de booleanos que ocultaban posibles excepciones de sistema durante el flujo de trabajo.
 - `2026-09-25T07:06:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T07:06:46` Corrida terminada. Total usado hoy: 168.
+- `2026-09-25T07:14:34` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-09-25T07:15:15` Tests FALLARON:
+```
+_source = Path(source)
+        try:
+            p_source = p_source.resolve(strict=True)
+        except (OSError, RuntimeError) as e:
+>           raise UnsafePathError(f"Ruta origen no válida o inaccesible: {e}")
+E           safety.UnsafePathError: [GENERIC] Ruta origen no válida o inaccesible: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_quarantine_missing_file_r0/no-existe.txt'
+
+app/quarantine.py:663: UnsafePathError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:232: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - safety.UnsafePathError: [GENERIC] Ruta origen no válida o inaccesible: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_quarantine_missing_file_r0/no-existe.txt'
+1 failed, 298 passed, 4 warnings in 1.47s
+
+```
+- `2026-09-25T07:15:15` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `quarantine_file` agregando validaciones preventivas contra estados inconsistentes del sistema (archivos que desaparecen durante la ejecución) y asegurando que las rutas de origen sean resueltas antes de cualquier operación, aplicando el enfoque de manejo de errores defensivo para evitar excepciones genéricas.
+- `2026-09-25T07:15:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-25T07:16:13` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `ensure_safe_to_modify` ante errores de concurrencia al capturar excepciones específicas (como `PermissionError` o `FileNotFoundError`) durante la creación de manejadores, evitando que el proceso completo se bloquee ante un archivo en transición (estado de carrera) mientras se verifica su integridad.
+- `2026-09-25T07:16:25` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de las heurísticas agregando validaciones de entrada (`None`/vacío) y capturas de excepciones específicas en `check_system_lookalike` y `_run_file_heuristics`, evitando que un error de acceso a un archivo detenga todo el proceso de escaneo.
+- `2026-09-25T07:16:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T07:16:25` Corrida terminada. Total usado hoy: 172.

@@ -267,15 +267,14 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
     """
     if os.name != 'nt': return False
     kernel32 = ctypes.windll.kernel32
-    # 0x00000000: No requiere acceso para probar existencia de bloqueo
-    # 0x00000003: FILE_SHARE_READ|FILE_SHARE_WRITE
-    # 0x00000003: OPEN_EXISTING
-    # 0x00000080: FILE_ATTRIBUTE_NORMAL
-    handle = kernel32.CreateFileW(
-        _to_long_path(path_str), 0, 0x00000003, None, 3, 0x00000080, None
-    )
-    if handle == -1: return True
-    kernel32.CloseHandle(handle)
+    try:
+        handle = kernel32.CreateFileW(
+            _to_long_path(path_str), 0, 0x00000003, None, 3, 0x00000080, None
+        )
+        if handle == -1: return True
+        kernel32.CloseHandle(handle)
+    except (OSError, Exception):
+        return True
     return False
 
 @lru_cache(maxsize=128)
@@ -556,16 +555,17 @@ def _get_final_path_normalized(path: Path) -> Optional[Path]:
     Permite detectar si un archivo ha sido redirigido mediante un Reparse Point (Junction).
     """
     kernel32 = ctypes.windll.kernel32
-    handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, 0, None, 3, 0x02000000, None)
-    if handle == -1: return None
     try:
-        buf = ctypes.create_unicode_buffer(1024)
-        if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0) > 0:
-            return Path(buf.value).resolve()
+        handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, 0, None, 3, 0x02000000, None)
+        if handle == -1: return None
+        try:
+            buf = ctypes.create_unicode_buffer(1024)
+            if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0) > 0:
+                return Path(buf.value).resolve()
+        finally:
+            kernel32.CloseHandle(handle)
     except (OSError, AttributeError, Exception):
         return None
-    finally:
-        kernel32.CloseHandle(handle)
     return None
 
 def _validate_ntfs_reparse_redirection(path: Path) -> None:

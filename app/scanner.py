@@ -116,10 +116,13 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     Detecta binarios con nombres de procesos del sistema ubicados fuera de System32.
     Riesgo: El malware suele intentar suplantar procesos legítimos mediante rutas falsas.
     """
-    if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
-        path_str = str(path).lower()
-        if SYSTEM32_LOWER not in path_str:
-            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+        try:
+            path_str = str(path).lower()
+            if SYSTEM32_LOWER not in path_str:
+                return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+        except Exception:
+            return None
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
@@ -214,7 +217,8 @@ class Scanner:
                 res = check_fn(path, entry, self.now_ts)
                 if isinstance(res, Suspicion):
                     self.results.append(res)
-            except Exception:
+            except (OSError, AttributeError, ValueError, TypeError):
+                logger.debug(f"Error en heurística {check_fn.__name__} para {path}")
                 continue
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
