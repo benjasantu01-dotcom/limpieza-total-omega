@@ -295,8 +295,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
 def _render_bar(points: int, max_val: int) -> str:
     """Visualización de barra de progreso ASCII para la interfaz."""
-    p = max(0, min(points, max_val))
-    return ('#' * p) + ('.' * (max_val - p))
+    safe_max = max(1, max_val)
+    p = max(0, min(points, safe_max))
+    return ('#' * p) + ('.' * (safe_max - p))
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera informe legible para la UI a partir del HealthResult."""
@@ -305,8 +306,9 @@ def summarize(result: HealthResult | None) -> List[str]:
     
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     bd = result.breakdown
-    lines.extend(f"  {area.capitalize():<12} {bd.get(area, 0):>2}/{maximo:<2} [{_render_bar(bd.get(area, 0), maximo)}]" 
-                 for area, maximo in WEIGHTS.items())
+    for area, maximo in WEIGHTS.items():
+        points = bd.get(area, 0)
+        lines.append(f"  {area.capitalize():<12} {points:>2}/{maximo:<2} [{_render_bar(points, maximo)}]")
     
     recs = result.recommendations or ["Sin recomendaciones."]
     lines.extend(("", "Recomendaciones:", *(f"  - {r}" for r in recs)))

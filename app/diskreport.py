@@ -269,11 +269,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(Path(entry.path))
                                 
-                        # Manejo de archivos: emisión de tupla (Ruta, Tamaño en bytes)
+                        # Manejo de archivos
                         elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat(follow_symlinks=False)
-                            if st.st_size >= 0:
-                                yield Path(entry.path), st.st_size
+                            try:
+                                st = entry.stat(follow_symlinks=False)
+                                if st.st_size >= 0:
+                                    yield Path(entry.path), st.st_size
+                            except (PermissionError, OSError):
+                                continue # Ignorar archivo bloqueado y continuar
                             
                     except (PermissionError, OSError):
                         continue
