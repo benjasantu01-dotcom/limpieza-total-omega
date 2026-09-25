@@ -437,3 +437,45 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-25T00:49:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-25T00:49:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T00:49:08` Corrida terminada. Total usado hoy: 20.
+- `2026-09-25T00:57:34` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-09-25T00:57:36` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T00:58:18` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: ValidationContext
+- `2026-09-25T00:58:43` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-25T00:59:30` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_is_file_secure_to_read` al reemplazar una verificación de existencia simple por el uso de `path.resolve()` antes de realizar chequeos, evitando así vulnerabilidades por rutas relativas o cambios en el estado del sistema de archivos entre la comprobación y la apertura (TOCTOU).
+- `2026-09-25T00:59:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T01:00:02` Tests FALLARON:
+```
+ird_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:78: SyntaxWarning: invalid escape sequence '\)'
+    Convierte una ruta a formato largo de Windows (\\?\) para evitar limitaciones
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:230: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) no aptas para archivos."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert ['PSPath', 'Real'] == ['Real']
+  
+  At index 0 diff: 'PSPath' != 'Real'
+  Left contains one more item: 'Real'
+  
+  Full diff:
+    [
+  +     'PSPath',
+        'Real',
+    ]
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 8 warnings in 1.09s
+
+```
+- `2026-09-25T01:00:02` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó `parse_registry_csv` añadiendo una validación defensiva estricta para evitar la inyección de comandos o el procesamiento de rutas que contengan caracteres de control ocultos o secuencias de escape de PowerShell, garantizando que solo se instancien objetos con rutas normalizadas y seguras.
+- `2026-09-25T01:00:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T01:00:02` Corrida terminada. Total usado hoy: 24.

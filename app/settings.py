@@ -285,12 +285,13 @@ def validate(raw_values: Any) -> AppSettings:
 
 def _is_file_secure_to_read(ruta: Path) -> bool:
     """Valida permisos y estructura de seguridad del archivo antes de la lectura."""
-    if not ruta.exists() or not ruta.is_file(): return False
     try:
-        st = ruta.lstat()
-        if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
-        ensure_safe_to_modify(ruta)
-        if not is_safe_to_modify(str(ruta)): return False
+        resolved = ruta.resolve()
+        if not resolved.exists() or not resolved.is_file(): return False
+        st = resolved.lstat()
+        if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(resolved): return False
+        ensure_safe_to_modify(resolved)
+        if not is_safe_to_modify(str(resolved)): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
         return True
     except (OSError, PermissionError):
