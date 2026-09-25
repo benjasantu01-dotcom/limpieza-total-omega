@@ -223,6 +223,10 @@ def _has_invalid_chars(path_str: Optional[str]) -> bool:
     if not isinstance(path_str, str) or not path_str: return True
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str))
 
+def _is_unc_path(path_str: str) -> bool:
+    """Detecta rutas de red UNC (Universal Naming Convention)."""
+    return path_str.startswith(("\\\\", "//"))
+
 @lru_cache(maxsize=128)
 def _is_reserved_device_name(name: str) -> bool:
     """Valida contra nombres de dispositivos legacy (CON, NUL, etc.) que bloquean la API Win32."""
@@ -483,6 +487,8 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """Valida la integridad de la estructura de la ruta (largo, caracteres, inyecciones)."""
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
+    if _is_unc_path(path_string):
+        raise UnsafePathError("Rutas UNC/Red bloqueadas.", SafetyValidationErrorCode.UNC_PATH)
     if ".." in path_string.split(os.sep):
         raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     if len(path_string) > MAX_PATH_LENGTH:
@@ -520,10 +526,6 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
     """Verifica límites de sandbox y restricciones específicas del tipo de volumen (ej. red)."""
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
-    
-    path_str = str(target_path)
-    if path_str.startswith(("\\\\", "//")):
-        raise UnsafePathError("Rutas UNC/Red bloqueadas.", SafetyValidationErrorCode.UNC_PATH)
         
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
@@ -645,7 +647,7 @@ def describe_protection(path: PathLike) -> str:
         p = normalize(path)
         raw_str = str(path)
     except (UnsafePathError, TypeError, ValueError): return "Ruta mal formada."
-    if raw_str.startswith(("\\\\", "//")): return f"'{raw_str}' es ruta de red."
+    if _is_unc_path(raw_str): return f"'{raw_str}' es ruta de red."
     if _is_device_file(p): return f"'{raw_str}' es un archivo de dispositivo."
     if is_drive_root(p): return f"'{p}' es raíz de unidad."
     if is_protected_path(str(p)): return f"'{p}' protegida por sistema."

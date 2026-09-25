@@ -197,17 +197,16 @@ def _get_sha256(path: Path) -> str:
 def _is_file_locked(path: Path) -> bool:
     """
     Determina si un archivo está siendo bloqueado por otro proceso.
-    Utiliza `os.dup` para intentar obtener un descriptor de archivo.
+    Utiliza un intento de apertura exclusivo para verificar disponibilidad.
     """
     if not path.exists():
         return True
     try:
-        with open(path, "rb") as f:
-            try:
-                os.dup(f.fileno())
-            except OSError:
-                return True
-            return False
+        # Intenta abrir con acceso compartido para lectura/escritura (o solo lectura)
+        # En sistemas POSIX esto suele ser siempre posible, en Windows falla si otro proceso tiene el lock
+        fd = os.open(path, os.O_RDWR) if os.access(path, os.W_OK) else os.open(path, os.O_RDONLY)
+        os.close(fd)
+        return False
     except (OSError, IOError):
         return True
 
