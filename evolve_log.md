@@ -795,3 +795,13 @@ FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - Nam
 - `2026-09-25T04:04:17` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimizé `is_protected_path` y `_is_system_path_cached` reemplazando el uso de `os.path.normpath` y la creación redundante de objetos `Path` en el bucle principal por comparaciones de cadenas directas, reduciendo drásticamente la sobrecarga de CPU al validar múltiples rutas.
 - `2026-09-25T04:04:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T04:04:17` Corrida terminada. Total usado hoy: 96.
+- `2026-09-25T04:11:18` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-09-25T04:11:48` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el método `_is_safe_entry` eliminando llamadas redundantes a `Path(entry.path)` y resoluciones de disco innecesarias, consolidando las verificaciones para reducir el costo de procesamiento por cada archivo escaneado.
+- `2026-09-25T04:12:17` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `_build_validator_map` y la lógica de validación usando un cache de validadores por clave y evitando reconstrucciones innecesarias del mapa en cada llamada, además de refactorizar `_coerce_and_verify` para mejorar la eficiencia en la recuperación de claves.
+- `2026-09-25T04:12:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T04:12:21` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-25T04:12:28` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-25T04:12:40` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-25T04:13:19` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext` ante valores numéricos extremos o inválidos inyectados por fuentes externas, implementando `math.isfinite` en todas las validaciones de `ingest` y asegurando que `get_metric` devuelva el valor por defecto si una métrica, aunque existente, es `NaN` o `Inf`.
+- `2026-09-25T04:13:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T04:13:19` Corrida terminada. Total usado hoy: 100.

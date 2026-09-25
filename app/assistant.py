@@ -304,7 +304,7 @@ class SystemContext:
     def get_metric(self, key: str, default: float) -> float:
         """Obtiene una métrica del contexto, aplicando un valor por defecto si no existe o es inválida."""
         val = getattr(self, key, None)
-        if val is None or not isinstance(val, (int, float)) or not math.isfinite(val):
+        if not isinstance(val, (int, float)) or not math.isfinite(val):
             return default
         return float(val)
 
@@ -393,8 +393,8 @@ class Answer:
 def _validate_context_integrity(ctx: SystemContext) -> bool:
     """Verifica que las métricas del contexto se encuentren dentro de rangos físicamente posibles."""
     return (
-        ctx.junk_mb >= 0 and math.isfinite(ctx.junk_mb) and
-        ctx.duplicate_mb >= 0 and math.isfinite(ctx.duplicate_mb) and
+        math.isfinite(ctx.junk_mb) and ctx.junk_mb >= 0 and
+        math.isfinite(ctx.duplicate_mb) and ctx.duplicate_mb >= 0 and
         0 <= ctx.get_metric("disk_free_percent", 0.0) <= 100 and
         0 <= ctx.get_metric("memory_available_percent", 0.0) <= 100
     )

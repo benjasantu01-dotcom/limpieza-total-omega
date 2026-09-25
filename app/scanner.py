@@ -150,11 +150,7 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Confirma que la ruta se mantiene dentro del alcance definido por el usuario."""
-        try:
-            p = Path(entry_path).resolve()
-            return str(p).lower().startswith(self.base_root_str)
-        except (OSError, RuntimeError):
-            return False
+        return entry_path.lower().startswith(self.base_root_str)
 
     def _has_invalid_name(self, name: str) -> bool:
         """Detecta nombres de archivo reservados o inválidos según el SO."""
@@ -173,14 +169,11 @@ class Scanner:
             return False
         if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
             return False
-        if not self._is_inside_base_root(entry.path):
+        if not self._is_inside_base_root(entry.path.lower()):
             return False
         if self._is_reparse_point(entry) or is_protected_path(Path(entry.path)):
             return False
-        try:
-            return not entry.is_symlink()
-        except (OSError, PermissionError, AttributeError):
-            return False
+        return not entry.is_symlink()
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Gestiona el registro de directorios visitados para evitar ciclos durante el escaneo."""
@@ -205,7 +198,6 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta el conjunto registrado de heurísticas sobre el archivo detectado."""
-        if not path: return
         for check_fn in ALL_CHECKS:
             try:
                 res = check_fn(path, entry, self.now_ts)
@@ -216,8 +208,7 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un único archivo sin recorrido recursivo, validando previamente su seguridad."""
-    if not isinstance(path, Path): return []
-    if is_protected_path(path): return []
+    if not isinstance(path, Path) or is_protected_path(path): return []
     try:
         if not path.is_file(): return []
     except (OSError, PermissionError): return []

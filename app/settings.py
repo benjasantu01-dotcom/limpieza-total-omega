@@ -228,6 +228,7 @@ class _Validators:
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(key, text)
         return _Validators._validate_enum_str(text, key)
 
+@lru_cache(maxsize=1)
 def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
     """Genera un mapa inmutable de validadores para la configuración."""
     bool_keys = {
@@ -273,10 +274,11 @@ def validate(raw_values: Any) -> AppSettings:
     if not _is_dict(raw_values): return DEFAULTS.copy()
     
     config = DEFAULTS.copy()
+    validators = _build_validator_map()
     try:
         for key_str, raw_val in raw_values.items():
             if (key_enum := _KEY_TO_ENUM.get(key_str)):
-                validated_val = _VALIDATOR_MAP[key_enum].func(key_enum, raw_val)
+                validated_val = validators[key_enum].func(key_enum, raw_val)
                 if validated_val is not None:
                     config[key_enum.value] = validated_val
     except Exception:
@@ -290,7 +292,6 @@ def _is_file_secure_to_read(ruta: Path) -> bool:
         if not ruta.exists() or not ruta.is_file(): return False
         st = ruta.lstat()
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
-        # Verificamos mediante is_safe_to_modify sin usar ensure_safe_to_modify que lanza excepción
         if not is_safe_to_modify(str(ruta)): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
         return True
@@ -335,10 +336,12 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Aplica consistencia forzada de tipos y reglas de negocio post-validación."""
     try:
+        # Recuperación optimizada evitando múltiples llamadas a get
         final = {k: settings.get(k, v) for k, v in DEFAULTS.items()}
-        # Verificación explícita de tipos críticos post-coerción
-        if not isinstance(final["asistente_activado"], bool): final["asistente_activado"] = False
-        if not isinstance(final["duplicados_tamano_minimo_kb"], int): final["duplicados_tamano_minimo_kb"] = 64
+        
+        # Coerción explícita de tipos críticos
+        final["asistente_activado"] = bool(final["asistente_activado"])
+        final["duplicados_tamano_minimo_kb"] = int(final["duplicados_tamano_minimo_kb"])
         
         if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
             final["asistente_activado"] = False
@@ -389,9 +392,10 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     """Actualiza selectivamente las preferencias y persite cambios si hubo modificaciones."""
     current = load(custom_base)
     modified = False
+    validators = _build_validator_map()
     for k, v in changes.items():
         if (key_enum := _KEY_TO_ENUM.get(k)):
-            val = _VALIDATOR_MAP[key_enum].func(key_enum, v)
+            val = validators[key_enum].func(key_enum, v)
             if val is not None and val != current.get(k):
                 current[k] = val
                 modified = True
