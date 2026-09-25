@@ -756,3 +756,12 @@ FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - Nam
 - `2026-09-25T03:22:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
 - `2026-09-25T03:22:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T03:22:08` Corrida terminada. Total usado hoy: 80.
+- `2026-09-25T03:30:37` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-09-25T03:31:23` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la actualización de los docstrings en las funciones críticas de validación de `safety.py`, clarificando los motivos técnicos (TOCTOU, Win32 API, integridad) detrás de cada chequeo para facilitar el mantenimiento y la auditoría.
+- `2026-09-25T03:31:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T03:31:55` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de las funciones de heurística añadiendo docstrings que explican el contexto de seguridad de cada regla, se ha tipado explícitamente el retorno de los métodos de la clase `Scanner` y se ha normalizado la gestión de excepciones para mejorar la mantenibilidad del código bajo el enfoque de legibilidad.
+- `2026-09-25T03:32:25` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._validate_enum_str
+- `2026-09-25T03:32:25` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T03:32:39` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-25T03:32:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T03:32:39` Corrida terminada. Total usado hoy: 84.
