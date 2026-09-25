@@ -87,8 +87,10 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Detecta archivos con doble extensión que intentan ocultar un ejecutable como otro tipo.
-    Riesgo: El usuario cree abrir un documento y ejecuta un binario.
+    Analiza si el nombre del archivo contiene una doble extensión (ej: documento.pdf.exe).
+    
+    Riesgo: Técnica de ingeniería social común para ocultar ejecutables maliciosos 
+    haciendo que parezcan documentos inofensivos ante usuarios con extensiones ocultas.
     """
     if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -96,8 +98,10 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Identifica ejecutables descargados recientemente en carpetas temporales o de usuario.
-    Riesgo: Mayor probabilidad de ser archivos maliciosos no analizados por el usuario.
+    Verifica si un ejecutable fue creado recientemente en carpetas de alta exposición.
+    
+    Riesgo: Los archivos recién descargados en ubicaciones volátiles tienen mayor 
+    probabilidad de no haber sido analizados por filtros de reputación del SO.
     """
     if not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
@@ -113,8 +117,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Detecta binarios con nombres de procesos del sistema ubicados fuera de System32.
-    Riesgo: El malware suele intentar suplantar procesos legítimos mediante rutas falsas.
+    Compara el nombre del archivo contra una lista negra de procesos críticos de sistema.
+    
+    Riesgo: El malware utiliza nombres de binarios legítimos (ej: svchost.exe) en 
+    directorios no estándar para evadir inspecciones superficiales del usuario.
     """
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         try:
@@ -127,8 +133,11 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Detecta ejecutables con tamaño de 0 bytes.
-    Riesgo: Puede ser un intento de bypass de AV o una descarga incompleta/corrupta.
+    Identifica ejecutables cuyo tamaño en disco es 0 bytes.
+    
+    Riesgo: Un ejecutable vacío puede ser un marcador de posición de un malware 
+    que intenta evadir detecciones activas o un residuo de una descarga interrumpida 
+    que podría corromper el comportamiento esperado de una aplicación legítima.
     """
     stats = _safe_stat(entry) if entry else None
     if stats:

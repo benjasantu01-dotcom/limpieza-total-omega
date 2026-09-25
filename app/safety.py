@@ -342,7 +342,11 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 }
 
 def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
-    """Recorre las reglas de validación y levanta excepción en la primera violación detectada."""
+    """
+    Itera sobre la lista de validadores de seguridad definidos.
+    Lanza UnsafePathError inmediatamente al encontrar cualquier discrepancia 
+    con las políticas de integridad, protegiendo contra el procesamiento de archivos no conformes.
+    """
     for rule in _VALIDATORS:
         if rule.predicate(path, current_stat):
             code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
@@ -362,7 +366,8 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     """
     Verifica metadatos en disco y compara con el estado inicial capturado.
-    Detecta condiciones de carrera (TOCTOU) comparando IDs únicos (st_dev/st_ino).
+    Implementa protección contra ataques TOCTOU (Time-of-Check to Time-of-Use) comparando 
+    identificadores unívocos de sistema (dev/ino) para asegurar que la ruta no ha sido reemplazada.
     """
     if not os.access(path, os.R_OK):
         raise UnsafePathError(f"Acceso de lectura denegado a {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
@@ -569,7 +574,11 @@ def _get_final_path_normalized(path: Path) -> Optional[Path]:
     return None
 
 def _validate_ntfs_reparse_redirection(path: Path) -> None:
-    """Asegura que la ruta no sea un proxy hacia otro volumen para evitar saltos de sandbox."""
+    """
+    Asegura que la ruta no sea un proxy hacia otro volumen o subdirectorio no autorizado.
+    Valida que la resolución final mediante API Win32 mantenga la consistencia 
+    con la ruta original esperada, evitando saltos de sandbox por redirecciones NTFS.
+    """
     if not path.exists(): return
     for parent in path.parents:
         if _is_reparse_point(str(parent)):

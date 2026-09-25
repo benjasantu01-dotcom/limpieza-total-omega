@@ -147,7 +147,12 @@ def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
     return wrapper
 
 class _Validators:
-    """Namespace de validadores estáticos para asegurar la integridad de la configuración."""
+    """Namespace de validadores estáticos para asegurar la integridad de la configuración.
+    
+    Cada validador recibe el valor crudo y retorna el valor normalizado o None
+    si la validación falla, delegando la recuperación de errores al sistema
+    de fallback de la app.
+    """
 
     @staticmethod
     def _is_reparse_point(path: Path) -> bool:
@@ -270,7 +275,11 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida y normaliza un diccionario crudo convirtiéndolo al esquema AppSettings."""
+    """Valida un dict crudo contra el esquema, descartando claves o valores inválidos.
+    
+    Si el archivo está corrupto o carece de claves obligatorias, esta función
+    retorna una copia de los valores predeterminados (DEFAULTS).
+    """
     if not _is_dict(raw_values): return DEFAULTS.copy()
     
     config = DEFAULTS.copy()
@@ -300,7 +309,7 @@ def _is_file_secure_to_read(ruta: Path) -> bool:
 
 @lru_cache(maxsize=4)
 def _load_impl(ruta: Path) -> AppSettings:
-    """Implementación privada cacheada para leer y verificar el archivo desde disco."""
+    """Carga y normaliza el contenido del JSON, garantizando la integridad de los datos."""
     try:
         if not _is_file_secure_to_read(ruta): return DEFAULTS.copy()
             
@@ -319,7 +328,7 @@ def _load_impl(ruta: Path) -> AppSettings:
         return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga los ajustes intentando leer el archivo principal o su respaldo .bak."""
+    """Carga ajustes, intentando primero con el archivo principal y luego con su respaldo."""
     ruta = settings_path(custom_base)
     cache_key = str(ruta)
     if cache_key in _CACHED_SETTINGS: return _CACHED_SETTINGS[cache_key].copy()
@@ -347,7 +356,7 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
         return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Guarda los ajustes usando escritura atómica: temp -> rename, con validación previa."""
+    """Persiste ajustes de forma atómica (temp -> backup -> original)."""
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     parent = ruta.parent
@@ -386,7 +395,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             except (OSError, PermissionError): pass
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Actualiza selectivamente las preferencias y persite cambios si hubo modificaciones."""
+    """Actualiza solo las claves modificadas y persite en disco si hay cambios."""
     current = load(custom_base)
     modified = False
     validators = _build_validator_map()
@@ -400,7 +409,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
-    """Restaura a valores de fábrica y limpia la caché."""
+    """Restaura la configuración a valores de fábrica y limpia la caché interna."""
     save(DEFAULTS, custom_base)
     _load_impl.cache_clear()
     _CACHED_SETTINGS.clear()
