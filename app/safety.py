@@ -263,20 +263,19 @@ def _is_offline(path_str: str) -> bool:
 def _is_file_locked_by_other_process(path_str: str) -> bool:
     """
     Verifica concurrencia usando Win32 API.
-    Abre con GENERIC_READ y acceso compartido. Si falla con acceso denegado, está en uso exclusivo.
+    Abre el archivo con acceso nulo y atributos de solo lectura para comprobar bloqueo.
     """
     if os.name != 'nt': return False
-    try:
-        kernel32 = ctypes.windll.kernel32
-        handle = kernel32.CreateFileW(
-            _to_long_path(path_str),
-            0x80000000, # GENERIC_READ
-            0x00000001 | 0x00000002 | 0x00000004, # FILE_SHARE_READ|WRITE|DELETE
-            None, 3, 0x00000080, None
-        )
-        if handle == -1: return True
-        kernel32.CloseHandle(handle)
-    except Exception: return True
+    kernel32 = ctypes.windll.kernel32
+    # 0x00000000: No requiere acceso para probar existencia de bloqueo
+    # 0x00000003: FILE_SHARE_READ|FILE_SHARE_WRITE
+    # 0x00000003: OPEN_EXISTING
+    # 0x00000080: FILE_ATTRIBUTE_NORMAL
+    handle = kernel32.CreateFileW(
+        _to_long_path(path_str), 0, 0x00000003, None, 3, 0x00000080, None
+    )
+    if handle == -1: return True
+    kernel32.CloseHandle(handle)
     return False
 
 @lru_cache(maxsize=128)

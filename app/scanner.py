@@ -199,8 +199,11 @@ class Scanner:
         try:
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack)
-            elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
-                self._run_file_heuristics(Path(entry.path), entry)
+            elif entry.is_file(follow_symlinks=False):
+                # Validar estado antes de procesar para evitar archivos especiales bloqueantes
+                stats = _safe_stat(entry)
+                if stats and self._is_relevant_extension(entry.name):
+                    self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, AttributeError):
             pass
 

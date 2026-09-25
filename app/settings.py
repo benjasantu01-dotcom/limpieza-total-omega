@@ -336,10 +336,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Aplica consistencia forzada de tipos y reglas de negocio post-validación."""
     try:
-        # Recuperación optimizada evitando múltiples llamadas a get
         final = {k: settings.get(k, v) for k, v in DEFAULTS.items()}
-        
-        # Coerción explícita de tipos críticos
         final["asistente_activado"] = bool(final["asistente_activado"])
         final["duplicados_tamano_minimo_kb"] = int(final["duplicados_tamano_minimo_kb"])
         
