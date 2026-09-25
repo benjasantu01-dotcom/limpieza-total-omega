@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 68 | 3 | 11 | 8 | 122 |
-| 2026-09-25 | 109 | 11 | 22 | 8 | 142 |
+| 2026-09-24 | 66 | 3 | 11 | 8 | 120 |
+| 2026-09-25 | 111 | 11 | 22 | 8 | 144 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
+- legibilidad y documentación: **40**
 - seguridad defensiva: **39**
-- legibilidad y documentación: **39**
-- robustez ante casos límite: **34**
-- rendimiento: **22**
+- robustez ante casos límite: **32**
+- rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
 - `scanner.py`: **18**
+- `settings.py`: **17**
 - `memory.py`: **17**
-- `settings.py`: **16**
-- `healthscore.py`: **15**
-- `assistant.py`: **15**
+- `assistant.py`: **16**
 - `safety.py`: **14**
+- `healthscore.py`: **14**
 - `quarantine.py`: **14**
-- `duplicates.py`: **13**
 - `branding.py`: **13**
+- `duplicates.py`: **12**
 - `browser.py`: **9**
 - `organizer.py`: **8**
 - `startup.py`: **5**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T12:32:36` **assistant.py** (rendimiento): Se optimizó el proceso de inferencia local del asistente convirtiendo `_TOKENS_MAP` en un `dict` con claves más específicas y pre-procesando la consulta para realizar búsquedas directas de tiempo constante O(1) en lugar de iterar sobre todos los tokens de la pregunta, reduciendo la carga de CPU ante consultas largas.
+- `2026-09-25T12:31:27` **settings.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de bajo nivel y validación para clarificar la lógica de seguridad y el manejo de tipos, facilitando el mantenimiento y la auditoría del código.
 - `2026-09-25T12:22:19` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings, la adición de Type Hints en la clase `Scanner` y el uso de un nombre más descriptivo para la constante `reparse_attr` (renombrada a `REPARSE_POINT_ATTR_MASK` para reflejar su rol como máscara de bits), facilitando la mantenibilidad del motor de escaneo.
 - `2026-09-25T12:14:12` **organizer.py** (legibilidad y documentación): Documenté el propósito técnico de las funciones de bajo nivel en `organizer.py` y refiné el uso de `type hints` en las firmas para mejorar la mantenibilidad y claridad del flujo de datos.
 - `2026-09-25T12:14:02` **memory.py** (legibilidad y documentación): Se mejoró la legibilidad de `memory.py` mediante docstrings más precisos y la sustitución de nombres de variables ambiguos (como `stat` por `mem_status`) para clarificar el propósito de las estructuras de bajo nivel, manteniendo el cumplimiento estricto con las reglas de seguridad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T11:32:12` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_windows_process_csv` y `_get_process_path` mediante la captura explícita de excepciones de bajo nivel y la validación estricta de parámetros para evitar cierres inesperados al procesar datos del sistema.
 - `2026-09-25T11:31:56` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_get_entry_value` y `_collect_settings` mediante una validación más estricta de las entradas de usuario, asegurando que los valores numéricos (PID, tamaño, top) sean correctamente validados antes de procesarlos, evitando así posibles errores de `TclError` o `ValueError` que podrían interrumpir el flujo de la aplicación.
 - `2026-09-25T11:30:33` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que el cálculo de `accumulated_score` sea consistente mediante la validación de `area_ratio` dentro del bucle principal, evitando que excepciones en los `scorers` o valores fuera de rango afecten negativamente la integridad del puntaje final.
-- `2026-09-25T11:29:59` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_collect_candidates` agregando validaciones de tipo y capturas de excepciones específicas al procesar `entry.path` y `entry.stat()`, evitando que un error de entrada interrumpa el escaneo del directorio completo.
-- `2026-09-25T11:22:17` **diskreport.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_collect_summary_data` y las funciones auxiliares mediante la validación proactiva de `size_bytes` y el manejo de tipos, evitando el procesamiento de archivos con errores de metadatos o tamaños negativos que podrían corromper las estadísticas.

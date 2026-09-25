@@ -571,7 +571,6 @@ _TOKENS_MAP: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
     "puntaje": handle_score, "salud": handle_score, "nota": handle_score, "score": handle_score,
     "inicio": handle_startup, "arranque": handle_startup, "arranca": handle_startup, "encender": handle_startup
 }
-_TOKEN_KEYS: Final[set[str]] = set(_TOKENS_MAP.keys())
 
 def _sanitize_query(question: str) -> str:
     """Limpia el input del usuario eliminando caracteres prohibidos."""
@@ -593,10 +592,11 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     if not q_sanitized:
         return Answer("Entrada no válida.")
     
-    # Búsqueda optimizada O(N) usando set para lookup inmediato
+    # Búsqueda optimizada O(N) buscando tokens en el diccionario pre-indexado
     for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
-        if token in _TOKEN_KEYS:
-            return _TOKENS_MAP[token](context, question)
+        handler = _TOKENS_MAP.get(token)
+        if handler:
+            return handler(context, question)
             
     cuerpo = _format_problem_message(
         context.active_problems, 

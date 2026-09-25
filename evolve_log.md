@@ -457,3 +457,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-25T12:22:19` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de docstrings, la adición de Type Hints en la clase `Scanner` y el uso de un nombre más descriptivo para la constante `reparse_attr` (renombrada a `REPARSE_POINT_ATTR_MASK` para reflejar su rol como máscara de bits), facilitando la mantenibilidad del motor de escaneo.
 - `2026-09-25T12:22:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T12:22:19` Corrida terminada. Total usado hoy: 292.
+- `2026-09-25T12:30:38` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-09-25T12:30:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T12:30:45` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-25T12:31:27` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Documenté con docstrings detallados las funciones de bajo nivel y validación para clarificar la lógica de seguridad y el manejo de tipos, facilitando el mantenimiento y la auditoría del código.
+- `2026-09-25T12:31:55` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
+- `2026-09-25T12:32:36` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el proceso de inferencia local del asistente convirtiendo `_TOKENS_MAP` en un `dict` con claves más específicas y pre-procesando la consulta para realizar búsquedas directas de tiempo constante O(1) en lugar de iterar sobre todos los tokens de la pregunta, reduciendo la carga de CPU ante consultas largas.
+- `2026-09-25T12:32:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T12:33:03` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-25T12:33:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T12:33:03` Corrida terminada. Total usado hoy: 296.
