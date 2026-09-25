@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 263
+- Sin respuesta de la IA (error o límite): 261
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 0 | 0 | 0 | 0 | 34 |
+| 2026-09-23 | 0 | 0 | 0 | 0 | 30 |
 | 2026-09-24 | 128 | 10 | 21 | 12 | 179 |
-| 2026-09-25 | 51 | 6 | 10 | 3 | 50 |
+| 2026-09-25 | 53 | 6 | 10 | 3 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **41**
+- seguridad defensiva: **43**
 - legibilidad y documentación: **40**
 - robustez ante casos límite: **36**
 - manejo de errores y validación de entradas: **34**
@@ -40,13 +40,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **15**
 - `safety.py`: **14**
 - `branding.py`: **13**
-- `quarantine.py`: **12**
+- `quarantine.py`: **13**
 - `startup.py`: **6**
 - `organizer.py`: **5**
-- `main.py`: **1**
+- `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T05:15:56` **quarantine.py** (seguridad defensiva): Mejoré la seguridad de `quarantine.py` implementando un chequeo explícito en `_atomic_isolate_file` para evitar que el proceso de aislamiento sobreescriba un archivo existente dentro del sandbox mediante una colisión de nombres (aunque sea improbable), garantizando una operación de escritura limpia y segura.
+- `2026-09-25T05:14:42` **main.py** (seguridad defensiva): Se introdujo una validación de seguridad adicional en `_ensure_path_writable_and_clean` para asegurar que, antes de cualquier operación de escritura, se verifique no solo la ruta, sino también que no sea un punto de reparse o junction, evitando así la recursión accidental o modificaciones fuera de los límites esperados.
 - `2026-09-25T05:03:47` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_evaluate_rules` encapsulando la ejecución de `message_factory` en un bloque `try-except` más robusto y validando la integridad del resultado antes de procesarlo, previniendo que una fábrica de mensajes maliciosa o corrupta rompa el flujo de cálculo.
 - `2026-09-25T05:03:34` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` asegurando que la validación de `is_safe_to_modify` ocurra inmediatamente después de obtener la ruta de `entry.path` y antes de cualquier acceso posterior, previniendo el procesamiento de archivos que podrían haber sido movidos o reemplazados por enlaces simbólicos durante la iteración.
 - `2026-09-25T05:03:07` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` implementando un chequeo de `is_protected_path` sobre `current_dir` antes de intentar iterar su contenido, previniendo así el acceso a subdirectorios protegidos que pudieran haberse omitido accidentalmente en el filtrado de entradas individuales.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T04:13:19` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext` ante valores numéricos extremos o inválidos inyectados por fuentes externas, implementando `math.isfinite` en todas las validaciones de `ingest` y asegurando que `get_metric` devuelva el valor por defecto si una métrica, aunque existente, es `NaN` o `Inf`.
 - `2026-09-25T04:12:17` **settings.py** (rendimiento): Optimizé `_build_validator_map` y la lógica de validación usando un cache de validadores por clave y evitando reconstrucciones innecesarias del mapa en cada llamada, además de refactorizar `_coerce_and_verify` para mejorar la eficiencia en la recuperación de claves.
 - `2026-09-25T04:11:48` **scanner.py** (rendimiento): Optimicé el método `_is_safe_entry` eliminando llamadas redundantes a `Path(entry.path)` y resoluciones de disco innecesarias, consolidando las verificaciones para reducir el costo de procesamiento por cada archivo escaneado.
-- `2026-09-25T04:04:17` **safety.py** (rendimiento): Optimizé `is_protected_path` y `_is_system_path_cached` reemplazando el uso de `os.path.normpath` y la creación redundante de objetos `Path` en el bucle principal por comparaciones de cadenas directas, reduciendo drásticamente la sobrecarga de CPU al validar múltiples rutas.
-- `2026-09-25T04:03:30` **quarantine.py** (rendimiento): Optimizé `list_items` y `purge_all` para evitar el acceso redundante al sistema de archivos y el re-cálculo de integridad de archivos que ya fueron validados, transformando los loops de O(N*M) a O(N) mediante el uso de diccionarios (hash maps).

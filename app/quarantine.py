@@ -553,6 +553,9 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     if not source.is_file():
         raise FileNotFoundError("Archivo origen no encontrado o no es un archivo.")
 
+    if destination.exists():
+        raise FileExistsError("Colisión de ruta: el archivo destino ya existe.")
+
     ensure_safe_to_modify(destination.parent)
 
     source_hash = _get_sha256(source)

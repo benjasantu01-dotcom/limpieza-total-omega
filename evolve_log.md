@@ -891,3 +891,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-25T05:03:47` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_evaluate_rules` encapsulando la ejecución de `message_factory` en un bloque `try-except` más robusto y validando la integridad del resultado antes de procesarlo, previniendo que una fábrica de mensajes maliciosa o corrupta rompa el flujo de cálculo.
 - `2026-09-25T05:03:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T05:03:47` Corrida terminada. Total usado hoy: 120.
+- `2026-09-25T05:12:21` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-09-25T05:13:23` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-25T05:14:42` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se introdujo una validación de seguridad adicional en `_ensure_path_writable_and_clean` para asegurar que, antes de cualquier operación de escritura, se verifique no solo la ruta, sino también que no sea un punto de reparse o junction, evitando así la recursión accidental o modificaciones fuera de los límites esperados.
+- `2026-09-25T05:15:07` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-09-25T05:15:33` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-25T05:15:56` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad de `quarantine.py` implementando un chequeo explícito en `_atomic_isolate_file` para evitar que el proceso de aislamiento sobreescriba un archivo existente dentro del sandbox mediante una colisión de nombres (aunque sea improbable), garantizando una operación de escritura limpia y segura.
+- `2026-09-25T05:15:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T05:15:56` Corrida terminada. Total usado hoy: 124.

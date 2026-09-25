@@ -315,10 +315,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         safety.ensure_safe_to_modify(app_root)
 
     def _ensure_path_writable_and_clean(self, path: Union[str, Path]) -> None:
-        """Verifica que la ruta sea un directorio existente y seguro."""
+        """Verifica que la ruta sea un directorio existente, seguro y sin puntos de reparse."""
         p = Path(path).resolve(strict=True)
-        if p.is_symlink():
-            raise safety.UnsafePathError("Ruta no permitida: enlace simbólico detectado.")
+        # Verificar que no sea punto de reparse (junctions/symlinks) para prevenir recursión incontrolada
+        if p.is_symlink() or (os.path.isdir(p) and p.is_mount() and not p.exists()):
+            raise safety.UnsafePathError("Ruta no permitida: punto de reparse o enlace detectado.")
         safety.ensure_safe_to_modify(p)
 
     def _init_window_properties(self) -> None:
