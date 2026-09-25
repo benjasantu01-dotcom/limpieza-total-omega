@@ -270,8 +270,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
-            raw_ratio = entry.scorer(metrics)
-            area_ratio = _clamp(raw_ratio, 0.0, 1.0)
+            area_ratio = _clamp(entry.scorer(metrics), 0.0, 1.0)
         except (ValueError, TypeError, ZeroDivisionError, ArithmeticError):
             area_ratio = 0.0
             
@@ -306,10 +305,9 @@ def summarize(result: HealthResult | None) -> List[str]:
     
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     bd = result.breakdown
-    for area, maximo in WEIGHTS.items():
-        val = bd.get(area, 0)
-        lines.append(f"  {area.capitalize():<12} {val:>2}/{maximo:<2} [{_render_bar(val, maximo)}]")
+    lines.extend(f"  {area.capitalize():<12} {bd.get(area, 0):>2}/{maximo:<2} [{_render_bar(bd.get(area, 0), maximo)}]" 
+                 for area, maximo in WEIGHTS.items())
     
-    recs = result.recommendations if result.recommendations else ["Sin recomendaciones."]
+    recs = result.recommendations or ["Sin recomendaciones."]
     lines.extend(("", "Recomendaciones:", *(f"  - {r}" for r in recs)))
     return lines

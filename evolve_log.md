@@ -467,3 +467,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-25T12:33:03` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-09-25T12:33:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T12:33:03` Corrida terminada. Total usado hoy: 296.
+- `2026-09-25T12:40:50` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-09-25T12:41:18` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-09-25T12:41:50` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizamos `_collect_summary_data` para reducir drásticamente la sobrecarga de consultas al sistema de archivos al centralizar el uso de `path.suffix` y mejorar la gestión del diccionario `ext_stats`, evitando búsquedas repetitivas y llamadas a métodos innecesarias dentro del bucle crítico de escaneo.
+- `2026-09-25T12:42:16` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-25T12:42:33` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje global en `compute_score` y la legibilidad en `summarize` reemplazando iteraciones redundantes y búsquedas lineales en diccionarios por accesos directos y comprensión de listas, reduciendo el overhead computacional.
+- `2026-09-25T12:42:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T12:42:33` Corrida terminada. Total usado hoy: 300.
