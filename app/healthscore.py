@@ -22,7 +22,7 @@ NormalizedRatio: TypeAlias = Annotated[float, "Valor de salud normalizado entre 
 MetricKey: TypeAlias = str
 
 class Scorer(Protocol):
-    """Interfaz para las funciones que normalizan métricas crudas a ratios [0.0, 1.0]."""
+    """Interfaz para funciones que normalizan métricas crudas a ratios [0.0, 1.0]."""
     def __call__(self, metrics: SystemMetrics) -> NormalizedRatio: ...
 
 class Grade(Enum):
@@ -35,7 +35,12 @@ class Grade(Enum):
 
     @classmethod
     def from_score(cls, score: float | int) -> str:
-        """Determina la letra de calificación para un puntaje dado [0-100]."""
+        """
+        Determina la letra de calificación para un puntaje dado [0-100].
+        
+        :param score: Puntaje numérico a convertir.
+        :return: Representación alfabética del grado.
+        """
         s = float(score)
         if s >= 90: return cls.A.value
         if s >= 80: return cls.B.value
@@ -47,11 +52,10 @@ class RecommendationRule(NamedTuple):
     """
     Reglas de recomendación: factory de mensajes activada por validación de métricas.
     
-    Attributes:
-        area: Identificador del dominio (ej. 'disco').
-        threshold: Ratio límite de salud para considerar necesaria la regla.
-        message_factory: Función que genera un mensaje dinámico basado en métricas.
-        check: Predicado que recibe métricas y ratio para decidir si disparar la regla.
+    :param area: Identificador del dominio (ej. 'disco').
+    :param threshold: Ratio límite de salud para considerar necesaria la regla.
+    :param message_factory: Función que genera un mensaje dinámico basado en métricas.
+    :param check: Predicado que recibe métricas y ratio para decidir si disparar la regla.
     """
     area: MetricKey
     threshold: float
@@ -62,11 +66,10 @@ class PipelineEntry(NamedTuple):
     """
     Configuración de una etapa de evaluación del Pipeline.
     
-    Attributes:
-        area: Nombre de la métrica a evaluar.
-        weight: Valor porcentual (0-100) del impacto en el puntaje total.
-        scorer: Función normalizadora para convertir datos a [0.0, 1.0].
-        rules: Lista de reglas de recomendación asociadas a esta área.
+    :param area: Nombre de la métrica a evaluar.
+    :param weight: Valor porcentual (0-100) del impacto en el puntaje total.
+    :param scorer: Función normalizadora para convertir datos a [0.0, 1.0].
+    :param rules: Lista de reglas de recomendación asociadas a esta área.
     """
     area: MetricKey
     weight: int
@@ -88,12 +91,11 @@ __all__ = [
     "summarize",
 ]
 
-# Umbrales base para normalizar métricas a un rango de salud [0, 1]
-_LIMIT_JUNK_MB: Final[float] = 5000.0          # Límite a partir del cual la salud de archivos basura llega a 0
-_LIMIT_DUPLICATE_MB: Final[float] = 2000.0     # Límite de MB duplicados considerados inaceptables
-_LIMIT_STARTUP_COUNT: Final[int] = 20          # Cantidad máxima de programas de inicio permitidos antes de penalizar
-_LIMIT_RAM_PERCENT: Final[float] = 35.0        # Porcentaje de RAM libre mínimo deseado
-_LIMIT_DISK_PERCENT: Final[float] = 25.0       # Porcentaje de espacio en disco libre mínimo deseado
+_LIMIT_JUNK_MB: Final[float] = 5000.0
+_LIMIT_DUPLICATE_MB: Final[float] = 2000.0
+_LIMIT_STARTUP_COUNT: Final[int] = 20
+_LIMIT_RAM_PERCENT: Final[float] = 35.0
+_LIMIT_DISK_PERCENT: Final[float] = 25.0
 
 def _safe_inv(val: float, fallback: float = 1.0) -> float:
     """Calcula el inverso multiplicativo para normalización, evitando divisiones por cero."""
@@ -105,7 +107,6 @@ _INV_STARTUP: Final[float] = _safe_inv(float(_LIMIT_STARTUP_COUNT))
 _INV_RAM: Final[float] = _safe_inv(_LIMIT_RAM_PERCENT, 0.01)
 _INV_DISK: Final[float] = _safe_inv(_LIMIT_DISK_PERCENT, 0.01)
 
-# Umbrales de advertencia global para los ratios normalizados
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
@@ -200,7 +201,14 @@ class SystemMetrics:
 
 @dataclass
 class HealthResult:
-    """Resultado final: puntaje global, grado y recomendaciones recolectadas."""
+    """
+    Resultado final: puntaje global, grado y recomendaciones recolectadas.
+    
+    :param score: Puntaje del 0 al 100.
+    :param grade: Calificación alfabética (A-F).
+    :param breakdown: Mapeo de puntos ganados por categoría.
+    :param recommendations: Lista de mensajes de sugerencias.
+    """
     score: int
     grade: str
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
@@ -229,7 +237,14 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Ejecuta reglas heurísticas, validando integridad de datos y capturando errores de factory."""
+    """
+    Ejecuta reglas heurísticas, validando integridad de datos y capturando errores de factory.
+    
+    :param metrics: Objeto SystemMetrics con los datos actuales.
+    :param rules: Lista de objetos RecommendationRule.
+    :param ratio: Valor de salud normalizado para esta categoría.
+    :param findings: Lista mutable donde se acumulan los mensajes hallados.
+    """
     if not isinstance(metrics, SystemMetrics):
         return
 

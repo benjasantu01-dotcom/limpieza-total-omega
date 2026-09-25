@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 31
+- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 259
+- Sin respuesta de la IA (error o límite): 260
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 117 | 9 | 18 | 10 | 174 |
-| 2026-09-25 | 65 | 8 | 13 | 5 | 85 |
+| 2026-09-24 | 116 | 8 | 17 | 10 | 173 |
+| 2026-09-25 | 67 | 8 | 13 | 5 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **36**
-- legibilidad y documentación: **33**
-- rendimiento: **25**
+- legibilidad y documentación: **35**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **19**
 - `assistant.py`: **18**
 - `diskreport.py`: **17**
+- `healthscore.py`: **16**
 - `safety.py`: **16**
 - `settings.py`: **16**
-- `healthscore.py`: **15**
 - `memory.py`: **15**
 - `branding.py`: **14**
-- `quarantine.py`: **13**
-- `browser.py`: **13**
+- `browser.py`: **14**
 - `duplicates.py`: **13**
+- `quarantine.py`: **12**
 - `organizer.py`: **6**
 - `startup.py`: **5**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T07:41:38` **healthscore.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con campos `@param` y `@return` en las funciones del núcleo, se reemplazaron las tuplas simples por `NamedTuple` con documentación explícita donde era necesario y se mejoró la legibilidad de la lógica de evaluación con tipos más claros, facilitando el mantenimiento y la comprensión del Pipeline sin alterar el comportamiento.
+- `2026-09-25T07:37:04` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones críticas, aclarando el propósito y las restricciones de seguridad que aseguran que el módulo permanezca como estrictamente de solo lectura.
 - `2026-09-25T07:31:46` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de los módulos y funciones de dibujo mediante docstrings más precisos, y se han añadido sugerencias de tipos más específicas (como el uso de `Final` y alias de tipo) para mejorar la claridad del contrato de interfaz y la legibilidad del código.
 - `2026-09-25T07:16:25` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las heurísticas agregando validaciones de entrada (`None`/vacío) y capturas de excepciones específicas en `check_system_lookalike` y `_run_file_heuristics`, evitando que un error de acceso a un archivo detenga todo el proceso de escaneo.
 - `2026-09-25T07:16:13` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de `ensure_safe_to_modify` ante errores de concurrencia al capturar excepciones específicas (como `PermissionError` o `FileNotFoundError`) durante la creación de manejadores, evitando que el proceso completo se bloquee ante un archivo en transición (estado de carrera) mientras se verifica su integridad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T05:24:07` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escáner en `Scanner.process_entry` al agregar una validación de `st_file_attributes` mediante `_safe_stat` antes de procesar archivos, evitando procesar archivos especiales o inaccesibles que podrían causar bloqueos, manteniendo la consistencia con las restricciones de seguridad al no seguir enlaces simbólicos.
 - `2026-09-25T05:23:42` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_locked_by_other_process` mediante el uso de constantes de acceso más seguras y el manejo explícito de handles, evitando posibles filtraciones de recursos y errores en el acceso a archivos del kernel, siguiendo el enfoque de seguridad defensiva.
 - `2026-09-25T05:15:56` **quarantine.py** (seguridad defensiva): Mejoré la seguridad de `quarantine.py` implementando un chequeo explícito en `_atomic_isolate_file` para evitar que el proceso de aislamiento sobreescriba un archivo existente dentro del sandbox mediante una colisión de nombres (aunque sea improbable), garantizando una operación de escritura limpia y segura.
-- `2026-09-25T05:14:42` **main.py** (seguridad defensiva): Se introdujo una validación de seguridad adicional en `_ensure_path_writable_and_clean` para asegurar que, antes de cualquier operación de escritura, se verifique no solo la ruta, sino también que no sea un punto de reparse o junction, evitando así la recursión accidental o modificaciones fuera de los límites esperados.
-- `2026-09-25T05:03:47` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_evaluate_rules` encapsulando la ejecución de `message_factory` en un bloque `try-except` más robusto y validando la integridad del resultado antes de procesarlo, previniendo que una fábrica de mensajes maliciosa o corrupta rompa el flujo de cálculo.
