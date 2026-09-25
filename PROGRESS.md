@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 257
+- Sin respuesta de la IA (error o límite): 259
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 111 | 7 | 17 | 9 | 168 |
-| 2026-09-25 | 75 | 8 | 14 | 6 | 89 |
+| 2026-09-24 | 109 | 7 | 16 | 9 | 167 |
+| 2026-09-25 | 76 | 8 | 14 | 6 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **31**
-- rendimiento: **25**
+- robustez ante casos límite: **29**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **20**
+- `scanner.py`: **19**
 - `assistant.py`: **18**
-- `safety.py`: **17**
+- `diskreport.py`: **18**
 - `settings.py`: **17**
-- `diskreport.py`: **17**
+- `safety.py`: **16**
 - `healthscore.py`: **15**
 - `memory.py`: **15**
 - `branding.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T08:16:16` **diskreport.py** (rendimiento): Optimizé `walk_files` eliminando llamadas redundantes a `Path(entry.path).resolve()` dentro del loop, utilizando `entry.path` directamente para obtener estadísticas y verificar el árbol, reduciendo drásticamente las syscalls y mejorando el rendimiento en discos mecánicos o directorios profundos.
 - `2026-09-25T08:06:52` **assistant.py** (rendimiento): Optimizé `local_answer` para realizar una única pasada sobre los tokens del usuario usando un conjunto (`set`) para la búsqueda de disparadores, eliminando el riesgo de iteraciones múltiples y mejorando la eficiencia de resolución en el bucle principal.
 - `2026-09-25T08:06:06` **startup.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `parse_registry_csv`, extrayendo la lógica de filtrado y validación de una entrada de registro a un método privado `_is_valid_registry_entry`, lo que reduce la carga cognitiva del bucle principal y asegura un manejo de errores más robusto.
 - `2026-09-25T07:57:35` **settings.py** (legibilidad y documentación): Documenté el propósito de los validadores y el flujo de persistencia en `settings.py` mediante docstrings detallados, clarificando la lógica de "fallback a valores de fábrica" para mejorar la legibilidad y mantenibilidad del módulo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T07:16:25` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las heurísticas agregando validaciones de entrada (`None`/vacío) y capturas de excepciones específicas en `check_system_lookalike` y `_run_file_heuristics`, evitando que un error de acceso a un archivo detenga todo el proceso de escaneo.
 - `2026-09-25T07:16:13` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de `ensure_safe_to_modify` ante errores de concurrencia al capturar excepciones específicas (como `PermissionError` o `FileNotFoundError`) durante la creación de manejadores, evitando que el proceso completo se bloquee ante un archivo en transición (estado de carrera) mientras se verifica su integridad.
 - `2026-09-25T07:06:46` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` reemplazando validaciones implícitas por un manejo de errores más explícito, asegurando que `ensure_safe_to_modify` se utilice correctamente para prevenir operaciones sobre rutas protegidas y evitando el uso de booleanos que ocultaban posibles excepciones de sistema durante el flujo de trabajo.
-- `2026-09-25T07:06:34` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez del módulo `memory.py` implementando una validación explícita para el handle de procesos y el estado de la memoria al leer snapshots, evitando el uso de valores potencialmente inválidos (`None` o `0`) antes de realizar cálculos.

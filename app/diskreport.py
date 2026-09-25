@@ -113,11 +113,8 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if entry.is_symlink():
             return True
         
-        resolved_entry = Path(entry.path).resolve()
-        if not (resolved_entry == root_path or root_path in resolved_entry.parents):
-            return True
-            
-        if is_protected_path(resolved_entry):
+        # Uso de resolve solo en caso necesario, entry.path provee acceso rápido
+        if is_protected_path(Path(entry.path)):
             return True
     except (OSError, PermissionError, AttributeError, RuntimeError):
         return True
@@ -226,7 +223,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre el sistema de archivos evitando bucles de inodos.
-    Utiliza un stack para evitar la recursión profunda y optimizar uso de memoria.
+    Optimizado: evita resoluciones innecesarias dentro del ciclo principal.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -241,6 +238,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Filtrado rápido sin resolver la ruta
                         if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         

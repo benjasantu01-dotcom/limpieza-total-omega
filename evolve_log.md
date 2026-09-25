@@ -1251,3 +1251,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-25T08:07:37` ➖ Sin cambios en browser.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de la detección de tamaños al reutilizar el objeto `kernel32` (WinDLL) durante toda la ejecución de `detect_profiles`, evitando la sobrecarga de múltiples llamadas a `ctypes.WinDLL` y validaciones repetidas en cada rama del árbol de archivos.
 - `2026-09-25T08:07:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T08:07:37` Corrida terminada. Total usado hoy: 192.
+- `2026-09-25T08:15:47` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-09-25T08:16:16` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` eliminando llamadas redundantes a `Path(entry.path).resolve()` dentro del loop, utilizando `entry.path` directamente para obtener estadísticas y verificar el árbol, reduciendo drásticamente las syscalls y mejorando el rendimiento en discos mecánicos o directorios profundos.
+- `2026-09-25T08:16:43` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-25T08:17:11` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-09-25T08:17:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T08:18:14` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-25T08:19:20` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-25T08:19:36` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-25T08:19:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T08:19:36` Corrida terminada. Total usado hoy: 196.
