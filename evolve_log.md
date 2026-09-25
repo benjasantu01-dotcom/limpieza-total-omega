@@ -1143,3 +1143,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-25T06:47:43` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `_call_gemini` y `_build_payload` para evitar fallos silenciosos al procesar entradas de red, añadiendo validaciones explícitas de estado y tipo de retorno que previenen la propagación de excepciones no controladas.
 - `2026-09-25T06:47:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T06:47:43` Corrida terminada. Total usado hoy: 160.
+- `2026-09-25T06:54:09` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-09-25T06:54:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T06:55:00` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de las funciones públicas `color`, `severity_color`, `severity_label` y `severity_icon` agregando validaciones de entrada (`isinstance` y chequeo de existencia en diccionarios) para evitar errores inesperados ante parámetros mal formados, garantizando que siempre retornen un valor seguro por defecto en lugar de lanzar excepciones.
+- `2026-09-25T06:55:27` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-25T06:55:53` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` capturando errores específicos al intentar acceder a atributos de `DirEntry` o rutas inaccesibles, evitando que una excepción silencie el análisis completo al encontrar archivos bloqueados.
+- `2026-09-25T06:55:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T06:56:08` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-25T06:56:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T06:56:08` Corrida terminada. Total usado hoy: 164.

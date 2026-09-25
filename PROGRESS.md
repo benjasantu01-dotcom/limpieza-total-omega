@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 260
+- Rechazadas por guardia de seguridad: 31
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 261
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 123 | 10 | 21 | 12 | 178 |
-| 2026-09-25 | 57 | 7 | 11 | 3 | 82 |
+| 2026-09-24 | 122 | 10 | 20 | 11 | 177 |
+| 2026-09-25 | 59 | 7 | 11 | 3 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
+- manejo de errores y validación de entradas: **37**
 - robustez ante casos límite: **36**
-- legibilidad y documentación: **35**
-- manejo de errores y validación de entradas: **35**
+- legibilidad y documentación: **34**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **19**
 - `assistant.py`: **18**
+- `diskreport.py`: **17**
 - `settings.py`: **16**
-- `diskreport.py`: **16**
-- `memory.py`: **15**
 - `healthscore.py`: **15**
 - `safety.py`: **15**
 - `browser.py`: **14**
 - `duplicates.py`: **14**
+- `memory.py`: **14**
 - `quarantine.py`: **13**
-- `branding.py`: **12**
+- `branding.py`: **13**
 - `startup.py`: **6**
 - `organizer.py`: **5**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T06:55:53` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` capturando errores específicos al intentar acceder a atributos de `DirEntry` o rutas inaccesibles, evitando que una excepción silencie el análisis completo al encontrar archivos bloqueados.
+- `2026-09-25T06:55:00` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las funciones públicas `color`, `severity_color`, `severity_label` y `severity_icon` agregando validaciones de entrada (`isinstance` y chequeo de existencia en diccionarios) para evitar errores inesperados ante parámetros mal formados, garantizando que siempre retornen un valor seguro por defecto en lugar de lanzar excepciones.
 - `2026-09-25T06:47:43` **assistant.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `_call_gemini` y `_build_payload` para evitar fallos silenciosos al procesar entradas de red, añadiendo validaciones explícitas de estado y tipo de retorno que previenen la propagación de excepciones no controladas.
 - `2026-09-25T05:24:22` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` al integrar explícitamente `ensure_safe_to_modify` antes de cualquier operación de escritura y validando la integridad del archivo mediante `is_safe_to_modify` en operaciones de solo lectura, siguiendo estrictamente el patrón de chequeo recomendado para evitar archivos inseguros o puntos de reanálisis.
 - `2026-09-25T05:24:07` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escáner en `Scanner.process_entry` al agregar una validación de `st_file_attributes` mediante `_safe_stat` antes de procesar archivos, evitando procesar archivos especiales o inaccesibles que podrían causar bloqueos, manteniendo la consistencia con las restricciones de seguridad al no seguir enlaces simbólicos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T04:43:50` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de las heurísticas de archivo añadiendo un manejo de excepciones local en `_safe_stat` y validaciones adicionales en `check_recent_executable_in_downloads` para prevenir fallos silenciosos al procesar archivos cuyo `st_mtime` es inaccesible o inexistente debido a restricciones de acceso al sistema de archivos (CASES: permisos denegados o archivos temporales bloqueados).
 - `2026-09-25T04:43:39` **safety.py** (robustez ante casos límite): Se implementó la detección de concurrencia mediante `is_file_locked_by_other_process` usando `CreateFileW` con acceso compartido explícito, lo cual es más robusto para identificar archivos en uso por el sistema o procesos bloqueantes antes de intentar cualquier operación de escritura.
 - `2026-09-25T04:32:10` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics.validate` y `compute_score` ante valores extremos o métricas no inicializadas, asegurando que el motor de puntuación nunca colapse ante datos corruptos o fuera de rango.
-- `2026-09-25T04:23:14` **duplicates.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores en `_collect_candidates` y `group_by_size` para manejar la posibilidad de que archivos cambien o desaparezcan entre la llamada a `os.scandir` y el acceso `stat()`, evitando que una excepción de sistema interrumpa todo el proceso de escaneo.
-- `2026-09-25T04:23:03` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en `entry.stat()` y `entry.is_dir()`, asegurando que un único permiso denegado no detenga el escaneo completo de una unidad.

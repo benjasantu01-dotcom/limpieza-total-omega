@@ -68,7 +68,7 @@ class SummaryData(NamedTuple):
 
 
 def _bytes_to_mb(size_bytes: int | float | None) -> float:
-    """Convierte bytes a Megabytes con precisión de dos decimales, validando entradas inválidas."""
+    """Convierta bytes a Megabytes con precisión de dos decimales, validando entradas inválidas."""
     if not isinstance(size_bytes, (int, float)) or size_bytes < 0:
         return 0.0
     return round(float(size_bytes) / MB_SIZE, 2)
@@ -237,9 +237,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     while stack:
         current_dir = stack.pop()
         
-        if skip_protected and is_protected_path(current_dir):
-            continue
-
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -247,7 +244,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
-                        # Manejo granular de tipos de archivo para evitar errores por bloqueo
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode: Inode = (st.st_dev, st.st_ino)

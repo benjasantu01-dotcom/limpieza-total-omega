@@ -178,6 +178,8 @@ def app_title() -> str:
 
 def color(name: str) -> ColorHex:
     """Busca un color en la paleta global usando su clave identificadora."""
+    if not isinstance(name, str):
+        return "#808080"
     return PALETTE.get(name, "#808080")
 
 @lru_cache(maxsize=16)
@@ -216,7 +218,9 @@ def severity_label(severity: Optional[str]) -> str:
 
 def severity_icon(severity: Optional[str]) -> str:
     """Retorna el glifo unicode representativo para una severidad dada."""
-    return SEVERITY_MAP.get(severity.lower(), "\u2022") if isinstance(severity, str) else "\u2022"
+    if not isinstance(severity, str):
+        return "\u2022"
+    return SEVERITY_MAP.get(severity.lower(), "\u2022")
 
 def grade_color(grade: Optional[str]) -> ColorHex:
     """Resuelve el color del grado de calificación de salud (A-F)."""
