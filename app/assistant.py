@@ -677,15 +677,16 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
             if len(raw_res) > _MAX_RESPONSE_BYTES: return None
             
-            data = json.loads(raw_res.decode("utf-8"))
+            try:
+                data = json.loads(raw_res.decode("utf-8"))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                return None
+                
             raw_text = _extract_text_from_gemini_json(data)
             if raw_text and _ensure_safe_text(raw_text):
                 return _validate_response_length(raw_text.strip())
             return None
-    except urllib.error.HTTPError as e:
-        logging.error(f"Error HTTP en Gemini: {e.code}")
-        return None
-    except (urllib.error.URLError, OSError, ValueError, KeyError, json.JSONDecodeError):
+    except (urllib.error.HTTPError, urllib.error.URLError, OSError, ValueError, KeyError):
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None,
