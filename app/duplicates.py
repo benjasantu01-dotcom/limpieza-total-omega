@@ -232,11 +232,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     def _scan_dir(current_dir: Path) -> None:
         try:
             with os.scandir(current_dir) as iterator:
-                while True:
-                    try:
-                        entry = next(iterator)
-                    except (StopIteration, OSError):
-                        break
+                for entry in iterator:
                     try:
                         if entry.is_dir(follow_symlinks=False):
                             path_entry = Path(entry.path)
@@ -247,12 +243,14 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         if entry.path in visited_files:
                             continue
                             
+                        st = entry.stat(follow_symlinks=False)
+                        if st.st_size < min_size:
+                            continue
+                            
                         p_entry = Path(entry.path)
                         if not is_safe_to_modify(p_entry) or (skip_protected and is_protected_path(p_entry)):
                             continue
-                            
-                        st = entry.stat(follow_symlinks=False)
-                        if st.st_size < min_size or is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
+                        if is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
                             continue
                             
                         size_to_paths_map[st.st_size].append(p_entry)

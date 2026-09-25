@@ -185,21 +185,19 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """Procesa el CSV de PowerShell y retorna los N procesos con mayor consumo."""
     if not raw_csv_text: return []
-    results: List[ProcessMemory] = []
     seen_pids: Set[int] = set()
-    for line in raw_csv_text.splitlines():
-        parts = line.split(",", 2)
-        if len(parts) < 3: continue
-        try:
-            pid_raw = "".join(c for c in parts[1] if c.isdigit())
-            ws_raw = "".join(c for c in parts[2] if c.isdigit())
-            if not pid_raw or not ws_raw: continue
-            pid, ws = int(pid_raw), int(ws_raw)
-            if pid > 0 and pid not in seen_pids and ws < MAX_VALID_PROCESS_MEM:
-                seen_pids.add(pid)
-                results.append(ProcessMemory(parts[0].strip("'\" "), pid, BytesValue(ws)))
-        except (ValueError, TypeError, OverflowError): continue
-    return sorted(results, key=lambda p: p.working_set, reverse=True)[:limit]
+    def _gen_processes():
+        for line in raw_csv_text.splitlines():
+            parts = line.split(",", 2)
+            if len(parts) == 3:
+                try:
+                    pid = int("".join(c for c in parts[1] if c.isdigit()))
+                    ws = int("".join(c for c in parts[2] if c.isdigit()))
+                    if pid > 0 and pid not in seen_pids and ws < MAX_VALID_PROCESS_MEM:
+                        seen_pids.add(pid)
+                        yield ProcessMemory(parts[0].strip("'\" "), pid, BytesValue(ws))
+                except ValueError: continue
+    return sorted(_gen_processes(), key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Invoca GlobalMemoryStatusEx para obtener métricas físicas del sistema (Win32 API)."""

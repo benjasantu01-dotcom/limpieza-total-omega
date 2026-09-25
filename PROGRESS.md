@@ -8,25 +8,25 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **172** (34.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 272
+- Sin respuesta de la IA (error o límite): 273
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 10 | 1 | 2 | 1 | 52 |
+| 2026-09-23 | 8 | 1 | 1 | 1 | 51 |
 | 2026-09-24 | 128 | 10 | 21 | 12 | 179 |
-| 2026-09-25 | 34 | 4 | 8 | 1 | 41 |
+| 2026-09-25 | 36 | 4 | 8 | 1 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
 - legibilidad y documentación: **40**
 - manejo de errores y validación de entradas: **34**
-- robustez ante casos límite: **31**
-- rendimiento: **22**
+- robustez ante casos límite: **29**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,12 +34,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **16**
 - `browser.py`: **16**
 - `diskreport.py`: **16**
-- `settings.py`: **15**
+- `memory.py`: **16**
 - `healthscore.py`: **15**
-- `memory.py`: **15**
-- `safety.py`: **13**
+- `duplicates.py`: **14**
+- `settings.py`: **14**
 - `branding.py`: **13**
-- `duplicates.py`: **13**
+- `safety.py`: **12**
 - `quarantine.py`: **11**
 - `startup.py`: **6**
 - `organizer.py`: **5**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T03:55:39` **memory.py** (rendimiento): Optimizé `parse_windows_process_csv` para reducir la carga en memoria y CPU evitando la creación de listas intermedias mediante un generador y mejorando la eficiencia del parseo de líneas con un solo `split` y conversión directa de tipos.
+- `2026-09-25T03:51:26` **duplicates.py** (rendimiento): Optimizé la fase de recolección en `_collect_candidates` para evitar llamadas redundantes a `entry.stat()` y múltiples instanciaciones de `Path` mediante el uso directo del objeto `os.DirEntry`, reduciendo significativamente el I/O y la carga de memoria al procesar directorios grandes.
 - `2026-09-25T03:44:06` **diskreport.py** (rendimiento): Se optimizó el rendimiento del motor de escaneo `_collect_summary_data` eliminando la creación repetitiva de objetos `ExtStats` y reduciendo el acceso al diccionario mediante `dict.setdefault` o manejo directo de claves, además de evitar la construcción de listas innecesarias durante la agregación.
 - `2026-09-25T03:42:05` **branding.py** (rendimiento): Se optimizó el acceso a la paleta mediante la eliminación de búsquedas de diccionario en tiempo de ejecución (`_PALETTE_MAP.get`) dentro de funciones críticas y repetitivas, reemplazándolas por constantes tipadas (`Final`), lo que reduce la carga de procesamiento en cada llamada a `color()`, `severity_color()` y `grade_color()`.
 - `2026-09-25T03:41:28` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la búsqueda de coincidencias mediante `set.intersection` (que es ineficiente al ser lineal respecto al número de tokens y palabras clave) por una búsqueda directa de O(1) usando los tokens del usuario como índices, además de consolidar la lógica de selección en una sola pasada.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T03:02:04` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, explicando el propósito, los parámetros y las restricciones de seguridad (`is_safe_to_modify`/`is_protected_path`) para clarificar el flujo de trabajo ante auditorías o futuras modificaciones.
 - `2026-09-25T03:01:11` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de negocio mediante la sustitución de índices numéricos mágicos (`SECURITY_PATTERNS[0]`, `[1]`) por constantes descriptivas (`_REGEX_INYECCION`, `_REGEX_CONTROL`), facilitando la comprensión del propósito de cada filtro de seguridad.
 - `2026-09-25T03:00:28` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita de `is_protected_path` sobre la ruta extraída y capturando excepciones durante la instanciación de `Path`, asegurando que entradas malformadas o rutas bloqueadas no alcancen el resto de la lógica de la aplicación.
-- `2026-09-25T02:51:28` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de archivos en `save()` y `_is_file_secure_to_read` mediante la validación explícita de tipos, capturando excepciones de forma más granular y evitando accesos inseguros a rutas, cumpliendo estrictamente con el enfoque de validación de entradas.
-- `2026-09-25T02:51:13` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_directory` validando la existencia y naturaleza de la ruta de entrada antes de instanciar el escáner, y se mejoró la resiliencia de `_run_file_heuristics` y `scan_file` al asegurar que las rutas sean tratadas como objetos `Path` válidos antes de procesarlas.
