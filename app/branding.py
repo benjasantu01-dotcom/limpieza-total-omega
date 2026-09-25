@@ -101,28 +101,38 @@ UI_FONT_BOLD: Final[str] = "bold"
 UI_FONT_HEADER_SIZE: Final[int] = 23
 UI_FONT_BODY_SIZE: Final[int] = 12
 
-# Mapeo maestro de colores.
-_PALETTE_MAP: Final[dict[str, ColorHex]] = {
-    "background": "#0a0e17", "surface": "#141b2d", "surface_alt": "#1e2740",
-    "surface_hover": "#28324f", "card": "#182135", "accent": "#00f0c0",
-    "accent_hover": "#00d0a4", "accent_dim": "#0a6b58", "accent2": "#7c5cff",
-    "accent2_hover": "#6a48f0", "accent3": "#ff2d78", "success": "#22e39a",
-    "info": "#38bdf8", "warning": "#ffb020", "danger": "#ff4757",
-    "danger_hover": "#e02e3d", "text": "#f0f6fc", "text_muted": "#94a3b8",
-    "text_dim": "#5c6b85", "border": "#2a3654", "glow": "#00f0c0",
-}
-PALETTE: Final[Mapping[str, ColorHex]] = MappingProxyType(_PALETTE_MAP)
+# Mapeo maestro de colores y constantes individuales para acceso O(1) sin hashing
+C_BACKGROUND: Final[ColorHex] = "#0a0e17"
+C_SURFACE: Final[ColorHex] = "#141b2d"
+C_SURFACE_ALT: Final[ColorHex] = "#1e2740"
+C_SURFACE_HOVER: Final[ColorHex] = "#28324f"
+C_CARD: Final[ColorHex] = "#182135"
+C_ACCENT: Final[ColorHex] = "#00f0c0"
+C_ACCENT_HOVER: Final[ColorHex] = "#00d0a4"
+C_ACCENT_DIM: Final[ColorHex] = "#0a6b58"
+C_ACCENT2: Final[ColorHex] = "#7c5cff"
+C_ACCENT2_HOVER: Final[ColorHex] = "#6a48f0"
+C_ACCENT3: Final[ColorHex] = "#ff2d78"
+C_SUCCESS: Final[ColorHex] = "#22e39a"
+C_INFO: Final[ColorHex] = "#38bdf8"
+C_WARNING: Final[ColorHex] = "#ffb020"
+C_DANGER: Final[ColorHex] = "#ff4757"
+C_DANGER_HOVER: Final[ColorHex] = "#e02e3d"
+C_TEXT: Final[ColorHex] = "#f0f6fc"
+C_TEXT_MUTED: Final[ColorHex] = "#94a3b8"
+C_TEXT_DIM: Final[ColorHex] = "#5c6b85"
+C_BORDER: Final[ColorHex] = "#2a3654"
+C_GLOW: Final[ColorHex] = "#00f0c0"
 
-# Exposición de colores fundamentales para acceso rápido
-C_SURFACE: Final[ColorHex] = _PALETTE_MAP["surface"]
-C_BACKGROUND: Final[ColorHex] = _PALETTE_MAP["background"]
-C_GLOW: Final[ColorHex] = _PALETTE_MAP["glow"]
-C_TEXT_MUTED: Final[ColorHex] = _PALETTE_MAP["text_muted"]
-C_SUCCESS: Final[ColorHex] = _PALETTE_MAP["success"]
-C_INFO: Final[ColorHex] = _PALETTE_MAP["info"]
-C_WARNING: Final[ColorHex] = _PALETTE_MAP["warning"]
-C_DANGER: Final[ColorHex] = _PALETTE_MAP["danger"]
-C_SURFACE_ALT: Final[ColorHex] = _PALETTE_MAP["surface_alt"]
+PALETTE: Final[Mapping[str, ColorHex]] = MappingProxyType({
+    "background": C_BACKGROUND, "surface": C_SURFACE, "surface_alt": C_SURFACE_ALT,
+    "surface_hover": C_SURFACE_HOVER, "card": C_CARD, "accent": C_ACCENT,
+    "accent_hover": C_ACCENT_HOVER, "accent_dim": C_ACCENT_DIM, "accent2": C_ACCENT2,
+    "accent2_hover": C_ACCENT2_HOVER, "accent3": C_ACCENT3, "success": C_SUCCESS,
+    "info": C_INFO, "warning": C_WARNING, "danger": C_DANGER,
+    "danger_hover": C_DANGER_HOVER, "text": C_TEXT, "text_muted": C_TEXT_MUTED,
+    "text_dim": C_TEXT_DIM, "border": C_BORDER, "glow": C_GLOW,
+})
 
 # Escala tipográfica fija: define jerarquía visual para mantener consistencia en toda la app.
 FONT_SIZES: Final[Mapping[str, int]] = MappingProxyType({
@@ -152,7 +162,7 @@ ICONS: Final[Mapping[str, str]] = MappingProxyType({
 })
 
 # Gradiente de marca: Verde (#00f0c0) -> Violeta (#7c5cff) -> Rosa (#ff2d78).
-GRADIENT_STOPS: Final[Tuple[ColorHex, ...]] = ("#00f0c0", "#7c5cff", "#ff2d78")
+GRADIENT_STOPS: Final[Tuple[ColorHex, ...]] = (C_ACCENT, C_ACCENT2, C_ACCENT3)
 
 # Umbrales de salud: define qué color corresponde a cada rango porcentual del puntaje.
 SCORE_THRESHOLDS: Final[Tuple[Tuple[float, ColorHex], ...]] = (
@@ -168,7 +178,7 @@ def app_title() -> str:
 
 def color(name: str) -> ColorHex:
     """Busca un color en la paleta global usando su clave identificadora."""
-    return _PALETTE_MAP.get(name, "#808080")
+    return PALETTE.get(name, "#808080")
 
 @lru_cache(maxsize=16)
 def font_size(name: str) -> int:

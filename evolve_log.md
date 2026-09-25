@@ -765,3 +765,14 @@ FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - Nam
 - `2026-09-25T03:32:39` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-09-25T03:32:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T03:32:39` Corrida terminada. Total usado hoy: 84.
+- `2026-09-25T03:40:45` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-09-25T03:41:28` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` reemplazando la búsqueda de coincidencias mediante `set.intersection` (que es ineficiente al ser lineal respecto al número de tokens y palabras clave) por una búsqueda directa de O(1) usando los tokens del usuario como índices, además de consolidar la lógica de selección en una sola pasada.
+- `2026-09-25T03:42:05` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el acceso a la paleta mediante la eliminación de búsquedas de diccionario en tiempo de ejecución (`_PALETTE_MAP.get`) dentro de funciones críticas y repetitivas, reemplazándolas por constantes tipadas (`Final`), lo que reduce la carga de procesamiento en cada llamada a `color()`, `severity_color()` y `grade_color()`.
+- `2026-09-25T03:42:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T03:42:12` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-25T03:42:32` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-25T03:43:26` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-25T03:43:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T03:44:06` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Se optimizó el rendimiento del motor de escaneo `_collect_summary_data` eliminando la creación repetitiva de objetos `ExtStats` y reduciendo el acceso al diccionario mediante `dict.setdefault` o manejo directo de claves, además de evitar la construcción de listas innecesarias durante la agregación.
+- `2026-09-25T03:44:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T03:44:06` Corrida terminada. Total usado hoy: 88.

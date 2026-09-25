@@ -585,11 +585,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     if not q_sanitized:
         return Answer("Entrada no válida.")
     
-    user_tokens = set(_TOKEN_REGEX.findall(q_sanitized.lower()))
-    matches = user_tokens.intersection(_TOKENS_MAP.keys())
-    
-    if matches:
-        return _TOKENS_MAP[next(iter(matches))](context, question)
+    # Búsqueda optimizada O(N) sin sets intermedios innecesarios
+    for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
+        if token in _TOKENS_MAP:
+            return _TOKENS_MAP[token](context, question)
             
     cuerpo = _format_problem_message(
         context.active_problems, 
@@ -711,4 +710,3 @@ def ask(question: str, context: Optional[SystemContext] = None,
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
     except Exception:
         return respaldo
-

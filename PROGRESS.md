@@ -7,46 +7,49 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **172** (34.1% de aceptación)
-- Rechazadas por tests: 16
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 271
+- Sin respuesta de la IA (error o límite): 272
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 13 | 2 | 2 | 1 | 52 |
+| 2026-09-23 | 10 | 1 | 2 | 1 | 52 |
 | 2026-09-24 | 128 | 10 | 21 | 12 | 179 |
-| 2026-09-25 | 31 | 4 | 8 | 1 | 40 |
+| 2026-09-25 | 34 | 4 | 8 | 1 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
 - legibilidad y documentación: **40**
-- robustez ante casos límite: **34**
 - manejo de errores y validación de entradas: **34**
-- rendimiento: **19**
+- robustez ante casos límite: **31**
+- rendimiento: **22**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **17**
+- `assistant.py`: **16**
 - `browser.py`: **16**
+- `diskreport.py`: **16**
 - `settings.py`: **15**
-- `assistant.py`: **15**
-- `diskreport.py`: **15**
 - `healthscore.py`: **15**
 - `memory.py`: **15**
 - `safety.py`: **13**
+- `branding.py`: **13**
 - `duplicates.py`: **13**
-- `quarantine.py`: **12**
-- `branding.py`: **12**
-- `organizer.py`: **6**
+- `quarantine.py`: **11**
 - `startup.py`: **6**
-- `main.py`: **2**
+- `organizer.py`: **5**
+- `main.py`: **1**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T03:44:06` **diskreport.py** (rendimiento): Se optimizó el rendimiento del motor de escaneo `_collect_summary_data` eliminando la creación repetitiva de objetos `ExtStats` y reduciendo el acceso al diccionario mediante `dict.setdefault` o manejo directo de claves, además de evitar la construcción de listas innecesarias durante la agregación.
+- `2026-09-25T03:42:05` **branding.py** (rendimiento): Se optimizó el acceso a la paleta mediante la eliminación de búsquedas de diccionario en tiempo de ejecución (`_PALETTE_MAP.get`) dentro de funciones críticas y repetitivas, reemplazándolas por constantes tipadas (`Final`), lo que reduce la carga de procesamiento en cada llamada a `color()`, `severity_color()` y `grade_color()`.
+- `2026-09-25T03:41:28` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la búsqueda de coincidencias mediante `set.intersection` (que es ineficiente al ser lineal respecto al número de tokens y palabras clave) por una búsqueda directa de O(1) usando los tokens del usuario como índices, además de consolidar la lógica de selección en una sola pasada.
 - `2026-09-25T03:31:55` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de heurística añadiendo docstrings que explican el contexto de seguridad de cada regla, se ha tipado explícitamente el retorno de los métodos de la clase `Scanner` y se ha normalizado la gestión de excepciones para mejorar la mantenibilidad del código bajo el enfoque de legibilidad.
 - `2026-09-25T03:31:23` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la actualización de los docstrings en las funciones críticas de validación de `safety.py`, clarificando los motivos técnicos (TOCTOU, Win32 API, integridad) detrás de cada chequeo para facilitar el mantenimiento y la auditoría.
 - `2026-09-25T03:22:02` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos con las secciones "Args" y "Returns" a las funciones críticas de manipulación de archivos y lógica de aislamiento, asegurando que los parámetros sean claros para futuros colaboradores.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T03:00:28` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita de `is_protected_path` sobre la ruta extraída y capturando excepciones durante la instanciación de `Path`, asegurando que entradas malformadas o rutas bloqueadas no alcancen el resto de la lógica de la aplicación.
 - `2026-09-25T02:51:28` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de archivos en `save()` y `_is_file_secure_to_read` mediante la validación explícita de tipos, capturando excepciones de forma más granular y evitando accesos inseguros a rutas, cumpliendo estrictamente con el enfoque de validación de entradas.
 - `2026-09-25T02:51:13` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_directory` validando la existencia y naturaleza de la ruta de entrada antes de instanciar el escáner, y se mejoró la resiliencia de `_run_file_heuristics` y `scan_file` al asegurar que las rutas sean tratadas como objetos `Path` válidos antes de procesarlas.
-- `2026-09-25T02:50:46` **safety.py** (manejo de errores y validación de entradas): Se introdujo un manejo de errores más específico y granular al normalizar rutas, evitando capturas genéricas que oculten fallos de acceso o permisos (`PermissionError`), permitiendo así que `ensure_safe_to_modify` reporte problemas de I/O de forma diferenciada.
-- `2026-09-25T02:45:38` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` y `save_manifest` mediante el manejo explícito de errores de E/S y la validación de integridad antes del parseo JSON, evitando estados corruptos y asegurando que las excepciones se gestionen sin abortar el flujo principal de la aplicación.
-- `2026-09-25T02:44:42` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes al implementar una validación de seguridad estricta y manejo de errores específico, asegurando que cualquier fallo en la apertura de procesos (como acceso denegado a nivel de sistema) sea capturado explícitamente sin depender de comportamientos indeterminados de la API de Windows.
