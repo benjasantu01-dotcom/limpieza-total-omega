@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 14
+- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 30
+- Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 261
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 122 | 10 | 20 | 11 | 177 |
-| 2026-09-25 | 59 | 7 | 11 | 3 | 84 |
+| 2026-09-24 | 120 | 9 | 19 | 11 | 177 |
+| 2026-09-25 | 62 | 7 | 11 | 4 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
-- manejo de errores y validación de entradas: **37**
+- manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **36**
-- legibilidad y documentación: **34**
+- legibilidad y documentación: **32**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **19**
 - `assistant.py`: **18**
+- `scanner.py`: **18**
 - `diskreport.py`: **17**
+- `healthscore.py`: **16**
 - `settings.py`: **16**
-- `healthscore.py`: **15**
+- `memory.py`: **15**
 - `safety.py`: **15**
 - `browser.py`: **14**
 - `duplicates.py`: **14**
-- `memory.py`: **14**
 - `quarantine.py`: **13**
 - `branding.py`: **13**
-- `startup.py`: **6**
-- `organizer.py`: **5**
+- `organizer.py`: **6**
+- `startup.py`: **5**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T07:06:46` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` reemplazando validaciones implícitas por un manejo de errores más explícito, asegurando que `ensure_safe_to_modify` se utilice correctamente para prevenir operaciones sobre rutas protegidas y evitando el uso de booleanos que ocultaban posibles excepciones de sistema durante el flujo de trabajo.
+- `2026-09-25T07:06:34` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez del módulo `memory.py` implementando una validación explícita para el handle de procesos y el estado de la memoria al leer snapshots, evitando el uso de valores potencialmente inválidos (`None` o `0`) antes de realizar cálculos.
+- `2026-09-25T07:04:56` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_evaluate_rules` mediante la validación proactiva de tipos en `metrics` y la adición de un chequeo estricto para evitar `AttributeError` si `message_factory` falla, asegurando que el pipeline de salud sea resiliente ante datos de entrada mal formados o inyectados externamente.
 - `2026-09-25T06:55:53` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` capturando errores específicos al intentar acceder a atributos de `DirEntry` o rutas inaccesibles, evitando que una excepción silencie el análisis completo al encontrar archivos bloqueados.
 - `2026-09-25T06:55:00` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las funciones públicas `color`, `severity_color`, `severity_label` y `severity_icon` agregando validaciones de entrada (`isinstance` y chequeo de existencia en diccionarios) para evitar errores inesperados ante parámetros mal formados, garantizando que siempre retornen un valor seguro por defecto en lugar de lanzar excepciones.
 - `2026-09-25T06:47:43` **assistant.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `_call_gemini` y `_build_payload` para evitar fallos silenciosos al procesar entradas de red, añadiendo validaciones explícitas de estado y tipo de retorno que previenen la propagación de excepciones no controladas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T05:03:34` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` asegurando que la validación de `is_safe_to_modify` ocurra inmediatamente después de obtener la ruta de `entry.path` y antes de cualquier acceso posterior, previniendo el procesamiento de archivos que podrían haber sido movidos o reemplazados por enlaces simbólicos durante la iteración.
 - `2026-09-25T05:03:07` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` implementando un chequeo de `is_protected_path` sobre `current_dir` antes de intentar iterar su contenido, previniendo así el acceso a subdirectorios protegidos que pudieran haberse omitido accidentalmente en el filtrado de entradas individuales.
 - `2026-09-25T04:54:15` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al añadir `_REGEX_PATH_TRAVERSAL` para detectar intentos de escape de directorio mediante `..` incluso si están ofuscados, y apliqué este nuevo chequeo de forma explícita en `_is_safe_text_structure`.
-- `2026-09-25T04:43:50` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de las heurísticas de archivo añadiendo un manejo de excepciones local en `_safe_stat` y validaciones adicionales en `check_recent_executable_in_downloads` para prevenir fallos silenciosos al procesar archivos cuyo `st_mtime` es inaccesible o inexistente debido a restricciones de acceso al sistema de archivos (CASES: permisos denegados o archivos temporales bloqueados).
-- `2026-09-25T04:43:39` **safety.py** (robustez ante casos límite): Se implementó la detección de concurrencia mediante `is_file_locked_by_other_process` usando `CreateFileW` con acceso compartido explícito, lo cual es más robusto para identificar archivos en uso por el sistema o procesos bloqueantes antes de intentar cualquier operación de escritura.
-- `2026-09-25T04:32:10` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics.validate` y `compute_score` ante valores extremos o métricas no inicializadas, asegurando que el motor de puntuación nunca colapse ante datos corruptos o fuera de rango.

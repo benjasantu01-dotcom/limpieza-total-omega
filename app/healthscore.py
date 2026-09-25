@@ -229,7 +229,10 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Ejecuta reglas heurísticas, validando tipos y sanitizando mensajes ante fallas internas."""
+    """Ejecuta reglas heurísticas, validando integridad de datos y capturando errores de factory."""
+    if not isinstance(metrics, SystemMetrics):
+        return
+
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -238,7 +241,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
                     clean_msg = "".join(c for c in raw_msg if c.isprintable()).strip()
                     if clean_msg:
                         findings.append(clean_msg[:200])
-        except Exception:
+        except (AttributeError, TypeError, ValueError, ZeroDivisionError):
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

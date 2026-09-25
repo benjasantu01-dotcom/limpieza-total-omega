@@ -204,7 +204,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
     stat = _create_mem_status_ex()
-    if kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)) and stat.ullTotalPhys > 0:
+    if kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)) != 0 and stat.ullTotalPhys > 0:
         return MemorySnapshot(total=BytesValue(stat.ullTotalPhys), available=BytesValue(stat.ullAvailPhys))
     return _EMPTY_SNAPSHOT
 
@@ -312,7 +312,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
 
     kernel32 = ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
-    if not proc_handle: 
+    if not proc_handle or proc_handle == 0: 
         if ctypes.GetLastError() == ERROR_ACCESS_DENIED:
             return False, "Acceso denegado: requiere privilegios elevados."
         return False, "No se pudo abrir el proceso para modificación."

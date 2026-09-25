@@ -226,28 +226,24 @@ def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = Tru
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """
-    Mueve los archivos candidatos a un directorio de cuarentena tras validar 
-    que ninguna ruta sea crítica y que exista espacio en disco.
-    """
+    """Mueve los archivos candidatos a un directorio de cuarentena tras validar integridad."""
     if not files: return None
     
-    # Pre-validación de seguridad del directorio de destino
     try:
         dest_base = Path(review_dir).expanduser()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve()
         
-        # El directorio base nunca debe ser una ruta protegida del sistema
-        if is_protected_path(dest_res): return None
+        # Validar destino mediante excepción (ensure_safe)
+        ensure_safe_to_modify(dest_res)
     except (OSError, RuntimeError, PermissionError): return None
     
     for junk_file in files:
-        # Validación individual por archivo para asegurar integridad en el movimiento
-        if not _is_safe_to_move(junk_file, dest_res): continue
+        if not is_safe_to_modify(junk_file.path): continue
+        if not _is_safe_for_disk_op(junk_file.path, dest_res): continue
         
-        target_path: Optional[Path] = _can_move_file(junk_file, dest_res)
-        if target_path and junk_file.path.exists() and is_safe_to_modify(junk_file.path):
+        target_path = _can_move_file(junk_file, dest_res)
+        if target_path:
             try:
                 ensure_safe_to_modify(junk_file.path)
                 shutil.move(str(junk_file.path), str(target_path))
@@ -270,15 +266,19 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     return _generate_unique_target(dest_base / safe_name)
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina archivos en cuarentena tras re-validar que no son rutas de sistema protegidas."""
+    """Elimina archivos en cuarentena tras validar que es seguro modificar cada elemento."""
     try:
         dest = Path(review_dir).expanduser().resolve()
-        if not dest.is_dir() or is_protected_path(dest) or not is_safe_to_modify(dest): return 0
+        if not dest.is_dir(): return 0
+        
         count = 0
         for item in dest.iterdir():
-            if item.is_file() and is_safe_to_modify(item):
-                ensure_safe_to_modify(item)
-                item.unlink()
-                count += 1
+            if item.is_file():
+                try:
+                    ensure_safe_to_modify(item)
+                    item.unlink()
+                    count += 1
+                except (OSError, PermissionError):
+                    continue
         return count
     except (OSError, PermissionError, RuntimeError): return 0
