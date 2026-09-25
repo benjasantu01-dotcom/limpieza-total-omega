@@ -243,6 +243,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             continue
                         if entry.path in visited_files:
                             continue
+                        
                         st = entry.stat(follow_symlinks=False)
                         if st.st_size < min_size:
                             continue
@@ -250,9 +251,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             continue
                         if is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
                             continue
+                        
                         size_to_paths_map[st.st_size].append(p_entry)
                         visited_files.add(entry.path)
-                    except (OSError, PermissionError):
+                    except (OSError, PermissionError, TypeError):
                         continue
         except (OSError, PermissionError):
             pass

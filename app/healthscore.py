@@ -275,11 +275,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
-            area_ratio = entry.scorer(metrics)
-        except Exception:
+            # Captura posibles errores en ejecución de funciones lambda/scorers externas
+            raw_ratio = entry.scorer(metrics)
+            area_ratio = _clamp(raw_ratio, 0.0, 1.0)
+        except (ValueError, TypeError, ZeroDivisionError, ArithmeticError):
             area_ratio = 0.0
-            
-        area_ratio = _clamp(area_ratio, 0.0, 1.0)
             
         if entry.rules:
             _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)

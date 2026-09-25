@@ -912,7 +912,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             clean_raw = "".join(c for c in raw if c.isprintable())
             if numeric:
                 try:
-                    return int(clean_raw)
+                    val = int(clean_raw)
+                    return val if val >= 0 else default
                 except ValueError:
                     return default
             return clean_raw
@@ -1906,7 +1907,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             if value is None: return default
             val = int(str(value).strip())
-            return val if val > 0 else default
+            return val if val >= 0 else default
         except (ValueError, TypeError):
             return default
 

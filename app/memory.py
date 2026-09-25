@@ -198,7 +198,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
                     if pid_val > 0 and pid_val not in seen_pids and ws_val < MAX_VALID_PROCESS_MEM:
                         seen_pids.add(pid_val)
                         yield ProcessMemory(parts[0].strip("'\" "), pid_val, BytesValue(ws_val))
-                except (ValueError, TypeError): 
+                except (ValueError, TypeError, OverflowError): 
                     continue
 
     return sorted(process_generator(), key=lambda p: p.working_set, reverse=True)[:limit]
@@ -287,7 +287,7 @@ def _get_process_path(pid: int) -> Optional[Path]:
             p = Path(buf.value).resolve(strict=False)
             if p.is_file() and p.is_absolute() and not is_protected_path(str(p)):
                 return p
-    except (ctypes.ArgumentError, OSError, ValueError): 
+    except (ctypes.ArgumentError, OSError, ValueError, TypeError): 
         pass
     finally: kernel32.CloseHandle(handle)
     return None
