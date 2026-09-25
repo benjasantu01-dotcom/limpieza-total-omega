@@ -430,3 +430,30 @@ assert not True
 - `2026-09-25T12:14:12` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Documenté el propósito técnico de las funciones de bajo nivel en `organizer.py` y refiné el uso de `type hints` en las firmas para mejorar la mantenibilidad y claridad del flujo de datos.
 - `2026-09-25T12:14:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T12:14:12` Corrida terminada. Total usado hoy: 288.
+- `2026-09-25T12:20:26` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-09-25T12:21:02` Tests FALLARON:
+```
+876] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba\n      Origen: /tmp/pytest-of-runner/pytest-1/test_quarantine_summary_report0/pesado.bin\n      Aislado: 2026-09-25T12:21:02'
+
+evolve/tests/test_safety.py:311: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:236: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - AssertionError: assert 'restaurar' in '1 archivo(s) en cuarentena — 0.00 MB\n\n  [e84d2ecbf876] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba\n      Origen: /tmp/pytest-of-runner/pytest-1/test_quarantine_summary_report0/pesado.bin\n      Aislado: 2026-09-25T12:21:02'
+2 failed, 297 passed, 4 warnings in 1.38s
+
+```
+- `2026-09-25T12:21:02` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y el mantenimiento de `quarantine.py` documentando los contratos de las funciones críticas, aplicando tipado estricto en las estructuras de control y extrayendo lógicas complejas de validación de rutas para clarificar el flujo de seguridad.
+- `2026-09-25T12:21:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-25T12:22:04` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ValidationContext
+- `2026-09-25T12:22:19` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de docstrings, la adición de Type Hints en la clase `Scanner` y el uso de un nombre más descriptivo para la constante `reparse_attr` (renombrada a `REPARSE_POINT_ATTR_MASK` para reflejar su rol como máscara de bits), facilitando la mantenibilidad del motor de escaneo.
+- `2026-09-25T12:22:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T12:22:19` Corrida terminada. Total usado hoy: 292.
