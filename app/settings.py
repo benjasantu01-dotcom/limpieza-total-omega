@@ -147,12 +147,7 @@ def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
     return wrapper
 
 class _Validators:
-    """Namespace de validadores estáticos para asegurar la integridad de la configuración.
-    
-    Cada validador recibe el valor crudo y retorna el valor normalizado o None
-    si la validación falla, delegando la recuperación de errores al sistema
-    de fallback de la app.
-    """
+    """Namespace de validadores estáticos para asegurar la integridad de la configuración."""
 
     @staticmethod
     def _is_reparse_point(path: Path) -> bool:
@@ -258,7 +253,7 @@ def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
 _VALIDATOR_MAP: Final = _build_validator_map()
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
-    """Calcula la ruta absoluta del archivo de configuración, verificando disponibilidad de acceso."""
+    """Calcula la ruta absoluta del archivo de configuración."""
     if custom_base is None: base_path = SETTINGS_DIR
     else: base_path = Path(custom_base).expanduser().resolve()
     
@@ -275,11 +270,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida un dict crudo contra el esquema, descartando claves o valores inválidos.
-    
-    Si el archivo está corrupto o carece de claves obligatorias, esta función
-    retorna una copia de los valores predeterminados (DEFAULTS).
-    """
+    """Valida un dict crudo contra el esquema, descartando claves o valores inválidos."""
     if not _is_dict(raw_values): return DEFAULTS.copy()
     
     config = DEFAULTS.copy()
@@ -300,8 +291,10 @@ def _is_file_secure_to_read(ruta: Path) -> bool:
         if not ruta.is_absolute(): return False
         if not ruta.exists() or not ruta.is_file(): return False
         st = ruta.lstat()
+        # Verificar que sea archivo regular (bit de symlink debe estar apagado)
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
         if not is_safe_to_modify(str(ruta)): return False
+        # Limite de tamaño para evitar ataques de desbordamiento de memoria
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
         return True
     except (OSError, PermissionError):
@@ -309,7 +302,7 @@ def _is_file_secure_to_read(ruta: Path) -> bool:
 
 @lru_cache(maxsize=4)
 def _load_impl(ruta: Path) -> AppSettings:
-    """Carga y normaliza el contenido del JSON, garantizando la integridad de los datos."""
+    """Carga y normaliza el contenido del JSON."""
     try:
         if not _is_file_secure_to_read(ruta): return DEFAULTS.copy()
             
@@ -343,7 +336,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
-    """Aplica consistencia forzada de tipos y reglas de negocio post-validación."""
+    """Aplica consistencia forzada de tipos y reglas de negocio."""
     try:
         final = {k: settings.get(k, v) for k, v in DEFAULTS.items()}
         final["asistente_activado"] = bool(final["asistente_activado"])
@@ -395,7 +388,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             except (OSError, PermissionError): pass
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Actualiza solo las claves modificadas y persite en disco si hay cambios."""
+    """Actualiza solo las claves modificadas y persiste en disco si hay cambios."""
     current = load(custom_base)
     modified = False
     validators = _build_validator_map()

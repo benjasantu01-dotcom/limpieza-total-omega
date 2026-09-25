@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 258
+- Sin respuesta de la IA (error o límite): 256
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 97 | 6 | 15 | 9 | 161 |
-| 2026-09-25 | 87 | 8 | 17 | 7 | 97 |
+| 2026-09-24 | 97 | 6 | 15 | 9 | 157 |
+| 2026-09-25 | 89 | 8 | 17 | 7 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **38**
 - seguridad defensiva: **35**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **19**
+- `scanner.py`: **20**
 - `assistant.py`: **18**
 - `diskreport.py`: **18**
 - `memory.py`: **17**
 - `safety.py`: **16**
-- `settings.py`: **15**
+- `settings.py`: **16**
 - `healthscore.py`: **15**
 - `quarantine.py`: **14**
 - `duplicates.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T09:19:17` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante errores de concurrencia y corrupción de archivos mediante la implementación de una validación más estricta en `_is_file_secure_to_read` (verificando que el archivo sea un archivo regular y no un link simbólico de forma explícita) y asegurando que las operaciones de lectura y escritura manejen correctamente situaciones de disco lleno o permisos denegados sin dejar estados inconsistentes en la caché.
+- `2026-09-25T09:17:18` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `check_recent_executable_in_downloads` y `process_entry`, añadiendo validaciones específicas para manejar correctamente archivos inaccesibles o eliminados durante el recorrido y evitando fallos innecesarios en la comparación de fechas.
 - `2026-09-25T09:08:38` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_is_unc_path` en `_validate_structural_safety` para detectar rutas UNC mediante la inspección directa del prefijo de cadena antes de cualquier resolución de sistema, evitando errores de I/O en entornos donde el acceso a red está bloqueado o es inestable.
 - `2026-09-25T09:07:48` **quarantine.py** (robustez ante casos límite): Se implementó un chequeo de concurrencia y disponibilidad en `_is_file_locked` usando `os.open` con flags de compartición exclusivos para Windows (`os.O_EXCL`), mejorando la detección de archivos en uso que bloquean operaciones críticas de movimiento o borrado en el sandbox.
 - `2026-09-25T09:07:08` **organizer.py** (robustez ante casos límite): Se ha robustecido `_is_file_locked` para manejar de forma segura archivos vacíos o bloqueados por el sistema operativo, utilizando el modo de lectura binaria sin excepciones no capturadas, y se ha añadido una validación de rutas relativas "malintencionadas" en `_is_safe_for_disk_op` para prevenir que `Path.resolve()` se ejecute sobre rutas inválidas que podrían lanzar errores inesperados al interactuar con el sistema de archivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T08:26:32` **memory.py** (rendimiento): Se optimizó el rendimiento de `parse_windows_process_csv` reemplazando la creación de una lista intermedia mediante `splitlines()` por un generador que procesa línea por línea, evitando duplicados innecesarios en memoria y mejorando la eficiencia durante la iteración sobre los resultados de `Get-Process`.
 - `2026-09-25T08:16:16` **diskreport.py** (rendimiento): Optimizé `walk_files` eliminando llamadas redundantes a `Path(entry.path).resolve()` dentro del loop, utilizando `entry.path` directamente para obtener estadísticas y verificar el árbol, reduciendo drásticamente las syscalls y mejorando el rendimiento en discos mecánicos o directorios profundos.
 - `2026-09-25T08:06:52` **assistant.py** (rendimiento): Optimizé `local_answer` para realizar una única pasada sobre los tokens del usuario usando un conjunto (`set`) para la búsqueda de disparadores, eliminando el riesgo de iteraciones múltiples y mejorando la eficiencia de resolución en el bucle principal.
-- `2026-09-25T08:06:06` **startup.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `parse_registry_csv`, extrayendo la lógica de filtrado y validación de una entrada de registro a un método privado `_is_valid_registry_entry`, lo que reduce la carga cognitiva del bucle principal y asegura un manejo de errores más robusto.
-- `2026-09-25T07:57:35` **settings.py** (legibilidad y documentación): Documenté el propósito de los validadores y el flujo de persistencia en `settings.py` mediante docstrings detallados, clarificando la lógica de "fallback a valores de fábrica" para mejorar la legibilidad y mantenibilidad del módulo.
