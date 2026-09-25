@@ -411,13 +411,19 @@ def _is_safe_text_structure(text: str) -> bool:
     o caracteres no permitidos en textos recibidos.
     """
     if not text: return True
+    # Restricción estricta contra caracteres de control y formatos ocultos
     if any(ord(c) < 32 and c not in '\n\r\t' for c in text): return False
     
     if is_protected_path(text): return False
+    # Evitar rutas y caracteres reservados de shell
     if text.startswith(("\\\\", "//", "UNC")): return False
+    if any(c in text for c in "<>|&^"): return False
+    
     try:
+        # Detectar rutas mediante pathing defensivo
+        if any(token in text.lower() for token in ["c:\\", "d:\\", "system32", "/etc/"]): return False
         p = Path(text)
-        if p.is_absolute() or text.startswith(("./", "../", "..\\", "C:", "D:", "/")):
+        if p.is_absolute() or text.startswith(("./", "../", "..\\")):
             return False
     except (ValueError, TypeError, OSError):
         pass
