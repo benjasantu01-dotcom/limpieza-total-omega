@@ -483,10 +483,11 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         
         return target_path
     except (OSError, IOError) as e:
+        raise RuntimeError(f"Error crítico al persistir manifiesto: {e}")
+    finally:
         if temp_path and temp_path.exists():
             try: os.remove(temp_path)
             except OSError: pass
-        raise RuntimeError(f"Error crítico al persistir manifiesto: {e}")
 
 
 def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:

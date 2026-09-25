@@ -358,11 +358,13 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """
-    Intenta obtener metadatos (stat) del sistema de archivos.
-    En caso de fallo, diferencia si es por denegación de permisos o error de I/O.
+    Intenta obtener metadatos (stat) del sistema de archivos con validación.
     """
     try:
-        return path.stat()
+        st = path.stat()
+        if not hasattr(st, 'st_dev') or not hasattr(st, 'st_ino'):
+             raise UnsafePathError("Metadatos incompletos.", SafetyValidationErrorCode.IO_ERROR)
+        return st
     except (OSError, FileNotFoundError) as e:
         code = SafetyValidationErrorCode.ACCESS_DENIED if isinstance(e, PermissionError) else SafetyValidationErrorCode.IO_ERROR
         raise UnsafePathError(f"No se pudo acceder a los metadatos: {path.name}", code)
@@ -370,16 +372,15 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     """
     Verifica metadatos en disco y compara con el estado inicial capturado.
-    Implementa protección contra ataques TOCTOU (Time-of-Check to Time-of-Use) comparando 
-    identificadores unívocos de sistema (dev/ino) para asegurar que la ruta no ha sido reemplazada.
+    Implementa protección contra ataques TOCTOU (Time-of-Check to Time-of-Use).
     """
     if not os.access(path, os.R_OK):
         raise UnsafePathError(f"Acceso de lectura denegado a {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     
     current_stat = _get_path_stat_robust(path)
     
-    # Compara el identificador único del dispositivo y del inodo (o índice de archivo en Windows)
-    if getattr(current_stat, 'st_dev', 0) != initial_stat.st_dev or getattr(current_stat, 'st_ino', 0) != initial_stat.st_ino:
+    # Compara el identificador único del dispositivo y del inodo (o índice de archivo)
+    if current_stat.st_dev != initial_stat.st_dev or current_stat.st_ino != initial_stat.st_ino:
         raise UnsafePathError(f"Consistencia fallida (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
     
     if _is_directory_junction(str(path)):
