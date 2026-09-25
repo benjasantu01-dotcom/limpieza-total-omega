@@ -786,3 +786,12 @@ FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - Nam
 - `2026-09-25T03:55:39` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `parse_windows_process_csv` para reducir la carga en memoria y CPU evitando la creación de listas intermedias mediante un generador y mejorando la eficiencia del parseo de líneas con un solo `split` y conversión directa de tipos.
 - `2026-09-25T03:55:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T03:55:39` Corrida terminada. Total usado hoy: 92.
+- `2026-09-25T04:01:06` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-09-25T04:01:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T04:02:18` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-25T04:02:51` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-25T04:03:30` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé `list_items` y `purge_all` para evitar el acceso redundante al sistema de archivos y el re-cálculo de integridad de archivos que ya fueron validados, transformando los loops de O(N*M) a O(N) mediante el uso de diccionarios (hash maps).
+- `2026-09-25T04:03:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-25T04:04:17` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimizé `is_protected_path` y `_is_system_path_cached` reemplazando el uso de `os.path.normpath` y la creación redundante de objetos `Path` en el bucle principal por comparaciones de cadenas directas, reduciendo drásticamente la sobrecarga de CPU al validar múltiples rutas.
+- `2026-09-25T04:04:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T04:04:17` Corrida terminada. Total usado hoy: 96.

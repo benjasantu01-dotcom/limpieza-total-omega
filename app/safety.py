@@ -433,11 +433,11 @@ def is_drive_root(path: PathLike) -> bool:
 def _is_system_path_cached(path_str: str) -> bool:
     """
     Verifica si una ruta cae dentro de los directorios críticos de Windows.
-    Compara prefijos de variables de entorno con los componentes normalizados.
+    Compara cadenas normalizadas evitando creación de objetos innecesarios.
     """
-    path_norm = os.path.normpath(path_str).lower()
-    if any(path_norm.startswith(root) for root in _SYSTEM_ROOT_PATHS_SET): return True
-    parts = Path(path_norm).parts
+    path_lower = path_str.lower()
+    if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_SET): return True
+    parts = set(path_lower.split(os.sep))
     return not PROTECTED_DIR_NAMES.isdisjoint(parts)
 
 @lru_cache(maxsize=4096)

@@ -704,16 +704,12 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
         actual_files = {f.name: f for f in base_path.iterdir() if f.is_file()}
         
         valid_items: List[QuarantineItem] = []
-        modified = False
-        
         for i in items:
             f_path = actual_files.get(i.stored_name)
             if f_path and i._validate_integrity(f_path):
                 valid_items.append(i)
-            else:
-                modified = True
             
-        if modified:
+        if len(valid_items) != len(items):
             save_manifest(valid_items, base)
             
         return sorted(valid_items, key=lambda x: x.quarantined_at, reverse=True)
@@ -835,17 +831,16 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
-    item_map = {item.stored_name: item for item in items}
+    item_map = {i.stored_name: i for i in items}
     purged_ids: Set[str] = set()
     
-    existing_files = {f.name: f for f in quarantine_root.iterdir() if f.is_file()}
-    
     try:
-        for name, f in existing_files.items():
-            if name != MANIFEST_NAME:
-                item = item_map.get(name)
-                if item and _is_item_purgable(f, item, quarantine_root):
-                    purged_ids.add(item.item_id)
+        for f in quarantine_root.iterdir():
+            if f.name == MANIFEST_NAME or not f.is_file():
+                continue
+            item = item_map.get(f.name)
+            if item and _is_item_purgable(f, item, quarantine_root):
+                purged_ids.add(item.item_id)
                 
         if purged_ids:
             remaining_items = [i for i in items if i.item_id not in purged_ids]
