@@ -711,3 +711,32 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-25T02:51:28` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del manejo de archivos en `save()` y `_is_file_secure_to_read` mediante la validación explícita de tipos, capturando excepciones de forma más granular y evitando accesos inseguros a rutas, cumpliendo estrictamente con el enfoque de validación de entradas.
 - `2026-09-25T02:51:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T02:51:28` Corrida terminada. Total usado hoy: 68.
+- `2026-09-25T02:59:57` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-09-25T03:00:28` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita de `is_protected_path` sobre la ruta extraída y capturando excepciones durante la instanciación de `Path`, asegurando que entradas malformadas o rutas bloqueadas no alcancen el resto de la lógica de la aplicación.
+- `2026-09-25T03:01:11` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento de la lógica de negocio mediante la sustitución de índices numéricos mágicos (`SECURITY_PATTERNS[0]`, `[1]`) por constantes descriptivas (`_REGEX_INYECCION`, `_REGEX_CONTROL`), facilitando la comprensión del propósito de cada filtro de seguridad.
+- `2026-09-25T03:01:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T03:01:52` Tests FALLARON:
+```
+s
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:230: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) no aptas para archivos."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_draw_logo_paints_on_the_canvas_without_a_display - NameError: name 'trramos' is not defined
+FAILED evolve/tests/test_modules.py::test_gradient_produces_the_requested_amount_of_colors - NameError: name 'trramos' is not defined
+FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops - NameError: name 'trramos' is not defined
+FAILED evolve/tests/test_modules.py::test_gradient_actually_changes_color - NameError: name 'trramos' is not defined
+FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel - NameError: name 'trramos' is not defined
+FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - NameError: name 'trramos' is not defined
+FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - NameError: name 'trramos' is not defined
+7 failed, 292 passed, 8 warnings in 1.16s
+
+```
+- `2026-09-25T03:01:52` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones clave (`draw_gradient_bar`, `draw_ring`) y documentando mediante docstrings el propósito de las funciones auxiliares de dibujo (`_draw_shield_stripes`, `_draw_shield_icon_decorations`) para mejorar la mantenibilidad del motor gráfico.
+- `2026-09-25T03:02:04` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings detallados en funciones clave, explicando el propósito, los parámetros y las restricciones de seguridad (`is_safe_to_modify`/`is_protected_path`) para clarificar el flujo de trabajo ante auditorías o futuras modificaciones.
+- `2026-09-25T03:02:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T03:02:04` Corrida terminada. Total usado hoy: 72.

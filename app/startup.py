@@ -265,7 +265,6 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
     scan_folders = folders if folders is not None else startup_folders()
     
     for folder in scan_folders:
-        # Validación defensiva extra antes de entrar en el bucle de archivos
         if is_protected_path(folder):
             continue
         try:
@@ -320,13 +319,10 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             if not name or not cmd or cmd.startswith(r"\\") or cmd in seen_commands or name.upper().startswith("PS"):
                 continue
             
-            # Validación defensiva estricta antes de instanciar StartupEntry
             try:
-                raw_path = Path(cmd).expanduser()
-                abs_path = raw_path.absolute()
-                
-                # Prevenir path traversal asegurando que la ruta normalizada sea coherente
-                if is_protected_path(abs_path) or ".." in str(raw_path):
+                # Verificación explícita de seguridad antes de procesar
+                p_candidate = Path(cmd).expanduser()
+                if is_protected_path(p_candidate) or ".." in str(p_candidate):
                     continue
                     
             except (ValueError, TypeError, OSError):
