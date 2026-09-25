@@ -1607,3 +1607,14 @@ assert not True
 - `2026-09-25T11:13:16` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-25T11:13:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T11:13:16` Corrida terminada. Total usado hoy: 264.
+- `2026-09-25T11:19:18` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-09-25T11:19:22` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T11:20:07` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de errores en `_parse_config` y `_build_payload`, asegurando que el asistente no falle ante configuraciones externas inesperadas o datos de entrada malformados, mediante validaciones de tipo explícitas y retornos seguros por defecto.
+- `2026-09-25T11:20:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T11:20:44` ➖ Sin cambios en branding.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de las funciones de entrada en `branding.py` mediante la validación proactiva y el uso de `None` como valor de retorno seguro, evitando el fallo silencioso de operaciones de dibujo cuando se pasan parámetros inválidos (tipos erróneos o números no finitos).
+- `2026-09-25T11:21:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T11:21:30` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-25T11:22:02` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-25T11:22:17` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_collect_summary_data` y las funciones auxiliares mediante la validación proactiva de `size_bytes` y el manejo de tipos, evitando el procesamiento de archivos con errores de metadatos o tamaños negativos que podrían corromper las estadísticas.
+- `2026-09-25T11:22:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T11:22:17` Corrida terminada. Total usado hoy: 268.

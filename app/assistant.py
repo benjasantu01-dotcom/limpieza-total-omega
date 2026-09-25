@@ -617,16 +617,18 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
     if not isinstance(raw_cfg, dict):
         return default
     
-    # Validar tipos de las claves esperadas
-    api_key = raw_cfg.get("asistente_api_key")
-    model = raw_cfg.get("asistente_modelo")
-    metrics_val = raw_cfg.get("asistente_enviar_metricas")
-    
-    return AssistantConfig(
-        api_key=str(api_key) if isinstance(api_key, str) else "",
-        model=str(model) if isinstance(model, str) else "gemini-3.1-flash-lite",
-        allow_metrics=bool(metrics_val) if isinstance(metrics_val, bool) else True
-    )
+    try:
+        api_key = raw_cfg.get("asistente_api_key")
+        model = raw_cfg.get("asistente_modelo")
+        metrics_val = raw_cfg.get("asistente_enviar_metricas")
+        
+        return AssistantConfig(
+            api_key=str(api_key) if isinstance(api_key, str) else "",
+            model=str(model) if isinstance(model, str) else "gemini-3.1-flash-lite",
+            allow_metrics=bool(metrics_val) if isinstance(metrics_val, bool) else True
+        )
+    except Exception:
+        return default
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa la pregunta y el contexto en un JSON listo para ser enviado a la API."""
@@ -642,7 +644,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
         payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
         payload = json.dumps(payload_data).encode("utf-8")
         return payload if len(payload) <= (_MAX_RESPONSE_BYTES // 2) else None
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, AttributeError):
         return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
