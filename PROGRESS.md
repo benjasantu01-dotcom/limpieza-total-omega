@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **171** (33.9% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 271
+- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 29
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 273
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-23 | 32 | 4 | 6 | 3 | 57 |
+| 2026-09-23 | 30 | 3 | 5 | 3 | 57 |
 | 2026-09-24 | 128 | 10 | 21 | 12 | 179 |
-| 2026-09-25 | 11 | 3 | 3 | 0 | 35 |
+| 2026-09-25 | 12 | 3 | 3 | 1 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
-- legibilidad y documentación: **38**
 - robustez ante casos límite: **38**
+- legibilidad y documentación: **36**
 - rendimiento: **27**
-- manejo de errores y validación de entradas: **23**
+- manejo de errores y validación de entradas: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **17**
-- `healthscore.py`: **16**
-- `memory.py`: **15**
 - `settings.py`: **15**
+- `assistant.py`: **15**
 - `browser.py`: **15**
 - `diskreport.py`: **15**
-- `assistant.py`: **14**
+- `healthscore.py`: **15**
 - `duplicates.py`: **14**
+- `memory.py`: **14**
 - `safety.py`: **13**
 - `branding.py`: **13**
 - `quarantine.py`: **11**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T02:22:08` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la robustez del método `ingest` en `SystemContext` mediante la validación explícita de la integridad del objeto de datos antes de iterar, evitando excepciones durante el procesamiento de entradas malformadas o tipos de datos inesperados.
 - `2026-09-25T00:59:30` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_file_secure_to_read` al reemplazar una verificación de existencia simple por el uso de `path.resolve()` antes de realizar chequeos, evitando así vulnerabilidades por rutas relativas o cambios en el estado del sistema de archivos entre la comprobación y la apertura (TOCTOU).
 - `2026-09-25T00:47:54` **memory.py** (seguridad defensiva): Se ha mejorado `_get_process_path` para prevenir la resolución de rutas maliciosas o inexistentes, asegurando que la validación de seguridad mediante `is_protected_path` se realice sobre rutas normalizadas y absolutas antes de permitir cualquier operación de trim.
 - `2026-09-25T00:38:08` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del sistema de `SystemMetrics` y la evaluación del `Pipeline` agregando validaciones defensivas contra estados nulos o no finitos en los inputs, garantizando que el motor de puntuación no colapse ante datos de entrada corrompidos o mal formateados durante su procesamiento.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-24T13:55:22` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de heurística y métodos de la clase `Scanner`, aclarando la lógica de validación y el propósito de cada verificación para facilitar el mantenimiento y la auditoría.
 - `2026-09-24T13:54:56` **safety.py** (legibilidad y documentación): Se introdujo un `Enum` explícito `SafetyAction` para tipificar y documentar el propósito de las validaciones, sustituyendo comentarios dispersos y mejorando la legibilidad de la lógica de negocio al distinguir claramente entre validaciones de "lectura" y "escritura/destrucción".
 - `2026-09-24T13:46:30` **quarantine.py** (legibilidad y documentación): Mejoré la documentación de las funciones de entrada/salida y validación de seguridad mediante docstrings descriptivos, añadiendo detalles sobre las precondiciones y el comportamiento de las excepciones para mejorar la mantenibilidad y legibilidad técnica.
-- `2026-09-24T13:35:26` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en las colecciones internas, la clarificación de docstrings mediante el uso de parámetros tipados y la descripción detallada de las estructuras de control, facilitando la mantenibilidad a largo plazo sin alterar la lógica.

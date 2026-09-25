@@ -350,7 +350,7 @@ class SystemContext:
         Carga datos externos hacia el contexto tras validar la integridad de cada campo.
         Retorna True solo si al menos una métrica fue importada exitosamente.
         """
-        if not isinstance(source, (dict, object)) or isinstance(source, (str, int, float, bool)):
+        if not (isinstance(source, dict) or hasattr(source, "__dict__")):
             return False
         if _is_input_too_deep_or_complex(source):
             return False
