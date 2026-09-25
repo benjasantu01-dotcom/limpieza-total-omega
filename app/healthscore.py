@@ -243,10 +243,12 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
     """
     Ejecuta el conjunto de reglas para un área, capturando excepciones de ejecución externa.
     """
-    if not isinstance(metrics, SystemMetrics):
+    if not isinstance(metrics, SystemMetrics) or not isinstance(rules, list):
         return
 
     for rule in rules:
+        if not isinstance(rule, RecommendationRule):
+            continue
         try:
             if rule.check(metrics, ratio):
                 raw_msg = rule.message_factory(metrics)

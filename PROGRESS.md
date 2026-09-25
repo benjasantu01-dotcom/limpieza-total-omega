@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 264
+- Sin respuesta de la IA (error o límite): 262
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 52 | 2 | 9 | 7 | 106 |
-| 2026-09-25 | 126 | 11 | 25 | 8 | 158 |
+| 2026-09-24 | 52 | 2 | 9 | 7 | 102 |
+| 2026-09-25 | 128 | 11 | 25 | 8 | 160 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **40**
 - robustez ante casos límite: **37**
+- seguridad defensiva: **31**
 - rendimiento: **29**
-- seguridad defensiva: **29**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,11 +34,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **17**
 - `settings.py`: **17**
 - `memory.py`: **16**
-- `healthscore.py`: **15**
+- `healthscore.py`: **16**
 - `quarantine.py`: **15**
 - `safety.py`: **13**
 - `branding.py`: **13**
-- `duplicates.py`: **11**
+- `duplicates.py`: **12**
 - `browser.py`: **9**
 - `organizer.py`: **9**
 - `startup.py`: **4**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T14:03:53` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `healthscore.py` mediante una verificación explícita de tipos y valores en `_evaluate_rules` y `compute_score`, asegurando que el motor de inferencia no procese datos corrompidos ni ejecute fábricas de mensajes inesperadas, manteniendo la integridad del pipeline ante entradas maliciosas.
+- `2026-09-25T14:03:06` **duplicates.py** (seguridad defensiva): Reforcé la integridad del proceso de escaneo centralizando la validación de seguridad de cada ruta recolectada mediante un nuevo método `_safe_path_check`, evitando inconsistencias entre `_collect_candidates` y otros métodos del módulo.
 - `2026-09-25T13:53:16` **assistant.py** (seguridad defensiva): Se endureció la validación de seguridad en `_is_safe_text_structure` para evitar que se filtren rutas locales a través de la interfaz del asistente, restringiendo explícitamente caracteres de control y formatos que podrían usarse para ocultar rutas de sistema, alineándose con las reglas de seguridad defensiva.
 - `2026-09-25T13:45:03` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de guardado atómico en `save()` incorporando una verificación de integridad tras la escritura (`os.fsync`) y un manejo de errores más estricto ante fallos del sistema de archivos, asegurando que si la escritura falla durante la operación de reemplazo, no se pierda el archivo original ni se corrompa la configuración.
 - `2026-09-25T13:33:49` **quarantine.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de concurrencia y bloqueos de sistema en `quarantine_file` añadiendo una pausa estratégica (reintento) al verificar el borrado del archivo origen, asegurando que el sistema haya liberado el descriptor de archivo tras la operación de copia.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T13:02:46` **scanner.py** (rendimiento): Optimicé el método `_is_relevant_extension` reemplazando la búsqueda lineal con `rfind` por una división de `os.path.splitext` que es más eficiente y robusta, y evité el llamado innecesario a `_is_safe_entry` dentro del loop de `process_entry` moviendo la validación de extensiones antes de las comprobaciones de seguridad más costosas.
 - `2026-09-25T12:55:30` **quarantine.py** (rendimiento): Optimicé `purge_all` para evitar búsquedas lineales costosas dentro del bucle de borrado utilizando un `set` y un acceso directo a la lógica de validación, mejorando el rendimiento en directorios con gran cantidad de archivos aislados.
 - `2026-09-25T12:55:00` **organizer.py** (rendimiento): Optimicé el método `is_valid_junk_extension` reemplazando la creación dinámica de una tupla mediante `os.path.splitext` en cada iteración del escáner por una comprobación de sufijo directa sobre el nombre del archivo, reduciendo el overhead de llamadas al sistema y la creación de objetos innecesarios en el bucle principal.
-- `2026-09-25T12:42:33` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global en `compute_score` y la legibilidad en `summarize` reemplazando iteraciones redundantes y búsquedas lineales en diccionarios por accesos directos y comprensión de listas, reduciendo el overhead computacional.
-- `2026-09-25T12:41:50` **diskreport.py** (rendimiento): Optimizamos `_collect_summary_data` para reducir drásticamente la sobrecarga de consultas al sistema de archivos al centralizar el uso de `path.suffix` y mejorar la gestión del diccionario `ext_stats`, evitando búsquedas repetitivas y llamadas a métodos innecesarias dentro del bucle crítico de escaneo.

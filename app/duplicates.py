@@ -115,6 +115,11 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 
+def _safe_path_check(path: Path) -> bool:
+    """Valida que la ruta no esté protegida y sea segura para leer."""
+    return is_safe_to_modify(path) and not is_protected_path(path) and not is_junction(path) and not path.is_symlink()
+
+
 def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
     """
     Normaliza una ruta a objeto Path absoluto y valida que sea un archivo
@@ -124,9 +129,7 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
         return None
     try:
         p: Path = Path(path).resolve(strict=True)
-        if p.is_symlink() or is_junction(p):
-            return None
-        if p.is_file() and is_safe_to_modify(p) and not _is_file_locked(p):
+        if _safe_path_check(p) and p.is_file() and not _is_file_locked(p):
             return p
     except (OSError, RuntimeError, ValueError):
         pass
@@ -180,11 +183,11 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Valida los requisitos de seguridad y atributos antes de incluir un archivo."""
     try:
-        if not path.is_file() or is_protected_path(path) or not is_safe_to_modify(path):
+        if not path.is_file() or not _safe_path_check(path):
             return False
-        if is_system_or_hidden(path) or path.is_symlink() or is_junction(path):
+        if is_system_or_hidden(path) or _is_file_locked(path):
             return False
-        return st_size > 0 and not _is_file_locked(path)
+        return st_size > 0
     except (OSError, ValueError, TypeError, RuntimeError, AttributeError):
         return False
 
@@ -200,7 +203,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
             continue
         try:
             path_obj = Path(p).resolve(strict=True)
-            if is_safe_to_modify(path_obj) and not path_obj.is_symlink():
+            if _safe_path_check(path_obj):
                 st = path_obj.stat()
                 if _is_valid_candidate(path_obj, st.st_size):
                     groups[st.st_size].append(path_obj)
@@ -214,7 +217,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
     try:
         if not item: return None
         root = Path(item).resolve(strict=True)
-        if root.is_dir() and not is_protected_path(root) and is_safe_to_modify(root):
+        if root.is_dir() and _safe_path_check(root):
             return root
     except (OSError, ValueError, RuntimeError, TypeError):
         pass
@@ -224,10 +227,6 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Exploración recursiva profunda para recolectar candidatos aptos para deduplicación.
-    
-    Utiliza una función interna `_scan_dir` para recorrer el árbol de directorios, 
-    gestionando la evitación de bucles mediante un `visited_files` (set de strings) 
-    y validando cada entrada contra `safety.py`. No sigue junctions ni symlinks.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     visited_files: set[str] = set()
@@ -238,11 +237,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 for entry in iterator:
                     try:
                         p_entry = Path(entry.path)
-                        if not is_safe_to_modify(p_entry):
+                        if not _safe_path_check(p_entry):
                             continue
                         if entry.is_dir(follow_symlinks=False):
-                            if not is_junction(p_entry):
-                                _scan_dir(p_entry)
+                            _scan_dir(p_entry)
                             continue
                         if entry.path in visited_files:
                             continue
@@ -273,7 +271,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Aplica una función de hash a un listado y devuelve grupos solo si hay colisiones."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if path.is_file() and is_safe_to_modify(path) and not path.is_symlink():
+        if path.is_file() and _safe_path_check(path):
             if (digest := hash_func(path)):
                 groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
@@ -319,7 +317,7 @@ def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     (mtime, longitud_de_la_ruta). Se prefiere el archivo más antiguo.
     """
     try:
-        if not path.is_file() or not is_safe_to_modify(path):
+        if not path.is_file() or not _safe_path_check(path):
             return None
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
@@ -364,7 +362,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
         if not isinstance(path, Path):
             continue
         try:
-            if not is_safe_to_modify(path):
+            if not _safe_path_check(path):
                 lines.append(f"   [inaccesible] {path}")
             else:
                 path_resolved = path.resolve(strict=True)
