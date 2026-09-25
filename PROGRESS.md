@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 75 | 3 | 11 | 8 | 123 |
-| 2026-09-25 | 105 | 10 | 20 | 8 | 141 |
+| 2026-09-24 | 72 | 3 | 11 | 8 | 122 |
+| 2026-09-25 | 108 | 10 | 20 | 8 | 142 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - seguridad defensiva: **39**
 - robustez ante casos límite: **38**
-- legibilidad y documentación: **35**
-- rendimiento: **25**
+- legibilidad y documentación: **38**
+- rendimiento: **22**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `scanner.py`: **18**
-- `settings.py`: **17**
+- `memory.py`: **17**
+- `scanner.py`: **17**
 - `assistant.py`: **16**
-- `memory.py`: **16**
-- `safety.py`: **15**
+- `settings.py`: **16**
+- `healthscore.py`: **15**
 - `branding.py`: **14**
-- `healthscore.py`: **14**
+- `safety.py`: **14**
 - `quarantine.py`: **14**
 - `duplicates.py`: **13**
 - `browser.py`: **10**
-- `organizer.py`: **7**
+- `organizer.py`: **8**
 - `startup.py`: **5**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-25T12:14:12` **organizer.py** (legibilidad y documentación): Documenté el propósito técnico de las funciones de bajo nivel en `organizer.py` y refiné el uso de `type hints` en las firmas para mejorar la mantenibilidad y claridad del flujo de datos.
+- `2026-09-25T12:14:02` **memory.py** (legibilidad y documentación): Se mejoró la legibilidad de `memory.py` mediante docstrings más precisos y la sustitución de nombres de variables ambiguos (como `stat` por `mem_status`) para clarificar el propósito de las estructuras de bajo nivel, manteniendo el cumplimiento estricto con las reglas de seguridad.
+- `2026-09-25T12:10:53` **healthscore.py** (legibilidad y documentación): Documenté el propósito de los métodos privados de normalización y mejoré la legibilidad del Pipeline principal mediante la adición de docstrings estructurados que explican el contrato de las funciones `scorer` y `check`.
 - `2026-09-25T12:02:02` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en las funciones internas de escaneo y una clarificación detallada en el docstring de `_collect_candidates` sobre el manejo de estados de recursión para facilitar su mantenimiento.
 - `2026-09-25T12:01:46` **diskreport.py** (legibilidad y documentación): Mejore la claridad y mantenibilidad del código documentando la lógica de filtrado en `walk_files` y `_is_excluded_path`, e incorporando type hints más precisos que facilitan la comprensión del flujo de datos en el análisis de disco.
 - `2026-09-25T12:00:44` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de renderizado mediante docstrings estandarizados que describen los parámetros y el comportamiento ante entradas inválidas, facilitando la comprensión del flujo de datos en componentes críticos de la UI.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T11:29:59` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_collect_candidates` agregando validaciones de tipo y capturas de excepciones específicas al procesar `entry.path` y `entry.stat()`, evitando que un error de entrada interrumpa el escaneo del directorio completo.
 - `2026-09-25T11:22:17` **diskreport.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_collect_summary_data` y las funciones auxiliares mediante la validación proactiva de `size_bytes` y el manejo de tipos, evitando el procesamiento de archivos con errores de metadatos o tamaños negativos que podrían corromper las estadísticas.
 - `2026-09-25T11:20:07` **assistant.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `_parse_config` y `_build_payload`, asegurando que el asistente no falle ante configuraciones externas inesperadas o datos de entrada malformados, mediante validaciones de tipo explícitas y retornos seguros por defecto.
-- `2026-09-25T09:58:30` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la escritura atómica del archivo de configuración, sustituyendo el chequeo genérico por `ensure_safe_to_modify` por una validación explícita mediante `is_safe_to_modify` antes de la operación de reemplazo, evitando excepciones no controladas y asegurando que la ruta destino no sea un punto de reanálisis antes de realizar el movimiento.
-- `2026-09-25T09:41:49` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_path` validando explícitamente el tamaño del búfer de caracteres de `GetModuleFileNameExW` antes de intentar crear un objeto `Path` y normalizarlo, evitando así posibles desbordamientos o rutas malformadas.
-- `2026-09-25T09:28:33` **diskreport.py** (seguridad defensiva): Se ha robustecido `_is_excluded_path` añadiendo una comprobación explícita mediante `path.is_relative_to(root_path)` para prevenir ataques de Directory Traversal que pudieran intentar escapar de la raíz de escaneo, asegurando que solo se analicen archivos contenidos estrictamente dentro de la jerarquía permitida.

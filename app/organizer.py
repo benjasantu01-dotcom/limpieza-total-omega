@@ -121,7 +121,7 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
-    """Intenta abrir el archivo en modo binario compartido; si falla por acceso denegado, está bloqueado."""
+    """Intenta abrir el archivo en modo binario compartido para verificar uso exclusivo por otro proceso."""
     try:
         if path.stat().st_size == 0: return False
         with open(path, 'rb') as f:
@@ -154,8 +154,8 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Coordinador de seguridad para E/S: valida existencia, permisos de lectura/escritura, 
-    integridad de la unidad (debe ser la misma) y si el archivo está en uso exclusivo.
+    Coordinador de seguridad para E/S: valida integridad técnica, accesibilidad de disco,
+    exclusividad de archivo y pertenencia a la misma unidad lógica antes de cualquier mutación.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
@@ -250,7 +250,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     return dest_res
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Valida disponibilidad de espacio en disco y genera un nombre seguro."""
+    """Valida disponibilidad de espacio en disco y genera un nombre seguro para la transferencia."""
     try:
         usage = shutil.disk_usage(dest_base.anchor)
         if usage.free < (junk_file.size_bytes + 52428800): return None

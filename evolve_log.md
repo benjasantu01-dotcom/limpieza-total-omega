@@ -419,3 +419,14 @@ assert not True
 - `2026-09-25T12:02:02` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de Type Hints en las funciones internas de escaneo y una clarificación detallada en el docstring de `_collect_candidates` sobre el manejo de estados de recursión para facilitar su mantenimiento.
 - `2026-09-25T12:02:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-25T12:02:02` Corrida terminada. Total usado hoy: 284.
+- `2026-09-25T12:10:15` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-09-25T12:10:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-25T12:10:53` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Documenté el propósito de los métodos privados de normalización y mejoré la legibilidad del Pipeline principal mediante la adición de docstrings estructurados que explican el contrato de las funciones `scorer` y `check`.
+- `2026-09-25T12:11:53` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-25T12:12:01` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-25T12:12:07` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-25T12:13:19` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-25T12:14:02` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se mejoró la legibilidad de `memory.py` mediante docstrings más precisos y la sustitución de nombres de variables ambiguos (como `stat` por `mem_status`) para clarificar el propósito de las estructuras de bajo nivel, manteniendo el cumplimiento estricto con las reglas de seguridad.
+- `2026-09-25T12:14:12` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Documenté el propósito técnico de las funciones de bajo nivel en `organizer.py` y refiné el uso de `type hints` en las firmas para mejorar la mantenibilidad y claridad del flujo de datos.
+- `2026-09-25T12:14:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-25T12:14:12` Corrida terminada. Total usado hoy: 288.

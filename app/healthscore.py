@@ -55,7 +55,7 @@ class RecommendationRule(NamedTuple):
     :param area: Identificador del dominio (ej. 'disco').
     :param threshold: Ratio límite de salud para considerar necesaria la regla.
     :param message_factory: Función que genera un mensaje dinámico basado en métricas.
-    :param check: Predicado que recibe métricas y ratio para decidir si disparar la regla.
+    :param check: Predicado: (metrics, current_ratio) -> bool. Determina si la regla se dispara.
     """
     area: MetricKey
     threshold: float
@@ -68,7 +68,7 @@ class PipelineEntry(NamedTuple):
     
     :param area: Nombre de la métrica a evaluar.
     :param weight: Valor porcentual (0-100) del impacto en el puntaje total.
-    :param scorer: Función normalizadora para convertir datos a [0.0, 1.0].
+    :param scorer: Función: (SystemMetrics) -> [0.0, 1.0]. Normaliza la métrica bruta.
     :param rules: Lista de reglas de recomendación asociadas a esta área.
     """
     area: MetricKey
@@ -124,28 +124,28 @@ if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Normaliza salud de basura: calcula la relación lineal entre el tamaño hallado y el límite."""
+    """Normaliza salud de basura mediante decaimiento lineal respecto al límite definido."""
     return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Normaliza salud de seguridad: penaliza hallazgos (5%) y advertencias (25%) por unidad."""
+    """Normaliza salud de seguridad: penalización acumulativa según severidad de amenazas."""
     penalization = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
     return _clamp(1.0 - _clamp(penalization, 0.0, 1.0))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Normaliza salud de memoria: ratio basado en % de RAM disponible sobre el umbral."""
+    """Normaliza salud de memoria: ratio basado en % de RAM disponible vs umbral."""
     return _clamp(float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Normaliza salud de disco: ratio basado en % de espacio libre sobre el umbral."""
+    """Normaliza salud de disco: ratio basado en % de espacio libre vs umbral."""
     return _clamp(float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Normaliza salud de duplicados: determina el ratio de desperdicio basado en límites definidos."""
+    """Normaliza salud de duplicados: mide el ratio de desperdicio de almacenamiento."""
     return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
-    """Normaliza salud de arranque: penaliza linealmente por cada programa detectado."""
+    """Normaliza salud de arranque: penaliza linealmente por cada entrada encontrada."""
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
 _PIPELINE: Final[List[PipelineEntry]] = [
@@ -223,13 +223,13 @@ class HealthResult:
         return 80 <= self.score <= 100
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
-    """Restringe un valor numérico a un rango acotado, devolviendo min_val en caso de error."""
+    """Acota un número a [min_val, max_val]; devuelve min_val en caso de valores inválidos."""
     val = float(value)
     if not math.isfinite(val) or math.isnan(val): return min_val
     return max(min_val, min(val, max_val))
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    """Convierte cualquier entrada a float de forma segura."""
+    """Conversor defensivo a float ignorando entradas corruptas o infinitas."""
     try:
         val = float(value)
         return val if (math.isfinite(val) and not math.isnan(val)) else default
@@ -241,12 +241,7 @@ def grade_for_score(score: float | int) -> str:
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
     """
-    Ejecuta reglas heurísticas, validando integridad de datos y capturando errores de factory.
-    
-    :param metrics: Objeto SystemMetrics con los datos actuales.
-    :param rules: Lista de objetos RecommendationRule.
-    :param ratio: Valor de salud normalizado para esta categoría.
-    :param findings: Lista mutable donde se acumulan los mensajes hallados.
+    Ejecuta el conjunto de reglas para un área, capturando excepciones de ejecución externa.
     """
     if not isinstance(metrics, SystemMetrics):
         return
@@ -263,7 +258,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Pipeline principal: procesa métricas, calcula pesos y genera recomendaciones."""
+    """Pipeline principal: calcula el puntaje ponderado y recolecta sugerencias."""
     if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
     
@@ -275,7 +270,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
-            # Captura posibles errores en ejecución de funciones lambda/scorers externas
             raw_ratio = entry.scorer(metrics)
             area_ratio = _clamp(raw_ratio, 0.0, 1.0)
         except (ValueError, TypeError, ZeroDivisionError, ArithmeticError):
