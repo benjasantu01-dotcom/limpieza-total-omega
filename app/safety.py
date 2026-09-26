@@ -360,12 +360,14 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     """
     Intenta obtener metadatos (stat) del sistema de archivos con validación.
     """
+    if not path.exists():
+        raise UnsafePathError(f"Ruta inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     try:
         st = path.stat()
         if not hasattr(st, 'st_dev') or not hasattr(st, 'st_ino'):
              raise UnsafePathError("Metadatos incompletos.", SafetyValidationErrorCode.IO_ERROR)
         return st
-    except (OSError, FileNotFoundError) as e:
+    except (OSError, FileNotFoundError, PermissionError) as e:
         code = SafetyValidationErrorCode.ACCESS_DENIED if isinstance(e, PermissionError) else SafetyValidationErrorCode.IO_ERROR
         raise UnsafePathError(f"No se pudo acceder a los metadatos: {path.name}", code)
 

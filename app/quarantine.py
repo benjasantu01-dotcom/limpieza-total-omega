@@ -219,23 +219,19 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
     try:
         if not path.exists():
             return False
+            
         resolved = path.resolve()
         
-        is_valid_target = (
-            resolved.exists() and 
-            resolved.is_file() and 
-            not resolved.is_symlink() and 
-            not is_protected_path(resolved) and
-            is_safe_to_modify(resolved)
-        )
-        if not is_valid_target:
+        # Validación de seguridad exigente: solo proceder si la ruta es segura
+        if not is_safe_to_modify(resolved) or is_protected_path(resolved):
+            return False
+            
+        if not resolved.is_file() or resolved.is_symlink():
             return False
             
         if expected_hash and _get_sha256(resolved) != expected_hash:
             return False
 
-        ensure_safe_to_modify(resolved)
-        
         if not _is_file_locked(resolved):
             path.unlink()
             try:

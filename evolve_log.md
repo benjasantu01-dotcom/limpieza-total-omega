@@ -927,3 +927,10 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-09-26T01:09:38` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-26T01:09:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T01:09:38` Corrida terminada. Total usado hoy: 28.
+- `2026-09-26T01:16:18` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-09-26T01:16:59` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_safe_unlink` al centralizar la validación de integridad mediante `is_safe_to_modify` antes de cualquier operación, asegurando que la función no dependa de asunciones externas sobre el estado del archivo y manejando explícitamente posibles errores de acceso durante la resolución de rutas.
+- `2026-09-26T01:17:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-26T01:18:02` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `_get_path_stat_robust` para incluir una validación estricta de la existencia del archivo antes de intentar acceder a sus atributos, evitando excepciones `FileNotFoundError` no capturadas y proporcionando un mensaje de error consistente mediante `UnsafePathError`.
+- `2026-09-26T01:18:13` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_safe_stat` y las funciones heurísticas mediante un manejo de excepciones más granular y defensivo, asegurando que fallos inesperados en el acceso a metadatos no interrumpan el flujo de escaneo, cumpliendo con el enfoque de validación de entradas y captura de excepciones específicas.
+- `2026-09-26T01:18:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T01:18:13` Corrida terminada. Total usado hoy: 32.

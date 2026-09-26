@@ -74,7 +74,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         return None
     try:
         return entry.stat(follow_symlinks=False)
-    except (OSError, PermissionError, AttributeError, FileNotFoundError):
+    except (OSError, PermissionError, AttributeError):
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -101,7 +101,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
             mtime = stats.st_mtime
             if 0 < mtime <= now_ts and (now_ts - mtime) < (LIMITS.recent_hours * 3600):
                 return Suspicion(path, f"Ejecutable reciente detectado (<{LIMITS.recent_hours}h)", "info")
-        except (AttributeError, ValueError):
+        except (AttributeError, TypeError):
             return None
     return None
 
@@ -119,11 +119,11 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Identifica ejecutables cuyo tamaño en disco es 0 bytes."""
     stats = _safe_stat(entry) if entry else None
-    if stats:
+    if stats is not None:
         try:
             if stats.st_size == 0:
                 return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
-        except (AttributeError, ValueError):
+        except (AttributeError, TypeError):
             return None
     return None
 
@@ -194,7 +194,7 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False):
                 if self._is_relevant_extension(entry.name) and self._is_safe_entry(entry):
                     self._run_file_heuristics(Path(entry.path), entry)
-        except (OSError, PermissionError, AttributeError):
+        except (OSError, PermissionError):
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
@@ -204,13 +204,14 @@ class Scanner:
                 res = check_fn(path, entry, self.now_ts)
                 if isinstance(res, Suspicion):
                     self.results.append(res)
-            except Exception:
+            except (AttributeError, TypeError, OSError):
                 continue
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un único archivo contra las heurísticas definidas."""
-    if not isinstance(path, Path) or is_protected_path(path.resolve()): return []
+    if not isinstance(path, Path): return []
     try:
+        if is_protected_path(path.resolve()): return []
         if not path.is_file(): return []
     except (OSError, PermissionError): return []
     
@@ -220,7 +221,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
             res = check_fn(path, entry, now_ts)
             if isinstance(res, Suspicion):
                 findings.append(res)
-        except Exception:
+        except (AttributeError, TypeError, OSError):
             continue
     return findings
 
@@ -247,7 +248,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, directory_stack)
-        except (PermissionError, OSError, AttributeError):
+        except (PermissionError, OSError):
             continue
     return scanner.results
 
