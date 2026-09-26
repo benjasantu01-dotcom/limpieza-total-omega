@@ -291,7 +291,8 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
     try:
         if not isinstance(cmd, str):
             return False
-        p_candidate = Path(cmd).expanduser()
+        p_candidate = Path(cmd.strip('"')).expanduser()
+        # Verificar protección contra rutas de sistema antes de aceptar la entrada
         if is_protected_path(p_candidate) or ".." in str(p_candidate):
             return False
         return True

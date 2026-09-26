@@ -384,6 +384,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         
         os.replace(temp_path, ruta)
         
+        # Validación final de seguridad post-escritura
+        if not is_safe_to_modify(str(ruta)) or _Validators._is_reparse_point(ruta):
+            raise PermissionError("Error de integridad: el archivo resultante no es seguro.")
+        
         if not ruta.exists() or ruta.stat().st_size == 0:
             raise IOError("Error de persistencia: El archivo resultante está vacío.")
             
