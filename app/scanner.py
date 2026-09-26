@@ -205,13 +205,14 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta toda la suite de heurísticas sobre un archivo dado."""
+        """Ejecuta toda la suite de heurísticas sobre un archivo dado, protegiendo contra errores individuales."""
         for check_fn in ALL_CHECKS:
             try:
                 res = check_fn(path, entry, self.now_ts)
                 if isinstance(res, Suspicion):
                     self.results.append(res)
-            except (AttributeError, TypeError, OSError):
+            except (Exception) as e:
+                logger.debug(f"Error en heurística {check_fn.__name__} para {path}: {e}")
                 continue
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
@@ -228,7 +229,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
             res = check_fn(path, entry, now_ts)
             if isinstance(res, Suspicion):
                 findings.append(res)
-        except (AttributeError, TypeError, OSError):
+        except (Exception):
             continue
     return findings
 

@@ -291,8 +291,11 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
     try:
         if not isinstance(cmd, str):
             return False
-        p_candidate = Path(cmd.strip('"')).expanduser()
-        # Verificar protección contra rutas de sistema antes de aceptar la entrada
+        # Removemos quotes para validar la ruta
+        clean_path = cmd.strip('"')
+        if not clean_path:
+            return False
+        p_candidate = Path(clean_path).expanduser()
         if is_protected_path(p_candidate) or ".." in str(p_candidate):
             return False
         return True
@@ -348,9 +351,9 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
     ps_cmd: str = f"Get-ItemProperty {targets} -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation"
     
     try:
-        result: subprocess.CompletedProcess = subprocess.run(
+        result = subprocess.run(
             ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_cmd],
-            capture_output=True, text=True, timeout=30,
+            capture_output=True, text=True, timeout=30, check=False
         )
         if result.returncode == 0 and result.stdout:
             clean_out = "".join(c for c in result.stdout if ord(c) >= 32 or c in "\r\n")

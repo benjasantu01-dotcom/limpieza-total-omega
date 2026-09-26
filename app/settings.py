@@ -316,12 +316,12 @@ def _load_impl(ruta: Path) -> AppSettings:
                 if _is_dict(data):
                     validated_data = validate(data)
                     for key, default_val in DEFAULTS.items():
-                        if key not in validated_data:
+                        if key not in validated_data or not isinstance(validated_data[key], type(default_val)):
                             validated_data[key] = default_val
                     return _coerce_and_verify(validated_data)
             time.sleep(0.1 * (attempt + 1))
         return DEFAULTS.copy()
-    except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError):
+    except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError, Exception):
         return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:

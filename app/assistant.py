@@ -76,10 +76,11 @@ DEFAULT_RAM_PCT: Final[float] = 50.0
 
 def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
     """
-    Decorador que envuelve los manejadores de consultas para garantizar que:
-    1. Se verifique la validez del contexto antes de procesar.
-    2. Las excepciones de ejecución no propaguen, retornando un mensaje amigable.
-    3. El tipo de retorno sea estrictamente un objeto `Answer`.
+    Decorador que estandariza el manejo de errores en las consultas de usuario.
+    
+    Asegura que cualquier `SystemContext` sea válido antes de procesar y que 
+    la ejecución no interrumpa la interfaz en caso de excepciones inesperadas,
+    garantizando siempre un objeto `Answer` como retorno.
     """
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
@@ -89,9 +90,9 @@ def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Calla
             result = func(ctx, q)
             if isinstance(result, Answer):
                 return result
-            logging.error(f"Handler {func.__name__} devolvió tipo inesperado: {type(result)}")
+            logging.error(f"Handler {func.__name__} devolvió un tipo no compatible: {type(result)}")
         except Exception as e:
-            logging.error(f"Error crítico en {func.__name__}: {str(e)[:50]}")
+            logging.error(f"Falla inesperada en {func.__name__}: {str(e)[:50]}")
         return Answer("Error al procesar la respuesta.")
     return wrapper
 
@@ -370,8 +371,11 @@ class SystemContext:
 
     def ingest(self, source: Any) -> bool:
         """
-        Carga métricas de una fuente externa dict-like.
-        Retorna True solo si la ingesta fue parcial o totalmente exitosa.
+        Ingesta datos de una fuente externa y los normaliza en el contexto.
+        
+        Recorre las claves definidas en `_VALIDATORS`, validando rangos y tipos
+        de cada métrica. Solo marca como `analyzed` si la estructura resultante
+        pasa los chequeos de integridad física.
         """
         if not (isinstance(source, dict) or hasattr(source, "__dict__")):
             return False
