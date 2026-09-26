@@ -653,3 +653,26 @@ FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning 
 - `2026-09-26T14:00:47` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha añadido un docstring estructurado a la función `ensure_safe_to_modify` para explicar explícitamente el flujo de validación, clarificar las condiciones de los argumentos opcionales y documentar el comportamiento ante errores, mejorando la mantenibilidad al ser este el punto de entrada crítico del módulo.
 - `2026-09-26T14:00:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T14:00:47` Corrida terminada. Total usado hoy: 256.
+- `2026-09-26T14:09:07` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-09-26T14:09:36` Tests FALLARON:
+```
+lid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - AssertionError: assert <Severity.WARNING: 2> == 'warning'
+ +  where <Severity.WARNING: 2> = Suspicion(path=PosixPath('factura.pdf.exe'), reason='Doble extensión disfrazando el tipo real de archivo', severity=<Severity.WARNING: 2>).severity
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - AssertionError: assert <Severity.WARNING: 2> == 'warning'
+ +  where <Severity.WARNING: 2> = Suspicion(path=PureWindowsPath('C:/Users/test/Downloads/svchost.exe'), reason='Nombre de proceso de sistema fuera de System32', severity=<Severity.WARNING: 2>).severity
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - AssertionError: assert (Suspicion(path=PurePosixPath('/home/user/Downloads/svchost.exe'), reason='Nombre de proceso de sistema fuera de System32', severity=<Severity.WARNING: 2>) is not None and <Severity.WARNING: 2> == 'warning')
+ +  where <Severity.WARNING: 2> = Suspicion(path=PurePosixPath('/home/user/Downloads/svchost.exe'), reason='Nombre de proceso de sistema fuera de System32', severity=<Severity.WARNING: 2>).severity
+3 failed, 296 passed, 4 warnings in 1.44s
+
+```
+- `2026-09-26T14:09:36` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se introdujo un `Enum` explícito para los niveles de severidad de `Suspicion` y se mejoró la documentación mediante tipos de retorno claros y descripciones detalladas de los parámetros, facilitando el mantenimiento y la extensibilidad del motor heurístico.
+- `2026-09-26T14:10:09` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del archivo documentando las estructuras de datos y el flujo de validación, además de clarificar mediante docstrings el propósito de los métodos internos, facilitando la comprensión de la lógica de seguridad y persistencia.
+- `2026-09-26T14:10:32` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._extract_quoted_path, StartupEntry._is_path_suspicious, StartupEntry._is_reserved_device_name, StartupEntry._is_valid_executable, StartupEntry._resolve_path_from_command, StartupEntry._sanitize_command
+- `2026-09-26T14:10:59` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el cálculo de `active_problems` en `SystemContext` usando un `cached_property` y convertí las evaluaciones de criterios en una operación de filtrado eficiente para evitar recorridos repetitivos del tuple de criterios durante consultas frecuentes.
+- `2026-09-26T14:10:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T14:10:59` Corrida terminada. Total usado hoy: 260.

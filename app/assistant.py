@@ -331,7 +331,7 @@ class SystemContext:
     def active_problems(self) -> tuple[str, ...]:
         """Retorna tuple de problemas detectados tras evaluar los criterios de salud."""
         if not self.analyzed: return ()
-        return tuple(msg for crit in _CRITERIOS_SALUD if (msg := crit.format_if_triggered(self)) is not None)
+        return tuple(m for c in _CRITERIOS_SALUD if (m := c.format_if_triggered(self)) is not None)
 
     @property
     def is_empty(self) -> bool:
