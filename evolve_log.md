@@ -847,3 +847,46 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-26T00:39:45` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-26T00:39:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T00:39:45` Corrida terminada. Total usado hoy: 16.
+- `2026-09-26T00:45:49` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-09-26T00:45:51` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-26T00:45:51` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-26T00:46:11` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-26T00:46:11` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-26T00:46:41` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-26T00:46:41` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-26T00:46:56` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-26T00:46:56` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-26T00:47:17` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-26T00:47:17` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-26T00:47:47` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-26T00:47:47` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-26T00:48:02` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-26T00:48:02` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-26T00:48:22` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-26T00:48:22` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-26T00:48:52` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-26T00:48:52` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-26T00:49:36` Tests FALLARON:
+```
+ida.' = <built-in method lower of str object at 0x7f93d4e9fb40>()
+ +    where <built-in method lower of str object at 0x7f93d4e9fb40> = 'Entrada no válida.'.lower
+ +      where 'Entrada no válida.' = Answer(text='Entrada no válida.', source='local', notice='', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - AssertionError: assert 'buen estado' in 'entrada no válida.'
+ +  where 'entrada no válida.' = <built-in method lower of str object at 0x7f93d4e9fb40>()
+ +    where <built-in method lower of str object at 0x7f93d4e9fb40> = 'Entrada no válida.'.lower
+ +      where 'Entrada no válida.' = Answer(text='Entrada no válida.', source='local', notice='', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - AssertionError: assert 'sin conexión' in ''
+ +  where '' = Answer(text='Entrada no válida.', source='local', notice='', suggestions=[]).notice
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - AssertionError: assert 'local' == 'gemini'
+  
+  - gemini
+  + local
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - AssertionError: assert 'motor local' in ''
+ +  where '' = Answer(text='Entrada no válida.', source='local', notice='', suggestions=[]).notice
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'texto'
+10 failed, 289 passed, 4 warnings in 1.47s
+
+```
+- `2026-09-26T00:49:36` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_is_safe_text_structure` añadiendo una validación explícita mediante `re.fullmatch` y un conjunto de caracteres permitidos para asegurar que no se filtren caracteres de control o formatos ocultos, además de consolidar la lógica de validación de rutas mediante `Path` para prevenir cualquier intento de inyección.
+- `2026-09-26T00:49:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T00:49:36` Corrida terminada. Total usado hoy: 20.
