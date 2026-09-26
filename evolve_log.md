@@ -897,3 +897,33 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-26T00:57:41` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-26T00:57:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T00:57:41` Corrida terminada. Total usado hoy: 24.
+- `2026-09-26T01:06:10` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-09-26T01:06:40` Tests FALLARON:
+```
+te para hacer.']).recommendations
+
+evolve/tests/test_modules.py:899: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:236: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommendation - AssertionError: assert 'buen estado' in 'No hay nada urgente para hacer.'
+ +  where 'No hay nada urgente para hacer.' = <built-in method join of str object at 0x7f4690e2bb40>(['No hay nada urgente para hacer.'])
+ +    where <built-in method join of str object at 0x7f4690e2bb40> = ' '.join
+ +    and   ['No hay nada urgente para hacer.'] = HealthResult(score=100, grade='A', breakdown={'seguridad': 30, 'disco': 20, 'memoria': 18, 'basura': 14, 'duplicados': 10, 'arranque': 8}, recommendations=['No hay nada urgente para hacer.']).recommendations
+1 failed, 298 passed, 4 warnings in 1.49s
+
+```
+- `2026-09-26T01:06:40` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `compute_score` asegurando que el acceso a `MetricKey` en el breakdown sea consistente incluso si fallan métricas externas, y añadí validación de integridad en `WEIGHTS` para prevenir estados inconsistentes en el pipeline.
+- `2026-09-26T01:07:40` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-26T01:09:00` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `main.py` mediante una validación estricta y centralizada en `_safe_get_entry_value` y una mejor gestión de errores en `_validate_numeric_setting`, asegurando que cualquier entrada del usuario sea sanitizada y validada antes de su uso en la lógica interna, evitando posibles excepciones de tipo `ValueError` o comportamientos inesperados ante inputs malformados.
+- `2026-09-26T01:09:27` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-26T01:09:38` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-26T01:09:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T01:09:38` Corrida terminada. Total usado hoy: 28.

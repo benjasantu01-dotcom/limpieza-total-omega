@@ -7,46 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **171** (33.9% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 273
+- Sin respuesta de la IA (error o límite): 274
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 36 | 2 | 7 | 4 | 81 |
+| 2026-09-24 | 35 | 2 | 5 | 4 | 80 |
 | 2026-09-25 | 132 | 12 | 26 | 8 | 172 |
-| 2026-09-26 | 3 | 1 | 0 | 0 | 20 |
+| 2026-09-26 | 4 | 2 | 0 | 0 | 22 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **37**
 - seguridad defensiva: **35**
-- legibilidad y documentación: **32**
+- legibilidad y documentación: **31**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
 - `scanner.py`: **18**
-- `settings.py`: **16**
 - `assistant.py`: **15**
 - `healthscore.py`: **15**
 - `quarantine.py`: **15**
 - `memory.py`: **15**
+- `settings.py`: **15**
 - `branding.py`: **13**
 - `safety.py`: **13**
 - `duplicates.py`: **10**
 - `browser.py`: **8**
 - `organizer.py`: **7**
 - `startup.py`: **5**
-- `main.py`: **2**
+- `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T01:09:00` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `main.py` mediante una validación estricta y centralizada en `_safe_get_entry_value` y una mejor gestión de errores en `_validate_numeric_setting`, asegurando que cualquier entrada del usuario sea sanitizada y validada antes de su uso en la lógica interna, evitando posibles excepciones de tipo `ValueError` o comportamientos inesperados ante inputs malformados.
 - `2026-09-26T00:57:30` **diskreport.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `summarize` y `_collect_summary_data` garantizando que las operaciones sobre rutas y archivos procesen correctamente posibles fallos de sistema sin detener la ejecución global, validando específicamente la existencia de la ruta antes de intentar cualquier operación de reporting.
 - `2026-09-26T00:57:02` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_path_inside_base` y `_resolve_browser_path` añadiendo validaciones estrictas de tipo y normalización de rutas, previniendo errores de comparación lógica entre `Path` y `str` que podrían derivar en saltos de seguridad.
 - `2026-09-26T00:56:35` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `branding.py` mediante una validación más estricta de los parámetros de entrada en las funciones que operan con el lienzo y los cálculos cromáticos, asegurando que valores inválidos o inesperados no propaguen excepciones en el bucle de renderizado.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T13:33:49` **quarantine.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de concurrencia y bloqueos de sistema en `quarantine_file` añadiendo una pausa estratégica (reintento) al verificar el borrado del archivo origen, asegurando que el sistema haya liberado el descriptor de archivo tras la operación de copia.
 - `2026-09-25T13:33:03` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar archivos inaccesibles o bloqueados por el sistema de forma más elegante, añadiendo una comprobación adicional mediante `os.access` y capturando errores específicos de acceso durante la apertura, evitando así que el escáner aborte ante archivos en uso.
 - `2026-09-25T13:25:18` **healthscore.py** (robustez ante casos límite): Se introdujo una validación defensiva en la función `summarize` para evitar un `NameError` ante entradas no válidas y se protegió la lógica de renderizado de barras contra desbordamientos mediante la normalización de pesos.
-- `2026-09-25T13:22:08` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` frente a archivos bloqueados por el sistema operativo mediante el uso de un bloque `try-except` más granular alrededor de la llamada a `entry.stat()`, evitando que un error de acceso a metadatos (común en archivos en uso o protegidos) interrumpa la ejecución total del análisis.
