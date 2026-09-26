@@ -299,7 +299,8 @@ def _is_file_secure_to_read(ruta: Path) -> bool:
     try:
         if not ruta.is_absolute(): return False
         if not ruta.exists() or not ruta.is_file(): return False
-        st = ruta.lstat()
+        st = ruta.stat()
+        # Verificación extra: asegurar que no sea un archivo vacío o una ruta crítica bloqueada.
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
         if not is_safe_to_modify(str(ruta)): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False

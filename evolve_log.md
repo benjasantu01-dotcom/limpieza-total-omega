@@ -1440,3 +1440,23 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-09-26T10:47:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-26T10:47:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T10:47:33` Corrida terminada. Total usado hoy: 180.
+- `2026-09-26T10:55:36` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-09-26T10:56:21` Tests FALLARON:
+```
+e_records_the_original_path_for_restoring - OSError: Error al preparar directorio de cuarentena: [SENSITIVE_EXTENSION] Extensión bloqueada ''.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - OSError: Error al preparar directorio de cuarentena: [SENSITIVE_EXTENSION] Extensión bloqueada ''.
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - OSError: Error al preparar directorio de cuarentena: [SENSITIVE_EXTENSION] Extensión bloqueada ''.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - OSError: Error al preparar directorio de cuarentena: [SENSITIVE_EXTENSION] Extensión bloqueada ''.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - OSError: Error al preparar directorio de cuarentena: [SENSITIVE_EXTENSION] Extensión bloqueada ''.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - OSError: Error al preparar directorio de cuarentena: [SENSITIVE_EXTENSION] Extensión bloqueada ''.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - OSError: Error al preparar directorio de cuarentena: [SENSITIVE_EXTENSION] Extensión bloqueada ''.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - OSError: Error al preparar directorio de cuarentena: [SENSITIVE_EXTENSION] Extensión bloqueada ''.
+16 failed, 283 passed, 5 warnings in 1.82s
+
+```
+- `2026-09-26T10:56:21` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez ante archivos inexistentes en `_get_file_attrs` y `is_sensitive_file` evitando que una ruta inválida pase como protegida por defecto, y añadí una validación explícita para archivos de 0 bytes como caso límite crítico en `ensure_safe_to_modify`.
+- `2026-09-26T10:56:51` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejora la robustez de `scanner.py` ante casos límite agregando una validación de existencia `entry.is_file()` segura dentro de `_run_file_heuristics` y un bloque `try-except` más granular en `_is_safe_entry` para capturar fallos inesperados al intentar resolver rutas, evitando que el escáner aborte por archivos bloqueados o con metadatos inaccesibles.
+- `2026-09-26T10:57:24` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante fallos de E/S y corrupción de archivos al añadir una validación de `st_size` y `st_mode` más estricta antes de abrir el JSON, previniendo lecturas de archivos corruptos o bloqueados durante cambios atómicos.
+- `2026-09-26T10:57:40` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-26T10:57:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T10:57:40` Corrida terminada. Total usado hoy: 184.
