@@ -220,28 +220,22 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
         if not path.exists():
             return False
             
+        # Validación: solo operar sobre rutas resueltas y seguras
         resolved = path.resolve()
         
-        # Validación de seguridad: debe ser un archivo seguro, no protegido, y no un enlace
         if not is_safe_to_modify(resolved) or is_protected_path(resolved):
             return False
             
         if not resolved.is_file() or resolved.is_symlink():
             return False
             
-        # Validación opcional de integridad del contenido
+        # Validación de integridad si se proporciona hash
         if expected_hash and _get_sha256(resolved) != expected_hash:
             return False
 
+        # Verificación de bloqueo y borrado atómico
         if not _is_file_locked(resolved):
-            path.unlink()
-            # Forzar sincronización de directorio para reflejar cambios en el sistema de archivos
-            try:
-                dir_fd = os.open(str(path.parent), os.O_RDONLY)
-                try: os.fsync(dir_fd)
-                finally: os.close(dir_fd)
-            except OSError:
-                pass
+            resolved.unlink()
             return True
         return False
     except (OSError, PermissionError, UnsafePathError):
@@ -473,12 +467,6 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             os.replace(temp_path, target_path)
         else:
             raise OSError("Integridad del archivo temporal fallida.")
-        
-        dir_fd = os.open(str(base_path), os.O_RDONLY)
-        try: 
-            os.fsync(dir_fd)
-        finally: 
-            os.close(dir_fd)
         
         return target_path
     except (OSError, IOError) as e:

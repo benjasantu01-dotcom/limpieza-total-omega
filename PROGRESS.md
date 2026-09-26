@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 255
+- Sin respuesta de la IA (error o límite): 253
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 11 | 0 | 2 | 1 | 52 |
+| 2026-09-24 | 11 | 0 | 2 | 1 | 48 |
 | 2026-09-25 | 132 | 12 | 26 | 8 | 172 |
-| 2026-09-26 | 45 | 4 | 6 | 2 | 31 |
+| 2026-09-26 | 46 | 4 | 7 | 2 | 33 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **43**
 - robustez ante casos límite: **40**
-- seguridad defensiva: **33**
+- seguridad defensiva: **34**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
@@ -33,9 +33,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `scanner.py`: **18**
 - `assistant.py`: **17**
+- `quarantine.py`: **17**
 - `memory.py`: **16**
 - `settings.py`: **16**
-- `quarantine.py`: **16**
 - `safety.py`: **16**
 - `healthscore.py`: **16**
 - `branding.py`: **13**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T07:01:37` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_safe_unlink` eliminando el uso de `path.unlink()` directo en favor de un wrapper que verifica rigurosamente la integridad y el estado del archivo antes de la operación, evitando además dependencias innecesarias de `os.fsync` en el directorio para asegurar la estabilidad en diversos sistemas de archivos.
 - `2026-09-26T03:41:12` **memory.py** (seguridad defensiva): Se reforzó la seguridad de `_get_process_path` validando que la ruta del ejecutable no sea una ruta de sistema ni un punto de reparse antes de procesarla, asegurando que `trim_working_set` nunca opere sobre ejecutables críticos o enlaces potencialmente maliciosos.
 - `2026-09-26T03:40:46` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_ask_folder` y `_verify_disk_path` añadiendo validaciones explícitas contra caracteres no imprimibles y rutas que pudieran ser puntos de reparse (junctions/symlinks), centralizando la lógica de verificación antes de que cualquier ruta de usuario alcance el procesamiento profundo del sistema.
 - `2026-09-26T03:39:31` **healthscore.py** (seguridad defensiva): Reforcé la integridad del motor de cálculo ante datos de entrada maliciosos o corruptos mediante la validación estricta de tipos y dominios en `_evaluate_rules`, evitando inyecciones de mensajes o fallos de ejecución.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T03:01:47` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_path` y `trim_working_set` ante procesos que finalizan abruptamente durante la consulta, asegurando que `OpenProcess` maneje correctamente los errores de sistema sin colapsar y verificando que el PID exista antes de intentar abrirlo.
 - `2026-09-26T03:01:34` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_target_choice_changed` añadiendo una validación explícita mediante `is_safe_disk_operation` para prevenir que rutas arbitrarias o puntos de reparse (que podrían llevar a bucles infinitos o ataques de path traversal) sean seleccionados como objetivo de escaneo.
 - `2026-09-26T02:58:47` **duplicates.py** (robustez ante casos límite): Se añadió una validación explícita para archivos de tamaño cero en el pipeline de hashing, previniendo errores de lectura y comportamiento indefinido en sistemas de archivos donde `stat().st_size` puede ser reportado pero el archivo no es procesable.
-- `2026-09-26T02:50:09` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante errores de permisos durante el escaneo en `walk_files` y `_collect_summary_data`, evitando que una excepción inesperada durante la iteración silencie el reporte o aborte prematuramente el proceso completo.

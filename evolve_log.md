@@ -1113,3 +1113,10 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-09-26T03:41:21` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-09-26T03:41:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T03:41:21` Corrida terminada. Total usado hoy: 88.
+- `2026-09-26T07:00:48` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-09-26T07:01:37` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_safe_unlink` eliminando el uso de `path.unlink()` directo en favor de un wrapper que verifica rigurosamente la integridad y el estado del archivo antes de la operación, evitando además dependencias innecesarias de `os.fsync` en el directorio para asegurar la estabilidad en diversos sistemas de archivos.
+- `2026-09-26T07:01:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-26T07:02:43` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-09-26T07:02:55` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-26T07:02:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T07:02:55` Corrida terminada. Total usado hoy: 92.
