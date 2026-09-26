@@ -275,9 +275,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Aplica una función de hash a un listado y devuelve grupos solo si hay colisiones."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if path.is_file() and _safe_path_check(path):
-            if (digest := hash_func(path)):
-                groups_by_digest[digest].append(path)
+        if (digest := hash_func(path)):
+            groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
 

@@ -8,24 +8,24 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 240
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 131 | 12 | 26 | 8 | 171 |
-| 2026-09-26 | 69 | 4 | 11 | 3 | 69 |
+| 2026-09-25 | 129 | 12 | 25 | 8 | 170 |
+| 2026-09-26 | 71 | 4 | 11 | 3 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **46**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **37**
 - seguridad defensiva: **36**
-- rendimiento: **29**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,11 +33,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **19**
 - `scanner.py`: **18**
 - `settings.py`: **18**
-- `quarantine.py`: **17**
-- `safety.py`: **17**
-- `healthscore.py`: **17**
+- `healthscore.py`: **18**
+- `quarantine.py`: **16**
+- `safety.py`: **16**
 - `memory.py`: **15**
-- `duplicates.py`: **13**
+- `duplicates.py`: **14**
 - `branding.py`: **12**
 - `browser.py`: **10**
 - `organizer.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T09:55:32` **healthscore.py** (rendimiento): Se optimizó el método `is_finite` de `SystemMetrics` reemplazando la repetición de llamadas a `math.isfinite` por una tupla con los campos numéricos relevantes, iterándolos con `all()` para reducir la complejidad de mantenimiento y mejorar la claridad del chequeo de integridad en tiempo de ejecución.
+- `2026-09-26T09:55:20` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_group_paths_by_hash` eliminando llamadas redundantes a `is_safe_to_modify` y `path.is_file()`, ya que la pre-validación realizada en `_collect_candidates` y `_decide_hash_strategy_and_process` garantiza que los paths recibidos son válidos y accesibles, reduciendo ciclos de CPU innecesarios durante el proceso de hashing.
 - `2026-09-26T09:46:07` **assistant.py** (rendimiento): Optimicé el cálculo de `active_problems` eliminando la recreación innecesaria de tuplas y filtrados en cada acceso, moviendo la lógica de filtrado a una propiedad cacheada que se invalida correctamente mediante el estado de `analyzed`, mejorando el rendimiento en consultas recurrentes a través de la UI.
 - `2026-09-26T09:44:25` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings detallados en los métodos de `_Validators` y `_coerce_and_verify`, clarificando la lógica de validación y la intención de seguridad detrás de cada chequeo para facilitar el mantenimiento futuro.
 - `2026-09-26T09:36:17` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `scanner.py` mediante la normalización de docstrings (especificando tipos de retorno y excepciones) y la clarificación de la intención técnica en métodos clave para facilitar el mantenimiento y la auditoría.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T09:14:09` **browser.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de los iteradores y validadores recursivos de `browser.py`, clarificando el propósito de seguridad de cada filtro para facilitar su auditoría y mantenimiento.
 - `2026-09-26T09:05:00` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_safe_handler_wrapper` y la adición de docstrings detallados en `SystemContext.ingest`, facilitando la comprensión del flujo de datos en un módulo crítico para la seguridad.
 - `2026-09-26T09:04:29` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez en `parse_registry_csv` y `entries_from_registry` mediante una validación estricta de las entradas del registro y la captura explícita de errores en la interacción con PowerShell, evitando el procesamiento de datos mal formados que podrían causar comportamientos inesperados.
-- `2026-09-26T09:04:00` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_load_impl` al agregar validación de tipo explícita tras la carga del JSON y capturar posibles excepciones de `coerce_and_verify` para evitar que el asistente o configuraciones mal formadas corrompan el retorno de la función.
-- `2026-09-26T09:03:28` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas centralizando la validación de archivos en `_run_file_heuristics` para capturar excepciones de forma individual por regla, evitando que una falla en una heurística específica detenga el análisis del archivo o corrompa el estado del escáner.

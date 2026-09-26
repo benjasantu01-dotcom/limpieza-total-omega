@@ -1391,3 +1391,10 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-09-26T09:46:31` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-09-26T09:46:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T09:46:31` Corrida terminada. Total usado hoy: 156.
+- `2026-09-26T09:53:59` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-09-26T09:54:28` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-09-26T09:54:53` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-26T09:55:20` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_group_paths_by_hash` eliminando llamadas redundantes a `is_safe_to_modify` y `path.is_file()`, ya que la pre-validación realizada en `_collect_candidates` y `_decide_hash_strategy_and_process` garantiza que los paths recibidos son válidos y accesibles, reduciendo ciclos de CPU innecesarios durante el proceso de hashing.
+- `2026-09-26T09:55:32` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el método `is_finite` de `SystemMetrics` reemplazando la repetición de llamadas a `math.isfinite` por una tupla con los campos numéricos relevantes, iterándolos con `all()` para reducir la complejidad de mantenimiento y mejorar la claridad del chequeo de integridad en tiempo de ejecución.
+- `2026-09-26T09:55:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T09:55:32` Corrida terminada. Total usado hoy: 160.
