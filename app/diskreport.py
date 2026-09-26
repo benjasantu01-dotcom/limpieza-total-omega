@@ -132,7 +132,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         # 3. Verificación de exclusión definida por seguridad
         if is_protected_path(entry_path):
             return True
-    except (OSError, PermissionError, AttributeError, RuntimeError, ValueError):
+    except (OSError, PermissionError, AttributeError, RuntimeError, ValueError, TypeError):
         return True
     return False
 
@@ -257,20 +257,23 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            st = entry.stat(follow_symlinks=False)
-                            inode: Inode = (st.st_dev, st.st_ino)
-                            if inode not in visited_inodes:
-                                visited_inodes.add(inode)
-                                stack.append(entry.path)
+                            try:
+                                st = entry.stat(follow_symlinks=False)
+                                inode: Inode = (st.st_dev, st.st_ino)
+                                if inode not in visited_inodes:
+                                    visited_inodes.add(inode)
+                                    stack.append(entry.path)
+                            except (OSError, PermissionError):
+                                continue
                                 
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size >= 0:
                                 yield Path(entry.path), st.st_size
                             
-                    except (PermissionError, OSError):
+                    except (PermissionError, OSError, ValueError, TypeError):
                         continue
-        except (PermissionError, OSError):
+        except (PermissionError, OSError, ValueError, TypeError):
             continue
 
 

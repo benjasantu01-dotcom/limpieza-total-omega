@@ -205,9 +205,9 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         try:
             path_obj = Path(p).resolve(strict=True)
             if _safe_path_check(path_obj):
-                st = path_obj.stat()
-                if _is_valid_candidate(path_obj, st.st_size):
-                    groups[st.st_size].append(path_obj)
+                st_size = path_obj.stat().st_size
+                if _is_valid_candidate(path_obj, st_size):
+                    groups[st_size].append(path_obj)
         except (OSError, RuntimeError, ValueError):
             continue
     return groups
@@ -237,27 +237,31 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if not is_safe_to_modify(Path(entry.path)):
+                        p_entry = Path(entry.path)
+                        if not is_safe_to_modify(p_entry):
                             continue
                         if entry.is_dir(follow_symlinks=False):
-                            if _safe_path_check(Path(entry.path)):
-                                _scan_dir(Path(entry.path))
+                            if _safe_path_check(p_entry):
+                                _scan_dir(p_entry)
                             continue
                         
                         if entry.path in visited_files:
                             continue
                         
-                        p_entry = Path(entry.path)
-                        st = entry.stat(follow_symlinks=False)
+                        try:
+                            st = entry.stat(follow_symlinks=False)
+                            st_size = st.st_size
+                        except OSError:
+                            continue
                         
-                        if st.st_size < min_size:
+                        if st_size < min_size:
                             continue
                         if (skip_protected and is_protected_path(p_entry)):
                             continue
-                        if not _is_valid_candidate(p_entry, st.st_size):
+                        if not _is_valid_candidate(p_entry, st_size):
                             continue
                         
-                        size_to_paths_map[st.st_size].append(p_entry)
+                        size_to_paths_map[st_size].append(p_entry)
                         visited_files.add(entry.path)
                     except (OSError, PermissionError, TypeError):
                         continue
