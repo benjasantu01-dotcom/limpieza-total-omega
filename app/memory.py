@@ -180,17 +180,21 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     """Transforma el CSV generado por PowerShell a una lista de objetos ProcessMemory."""
     if not raw_csv_text: return []
     
-    # Utilizar una lista pre-asignada o pre-procesamiento ayuda a reducir overhead
     results = []
     seen_pids: Set[int] = set()
 
     for line in raw_csv_text.splitlines():
-        if not (line := line.strip()): continue
+        line = line.strip()
+        if not line: continue
         parts = line.split(",", 2)
         if len(parts) == 3:
+            # Validar que los campos críticos contengan dígitos antes de convertir
+            pid_raw, ws_raw = parts[1], parts[2]
+            if not (any(c.isdigit() for c in pid_raw) and any(c.isdigit() for c in ws_raw)):
+                continue
             try:
-                pid = int(''.join(filter(str.isdigit, parts[1])))
-                ws = int(''.join(filter(str.isdigit, parts[2])))
+                pid = int(''.join(filter(str.isdigit, pid_raw)))
+                ws = int(''.join(filter(str.isdigit, ws_raw)))
                 if pid not in seen_pids and ws < MAX_VALID_PROCESS_MEM:
                     seen_pids.add(pid)
                     results.append(ProcessMemory(parts[0].strip("'\" "), pid, BytesValue(ws)))
@@ -230,7 +234,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     now = time.time()
     if (now - _proc_cache_time) > 60:
         try:
-            # Comando optimizado: filtrado nativo en PS para reducir transferencia de texto al buffer
             cmd = ['powershell', '-NoProfile', '-NonInteractive', '-Command', 
                    'Get-Process | Where-Object { $_.Id -notin 0,4 } | Select-Object -First 50 | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }']
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)

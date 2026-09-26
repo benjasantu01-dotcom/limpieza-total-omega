@@ -122,16 +122,18 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
-    """Intenta validar acceso exclusivo mediante lectura. Retorna True si está bloqueado."""
+    """Valida si un archivo está bloqueado por otro proceso intentando abrirlo en modo lectura exclusiva."""
     if not path.is_file():
         return True
     try:
-        if path.stat().st_size == 0:
+        # Intenta abrir el archivo con acceso exclusivo (modo 'r+b' genera error si está en uso)
+        with open(path, 'r+b') as f:
+            f.seek(0)
             return False
-        with open(path, 'rb') as f:
-            f.read(1)
-        return False
-    except (OSError, PermissionError, IOError):
+    except (PermissionError, OSError):
+        # Si el archivo está siendo usado por otro proceso, se captura el error de acceso
+        return True
+    except Exception:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:

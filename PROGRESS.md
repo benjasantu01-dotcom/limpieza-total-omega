@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 12
+- Rechazadas por guardia de seguridad: 34
+- Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 245
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 101 | 8 | 20 | 7 | 132 |
-| 2026-09-26 | 94 | 9 | 15 | 5 | 113 |
+| 2026-09-25 | 99 | 8 | 18 | 7 | 132 |
+| 2026-09-26 | 96 | 9 | 16 | 6 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **43**
 - legibilidad y documentación: **41**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **40**
 - seguridad defensiva: **37**
-- rendimiento: **36**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `assistant.py`: **19**
 - `scanner.py`: **18**
+- `assistant.py`: **18**
 - `settings.py`: **17**
 - `safety.py`: **16**
 - `healthscore.py`: **16**
 - `duplicates.py`: **15**
 - `quarantine.py`: **15**
-- `memory.py`: **13**
-- `branding.py`: **11**
-- `organizer.py`: **10**
+- `memory.py`: **14**
+- `organizer.py`: **11**
+- `branding.py`: **10**
 - `browser.py`: **9**
 - `startup.py`: **8**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T13:19:09` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_file_locked` para evitar falsos positivos y posibles bloqueos mediante una validación estricta de permisos de apertura y el manejo explícito de errores de acceso, asegurando que solo los archivos efectivamente bloqueados por el sistema sean reportados.
+- `2026-09-26T13:18:42` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` implementando una validación explícita para evitar errores de conversión en líneas mal formadas o vacías, garantizando que el recolector de procesos no falle ante datos de entrada inesperados.
 - `2026-09-26T13:09:25` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `compute_score` y `summarize` implementando validaciones de tipo explícitas y manejo defensivo de valores nulos o corruptos, garantizando que el motor de puntuación nunca falle ante entradas inesperadas.
 - `2026-09-26T13:08:30` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_collect_summary_data` y las funciones públicas mediante la validación proactiva de `size_bytes` y la captura de errores en operaciones críticas de sistema, asegurando que el análisis no se interrumpa ante metadatos corruptos o cambios inesperados en el sistema de archivos durante el escaneo.
 - `2026-09-26T12:59:39` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` y `_call_gemini` para prevenir excepciones ante respuestas malformadas o inesperadas de la API, asegurando que el flujo siempre retorne un estado válido sin romper la ejecución.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T10:57:24` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante fallos de E/S y corrupción de archivos al añadir una validación de `st_size` y `st_mode` más estricta antes de abrir el JSON, previniendo lecturas de archivos corruptos o bloqueados durante cambios atómicos.
 - `2026-09-26T10:56:51` **scanner.py** (robustez ante casos límite): Se mejora la robustez de `scanner.py` ante casos límite agregando una validación de existencia `entry.is_file()` segura dentro de `_run_file_heuristics` y un bloque `try-except` más granular en `_is_safe_entry` para capturar fallos inesperados al intentar resolver rutas, evitando que el escáner aborte por archivos bloqueados o con metadatos inaccesibles.
 - `2026-09-26T10:47:29` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para que maneje correctamente errores de acceso en sistemas Windows, evitando bloqueos innecesarios cuando el archivo no está realmente en uso, y añadí una validación de `os.fsync` en el `save_manifest` para garantizar la integridad ante fallos de escritura en disco.
-- `2026-09-26T10:46:35` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_locked` para manejar correctamente archivos que no existen, archivos con tamaño cero (que no pueden ser leídos con `read(1)`) y archivos con permisos restringidos, evitando falsos positivos en el escaneo de basura.
-- `2026-09-26T10:36:00` **duplicates.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de lectura en `_collect_candidates` y `group_by_size` al envolver la obtención del tamaño (`st.st_size`) en bloques `try-except` más granulares, evitando que la falla de un solo archivo bloquee la exploración de directorios completos.
