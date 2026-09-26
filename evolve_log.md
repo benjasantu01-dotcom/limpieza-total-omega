@@ -1500,3 +1500,44 @@ assert not ['memory.py']
 - `2026-09-26T11:19:25` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad del acceso a procesos en `memory.py` mediante la implementación de `ensure_safe_to_modify` antes de cualquier operación de modificación (`trim_working_set`), garantizando que la ruta del ejecutable sea validada explícitamente contra la política de seguridad y previniendo la manipulación de procesos en rutas críticas o fuera de los límites permitidos.
 - `2026-09-26T11:19:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T11:19:25` Corrida terminada. Total usado hoy: 192.
+- `2026-09-26T11:26:07` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-09-26T11:26:33` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-26T11:27:13` Tests FALLARON:
+```
+ge_all_only_deletes_in0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-1/test_purge_all_only_deletes_in0/_Cuarentena')
+
+    def test_purge_all_only_deletes_inside_the_quarantine(tmp_path, cuarentena):
+        afuera = tmp_path / "intacto.txt"
+        afuera.write_text("y")
+    
+        for nombre in ("a.txt", "b.txt"):
+            f = tmp_path / nombre
+            f.write_text("x")
+            quarantine.quarantine_file(f, base=cuarentena)
+    
+        borrados = quarantine.purge_all(base=cuarentena)
+    
+>       assert borrados == 2
+E       assert 0 == 2
+
+evolve/tests/test_safety.py:272: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:239: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - assert 0 == 2
+1 failed, 298 passed, 4 warnings in 1.51s
+
+```
+- `2026-09-26T11:27:13` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `_is_file_locked` para evitar falsos positivos y mejorar el manejo de errores mediante el uso de `try-except` específico para la apertura del archivo sin intentar bloqueos de bajo nivel innecesarios que pueden fallar por permisos de usuario o configuración de SO, y se añadió una validación explícita para evitar que `_safe_unlink` intente procesar rutas que no residen dentro del sandbox.
+- `2026-09-26T11:27:32` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-26T11:27:57` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una verificación de "puntos de reparse padre" en `ensure_safe_to_modify` para mitigar ataques de bypass de sandbox donde un directorio padre (que sí es seguro) contiene un punto de reparse que redirige silenciosamente a un sistema de archivos restringido.
+- `2026-09-26T11:27:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T11:27:57` Corrida terminada. Total usado hoy: 196.
