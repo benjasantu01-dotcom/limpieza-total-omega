@@ -152,7 +152,10 @@ class _Validators:
 
     @staticmethod
     def _is_reparse_point(path: Path) -> bool:
-        """Determina si una ruta es symlink o junction usando métodos de objeto Path."""
+        """
+        Detecta si la ruta es un punto de reanálisis (symlink/junction).
+        Es crítico no seguirlos para evitar bucles infinitos o fugas de permisos.
+        """
         try:
             return path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction())
         except (OSError, PermissionError):
@@ -340,12 +343,17 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
-    """Aplica consistencia final de tipos y reglas de negocio obligatorias."""
+    """
+    Aplica consistencia final de tipos. 
+    Verifica condiciones de negocio cruzadas (ej: el asistente requiere clave)
+    y garantiza que el diccionario de salida sea compatible con el esquema AppSettings.
+    """
     try:
         final = {k: settings.get(k, v) for k, v in DEFAULTS.items()}
         final["asistente_activado"] = bool(final["asistente_activado"])
         final["duplicados_tamano_minimo_kb"] = int(final["duplicados_tamano_minimo_kb"])
         
+        # Invariante: El asistente no puede estar activo si no existe una API Key.
         if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
             final["asistente_activado"] = False
         return final

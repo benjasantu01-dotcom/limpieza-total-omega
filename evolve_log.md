@@ -1381,3 +1381,13 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-09-26T09:36:17` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `scanner.py` mediante la normalización de docstrings (especificando tipos de retorno y excepciones) y la clarificación de la intención técnica en métodos clave para facilitar el mantenimiento y la auditoría.
 - `2026-09-26T09:36:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T09:36:17` Corrida terminada. Total usado hoy: 152.
+- `2026-09-26T09:43:46` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-09-26T09:44:25` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna agregando docstrings detallados en los métodos de `_Validators` y `_coerce_and_verify`, clarificando la lógica de validación y la intención de seguridad detrás de cada chequeo para facilitar el mantenimiento futuro.
+- `2026-09-26T09:44:25` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-26T09:44:29` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-26T09:44:35` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-26T09:45:16` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-26T09:46:07` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el cálculo de `active_problems` eliminando la recreación innecesaria de tuplas y filtrados en cada acceso, moviendo la lógica de filtrado a una propiedad cacheada que se invalida correctamente mediante el estado de `analyzed`, mejorando el rendimiento en consultas recurrentes a través de la UI.
+- `2026-09-26T09:46:31` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-26T09:46:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T09:46:31` Corrida terminada. Total usado hoy: 156.
