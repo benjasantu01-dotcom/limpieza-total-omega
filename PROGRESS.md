@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 76 | 5 | 15 | 5 | 103 |
-| 2026-09-26 | 126 | 11 | 23 | 10 | 130 |
+| 2026-09-25 | 76 | 5 | 15 | 5 | 99 |
+| 2026-09-26 | 129 | 11 | 23 | 10 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **43**
+- seguridad defensiva: **36**
 - rendimiento: **35**
-- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
+- `settings.py`: **19**
 - `healthscore.py`: **18**
-- `settings.py`: **18**
+- `safety.py`: **18**
+- `scanner.py`: **18**
 - `assistant.py`: **17**
-- `safety.py`: **17**
-- `scanner.py`: **17**
 - `quarantine.py`: **16**
 - `memory.py`: **15**
 - `duplicates.py`: **14**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T16:03:17` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `_load_impl` al añadir una validación de propiedad del archivo (`os.stat().st_uid`) para asegurar que el archivo de configuración sea propiedad del usuario actual, previniendo riesgos de manipulación externa en entornos multiusuario.
+- `2026-09-26T16:02:45` **scanner.py** (seguridad defensiva): Se ha mejorado `_is_safe_entry` en `Scanner` para garantizar que la ruta absoluta de la entrada sea la que se utiliza al validar contra `is_protected_path`, evitando inconsistencias por rutas relativas o cambios en el contexto durante el recorrido recursivo.
+- `2026-09-26T16:02:16` **safety.py** (seguridad defensiva): Se implementó un chequeo preventivo para detectar si una ruta se encuentra dentro de un punto de reparse (junction/symlink) durante la fase de normalización y validación estructural, evitando que el proceso siga trayectorias redireccionadas que puedan escapar del sandbox antes incluso de intentar acceder al archivo.
 - `2026-09-26T15:52:56` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_file_locked` al implementar una verificación de exclusividad nativa más robusta mediante el manejo de descriptores de archivo, asegurando que la operación de cuarentena no interrumpa procesos críticos en ejecución.
 - `2026-09-26T15:51:40` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_get_process_path` integrando explícitamente `is_protected_path` sobre la ruta resuelta antes de permitir cualquier operación de manejo, asegurando que ni siquiera los metadatos de rutas del sistema sean procesados o devueltos para manipulación.
 - `2026-09-26T15:43:51` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de cómputo introduciendo un chequeo explícito en `compute_score` para asegurar que el conjunto de métricas sea válido mediante `metrics.is_finite` antes de procesar, y encapsulando el cálculo del `area_ratio` dentro de un bloque `try-except` más estricto, protegiendo al sistema de posibles desbordamientos o excepciones inesperadas durante la evaluación de métricas malformadas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T15:05:24` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics.validate()` eliminando la invocación recursiva innecesaria y añadiendo un chequeo de tipo más explícito para evitar `TypeError` en escenarios donde las entradas podrían ser `None` o contenedores inesperados antes de procesarlas.
 - `2026-09-26T15:01:09` **diskreport.py** (robustez ante casos límite): Se ha robustecido el escaneo en `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles añadiendo un control explícito de `stat` con manejo de excepciones dentro del bucle, asegurando que la recolección de datos no se interrumpa silenciosamente ni falle ante permisos denegados sobre archivos individuales.
 - `2026-09-26T15:00:38` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo frente a archivos bloqueados durante la lectura, asegurando que `_sum_directory_recursive` maneje adecuadamente errores de acceso al intentar realizar `os.stat` sobre archivos individuales o subdirectorios, evitando que excepciones inesperadas interrumpan el cálculo de carpetas parcialmente accesibles.
-- `2026-09-26T14:41:41` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de un `set` para la `protected_cache` con una lógica de expiración por nivel de profundidad, evitando el costo de `path.resolve()` en cada archivo y acelerando las búsquedas en directorios grandes.
-- `2026-09-26T14:41:29` **safety.py** (rendimiento): Se ha optimizado `_is_system_path_raw` reemplazando la evaluación iterativa `any()` con un `frozenset.isdisjoint()` directo sobre los componentes de la ruta, reduciendo drásticamente la complejidad computacional en cada chequeo.
-- `2026-09-26T14:40:28` **quarantine.py** (rendimiento): Optimicé el método `list_items` convirtiendo la lectura secuencial de los archivos en disco en una operación de conjunto O(1), evitando el re-procesamiento redundante del manifiesto y las llamadas innecesarias a `stat()` en archivos que no corresponden a ningún ítem.

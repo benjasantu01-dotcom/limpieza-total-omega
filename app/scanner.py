@@ -201,10 +201,12 @@ class Scanner:
             return False
         
         try:
-            parent_str = str(Path(entry.path).parent).lower()
+            # Usar ruta absoluta resuelta para el chequeo de seguridad
+            abs_path = Path(entry.path).resolve()
+            parent_abs_path = abs_path.parent
+            parent_str = str(parent_abs_path).lower()
             if parent_str not in self.protected_cache:
-                # Resolve solo una vez por carpeta, no por archivo
-                if is_protected_path(Path(entry.path).parent.resolve()):
+                if is_protected_path(parent_abs_path):
                     return False
                 self.protected_cache.add(parent_str)
         except (OSError, RuntimeError):

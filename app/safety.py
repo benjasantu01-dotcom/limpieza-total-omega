@@ -432,6 +432,10 @@ def normalize(path: PathLike) -> Path:
          raise UnsafePathError("Ruta contiene secuencias Unicode sospechosas.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING)
     try:
         p = Path(path_str)
+        # Validación de reparse points preventiva antes de resolver
+        for part in p.parts:
+            if part and os.path.exists(str(p.parent / part)) and _is_reparse_point(str(p.parent / part)):
+                raise UnsafePathError("Segmento de ruta contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         resolved = p.resolve()
         # Verificar si hay traversal comparando componentes originales resueltos
         if ".." in p.parts: raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS)

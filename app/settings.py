@@ -292,6 +292,8 @@ def _is_file_secure_to_read(ruta: Path) -> bool:
         st = ruta.stat()
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
         if not is_safe_to_modify(str(ruta)): return False
+        # Verificación de propiedad (evitar manipulación en entornos compartidos si es posible)
+        if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
         return True
     except (OSError, PermissionError):

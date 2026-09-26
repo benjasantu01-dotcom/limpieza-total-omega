@@ -782,3 +782,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-26T15:53:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-26T15:53:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T15:53:01` Corrida terminada. Total usado hoy: 300.
+- `2026-09-26T16:01:21` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-26T16:01:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-26T16:02:16` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se implementó un chequeo preventivo para detectar si una ruta se encuentra dentro de un punto de reparse (junction/symlink) durante la fase de normalización y validación estructural, evitando que el proceso siga trayectorias redireccionadas que puedan escapar del sandbox antes incluso de intentar acceder al archivo.
+- `2026-09-26T16:02:45` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado `_is_safe_entry` en `Scanner` para garantizar que la ruta absoluta de la entrada sea la que se utiliza al validar contra `is_protected_path`, evitando inconsistencias por rutas relativas o cambios en el contexto durante el recorrido recursivo.
+- `2026-09-26T16:03:17` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `_load_impl` al añadir una validación de propiedad del archivo (`os.stat().st_uid`) para asegurar que el archivo de configuración sea propiedad del usuario actual, previniendo riesgos de manipulación externa en entornos multiusuario.
+- `2026-09-26T16:03:31` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-09-26T16:03:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T16:03:31` Corrida terminada. Total usado hoy: 304.
