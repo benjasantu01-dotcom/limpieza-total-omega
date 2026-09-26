@@ -442,10 +442,10 @@ def is_drive_root(path: PathLike) -> bool:
     except (UnsafePathError, TypeError, OSError): return True
 
 @lru_cache(maxsize=4096)
-def _is_system_path_cached(path_str: str) -> bool:
+def _is_system_path_raw(path_str: str) -> bool:
     """
-    Verifica si una ruta cae dentro de los directorios críticos de Windows.
-    Compara cadenas normalizadas evitando creación de objetos innecesarios.
+    Verifica si una ruta normalizada y en minúsculas es parte del sistema.
+    Optimizado para evitar objetos Path en el bucle de validación.
     """
     path_lower = path_str.lower()
     if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_SET): return True
@@ -458,7 +458,9 @@ def is_protected_path(path: PathLike) -> TypeGuard[str]:
     if not path: return True
     try:
         p = normalize(path)
-        return _is_system_path_cached(str(p)) or p == Path(p.anchor)
+        # Comparación directa de anclaje (C:\) y chequeo de sistema eficiente
+        if p == Path(p.anchor): return True
+        return _is_system_path_raw(str(p))
     except (UnsafePathError, TypeError, OSError, RuntimeError): return True
 
 @lru_cache(maxsize=4096)

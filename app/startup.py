@@ -272,15 +272,13 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
                 for entry in it:
                     if entry.is_file(follow_symlinks=False):
                         _, ext = os.path.splitext(entry.name)
-                        if ext.lower() in EXECUTABLE_EXTS:
-                            p = Path(entry.path)
-                            if not is_protected_path(p):
-                                name = os.path.splitext(entry.name)[0]
-                                found_entries.append(StartupEntry(
-                                    name="".join(c for c in name if ord(c) >= 32),
-                                    command=entry.path,
-                                    source="carpeta"
-                                ))
+                        if ext.lower() in EXECUTABLE_EXTS and not is_protected_path(Path(entry.path)):
+                            name = "".join(c for c in os.path.splitext(entry.name)[0] if ord(c) >= 32)
+                            found_entries.append(StartupEntry(
+                                name=name,
+                                command=entry.path,
+                                source="carpeta"
+                            ))
         except (OSError, PermissionError):
             continue
     return found_entries

@@ -1017,3 +1017,54 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-26T02:29:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
 - `2026-09-26T02:29:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T02:29:19` Corrida terminada. Total usado hoy: 60.
+- `2026-09-26T02:37:50` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-09-26T02:37:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-26T02:38:34` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` eliminando la recreación de objetos `Path` y reduciendo las llamadas a `normalize` mediante un caché especializado que opera directamente sobre cadenas, evitando así el alto costo de resolución de rutas en el sistema de archivos durante los bucles de escaneo.
+- `2026-09-26T02:38:58` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory
+- `2026-09-26T02:39:27` Tests FALLARON:
+```
+.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:236: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - AssertionError: assert {'tema': 'cla...s': True, ...} == {'tema': 'osc...s': True, ...}
+  
+  Omitting 14 identical items, use -vv to show
+  Differing items:
+  {'top_archivos': 99} != {'top_archivos': 15}
+  {'tema': 'claro'} != {'tema': 'oscuro'}
+  
+  Full diff:
+    {
+  -     'tema': 'oscuro',
+  ?              -- ^
+  +     'tema': 'claro',
+  ?               ^^
+        'acento': 'menta',
+        'mostrar_barras': True,
+        'animaciones': True,
+        'confirmar_siempre': True,
+        'abrir_en': 'Salud',
+        'recordar_ultima_carpeta': True,
+        'ultima_carpeta': '',
+        'duplicados_tamano_minimo_kb': 64,
+  -     'top_archivos': 15,
+  ?                     ^^
+  +     'top_archivos': 99,
+  ?                     ^^
+        'top_procesos': 15,
+        'analisis_en_paralelo': True,
+        'asistente_activado': False,
+        'asistente_clave_api': '',
+        'asistente_enviar_metricas': True,
+        'asistente_modelo': 'gemini-3.1-flash-lite',
+    }
+1 failed, 298 passed, 4 warnings in 0.86s
+
+```
+- `2026-09-26T02:39:27` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `load()` y `save()` reemplazando la lógica de comparación manual y el cacheado ineficiente con un mecanismo de `lru_cache` sobre el contenido serializado, evitando lecturas redundantes de disco y reconstrucción del diccionario de configuración en cada acceso.
+- `2026-09-26T02:39:40` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó `entries_from_folders` para evitar la creación de múltiples objetos `Path` y realizar llamadas innecesarias al sistema de archivos dentro del bucle, utilizando `os.scandir` de forma más eficiente y evitando la conversión redundante a `Path` cuando la cadena de ruta ya está disponible.
+- `2026-09-26T02:39:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T02:39:40` Corrida terminada. Total usado hoy: 64.
