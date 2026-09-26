@@ -77,6 +77,13 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     except (OSError, PermissionError, AttributeError):
         return None
 
+def _get_file_attributes(entry: os.DirEntry) -> int:
+    """Extrae de forma segura el bitmask de atributos del sistema de archivos del DirEntry."""
+    stats = _safe_stat(entry)
+    if stats and hasattr(stats, 'st_file_attributes'):
+        return int(stats.st_file_attributes)
+    return 0
+
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """Valida la integridad de una ruta según estándares de Windows antes de su procesamiento."""
     if not path_str or len(path_str) > LIMITS.max_path:
@@ -157,10 +164,8 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Detecta si una entrada es un punto de reanálisis (Junction o Symlink)."""
-        stats = _safe_stat(entry)
-        if stats and hasattr(stats, 'st_file_attributes'):
-            return bool(stats.st_file_attributes & LIMITS.reparse_point_attr_mask)
-        return False
+        attributes = _get_file_attributes(entry)
+        return bool(attributes & LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Valida que la entrada cumpla con las políticas de seguridad antes de ser escaneada."""

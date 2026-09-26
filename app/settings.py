@@ -234,22 +234,23 @@ class _Validators:
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(key, text)
         return _Validators._validate_enum_str(text, key)
 
+BOOL_KEYS: Final = {
+    ConfigKey.MOSTRAR_BARRAS, ConfigKey.ANIMACIONES, ConfigKey.CONFIRMAR_SIEMPRE,
+    ConfigKey.RECORDAR_ULTIMA_CARPETA, ConfigKey.ANALISIS_EN_PARALELO,
+    ConfigKey.ASISTENTE_ACTIVADO, ConfigKey.ASISTENTE_ENVIAR_METRICAS
+}
+
+INT_KEYS: Final = {
+    ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB, ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS
+}
+
 @lru_cache(maxsize=1)
 def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
     """Genera un mapa inmutable de validadores para la configuración."""
-    bool_keys = {
-        ConfigKey.MOSTRAR_BARRAS, ConfigKey.ANIMACIONES, ConfigKey.CONFIRMAR_SIEMPRE,
-        ConfigKey.RECORDAR_ULTIMA_CARPETA, ConfigKey.ANALISIS_EN_PARALELO,
-        ConfigKey.ASISTENTE_ACTIVADO, ConfigKey.ASISTENTE_ENVIAR_METRICAS
-    }
-    int_keys = {
-        ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB, ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS
-    }
-    
     mapping = {}
     for key in ConfigKey:
-        if key in bool_keys: validator = _Validators.bool
-        elif key in int_keys: validator = _Validators.int
+        if key in BOOL_KEYS: validator = _Validators.bool
+        elif key in INT_KEYS: validator = _Validators.int
         elif key == ConfigKey.ULTIMA_CARPETA: validator = _Validators.path
         else: validator = _Validators.str
         mapping[key] = _ValidatorEntry(validator)
