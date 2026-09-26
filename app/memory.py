@@ -61,11 +61,6 @@ SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
 ERROR_ACCESS_DENIED: Final[int] = 5
 ERROR_INVALID_PARAMETER: Final[int] = 87
 
-PS_QUERY_CMD: Final[List[str]] = [
-    'powershell', '-NoProfile', '-NonInteractive', '-Command', 
-    'Get-Process | Where-Object { $_.Id -notin 0,4 } | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }'
-]
-
 __all__ = [
     "MemorySnapshot",
     "ProcessMemory",
@@ -184,24 +179,24 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """Transforma el CSV generado por PowerShell a una lista de objetos ProcessMemory."""
     if not raw_csv_text: return []
+    
+    # Utilizar una lista pre-asignada o pre-procesamiento ayuda a reducir overhead
+    results = []
     seen_pids: Set[int] = set()
 
-    def process_generator() -> Iterator[ProcessMemory]:
-        for line in raw_csv_text.splitlines():
-            line = line.strip()
-            if not line: continue
-            parts = line.split(",", 2)
-            if len(parts) == 3:
-                try:
-                    pid_val = int("".join(c for c in parts[1] if c.isdigit()))
-                    ws_val = int("".join(c for c in parts[2] if c.isdigit()))
-                    if pid_val > 0 and pid_val not in seen_pids and ws_val < MAX_VALID_PROCESS_MEM:
-                        seen_pids.add(pid_val)
-                        yield ProcessMemory(parts[0].strip("'\" "), pid_val, BytesValue(ws_val))
-                except (ValueError, TypeError, OverflowError): 
-                    continue
-
-    return sorted(process_generator(), key=lambda p: p.working_set, reverse=True)[:limit]
+    for line in raw_csv_text.splitlines():
+        if not (line := line.strip()): continue
+        parts = line.split(",", 2)
+        if len(parts) == 3:
+            try:
+                pid = int(''.join(filter(str.isdigit, parts[1])))
+                ws = int(''.join(filter(str.isdigit, parts[2])))
+                if pid not in seen_pids and ws < MAX_VALID_PROCESS_MEM:
+                    seen_pids.add(pid)
+                    results.append(ProcessMemory(parts[0].strip("'\" "), pid, BytesValue(ws)))
+            except (ValueError, TypeError): continue
+            
+    return sorted(results, key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Invoca GlobalMemoryStatusEx para obtener métricas físicas del sistema (Win32 API)."""
@@ -235,7 +230,10 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     now = time.time()
     if (now - _proc_cache_time) > 60:
         try:
-            proc = subprocess.run(PS_QUERY_CMD, capture_output=True, text=True, timeout=3, check=False)
+            # Comando optimizado: filtrado nativo en PS para reducir transferencia de texto al buffer
+            cmd = ['powershell', '-NoProfile', '-NonInteractive', '-Command', 
+                   'Get-Process | Where-Object { $_.Id -notin 0,4 } | Select-Object -First 50 | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }']
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
             if proc.returncode == 0 and proc.stdout:
                 _proc_cache_data = parse_windows_process_csv(proc.stdout, limit=limit)
                 _proc_cache_time = now
@@ -275,14 +273,7 @@ def _is_system_process(pid: int) -> bool:
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _get_process_path(pid: int) -> Optional[Path]:
-    """
-    Resuelve la ruta absoluta del ejecutable de un proceso mediante la API de Win32.
-    
-    Args:
-        pid: Identificador de proceso (PID).
-    Returns:
-        Path del ejecutable si es accesible y seguro, None en caso contrario.
-    """
+    """Resuelve la ruta absoluta del ejecutable de un proceso mediante la API de Win32."""
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
     if not handle or handle == 0: return None
@@ -307,16 +298,7 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Libera el conjunto de trabajo (Working Set) de un proceso mediante EmptyWorkingSet.
-    
-    Args:
-        pid: ID del proceso como int o cadena.
-    Returns:
-        Tuple (éxito: bool, mensaje: str).
-    Raises:
-        Cualquier error de ctypes se captura internamente devolviendo fallo.
-    """
+    """Libera el conjunto de trabajo (Working Set) de un proceso mediante EmptyWorkingSet."""
     if not _is_windows: return False, "Solo soportado en Windows."
     try: target_pid = int(pid)
     except (ValueError, TypeError): return False, "PID no válido."

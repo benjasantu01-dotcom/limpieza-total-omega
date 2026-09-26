@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 11
+- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 37
+- Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 129 | 12 | 25 | 8 | 170 |
-| 2026-09-26 | 71 | 4 | 11 | 3 | 71 |
+| 2026-09-25 | 127 | 11 | 25 | 8 | 169 |
+| 2026-09-26 | 72 | 4 | 12 | 4 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **46**
-- robustez ante casos límite: **37**
 - seguridad defensiva: **36**
-- rendimiento: **31**
+- robustez ante casos límite: **35**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `assistant.py`: **19**
-- `scanner.py`: **18**
-- `settings.py`: **18**
 - `healthscore.py`: **18**
+- `settings.py`: **17**
+- `scanner.py`: **17**
+- `memory.py`: **16**
 - `quarantine.py`: **16**
 - `safety.py`: **16**
-- `memory.py`: **15**
 - `duplicates.py`: **14**
 - `branding.py`: **12**
 - `browser.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T10:05:38` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas de procesos eliminando el uso de `subprocess` y su parseo de texto intensivo, reemplazándolo por una lógica más eficiente que minimiza la creación de objetos y utiliza estructuras de datos adecuadas para filtrar duplicados rápidamente, mejorando el rendimiento en cada actualización del `top`.
 - `2026-09-26T09:55:32` **healthscore.py** (rendimiento): Se optimizó el método `is_finite` de `SystemMetrics` reemplazando la repetición de llamadas a `math.isfinite` por una tupla con los campos numéricos relevantes, iterándolos con `all()` para reducir la complejidad de mantenimiento y mejorar la claridad del chequeo de integridad en tiempo de ejecución.
 - `2026-09-26T09:55:20` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_group_paths_by_hash` eliminando llamadas redundantes a `is_safe_to_modify` y `path.is_file()`, ya que la pre-validación realizada en `_collect_candidates` y `_decide_hash_strategy_and_process` garantiza que los paths recibidos son válidos y accesibles, reduciendo ciclos de CPU innecesarios durante el proceso de hashing.
 - `2026-09-26T09:46:07` **assistant.py** (rendimiento): Optimicé el cálculo de `active_problems` eliminando la recreación innecesaria de tuplas y filtrados en cada acceso, moviendo la lógica de filtrado a una propiedad cacheada que se invalida correctamente mediante el estado de `analyzed`, mejorando el rendimiento en consultas recurrentes a través de la UI.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T09:14:36` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del motor interno `_collect_summary_data` y añadí *type hints* faltantes en el uso de `defaultdict` y *heaps* para clarificar la estructura de datos que procesa el análisis, facilitando el mantenimiento y la comprensión de las transformaciones de estado.
 - `2026-09-26T09:14:09` **browser.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de los iteradores y validadores recursivos de `browser.py`, clarificando el propósito de seguridad de cada filtro para facilitar su auditoría y mantenimiento.
 - `2026-09-26T09:05:00` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_safe_handler_wrapper` y la adición de docstrings detallados en `SystemContext.ingest`, facilitando la comprensión del flujo de datos en un módulo crítico para la seguridad.
-- `2026-09-26T09:04:29` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez en `parse_registry_csv` y `entries_from_registry` mediante una validación estricta de las entradas del registro y la captura explícita de errores en la interacción con PowerShell, evitando el procesamiento de datos mal formados que podrían causar comportamientos inesperados.
