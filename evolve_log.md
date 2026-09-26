@@ -1011,3 +1011,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-26T17:46:58` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-26T17:46:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T17:46:58` Corrida terminada. Total usado hoy: 344.
+- `2026-09-26T17:53:35` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-26T17:54:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-26T17:54:45` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_get_path_stat_robust` agregando una validación explícita de `os.stat_result` y un manejo más granular de excepciones (FileNotFoundError y PermissionError), evitando que `UnsafePathError` se propague con mensajes genéricos.
+- `2026-09-26T17:55:13` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-26T17:55:30` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` y `_load_impl()` incorporando validación explícita mediante `ensure_safe_to_modify` antes de operaciones críticas de disco, cumpliendo con la jerarquía de seguridad exigida para evitar manipulaciones inseguras de rutas, y añadí bloques `try-except` más granulares al manipular `os.replace` y archivos temporales para evitar estados corruptos si el filesystem falla.
+- `2026-09-26T17:55:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T17:55:30` Corrida terminada. Total usado hoy: 348.

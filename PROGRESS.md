@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 249
+- Rechazadas por guardia de seguridad: 36
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 248
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 57 | 4 | 12 | 3 | 84 |
-| 2026-09-26 | 135 | 11 | 23 | 10 | 165 |
+| 2026-09-25 | 56 | 4 | 12 | 2 | 82 |
+| 2026-09-26 | 137 | 11 | 24 | 10 | 166 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **43**
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **38**
 - seguridad defensiva: **36**
-- rendimiento: **34**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
-- `settings.py`: **18**
+- `diskreport.py`: **21**
+- `settings.py`: **19**
+- `safety.py`: **17**
 - `scanner.py`: **16**
 - `assistant.py`: **16**
 - `healthscore.py`: **16**
-- `safety.py`: **16**
 - `quarantine.py`: **15**
 - `duplicates.py`: **15**
 - `memory.py`: **14**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T17:55:30` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_load_impl()` incorporando validación explícita mediante `ensure_safe_to_modify` antes de operaciones críticas de disco, cumpliendo con la jerarquía de seguridad exigida para evitar manipulaciones inseguras de rutas, y añadí bloques `try-except` más granulares al manipular `os.replace` y archivos temporales para evitar estados corruptos si el filesystem falla.
+- `2026-09-26T17:54:45` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` agregando una validación explícita de `os.stat_result` y un manejo más granular de excepciones (FileNotFoundError y PermissionError), evitando que `UnsafePathError` se propague con mensajes genéricos.
 - `2026-09-26T17:46:10` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y `_get_process_path` validando explícitamente el valor de los handles y los resultados de las APIs, asegurando que los recursos se liberen siempre mediante bloques `try...finally` y evitando el uso de llamadas con punteros no validados.
 - `2026-09-26T17:45:43` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `on_restore_quarantine` mediante una validación estricta y declarativa de la entrada del usuario antes de procesar el archivo, asegurando que solo IDs con formato alfanumérico sean aceptados y que cualquier ruta restaurada sea validada previamente por `is_safe_path`, evitando así el potencial uso de IDs malformados para inyectar rutas de sistema.
 - `2026-09-26T17:34:40` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos, encapsulando la lógica de apertura en un bloque `try-except` más preciso y validando explícitamente el estado del descriptor de archivo para evitar fugas de recursos y excepciones no controladas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T15:51:40` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_get_process_path` integrando explícitamente `is_protected_path` sobre la ruta resuelta antes de permitir cualquier operación de manejo, asegurando que ni siquiera los metadatos de rutas del sistema sean procesados o devueltos para manipulación.
 - `2026-09-26T15:43:51` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de cómputo introduciendo un chequeo explícito en `compute_score` para asegurar que el conjunto de métricas sea válido mediante `metrics.is_finite` antes de procesar, y encapsulando el cálculo del `area_ratio` dentro de un bloque `try-except` más estricto, protegiendo al sistema de posibles desbordamientos o excepciones inesperadas durante la evaluación de métricas malformadas.
 - `2026-09-26T15:43:23` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` aplicando `is_safe_to_modify` directamente sobre cada ruta antes de cualquier operación, asegurando que no se sigan enlaces simbólicos o rutas prohibidas durante la recursión, alineado con las reglas de seguridad.
-- `2026-09-26T15:42:33` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_excluded_path` añadiendo una comprobación explícita para evitar el seguimiento de reparse points (puntos de reanálisis) a nivel de sistema, incrementando la seguridad defensiva al evitar que el escáner se introduzca en bucles o jerarquías de montaje inesperadas.
-- `2026-09-26T15:22:30` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save` contra condiciones de carrera y fallos parciales al realizar una validación de seguridad post-escritura más estricta antes de reemplazar el archivo original, evitando el uso de archivos potencialmente corruptos o con permisos incorrectos como "versión actual".

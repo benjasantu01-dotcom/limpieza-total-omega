@@ -292,7 +292,6 @@ def _is_file_secure_to_read(ruta: Path) -> bool:
         st = ruta.stat()
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
         if not is_safe_to_modify(str(ruta)): return False
-        # Verificación de propiedad (evitar manipulación en entornos compartidos si es posible)
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
         return True
@@ -374,18 +373,15 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.flush()
             os.fsync(f.fileno())
         
-        # Validación post-escritura: verificar integridad del archivo generado
         if not _is_file_secure_to_read(temp_path): raise PermissionError("Temp file invalid")
         
         if ruta.exists():
-            if not is_safe_to_modify(str(ruta)) or _Validators._is_reparse_point(ruta): return None
-            if bak_path.exists():
-                if not is_safe_to_modify(str(bak_path)) or _Validators._is_reparse_point(bak_path): return None
+            ensure_safe_to_modify(ruta)
+            if bak_path.exists(): ensure_safe_to_modify(bak_path)
             os.replace(ruta, bak_path)
         
         os.replace(temp_path, ruta)
         
-        # Verificar nuevamente tras el reemplazo
         if not _is_file_secure_to_read(ruta):
             raise PermissionError("Error de integridad final.")
             
