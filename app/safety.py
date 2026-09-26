@@ -606,8 +606,24 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
-    Valida integridad y seguridad para operaciones de modificación.
-    Lanza UnsafePathError ante cualquier sospecha de violación de seguridad.
+    Valida la integridad de una ruta y sus permisos para operaciones de escritura.
+    
+    El proceso sigue un pipeline de seguridad estricto:
+    1. Normalización y limpieza de caracteres.
+    2. Validación estructural (evitar traversal, caracteres prohibidos).
+    3. Verificación de límites (evitar sistema, unidades de red, sandbox).
+    4. Inspección de integridad física (TOCTOU, bloqueos, reparse points).
+    
+    Args:
+        path: La ruta a evaluar.
+        allow_sensitive: Si es True, permite extensiones bloqueadas (ej. .exe).
+        base_dir: Directorio raíz opcional para restringir el alcance del movimiento.
+        
+    Returns:
+        Path: La ruta normalizada y validada.
+        
+    Raises:
+        UnsafePathError: Si la ruta infringe cualquier política de seguridad definida.
     """
     if path is None:
         raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
