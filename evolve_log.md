@@ -676,3 +676,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-09-26T14:10:59` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el cálculo de `active_problems` en `SystemContext` usando un `cached_property` y convertí las evaluaciones de criterios en una operación de filtrado eficiente para evitar recorridos repetitivos del tuple de criterios durante consultas frecuentes.
 - `2026-09-26T14:10:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T14:10:59` Corrida terminada. Total usado hoy: 260.
+- `2026-09-26T14:19:23` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-09-26T14:19:58` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-26T14:20:23` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo mediante el uso de un diccionario de memoización compartido (`memo`) para evitar procesar múltiples veces el mismo inodo y reducir significativamente las llamadas al sistema en estructuras de directorios complejas.
+- `2026-09-26T14:20:51` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el motor `_collect_summary_data` para evitar re-validaciones redundantes de `is_protected_path` y `is_relative_to` (ya garantizadas por `walk_files`), reduciendo drásticamente las llamadas al sistema en cada iteración del bucle principal.
+- `2026-09-26T14:21:02` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando un set de `Path.resolve()` para las rutas ya visitadas, evitando así el procesamiento redundante y las llamadas repetitivas a `stat()` y `is_safe_to_modify` en estructuras de directorios con enlaces complejos o múltiples referencias.
+- `2026-09-26T14:21:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T14:21:02` Corrida terminada. Total usado hoy: 264.

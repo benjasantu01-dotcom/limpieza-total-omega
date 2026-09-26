@@ -230,41 +230,36 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     Exploración recursiva eficiente usando os.scandir y cacheo de stat().
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
-    visited_files: set[str] = set()
+    visited_paths: set[Path] = set()
 
     def _scan_dir(current_dir: Path) -> None:
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        p_entry = Path(entry.path)
-                        # Validación de seguridad defensiva anticipada
+                        p_entry = Path(entry.path).resolve()
+                        if p_entry in visited_paths:
+                            continue
+                        
                         if not is_safe_to_modify(p_entry):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
                             if _safe_path_check(p_entry):
+                                visited_paths.add(p_entry)
                                 _scan_dir(p_entry)
                             continue
                         
-                        if entry.path in visited_files:
-                            continue
-                        
-                        try:
-                            st = entry.stat(follow_symlinks=False)
-                            st_size = st.st_size
-                        except OSError:
-                            continue
-                        
-                        if st_size < min_size:
+                        st = entry.stat(follow_symlinks=False)
+                        if st.st_size < min_size:
                             continue
                         if (skip_protected and is_protected_path(p_entry)):
                             continue
-                        if not _is_valid_candidate(p_entry, st_size):
+                        if not _is_valid_candidate(p_entry, st.st_size):
                             continue
                         
-                        size_to_paths_map[st_size].append(p_entry)
-                        visited_files.add(entry.path)
+                        size_to_paths_map[st.st_size].append(p_entry)
+                        visited_paths.add(p_entry)
                     except (OSError, PermissionError, TypeError):
                         continue
         except (OSError, PermissionError):
@@ -272,7 +267,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
     for item in directories:
         if (root := _resolve_and_verify_root(item)):
-            _scan_dir(root)
+            if root not in visited_paths:
+                visited_paths.add(root)
+                _scan_dir(root)
             
     return {sz: files for sz, files in size_to_paths_map.items() if len(files) > 1}
 

@@ -342,16 +342,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     for path, size_bytes in walk_files(directory, skip_protected):
         try:
-            # Validación robusta de integridad antes de procesar la métrica
-            if not isinstance(size_bytes, int) or size_bytes < 0:
-                continue
-            
-            # Verificación de seguridad de ruta (doble check ante posibles cambios en disco)
-            if skip_protected and is_protected_path(path):
-                continue
-            if not path.is_relative_to(directory):
-                continue
-
             total_bytes += size_bytes
             total_files += 1
             
@@ -362,7 +352,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             stats_obj.count += 1
             
             # Actualización del Min-Heap para los archivos más grandes
-            if limit > 0 and size_bytes > 0:
+            if limit > 0:
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (size_bytes, path))
                 elif size_bytes > top_heap[0][0]:

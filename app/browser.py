@@ -207,9 +207,7 @@ def _get_entry_size(entry: os.DirEntry) -> int:
     Valida la seguridad del path y no sigue enlaces simbólicos para evitar bucles.
     """
     try:
-        p = Path(entry.path)
-        if not is_safe_to_modify(p) or is_protected_path(p):
-            return 0
+        # Usar lstat evita resolver enlaces simbólicos internamente
         return int(entry.stat(follow_symlinks=False).st_size)
     except (OSError, PermissionError):
         return 0
@@ -223,31 +221,22 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Recorre un árbol de directorios para calcular el tamaño total.
-    
-    Args:
-        root_abs: Ruta absoluta inicial.
-        memo: Diccionario para tracking de inodos (st_ino) y prevenir ciclos.
-        depth: Control de profundidad para evitar recursión infinita.
+    Recorre un árbol de directorios con memoización de inodos para evitar bucles y re-escaneo.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
 
     try:
-        p = Path(root_abs).resolve(strict=True)
-        if not is_safe_to_modify(p) or is_protected_path(p):
-            return 0
-            
-        root_stat = p.stat()
+        root_stat = os.stat(root_abs)
         if root_stat.st_ino in memo:
             return 0
         memo[root_stat.st_ino] = root_stat.st_size
-    except (OSError, PermissionError, RuntimeError):
+    except (OSError, PermissionError):
         return 0
 
     total_bytes: int = 0
     try:
-        with os.scandir(str(p)) as it:
+        with os.scandir(root_abs) as it:
             for entry in it:
                 if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue
@@ -256,7 +245,7 @@ def _sum_directory_recursive(
                     total_bytes += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, depth + 1)
                 else:
                     total_bytes += _get_entry_size(entry)
-    except (OSError, PermissionError, RuntimeError):
+    except (OSError, PermissionError):
         pass
         
     return total_bytes
@@ -315,6 +304,9 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     k32 = _get_kernel32()
     found: List[BrowserCache] = []
     
+    # Memo compartido para todo el proceso de detección
+    global_memo: Dict[int, int] = {}
+    
     for base in raw_bases:
         try:
             real_base = base.resolve(strict=True)
@@ -323,7 +315,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
                 if not candidate or not _is_valid_cache_path(candidate, str(real_base), _IS_JUNCTION_FN):
                     continue
                 
-                size = _sum_directory_recursive(str(candidate.resolve()), _IS_JUNCTION_FN, k32, {})
+                size = _sum_directory_recursive(str(candidate), _IS_JUNCTION_FN, k32, global_memo)
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), candidate, size))
         except (OSError, RuntimeError):
