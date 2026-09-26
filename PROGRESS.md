@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 259
+- Sin respuesta de la IA (error o límite): 261
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 2 | 0 | 1 | 0 | 23 |
+| 2026-09-24 | 0 | 0 | 0 | 0 | 22 |
 | 2026-09-25 | 132 | 12 | 26 | 8 | 172 |
-| 2026-09-26 | 51 | 4 | 7 | 2 | 64 |
+| 2026-09-26 | 52 | 4 | 7 | 2 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **41**
+- manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **40**
-- manejo de errores y validación de entradas: **40**
+- legibilidad y documentación: **39**
 - seguridad defensiva: **36**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `scanner.py`: **17**
 - `assistant.py`: **17**
-- `safety.py`: **16**
 - `quarantine.py`: **16**
+- `scanner.py`: **16**
 - `settings.py`: **16**
 - `healthscore.py`: **16**
 - `memory.py`: **15**
+- `safety.py`: **15**
 - `branding.py`: **12**
-- `duplicates.py`: **11**
+- `duplicates.py`: **12**
 - `browser.py`: **9**
 - `organizer.py`: **8**
 - `startup.py`: **6**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T08:43:06` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` añadiendo validaciones de entrada (`isinstance` y chequeo de existencia) y manejo explícito de errores de lectura mediante bloques `try-except` más granulares, asegurando que fallos de I/O no silencien estados inválidos.
 - `2026-09-26T08:34:25` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` y `walk_files` centralizando la validación de archivos encontrados para evitar el procesamiento de tamaños de archivo negativos o nulos que podrían causar comportamientos inesperados, garantizando un filtrado consistente en todo el módulo.
 - `2026-09-26T08:34:14` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_path_inside_base` y `_resolve_browser_path` mediante la validación estricta de rutas nulas o malformadas antes de realizar operaciones de sistema, previniendo excepciones innecesarias y asegurando que las comparaciones de `normcase` manejen adecuadamente la entrada.
 - `2026-09-26T08:33:14` **assistant.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_call_gemini` y `_build_payload` implementando validaciones de entrada más estrictas y manejando explícitamente posibles errores de codificación o tipos inesperados, siguiendo el enfoque de manejo de errores defensivo solicitado.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T03:29:53` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva al centralizar la validación de integridad de rutas mediante `pathlib.Path.resolve(strict=True)` dentro de `_resolve_browser_path` y `_sum_directory_recursive`, evitando chequeos redundantes y asegurando que ninguna ruta pase al escaneo sin antes ser validada contra `is_safe_to_modify` tras su resolución.
 - `2026-09-26T03:20:33` **assistant.py** (seguridad defensiva): Mejoré la seguridad de la ingesta de datos en `SystemContext` implementando una validación estricta de tipos mediante un registro de chequeo en `_apply_field`, evitando que datos maliciosos o malformados inyecten tipos inesperados en los atributos del objeto, cerrando así un potencial vector de confusión de tipos.
 - `2026-09-26T03:19:42` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante fallos de disco o archivos bloqueados mediante la implementación de una estrategia de "intento de carga reintento" en `load` y un control de concurrencia más estricto al leer el archivo de configuración.
-- `2026-09-26T03:19:10` **scanner.py** (robustez ante casos límite): Se ha robustecido el escáner implementando una validación de existencia antes de procesar cada entrada en `process_entry` y `scan_directory` para evitar excepciones `FileNotFoundError` causadas por condiciones de carrera (archivos borrados o movidos durante el escaneo).
