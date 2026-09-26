@@ -354,16 +354,19 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     """
     Guarda el logo SVG en disco tras validar la seguridad de la ruta destino.
     """
-    if not isinstance(destination, (str, Path)):
-        return None
     try:
+        if not isinstance(destination, (str, Path)):
+            return None
+            
         path = Path(destination).resolve()
+        
+        # Validaciones de seguridad pre-operativas
         if is_protected_path(path) or not is_safe_to_modify(path):
             return None
             
-        safe_size = max(16, min(1024, int(size)))
         ensure_safe_to_modify(path)
         
+        safe_size = max(16, min(1024, int(size)))
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(logo_svg(safe_size), encoding="utf-8")
         return path if path.is_file() else None

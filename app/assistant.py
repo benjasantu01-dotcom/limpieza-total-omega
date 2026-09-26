@@ -378,6 +378,7 @@ class SystemContext:
         if _is_input_too_deep_or_complex(source):
             return False
             
+        temp_ctx = SystemContext()
         found_data = False
         for key, spec in _VALIDATORS.items():
             if self._apply_field(source, key, spec):

@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 267
+- Sin respuesta de la IA (error o límite): 265
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 16 | 0 | 3 | 1 | 70 |
+| 2026-09-24 | 15 | 0 | 3 | 1 | 67 |
 | 2026-09-25 | 132 | 12 | 26 | 8 | 172 |
-| 2026-09-26 | 28 | 4 | 5 | 2 | 25 |
+| 2026-09-26 | 31 | 4 | 5 | 2 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **43**
-- seguridad defensiva: **31**
-- robustez ante casos límite: **30**
+- robustez ante casos límite: **33**
+- seguridad defensiva: **30**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `scanner.py`: **18**
 - `safety.py`: **16**
 - `settings.py`: **16**
-- `memory.py`: **15**
-- `assistant.py`: **15**
+- `assistant.py`: **16**
 - `quarantine.py`: **15**
 - `healthscore.py`: **15**
-- `branding.py`: **12**
+- `memory.py`: **14**
+- `branding.py`: **13**
 - `duplicates.py`: **10**
 - `organizer.py`: **8**
 - `browser.py`: **7**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T02:50:09` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante errores de permisos durante el escaneo en `walk_files` y `_collect_summary_data`, evitando que una excepción inesperada durante la iteración silencie el reporte o aborte prematuramente el proceso completo.
+- `2026-09-26T02:49:28` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos en el sistema de archivos, asegurando que la validación de rutas maneje correctamente valores inesperados antes de realizar operaciones críticas de E/S.
+- `2026-09-26T02:48:52` **assistant.py** (robustez ante casos límite): Mejoré la robustez ante estados inconsistentes o corruptos durante la ingesta de datos, asegurando que `ingest` sea una operación atómica que solo marca el contexto como analizado (`analyzed = True`) si se cumplen las validaciones de integridad, evitando así que el asistente procese métricas parciales o potencialmente inválidas.
 - `2026-09-26T02:39:40` **startup.py** (rendimiento): Se optimizó `entries_from_folders` para evitar la creación de múltiples objetos `Path` y realizar llamadas innecesarias al sistema de archivos dentro del bucle, utilizando `os.scandir` de forma más eficiente y evitando la conversión redundante a `Path` cuando la cadena de ruta ya está disponible.
 - `2026-09-26T02:38:34` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` eliminando la recreación de objetos `Path` y reduciendo las llamadas a `normalize` mediante un caché especializado que opera directamente sobre cadenas, evitando así el alto costo de resolución de rutas en el sistema de archivos durante los bucles de escaneo.
 - `2026-09-26T02:18:56` **healthscore.py** (rendimiento): Se optimizó el método `is_finite` de `SystemMetrics` reemplazando la creación de una tupla gigante y la llamada a `all()` por una verificación de cortocircuito (`and`) que evita procesar el resto de los campos apenas encuentra uno inválido, mejorando la eficiencia del bucle de evaluación.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T01:58:55` **safety.py** (legibilidad y documentación): Se introdujeron docstrings detallados en las funciones críticas de validación de integridad (`_evaluate_security_rules`, `_check_file_integrity` y `_validate_ntfs_reparse_redirection`) para aclarar el propósito de cada capa de defensa, facilitando el mantenimiento y auditoría del código.
 - `2026-09-26T01:49:27` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y `_is_item_purgable` para eliminar la duplicación de lógica de verificación y mejorar la claridad del flujo de purga.
 - `2026-09-26T01:49:02` **organizer.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones clave de validación y recorrido, aclarando la intención detrás de cada chequeo de seguridad y mejorando la mantenibilidad sin alterar la lógica de ejecución.
-- `2026-09-26T01:48:36` **memory.py** (legibilidad y documentación): Mejoré la legibilidad del código utilizando type hints más precisos (específicamente `Final` y alias de tipo) en las constantes y estructuras, además de añadir documentación esencial a los métodos de `ProcessMemory` para aclarar el origen de los datos.
-- `2026-09-26T01:48:08` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `main.py` mediante la refactorización de `_build_health_metrics_row` y la adición de docstrings técnicos específicos, facilitando la comprensión del flujo de datos en el dashboard de salud.
-- `2026-09-26T01:38:17` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y tipos explícitos, clarificando el propósito de las funciones internas y el contrato de los datos de entrada para facilitar el mantenimiento.

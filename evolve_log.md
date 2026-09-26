@@ -1068,3 +1068,10 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-09-26T02:39:40` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó `entries_from_folders` para evitar la creación de múltiples objetos `Path` y realizar llamadas innecesarias al sistema de archivos dentro del bucle, utilizando `os.scandir` de forma más eficiente y evitando la conversión redundante a `Path` cuando la cadena de ruta ya está disponible.
 - `2026-09-26T02:39:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T02:39:40` Corrida terminada. Total usado hoy: 64.
+- `2026-09-26T02:48:06` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-09-26T02:48:52` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez ante estados inconsistentes o corruptos durante la ingesta de datos, asegurando que `ingest` sea una operación atómica que solo marca el contexto como analizado (`analyzed = True`) si se cumplen las validaciones de integridad, evitando así que el asistente procese métricas parciales o potencialmente inválidas.
+- `2026-09-26T02:49:28` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos en el sistema de archivos, asegurando que la validación de rutas maneje correctamente valores inesperados antes de realizar operaciones críticas de E/S.
+- `2026-09-26T02:49:56` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-26T02:50:09` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia ante errores de permisos durante el escaneo en `walk_files` y `_collect_summary_data`, evitando que una excepción inesperada durante la iteración silencie el reporte o aborte prematuramente el proceso completo.
+- `2026-09-26T02:50:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T02:50:09` Corrida terminada. Total usado hoy: 68.

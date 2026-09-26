@@ -239,10 +239,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre el árbol de directorios de forma segura.
-    
-    Mantiene un set de inodos visitados para evitar recursión infinita en casos de 
-    puntos de reparse o ciclos en el sistema de archivos. Cada archivo detectado 
-    es validado contra la política de seguridad centralizada antes de su inclusión.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -257,11 +253,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Filtrado según políticas de seguridad (skip_protected)
                         if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
-                        # Manejo de subdirectorios
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode: Inode = (st.st_dev, st.st_ino)
@@ -269,7 +263,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)
                                 
-                        # Manejo de archivos
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size >= 0:
@@ -337,8 +330,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
     top_heap: List[Tuple[int, Path]] = []
     
-    try:
-        for path, size_bytes in walk_files(directory, skip_protected):
+    for path, size_bytes in walk_files(directory, skip_protected):
+        try:
             total_bytes += size_bytes
             total_files += 1
             
@@ -352,8 +345,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                     heapq.heappush(top_heap, (size_bytes, path))
                 elif size_bytes > top_heap[0][0]:
                     heapq.heapreplace(top_heap, (size_bytes, path))
-    except Exception:
-        pass
+        except (OSError, RuntimeError, Exception):
+            continue
     
     return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)
 
