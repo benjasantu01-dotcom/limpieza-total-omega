@@ -209,17 +209,23 @@ def _sum_directory_recursive(
     root_abs: str, 
     is_junction_fn: JunctionChecker, 
     kernel32: Optional[ctypes.WinDLL],
-    memo: Dict[str, int],
+    memo: Dict[int, int],
     depth: int = 0
 ) -> int:
     """
     Calcula el tamaño de un árbol de directorios de manera recursiva y segura.
-    Utiliza un diccionario 'memo' para evitar ciclos y re-escaneos, y limita la profundidad.
+    Utiliza un diccionario 'memo' por inodo (st_ino) para evitar ciclos.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
-    if root_abs in memo:
-        return memo[root_abs]
+
+    try:
+        root_stat = os.stat(root_abs)
+        if root_stat.st_ino in memo:
+            return 0
+        memo[root_stat.st_ino] = root_stat.st_size
+    except (OSError, PermissionError):
+        return 0
 
     # Validar integridad y seguridad antes de procesar
     try:
@@ -243,7 +249,6 @@ def _sum_directory_recursive(
     except (OSError, PermissionError, RuntimeError):
         pass
         
-    memo[root_abs] = total_bytes
     return total_bytes
 
 
@@ -292,7 +297,6 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     k32 = _get_kernel32()
-    global_memo: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
     for base in raw_bases:
@@ -303,7 +307,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
                 if not candidate or not _is_valid_cache_path(candidate, str(real_base), _IS_JUNCTION_FN):
                     continue
                 
-                size = _sum_directory_recursive(str(candidate.resolve()), _IS_JUNCTION_FN, k32, global_memo)
+                size = _sum_directory_recursive(str(candidate.resolve()), _IS_JUNCTION_FN, k32, {})
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), candidate, size))
         except (OSError, RuntimeError):

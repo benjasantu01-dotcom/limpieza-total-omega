@@ -57,6 +57,7 @@ SUSPICIOUS_CHARS: str = '<>|?*\0&;%^$'
 
 # Caché global para evitar operaciones de I/O redundantes durante la sesión.
 _EXISTS_CACHE: Dict[str, bool] = {}
+_COMMAND_CACHE: Dict[str, str] = {}
 _FULL_SCAN_CACHE: Optional[List[StartupEntry]] = None
 
 # Mensaje estandarizado para deshabilitar programas sin tocar el registro.
@@ -210,16 +211,22 @@ class StartupEntry:
         if not command_line or not isinstance(command_line, str):
             return ""
         
+        if command_line in _COMMAND_CACHE:
+            return _COMMAND_CACHE[command_line]
+        
+        result: str = ""
         if command_line.startswith('"'):
-            return self._extract_quoted_path(command_line)
-            
-        try:
-            parts: List[str] = command_line.split()
-            if not parts:
-                return ""
-            return self._resolve_and_cache_path(parts[0])
-        except (AttributeError, ValueError):
-            return ""
+            result = self._extract_quoted_path(command_line)
+        else:
+            try:
+                parts: List[str] = command_line.split()
+                if parts:
+                    result = self._resolve_and_cache_path(parts[0])
+            except (AttributeError, ValueError):
+                pass
+        
+        _COMMAND_CACHE[command_line] = result
+        return result
         
     @property
     def executable(self) -> str:

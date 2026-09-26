@@ -356,9 +356,8 @@ class SystemContext:
         try:
             float_val = float(val)
             if not _is_metric_within_bounds(float_val, spec): return False
-            # Registro estricto de tipos basado en el spec de la métrica
             converted = spec.cast_func(float_val)
-            setattr(self, key, converted)
+            object.__setattr__(self, key, converted)
             return True
         except (TypeError, ValueError):
             return False
@@ -382,7 +381,6 @@ class SystemContext:
         if _is_input_too_deep_or_complex(source):
             return False
             
-        temp_ctx = SystemContext()
         found_data = False
         for key, spec in _VALIDATORS.items():
             if self._apply_field(source, key, spec):
