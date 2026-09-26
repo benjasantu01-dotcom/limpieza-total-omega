@@ -707,3 +707,13 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-09-26T14:51:53` ➖ Sin cambios en branding.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de tipos y estados, garantizando que valores numéricos inválidos o nulos no propaguen excepciones inesperadas hacia los componentes gráficos o el sistema de archivos.
 - `2026-09-26T14:51:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T14:51:53` Corrida terminada. Total usado hoy: 276.
+- `2026-09-26T15:00:07` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-09-26T15:00:38` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez del escaneo frente a archivos bloqueados durante la lectura, asegurando que `_sum_directory_recursive` maneje adecuadamente errores de acceso al intentar realizar `os.stat` sobre archivos individuales o subdirectorios, evitando que excepciones inesperadas interrumpan el cálculo de carpetas parcialmente accesibles.
+- `2026-09-26T15:01:09` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha robustecido el escaneo en `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles añadiendo un control explícito de `stat` con manejo de excepciones dentro del bucle, asegurando que la recolección de datos no se interrumpa silenciosamente ni falle ante permisos denegados sobre archivos individuales.
+- `2026-09-26T15:01:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-26T15:02:31` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-26T15:03:38` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-26T15:04:50` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-26T15:05:24` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics.validate()` eliminando la invocación recursiva innecesaria y añadiendo un chequeo de tipo más explícito para evitar `TypeError` en escenarios donde las entradas podrían ser `None` o contenedores inesperados antes de procesarlas.
+- `2026-09-26T15:05:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T15:05:24` Corrida terminada. Total usado hoy: 280.

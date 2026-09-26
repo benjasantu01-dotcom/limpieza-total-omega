@@ -241,10 +241,13 @@ def _sum_directory_recursive(
                 if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue
                         
-                if entry.is_dir(follow_symlinks=False):
-                    total_bytes += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, depth + 1)
-                else:
-                    total_bytes += _get_entry_size(entry)
+                try:
+                    if entry.is_dir(follow_symlinks=False):
+                        total_bytes += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, depth + 1)
+                    else:
+                        total_bytes += _get_entry_size(entry)
+                except (OSError, PermissionError):
+                    continue
     except (OSError, PermissionError):
         pass
         

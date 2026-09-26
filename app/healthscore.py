@@ -186,14 +186,19 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura la integridad de los datos, forzando rangos positivos y sanitización."""
-        self.junk_mb = max(0.0, _to_float(self.junk_mb))
-        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
-        self.suspicious_count = int(max(0, int(_to_float(self.suspicious_count))))
-        self.suspicious_warnings = int(max(0, int(_to_float(self.suspicious_warnings))))
-        self.startup_count = int(max(0, int(_to_float(self.startup_count))))
-        self.quarantined_count = int(max(0, int(_to_float(self.quarantined_count))))
-        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
-        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
+        for field_name in self.__dict__:
+            val = getattr(self, field_name)
+            if not isinstance(val, (int, float)):
+                setattr(self, field_name, 0.0)
+        
+        self.junk_mb = max(0.0, float(self.junk_mb))
+        self.duplicate_mb = max(0.0, float(self.duplicate_mb))
+        self.suspicious_count = int(max(0, int(self.suspicious_count)))
+        self.suspicious_warnings = int(max(0, int(self.suspicious_warnings)))
+        self.startup_count = int(max(0, int(self.startup_count)))
+        self.quarantined_count = int(max(0, int(self.quarantined_count)))
+        self.memory_available_percent = _clamp(float(self.memory_available_percent), 0.0, 100.0)
+        self.disk_free_percent = _clamp(float(self.disk_free_percent), 0.0, 100.0)
 
     @property
     def is_finite(self) -> bool:

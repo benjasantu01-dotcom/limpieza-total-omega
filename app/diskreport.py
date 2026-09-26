@@ -270,10 +270,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 continue
                                 
                         elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat(follow_symlinks=False)
-                            # Validar que el tamaño sea un entero positivo
-                            if isinstance(st.st_size, int) and st.st_size >= 0:
-                                yield Path(entry.path), st.st_size
+                            try:
+                                st = entry.stat(follow_symlinks=False)
+                                if isinstance(st.st_size, int) and st.st_size >= 0:
+                                    yield Path(entry.path), st.st_size
+                            except (OSError, PermissionError):
+                                continue
                             
                     except (PermissionError, OSError, ValueError, TypeError):
                         continue
