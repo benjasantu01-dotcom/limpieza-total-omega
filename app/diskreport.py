@@ -268,7 +268,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
-                            if st.st_size >= 0:
+                            # Validar que el tamaño sea un entero positivo
+                            if isinstance(st.st_size, int) and st.st_size >= 0:
                                 yield Path(entry.path), st.st_size
                             
                     except (PermissionError, OSError, ValueError, TypeError):
@@ -338,10 +339,14 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     for path, size_bytes in walk_files(directory, skip_protected):
         try:
-            # Validar integridad profunda: el archivo debe existir y no ser protegido
-            if size_bytes < 0 or not path.is_relative_to(directory):
+            # Validación robusta de integridad antes de procesar la métrica
+            if not isinstance(size_bytes, int) or size_bytes < 0:
                 continue
+            
+            # Verificación de seguridad de ruta (doble check ante posibles cambios en disco)
             if skip_protected and is_protected_path(path):
+                continue
+            if not path.is_relative_to(directory):
                 continue
 
             total_bytes += size_bytes

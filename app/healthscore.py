@@ -233,9 +233,7 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """
-    Ejecuta reglas de recomendación para un área, sanitizando los mensajes resultantes.
-    """
+    """Ejecuta reglas de recomendación para un área, sanitizando los mensajes resultantes."""
     if not isinstance(metrics, SystemMetrics) or not isinstance(rules, list):
         return
 
@@ -246,7 +244,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             if rule.check(metrics, ratio):
                 raw_msg = rule.message_factory(metrics)
                 if isinstance(raw_msg, str):
-                    # Solo permitir caracteres imprimibles, sanitizar longitud y evitar strings vacíos maliciosos
                     clean_msg = "".join(c for c in raw_msg if c.isprintable()).strip()
                     if clean_msg:
                         findings.append(clean_msg[:200])

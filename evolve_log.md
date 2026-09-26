@@ -576,3 +576,42 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-09-26T13:00:24` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-26T13:00:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T13:00:24` Corrida terminada. Total usado hoy: 232.
+- `2026-09-26T13:07:58` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-09-26T13:08:30` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_collect_summary_data` y las funciones públicas mediante la validación proactiva de `size_bytes` y la captura de errores en operaciones críticas de sistema, asegurando que el análisis no se interrumpa ante metadatos corruptos o cambios inesperados en el sistema de archivos durante el escaneo.
+- `2026-09-26T13:08:57` Tests FALLARON:
+```
+11: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:239: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size - assert [] == [1, 2]
+  
+  Right contains 2 more items, first extra item: 1
+  
+  Full diff:
+  + []
+  - [
+  -     1,
+  -     2,
+  - ]
+FAILED evolve/tests/test_modules.py::test_hash_of_identical_content_matches - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning - AttributeError: module 'os' has no attribute 'O_BINARY'
+5 failed, 294 passed, 4 warnings in 1.55s
+
+```
+- `2026-09-26T13:08:57` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `_is_file_locked` para evitar falsos positivos y errores inesperados al capturar `OSError` de forma más granular, además de añadir validaciones explícitas de tipos en `_collect_candidates` para prevenir excepciones durante la iteración sobre objetos de sistema inesperados.
+- `2026-09-26T13:09:25` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `compute_score` y `summarize` implementando validaciones de tipo explícitas y manejo defensivo de valores nulos o corruptos, garantizando que el motor de puntuación nunca falle ante entradas inesperadas.
+- `2026-09-26T13:10:23` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de `on_restore_quarantine` mediante una validación más estricta del ID, evitando que caracteres inesperados en la entrada del usuario puedan causar comportamientos erráticos o intentos de manipulación de rutas en el sistema de archivos.
+- `2026-09-26T13:10:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T13:10:23` Corrida terminada. Total usado hoy: 236.
