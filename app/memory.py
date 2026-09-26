@@ -280,7 +280,8 @@ def _is_system_process(pid: int) -> bool:
 def _get_process_path(pid: int) -> Optional[Path]:
     """
     Resuelve la ruta absoluta del ejecutable de un proceso mediante GetModuleFileNameExW.
-    Utiliza SAFE_VALIDATION_MASK para abrir el handle sin permisos intrusivos.
+    Utiliza SAFE_VALIDATION_MASK para abrir el handle sin permisos intrusivos y valida
+    contra protecciones de sistema.
     """
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)

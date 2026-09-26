@@ -197,26 +197,27 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Determina si un archivo está siendo bloqueado por otro proceso.
+    Determina si un archivo está siendo bloqueado por otro proceso usando I/O nativo.
     """
     if not path.exists():
         return True
     try:
-        # En Windows, abrir en modo lectura exclusiva falla si otro proceso tiene el lock.
-        # En sistemas POSIX, os.open con flags estándar rara vez bloquea el archivo.
         if os.name == 'nt':
             import msvcrt
             fd = os.open(path, os.O_RDONLY | os.O_BINARY)
-            msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
-            msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
-            os.close(fd)
+            try:
+                # Intento de lock exclusivo no bloqueante
+                msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+                msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+            finally:
+                os.close(fd)
         else:
             with open(path, 'rb') as f:
                 fcntl = __import__('fcntl')
-                fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                fcntl.flock(f, fcntl.LOCK_UN)
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         return False
-    except (OSError, IOError, ImportError, AttributeError):
+    except (OSError, IOError, ImportError, AttributeError, PermissionError):
         return True
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
