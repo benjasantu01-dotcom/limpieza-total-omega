@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 264
+- Sin respuesta de la IA (error o límite): 261
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 11 | 0 | 2 | 1 | 64 |
+| 2026-09-24 | 11 | 0 | 2 | 1 | 60 |
 | 2026-09-25 | 132 | 12 | 26 | 8 | 172 |
-| 2026-09-26 | 36 | 4 | 6 | 2 | 28 |
+| 2026-09-26 | 39 | 4 | 6 | 2 | 29 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
 - rendimiento: **28**
-- seguridad defensiva: **26**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `scanner.py`: **17**
-- `assistant.py`: **16**
+- `scanner.py`: **18**
+- `assistant.py`: **17**
+- `settings.py`: **16**
 - `quarantine.py`: **16**
 - `safety.py`: **16**
 - `memory.py`: **15**
-- `settings.py`: **15**
 - `healthscore.py`: **15**
 - `branding.py`: **13**
 - `duplicates.py`: **11**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T03:20:33` **assistant.py** (seguridad defensiva): Mejoré la seguridad de la ingesta de datos en `SystemContext` implementando una validación estricta de tipos mediante un registro de chequeo en `_apply_field`, evitando que datos maliciosos o malformados inyecten tipos inesperados en los atributos del objeto, cerrando así un potencial vector de confusión de tipos.
+- `2026-09-26T03:19:42` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante fallos de disco o archivos bloqueados mediante la implementación de una estrategia de "intento de carga reintento" en `load` y un control de concurrencia más estricto al leer el archivo de configuración.
+- `2026-09-26T03:19:10` **scanner.py** (robustez ante casos límite): Se ha robustecido el escáner implementando una validación de existencia antes de procesar cada entrada en `process_entry` y `scan_directory` para evitar excepciones `FileNotFoundError` causadas por condiciones de carrera (archivos borrados o movidos durante el escaneo).
 - `2026-09-26T03:13:06` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar operaciones destructivas sobre archivos cuyo tamaño sea 0, ya que suelen ser archivos de control del sistema o placeholders cuyo borrado puede causar inestabilidad.
 - `2026-09-26T03:11:47` **quarantine.py** (robustez ante casos límite): Mejoré `_copy_with_verification` agregando un manejo robusto de excepciones y una verificación de escritura explícita para evitar archivos corruptos ante fallas parciales durante la copia, siguiendo el enfoque de robustez ante casos límite.
 - `2026-09-26T03:01:47` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_path` y `trim_working_set` ante procesos que finalizan abruptamente durante la consulta, asegurando que `OpenProcess` maneje correctamente los errores de sistema sin colapsar y verificando que el PID exista antes de intentar abrirlo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T02:38:34` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` eliminando la recreación de objetos `Path` y reduciendo las llamadas a `normalize` mediante un caché especializado que opera directamente sobre cadenas, evitando así el alto costo de resolución de rutas en el sistema de archivos durante los bucles de escaneo.
 - `2026-09-26T02:18:56` **healthscore.py** (rendimiento): Se optimizó el método `is_finite` de `SystemMetrics` reemplazando la creación de una tupla gigante y la llamada a `all()` por una verificación de cortocircuito (`and`) que evita procesar el resto de los campos apenas encuentra uno inválido, mejorando la eficiencia del bucle de evaluación.
 - `2026-09-26T02:18:26` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos utilizando `os.scandir` de forma más eficiente al cachear los resultados de `entry.stat()` durante la iteración, evitando llamadas redundantes a `stat()` y validaciones innecesarias de `is_safe_to_modify` para archivos ya validados.
-- `2026-09-26T02:17:59` **diskreport.py** (rendimiento): Optimicé el motor de escaneo `_collect_summary_data` utilizando la técnica de pre-cálculo de `os.scandir` y reduciendo las llamadas a `Path` dentro del bucle crítico para minimizar la sobrecarga de instanciación de objetos en recorridos de directorios masivos.
-- `2026-09-26T02:08:58` **branding.py** (rendimiento): Se optimizó el rendimiento del renderizado de franjas y barras mediante la eliminación de la creación de objetos `ColorSegment` en el bucle principal, reemplazándolos por un acceso directo a una tupla de colores pre-calculada, reduciendo significativamente la presión sobre el recolector de basura en animaciones de alta frecuencia.
-- `2026-09-26T02:08:22` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal de palabras clave en un loop por un acceso directo mediante diccionario, y aproveché el cacheo de `active_problems` en `SystemContext` para evitar recalcular advertencias en cada consulta.

@@ -1092,3 +1092,10 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-09-26T03:13:06` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar operaciones destructivas sobre archivos cuyo tamaño sea 0, ya que suelen ser archivos de control del sistema o placeholders cuyo borrado puede causar inestabilidad.
 - `2026-09-26T03:13:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T03:13:06` Corrida terminada. Total usado hoy: 76.
+- `2026-09-26T03:18:43` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-09-26T03:19:10` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha robustecido el escáner implementando una validación de existencia antes de procesar cada entrada en `process_entry` y `scan_directory` para evitar excepciones `FileNotFoundError` causadas por condiciones de carrera (archivos borrados o movidos durante el escaneo).
+- `2026-09-26T03:19:42` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante fallos de disco o archivos bloqueados mediante la implementación de una estrategia de "intento de carga reintento" en `load` y un control de concurrencia más estricto al leer el archivo de configuración.
+- `2026-09-26T03:20:07` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-26T03:20:33` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad de la ingesta de datos en `SystemContext` implementando una validación estricta de tipos mediante un registro de chequeo en `_apply_field`, evitando que datos maliciosos o malformados inyecten tipos inesperados en los atributos del objeto, cerrando así un potencial vector de confusión de tipos.
+- `2026-09-26T03:20:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T03:20:33` Corrida terminada. Total usado hoy: 80.

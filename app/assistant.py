@@ -348,19 +348,19 @@ class SystemContext:
         return _ensure_safe_text(self.grade) if self.grade else True
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> bool:
-        """Valida y asigna un valor a una métrica, aplicando casting seguro."""
+        """Valida y asigna un valor a una métrica, aplicando casting seguro y registro."""
         val = _get_source_value(source, key)
         if val is None or not spec.is_valid_type(val): return False
         
-        if isinstance(spec.cast_func, type):
-            try:
-                float_val = float(val)
-                if not _is_metric_within_bounds(float_val, spec): return False
-                setattr(self, key, spec.cast_func(float_val))
-                return True
-            except (TypeError, ValueError):
-                return False
-        return False
+        try:
+            float_val = float(val)
+            if not _is_metric_within_bounds(float_val, spec): return False
+            # Registro estricto de tipos basado en el spec de la métrica
+            converted = spec.cast_func(float_val)
+            setattr(self, key, converted)
+            return True
+        except (TypeError, ValueError):
+            return False
 
     def _clean_grade(self, val: Any) -> str:
         """Limpia el string de calificación eliminando caracteres de control."""

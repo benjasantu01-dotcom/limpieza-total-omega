@@ -193,6 +193,8 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Procesa una entrada individual (directorio o archivo)."""
         try:
+            if not entry.exists():
+                return
             if entry.is_dir(follow_symlinks=False):
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, directory_stack)
@@ -253,7 +255,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, directory_stack)
-        except (PermissionError, OSError):
+        except (PermissionError, OSError, FileNotFoundError):
             continue
     return scanner.results
 

@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import os
 import stat
+import time
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -307,19 +308,19 @@ def _is_file_secure_to_read(ruta: Path) -> bool:
 def _load_impl(ruta: Path) -> AppSettings:
     """Carga y normaliza el contenido del JSON, recuperando defaults si falla."""
     try:
-        if not _is_file_secure_to_read(ruta): return DEFAULTS.copy()
-            
-        with open(ruta, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            
-        if not _is_dict(data): return DEFAULTS.copy()
-            
-        validated_data = validate(data)
-        for key, default_val in DEFAULTS.items():
-            if key not in validated_data:
-                validated_data[key] = default_val
-                
-        return _coerce_and_verify(validated_data)
+        # Reintento breve para casos de contención temporal (ej. antivirus escaneando)
+        for attempt in range(3):
+            if _is_file_secure_to_read(ruta):
+                with open(ruta, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                if _is_dict(data):
+                    validated_data = validate(data)
+                    for key, default_val in DEFAULTS.items():
+                        if key not in validated_data:
+                            validated_data[key] = default_val
+                    return _coerce_and_verify(validated_data)
+            time.sleep(0.1 * (attempt + 1))
+        return DEFAULTS.copy()
     except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError):
         return DEFAULTS.copy()
 
