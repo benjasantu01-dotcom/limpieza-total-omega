@@ -663,7 +663,9 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     try:
         payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
         payload = json.dumps(payload_data).encode("utf-8")
-        return payload if len(payload) <= (_MAX_RESPONSE_BYTES // 2) else None
+        if not isinstance(payload, bytes) or len(payload) > (_MAX_RESPONSE_BYTES // 2):
+            return None
+        return payload
     except (TypeError, ValueError, AttributeError):
         return None
 
@@ -688,8 +690,8 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
     """Realiza una petición POST segura a la API de Google."""
-    if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): 
-        return None
+    if not isinstance(api_key, str) or not _API_KEY_REGEX.match(api_key): return None
+    if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
     if not context_text: return None
     
     payload = _build_payload(question, context_text)
@@ -703,7 +705,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
-            if len(raw_res) > _MAX_RESPONSE_BYTES: return None
+            if not isinstance(raw_res, bytes) or len(raw_res) > _MAX_RESPONSE_BYTES: return None
             
             try:
                 data = json.loads(raw_res.decode("utf-8"))
@@ -711,7 +713,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
                 return None
                 
             raw_text = _extract_text_from_gemini_json(data)
-            if raw_text and _ensure_safe_text(raw_text):
+            if isinstance(raw_text, str) and _ensure_safe_text(raw_text):
                 return _validate_response_length(raw_text.strip())
             return None
     except (urllib.error.HTTPError, urllib.error.URLError, OSError, ValueError, KeyError):

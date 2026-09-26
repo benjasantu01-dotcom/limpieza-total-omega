@@ -137,7 +137,9 @@ def base_directories() -> List[Path]:
 
 def _is_path_inside_base(target_abs: str, base_abs: str) -> bool:
     """Valida que la ruta objetivo sea un subdirectorio de la base, evitando escape de directorio."""
-    if not isinstance(target_abs, str) or not isinstance(base_abs, str) or not target_abs or not base_abs:
+    if not isinstance(target_abs, str) or not isinstance(base_abs, str):
+        return False
+    if not target_abs or not base_abs:
         return False
     try:
         target_norm = os.path.normcase(os.path.normpath(target_abs))
@@ -266,6 +268,8 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """
     Combina la base (LOCALAPPDATA) con la ruta conocida del navegador.
     """
+    if not isinstance(real_base, Path) or not isinstance(rel_str, str) or not rel_str:
+        return Path()
     try:
         target = (real_base.joinpath(*rel_str.split("\\"))).resolve(strict=True)
         if not _is_path_inside_base(str(target), str(real_base)):

@@ -332,8 +332,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     for path, size_bytes in walk_files(directory, skip_protected):
         try:
-            # Re-verificación de seguridad: asegurar que sigue dentro de la raíz permitida
-            if not path.is_relative_to(directory):
+            # Validar integridad: el archivo debe existir y ser positivo
+            if size_bytes < 0 or not path.is_relative_to(directory):
                 continue
 
             total_bytes += size_bytes

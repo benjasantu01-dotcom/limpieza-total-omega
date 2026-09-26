@@ -1326,3 +1326,10 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-09-26T08:26:29` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-26T08:26:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T08:26:29` Corrida terminada. Total usado hoy: 124.
+- `2026-09-26T08:32:28` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-09-26T08:33:14` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_call_gemini` y `_build_payload` implementando validaciones de entrada más estrictas y manejando explícitamente posibles errores de codificación o tipos inesperados, siguiendo el enfoque de manejo de errores defensivo solicitado.
+- `2026-09-26T08:33:48` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-26T08:34:14` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_path_inside_base` y `_resolve_browser_path` mediante la validación estricta de rutas nulas o malformadas antes de realizar operaciones de sistema, previniendo excepciones innecesarias y asegurando que las comparaciones de `normcase` manejen adecuadamente la entrada.
+- `2026-09-26T08:34:25` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_collect_summary_data` y `walk_files` centralizando la validación de archivos encontrados para evitar el procesamiento de tamaños de archivo negativos o nulos que podrían causar comportamientos inesperados, garantizando un filtrado consistente en todo el módulo.
+- `2026-09-26T08:34:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T08:34:25` Corrida terminada. Total usado hoy: 128.
