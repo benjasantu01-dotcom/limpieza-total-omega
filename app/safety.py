@@ -84,13 +84,17 @@ def _to_long_path(path_str: str) -> str:
         return "\\\\?\\" + path_str
     return path_str
 
+def _is_path_too_long(path_str: str) -> bool:
+    """Valida si la ruta excede los límites estándares antes de cualquier syscall."""
+    return len(path_str) > MAX_PATH_LENGTH
+
 @lru_cache(maxsize=1024)
 def _get_file_attrs(path_str: Optional[str]) -> int:
     """
     Obtiene atributos de archivo Win32 mediante syscall GetFileAttributesW.
     Retorna 0 en caso de fallo, tratando la ruta como estándar (seguridad conservadora).
     """
-    if os.name != 'nt' or not path_str: return 0
+    if os.name != 'nt' or not path_str or _is_path_too_long(path_str): return 0
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         # 0xFFFFFFFF indica error en la llamada Win32
@@ -273,7 +277,7 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
     Verifica concurrencia usando Win32 API.
     Abre el archivo con acceso nulo y atributos de solo lectura para comprobar bloqueo.
     """
-    if os.name != 'nt': return False
+    if os.name != 'nt' or _is_path_too_long(path_str): return False
     kernel32 = ctypes.windll.kernel32
     try:
         handle = kernel32.CreateFileW(
@@ -288,7 +292,7 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
 @lru_cache(maxsize=128)
 def _is_volume_readonly(path_str: Optional[str]) -> bool:
     """Consulta GetVolumeInformationW para verificar si el volumen completo es de solo lectura."""
-    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or _is_path_too_long(path_str): return False
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
         flags = ctypes.c_ulong()
@@ -422,6 +426,8 @@ def normalize(path: PathLike) -> Path:
     if path is None: raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
     path_str = str(path).strip()
     if not path_str: raise UnsafePathError("Entrada de ruta vacía.", SafetyValidationErrorCode.GENERIC)
+    if _is_path_too_long(path_str):
+        raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG)
     if unicodedata.normalize('NFKC', path_str) != path_str:
          raise UnsafePathError("Ruta contiene secuencias Unicode sospechosas.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING)
     try:
@@ -503,7 +509,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Rutas UNC/Red bloqueadas.", SafetyValidationErrorCode.UNC_PATH)
     if ".." in path_string.split(os.sep):
         raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
-    if len(path_string) > MAX_PATH_LENGTH:
+    if _is_path_too_long(path_string):
         raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG)
     if "\0" in path_string:
         raise UnsafePathError("Inyección de carácter nulo.", SafetyValidationErrorCode.NULL_CHAR)
@@ -573,6 +579,7 @@ def _get_final_path_normalized(path: Path) -> Optional[Path]:
     Resuelve la ruta física real en disco mediante GetFinalPathNameByHandleW.
     Permite detectar si un archivo ha sido redirigido mediante un Reparse Point (Junction).
     """
+    if _is_path_too_long(str(path)): return None
     kernel32 = ctypes.windll.kernel32
     try:
         handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, 0, None, 3, 0x02000000, None)

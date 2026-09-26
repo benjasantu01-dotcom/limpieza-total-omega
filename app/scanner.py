@@ -192,7 +192,12 @@ class Scanner:
             return False
         if not self._is_inside_base_root(entry.path.lower()):
             return False
-        if not os.access(entry.path, os.R_OK):
+        
+        # Comprobar accesibilidad inmediata ante bloqueos de sistema o archivos en uso
+        try:
+            if not os.access(entry.path, os.R_OK):
+                return False
+        except OSError:
             return False
         
         try:
