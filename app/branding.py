@@ -389,12 +389,13 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
         base_y = canvas_y + 18 * scale
         center_x = canvas_x + 64 * scale
         params = _get_stripe_params(scale, franjas_count)
+        colors = gradient_colors(franjas_count)
         
-        for seg in _get_grouped_segments(gradient_colors(franjas_count)):
-            w, y_start, y_end = params[seg.start_index]
+        for i, hex_color in enumerate(colors):
+            w, y_start, y_end = params[i]
             canvas.create_rectangle(center_x - w, base_y + y_start, 
                                     center_x + w, base_y + y_end, 
-                                    fill=seg.hex_color, outline="")
+                                    fill=hex_color, outline="")
     except (TypeError, ValueError, ZeroDivisionError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
@@ -434,8 +435,9 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     try:
         w_val = max(1, int(width))
         h_val = max(1, int(height))
-        for seg in _get_grouped_segments(gradient_colors(w_val, stops)):
-            canvas.create_line(canvas_x + seg.start_index, canvas_y, canvas_x + seg.end_index, canvas_y, fill=seg.hex_color, width=h_val)
+        colors = gradient_colors(w_val, stops)
+        for i, hex_color in enumerate(colors):
+            canvas.create_line(canvas_x + i, canvas_y, canvas_x + i + 1, canvas_y, fill=hex_color, width=h_val)
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, 

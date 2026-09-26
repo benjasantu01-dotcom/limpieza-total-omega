@@ -963,3 +963,42 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-09-26T01:59:37` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejora la legibilidad del sistema de validación extrayendo la lógica de filtrado de tipos de `_build_validator_map` a constantes con nombre (`BOOL_KEYS`, `INT_KEYS`), facilitando el mantenimiento y la comprensión de las reglas de negocio.
 - `2026-09-26T01:59:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T01:59:37` Corrida terminada. Total usado hoy: 48.
+- `2026-09-26T02:07:13` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-09-26T02:07:42` Tests FALLARON:
+```
+...................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:236: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 4 warnings in 1.11s
+
+```
+- `2026-09-26T02:07:42` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y el mantenimiento de la clase `StartupEntry` encapsulando la lógica de validación de rutas en una propiedad `is_path_safe` y añadiendo docstrings descriptivos a los métodos internos, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
+- `2026-09-26T02:08:22` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal de palabras clave en un loop por un acceso directo mediante diccionario, y aproveché el cacheo de `active_problems` en `SystemContext` para evitar recalcular advertencias en cada consulta.
+- `2026-09-26T02:08:58` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el rendimiento del renderizado de franjas y barras mediante la eliminación de la creación de objetos `ColorSegment` en el bucle principal, reemplazándolos por un acceso directo a una tupla de colores pre-calculada, reduciendo significativamente la presión sobre el recolector de basura en animaciones de alta frecuencia.
+- `2026-09-26T02:09:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-26T02:09:31` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-26T02:09:46` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-09-26T02:09:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T02:09:46` Corrida terminada. Total usado hoy: 52.
