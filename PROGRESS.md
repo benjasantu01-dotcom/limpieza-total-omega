@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 266
+- Sin respuesta de la IA (error o límite): 264
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 12 | 0 | 2 | 1 | 67 |
+| 2026-09-24 | 11 | 0 | 2 | 1 | 64 |
 | 2026-09-25 | 132 | 12 | 26 | 8 | 172 |
-| 2026-09-26 | 34 | 4 | 5 | 2 | 27 |
+| 2026-09-26 | 36 | 4 | 6 | 2 | 28 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **38**
 - rendimiento: **28**
-- seguridad defensiva: **27**
+- seguridad defensiva: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `scanner.py`: **17**
 - `assistant.py`: **16**
+- `quarantine.py`: **16**
+- `safety.py`: **16**
 - `memory.py`: **15**
 - `settings.py`: **15**
-- `quarantine.py`: **15**
-- `safety.py`: **15**
 - `healthscore.py`: **15**
 - `branding.py`: **13**
 - `duplicates.py`: **11**
 - `organizer.py`: **8**
 - `browser.py`: **7**
-- `startup.py`: **6**
+- `startup.py`: **5**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T03:13:06` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar operaciones destructivas sobre archivos cuyo tamaño sea 0, ya que suelen ser archivos de control del sistema o placeholders cuyo borrado puede causar inestabilidad.
+- `2026-09-26T03:11:47` **quarantine.py** (robustez ante casos límite): Mejoré `_copy_with_verification` agregando un manejo robusto de excepciones y una verificación de escritura explícita para evitar archivos corruptos ante fallas parciales durante la copia, siguiendo el enfoque de robustez ante casos límite.
 - `2026-09-26T03:01:47` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_path` y `trim_working_set` ante procesos que finalizan abruptamente durante la consulta, asegurando que `OpenProcess` maneje correctamente los errores de sistema sin colapsar y verificando que el PID exista antes de intentar abrirlo.
 - `2026-09-26T03:01:34` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_target_choice_changed` añadiendo una validación explícita mediante `is_safe_disk_operation` para prevenir que rutas arbitrarias o puntos de reparse (que podrían llevar a bucles infinitos o ataques de path traversal) sean seleccionados como objetivo de escaneo.
 - `2026-09-26T02:58:47` **duplicates.py** (robustez ante casos límite): Se añadió una validación explícita para archivos de tamaño cero en el pipeline de hashing, previniendo errores de lectura y comportamiento indefinido en sistemas de archivos donde `stat().st_size` puede ser reportado pero el archivo no es procesable.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T02:17:59` **diskreport.py** (rendimiento): Optimicé el motor de escaneo `_collect_summary_data` utilizando la técnica de pre-cálculo de `os.scandir` y reduciendo las llamadas a `Path` dentro del bucle crítico para minimizar la sobrecarga de instanciación de objetos en recorridos de directorios masivos.
 - `2026-09-26T02:08:58` **branding.py** (rendimiento): Se optimizó el rendimiento del renderizado de franjas y barras mediante la eliminación de la creación de objetos `ColorSegment` en el bucle principal, reemplazándolos por un acceso directo a una tupla de colores pre-calculada, reduciendo significativamente la presión sobre el recolector de basura en animaciones de alta frecuencia.
 - `2026-09-26T02:08:22` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal de palabras clave en un loop por un acceso directo mediante diccionario, y aproveché el cacheo de `active_problems` en `SystemContext` para evitar recalcular advertencias en cada consulta.
-- `2026-09-26T01:59:37` **settings.py** (legibilidad y documentación): Mejora la legibilidad del sistema de validación extrayendo la lógica de filtrado de tipos de `_build_validator_map` a constantes con nombre (`BOOL_KEYS`, `INT_KEYS`), facilitando el mantenimiento y la comprensión de las reglas de negocio.
-- `2026-09-26T01:59:22` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se encapsuló la lógica de obtención de atributos de archivo en una función privada con mejor documentación para mejorar la legibilidad y mantenimiento del código.

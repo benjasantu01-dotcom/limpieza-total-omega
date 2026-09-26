@@ -532,8 +532,8 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
 
 def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> None:
     """Ejecuta la copia binaria y verifica la integridad del archivo resultante."""
-    # Abrir origen con O_NOFOLLOW para prevenir race conditions sobre enlaces simbólicos
     try:
+        # Abrir origen con O_NOFOLLOW para prevenir race conditions sobre enlaces simbólicos
         fd_src = os.open(str(source), os.O_RDONLY | os.O_NOFOLLOW)
     except OSError as e:
         raise OSError(f"No se pudo abrir el origen de forma segura: {e}")
@@ -547,16 +547,21 @@ def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> 
             with open(temp_dest, "wb") as f_dst:
                 shutil.copyfileobj(f_src, f_dst)
                 f_dst.flush()
+                # Asegurar escritura física antes de la validación
                 os.fsync(f_dst.fileno())
                 
+        # Validar tamaño tras copia exitosa
         if temp_dest.stat().st_size != stat_src.st_size:
             raise OSError("Falla de integridad: tamaño mismatch tras copia.")
             
         final_hash = _get_sha256(temp_dest)
         if not final_hash or final_hash != source_hash:
             raise OSError("Falla crítica: el hash del archivo copiado no coincide.")
-    finally:
-        pass
+    except (OSError, IOError) as e:
+        if temp_dest.exists():
+            try: os.remove(temp_dest)
+            except OSError: pass
+        raise OSError(f"Falla durante operación I/O de copia: {e}")
 
 
 def _write_temp_to_final(source: Path, destination: Path) -> str:

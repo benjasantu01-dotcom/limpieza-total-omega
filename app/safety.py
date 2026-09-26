@@ -127,6 +127,7 @@ class SafetyValidationErrorCode(IntEnum):
     TOCTOU_VIOLATION = 26
     SPARSE_FILE_DETECTED = 27
     DEVICE_FILE_DETECTED = 28
+    EMPTY_FILE = 29
 
 class UnsafePathError(Exception):
     """Excepción base para violaciones de seguridad detectadas durante la validación."""
@@ -342,7 +343,8 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.KERNEL_LOCKED: SafetyValidationErrorCode.KERNEL_LOCKED_FILE,
     ProtectionReason.ACCESS_WRITE: SafetyValidationErrorCode.WRITE_ACCESS_DENIED,
     ProtectionReason.MOUNT_POINT: SafetyValidationErrorCode.MOUNT_POINT_DETECTED,
-    ProtectionReason.SPARSE_FILE: SafetyValidationErrorCode.SPARSE_FILE_DETECTED
+    ProtectionReason.SPARSE_FILE: SafetyValidationErrorCode.SPARSE_FILE_DETECTED,
+    ProtectionReason.EMPTY_FILE: SafetyValidationErrorCode.EMPTY_FILE
 }
 
 def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
@@ -669,7 +671,7 @@ def describe_protection(path: PathLike) -> str:
             if _is_system_or_hidden(str(p)): return f"'{p}' atributo oculto/sistema/temporal."
             if _has_alternate_data_stream(p.name): return f"'{p}' contiene ADS."
             if not (p.is_file() or p.is_dir()): return f"'{p}' tipo de objeto no soportado."
-            if p.is_file() and p.stat().st_size == 0: return f"'{p}' archivo vacío."
+            if p.is_file() and p.stat().st_size == 0: return f"'{p}' archivo vacío (potencialmente crítico)."
             if p.is_file() and p.stat().st_size > MAX_FILE_SIZE: return f"'{p}' tamaño excesivo."
             if p.is_file() and p.stat().st_nlink > 1: return f"'{p}' detectado como hard link."
     except (OSError, FileNotFoundError, AttributeError): pass
