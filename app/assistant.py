@@ -687,7 +687,7 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         if not isinstance(part, dict): return None
         text_val = part.get("text")
         return str(text_val) if isinstance(text_val, str) else None
-    except (AttributeError, TypeError, IndexError): 
+    except (AttributeError, TypeError, IndexError, KeyError): 
         return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
