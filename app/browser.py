@@ -140,11 +140,13 @@ def _is_path_inside_base(target_abs: str, base_abs: str) -> bool:
     """Valida que la ruta objetivo sea un subdirectorio de la base, evitando escape de directorio."""
     if not isinstance(target_abs, str) or not isinstance(base_abs, str) or not target_abs or not base_abs:
         return False
-    if len(target_abs) >= MAX_PATH_LEN or len(base_abs) >= MAX_PATH_LEN or '\0' in target_abs:
-        return False
+    # Normalización para asegurar consistencia en comparaciones
     try:
-        common = os.path.commonpath([os.path.normpath(target_abs), os.path.normpath(base_abs)])
-        return os.path.normpath(common) == os.path.normpath(base_abs)
+        target_norm = os.path.normcase(os.path.normpath(target_abs))
+        base_norm = os.path.normcase(os.path.normpath(base_abs))
+        if len(target_norm) >= MAX_PATH_LEN or len(base_norm) >= MAX_PATH_LEN or '\0' in target_norm:
+            return False
+        return target_norm.startswith(base_norm)
     except (OSError, ValueError):
         return False
 
@@ -285,8 +287,8 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     try:
         target = (real_base.joinpath(*rel_str.split("\\"))).resolve()
         
-        # Validar que el destino resuelto sea subdirectorio de real_base
-        if not str(target).startswith(str(real_base)):
+        # Validar que el destino resuelto sea subdirectorio de real_base mediante normalización
+        if not _is_path_inside_base(str(target), str(real_base)):
             return Path()
         
         # Validar seguridad antes de retornar

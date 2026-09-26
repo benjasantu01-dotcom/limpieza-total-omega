@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Mejoras aceptadas: **171** (33.9% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 272
+- Rechazadas por guardia de seguridad: 33
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 273
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 38 | 2 | 8 | 5 | 81 |
+| 2026-09-24 | 36 | 2 | 7 | 4 | 81 |
 | 2026-09-25 | 132 | 12 | 26 | 8 | 172 |
-| 2026-09-26 | 0 | 1 | 0 | 0 | 19 |
+| 2026-09-26 | 3 | 1 | 0 | 0 | 20 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **37**
 - seguridad defensiva: **35**
-- manejo de errores y validación de entradas: **35**
-- legibilidad y documentación: **34**
+- legibilidad y documentación: **32**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `scanner.py`: **18**
-- `quarantine.py`: **16**
 - `settings.py`: **16**
 - `assistant.py`: **15**
 - `healthscore.py`: **15**
+- `quarantine.py`: **15**
 - `memory.py`: **15**
+- `branding.py`: **13**
 - `safety.py`: **13**
-- `branding.py`: **12**
 - `duplicates.py`: **10**
-- `organizer.py`: **8**
-- `browser.py`: **7**
+- `browser.py`: **8**
+- `organizer.py`: **7**
 - `startup.py`: **5**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T00:57:30` **diskreport.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `summarize` y `_collect_summary_data` garantizando que las operaciones sobre rutas y archivos procesen correctamente posibles fallos de sistema sin detener la ejecución global, validando específicamente la existencia de la ruta antes de intentar cualquier operación de reporting.
+- `2026-09-26T00:57:02` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_path_inside_base` y `_resolve_browser_path` añadiendo validaciones estrictas de tipo y normalización de rutas, previniendo errores de comparación lógica entre `Path` y `str` que podrían derivar en saltos de seguridad.
+- `2026-09-26T00:56:35` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `branding.py` mediante una validación más estricta de los parámetros de entrada en las funciones que operan con el lienzo y los cálculos cromáticos, asegurando que valores inválidos o inesperados no propaguen excepciones en el bucle de renderizado.
 - `2026-09-25T14:24:42` **startup.py** (seguridad defensiva): Se endureció la validación en `_is_valid_registry_entry` incorporando `is_protected_path` directamente sobre la ruta expandida del comando antes de procesarla, asegurando que ninguna clave de registro apunte a áreas restringidas del sistema incluso si el nombre parece inofensivo.
 - `2026-09-25T14:23:27` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `Scanner._is_safe_entry` al añadir una validación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier procesamiento, garantizando que incluso si una entrada parece válida, se mantenga bajo el control centralizado de `safety.py`.
 - `2026-09-25T14:15:21` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_kernel_managed` para prevenir el acceso a archivos de paginación o hibernación en cualquier unidad, no solo en la raíz, protegiendo al sistema de posibles corrupciones o bloqueos de acceso durante operaciones de escaneo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-25T13:33:03` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar archivos inaccesibles o bloqueados por el sistema de forma más elegante, añadiendo una comprobación adicional mediante `os.access` y capturando errores específicos de acceso durante la apertura, evitando así que el escáner aborte ante archivos en uso.
 - `2026-09-25T13:25:18` **healthscore.py** (robustez ante casos límite): Se introdujo una validación defensiva en la función `summarize` para evitar un `NameError` ante entradas no válidas y se protegió la lógica de renderizado de barras contra desbordamientos mediante la normalización de pesos.
 - `2026-09-25T13:22:08` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` frente a archivos bloqueados por el sistema operativo mediante el uso de un bloque `try-except` más granular alrededor de la llamada a `entry.stat()`, evitando que un error de acceso a metadatos (común en archivos en uso o protegidos) interrumpa la ejecución total del análisis.
-- `2026-09-25T13:13:39` **browser.py** (robustez ante casos límite): He mejorado la robustez ante errores de acceso a disco en la función `_sum_directory_recursive` mediante el uso de `os.scandir` como gestor de contexto en un bloque `try-except` más granular, asegurando que si un subdirectorio lanza una excepción de acceso denegado (muy común en cachés de navegadores), el proceso continúe con el resto del escaneo en lugar de abortar silenciosamente o truncar el conteo.
-- `2026-09-25T13:13:26` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos al añadir una verificación explícita de `is_protected_path` antes de intentar cualquier operación, asegurando que incluso ante fallos en la resolución de rutas la aplicación no intente escribir en directorios críticos.
-- `2026-09-25T13:12:44` **assistant.py** (robustez ante casos límite): Reforcé la robustez del sistema ante datos inesperados en el `SystemContext` añadiendo validaciones de tipo explícitas en `ingest` y protegiendo el decorador contra métodos no aptos o valores `None` durante la evaluación de criterios.

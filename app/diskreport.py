@@ -340,20 +340,23 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
     top_heap: List[Tuple[int, Path]] = []
     
-    for path, size_bytes in walk_files(directory, skip_protected):
-        total_bytes += size_bytes
-        total_files += 1
-        
-        ext = path.suffix.lower() or "(sin extensión)"
-        stat = ext_stats[ext]
-        stat.total_bytes += size_bytes
-        stat.count += 1
-        
-        if limit > 0 and size_bytes > 0:
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size_bytes, path))
-            elif size_bytes > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (size_bytes, path))
+    try:
+        for path, size_bytes in walk_files(directory, skip_protected):
+            total_bytes += size_bytes
+            total_files += 1
+            
+            ext = path.suffix.lower() or "(sin extensión)"
+            stat = ext_stats[ext]
+            stat.total_bytes += size_bytes
+            stat.count += 1
+            
+            if limit > 0 and size_bytes > 0:
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, (size_bytes, path))
+                elif size_bytes > top_heap[0][0]:
+                    heapq.heapreplace(top_heap, (size_bytes, path))
+    except Exception:
+        pass
     
     return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)
 

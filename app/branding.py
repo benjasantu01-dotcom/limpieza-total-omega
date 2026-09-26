@@ -252,7 +252,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
 @lru_cache(maxsize=256)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
     """Convierte un string hex '#RRGGBB' a una tupla RGB (R, G, B)."""
-    if isinstance(value, str) and len(value) == 7 and value[0] == '#':
+    if isinstance(value, str) and len(value) == 7 and value.startswith('#'):
         try:
             val = int(value[1:], 16)
             return ((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
@@ -353,20 +353,11 @@ def logo_svg(size: int = 128) -> str:
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
     """
     Guarda el logo SVG en disco tras validar la seguridad de la ruta destino.
-    
-    Args:
-        destination: Ruta donde guardar el archivo.
-        size: Tamaño en píxeles del logo (se ajusta entre 16 y 1024).
-        
-    Returns:
-        Path del archivo guardado si tuvo éxito, None en caso contrario.
     """
     if not isinstance(destination, (str, Path)):
         return None
     try:
         path = Path(destination).resolve()
-        
-        # Defensa: validación jerárquica para evitar rutas protegidas de sistema
         if is_protected_path(path) or not is_safe_to_modify(path):
             return None
             
@@ -391,10 +382,7 @@ def _get_stripe_params(scale: float, franjas_count: int) -> Tuple[Tuple[float, f
                   (i + 1) * (92.0 * scale / franjas_count)) for i in range(franjas_count))
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """
-    Renderiza franjas decorativas graduadas en el interior del escudo.
-    Captura excepciones de tipo gráfico para mantener la estabilidad del hilo.
-    """
+    """Renderiza franjas decorativas graduadas en el interior del escudo."""
     try:
         if not math.isfinite(scale) or scale <= 0: return
         franjas_count = max(6, int(28 * scale))
@@ -442,16 +430,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """
-    Dibuja una barra horizontal decorativa con gradiente lineal sobre el lienzo.
-    
-    Args:
-        canvas: Objeto de dibujo.
-        width: Ancho total en píxeles.
-        height: Grosor de la línea.
-        canvas_x/y: Coordenadas de origen.
-        stops: Colores para la interpolación del gradiente.
-    """
+    """Dibuja una barra horizontal decorativa con gradiente lineal sobre el lienzo."""
     try:
         w_val = max(1, int(width))
         h_val = max(1, int(height))
@@ -462,10 +441,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, 
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, 
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """
-    Renderiza un gráfico circular de progreso (anillo) en las coordenadas especificadas.
-    Gestiona internamente valores fuera de rango para evitar errores de renderizado.
-    """
+    """Renderiza un gráfico circular de progreso (anillo) en las coordenadas especificadas."""
     if percent is None or not isinstance(percent, (int, float)): return
     try:
         val = float(percent)
