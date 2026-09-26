@@ -1467,3 +1467,36 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-26T11:07:44` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_collect_summary_data` y `walk_files` implementando una validación explícita mediante `is_protected_path` para cada archivo procesado antes de realizar cualquier operación de recolección de métricas, garantizando que el escáner no acceda a contenido prohibido por política de seguridad incluso en estados intermedios del recorrido.
 - `2026-09-26T11:07:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T11:07:44` Corrida terminada. Total usado hoy: 188.
+- `2026-09-26T11:15:57` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-09-26T11:16:27` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_collect_candidates` implementando una validación de seguridad anticipada mediante `is_safe_to_modify` antes de procesar cualquier entrada, asegurando que el escáner no intente ni siquiera obtener metadatos de rutas prohibidas que podrían disparar errores de acceso o violar el principio de mínima exposición a rutas sensibles.
+- `2026-09-26T11:16:52` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-09-26T11:17:52` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-26T11:19:10` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la implementación de `_ensure_path_writable_and_clean` en los métodos de entrada de usuario (`on_target_choice_changed`), centralizando la validación contra puntos de reparse (junctions/symlinks) y rutas protegidas antes de realizar cualquier operación de disco o escaneo, cumpliendo estrictamente con el enfoque de seguridad defensiva.
+- `2026-09-26T11:19:25` Tests FALLARON:
+```
+escritura: "
+            f"{', '.join(culpables)}. Para saber si algo es de sistema sin "
+            "bloquear la lectura, usá `is_protected_path`."
+        )
+E       AssertionError: Estos módulos son de solo lectura y usan el chequeo de escritura: memory.py. Para saber si algo es de sistema sin bloquear la lectura, usá `is_protected_path`.
+E       assert not ['memory.py']
+
+evolve/tests/test_integrity.py:279: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:239: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check - AssertionError: Estos módulos son de solo lectura y usan el chequeo de escritura: memory.py. Para saber si algo es de sistema sin bloquear la lectura, usá `is_protected_path`.
+assert not ['memory.py']
+1 failed, 298 passed, 4 warnings in 1.46s
+
+```
+- `2026-09-26T11:19:25` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad del acceso a procesos en `memory.py` mediante la implementación de `ensure_safe_to_modify` antes de cualquier operación de modificación (`trim_working_set`), garantizando que la ruta del ejecutable sea validada explícitamente contra la política de seguridad y previniendo la manipulación de procesos en rutas críticas o fuera de los límites permitidos.
+- `2026-09-26T11:19:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T11:19:25` Corrida terminada. Total usado hoy: 192.

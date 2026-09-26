@@ -238,8 +238,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 for entry in iterator:
                     try:
                         p_entry = Path(entry.path)
+                        # Validación de seguridad defensiva anticipada
                         if not is_safe_to_modify(p_entry):
                             continue
+                        
                         if entry.is_dir(follow_symlinks=False):
                             if _safe_path_check(p_entry):
                                 _scan_dir(p_entry)
