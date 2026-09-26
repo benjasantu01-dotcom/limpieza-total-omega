@@ -128,7 +128,6 @@ def base_directories() -> List[Path]:
         p = Path(local_env)
         if p.exists() and p.is_dir():
             path_local = p.resolve(strict=True)
-            # Verifica seguridad antes de incluir la ruta como base de escaneo
             if is_safe_to_modify(path_local) and not is_protected_path(path_local):
                 return [path_local]
     except (OSError, RuntimeError, PermissionError):
@@ -140,7 +139,6 @@ def _is_path_inside_base(target_abs: str, base_abs: str) -> bool:
     """Valida que la ruta objetivo sea un subdirectorio de la base, evitando escape de directorio."""
     if not isinstance(target_abs, str) or not isinstance(base_abs, str) or not target_abs or not base_abs:
         return False
-    # Normalización para asegurar consistencia en comparaciones
     try:
         target_norm = os.path.normcase(os.path.normpath(target_abs))
         base_norm = os.path.normcase(os.path.normpath(base_abs))
@@ -206,45 +204,34 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula el tamaño total de forma recursiva con validación estricta.
-    
-    La recursión se limita por MAX_SCAN_DEPTH para evitar ataques de recursión profunda
-    y utiliza 'memo' para evitar reprocesar directorios en sistemas con muchos symlinks
-    o enlaces cruzados. Cada nivel verifica permisos mediante `is_safe_to_modify`.
+    Calcula el tamaño total de forma recursiva con validación estricta de seguridad.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
     if root_abs in memo:
         return memo[root_abs]
 
-    # Validar seguridad antes de procesar el directorio
+    # Validar integridad y seguridad antes de procesar
     try:
-        target_path = Path(root_abs)
-        if not is_safe_to_modify(target_path) or is_protected_path(target_path):
+        p = Path(root_abs).resolve(strict=True)
+        if not is_safe_to_modify(p) or is_protected_path(p):
             return 0
-    except (OSError, ValueError):
+    except (OSError, RuntimeError, ValueError):
         return 0
 
     total_bytes: int = 0
     try:
-        with os.scandir(root_abs) as it:
-            while True:
-                try:
-                    entry = next(it, None)
-                    if entry is None:
-                        break
-                    
-                    if _should_skip_entry(entry, kernel32, is_junction_fn):
-                        continue
-                        
-                    if entry.is_dir(follow_symlinks=False):
-                        total_bytes += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, depth + 1)
-                    else:
-                        total_bytes += _get_entry_size(entry)
-                except (OSError, PermissionError):
+        with os.scandir(str(p)) as it:
+            for entry in it:
+                if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue
+                        
+                if entry.is_dir(follow_symlinks=False):
+                    total_bytes += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, depth + 1)
+                else:
+                    total_bytes += _get_entry_size(entry)
     except (OSError, PermissionError, RuntimeError):
-        return 0
+        pass
         
     memo[root_abs] = total_bytes
     return total_bytes
@@ -254,27 +241,23 @@ def directory_size(path: Optional[OSPath]) -> int:
     """Calcula el tamaño de una ruta verificando integridad y restricciones de seguridad."""
     if not path: return 0
     try:
-        p = Path(path)
-        if not p.is_absolute() or not p.exists() or not p.is_dir():
+        p = Path(path).resolve(strict=True)
+        if not p.is_dir() or not is_safe_to_modify(p) or is_protected_path(p):
             return 0
-        # Garantía: no calcular tamaños de rutas protegidas
-        if not is_safe_to_modify(p) or is_protected_path(p):
-            return 0
-        return _sum_directory_recursive(str(p.resolve(strict=True)), _IS_JUNCTION_FN, _get_kernel32(), {})
+        return _sum_directory_recursive(str(p), _IS_JUNCTION_FN, _get_kernel32(), {})
     except (OSError, RuntimeError, PermissionError):
         return 0
 
 
 def _is_valid_cache_path(candidate: Path, base_abs_str: str, is_junction_fn: JunctionChecker) -> bool:
     """Valida que la ruta de caché detectada cumpla con las normas de seguridad del proyecto."""
-    if not isinstance(candidate, Path): return False
     try:
-        if not candidate.exists() or not candidate.is_dir(): return False
-        real_candidate = str(candidate.resolve(strict=True))
-        # Validar consistencia de ruta y permisos de seguridad
-        if not _is_path_inside_base(real_candidate, base_abs_str) or not is_safe_to_modify(candidate) or is_protected_path(candidate):
+        real = candidate.resolve(strict=True)
+        if not real.is_dir() or not _is_path_inside_base(str(real), base_abs_str):
             return False
-        return not (candidate.is_symlink() or is_junction_fn(str(candidate)) or _is_excluded_file(candidate.name))
+        if not is_safe_to_modify(real) or is_protected_path(real):
+            return False
+        return not (real.is_symlink() or is_junction_fn(str(real)) or _is_excluded_file(real.name))
     except (OSError, RuntimeError):
         return False
 
@@ -282,33 +265,20 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str, is_junction_fn: Jun
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """
     Combina la base (LOCALAPPDATA) con la ruta conocida del navegador.
-    Realiza saneamiento de ruta para asegurar que no se escape de la carpeta base
-    mediante una comparación estricta de rutas resueltas.
     """
-    if not isinstance(real_base, Path) or not isinstance(rel_str, str):
-        return Path()
     try:
-        target = (real_base.joinpath(*rel_str.split("\\"))).resolve()
-        
-        # Validar que el destino resuelto sea subdirectorio de real_base mediante normalización
+        target = (real_base.joinpath(*rel_str.split("\\"))).resolve(strict=True)
         if not _is_path_inside_base(str(target), str(real_base)):
             return Path()
-        
-        # Validar seguridad antes de retornar: target debe existir y ser seguro para su lectura
-        if not target.exists() or not is_safe_to_modify(target) or is_protected_path(target):
+        if not is_safe_to_modify(target) or is_protected_path(target):
             return Path()
-            
         return target if len(str(target)) < MAX_PATH_LEN else Path()
     except (OSError, RuntimeError):
         return Path()
 
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    """
-    Escaneo principal para detectar navegadores. 
-    Cruza las bases del sistema con los mapeos conocidos, validando la seguridad
-    en cada paso del recorrido.
-    """
+    """Escaneo principal para detectar navegadores con validación de seguridad."""
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     k32 = _get_kernel32()
@@ -316,19 +286,16 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     found: List[BrowserCache] = []
     
     for base in raw_bases:
-        if not isinstance(base, Path): continue
         try:
-            real_base_path = base.resolve(strict=True)
-            base_abs_str = str(real_base_path)
+            real_base = base.resolve(strict=True)
             for browser_name, rel_str in browser_map.items():
-                candidate = _resolve_browser_path(real_base_path, rel_str)
-                if not candidate or not _is_valid_cache_path(candidate, base_abs_str, _IS_JUNCTION_FN):
+                candidate = _resolve_browser_path(real_base, rel_str)
+                if not candidate or not _is_valid_cache_path(candidate, str(real_base), _IS_JUNCTION_FN):
                     continue
                 
-                real_candidate = str(candidate.resolve(strict=True))
-                size = _sum_directory_recursive(real_candidate, _IS_JUNCTION_FN, k32, global_memo)
+                size = _sum_directory_recursive(str(candidate.resolve()), _IS_JUNCTION_FN, k32, global_memo)
                 if size > 0:
-                    found.append(BrowserCache(str(browser_name), Path(real_candidate), size))
+                    found.append(BrowserCache(str(browser_name), candidate, size))
         except (OSError, RuntimeError):
             continue
                 

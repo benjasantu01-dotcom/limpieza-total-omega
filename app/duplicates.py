@@ -237,6 +237,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        if not is_safe_to_modify(Path(entry.path)):
+                            continue
                         if entry.is_dir(follow_symlinks=False):
                             if _safe_path_check(Path(entry.path)):
                                 _scan_dir(Path(entry.path))
