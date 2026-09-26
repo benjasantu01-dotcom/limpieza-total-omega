@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 241
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 127 | 11 | 25 | 8 | 169 |
-| 2026-09-26 | 72 | 4 | 12 | 4 | 72 |
+| 2026-09-25 | 124 | 11 | 25 | 8 | 168 |
+| 2026-09-26 | 75 | 4 | 13 | 4 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **36**
+- rendimiento: **35**
 - robustez ante casos límite: **35**
-- rendimiento: **32**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **20**
 - `assistant.py`: **19**
 - `healthscore.py`: **18**
-- `settings.py`: **17**
-- `scanner.py`: **17**
+- `settings.py`: **18**
+- `scanner.py`: **18**
+- `safety.py`: **17**
 - `memory.py`: **16**
 - `quarantine.py`: **16**
-- `safety.py`: **16**
 - `duplicates.py`: **14**
-- `branding.py`: **12**
-- `browser.py`: **10**
+- `branding.py`: **11**
 - `organizer.py`: **10**
+- `browser.py`: **9**
 - `startup.py`: **7**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T10:16:28` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` reemplazando la serialización JSON redundante y el recálculo de validaciones por una verificación de `mtime` (tiempo de modificación) del archivo, evitando I/O innecesario cuando el archivo no ha cambiado desde la última lectura exitosa.
+- `2026-09-26T10:15:51` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo eliminando llamadas redundantes a `is_protected_path` y `resolve()` mediante el cacheo del estado de seguridad al visitar directorios, evitando la recreación constante de objetos Path y la resolución de rutas en cada iteración del bucle.
+- `2026-09-26T10:15:23` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` eliminando la recreación innecesaria de objetos `Path` y el uso de `.split(os.sep)` mediante la conversión a un `frozenset` pre-calculado de componentes prohibidos, reduciendo drásticamente la carga en el bucle principal.
 - `2026-09-26T10:05:38` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas de procesos eliminando el uso de `subprocess` y su parseo de texto intensivo, reemplazándolo por una lógica más eficiente que minimiza la creación de objetos y utiliza estructuras de datos adecuadas para filtrar duplicados rápidamente, mejorando el rendimiento en cada actualización del `top`.
 - `2026-09-26T09:55:32` **healthscore.py** (rendimiento): Se optimizó el método `is_finite` de `SystemMetrics` reemplazando la repetición de llamadas a `math.isfinite` por una tupla con los campos numéricos relevantes, iterándolos con `all()` para reducir la complejidad de mantenimiento y mejorar la claridad del chequeo de integridad en tiempo de ejecución.
 - `2026-09-26T09:55:20` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_group_paths_by_hash` eliminando llamadas redundantes a `is_safe_to_modify` y `path.is_file()`, ya que la pre-validación realizada en `_collect_candidates` y `_decide_hash_strategy_and_process` garantiza que los paths recibidos son válidos y accesibles, reduciendo ciclos de CPU innecesarios durante el proceso de hashing.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T09:28:59` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `memory.py` mediante la adición de docstrings estructuradas con secciones "Args", "Returns" y "Raises", clarificando las precondiciones y el comportamiento de las funciones críticas de la API de Windows.
 - `2026-09-26T09:23:52` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de scoring para clarificar el flujo de normalización, garantizando que la arquitectura funcional sea legible y auto-documentada.
 - `2026-09-26T09:14:48` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del pipeline de hashing (`_decide_hash_strategy_and_process`) mediante comentarios explicativos y tipos más claros, para clarificar la lógica de descarte y el flujo jerárquico de la detección.
-- `2026-09-26T09:14:36` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del motor interno `_collect_summary_data` y añadí *type hints* faltantes en el uso de `defaultdict` y *heaps* para clarificar la estructura de datos que procesa el análisis, facilitando el mantenimiento y la comprensión de las transformaciones de estado.
-- `2026-09-26T09:14:09` **browser.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de los iteradores y validadores recursivos de `browser.py`, clarificando el propósito de seguridad de cada filtro para facilitar su auditoría y mantenimiento.
-- `2026-09-26T09:05:00` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_safe_handler_wrapper` y la adición de docstrings detallados en `SystemContext.ingest`, facilitando la comprensión del flujo de datos en un módulo crítico para la seguridad.

@@ -164,6 +164,7 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
+        self.protected_cache: set[str] = set()
         self.base_root: Path = base_root.resolve()
         self.base_root_str: str = str(self.base_root).lower()
         self.now_ts: float = datetime.now().timestamp()
@@ -184,9 +185,6 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
         Valida que la entrada sea segura para procesar.
-        
-        Aplica: validación de estructura, scope, reparse points, enlaces simbólicos
-        y rutas protegidas por configuración del sistema.
         """
         if not entry or not entry.path or not entry.name:
             return False
@@ -194,9 +192,17 @@ class Scanner:
             return False
         if not self._is_inside_base_root(entry.path.lower()):
             return False
-        if self._is_reparse_point(entry) or is_protected_path(Path(entry.path).resolve()):
-            return False
-        return not entry.is_symlink()
+        
+        path_obj = Path(entry.path)
+        parent_str = str(path_obj.parent).lower()
+        
+        # Cache de protección para evitar resolución costosa de path.resolve() en cada archivo
+        if parent_str not in self.protected_cache:
+            if is_protected_path(path_obj.resolve()):
+                return False
+            self.protected_cache.add(parent_str)
+            
+        return not (self._is_reparse_point(entry) or entry.is_symlink())
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Gestiona el descenso recursivo de directorios."""
@@ -212,10 +218,6 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """
         Lógica de decisión para cada entrada encontrada por os.scandir.
-        
-        Args:
-            entry: Entrada del sistema de archivos.
-            directory_stack: Referencia a la pila de directorios pendientes.
         """
         try:
             if not entry.exists():
@@ -261,8 +263,6 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
     Punto de entrada para escaneo recursivo de directorios.
-    
-    Coordina la pila de procesamiento y la instanciación del objeto Scanner.
     """
     if directory is None: return []
     path_str = str(directory).strip()

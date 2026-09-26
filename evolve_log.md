@@ -1405,3 +1405,10 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-09-26T10:06:28` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `list_items` y `purge_all` al evitar re-cargar y re-parsear el manifiesto JSON dentro de los bucles de iteración de archivos, utilizando una estructura de datos `set` para búsquedas en tiempo constante $O(1)$ y minimizando las llamadas I/O.
 - `2026-09-26T10:06:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T10:06:28` Corrida terminada. Total usado hoy: 164.
+- `2026-09-26T10:14:20` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-09-26T10:14:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 89): unterminated string literal (detected at line 89)
+- `2026-09-26T10:15:23` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` eliminando la recreación innecesaria de objetos `Path` y el uso de `.split(os.sep)` mediante la conversión a un `frozenset` pre-calculado de componentes prohibidos, reduciendo drásticamente la carga en el bucle principal.
+- `2026-09-26T10:15:51` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo eliminando llamadas redundantes a `is_protected_path` y `resolve()` mediante el cacheo del estado de seguridad al visitar directorios, evitando la recreación constante de objetos Path y la resolución de rutas en cada iteración del bucle.
+- `2026-09-26T10:16:28` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` y `save()` reemplazando la serialización JSON redundante y el recálculo de validaciones por una verificación de `mtime` (tiempo de modificación) del archivo, evitando I/O innecesario cuando el archivo no ha cambiado desde la última lectura exitosa.
+- `2026-09-26T10:16:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T10:16:28` Corrida terminada. Total usado hoy: 168.

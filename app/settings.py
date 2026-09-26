@@ -97,7 +97,7 @@ MAX_SETTINGS_SIZE: Final = 1024 * 64
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
 _PATH_CACHE: dict[Path, Path] = {}
-_CACHED_SETTINGS: dict[str, AppSettings] = {}
+_CACHED_SETTINGS: dict[str, tuple[float, AppSettings]] = {}
 _BOOL_TRUE_SET: Final = frozenset(("1", "true", "si", "sí", "yes"))
 _BOOL_FALSE_SET: Final = frozenset(("0", "false", "no", "none"))
 
@@ -307,36 +307,39 @@ def _is_file_secure_to_read(ruta: Path) -> bool:
     except (OSError, PermissionError):
         return False
 
-@lru_cache(maxsize=4)
 def _load_impl(ruta: Path) -> AppSettings:
     """Carga y normaliza el contenido del JSON, recuperando defaults si falla."""
     try:
-        # Reintento breve para casos de contención temporal (ej. antivirus escaneando)
-        for attempt in range(3):
-            if _is_file_secure_to_read(ruta):
-                with open(ruta, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                if _is_dict(data):
-                    validated_data = validate(data)
-                    for key, default_val in DEFAULTS.items():
-                        if key not in validated_data or not isinstance(validated_data[key], type(default_val)):
-                            validated_data[key] = default_val
-                    return _coerce_and_verify(validated_data)
-            time.sleep(0.1 * (attempt + 1))
+        if _is_file_secure_to_read(ruta):
+            with open(ruta, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if _is_dict(data):
+                validated_data = validate(data)
+                for key, default_val in DEFAULTS.items():
+                    if key not in validated_data or not isinstance(validated_data[key], type(default_val)):
+                        validated_data[key] = default_val
+                return _coerce_and_verify(validated_data)
         return DEFAULTS.copy()
     except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError, Exception):
         return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga ajustes desde el archivo o su respaldo (.bak)."""
+    """Carga ajustes desde el archivo o su respaldo (.bak), cacheado por mtime."""
     ruta = settings_path(custom_base)
     cache_key = str(ruta)
-    if cache_key in _CACHED_SETTINGS: return _CACHED_SETTINGS[cache_key].copy()
+    
+    try:
+        mtime = ruta.stat().st_mtime if ruta.exists() else 0.0
+        if cache_key in _CACHED_SETTINGS:
+            cached_mtime, cached_val = _CACHED_SETTINGS[cache_key]
+            if cached_mtime == mtime: return cached_val.copy()
+    except OSError: pass
     
     for r in [ruta, ruta.with_suffix(".bak")]:
         try:
             settings = _load_impl(r)
-            _CACHED_SETTINGS[cache_key] = settings
+            mtime = r.stat().st_mtime if r.exists() else 0.0
+            _CACHED_SETTINGS[cache_key] = (mtime, settings)
             return settings.copy()
         except Exception:
             continue
@@ -399,7 +402,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not ruta.exists() or ruta.stat().st_size == 0:
             raise IOError("Error de persistencia: El archivo resultante está vacío.")
             
-        _load_impl.cache_clear()
         _CACHED_SETTINGS.clear()
         return ruta
     except (OSError, IOError, PermissionError, AttributeError): 
@@ -427,7 +429,6 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
 def reset(custom_base: PathLike | None = None) -> AppSettings:
     """Restaura configuración a valores de fábrica y purga cachés."""
     save(DEFAULTS, custom_base)
-    _load_impl.cache_clear()
     _CACHED_SETTINGS.clear()
     return DEFAULTS.copy()
 
