@@ -1018,3 +1018,39 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-26T17:55:30` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` y `_load_impl()` incorporando validación explícita mediante `ensure_safe_to_modify` antes de operaciones críticas de disco, cumpliendo con la jerarquía de seguridad exigida para evitar manipulaciones inseguras de rutas, y añadí bloques `try-except` más granulares al manipular `os.replace` y archivos temporales para evitar estados corruptos si el filesystem falla.
 - `2026-09-26T17:55:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T17:55:30` Corrida terminada. Total usado hoy: 348.
+- `2026-09-26T18:03:44` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-26T18:04:16` Tests FALLARON:
+```
+...................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:244: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 4 warnings in 1.26s
+
+```
+- `2026-09-26T18:04:16` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_resolve_and_cache_path` añadiendo validaciones explícitas de tipo `None` y caracteres de control para evitar fallos silenciosos al procesar entradas de registro malformadas, alineándome con el enfoque de validación estricta de parámetros.
+- `2026-09-26T18:04:52` ➖ Sin cambios en assistant.py (enfoque: legibilidad y documentación). Motivo: Mejoré la legibilidad y mantenibilidad de `SystemContext` mediante la migración a `dataclasses` con manejo explícito de inmutabilidad y validación de tipos, además de añadir docstrings detallados que clarifican el contrato de datos del módulo.
+- `2026-09-26T18:04:52` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-09-26T18:04:52` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T18:04:52` Corrida terminada. Total usado hoy: 350.
