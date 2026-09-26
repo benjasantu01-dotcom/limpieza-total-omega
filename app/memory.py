@@ -49,7 +49,7 @@ BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
-# Máscaras de acceso Win32:
+# Máscaras de acceso Win32 (Permisos requeridos para consultar o modificar procesos):
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x100
 PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
@@ -128,7 +128,7 @@ class MemorySnapshot:
 
 @dataclass
 class ProcessMemory:
-    """Representación de consumo de memoria de un proceso individual."""
+    """Consumo de RAM obtenido mediante el WorkingSet del proceso."""
     name: str
     pid: int
     working_set: BytesValue
@@ -136,7 +136,7 @@ class ProcessMemory:
 
     @property
     def working_set_mb(self) -> MegabytesValue:
-        """Convierte bytes de memoria de trabajo a MiB para reportes."""
+        """Convierte los bytes del WorkingSet a MiB (1024^2) para lectura humana."""
         return MegabytesValue(round(self.working_set / BYTES_IN_MB, 1))
 
 def format_bytes(num: Optional[int | float]) -> str:

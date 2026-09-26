@@ -122,7 +122,7 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
-    """Intenta validar acceso exclusivo al archivo. Retorna True si está bloqueado o inaccesible."""
+    """Intenta validar acceso exclusivo mediante lectura. Retorna True si está bloqueado o inaccesible."""
     if not os.access(path, os.R_OK): return True
     try:
         if path.stat().st_size == 0: return False
@@ -141,7 +141,7 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
         return True
 
 def _has_forbidden_chars(path: Path) -> bool:
-    """Detecta caracteres nulos o de redirección de shell que podrían inyectar comandos o corromper rutas."""
+    """Detecta caracteres que podrían inyectar comandos o corromper rutas en shell."""
     path_str = str(path).lower()
     return any(c in path_str for c in ["<", ">", "|", "\0"])
 
@@ -156,8 +156,8 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Coordinador de seguridad para E/S: valida integridad técnica, accesibilidad de disco,
-    exclusividad de archivo y pertenencia a la misma unidad lógica antes de cualquier mutación.
+    Coordinador de seguridad para E/S: verifica integridad, exclusividad de archivo,
+    restricciones de unidad y que no haya rutas circulares antes de cualquier mutación.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
@@ -191,7 +191,7 @@ def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result) -> bool:
             is_valid_junk_extension(entry.name))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
-    """Recorrido recursivo limitado por profundidad y caché de rutas visitadas para evitar ciclos de enlaces."""
+    """Recorrido recursivo limitado por profundidad y caché para evitar ciclos de enlaces."""
     if depth > 50 or not current_dir.exists(): return
     try:
         resolved_dir = current_dir.resolve()
