@@ -283,16 +283,22 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Ejecuta el pipeline de hashing jerárquico para confirmar duplicados.
+    Ejecuta el pipeline de hashing jerárquico. 
+    1. Si el archivo es pequeño, hash completo directo.
+    2. Si es grande, hash parcial (64KB) para descartar, y luego hash completo
+       solo sobre los colisionadores de hash parcial.
     """
     if not paths or size <= 0:
         return []
 
+    # Estrategia de optimización: evitar I/O pesado innecesario en archivos grandes.
     if size <= PARTIAL_READ_BYTES:
         final_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, hash_file)
     else:
+        # Primero filtramos por hash parcial: O(M)
         partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
         final_groups = {}
+        # Luego confirmamos solo colisiones: O(K)
         for candidate_subset in partial_groups.values():
             full_hash_groups: Dict[str, List[Path]] = _group_paths_by_hash(candidate_subset, hash_file)
             final_groups.update(full_hash_groups)

@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 253
+- Sin respuesta de la IA (error o límite): 249
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-24 | 0 | 0 | 0 | 0 | 14 |
+| 2026-09-24 | 0 | 0 | 0 | 0 | 10 |
 | 2026-09-25 | 132 | 12 | 26 | 8 | 172 |
-| 2026-09-26 | 58 | 4 | 8 | 3 | 67 |
+| 2026-09-26 | 61 | 4 | 9 | 3 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
+- legibilidad y documentación: **43**
 - robustez ante casos límite: **40**
-- legibilidad y documentación: **40**
 - seguridad defensiva: **36**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
 - `assistant.py`: **18**
 - `scanner.py`: **17**
 - `settings.py`: **17**
@@ -38,15 +38,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **16**
 - `healthscore.py`: **16**
 - `memory.py`: **15**
+- `duplicates.py`: **13**
 - `branding.py`: **12**
-- `duplicates.py`: **12**
-- `browser.py`: **9**
+- `browser.py`: **10**
 - `organizer.py`: **9**
 - `startup.py`: **7**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T09:14:48` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del pipeline de hashing (`_decide_hash_strategy_and_process`) mediante comentarios explicativos y tipos más claros, para clarificar la lógica de descarte y el flujo jerárquico de la detección.
+- `2026-09-26T09:14:36` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del motor interno `_collect_summary_data` y añadí *type hints* faltantes en el uso de `defaultdict` y *heaps* para clarificar la estructura de datos que procesa el análisis, facilitando el mantenimiento y la comprensión de las transformaciones de estado.
+- `2026-09-26T09:14:09` **browser.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de los iteradores y validadores recursivos de `browser.py`, clarificando el propósito de seguridad de cada filtro para facilitar su auditoría y mantenimiento.
 - `2026-09-26T09:05:00` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_safe_handler_wrapper` y la adición de docstrings detallados en `SystemContext.ingest`, facilitando la comprensión del flujo de datos en un módulo crítico para la seguridad.
 - `2026-09-26T09:04:29` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez en `parse_registry_csv` y `entries_from_registry` mediante una validación estricta de las entradas del registro y la captura explícita de errores en la interacción con PowerShell, evitando el procesamiento de datos mal formados que podrían causar comportamientos inesperados.
 - `2026-09-26T09:04:00` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_load_impl` al agregar validación de tipo explícita tras la carga del JSON y capturar posibles excepciones de `coerce_and_verify` para evitar que el asistente o configuraciones mal formadas corrompan el retorno de la función.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T08:33:14` **assistant.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_call_gemini` y `_build_payload` implementando validaciones de entrada más estrictas y manejando explícitamente posibles errores de codificación o tipos inesperados, siguiendo el enfoque de manejo de errores defensivo solicitado.
 - `2026-09-26T07:12:12` **startup.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_is_valid_registry_entry` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta, evitando que entradas de registro maliciosas o mal formadas puedan ser procesadas si apuntan a zonas críticas del sistema.
 - `2026-09-26T07:11:37` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita de `is_safe_to_modify` para el archivo `config.json` final, asegurando que no se sobrescriba ni se cree un archivo en una ruta que haya sido manipulada o convertida en un punto de reparseo durante el proceso de escritura.
-- `2026-09-26T07:01:37` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_safe_unlink` eliminando el uso de `path.unlink()` directo en favor de un wrapper que verifica rigurosamente la integridad y el estado del archivo antes de la operación, evitando además dependencias innecesarias de `os.fsync` en el directorio para asegurar la estabilidad en diversos sistemas de archivos.
-- `2026-09-26T03:41:12` **memory.py** (seguridad defensiva): Se reforzó la seguridad de `_get_process_path` validando que la ruta del ejecutable no sea una ruta de sistema ni un punto de reparse antes de procesarla, asegurando que `trim_working_set` nunca opere sobre ejecutables críticos o enlaces potencialmente maliciosos.
-- `2026-09-26T03:40:46` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_ask_folder` y `_verify_disk_path` añadiendo validaciones explícitas contra caracteres no imprimibles y rutas que pudieran ser puntos de reparse (junctions/symlinks), centralizando la lógica de verificación antes de que cualquier ruta de usuario alcance el procesamiento profundo del sistema.

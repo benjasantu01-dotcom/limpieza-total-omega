@@ -322,8 +322,11 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Motor interno de escaneo: realiza un único recorrido recolectando estadísticas
-    totales, métricas por extensión y el top N de archivos usando un min-heap.
+    Motor interno de escaneo: realiza un recorrido único sobre el sistema de archivos.
+
+    Procesa las estadísticas de forma agregada utilizando:
+    - defaultdict: para clasificar bytes y conteos por extensión de archivo.
+    - min-heap: para mantener un Top N eficiente de archivos más pesados en O(N log K).
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -339,11 +342,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             total_bytes += size_bytes
             total_files += 1
             
+            # Clasificación por extensión
             ext = path.suffix.lower() or "(sin extensión)"
             stats_obj = ext_stats[ext]
             stats_obj.total_bytes += size_bytes
             stats_obj.count += 1
             
+            # Actualización del Min-Heap para los archivos más grandes
             if limit > 0 and size_bytes > 0:
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (size_bytes, path))
