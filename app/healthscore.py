@@ -246,10 +246,11 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             if rule.check(metrics, ratio):
                 raw_msg = rule.message_factory(metrics)
                 if isinstance(raw_msg, str):
+                    # Solo permitir caracteres imprimibles, sanitizar longitud y evitar strings vacíos maliciosos
                     clean_msg = "".join(c for c in raw_msg if c.isprintable()).strip()
                     if clean_msg:
                         findings.append(clean_msg[:200])
-        except (AttributeError, TypeError, ValueError, ZeroDivisionError):
+        except (AttributeError, TypeError, ValueError, ZeroDivisionError, ArithmeticError):
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

@@ -285,7 +285,8 @@ def _get_process_path(pid: int) -> Optional[Path]:
         length = psapi.GetModuleFileNameExW(handle, None, buf, 1024)
         if 0 < length < 1024:
             p = Path(buf.value).resolve(strict=False)
-            if p.is_file() and p.is_absolute() and not is_protected_path(str(p)):
+            # Validación defensiva adicional contra junctions o rutas protegidas.
+            if p.is_file() and p.is_absolute() and not is_protected_path(str(p)) and not p.is_symlink():
                 return p
     except (ctypes.ArgumentError, OSError, ValueError, TypeError): 
         pass
