@@ -424,7 +424,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
-    """Carga el manifiesto de cuarentena y filtra ítems malformados. Retorna lista vacía si hay error."""
+    """Carga el manifiesto de cuarentena y filtra ítems malformados o huérfanos."""
     try:
         base_dir = quarantine_dir(base)
         m_path = _manifest_path(base_dir)
@@ -443,7 +443,9 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
                 continue
             item = QuarantineItem.from_dict(d)
             if item:
-                results.append(item)
+                # Validar existencia física del archivo
+                if (base_dir / item.stored_name).exists():
+                    results.append(item)
         return results
     except (json.JSONDecodeError, OSError, PermissionError, UnsafePathError, ValueError):
         return []

@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 242
+- Sin respuesta de la IA (error o límite): 244
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 78 | 6 | 15 | 5 | 120 |
-| 2026-09-26 | 117 | 10 | 21 | 10 | 122 |
+| 2026-09-25 | 76 | 5 | 15 | 5 | 119 |
+| 2026-09-26 | 118 | 10 | 21 | 10 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **40**
 - rendimiento: **35**
-- seguridad defensiva: **30**
+- seguridad defensiva: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `settings.py`: **18**
-- `scanner.py`: **17**
 - `assistant.py`: **17**
 - `healthscore.py`: **17**
+- `settings.py`: **17**
 - `safety.py`: **16**
+- `scanner.py`: **16**
+- `quarantine.py`: **15**
 - `memory.py`: **14**
-- `quarantine.py`: **14**
 - `duplicates.py`: **13**
 - `organizer.py`: **12**
 - `browser.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T15:16:20` **quarantine.py** (robustez ante casos límite): Se ha robustecido el proceso de purga y carga del manifiesto ante casos límite (archivos huérfanos en disco, entradas corruptas en el JSON) añadiendo una validación de existencia física y hash antes de procesar, garantizando que el estado del manifiesto y del sistema de archivos siempre coincidan.
 - `2026-09-26T15:05:24` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics.validate()` eliminando la invocación recursiva innecesaria y añadiendo un chequeo de tipo más explícito para evitar `TypeError` en escenarios donde las entradas podrían ser `None` o contenedores inesperados antes de procesarlas.
 - `2026-09-26T15:01:09` **diskreport.py** (robustez ante casos límite): Se ha robustecido el escaneo en `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles añadiendo un control explícito de `stat` con manejo de excepciones dentro del bucle, asegurando que la recolección de datos no se interrumpa silenciosamente ni falle ante permisos denegados sobre archivos individuales.
 - `2026-09-26T15:00:38` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo frente a archivos bloqueados durante la lectura, asegurando que `_sum_directory_recursive` maneje adecuadamente errores de acceso al intentar realizar `os.stat` sobre archivos individuales o subdirectorios, evitando que excepciones inesperadas interrumpan el cálculo de carpetas parcialmente accesibles.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T14:10:09` **settings.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando las estructuras de datos y el flujo de validación, además de clarificar mediante docstrings el propósito de los métodos internos, facilitando la comprensión de la lógica de seguridad y persistencia.
 - `2026-09-26T14:00:47` **safety.py** (legibilidad y documentación): Se ha añadido un docstring estructurado a la función `ensure_safe_to_modify` para explicar explícitamente el flujo de validación, clarificar las condiciones de los argumentos opcionales y documentar el comportamiento ante errores, mejorando la mantenibilidad al ser este el punto de entrada crítico del módulo.
 - `2026-09-26T13:59:23` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de docstrings técnicos detallados en funciones clave, la estandarización de type hints y la clarificación de la intención lógica mediante nombres de variables más precisos y comentarios explicativos sobre los criterios de seguridad aplicados.
-- `2026-09-26T13:54:30` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante docstrings expandidos en las funciones de acceso a la API de Win32 y una clarificación explícita de las constantes de máscara de acceso, asegurando que el propósito y los requisitos de cada operación queden claros para futuros mantenimientos sin alterar la funcionalidad.

@@ -717,3 +717,13 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-09-26T15:05:24` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics.validate()` eliminando la invocación recursiva innecesaria y añadiendo un chequeo de tipo más explícito para evitar `TypeError` en escenarios donde las entradas podrían ser `None` o contenedores inesperados antes de procesarlas.
 - `2026-09-26T15:05:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T15:05:24` Corrida terminada. Total usado hoy: 280.
+- `2026-09-26T15:10:21` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-09-26T15:11:22` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-26T15:12:25` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-26T15:13:32` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-26T15:14:44` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-26T15:15:29` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-26T15:15:54` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-26T15:16:20` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha robustecido el proceso de purga y carga del manifiesto ante casos límite (archivos huérfanos en disco, entradas corruptas en el JSON) añadiendo una validación de existencia física y hash antes de procesar, garantizando que el estado del manifiesto y del sistema de archivos siempre coincidan.
+- `2026-09-26T15:16:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T15:16:20` Corrida terminada. Total usado hoy: 284.
