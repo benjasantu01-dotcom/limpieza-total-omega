@@ -734,3 +734,33 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-09-26T15:22:30` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save` contra condiciones de carrera y fallos parciales al realizar una validación de seguridad post-escritura más estricta antes de reemplazar el archivo original, evitando el uso de archivos potencialmente corruptos o con permisos incorrectos como "versión actual".
 - `2026-09-26T15:22:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T15:22:30` Corrida terminada. Total usado hoy: 288.
+- `2026-09-26T15:30:46` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-09-26T15:31:16` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-26T15:31:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-26T15:32:03` Tests FALLARON:
+```
+ida.' = <built-in method lower of str object at 0x7fa3666ebaa0>()
+ +    where <built-in method lower of str object at 0x7fa3666ebaa0> = 'Entrada no válida.'.lower
+ +      where 'Entrada no válida.' = Answer(text='Entrada no válida.', source='local', notice='', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - AssertionError: assert 'buen estado' in 'entrada no válida.'
+ +  where 'entrada no válida.' = <built-in method lower of str object at 0x7fa3666ebaa0>()
+ +    where <built-in method lower of str object at 0x7fa3666ebaa0> = 'Entrada no válida.'.lower
+ +      where 'Entrada no válida.' = Answer(text='Entrada no válida.', source='local', notice='', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - AssertionError: assert 'sin conexión' in ''
+ +  where '' = Answer(text='Entrada no válida.', source='local', notice='', suggestions=[]).notice
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - AssertionError: assert 'local' == 'gemini'
+  
+  - gemini
+  + local
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - AssertionError: assert 'motor local' in ''
+ +  where '' = Answer(text='Entrada no válida.', source='local', notice='', suggestions=[]).notice
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'texto'
+10 failed, 289 passed, 4 warnings in 1.49s
+
+```
+- `2026-09-26T15:32:03` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `_is_safe_text_structure` al restringir explícitamente caracteres de control extendidos y prevenir inyecciones de rutas mediante la validación estricta de prefijos `\\` (UNC) y la normalización de la ruta antes del chequeo, cerrando la posibilidad de que rutas relativas o maliciosas evadan los filtros actuales.
+- `2026-09-26T15:32:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-26T15:32:41` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-26T15:32:53` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-09-26T15:32:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T15:32:53` Corrida terminada. Total usado hoy: 292.
