@@ -354,14 +354,17 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """
     try:
         final = {k: settings.get(k, v) for k, v in DEFAULTS.items()}
+        # Forzar tipos base por si la carga del JSON alteró tipos (ej: int vs float)
         final["asistente_activado"] = bool(final["asistente_activado"])
         final["duplicados_tamano_minimo_kb"] = int(final["duplicados_tamano_minimo_kb"])
+        final["top_archivos"] = int(final["top_archivos"])
+        final["top_procesos"] = int(final["top_procesos"])
         
         # Invariante: El asistente no puede estar activo si no existe una API Key.
         if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
             final["asistente_activado"] = False
-        return final
-    except Exception:
+        return final # type: ignore
+    except (ValueError, TypeError, AttributeError):
         return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:

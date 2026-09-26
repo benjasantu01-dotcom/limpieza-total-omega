@@ -323,17 +323,19 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f = io.StringIO(csv_text.strip())
         reader = csv.DictReader(f)
         
-        if not reader.fieldnames or len(reader.fieldnames) < 2:
+        # Validación defensiva: asegurar estructura mínima del CSV
+        if not reader or not reader.fieldnames or len(reader.fieldnames) < 2:
             return []
             
         f_name, f_cmd = reader.fieldnames[0], reader.fieldnames[1]
             
         for row in reader:
-            if not isinstance(row, dict):
+            # Validar integridad del diccionario de fila y claves necesarias
+            if not isinstance(row, dict) or f_name not in row or f_cmd not in row:
                 continue
             
-            val_name = row.get(f_name)
-            val_cmd = row.get(f_cmd)
+            val_name = row[f_name]
+            val_cmd = row[f_cmd]
             
             if val_name is None or val_cmd is None:
                 continue

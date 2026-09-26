@@ -93,6 +93,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
     if os.name != 'nt' or not path_str: return 0
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
+        # 0xFFFFFFFF indica error en la llamada Win32
         return attrs if attrs != 0xFFFFFFFF else 0
     except (AttributeError, OSError, ctypes.ArgumentError, TypeError):
         return 0
@@ -291,6 +292,7 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
         flags = ctypes.c_ulong()
+        # Se asegura que la llamada no exceda los límites de la API
         if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0):
             return bool(flags.value & 0x80000)
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
@@ -460,7 +462,7 @@ def _is_system_path_raw(path_str: str) -> bool:
 @lru_cache(maxsize=4096)
 def is_protected_path(path: PathLike) -> TypeGuard[str]:
     """Valida si la ruta es parte de las áreas protegidas del sistema o raíz de unidad."""
-    if not path: return True
+    if not isinstance(path, (str, Path)) or not path: return True
     try:
         p = normalize(path)
         if p == Path(p.anchor): return True

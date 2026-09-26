@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 245
+- Sin respuesta de la IA (error o límite): 244
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 99 | 8 | 18 | 7 | 132 |
-| 2026-09-26 | 96 | 9 | 16 | 6 | 113 |
+| 2026-09-25 | 97 | 8 | 18 | 7 | 130 |
+| 2026-09-26 | 99 | 9 | 16 | 6 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **43**
+- manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
-- manejo de errores y validación de entradas: **40**
 - seguridad defensiva: **37**
-- rendimiento: **34**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **20**
 - `scanner.py`: **18**
+- `settings.py`: **18**
 - `assistant.py`: **18**
-- `settings.py`: **17**
-- `safety.py`: **16**
+- `safety.py`: **17**
 - `healthscore.py`: **16**
-- `duplicates.py`: **15**
 - `quarantine.py`: **15**
 - `memory.py`: **14**
+- `duplicates.py`: **14**
 - `organizer.py`: **11**
 - `branding.py`: **10**
 - `browser.py`: **9**
-- `startup.py`: **8**
+- `startup.py`: **9**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T13:30:15` **startup.py** (manejo de errores y validación de entradas): Reforcé la robustez de `parse_registry_csv` añadiendo una validación explícita para evitar errores cuando el CSV de PowerShell retorna filas mal formadas o encabezados inesperados, evitando que una entrada corrupta bloquee el procesamiento total.
+- `2026-09-26T13:30:02` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando validaciones de entrada más estrictas y manejo explícito de errores de tipo en las funciones de conversión, asegurando que `validate` nunca propague excepciones hacia afuera.
+- `2026-09-26T13:29:05` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_file_attrs` y `_is_volume_readonly` añadiendo un manejo explícito de errores para evitar fallos catastróficos si la API de Windows devuelve estados inesperados o si las estructuras de memoria fallan, y centralicé la validación de `path_str` en `is_protected_path` para prevenir excepciones por tipos no válidos.
 - `2026-09-26T13:19:09` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_file_locked` para evitar falsos positivos y posibles bloqueos mediante una validación estricta de permisos de apertura y el manejo explícito de errores de acceso, asegurando que solo los archivos efectivamente bloqueados por el sistema sean reportados.
 - `2026-09-26T13:18:42` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` implementando una validación explícita para evitar errores de conversión en líneas mal formadas o vacías, garantizando que el recolector de procesos no falle ante datos de entrada inesperados.
 - `2026-09-26T13:09:25` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `compute_score` y `summarize` implementando validaciones de tipo explícitas y manejo defensivo de valores nulos o corruptos, garantizando que el motor de puntuación nunca falle ante entradas inesperadas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T11:16:27` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de `_collect_candidates` implementando una validación de seguridad anticipada mediante `is_safe_to_modify` antes de procesar cualquier entrada, asegurando que el escáner no intente ni siquiera obtener metadatos de rutas prohibidas que podrían disparar errores de acceso o violar el principio de mínima exposición a rutas sensibles.
 - `2026-09-26T11:07:44` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_collect_summary_data` y `walk_files` implementando una validación explícita mediante `is_protected_path` para cada archivo procesado antes de realizar cualquier operación de recolección de métricas, garantizando que el escáner no acceda a contenido prohibido por política de seguridad incluso en estados intermedios del recorrido.
 - `2026-09-26T11:07:31` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_get_entry_size` y `_sum_directory_recursive` mediante el uso de `is_safe_to_modify` antes de acceder a la información de archivos o subdirectorios, asegurando que el escáner no intente interactuar con rutas fuera del alcance permitido del usuario incluso si el sistema de archivos reporta estructuras inusuales.
-- `2026-09-26T10:57:24` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante fallos de E/S y corrupción de archivos al añadir una validación de `st_size` y `st_mode` más estricta antes de abrir el JSON, previniendo lecturas de archivos corruptos o bloqueados durante cambios atómicos.
-- `2026-09-26T10:56:51` **scanner.py** (robustez ante casos límite): Se mejora la robustez de `scanner.py` ante casos límite agregando una validación de existencia `entry.is_file()` segura dentro de `_run_file_heuristics` y un bloque `try-except` más granular en `_is_safe_entry` para capturar fallos inesperados al intentar resolver rutas, evitando que el escáner aborte por archivos bloqueados o con metadatos inaccesibles.
-- `2026-09-26T10:47:29` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para que maneje correctamente errores de acceso en sistemas Windows, evitando bloqueos innecesarios cuando el archivo no está realmente en uso, y añadí una validación de `os.fsync` en el `save_manifest` para garantizar la integridad ante fallos de escritura en disco.
