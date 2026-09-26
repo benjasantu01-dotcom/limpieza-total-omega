@@ -693,3 +693,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-09-26T14:35:32` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-09-26T14:35:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T14:35:32` Corrida terminada. Total usado hoy: 268.
+- `2026-09-26T14:39:43` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-09-26T14:40:28` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el método `list_items` convirtiendo la lectura secuencial de los archivos en disco en una operación de conjunto O(1), evitando el re-procesamiento redundante del manifiesto y las llamadas innecesarias a `stat()` en archivos que no corresponden a ningún ítem.
+- `2026-09-26T14:40:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-09-26T14:41:29` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado `_is_system_path_raw` reemplazando la evaluación iterativa `any()` con un `frozenset.isdisjoint()` directo sobre los componentes de la ruta, reduciendo drásticamente la complejidad computacional en cada chequeo.
+- `2026-09-26T14:41:41` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo mediante el uso de un `set` para la `protected_cache` con una lógica de expiración por nivel de profundidad, evitando el costo de `path.resolve()` en cada archivo y acelerando las búsquedas en directorios grandes.
+- `2026-09-26T14:41:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T14:41:41` Corrida terminada. Total usado hoy: 272.

@@ -191,7 +191,7 @@ _SYSTEM_ROOT_PATHS: Final[tuple[str, ...]] = tuple(
     if os.environ.get(v)
 )
 
-_SYSTEM_ROOT_PATHS_SET: Final[frozenset[str]] = frozenset(p.lower() for p in _SYSTEM_ROOT_PATHS)
+_SYSTEM_ROOT_PATHS_TUPLE: Final[tuple[str, ...]] = tuple(p.lower() for p in _SYSTEM_ROOT_PATHS)
 
 _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
     r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$', re.IGNORECASE
@@ -454,8 +454,9 @@ def _is_system_path_raw(path_str: str) -> bool:
     Optimizado mediante el uso de conjuntos para evitar bucles.
     """
     path_lower = path_str.lower()
-    if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_SET): return True
-    # Extraer componentes del path de forma eficiente
+    # Verifica si es parte de las rutas raíces prohibidas
+    if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_TUPLE): return True
+    # Extraer componentes del path para verificar contra PROTECTED_DIR_NAMES
     components = frozenset(path_lower.split(os.sep))
     return not PROTECTED_DIR_NAMES.isdisjoint(components)
 

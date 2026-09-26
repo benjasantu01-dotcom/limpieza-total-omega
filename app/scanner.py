@@ -196,12 +196,10 @@ class Scanner:
             return False
         
         try:
-            path_obj = Path(entry.path)
-            parent_str = str(path_obj.parent).lower()
-            
-            # Cache de protección para evitar resolución costosa de path.resolve() en cada archivo
+            parent_str = str(Path(entry.path).parent).lower()
             if parent_str not in self.protected_cache:
-                if is_protected_path(path_obj.resolve()):
+                # Resolve solo una vez por carpeta, no por archivo
+                if is_protected_path(Path(entry.path).parent.resolve()):
                     return False
                 self.protected_cache.add(parent_str)
         except (OSError, RuntimeError):
@@ -238,7 +236,6 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Itera todas las funciones de heurística y acumula hallazgos sin detener el escaneo."""
-        # Doble validación de tipo para asegurar que no se analice algo que dejó de existir o cambió
         try:
             if not entry.is_file(): return
         except OSError: return

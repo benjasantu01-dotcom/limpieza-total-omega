@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 36
+- Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 242
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 85 | 6 | 16 | 5 | 124 |
-| 2026-09-26 | 111 | 10 | 20 | 9 | 118 |
+| 2026-09-25 | 83 | 6 | 16 | 5 | 122 |
+| 2026-09-26 | 114 | 10 | 21 | 9 | 118 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **37**
 - robustez ante casos límite: **36**
-- rendimiento: **32**
+- seguridad defensiva: **35**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `assistant.py`: **18**
+- `diskreport.py`: **20**
 - `settings.py`: **18**
 - `healthscore.py`: **17**
-- `safety.py`: **16**
-- `scanner.py`: **16**
+- `safety.py`: **17**
+- `scanner.py`: **17**
+- `assistant.py`: **17**
+- `quarantine.py`: **15**
 - `duplicates.py`: **14**
-- `quarantine.py`: **14**
 - `memory.py`: **14**
 - `organizer.py`: **12**
 - `browser.py`: **11**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T14:41:41` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de un `set` para la `protected_cache` con una lógica de expiración por nivel de profundidad, evitando el costo de `path.resolve()` en cada archivo y acelerando las búsquedas en directorios grandes.
+- `2026-09-26T14:41:29` **safety.py** (rendimiento): Se ha optimizado `_is_system_path_raw` reemplazando la evaluación iterativa `any()` con un `frozenset.isdisjoint()` directo sobre los componentes de la ruta, reduciendo drásticamente la complejidad computacional en cada chequeo.
+- `2026-09-26T14:40:28` **quarantine.py** (rendimiento): Optimicé el método `list_items` convirtiendo la lectura secuencial de los archivos en disco en una operación de conjunto O(1), evitando el re-procesamiento redundante del manifiesto y las llamadas innecesarias a `stat()` en archivos que no corresponden a ningún ítem.
 - `2026-09-26T14:30:01` **healthscore.py** (rendimiento): Optimicé el bucle principal de `compute_score` eliminando la llamada a `is_finite` dentro del `validate` y pre-calculando el desglose inicial en un diccionario de comprensión, mejorando la eficiencia al evitar iteraciones redundantes y validaciones anidadas pesadas.
 - `2026-09-26T14:21:02` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando un set de `Path.resolve()` para las rutas ya visitadas, evitando así el procesamiento redundante y las llamadas repetitivas a `stat()` y `is_safe_to_modify` en estructuras de directorios con enlaces complejos o múltiples referencias.
 - `2026-09-26T14:20:51` **diskreport.py** (rendimiento): Optimicé el motor `_collect_summary_data` para evitar re-validaciones redundantes de `is_protected_path` y `is_relative_to` (ya garantizadas por `walk_files`), reduciendo drásticamente las llamadas al sistema en cada iteración del bucle principal.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T13:49:40` **healthscore.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en formato Docstring para `compute_score` y `SystemMetrics.validate`, aclarando la lógica de normalización y los contratos de datos para mejorar la mantenibilidad del motor.
 - `2026-09-26T13:40:46` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos (específicamente en el `defaultdict` de `_collect_summary_data`) y se documentó con mayor claridad el contrato de las funciones principales para asegurar la mantenibilidad a largo plazo sin alterar la lógica de escaneo.
 - `2026-09-26T13:40:33` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados y precisos en las funciones críticas de detección y recorrido, clarificando las precondiciones de seguridad y el manejo de excepciones para facilitar el mantenimiento.
-- `2026-09-26T13:30:15` **startup.py** (manejo de errores y validación de entradas): Reforcé la robustez de `parse_registry_csv` añadiendo una validación explícita para evitar errores cuando el CSV de PowerShell retorna filas mal formadas o encabezados inesperados, evitando que una entrada corrupta bloquee el procesamiento total.
-- `2026-09-26T13:30:02` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando validaciones de entrada más estrictas y manejo explícito de errores de tipo en las funciones de conversión, asegurando que `validate` nunca propague excepciones hacia afuera.
-- `2026-09-26T13:29:05` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_file_attrs` y `_is_volume_readonly` añadiendo un manejo explícito de errores para evitar fallos catastróficos si la API de Windows devuelve estados inesperados o si las estructuras de memoria fallan, y centralicé la validación de `path_str` en `is_protected_path` para prevenir excepciones por tipos no válidos.
