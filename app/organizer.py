@@ -156,8 +156,8 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Coordinador de seguridad para E/S: verifica integridad, exclusividad de archivo,
-    restricciones de unidad y que no haya rutas circulares antes de cualquier mutación.
+    Coordinador de seguridad para E/S: valida la integridad, exclusividad y
+    la ausencia de colisiones o ciclos antes de realizar cualquier mutación.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:

@@ -275,7 +275,14 @@ def _is_system_process(pid: int) -> bool:
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _get_process_path(pid: int) -> Optional[Path]:
-    """Resuelve la ruta absoluta del ejecutable de un proceso mediante Win32 API."""
+    """
+    Resuelve la ruta absoluta del ejecutable de un proceso mediante la API de Win32.
+    
+    Args:
+        pid: Identificador de proceso (PID).
+    Returns:
+        Path del ejecutable si es accesible y seguro, None en caso contrario.
+    """
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
     if not handle or handle == 0: return None
@@ -285,7 +292,6 @@ def _get_process_path(pid: int) -> Optional[Path]:
         length = psapi.GetModuleFileNameExW(handle, None, buf, 1024)
         if 0 < length < 1024:
             p = Path(buf.value).resolve(strict=False)
-            # Validación defensiva adicional contra junctions o rutas protegidas.
             if p.is_file() and p.is_absolute() and not is_protected_path(str(p)) and not p.is_symlink():
                 return p
     except (ctypes.ArgumentError, OSError, ValueError, TypeError): 
@@ -301,7 +307,16 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Libera el working set de un proceso específico tras validar su seguridad."""
+    """
+    Libera el conjunto de trabajo (Working Set) de un proceso mediante EmptyWorkingSet.
+    
+    Args:
+        pid: ID del proceso como int o cadena.
+    Returns:
+        Tuple (éxito: bool, mensaje: str).
+    Raises:
+        Cualquier error de ctypes se captura internamente devolviendo fallo.
+    """
     if not _is_windows: return False, "Solo soportado en Windows."
     try: target_pid = int(pid)
     except (ValueError, TypeError): return False, "PID no válido."

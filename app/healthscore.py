@@ -125,28 +125,28 @@ if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud para archivos basura: a mayor volumen, menor puntaje."""
+    """Normaliza el volumen de basura: puntaje decreciente linealmente según el umbral."""
     return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula el ratio de salud de seguridad considerando amenazas halladas y advertencias."""
+    """Calcula salud de seguridad: penaliza hallazgos y advertencias con pesos ponderados."""
     penalization = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
     return _clamp(1.0 - _clamp(penalization, 0.0, 1.0))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud de memoria basado en el porcentaje disponible actual."""
+    """Normaliza salud de memoria: puntaje basado en porcentaje de RAM libre disponible."""
     return _clamp(float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud de disco según el espacio libre remanente."""
+    """Normaliza salud de disco: puntaje basado en el porcentaje de espacio libre disponible."""
     return _clamp(float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud para duplicados basado en el almacenamiento desperdiciado."""
+    """Normaliza salud de duplicados: penaliza el almacenamiento redundante detectado."""
     return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
-    """Calcula el ratio de salud de arranque: penaliza por la cantidad de items de auto-inicio."""
+    """Normaliza salud de arranque: penaliza linealmente el número de programas en inicio."""
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
 _PIPELINE: Final[List[PipelineEntry]] = [
