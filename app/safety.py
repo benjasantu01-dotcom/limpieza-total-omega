@@ -50,6 +50,7 @@ __all__ = [
 
 # Máscaras de bits para FileAttributes (Win32 API)
 class Win32Attr(IntEnum):
+    """Atributos de archivo del sistema de archivos Windows (Win32)."""
     HIDDEN: int = 0x02
     SYSTEM: int = 0x04
     DIRECTORY: int = 0x10
@@ -62,21 +63,21 @@ class Win32Attr(IntEnum):
 
 MAX_PATH_LENGTH: Final[int] = 260
 MAX_FILENAME_LENGTH: Final[int] = 255
-MAX_FILE_SIZE: Final[int] = 2 * 1024 * 1024 * 1024  # 2GB límite de seguridad arbitrario
+MAX_FILE_SIZE: Final[int] = 2 * 1024 * 1024 * 1024  # 2GB: Evita procesamiento de archivos gigantes para prevenir DoS.
 
-# Constantes Win32 Drive Types (GetDriveType)
+# Constantes Win32 Drive Types (retornadas por GetDriveType)
 DRIVE_UNKNOWN: Final[int] = 0
 DRIVE_NO_ROOT_DIR: Final[int] = 1
-DRIVE_REMOVABLE: Final[int] = 2
-DRIVE_FIXED: Final[int] = 3
-DRIVE_REMOTE: Final[int] = 4
-DRIVE_CDROM: Final[int] = 5
-DRIVE_RAMDISK: Final[int] = 6
+DRIVE_REMOVABLE: Final[int] = 2 # Discos extraíbles (USB/SD)
+DRIVE_FIXED: Final[int] = 3     # Discos locales fijos
+DRIVE_REMOTE: Final[int] = 4    # Unidades de red mapeadas
+DRIVE_CDROM: Final[int] = 5     # Discos ópticos
+DRIVE_RAMDISK: Final[int] = 6   # Discos virtuales en memoria
 
 def _to_long_path(path_str: str) -> str:
     """
-    Convierte rutas a prefijo '\\?\' para permitir rutas > 260 caracteres 
-    y bypass de normalización de API win32 en nombres reservados.
+    Aplica el prefijo '\\?\' para habilitar el acceso a rutas largas (>260 chars) 
+    y deshabilitar la normalización de nombres reservados (ej. 'CON.txt').
     """
     if os.name == 'nt' and not path_str.startswith("\\\\?\\"):
         if path_str.startswith("\\\\"): return "\\\\?\\UNC" + path_str[1:]
@@ -87,7 +88,7 @@ def _to_long_path(path_str: str) -> str:
 def _get_file_attrs(path_str: Optional[str]) -> int:
     """
     Obtiene atributos de archivo Win32 mediante syscall GetFileAttributesW.
-    Retorna 0 en caso de error o ruta inexistente para ser conservadores.
+    Retorna 0 en caso de fallo, tratando la ruta como estándar (seguridad conservadora).
     """
     if os.name != 'nt' or not path_str: return 0
     try:
@@ -136,7 +137,7 @@ class UnsafePathError(Exception):
         self.code = code
 
 class ProtectionReason(Enum):
-    """Categorías de riesgo para mapeo entre predicados de seguridad y códigos de error."""
+    """Categorías semánticas de riesgo utilizadas para mapear fallos a causas raíz."""
     INACCESSIBLE = "inaccesible"
     REPARSE_POINT = "punto de reparse"
     READ_ONLY = "solo lectura"
@@ -162,11 +163,11 @@ class ProtectionReason(Enum):
     DEVICE_FILE = "archivo de dispositivo detectado"
 
 class ValidationContext(Enum):
-    """Determina si la validación debe realizar chequeos estructurales o de integridad física."""
+    """Diferencia entre validación de estructura (nombres/cadenas) e integridad (estado físico)."""
     STRUCTURAL = auto()
     INTEGRITY = auto()
 
-# Directorios críticos del sistema
+# Directorios críticos del sistema que la aplicación NUNCA debe modificar
 PROTECTED_DIR_NAMES: Final[frozenset[str]] = frozenset({
     "windows", "winnt", "system32", "syswow64", "system", "boot",
     "program files", "program files (x86)", "programdata",
@@ -178,6 +179,7 @@ PROTECTED_DIR_NAMES: Final[frozenset[str]] = frozenset({
     "dev", "root", "library", "applications",
 })
 
+# Extensiones ejecutables y configuraciones de seguridad críticas
 SENSITIVE_EXTENSIONS: Final[frozenset[str]] = frozenset({
     ".sys", ".dll", ".exe", ".msi", ".drv", ".ocx", ".cpl", ".efi",
     ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",

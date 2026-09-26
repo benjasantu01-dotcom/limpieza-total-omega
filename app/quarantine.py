@@ -355,7 +355,10 @@ def _check_device_consistency(source: Path, target_dir: Path) -> None:
 def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     """
     Verifica condiciones de seguridad origen-destino previo a la operación.
-    Lanza excepciones de seguridad si el origen es un enlace o el destino no tiene permisos.
+    
+    Asegura que el archivo sea regular, no un enlace, tenga tamaño válido y que 
+    no se esté operando sobre una ruta protegida o circular. Valida el acceso
+    de escritura en el destino antes de proceder con cualquier transferencia.
     """
     resolved_source = source_path.resolve(strict=True)
     resolved_dest_dir = dest_dir.resolve()
@@ -553,7 +556,13 @@ def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> 
 
 
 def _write_temp_to_final(source: Path, destination: Path) -> str:
-    """Copia física segura al sandbox mediante un archivo temporal y reemplazo atómico."""
+    """
+    Copia física segura al sandbox mediante un archivo temporal y reemplazo atómico.
+    
+    Garantiza que el archivo no sea expuesto parcialmente durante la transferencia,
+    usando un archivo temporal único dentro del mismo volumen y `os.replace`
+    para lograr una atomicidad a nivel de sistema operativo.
+    """
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
 
