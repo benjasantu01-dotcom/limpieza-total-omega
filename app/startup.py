@@ -291,12 +291,13 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
     if not name or not cmd or cmd.startswith(r"\\") or cmd in seen or name.upper().startswith("PS"):
         return False
     try:
-        # Resolvemos y verificamos si la ruta del comando apunta a algo protegido
+        if not isinstance(cmd, str):
+            return False
         p_candidate = Path(cmd).expanduser()
         if is_protected_path(p_candidate) or ".." in str(p_candidate):
             return False
         return True
-    except (ValueError, TypeError, OSError):
+    except (ValueError, TypeError, OSError, RuntimeError):
         return False
 
 

@@ -372,6 +372,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.flush()
             os.fsync(f.fileno())
         
+        if not os.access(temp_path, os.W_OK): raise PermissionError("Archivo temporal no escribible.")
+        
         if ruta.exists():
             if not is_safe_to_modify(str(ruta)) or _Validators._is_reparse_point(ruta): return None
             if bak_path.exists():
@@ -386,7 +388,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         _load_impl.cache_clear()
         _CACHED_SETTINGS.clear()
         return ruta
-    except (OSError, IOError, PermissionError): 
+    except (OSError, IOError, PermissionError, AttributeError): 
         return None
     finally:
         if temp_path.exists():
