@@ -183,7 +183,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Valida los requisitos de seguridad y atributos antes de incluir un archivo."""
     try:
-        if not path.is_file() or not _safe_path_check(path):
+        if not _safe_path_check(path):
             return False
         if is_system_or_hidden(path) or _is_file_locked(path):
             return False
@@ -226,7 +226,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Exploración recursiva profunda para recolectar candidatos aptos para deduplicación.
+    Exploración recursiva eficiente usando os.scandir y cacheo de stat().
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     visited_files: set[str] = set()
@@ -236,21 +236,22 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        p_entry = Path(entry.path)
-                        if not _safe_path_check(p_entry):
-                            continue
                         if entry.is_dir(follow_symlinks=False):
-                            _scan_dir(p_entry)
+                            if _safe_path_check(Path(entry.path)):
+                                _scan_dir(Path(entry.path))
                             continue
+                        
                         if entry.path in visited_files:
                             continue
                         
+                        p_entry = Path(entry.path)
                         st = entry.stat(follow_symlinks=False)
+                        
                         if st.st_size < min_size:
                             continue
                         if (skip_protected and is_protected_path(p_entry)):
                             continue
-                        if is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
+                        if not _is_valid_candidate(p_entry, st.st_size):
                             continue
                         
                         size_to_paths_map[st.st_size].append(p_entry)

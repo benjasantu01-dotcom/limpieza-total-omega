@@ -197,12 +197,10 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que todos los campos numéricos sean números finitos y válidos."""
-        return all((
-            math.isfinite(self.junk_mb), math.isfinite(self.suspicious_count), 
-            math.isfinite(self.suspicious_warnings), math.isfinite(self.memory_available_percent), 
-            math.isfinite(self.disk_free_percent), math.isfinite(self.duplicate_mb), 
-            math.isfinite(self.startup_count), math.isfinite(self.quarantined_count)
-        ))
+        return (math.isfinite(self.junk_mb) and math.isfinite(self.suspicious_count) and 
+                math.isfinite(self.suspicious_warnings) and math.isfinite(self.memory_available_percent) and 
+                math.isfinite(self.disk_free_percent) and math.isfinite(self.duplicate_mb) and 
+                math.isfinite(self.startup_count) and math.isfinite(self.quarantined_count))
 
 @dataclass
 class HealthResult:

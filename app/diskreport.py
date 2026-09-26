@@ -248,7 +248,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     if root_path is None: return
 
     visited_inodes: set[Inode] = set()
-    stack: List[Path] = [root_path]
+    stack: List[str] = [str(root_path)]
     
     while stack:
         current_dir = stack.pop()
@@ -261,22 +261,19 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
-                        # Manejo de subdirectorios: se añade a la pila si es nuevo
+                        # Manejo de subdirectorios
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode: Inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(Path(entry.path))
+                                stack.append(entry.path)
                                 
                         # Manejo de archivos
                         elif entry.is_file(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                if st.st_size >= 0:
-                                    yield Path(entry.path), st.st_size
-                            except (PermissionError, OSError):
-                                continue # Ignorar archivo bloqueado y continuar
+                            st = entry.stat(follow_symlinks=False)
+                            if st.st_size >= 0:
+                                yield Path(entry.path), st.st_size
                             
                     except (PermissionError, OSError):
                         continue
@@ -334,10 +331,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Motor interno de escaneo: realiza un único recorrido recolectando estadísticas
     totales, métricas por extensión y el top N de archivos usando un min-heap.
-    
-    Retorna:
-        Un objeto SummaryData con los resultados agregados. Si ocurre un fallo en
-        el recorrido, retorna los datos parciales recopilados hasta ese punto.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -350,9 +343,9 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             total_files += 1
             
             ext = path.suffix.lower() or "(sin extensión)"
-            stat = ext_stats[ext]
-            stat.total_bytes += size_bytes
-            stat.count += 1
+            stats_obj = ext_stats[ext]
+            stats_obj.total_bytes += size_bytes
+            stats_obj.count += 1
             
             if limit > 0 and size_bytes > 0:
                 if len(top_heap) < limit:
