@@ -700,3 +700,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-09-26T14:41:41` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo mediante el uso de un `set` para la `protected_cache` con una lógica de expiración por nivel de profundidad, evitando el costo de `path.resolve()` en cada archivo y acelerando las búsquedas en directorios grandes.
 - `2026-09-26T14:41:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T14:41:41` Corrida terminada. Total usado hoy: 272.
+- `2026-09-26T14:49:56` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-09-26T14:50:29` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-09-26T14:50:55` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-26T14:51:36` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: robustez ante casos límite).
+- `2026-09-26T14:51:53` ➖ Sin cambios en branding.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de tipos y estados, garantizando que valores numéricos inválidos o nulos no propaguen excepciones inesperadas hacia los componentes gráficos o el sistema de archivos.
+- `2026-09-26T14:51:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T14:51:53` Corrida terminada. Total usado hoy: 276.
