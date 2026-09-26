@@ -171,9 +171,6 @@ if len(_PIPELINE) != len(WEIGHTS):
 class SystemMetrics:
     """
     Contenedor de datos crudos (inputs) para el motor de salud.
-    
-    Centraliza la recepción de métricas externas, garantizando que todos los valores 
-    sean numéricos, finitos y positivos antes de cualquier cálculo.
     """
     junk_mb: float = 0.0
     suspicious_count: int = 0
@@ -185,16 +182,10 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None:
-        """Valida y ajusta las métricas tras la inicialización del objeto."""
         self.validate()
 
     def validate(self) -> None:
-        """
-        Asegura la integridad de los datos, forzando rangos positivos y sanitización.
-        
-        Realiza una limpieza de valores inesperados convirtiendo todo a tipos flotantes 
-        y aplicando límites 'clamp' para evitar desbordamientos en los cálculos del pipeline.
-        """
+        """Asegura la integridad de los datos, forzando rangos positivos y sanitización."""
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
         self.suspicious_count = int(max(0, int(_to_float(self.suspicious_count))))
@@ -207,10 +198,9 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que todos los campos numéricos sean números finitos y válidos."""
-        values = (self.junk_mb, self.suspicious_count, self.suspicious_warnings, 
+        return all(math.isfinite(v) for v in (self.junk_mb, self.suspicious_count, self.suspicious_warnings, 
                   self.memory_available_percent, self.disk_free_percent, self.duplicate_mb, 
-                  self.startup_count, self.quarantined_count)
-        return all(math.isfinite(v) for v in values)
+                  self.startup_count, self.quarantined_count))
 
 @dataclass
 class HealthResult:
@@ -244,12 +234,7 @@ def grade_for_score(score: float | int) -> str:
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta reglas de recomendación para un área, sanitizando los mensajes resultantes."""
-    if not isinstance(metrics, SystemMetrics) or not isinstance(rules, list):
-        return
-
     for rule in rules:
-        if not isinstance(rule, RecommendationRule):
-            continue
         try:
             if rule.check(metrics, ratio):
                 raw_msg = rule.message_factory(metrics)
@@ -261,20 +246,12 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """
-    Ejecuta el Pipeline de salud sobre las métricas y devuelve el resultado unificado.
-    
-    El proceso itera sobre _PIPELINE aplicando cada 'scorer' a las métricas, 
-    calculando el peso proporcional, y recolectando recomendaciones a través 
-    de _evaluate_rules, para finalmente consolidar un puntaje [0-100].
-    """
+    """Ejecuta el Pipeline de salud sobre las métricas y devuelve el resultado unificado."""
     if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
     
-    metrics.validate()
-    
     recommendations: List[str] = []
-    metric_breakdown: Dict[MetricKey, int] = {}
+    metric_breakdown: Dict[MetricKey, int] = {k: 0 for k in WEIGHTS}
     accumulated_score: int = 0
     
     for entry in _PIPELINE:

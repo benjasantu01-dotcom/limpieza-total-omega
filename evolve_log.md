@@ -683,3 +683,13 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-09-26T14:21:02` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando un set de `Path.resolve()` para las rutas ya visitadas, evitando así el procesamiento redundante y las llamadas repetitivas a `stat()` y `is_safe_to_modify` en estructuras de directorios con enlaces complejos o múltiples referencias.
 - `2026-09-26T14:21:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T14:21:02` Corrida terminada. Total usado hoy: 264.
+- `2026-09-26T14:29:32` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-09-26T14:30:01` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle principal de `compute_score` eliminando la llamada a `is_finite` dentro del `validate` y pre-calculando el desglose inicial en un diccionario de comprensión, mejorando la eficiencia al evitar iteraciones redundantes y validaciones anidadas pesadas.
+- `2026-09-26T14:31:02` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-26T14:32:05` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-26T14:33:24` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se ha optimizado la gestión de las colas de logs y los redibujos de la interfaz mediante la centralización de las actualizaciones de estado en el bucle principal, reduciendo la carga de trabajo redundante y el número de llamadas asíncronas innecesarias al hilo principal cuando el estado (UI o datos) no ha cambiado.
+- `2026-09-26T14:33:50` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-09-26T14:34:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-26T14:35:32` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-26T14:35:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T14:35:32` Corrida terminada. Total usado hoy: 268.
