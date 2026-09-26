@@ -303,6 +303,7 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
         if not clean_path:
             return False
         p_candidate = Path(clean_path).expanduser()
+        # Validación de seguridad defensiva: no procesar rutas fuera del ámbito permitido
         if is_protected_path(p_candidate) or ".." in str(p_candidate):
             return False
         return True

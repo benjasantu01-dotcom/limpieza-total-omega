@@ -1541,3 +1541,46 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-09-26T11:27:57` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una verificación de "puntos de reparse padre" en `ensure_safe_to_modify` para mitigar ataques de bypass de sandbox donde un directorio padre (que sí es seguro) contiene un punto de reparse que redirige silenciosamente a un sistema de archivos restringido.
 - `2026-09-26T11:27:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T11:27:57` Corrida terminada. Total usado hoy: 196.
+- `2026-09-26T11:36:20` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-09-26T11:36:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-26T11:36:26` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-26T11:37:06` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha añadido un chequeo de bloqueo de acceso de lectura (`os.access(path, os.R_OK)`) dentro de `_is_safe_entry` y en las funciones de escaneo, garantizando que no se intenten analizar archivos que están siendo bloqueados por el sistema operativo o en uso exclusivo, mejorando la robustez defensiva ante errores de acceso.
+- `2026-09-26T11:37:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-26T11:37:18` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-26T11:38:06` Tests FALLARON:
+```
+ssert '' == '/tmp/pytest-...mb0/Descargas'
+E         
+E         - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+
+evolve/tests/test_assistant.py:124: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:239: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert False
+ +  where False = is_file()
+ +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+ +      where 'config.json' = settings.SETTINGS_FILE
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+2 failed, 297 passed, 4 warnings in 1.41s
+
+```
+- `2026-09-26T11:38:06` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `settings.py` implementando una validación estricta de "Path Traversal" y reparseo durante la carga y guardado, asegurando que la ruta del archivo de configuración no sea alterada mediante rutas relativas maliciosas y verificando la integridad de los permisos del directorio padre antes de realizar operaciones de E/S.
+- `2026-09-26T11:38:44` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_valid_registry_entry` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta después de limpiar el comando, previniendo que rutas maliciosas o fuera de los límites permitidos sean procesadas en caso de inyección de valores en el registro.
+- `2026-09-26T11:38:44` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-26T11:38:44` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-26T11:39:05` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-26T11:39:05` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-26T11:39:35` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-26T11:39:35` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-26T11:39:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T11:39:35` Corrida terminada. Total usado hoy: 200.

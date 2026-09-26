@@ -192,6 +192,8 @@ class Scanner:
             return False
         if not self._is_inside_base_root(entry.path.lower()):
             return False
+        if not os.access(entry.path, os.R_OK):
+            return False
         
         try:
             path_obj = Path(entry.path)
@@ -254,6 +256,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """Escanea un archivo puntual contra todas las heurísticas definidas."""
     if not isinstance(path, Path): return []
     try:
+        if not os.access(path, os.R_OK): return []
         if is_protected_path(path.resolve()): return []
         if not path.is_file(): return []
     except (OSError, PermissionError): return []
@@ -280,6 +283,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         base_path = Path(path_str).resolve()
         if not base_path.exists() or not base_path.is_dir() or base_path.is_symlink():
             return []
+        if not os.access(base_path, os.R_OK): return []
         if is_protected_path(base_path): return []
     except (OSError, RuntimeError): 
         return []
