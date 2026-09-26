@@ -278,12 +278,12 @@ def _get_process_path(pid: int) -> Optional[Path]:
     """Resuelve la ruta absoluta del ejecutable de un proceso mediante Win32 API."""
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
-    if not handle: return None
+    if not handle or handle == 0: return None
     try:
         psapi = ctypes.windll.psapi
         buf = ctypes.create_unicode_buffer(1024)
         length = psapi.GetModuleFileNameExW(handle, None, buf, 1024)
-        if length > 0 and length < 1024:
+        if 0 < length < 1024:
             p = Path(buf.value).resolve(strict=False)
             if p.is_file() and p.is_absolute() and not is_protected_path(str(p)):
                 return p
@@ -320,7 +320,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not proc_handle or proc_handle == 0: 
         if ctypes.GetLastError() == ERROR_ACCESS_DENIED:
             return False, "Acceso denegado: requiere privilegios elevados."
-        return False, "No se pudo abrir el proceso para modificación."
+        return False, "No se pudo abrir el proceso (¿el proceso ya cerró?)."
     
     try:
         if not psapi.EmptyWorkingSet(proc_handle):

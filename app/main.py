@@ -1348,7 +1348,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             update_label("")
         else:
             # Validación robusta de la ruta seleccionada usando lógica de seguridad asíncrona
-            if self._verify_disk_path(choice):
+            if self._is_safe_disk_operation(choice):
                 self.scan_target = choice
                 update_label(f"Unidad: {choice}")
             else:

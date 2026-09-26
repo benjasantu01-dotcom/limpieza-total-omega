@@ -130,7 +130,8 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
     try:
         p: Path = Path(path).resolve(strict=True)
         if _safe_path_check(p) and p.is_file() and not _is_file_locked(p):
-            return p
+            if p.stat().st_size > 0:
+                return p
     except (OSError, RuntimeError, ValueError):
         pass
     return None
@@ -282,7 +283,7 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
     """
     Ejecuta el pipeline de hashing jerárquico para confirmar duplicados.
     """
-    if not paths or size < 0:
+    if not paths or size <= 0:
         return []
 
     if size <= PARTIAL_READ_BYTES:

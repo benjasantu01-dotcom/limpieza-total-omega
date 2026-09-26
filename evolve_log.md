@@ -1075,3 +1075,11 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-09-26T02:50:09` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia ante errores de permisos durante el escaneo en `walk_files` y `_collect_summary_data`, evitando que una excepción inesperada durante la iteración silencie el reporte o aborte prematuramente el proceso completo.
 - `2026-09-26T02:50:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T02:50:09` Corrida terminada. Total usado hoy: 68.
+- `2026-09-26T02:58:16` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-09-26T02:58:47` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se añadió una validación explícita para archivos de tamaño cero en el pipeline de hashing, previniendo errores de lectura y comportamiento indefinido en sistemas de archivos donde `stat().st_size` puede ser reportado pero el archivo no es procesable.
+- `2026-09-26T02:59:15` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-09-26T03:00:15` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-26T03:01:34` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `on_target_choice_changed` añadiendo una validación explícita mediante `is_safe_disk_operation` para prevenir que rutas arbitrarias o puntos de reparse (que podrían llevar a bucles infinitos o ataques de path traversal) sean seleccionados como objetivo de escaneo.
+- `2026-09-26T03:01:47` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_get_process_path` y `trim_working_set` ante procesos que finalizan abruptamente durante la consulta, asegurando que `OpenProcess` maneje correctamente los errores de sistema sin colapsar y verificando que el PID exista antes de intentar abrirlo.
+- `2026-09-26T03:01:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T03:01:47` Corrida terminada. Total usado hoy: 72.
