@@ -1460,3 +1460,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-26T10:57:40` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
 - `2026-09-26T10:57:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T10:57:40` Corrida terminada. Total usado hoy: 184.
+- `2026-09-26T11:05:48` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-09-26T11:06:31` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: seguridad defensiva).
+- `2026-09-26T11:07:05` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-26T11:07:31` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_get_entry_size` y `_sum_directory_recursive` mediante el uso de `is_safe_to_modify` antes de acceder a la información de archivos o subdirectorios, asegurando que el escáner no intente interactuar con rutas fuera del alcance permitido del usuario incluso si el sistema de archivos reporta estructuras inusuales.
+- `2026-09-26T11:07:44` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_collect_summary_data` y `walk_files` implementando una validación explícita mediante `is_protected_path` para cada archivo procesado antes de realizar cualquier operación de recolección de métricas, garantizando que el escáner no acceda a contenido prohibido por política de seguridad incluso en estados intermedios del recorrido.
+- `2026-09-26T11:07:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T11:07:44` Corrida terminada. Total usado hoy: 188.

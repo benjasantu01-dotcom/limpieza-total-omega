@@ -198,8 +198,11 @@ def _should_skip_entry(
 
 
 def _get_entry_size(entry: os.DirEntry) -> int:
-    """Obtiene el tamaño de un archivo sin seguir enlaces simbólicos."""
+    """Obtiene el tamaño de un archivo sin seguir enlaces simbólicos y validando seguridad."""
     try:
+        p = Path(entry.path)
+        if not is_safe_to_modify(p) or is_protected_path(p):
+            return 0
         return int(entry.stat(follow_symlinks=False).st_size)
     except (OSError, PermissionError):
         return 0
@@ -220,19 +223,15 @@ def _sum_directory_recursive(
         return 0
 
     try:
-        root_stat = os.stat(root_abs)
-        if root_stat.st_ino in memo:
-            return 0
-        memo[root_stat.st_ino] = root_stat.st_size
-    except (OSError, PermissionError):
-        return 0
-
-    # Validar integridad y seguridad antes de procesar
-    try:
         p = Path(root_abs).resolve(strict=True)
         if not is_safe_to_modify(p) or is_protected_path(p):
             return 0
-    except (OSError, RuntimeError, ValueError):
+            
+        root_stat = p.stat()
+        if root_stat.st_ino in memo:
+            return 0
+        memo[root_stat.st_ino] = root_stat.st_size
+    except (OSError, PermissionError, RuntimeError):
         return 0
 
     total_bytes: int = 0
