@@ -68,7 +68,7 @@ class SummaryData(NamedTuple):
 
 
 def _bytes_to_mb(size_bytes: int | float | None) -> float:
-    """Convierta bytes a Megabytes con precisión de dos decimales, validando entradas inválidas."""
+    """Convierte bytes a Megabytes con precisión de dos decimales, validando entradas inválidas."""
     if not isinstance(size_bytes, (int, float)) or size_bytes < 0:
         return 0.0
     return round(float(size_bytes) / MB_SIZE, 2)
@@ -84,7 +84,9 @@ def _validate_limit(limit: Any) -> int:
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
     Resuelve una ruta a un objeto Path absoluto, verificando existencia y permisos.
-    Retorna None si la ruta está protegida, es inaccesible o no es un directorio.
+    
+    Retorna:
+        Path absoluto si la ruta es válida y accesible, None en caso contrario o si está protegida.
     """
     if directory is None:
         return None
@@ -106,10 +108,8 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """
     Evalúa mediante heurística de seguridad si una entrada de sistema debe omitirse.
     
-    El filtrado ocurre en tres niveles:
-    1. Ofuscación de nombres (caracteres RTL/especiales).
-    2. Integridad de estructura (enlaces simbólicos y escapes de directorio).
-    3. Política de seguridad global (is_protected_path).
+    Retorna True si el archivo/carpeta debe ser ignorado por razones de seguridad
+    (ofuscación, enlaces externos, o rutas protegidas).
     """
     try:
         # 1. Detección de ofuscación
@@ -334,6 +334,10 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Motor interno de escaneo: realiza un único recorrido recolectando estadísticas
     totales, métricas por extensión y el top N de archivos usando un min-heap.
+    
+    Retorna:
+        Un objeto SummaryData con los resultados agregados. Si ocurre un fallo en
+        el recorrido, retorna los datos parciales recopilados hasta ese punto.
     """
     total_bytes: int = 0
     total_files: int = 0

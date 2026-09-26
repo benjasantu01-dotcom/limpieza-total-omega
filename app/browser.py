@@ -206,9 +206,11 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Algoritmo recursivo para calcular tamaño total. 
-    Aplica chequeos de seguridad (is_safe_to_modify) en cada rama para evitar
-    accesos indebidos o recursión infinita en junctions.
+    Calcula el tamaño total de forma recursiva con validación estricta.
+    
+    La recursión se limita por MAX_SCAN_DEPTH para evitar ataques de recursión profunda
+    y utiliza 'memo' para evitar reprocesar directorios en sistemas con muchos symlinks
+    o enlaces cruzados. Cada nivel verifica permisos mediante `is_safe_to_modify`.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
@@ -280,7 +282,8 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str, is_junction_fn: Jun
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """
     Combina la base (LOCALAPPDATA) con la ruta conocida del navegador.
-    Realiza saneamiento de ruta para asegurar que no se escape de la carpeta base.
+    Realiza saneamiento de ruta para asegurar que no se escape de la carpeta base
+    mediante una comparación estricta de rutas resueltas.
     """
     if not isinstance(real_base, Path) or not isinstance(rel_str, str):
         return Path()
@@ -291,7 +294,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
         if not _is_path_inside_base(str(target), str(real_base)):
             return Path()
         
-        # Validar seguridad antes de retornar
+        # Validar seguridad antes de retornar: target debe existir y ser seguro para su lectura
         if not target.exists() or not is_safe_to_modify(target) or is_protected_path(target):
             return Path()
             
