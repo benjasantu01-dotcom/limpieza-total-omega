@@ -372,31 +372,31 @@ class SystemContext:
         """
         Ingesta datos de una fuente externa y los normaliza en el contexto.
         
-        Recorre las claves definidas en `_VALIDATORS`, validando rangos y tipos
-        de cada métrica. Solo marca como `analyzed` si la estructura resultante
-        pasa los chequeos de integridad física.
+        Realiza una copia temporal o validación atómica para asegurar que 
+        solo se actualice el estado si el conjunto de métricas es íntegro.
         """
         if not (isinstance(source, dict) or hasattr(source, "__dict__")):
             return False
         if _is_input_too_deep_or_complex(source):
             return False
-            
+        
+        temp_ctx = SystemContext()
         found_data = False
         for key, spec in _VALIDATORS.items():
-            if self._apply_field(source, key, spec):
+            if temp_ctx._apply_field(source, key, spec):
                 found_data = True
         
-        try:
-            grade_val = _get_source_value(source, "grade")
-            if isinstance(grade_val, str):
-                clean_grade = self._clean_grade(grade_val)
-                if clean_grade:
-                    object.__setattr__(self, 'grade', clean_grade)
-                    found_data = True
-        except Exception:
-            pass
+        grade_val = _get_source_value(source, "grade")
+        if isinstance(grade_val, str):
+            clean_grade = temp_ctx._clean_grade(grade_val)
+            if clean_grade:
+                object.__setattr__(temp_ctx, 'grade', clean_grade)
+                found_data = True
         
-        if found_data and _validate_context_integrity(self):
+        if found_data and _validate_context_integrity(temp_ctx):
+            for field_name in _VALIDATORS.keys():
+                object.__setattr__(self, field_name, getattr(temp_ctx, field_name))
+            object.__setattr__(self, 'grade', temp_ctx.grade)
             object.__setattr__(self, 'analyzed', True)
             return True
         return False
@@ -459,7 +459,10 @@ def _get_source_value(source: Any, key: str) -> Any:
         if isinstance(source, dict):
             val = source.get(key)
         else:
-            val = getattr(source, key, None)
+            if hasattr(source, key):
+                val = getattr(source, key)
+            else:
+                return None
         
         if callable(val) or (isinstance(key, str) and (key.startswith("__") or key.startswith("_"))):
             return None
