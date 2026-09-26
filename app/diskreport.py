@@ -239,6 +239,9 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre el árbol de directorios de forma segura.
+    
+    Yields:
+        Tuple[Path, int]: Ruta del archivo y su tamaño en bytes.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -354,7 +357,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             
             # Clasificación por extensión
             ext = path.suffix.lower() or "(sin extensión)"
-            stats_obj = ext_stats[ext]
+            stats_obj: ExtStats = ext_stats[ext]
             stats_obj.total_bytes += size_bytes
             stats_obj.count += 1
             
