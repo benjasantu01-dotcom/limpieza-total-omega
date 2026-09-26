@@ -117,7 +117,8 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             return True
             
         # 2. Detección de enlaces y escapes de ruta
-        if entry.is_symlink():
+        # Se verifica explícitamente reparse points/junctions para seguridad defensiva
+        if entry.is_symlink() or (os.name == 'nt' and entry.is_dir() and entry.stat().st_file_attributes & 0x400):
             return True
         
         entry_path = Path(entry.path).resolve()

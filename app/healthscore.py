@@ -252,6 +252,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Ejecuta el Pipeline de salud sobre las métricas y devuelve el resultado unificado."""
+    # Validación defensiva de entrada: si el objeto no es íntegro, abortar operación.
     if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
     

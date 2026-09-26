@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 239
+- Sin respuesta de la IA (error o límite): 236
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 76 | 5 | 15 | 5 | 111 |
-| 2026-09-26 | 121 | 11 | 22 | 10 | 128 |
+| 2026-09-25 | 76 | 5 | 15 | 5 | 107 |
+| 2026-09-26 | 124 | 11 | 22 | 10 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,19 +25,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **43**
 - rendimiento: **35**
-- seguridad defensiva: **28**
+- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
+- `healthscore.py`: **18**
 - `settings.py`: **18**
 - `assistant.py`: **17**
-- `healthscore.py`: **17**
 - `safety.py`: **17**
 - `scanner.py`: **17**
 - `quarantine.py`: **15**
 - `memory.py`: **14**
-- `duplicates.py`: **13**
+- `duplicates.py`: **14**
 - `organizer.py`: **12**
 - `browser.py`: **12**
 - `branding.py`: **9**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T15:43:51` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de cómputo introduciendo un chequeo explícito en `compute_score` para asegurar que el conjunto de métricas sea válido mediante `metrics.is_finite` antes de procesar, y encapsulando el cálculo del `area_ratio` dentro de un bloque `try-except` más estricto, protegiendo al sistema de posibles desbordamientos o excepciones inesperadas durante la evaluación de métricas malformadas.
+- `2026-09-26T15:43:23` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` aplicando `is_safe_to_modify` directamente sobre cada ruta antes de cualquier operación, asegurando que no se sigan enlaces simbólicos o rutas prohibidas durante la recursión, alineado con las reglas de seguridad.
+- `2026-09-26T15:42:33` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_excluded_path` añadiendo una comprobación explícita para evitar el seguimiento de reparse points (puntos de reanálisis) a nivel de sistema, incrementando la seguridad defensiva al evitar que el escáner se introduzca en bucles o jerarquías de montaje inesperadas.
 - `2026-09-26T15:22:30` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save` contra condiciones de carrera y fallos parciales al realizar una validación de seguridad post-escritura más estricta antes de reemplazar el archivo original, evitando el uso de archivos potencialmente corruptos o con permisos incorrectos como "versión actual".
 - `2026-09-26T15:22:12` **scanner.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar que `_is_safe_entry` y los procesos de escaneo procesen archivos bloqueados o archivos de sistema que podrían causar excepciones `OSError` o bloqueos por acceso denegado (como archivos de paginación o archivos de sistema en uso), utilizando un manejo de errores robusto que asegura la continuidad del bucle ante fallos de acceso a metadatos.
 - `2026-09-26T15:21:42` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite mediante la implementación de `_is_path_too_long` como medida preventiva proactiva, asegurando que las operaciones de sistema bajo Windows (específicamente la API `GetFileAttributesW`) no fallen silenciosamente o por excepciones de desbordamiento al manejar rutas que excedan el límite de `MAX_PATH_LENGTH` antes de llegar a la lógica principal.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T14:40:28` **quarantine.py** (rendimiento): Optimicé el método `list_items` convirtiendo la lectura secuencial de los archivos en disco en una operación de conjunto O(1), evitando el re-procesamiento redundante del manifiesto y las llamadas innecesarias a `stat()` en archivos que no corresponden a ningún ítem.
 - `2026-09-26T14:30:01` **healthscore.py** (rendimiento): Optimicé el bucle principal de `compute_score` eliminando la llamada a `is_finite` dentro del `validate` y pre-calculando el desglose inicial en un diccionario de comprensión, mejorando la eficiencia al evitar iteraciones redundantes y validaciones anidadas pesadas.
 - `2026-09-26T14:21:02` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando un set de `Path.resolve()` para las rutas ya visitadas, evitando así el procesamiento redundante y las llamadas repetitivas a `stat()` y `is_safe_to_modify` en estructuras de directorios con enlaces complejos o múltiples referencias.
-- `2026-09-26T14:20:51` **diskreport.py** (rendimiento): Optimicé el motor `_collect_summary_data` para evitar re-validaciones redundantes de `is_protected_path` y `is_relative_to` (ya garantizadas por `walk_files`), reduciendo drásticamente las llamadas al sistema en cada iteración del bucle principal.
-- `2026-09-26T14:20:23` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de un diccionario de memoización compartido (`memo`) para evitar procesar múltiples veces el mismo inodo y reducir significativamente las llamadas al sistema en estructuras de directorios complejas.
-- `2026-09-26T14:10:59` **assistant.py** (rendimiento): Optimicé el cálculo de `active_problems` en `SystemContext` usando un `cached_property` y convertí las evaluaciones de criterios en una operación de filtrado eficiente para evitar recorridos repetitivos del tuple de criterios durante consultas frecuentes.

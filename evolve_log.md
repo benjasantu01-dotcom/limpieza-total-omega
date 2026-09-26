@@ -764,3 +764,14 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-26T15:32:53` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
 - `2026-09-26T15:32:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T15:32:53` Corrida terminada. Total usado hoy: 292.
+- `2026-09-26T15:40:59` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-09-26T15:42:02` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-26T15:42:33` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_excluded_path` añadiendo una comprobación explícita para evitar el seguimiento de reparse points (puntos de reanálisis) a nivel de sistema, incrementando la seguridad defensiva al evitar que el escáner se introduzca en bucles o jerarquías de montaje inesperadas.
+- `2026-09-26T15:43:23` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` aplicando `is_safe_to_modify` directamente sobre cada ruta antes de cualquier operación, asegurando que no se sigan enlaces simbólicos o rutas prohibidas durante la recursión, alineado con las reglas de seguridad.
+- `2026-09-26T15:43:51` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez del motor de cómputo introduciendo un chequeo explícito en `compute_score` para asegurar que el conjunto de métricas sea válido mediante `metrics.is_finite` antes de procesar, y encapsulando el cálculo del `area_ratio` dentro de un bloque `try-except` más estricto, protegiendo al sistema de posibles desbordamientos o excepciones inesperadas durante la evaluación de métricas malformadas.
+- `2026-09-26T15:44:51` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-26T15:45:54` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-26T15:47:00` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-26T15:48:13` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-26T15:48:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T15:48:13` Corrida terminada. Total usado hoy: 296.
