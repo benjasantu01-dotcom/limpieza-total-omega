@@ -1432,3 +1432,11 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-09-26T10:39:23` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-26T10:39:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T10:39:23` Corrida terminada. Total usado hoy: 176.
+- `2026-09-26T10:45:27` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-09-26T10:46:00` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-26T10:46:35` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_file_locked` para manejar correctamente archivos que no existen, archivos con tamaño cero (que no pueden ser leídos con `read(1)`) y archivos con permisos restringidos, evitando falsos positivos en el escaneo de basura.
+- `2026-09-26T10:46:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-26T10:47:29` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_file_locked` para que maneje correctamente errores de acceso en sistemas Windows, evitando bloqueos innecesarios cuando el archivo no está realmente en uso, y añadí una validación de `os.fsync` en el `save_manifest` para garantizar la integridad ante fallos de escritura en disco.
+- `2026-09-26T10:47:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-26T10:47:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T10:47:33` Corrida terminada. Total usado hoy: 180.

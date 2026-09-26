@@ -123,9 +123,11 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """Intenta validar acceso exclusivo mediante lectura. Retorna True si está bloqueado."""
+    if not path.is_file():
+        return True
     try:
-        if not path.exists(): return True
-        if path.stat().st_size == 0: return False
+        if path.stat().st_size == 0:
+            return False
         with open(path, 'rb') as f:
             f.read(1)
         return False

@@ -198,17 +198,25 @@ def _get_sha256(path: Path) -> str:
 def _is_file_locked(path: Path) -> bool:
     """
     Determina si un archivo está siendo bloqueado por otro proceso.
-    Utiliza un intento de apertura exclusivo para verificar disponibilidad.
     """
     if not path.exists():
         return True
     try:
-        # Intenta abrir con acceso compartido para lectura/escritura (o solo lectura)
-        # En sistemas POSIX esto suele ser siempre posible, en Windows falla si otro proceso tiene el lock
-        fd = os.open(path, os.O_RDWR) if os.access(path, os.W_OK) else os.open(path, os.O_RDONLY)
-        os.close(fd)
+        # En Windows, abrir en modo lectura exclusiva falla si otro proceso tiene el lock.
+        # En sistemas POSIX, os.open con flags estándar rara vez bloquea el archivo.
+        if os.name == 'nt':
+            import msvcrt
+            fd = os.open(path, os.O_RDONLY | os.O_BINARY)
+            msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+            msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+            os.close(fd)
+        else:
+            with open(path, 'rb') as f:
+                fcntl = __import__('fcntl')
+                fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                fcntl.flock(f, fcntl.LOCK_UN)
         return False
-    except (OSError, IOError):
+    except (OSError, IOError, ImportError, AttributeError):
         return True
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
@@ -468,6 +476,12 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             
         if temp_path and temp_path.exists() and temp_path.stat().st_size == len(encoded_content):
             os.replace(temp_path, target_path)
+            # Asegurar persistencia del directorio que contiene el archivo
+            try:
+                dir_fd = os.open(str(base_path), os.O_RDONLY)
+                os.fsync(dir_fd)
+                os.close(dir_fd)
+            except OSError: pass
         else:
             raise OSError("Integridad del archivo temporal fallida.")
         
