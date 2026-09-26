@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 36
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 246
+- Sin respuesta de la IA (error o límite): 247
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 64 | 4 | 13 | 3 | 84 |
-| 2026-09-26 | 130 | 11 | 23 | 10 | 162 |
+| 2026-09-25 | 61 | 4 | 12 | 3 | 84 |
+| 2026-09-26 | 133 | 11 | 23 | 10 | 163 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
 - robustez ante casos límite: **43**
+- legibilidad y documentación: **41**
+- manejo de errores y validación de entradas: **39**
 - seguridad defensiva: **36**
-- manejo de errores y validación de entradas: **36**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
 - `settings.py`: **19**
-- `safety.py`: **17**
 - `scanner.py`: **17**
 - `assistant.py`: **17**
-- `quarantine.py`: **16**
 - `healthscore.py`: **16**
-- `duplicates.py`: **14**
+- `safety.py`: **16**
+- `quarantine.py`: **15**
+- `duplicates.py`: **15**
 - `memory.py`: **13**
-- `organizer.py`: **11**
-- `browser.py`: **11**
+- `browser.py`: **12**
+- `organizer.py`: **10**
 - `startup.py`: **9**
 - `branding.py`: **7**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T17:34:40` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos, encapsulando la lógica de apertura en un bloque `try-except` más preciso y validando explícitamente el estado del descriptor de archivo para evitar fugas de recursos y excepciones no controladas.
+- `2026-09-26T17:34:09` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_bytes_to_mb` y `_validate_limit` añadiendo validaciones estrictas y manejo de excepciones que aseguren que los cálculos no se vean afectados por entradas de datos inesperadas, manteniendo la integridad del reporte.
+- `2026-09-26T17:33:40` **browser.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `_sum_directory_recursive` y `detect_profiles` para prevenir excepciones durante el acceso a archivos del sistema mediante la validación explícita de `OSError` y `PermissionError`, asegurando que el proceso de escaneo no se interrumpa ante rutas inaccesibles.
 - `2026-09-26T17:25:52` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` para prevenir excepciones al acceder a atributos maliciosos o inesperados, y refiné `ingest` para asegurar que el procesamiento de datos externos sea atómico y no contamine el `SystemContext` ante entradas parcialmente inválidas.
 - `2026-09-26T16:03:17` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `_load_impl` al añadir una validación de propiedad del archivo (`os.stat().st_uid`) para asegurar que el archivo de configuración sea propiedad del usuario actual, previniendo riesgos de manipulación externa en entornos multiusuario.
 - `2026-09-26T16:02:45` **scanner.py** (seguridad defensiva): Se ha mejorado `_is_safe_entry` en `Scanner` para garantizar que la ruta absoluta de la entrada sea la que se utiliza al validar contra `is_protected_path`, evitando inconsistencias por rutas relativas o cambios en el contexto durante el recorrido recursivo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T15:22:30` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save` contra condiciones de carrera y fallos parciales al realizar una validación de seguridad post-escritura más estricta antes de reemplazar el archivo original, evitando el uso de archivos potencialmente corruptos o con permisos incorrectos como "versión actual".
 - `2026-09-26T15:22:12` **scanner.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar que `_is_safe_entry` y los procesos de escaneo procesen archivos bloqueados o archivos de sistema que podrían causar excepciones `OSError` o bloqueos por acceso denegado (como archivos de paginación o archivos de sistema en uso), utilizando un manejo de errores robusto que asegura la continuidad del bucle ante fallos de acceso a metadatos.
 - `2026-09-26T15:21:42` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite mediante la implementación de `_is_path_too_long` como medida preventiva proactiva, asegurando que las operaciones de sistema bajo Windows (específicamente la API `GetFileAttributesW`) no fallen silenciosamente o por excepciones de desbordamiento al manejar rutas que excedan el límite de `MAX_PATH_LENGTH` antes de llegar a la lógica principal.
-- `2026-09-26T15:16:20` **quarantine.py** (robustez ante casos límite): Se ha robustecido el proceso de purga y carga del manifiesto ante casos límite (archivos huérfanos en disco, entradas corruptas en el JSON) añadiendo una validación de existencia física y hash antes de procesar, garantizando que el estado del manifiesto y del sistema de archivos siempre coincidan.
-- `2026-09-26T15:05:24` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics.validate()` eliminando la invocación recursiva innecesaria y añadiendo un chequeo de tipo más explícito para evitar `TypeError` en escenarios donde las entradas podrían ser `None` o contenedores inesperados antes de procesarlas.
-- `2026-09-26T15:01:09` **diskreport.py** (robustez ante casos límite): Se ha robustecido el escaneo en `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles añadiendo un control explícito de `stat` con manejo de excepciones dentro del bucle, asegurando que la recolección de datos no se interrumpa silenciosamente ni falle ante permisos denegados sobre archivos individuales.

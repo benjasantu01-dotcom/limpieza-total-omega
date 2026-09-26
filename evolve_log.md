@@ -996,3 +996,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-26T17:26:11` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-26T17:26:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T17:26:12` Corrida terminada. Total usado hoy: 336.
+- `2026-09-26T17:33:12` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-26T17:33:40` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de errores en `_sum_directory_recursive` y `detect_profiles` para prevenir excepciones durante el acceso a archivos del sistema mediante la validación explícita de `OSError` y `PermissionError`, asegurando que el proceso de escaneo no se interrumpa ante rutas inaccesibles.
+- `2026-09-26T17:34:09` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_bytes_to_mb` y `_validate_limit` añadiendo validaciones estrictas y manejo de excepciones que aseguren que los cálculos no se vean afectados por entradas de datos inesperadas, manteniendo la integridad del reporte.
+- `2026-09-26T17:34:40` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos, encapsulando la lógica de apertura en un bloque `try-except` más preciso y validando explícitamente el estado del descriptor de archivo para evitar fugas de recursos y excepciones no controladas.
+- `2026-09-26T17:35:07` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-26T17:35:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T17:35:07` Corrida terminada. Total usado hoy: 340.

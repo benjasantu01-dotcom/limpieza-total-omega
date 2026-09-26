@@ -69,15 +69,21 @@ class SummaryData(NamedTuple):
 
 def _bytes_to_mb(size_bytes: int | float | None) -> float:
     """Convierte bytes a Megabytes con precisión de dos decimales, validando entradas inválidas."""
-    if not isinstance(size_bytes, (int, float)) or size_bytes < 0:
+    try:
+        if size_bytes is None or not isinstance(size_bytes, (int, float)) or size_bytes < 0:
+            return 0.0
+        return round(float(size_bytes) / MB_SIZE, 2)
+    except (ValueError, TypeError, ZeroDivisionError):
         return 0.0
-    return round(float(size_bytes) / MB_SIZE, 2)
 
 
 def _validate_limit(limit: Any) -> int:
     """Normaliza un límite de resultados a un entero no negativo, ignorando tipos inválidos."""
-    if isinstance(limit, int) and not isinstance(limit, bool):
-        return max(0, limit)
+    try:
+        if isinstance(limit, int) and not isinstance(limit, bool):
+            return max(0, limit)
+    except (ValueError, TypeError):
+        pass
     return 0
 
 

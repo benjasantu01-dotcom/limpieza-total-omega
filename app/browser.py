@@ -314,13 +314,16 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         try:
             real_base = base.resolve(strict=True)
             for browser_name, rel_str in browser_map.items():
-                candidate = _resolve_browser_path(real_base, rel_str)
-                if not candidate or not _is_valid_cache_path(candidate, str(real_base), _IS_JUNCTION_FN):
+                try:
+                    candidate = _resolve_browser_path(real_base, rel_str)
+                    if not candidate or not _is_valid_cache_path(candidate, str(real_base), _IS_JUNCTION_FN):
+                        continue
+                    
+                    size = _sum_directory_recursive(str(candidate), _IS_JUNCTION_FN, k32, global_memo)
+                    if size > 0:
+                        found.append(BrowserCache(str(browser_name), candidate, size))
+                except (OSError, RuntimeError, PermissionError):
                     continue
-                
-                size = _sum_directory_recursive(str(candidate), _IS_JUNCTION_FN, k32, global_memo)
-                if size > 0:
-                    found.append(BrowserCache(str(browser_name), candidate, size))
         except (OSError, RuntimeError):
             continue
                 
