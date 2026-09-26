@@ -1343,3 +1343,10 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-09-26T08:48:21` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-26T08:48:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-26T08:48:21` Corrida terminada. Total usado hoy: 132.
+- `2026-09-26T08:52:49` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-09-26T08:53:16` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_file_locked` para evitar falsos negativos en archivos de tamaño cero y se ha refinado `_is_safe_for_disk_op` para validar explícitamente el origen antes de realizar comprobaciones de acceso, previniendo excepciones innecesarias en archivos inaccesibles.
+- `2026-09-26T08:54:07` ➖ Sin cambios en quarantine.py (enfoque: manejo de errores y validación de entradas). Motivo: Se introdujo una validación explícita para el parámetro `item_id` en las funciones `purge_item` y `restore_item` para evitar el procesamiento de cadenas vacías, espacios o tipos incorrectos antes de operar sobre el sistema de archivos, siguiendo el enfoque de validación temprana.
+- `2026-09-26T08:54:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-09-26T08:54:51` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación robusta de nulos y tipos en `_get_file_attrs` y `_is_volume_readonly` para prevenir excepciones de sistema inesperadas que podrían abortar procesos críticos del bucle de seguridad.
+- `2026-09-26T08:54:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-26T08:54:51` Corrida terminada. Total usado hoy: 136.

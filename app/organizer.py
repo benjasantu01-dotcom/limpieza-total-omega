@@ -122,9 +122,9 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
-    """Intenta validar acceso exclusivo mediante lectura. Retorna True si está bloqueado o inaccesible."""
-    if not os.access(path, os.R_OK): return True
+    """Intenta validar acceso exclusivo mediante lectura. Retorna True si está bloqueado."""
     try:
+        if not path.exists(): return True
         if path.stat().st_size == 0: return False
         with open(path, 'rb') as f:
             f.read(1)
@@ -164,11 +164,11 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if not src.exists() or not src.is_file() or not is_safe_to_modify(src): return False
         if not _validate_path_security(src, dest): return False
         target_dir = dest.parent if dest.exists() else dest
-        if not target_dir.exists() or not target_dir.is_dir(): return False
+        if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
         if is_protected_path(target_dir) or _is_unc_path(target_dir): return False
         if src.drive != target_dir.drive: return False
         if _is_recursive_violation(src, dest): return False
-        if not os.access(target_dir, os.W_OK) or not os.access(src, os.R_OK): return False
+        if not os.access(src, os.R_OK): return False
         stats = src.stat()
         if not (0 <= stats.st_size < 100_000_000_000): return False
         return not _is_file_locked(src)

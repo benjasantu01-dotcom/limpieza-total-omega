@@ -84,7 +84,7 @@ def _to_long_path(path_str: str) -> str:
     return path_str
 
 @lru_cache(maxsize=1024)
-def _get_file_attrs(path_str: str) -> int:
+def _get_file_attrs(path_str: Optional[str]) -> int:
     """
     Obtiene atributos de archivo Win32 mediante syscall GetFileAttributesW.
     Retorna 0 en caso de error o ruta inexistente para ser conservadores.
@@ -283,7 +283,7 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
     return False
 
 @lru_cache(maxsize=128)
-def _is_volume_readonly(path_str: str) -> bool:
+def _is_volume_readonly(path_str: Optional[str]) -> bool:
     """Consulta GetVolumeInformationW para verificar si el volumen completo es de solo lectura."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     try:
