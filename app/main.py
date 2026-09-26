@@ -1560,28 +1560,28 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @validated_ui_operation
     @ensure_safety
     def on_restore_quarantine(self) -> None:
-        """Restaura un archivo desde la cuarentena."""
+        """Restaura un archivo desde la cuarentena con validación estricta."""
         raw_id = self._safe_get_entry_value(getattr(self, 'quarantine_id', None), "")
         if not raw_id:
             messagebox.showinfo("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
             return
         
-        # Sanitizar ID para evitar inyecciones o rutas arbitrarias
+        # Validación: ID solo alfanumérico + guiones (evita inyecciones)
         clean_id = "".join(c for c in raw_id if c.isalnum() or c == "-")
         if not quarantine.item_exists(clean_id):
-            self.log(f"Error: El ID '{clean_id}' no existe en cuarentena.", "Cuarentena")
+            self.log(f"Error: El ID '{clean_id}' no existe o es inválido.", "Cuarentena")
             return
 
         def task() -> None:
             try:
                 item = quarantine.get_item(clean_id)
                 if not item or not hasattr(item, 'original_path'):
-                    self._safe_run_ui_callback(lambda: self.log("Error: Manifiesto de cuarentena corrupto o inaccesible.", "Cuarentena"))
+                    self._safe_run_ui_callback(lambda: self.log("Error: Manifiesto de cuarentena corrupto.", "Cuarentena"))
                     return
                 
-                # Validar ruta destino
+                # Validación de seguridad: no restaurar en rutas protegidas
                 if not self._is_safe_path(item.original_path):
-                    self._safe_run_ui_callback(lambda: self.log("Error: La ruta original del archivo no es segura para restauración.", "Cuarentena"))
+                    self._safe_run_ui_callback(lambda: self.log("Error: La ruta destino no es segura.", "Cuarentena"))
                     return
                 
                 destino = quarantine.restore_item(clean_id)

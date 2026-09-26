@@ -190,7 +190,6 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         if not line: continue
         parts = line.split(",", 2)
         if len(parts) == 3:
-            # Validar que los campos críticos contengan dígitos antes de convertir
             pid_raw, ws_raw = parts[1], parts[2]
             if not (any(c.isdigit() for c in pid_raw) and any(c.isdigit() for c in ws_raw)):
                 continue
@@ -280,43 +279,38 @@ def _is_system_process(pid: int) -> bool:
 def _get_process_path(pid: int) -> Optional[Path]:
     """
     Resuelve la ruta absoluta del ejecutable de un proceso mediante GetModuleFileNameExW.
-    Utiliza SAFE_VALIDATION_MASK para abrir el handle sin permisos intrusivos y valida
-    contra protecciones de sistema.
+    Valida el handle y garantiza el cierre seguro del recurso.
     """
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
-    if not handle or handle == 0: return None
+    if not handle: return None
     try:
         psapi = ctypes.windll.psapi
         buf = ctypes.create_unicode_buffer(1024)
-        length = psapi.GetModuleFileNameExW(handle, None, buf, 1024)
-        if 0 < length < 1024:
+        if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             p = Path(buf.value).resolve(strict=False)
             if p.is_file() and p.is_absolute() and not is_protected_path(str(p)) and not p.is_symlink():
                 return p
-    except (ctypes.ArgumentError, OSError, ValueError, TypeError): 
+    except (ctypes.ArgumentError, OSError, ValueError, TypeError):
         pass
-    finally: kernel32.CloseHandle(handle)
+    finally:
+        kernel32.CloseHandle(handle)
     return None
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
-    """
-    Valida si el proceso es candidato seguro para una operación de 'trim'.
-    Realiza chequeos contra la lista de rutas protegidas global del sistema.
-    """
+    """Valida si el proceso es candidato seguro mediante ruta."""
     exec_path = _get_process_path(pid)
     if not exec_path or not is_safe_to_modify(str(exec_path)):
         return False, "Acceso no autorizado o ruta protegida."
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Libera el conjunto de trabajo (Working Set) de un proceso mediante EmptyWorkingSet.
-    Requiere permisos administrativos o de sistema para realizar esta acción.
-    """
+    """Libera el working set de un proceso validando permisos y estado de ejecución."""
     if not _is_windows: return False, "Solo soportado en Windows."
-    try: target_pid = int(pid)
-    except (ValueError, TypeError): return False, "PID no válido."
+    try: 
+        target_pid = int(pid)
+    except (ValueError, TypeError): 
+        return False, "PID no válido."
     
     if _is_system_process(target_pid): 
         return False, "Proceso crítico protegido."
@@ -330,10 +324,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
 
     kernel32 = ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
-    if not proc_handle or proc_handle == 0: 
-        if ctypes.GetLastError() == ERROR_ACCESS_DENIED:
+    if not proc_handle: 
+        if kernel32.GetLastError() == ERROR_ACCESS_DENIED:
             return False, "Acceso denegado: requiere privilegios elevados."
-        return False, "No se pudo abrir el proceso (¿el proceso ya cerró?)."
+        return False, "No se pudo abrir el proceso."
     
     try:
         if not psapi.EmptyWorkingSet(proc_handle):
