@@ -53,7 +53,9 @@ MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x100
 PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
+# Máscara para verificar metadatos de procesos de forma segura (sin privilegios de lectura total).
 SAFE_VALIDATION_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION 
+# Máscara para la operación de limpieza, requiere privilegios de cuota para modificar el working set.
 TRIM_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
 
 STILL_ACTIVE_EXIT_CODE: Final[int] = 259
@@ -276,7 +278,10 @@ def _is_system_process(pid: int) -> bool:
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _get_process_path(pid: int) -> Optional[Path]:
-    """Resuelve la ruta absoluta del ejecutable de un proceso mediante la API de Win32."""
+    """
+    Resuelve la ruta absoluta del ejecutable de un proceso mediante GetModuleFileNameExW.
+    Utiliza SAFE_VALIDATION_MASK para abrir el handle sin permisos intrusivos.
+    """
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
     if not handle or handle == 0: return None
@@ -294,14 +299,20 @@ def _get_process_path(pid: int) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
-    """Valida si la ruta del proceso es modificable antes de liberar su memoria."""
+    """
+    Valida si el proceso es candidato seguro para una operación de 'trim'.
+    Realiza chequeos contra la lista de rutas protegidas global del sistema.
+    """
     exec_path = _get_process_path(pid)
     if not exec_path or not is_safe_to_modify(str(exec_path)):
         return False, "Acceso no autorizado o ruta protegida."
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Libera el conjunto de trabajo (Working Set) de un proceso mediante EmptyWorkingSet."""
+    """
+    Libera el conjunto de trabajo (Working Set) de un proceso mediante EmptyWorkingSet.
+    Requiere permisos administrativos o de sistema para realizar esta acción.
+    """
     if not _is_windows: return False, "Solo soportado en Windows."
     try: target_pid = int(pid)
     except (ValueError, TypeError): return False, "PID no válido."

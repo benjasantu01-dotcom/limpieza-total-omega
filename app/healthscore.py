@@ -169,7 +169,12 @@ if len(_PIPELINE) != len(WEIGHTS):
 
 @dataclass
 class SystemMetrics:
-    """Contenedor de datos crudos (inputs) para el motor de salud."""
+    """
+    Contenedor de datos crudos (inputs) para el motor de salud.
+    
+    Centraliza la recepción de métricas externas, garantizando que todos los valores 
+    sean numéricos, finitos y positivos antes de cualquier cálculo.
+    """
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -184,7 +189,12 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        """Asegura la integridad de los datos, forzando rangos positivos y sanitización."""
+        """
+        Asegura la integridad de los datos, forzando rangos positivos y sanitización.
+        
+        Realiza una limpieza de valores inesperados convirtiendo todo a tipos flotantes 
+        y aplicando límites 'clamp' para evitar desbordamientos en los cálculos del pipeline.
+        """
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
         self.suspicious_count = int(max(0, int(_to_float(self.suspicious_count))))
@@ -251,7 +261,13 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Ejecuta el Pipeline de salud sobre las métricas y devuelve el resultado unificado."""
+    """
+    Ejecuta el Pipeline de salud sobre las métricas y devuelve el resultado unificado.
+    
+    El proceso itera sobre _PIPELINE aplicando cada 'scorer' a las métricas, 
+    calculando el peso proporcional, y recolectando recomendaciones a través 
+    de _evaluate_rules, para finalmente consolidar un puntaje [0-100].
+    """
     if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
     

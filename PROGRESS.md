@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 242
+- Rechazadas por guardia de seguridad: 34
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 243
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 95 | 8 | 18 | 7 | 128 |
-| 2026-09-26 | 101 | 9 | 17 | 7 | 114 |
+| 2026-09-25 | 92 | 8 | 17 | 7 | 128 |
+| 2026-09-26 | 103 | 9 | 17 | 8 | 115 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **45**
 - robustez ante casos límite: **43**
 - manejo de errores y validación de entradas: **43**
-- legibilidad y documentación: **43**
 - seguridad defensiva: **37**
-- rendimiento: **30**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `scanner.py`: **18**
-- `settings.py`: **18**
 - `assistant.py`: **18**
-- `safety.py`: **17**
-- `healthscore.py`: **16**
+- `healthscore.py`: **17**
+- `scanner.py`: **17**
+- `settings.py`: **17**
+- `safety.py`: **16**
 - `duplicates.py`: **14**
 - `quarantine.py`: **14**
-- `memory.py`: **13**
+- `memory.py`: **14**
 - `organizer.py`: **11**
 - `branding.py`: **10**
 - `browser.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-26T13:54:30` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante docstrings expandidos en las funciones de acceso a la API de Win32 y una clarificación explícita de las constantes de máscara de acceso, asegurando que el propósito y los requisitos de cada operación queden claros para futuros mantenimientos sin alterar la funcionalidad.
+- `2026-09-26T13:49:40` **healthscore.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en formato Docstring para `compute_score` y `SystemMetrics.validate`, aclarando la lógica de normalización y los contratos de datos para mejorar la mantenibilidad del motor.
 - `2026-09-26T13:40:46` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos (específicamente en el `defaultdict` de `_collect_summary_data`) y se documentó con mayor claridad el contrato de las funciones principales para asegurar la mantenibilidad a largo plazo sin alterar la lógica de escaneo.
 - `2026-09-26T13:40:33` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados y precisos en las funciones críticas de detección y recorrido, clarificando las precondiciones de seguridad y el manejo de excepciones para facilitar el mantenimiento.
 - `2026-09-26T13:30:15` **startup.py** (manejo de errores y validación de entradas): Reforcé la robustez de `parse_registry_csv` añadiendo una validación explícita para evitar errores cuando el CSV de PowerShell retorna filas mal formadas o encabezados inesperados, evitando que una entrada corrupta bloquee el procesamiento total.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T11:38:44` **startup.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_valid_registry_entry` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta después de limpiar el comando, previniendo que rutas maliciosas o fuera de los límites permitidos sean procesadas en caso de inyección de valores en el registro.
 - `2026-09-26T11:37:06` **scanner.py** (seguridad defensiva): Se ha añadido un chequeo de bloqueo de acceso de lectura (`os.access(path, os.R_OK)`) dentro de `_is_safe_entry` y en las funciones de escaneo, garantizando que no se intenten analizar archivos que están siendo bloqueados por el sistema operativo o en uso exclusivo, mejorando la robustez defensiva ante errores de acceso.
 - `2026-09-26T11:27:57` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "puntos de reparse padre" en `ensure_safe_to_modify` para mitigar ataques de bypass de sandbox donde un directorio padre (que sí es seguro) contiene un punto de reparse que redirige silenciosamente a un sistema de archivos restringido.
-- `2026-09-26T11:19:10` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de `_ensure_path_writable_and_clean` en los métodos de entrada de usuario (`on_target_choice_changed`), centralizando la validación contra puntos de reparse (junctions/symlinks) y rutas protegidas antes de realizar cualquier operación de disco o escaneo, cumpliendo estrictamente con el enfoque de seguridad defensiva.
-- `2026-09-26T11:16:27` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de `_collect_candidates` implementando una validación de seguridad anticipada mediante `is_safe_to_modify` antes de procesar cualquier entrada, asegurando que el escáner no intente ni siquiera obtener metadatos de rutas prohibidas que podrían disparar errores de acceso o violar el principio de mínima exposición a rutas sensibles.
