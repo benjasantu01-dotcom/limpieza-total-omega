@@ -743,11 +743,15 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
+        # O(N) para obtener nombres presentes en disco
         actual_files = {f.name for f in base_path.iterdir() if f.is_file()}
         
-        valid_items: List[QuarantineItem] = [
-            i for i in items if i.stored_name in actual_files and i._validate_integrity(base_path / i.stored_name)
-        ]
+        valid_items: List[QuarantineItem] = []
+        for i in items:
+            if i.stored_name in actual_files:
+                stored_path = base_path / i.stored_name
+                if i._validate_integrity(stored_path):
+                    valid_items.append(i)
             
         if len(valid_items) != len(items):
             save_manifest(valid_items, base)
@@ -881,6 +885,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue
             item = item_map.get(f.name)
+            # O(1) lookup vs O(N) original
             if item and _is_item_purgable(f, item, quarantine_root):
                 purged_ids.add(item.item_id)
                 
