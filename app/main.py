@@ -315,18 +315,22 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         # Última comprobación de integridad con el guardián de seguridad
         safety.ensure_safe_to_modify(app_root)
 
+    def _validate_disk_access(self, path: Union[str, Path]) -> Path:
+        """
+        Valida que una ruta sea absoluta, existente y pase el filtro de seguridad.
+        Lanza error si la ruta es sospechosa o está protegida.
+        """
+        p = Path(path).resolve(strict=True)
+        if any(ord(c) < 32 for c in str(p)):
+            raise safety.UnsafePathError("Ruta contiene caracteres inválidos")
+        if p.is_symlink() or (p.is_dir() and p.is_mount() and not p.exists()):
+            raise safety.UnsafePathError("Ruta inválida o enlace prohibido")
+        safety.ensure_safe_to_modify(p)
+        return p
+
     def _ensure_path_writable_and_clean(self, path: Union[str, Path]) -> None:
         """Verifica que la ruta sea un directorio existente, seguro y sin puntos de reparse."""
-        path_str = str(path)
-        # Prevención contra caracteres de control/no imprimibles en rutas de sistema
-        if any(ord(c) < 32 for c in path_str):
-            raise safety.UnsafePathError("Ruta contiene caracteres inválidos.")
-        
-        p = Path(path_str).resolve(strict=True)
-        # Verificar que no sea punto de reparse (junctions/symlinks) para prevenir recursión incontrolada
-        if p.is_symlink() or (os.path.isdir(p) and p.is_mount() and not p.exists()):
-            raise safety.UnsafePathError("Ruta no permitida: punto de reparse o enlace detectado.")
-        safety.ensure_safe_to_modify(p)
+        self._validate_disk_access(path)
 
     def _init_window_properties(self) -> None:
         """Establece parámetros geométricos y estéticos de la ventana raíz."""
@@ -932,57 +936,30 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _is_safe_disk_operation(self, path: Union[str, Path]) -> bool:
         """Valida que una operación de disco sea segura y permitida."""
         try:
-            path_str = str(path)
-            if any(ord(c) < 32 for c in path_str): return False
-            p = Path(path_str).resolve(strict=True)
-            return not p.is_symlink() and not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
-        except (OSError, RuntimeError, PermissionError, ValueError):
+            self._validate_disk_access(path)
+            return True
+        except Exception:
             return False
 
     def _is_safe_file_access(self, path: Union[str, Path]) -> bool:
         """Valida que el acceso a un archivo específico sea seguro."""
-        try:
-            path_str = str(path)
-            if any(ord(c) < 32 for c in path_str): return False
-            p = Path(path_str).resolve(strict=True)
-            return p.exists() and not p.is_symlink() and not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
-        except (OSError, RuntimeError, PermissionError, ValueError):
-            return False
+        return self._is_safe_disk_operation(path)
 
     def _is_safe_path(self, path: Union[str, Path]) -> bool:
         """Valida si la ruta es apta para procesamiento general."""
-        if not path: return False
-        try:
-            path_str = str(path)
-            if any(ord(c) < 32 for c in path_str): return False
-            p = Path(path_str).resolve(strict=True)
-            if p.is_symlink():
-                return False
-            return not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
-        except (OSError, RuntimeError, PermissionError, ValueError):
-            return False
+        return self._is_safe_disk_operation(path)
 
     def _verify_disk_path(self, path: str) -> bool:
         """Verifica que una ruta sea apta para análisis recursivo."""
         try:
-            if any(ord(c) < 32 for c in path): return False
-            p = Path(path).resolve(strict=True)
-            # Prevenir seguimiento de junctions/symlinks
-            if not p.exists() or p.is_symlink() or safety.is_protected_path(p): return False
-            safety.ensure_safe_to_modify(p)
+            self._validate_disk_access(path)
             return True
-        except (safety.UnsafePathError, OSError, PermissionError, ValueError):
+        except Exception:
             return False
 
     def _is_safe_target_dir(self, path: Union[str, Path]) -> bool:
         """Valida si un directorio destino es seguro para procesamientos."""
-        try:
-            path_str = str(path)
-            if any(ord(c) < 32 for c in path_str): return False
-            p = Path(path_str).resolve(strict=True)
-            return p.exists() and p.is_dir() and not p.is_symlink() and not safety.is_protected_path(p) and safety.is_safe_to_modify(p)
-        except (OSError, PermissionError, ValueError):
-            return False
+        return self._is_safe_disk_operation(path)
 
     def _is_valid_dir(self, path: Optional[Union[str, Path]]) -> bool:
         """Verifica existencia y legibilidad de una ruta de directorio."""
@@ -991,7 +968,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             p = Path(path).resolve(strict=True)
             return p.is_dir()
-        except (OSError, PermissionError, ValueError):
+        except Exception:
             return False
 
     def _get_cached_data(self, key: str) -> Any:
@@ -1180,9 +1157,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 return None
             
             # Sanitización de ruta y validación de seguridad
-            self._ensure_path_writable_and_clean(folder)
+            self._validate_disk_access(folder)
             return str(Path(folder).resolve())
-        except (safety.UnsafePathError, OSError, PermissionError, FileNotFoundError, ValueError):
+        except Exception:
             messagebox.showwarning("Ruta no segura", "Operación no permitida en esta ruta.")
             return None
 
@@ -1450,8 +1427,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _run_heuristic_scan(self, folder: str) -> None:
         """Lógica interna de escaneo heurístico de seguridad."""
-        p = Path(folder)
-        if not p.is_dir():
+        try:
+            p = self._validate_disk_access(folder)
+        except Exception:
             self.log(f"Error: La ruta {folder} no es una carpeta válida.", "Seguridad")
             return
 
@@ -1459,7 +1437,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.set_status(f"Escaneando {folder}...")
             self.clear("Seguridad")
             self.log(f"Escaneo heurístico en: {folder}", "Seguridad")
-            results = scan_directory(folder)
+            results = scan_directory(str(p))
             self._invalidate_cache("suspicions")
             self._cache["suspicions"] = results
             self._cache_access_times["suspicions"] = time.time()
@@ -1479,7 +1457,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log("Recordá: son señales, no una condena. Usá 'Aislar hallazgos' "
                      "para moverlos a cuarentena sin borrarlos.", "Seguridad")
 
-        self.run_async(task, target=folder)
+        self.run_async(task, target=str(p))
 
     @validated_ui_operation
     @ensure_safety
@@ -1529,8 +1507,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 # Verificación final individual en el hilo de fondo
                 if self._is_safe_path(item_s.path):
                     try:
-                        p = Path(item_s.path).resolve()
-                        safety.ensure_safe_to_modify(p)
+                        p = self._validate_disk_access(item_s.path)
                         item = quarantine.quarantine_file(str(p), reason="Marcado por escaneo heurístico")
                         self.log(f"Aislado [{item.item_id}] {item_s.path}", "Seguridad")
                         aislados += 1
@@ -1729,7 +1706,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_disk_analysis(self) -> None:
         """Inicia análisis de estructura de carpetas."""
         folder = self._ask_folder()
-        if not folder or not self._verify_disk_path(folder):
+        if not folder:
             return
         
         self.analysis_folder = folder
@@ -1747,7 +1724,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_find_duplicates(self) -> None:
         """Inicia análisis de duplicados por hash."""
         folder = self._ask_folder()
-        if not folder or not self._verify_disk_path(folder):
+        if not folder:
             return
 
         def task() -> None:
@@ -1812,7 +1789,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             for ruta in aptos:
                 if self._is_safe_path(ruta):
                     try:
-                        quarantine.quarantine_file(ruta, reason="Copia duplicada")
+                        p = self._validate_disk_access(ruta)
+                        quarantine.quarantine_file(str(p), reason="Copia duplicada")
                         movidos += 1
                     except Exception as e:
                         self.log(f"Error al aislar {ruta}: {e}", "Duplicados")

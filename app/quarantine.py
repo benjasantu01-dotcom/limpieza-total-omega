@@ -635,6 +635,9 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     try:
         return _write_temp_to_final(source, destination)
     except Exception as e:
+        # Limpieza de contexto transaccional antes de elevar el error
+        if destination.exists():
+            _safe_unlink(destination)
         raise RuntimeError(f"Error durante aislamiento: {e}")
 
 
