@@ -1247,3 +1247,12 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-27T01:33:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
 - `2026-09-27T01:33:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T01:33:29` Corrida terminada. Total usado hoy: 40.
+- `2026-09-27T01:41:57` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-09-27T01:42:43` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-09-27T01:43:08` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-27T01:43:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-27T01:43:14` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-27T01:43:56` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `settings.py` ante archivos corrompidos o bloqueados al añadir un bloque `try-except` específico en la lectura de `json.load` y asegurar que la función `_load_impl` no solo capture errores de parseo, sino que también verifique la integridad del diccionario resultante antes de procesarlo, evitando que valores `None` o estructuras inválidas escapen hacia la aplicación.
+- `2026-09-27T01:44:13` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-27T01:44:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T01:44:13` Corrida terminada. Total usado hoy: 44.
