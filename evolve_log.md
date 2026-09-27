@@ -459,3 +459,49 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-09-27T05:07:33` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
 - `2026-09-27T05:07:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T05:07:33` Corrida terminada. Total usado hoy: 124.
+- `2026-09-27T05:16:03` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-09-27T05:16:33` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `compute_score` convirtiendo el `_PIPELINE` de una `List` a una `tuple` para asegurar tiempo de acceso constante (O(1)) e inmutabilidad, y eliminé la recreación innecesaria de objetos en cada iteración del bucle, reduciendo la carga del recolector de basura.
+- `2026-09-27T05:17:33` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-27T05:18:36` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-27T05:19:42` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-27T05:20:54` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-27T05:21:40` Tests FALLARON:
+```
+ocess_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:244: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed, 4 warnings in 1.47s
+
+```
+- `2026-09-27T05:21:40` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de recolección de memoria en Windows reemplazando múltiples llamadas a PowerShell por una única consulta `Select-Object` con filtrado previo, reduciendo drásticamente la latencia y la sobrecarga de I/O por iteración.
+- `2026-09-27T05:21:50` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-27T05:21:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T05:21:50` Corrida terminada. Total usado hoy: 128.

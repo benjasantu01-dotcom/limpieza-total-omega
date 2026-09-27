@@ -13,7 +13,7 @@ El proceso sigue tres pasos:
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Final, NamedTuple, Annotated, Callable, TypeAlias, Protocol
+from typing import Dict, List, Any, Final, NamedTuple, Annotated, Callable, TypeAlias, Protocol, Tuple
 from enum import Enum
 import math
 
@@ -78,7 +78,7 @@ class PipelineEntry(NamedTuple):
     area: MetricKey
     weight: int
     scorer: Scorer
-    rules: List[RecommendationRule]
+    rules: Tuple[RecommendationRule, ...]
 
 __all__ = [
     "SystemMetrics",
@@ -152,20 +152,20 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
     """Calcula salud de arranque: decremento lineal según cantidad de apps iniciadas."""
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
-_PIPELINE: Final[List[PipelineEntry]] = [
+_PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), 
-                  [RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH)]),
+                  (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),)),
     PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), 
-                  [RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW)]),
+                  (RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
     PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), 
-                  [RecommendationRule("memoria", WARN_THRESHOLD_LOW, lambda m: "Memoria disponible baja: cerrá procesos innecesarios.", lambda m, r: r < WARN_THRESHOLD_LOW)]),
+                  (RecommendationRule("memoria", WARN_THRESHOLD_LOW, lambda m: "Memoria disponible baja: cerrá procesos innecesarios.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
     PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), 
-                  [RecommendationRule("basura", WARN_THRESHOLD_MED, lambda m: f"Hay {m.junk_mb:.0f} MB de archivos temporales.", lambda m, r: r < WARN_THRESHOLD_MED)]),
+                  (RecommendationRule("basura", WARN_THRESHOLD_MED, lambda m: f"Hay {m.junk_mb:.0f} MB de archivos temporales.", lambda m, r: r < WARN_THRESHOLD_MED),)),
     PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), 
-                  [RecommendationRule("duplicados", WARN_THRESHOLD_MED, lambda m: f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados.", lambda m, r: r < WARN_THRESHOLD_MED)]),
+                  (RecommendationRule("duplicados", WARN_THRESHOLD_MED, lambda m: f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados.", lambda m, r: r < WARN_THRESHOLD_MED),)),
     PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), 
-                  [RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW)]),
-]
+                  (RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
+)
 
 if len(_PIPELINE) != len(WEIGHTS):
     raise RuntimeError("Desalineación crítica entre el Pipeline de evaluación y los pesos definidos.")
@@ -247,13 +247,13 @@ def grade_for_score(score: float | int) -> str:
     """Helper para obtener el grado alfabético mediante la clase Grade."""
     return Grade.from_score(score)
 
-def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
+def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], ratio: NormalizedRatio, findings: List[str]) -> None:
     """
     Ejecuta reglas de recomendación para un área, sanitizando los mensajes resultantes.
     
     Args:
         metrics: Datos de entrada para las reglas.
-        rules: Lista de reglas a evaluar.
+        rules: Tuple de reglas a evaluar.
         ratio: Valor de salud del dominio.
         findings: Lista acumulativa de mensajes de recomendación.
     """
