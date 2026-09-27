@@ -1069,3 +1069,11 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-27T09:46:46` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la iteración manual con filtrado de caracteres por una búsqueda optimizada de índices y reduje la sobrecarga de `top_memory_processes` aplicando la lógica de filtro directamente en el comando de PowerShell para evitar procesar líneas innecesarias en Python.
 - `2026-09-27T09:46:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T09:46:46` Corrida terminada. Total usado hoy: 232.
+- `2026-09-27T09:50:51` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-09-27T09:51:21` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-27T09:52:06` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `restore_item` y `purge_item` reemplazando la búsqueda lineal por indexación mediante diccionarios, evitando O(N^2) en operaciones frecuentes y mejorando la eficiencia al manejar listas de cuarentena grandes.
+- `2026-09-27T09:52:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-27T09:52:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-09-27T09:53:03` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_file_attrs` y otras verificaciones de estado reemplazando llamadas repetidas al sistema de archivos por una cache LRU de mayor capacidad y evitando el cálculo redundante de rutas UNC en cada iteración del bucle de validación.
+- `2026-09-27T09:53:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T09:53:03` Corrida terminada. Total usado hoy: 236.

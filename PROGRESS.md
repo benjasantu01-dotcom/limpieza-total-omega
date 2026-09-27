@@ -8,37 +8,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **176** (34.9% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 244
+- Sin respuesta de la IA (error o límite): 243
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 99 | 8 | 18 | 9 | 138 |
-| 2026-09-27 | 77 | 14 | 23 | 12 | 106 |
+| 2026-09-26 | 97 | 8 | 18 | 9 | 136 |
+| 2026-09-27 | 79 | 14 | 24 | 12 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
-- seguridad defensiva: **41**
+- seguridad defensiva: **39**
 - manejo de errores y validación de entradas: **35**
-- rendimiento: **28**
+- rendimiento: **30**
 - robustez ante casos límite: **21**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `browser.py`: **17**
-- `safety.py`: **17**
+- `safety.py`: **18**
 - `duplicates.py`: **16**
+- `browser.py`: **16**
+- `quarantine.py`: **15**
 - `settings.py`: **15**
 - `healthscore.py`: **14**
-- `quarantine.py`: **14**
-- `assistant.py`: **13**
 - `scanner.py`: **13**
 - `memory.py`: **12**
+- `assistant.py`: **12**
 - `organizer.py`: **10**
 - `startup.py`: **7**
 - `main.py`: **5**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T09:53:03` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_attrs` y otras verificaciones de estado reemplazando llamadas repetidas al sistema de archivos por una cache LRU de mayor capacidad y evitando el cálculo redundante de rutas UNC en cada iteración del bucle de validación.
+- `2026-09-27T09:52:06` **quarantine.py** (rendimiento): Optimicé el rendimiento de `restore_item` y `purge_item` reemplazando la búsqueda lineal por indexación mediante diccionarios, evitando O(N^2) en operaciones frecuentes y mejorando la eficiencia al manejar listas de cuarentena grandes.
 - `2026-09-27T09:41:46` **healthscore.py** (rendimiento): Optimicé el método `validate` de `SystemMetrics` eliminando la iteración dinámica por `self.__dict__` (que utiliza reflexión costosa) y reemplazándola por una asignación directa de los campos clave, mejorando el rendimiento en cada actualización de métricas.
 - `2026-09-27T09:32:53` **diskreport.py** (rendimiento): Se optimizó el motor de escaneo `_collect_summary_data` y el uso de `walk_files` para evitar el re-procesamiento redundante de rutas, consolidando el escaneo en una pasada única eficiente que minimiza la creación innecesaria de objetos `Path` y reduce las llamadas a `os.path` al aprovechar `os.DirEntry`.
 - `2026-09-27T09:32:35` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `Path.resolve()` y `Path.stat()` en cada iteración del bucle, confiando en `os.scandir` para obtener la información necesaria de forma directa y eficiente.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T09:00:27` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad de `_collect_summary_data` y `walk_files` mediante Type Hints más precisos, un docstring explicativo sobre el uso del heap, y la consolidación de la lógica de extensión para evitar redundancias.
 - `2026-09-27T08:51:59` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave y se ha optimizado el uso de type hints y estructuras de datos para clarificar el flujo de control y las responsabilidades en el escaneo recursivo.
 - `2026-09-27T08:51:37` **branding.py** (legibilidad y documentación): Se introdujo un `Enum` llamado `SeverityType` para reemplazar los literales de string en `SeverityLevel`, mejorando la seguridad de tipos, la autocompletado y eliminando la necesidad de múltiples validaciones manuales de strings en funciones de acceso.
-- `2026-09-27T08:51:00` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de manipulación de datos y la estructuración mediante docstrings descriptivos, asegurando que el contrato de cada función (entradas esperadas, transformaciones y garantías de seguridad) sea evidente para futuros desarrolladores.
-- `2026-09-27T08:40:53` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` agregando una validación específica para detectar archivos de dispositivo (device files) antes de intentar acceder a sus metadatos, evitando posibles bloqueos o lecturas erróneas de bajo nivel en el sistema de archivos.

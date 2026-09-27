@@ -74,12 +74,10 @@ DRIVE_REMOTE: Final[int] = 4    # Unidades de red mapeadas
 DRIVE_CDROM: Final[int] = 5     # Discos ópticos
 DRIVE_RAMDISK: Final[int] = 6   # Discos virtuales en memoria
 
+@lru_cache(maxsize=4096)
 def _to_long_path(path_str: str) -> str:
     """
     Convierte una ruta estándar en una ruta Win32 de formato largo (UNC).
-    
-    Permite acceder a rutas superiores a 260 caracteres y desactiva la 
-    normalización de nombres reservados (ej. 'CON.txt').
     """
     if os.name == 'nt' and not path_str.startswith("\\\\?\\"):
         if path_str.startswith("\\\\"): return "\\\\?\\UNC" + path_str[1:]
@@ -90,18 +88,14 @@ def _is_path_too_long(path_str: str) -> bool:
     """Verifica si la longitud de la cadena excede el estándar MAX_PATH."""
     return len(path_str) > MAX_PATH_LENGTH
 
-@lru_cache(maxsize=1024)
+@lru_cache(maxsize=2048)
 def _get_file_attrs(path_str: Optional[str]) -> int:
     """
     Consulta los atributos de archivo mediante la API Win32 GetFileAttributesW.
-    
-    Retorna 0 si la ruta es inaccesible o si el SO no es Windows, actuando 
-    bajo una política de seguridad conservadora.
     """
     if os.name != 'nt' or not path_str or _is_path_too_long(path_str): return 0
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
-        # 0xFFFFFFFF indica error en la llamada Win32
         return attrs if attrs != 0xFFFFFFFF else 0
     except (AttributeError, OSError, ctypes.ArgumentError, TypeError):
         return 0
@@ -427,6 +421,7 @@ def normalize(path: PathLike) -> Path:
          raise UnsafePathError("Ruta contiene secuencias Unicode sospechosas.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING)
     try:
         p = Path(path_str)
+        # Optimizacion: validacion de reparse point solo en componentes padres existentes
         for part in p.parts:
             if part and os.path.exists(str(p.parent / part)) and _is_reparse_point(str(p.parent / part)):
                 raise UnsafePathError("Segmento de ruta contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
@@ -602,14 +597,6 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
     Valida si es seguro modificar un archivo o directorio.
-    
-    Args:
-        path: Ruta a validar.
-        allow_sensitive: Si es True, permite archivos con extensiones críticas.
-        base_dir: Directorio sandbox opcional.
-        
-    Raises:
-        UnsafePathError: Si la ruta no cumple con los protocolos de seguridad.
     """
     if path is None:
         raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
