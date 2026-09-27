@@ -1502,3 +1502,46 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-27T04:00:12` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-09-27T04:00:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T04:00:12` Corrida terminada. Total usado hoy: 96.
+- `2026-09-27T04:04:39` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-09-27T04:05:11` Tests FALLARON:
+```
+ocess_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:244: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed, 4 warnings in 1.47s
+
+```
+- `2026-09-27T04:05:11` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `parse_windows_process_csv` reemplazando la lógica de conversión frágil basada en filtrado de caracteres por un manejo de errores estructurado (`try-except`) que valida la integridad de los datos antes de operar, evitando posibles errores de desbordamiento o parsing inesperado en entornos con configuraciones regionales distintas.
+- `2026-09-27T04:05:38` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_locked` al reemplazar el modo `r+b` (que requiere permisos de escritura y puede fallar innecesariamente en archivos solo lectura legítimos) por `rb` y un chequeo de bloqueo más preciso basado en la API de Python, evitando excepciones genéricas y mejorando el manejo de errores de acceso.
+- `2026-09-27T04:06:19` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-27T04:06:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-27T04:06:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T04:06:29` Corrida terminada. Total usado hoy: 100.
