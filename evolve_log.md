@@ -638,3 +638,13 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-27T05:48:01` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
 - `2026-09-27T05:48:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T05:48:01` Corrida terminada. Total usado hoy: 140.
+- `2026-09-27T05:56:39` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-09-27T05:57:42` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-27T05:58:45` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-27T05:59:51` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-27T06:01:03` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-27T06:01:48` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-27T06:02:19` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-27T06:02:45` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-09-27T06:02:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T06:02:45` Corrida terminada. Total usado hoy: 144.
