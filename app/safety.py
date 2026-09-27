@@ -316,24 +316,28 @@ def _is_sensitive_extension(ext: str) -> bool:
     """Verifica si la extensión del archivo está en la lista negra de componentes críticos."""
     return ext.lower() in SENSITIVE_EXTENSIONS
 
+def _rule(reason: ProtectionReason, predicate: ViolationPredicate) -> _IntegrityCheck:
+    """Helper para construir definiciones de reglas de integridad."""
+    return _IntegrityCheck(reason, predicate)
+
 # Lista de validadores de integridad aplicada secuencialmente
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
-    _IntegrityCheck(ProtectionReason.SYMLINK, lambda p, _: p.is_symlink()),
-    _IntegrityCheck(ProtectionReason.REPARSE_POINT, lambda p, _: _is_reparse_point(str(p))),
-    _IntegrityCheck(ProtectionReason.KERNEL_LOCKED, lambda p, _: _is_kernel_managed(p)),
-    _IntegrityCheck(ProtectionReason.READ_ONLY, lambda _, st: not bool(st.st_mode & stat.S_IWRITE)),
-    _IntegrityCheck(ProtectionReason.VOLUME_READ_ONLY, lambda p, _: _is_volume_readonly(str(p))),
-    _IntegrityCheck(ProtectionReason.IN_USE, lambda p, _: _is_file_locked_by_other_process(str(p))),
-    _IntegrityCheck(ProtectionReason.SYSTEM_HIDDEN, lambda p, _: _is_system_or_hidden(str(p))),
-    _IntegrityCheck(ProtectionReason.OFFLINE, lambda p, _: _is_offline(str(p))),
-    _IntegrityCheck(ProtectionReason.ENCRYPTED_OR_COMPRESSED, lambda p, _: _is_encrypted_or_compressed_or_sparse(str(p))),
-    _IntegrityCheck(ProtectionReason.SPARSE_FILE, lambda p, _: _is_encrypted_or_compressed_or_sparse(str(p))),
-    _IntegrityCheck(ProtectionReason.HARD_LINK, lambda p, st: p.is_file() and st.st_nlink > 1),
-    _IntegrityCheck(ProtectionReason.ADS, lambda p, _: _has_alternate_data_stream(p.name)),
-    _IntegrityCheck(ProtectionReason.EMPTY_FILE, lambda p, st: p.is_file() and st.st_size == 0),
-    _IntegrityCheck(ProtectionReason.EXCESSIVE_SIZE, lambda p, st: p.is_file() and st.st_size > MAX_FILE_SIZE),
-    _IntegrityCheck(ProtectionReason.MOUNT_POINT, lambda p, _: os.path.ismount(p)),
-    _IntegrityCheck(ProtectionReason.INVALID_TYPE, lambda _, st: not (stat.S_ISREG(st.st_mode) or stat.S_ISDIR(st.st_mode))),
+    _rule(ProtectionReason.SYMLINK, lambda p, _: p.is_symlink()),
+    _rule(ProtectionReason.REPARSE_POINT, lambda p, _: _is_reparse_point(str(p))),
+    _rule(ProtectionReason.KERNEL_LOCKED, lambda p, _: _is_kernel_managed(p)),
+    _rule(ProtectionReason.READ_ONLY, lambda _, st: not bool(st.st_mode & stat.S_IWRITE)),
+    _rule(ProtectionReason.VOLUME_READ_ONLY, lambda p, _: _is_volume_readonly(str(p))),
+    _rule(ProtectionReason.IN_USE, lambda p, _: _is_file_locked_by_other_process(str(p))),
+    _rule(ProtectionReason.SYSTEM_HIDDEN, lambda p, _: _is_system_or_hidden(str(p))),
+    _rule(ProtectionReason.OFFLINE, lambda p, _: _is_offline(str(p))),
+    _rule(ProtectionReason.ENCRYPTED_OR_COMPRESSED, lambda p, _: _is_encrypted_or_compressed_or_sparse(str(p))),
+    _rule(ProtectionReason.SPARSE_FILE, lambda p, _: _is_encrypted_or_compressed_or_sparse(str(p))),
+    _rule(ProtectionReason.HARD_LINK, lambda p, st: p.is_file() and st.st_nlink > 1),
+    _rule(ProtectionReason.ADS, lambda p, _: _has_alternate_data_stream(p.name)),
+    _rule(ProtectionReason.EMPTY_FILE, lambda p, st: p.is_file() and st.st_size == 0),
+    _rule(ProtectionReason.EXCESSIVE_SIZE, lambda p, st: p.is_file() and st.st_size > MAX_FILE_SIZE),
+    _rule(ProtectionReason.MOUNT_POINT, lambda p, _: os.path.ismount(p)),
+    _rule(ProtectionReason.INVALID_TYPE, lambda _, st: not (stat.S_ISREG(st.st_mode) or stat.S_ISDIR(st.st_mode))),
 ]
 
 _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
