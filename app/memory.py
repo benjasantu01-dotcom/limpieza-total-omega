@@ -347,7 +347,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "No se pudo abrir el proceso."
     
     try:
-        if not psapi.EmptyWorkingSet(proc_handle):
+        # EmptyWorkingSet devuelve un valor distinto de cero si tiene éxito
+        if psapi.EmptyWorkingSet(proc_handle) == 0:
             return False, "Operación denegada por el sistema."
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, OSError):

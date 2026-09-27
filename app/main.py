@@ -103,8 +103,8 @@ def get_cached_settings() -> Dict[str, Any]:
                 if key in raw and raw[key] and not safety.is_safe_to_modify(Path(raw[key])):
                     raw[key] = ""
             return raw
-    except Exception:
-        pass
+    except Exception as e:
+        logging.error("Error al cargar settings: %s", e)
     return settings_mod.reset()
 
 class AppSettings(TypedDict, total=False):
@@ -267,8 +267,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.protocol("WM_DELETE_WINDOW", self._on_closing)
         except Exception as e:
             logging.critical("Error fatal al inicializar la aplicación: %s", e)
-            messagebox.showerror("Error de inicio", f"La aplicación no pudo inicializarse: {e}")
-            self.destroy()
+            if self.winfo_exists():
+                messagebox.showerror("Error de inicio", f"La aplicación no pudo inicializarse: {e}")
+                self.destroy()
+            else:
+                raise
 
     def _on_closing(self) -> None:
         """Finaliza hilos de fondo, libera recursos y destruye la ventana."""
@@ -486,6 +489,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self._initialized_tabs[name] = True
             except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
+                # Opcional: mostrar aviso al usuario en el log si la pestaña falla
+                self.log(f"Error cargando pestaña {name}: {e}", "Salud")
 
     def _build_tabs_container(self) -> None:
         """Crea el contenedor central de pestañas."""

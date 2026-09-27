@@ -1510,3 +1510,11 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-27T12:45:48` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `format_group` mediante la validación explícita de `group.paths`, asegurando que `suggest_keeper` no falle ante un grupo parcialmente inválido y que `format_group` maneje adecuadamente situaciones donde la comparación de rutas pueda fallar por errores de sistema de archivos.
 - `2026-09-27T12:45:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T12:45:48` Corrida terminada. Total usado hoy: 304.
+- `2026-09-27T12:54:21` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-27T12:54:48` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-27T12:55:48` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-27T12:57:06` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejora el manejo de errores en `_setup_application` y `_build_tab_factory` para evitar bloqueos silenciosos o estados inconsistentes de la UI al fallar la inicialización, aplicando validación preventiva en la creación de pestañas y encapsulando el logueo de errores críticos.
+- `2026-09-27T12:57:37` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y sus dependencias validando explícitamente el handle del proceso y el retorno de la API, además de consolidar la lógica de cierre de handles para evitar fugas de recursos incluso ante errores inesperados.
+- `2026-09-27T12:57:47` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-27T12:57:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T12:57:47` Corrida terminada. Total usado hoy: 308.
