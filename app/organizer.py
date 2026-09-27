@@ -122,7 +122,10 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
-    """Determina si un archivo está en uso exclusivo intentando abrirlo en modo lectura/escritura binaria."""
+    """
+    Verifica si un archivo está bloqueado intentando abrirlo en modo lectura/escritura exclusiva.
+    Retorna True si el archivo está en uso o no se puede acceder, False si está libre.
+    """
     if not path.is_file():
         return True
     try:
@@ -135,7 +138,7 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Verifica si el destino es un subdirectorio del origen para evitar ciclos recursivos en la jerarquía."""
+    """Comprueba si el destino está contenido dentro del origen para prevenir recursión infinita durante el movimiento."""
     try:
         s, d = str(src.resolve()), str(dest.resolve())
         return os.path.commonpath([s, d]) == s
@@ -143,18 +146,21 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
         return True
 
 def _has_forbidden_chars(path: Path) -> bool:
-    """Detecta caracteres que podrían inyectar comandos o comprometer la integridad del path en el SO."""
+    """Detecta caracteres nulos o meta-caracteres de shell que puedan comprometer la integridad del sistema de archivos."""
     path_str = str(path).lower()
     return any(c in path_str for c in ["<", ">", "|", "\0"])
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
-    """Realiza una auditoría estática de rutas respecto a longitud y caracteres maliciosos."""
+    """Realiza una auditoría estática de seguridad sobre la viabilidad de la ruta y la longitud máxima (MAX_PATH)."""
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > 260 or len(str(dest)) > 260: return False
     return not (is_protected_path(src) or is_protected_path(dest))
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """Coordinador de seguridad para E/S: valida integridad, exclusividad y condiciones de destino."""
+    """
+    Coordinador de seguridad para operaciones de E/S.
+    Verifica: existencia, seguridad de la ruta, permisos de escritura, y bloqueo de archivos.
+    """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
         if not src.exists() or not src.is_file() or not is_safe_to_modify(src): return False
@@ -227,7 +233,10 @@ def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = Tru
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Valida y mueve archivos basura a un directorio de cuarentena antes de su eliminación final."""
+    """
+    Valida y mueve archivos basura a un directorio de cuarentena. 
+    Requiere confirmación explícita previa, utiliza `ensure_safe_to_modify` para cada operación.
+    """
     if not files: return None
     try:
         dest_base = Path(review_dir).expanduser()
@@ -248,7 +257,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     return dest_res
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Verifica disponibilidad de espacio y genera una ruta destino única y segura."""
+    """Verifica disponibilidad de espacio en la unidad destino y genera una ruta única para evitar colisiones."""
     try:
         usage = shutil.disk_usage(dest_base.anchor)
         if usage.free < (junk_file.size_bytes + 52428800): return None
@@ -257,7 +266,10 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     return _generate_unique_target(dest_base / safe_name)
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente archivos en cuarentena tras validar su seguridad de modificación."""
+    """
+    Elimina permanentemente archivos en cuarentena tras validar su seguridad.
+    Esta es una operación destructiva que requiere validación previa mediante `ensure_safe_to_modify`.
+    """
     try:
         dest = Path(review_dir).expanduser().resolve()
         if not dest.is_dir(): return 0

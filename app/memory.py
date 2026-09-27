@@ -31,7 +31,7 @@ import time
 from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, Final, Set, NewType, Iterator
+from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, Final, Set, NewType
 from safety import is_protected_path, is_safe_to_modify
 
 if TYPE_CHECKING:
@@ -279,7 +279,8 @@ def _is_system_process(pid: int) -> bool:
 def _get_process_path(pid: int) -> Optional[Path]:
     """
     Resuelve la ruta absoluta del ejecutable de un proceso mediante GetModuleFileNameExW.
-    Valida el handle y garantiza el cierre seguro del recurso.
+    Utiliza un handle con privilegios limitados para obtener metadatos y asegura la liberación 
+    del handle mediante el bloque finally. Valida que la ruta no sea protegida antes de retornar.
     """
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
@@ -298,14 +299,20 @@ def _get_process_path(pid: int) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
-    """Valida si el proceso es candidato seguro mediante ruta."""
+    """Valida si la ruta del proceso es un candidato seguro para modificar mediante is_safe_to_modify."""
     exec_path = _get_process_path(pid)
     if not exec_path or not is_safe_to_modify(str(exec_path)):
         return False, "Acceso no autorizado o ruta protegida."
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Libera el working set de un proceso validando permisos y estado de ejecución."""
+    """
+    Libera el working set de un proceso. 
+    1. Valida el PID (no sistema).
+    2. Verifica permisos de ruta mediante _is_safe_to_trim.
+    3. Abre el proceso con los privilegios mínimos necesarios (TRIM_ACCESS_MASK).
+    4. Ejecuta la función del sistema y asegura el cierre del handle.
+    """
     if not _is_windows: return False, "Solo soportado en Windows."
     try: 
         target_pid = int(pid)

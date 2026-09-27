@@ -38,7 +38,10 @@ class Grade(Enum):
         """
         Convierte un puntaje numérico al grado alfabético correspondiente.
         
-        Usa escalas estándar: A (>=90), B (>=80), C (>=65), D (>=50), F (<50).
+        Args:
+            score: Valor numérico de salud total.
+        Returns:
+            String con la letra representativa ('A' a 'F').
         """
         s = float(score)
         if s >= 90: return cls.A.value
@@ -238,7 +241,15 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Ejecuta reglas de recomendación para un área, sanitizando los mensajes resultantes."""
+    """
+    Ejecuta reglas de recomendación para un área, sanitizando los mensajes resultantes.
+    
+    Args:
+        metrics: Datos de entrada para las reglas.
+        rules: Lista de reglas a evaluar.
+        ratio: Valor de salud del dominio.
+        findings: Lista acumulativa de mensajes de recomendación.
+    """
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -251,8 +262,12 @@ def _evaluate_rules(metrics: SystemMetrics, rules: List[RecommendationRule], rat
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Ejecuta el Pipeline de salud sobre las métricas y devuelve el resultado unificado."""
-    # Validación defensiva de entrada: si el objeto no es íntegro, abortar operación.
+    """
+    Ejecuta el Pipeline de salud sobre las métricas y devuelve el resultado unificado.
+    
+    Returns:
+        Objeto HealthResult con los indicadores analizados.
+    """
     if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
     
