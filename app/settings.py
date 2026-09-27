@@ -319,9 +319,6 @@ def _load_impl(ruta: Path) -> AppSettings:
                 data = json.load(f)
             if _is_dict(data):
                 validated_data = validate(data)
-                for key, default_val in DEFAULTS.items():
-                    if key not in validated_data or not isinstance(validated_data[key], type(default_val)):
-                        validated_data[key] = default_val
                 return _coerce_and_verify(validated_data)
         return DEFAULTS.copy()
     except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError):
@@ -351,17 +348,18 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
-    """Asegura consistencia de negocio: inyecta defaults faltantes y aplica reglas de seguridad cruzadas."""
+    """Asegura consistencia de tipos y reglas de negocio, revirtiendo a defaults ante inconsistencias."""
     try:
-        final = {k: settings.get(k, v) for k, v in DEFAULTS.items()}
-        final["asistente_activado"] = bool(final["asistente_activado"])
-        final["duplicados_tamano_minimo_kb"] = int(final["duplicados_tamano_minimo_kb"])
-        final["top_archivos"] = int(final["top_archivos"])
-        final["top_procesos"] = int(final["top_procesos"])
+        final: AppSettings = DEFAULTS.copy()
+        for key, expected_type in DEFAULTS.items():
+            val = settings.get(key)
+            if val is not None and isinstance(val, type(expected_type)):
+                final[key] = val # type: ignore
         
+        # Validaciones de consistencia cruzada
         if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
             final["asistente_activado"] = False
-        return final # type: ignore
+        return final
     except (ValueError, TypeError, AttributeError):
         return DEFAULTS.copy()
 

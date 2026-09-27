@@ -1525,3 +1525,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-27T13:06:42` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las heurísticas `check_recent_executable_in_downloads` y `check_system_lookalike` agregando validaciones preventivas de tipos y estados para evitar excepciones por accesos a atributos `None` o rutas malformadas, garantizando un manejo de errores más defensivo acorde al enfoque.
 - `2026-09-27T13:06:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T13:06:42` Corrida terminada. Total usado hoy: 312.
+- `2026-09-27T13:14:44` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-27T13:15:18` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `settings.py` integrando validaciones de tipo explícitas en `_coerce_and_verify` para evitar que valores corrompidos en el JSON rompan la lógica de la aplicación, sustituyendo conversiones implícitas peligrosas por un manejo controlado que retorna defaults ante cualquier error.
+- `2026-09-27T13:15:45` ➖ Sin cambios en startup.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que `reader.fieldnames` sea indexable antes de acceder a sus elementos, evitando posibles errores de tipo o índice al procesar salidas de PowerShell vacías o malformadas.
+- `2026-09-27T13:16:24` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 583): unterminated string literal (detected at line 583)
+- `2026-09-27T13:16:50` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-09-27T13:16:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T13:16:50` Corrida terminada. Total usado hoy: 316.
