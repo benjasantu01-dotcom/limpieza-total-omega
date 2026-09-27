@@ -1626,3 +1626,50 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-09-27T14:11:37` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-09-27T14:11:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T14:11:37` Corrida terminada. Total usado hoy: 336.
+- `2026-09-27T14:15:52` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-27T14:16:24` Tests FALLARON:
+```
+    assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert ['chico', 'grande', 'medio'] == ['grande', 'medio', 'chico']
+E         
+E         At index 0 diff: 'chico' != 'grande'
+E         
+E         Full diff:
+E           [
+E         +     'chico',
+E               'grande',
+E               'medio',
+E         -     'chico',
+E           ]
+
+evolve/tests/test_modules.py:346: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:81: SyntaxWarning: invalid escape sequence '\ '
+    El prefijo \\?\ es necesario para superar limitaciones de MAX_PATH en Windows.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert ['chico', 'grande', 'medio'] == ['grande', 'medio', 'chico']
+  
+  At index 0 diff: 'chico' != 'grande'
+  
+  Full diff:
+    [
+  +     'chico',
+        'grande',
+        'medio',
+  -     'chico',
+    ]
+1 failed, 298 passed, 4 warnings in 1.48s
+
+```
+- `2026-09-27T14:16:24` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el filtrado de procesos en `top_memory_processes` delegando la exclusión de PIDs críticos y el límite de resultados directamente al comando de PowerShell, lo que reduce la carga de procesamiento y la transferencia de datos entre el subproceso y Python.
+- `2026-09-27T14:16:52` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-27T14:17:28` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del tamaño total y el listado de archivos en cuarentena reemplazando la lectura repetitiva del manifiesto y el uso de `.iterdir()` con una lógica de caché de objetos y conjuntos (sets) que evita iteraciones redundantes y llamadas innecesarias al sistema de archivos.
+- `2026-09-27T14:17:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-27T14:17:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T14:17:33` Corrida terminada. Total usado hoy: 340.
