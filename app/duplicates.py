@@ -240,7 +240,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        p_entry = Path(entry.path).resolve()
+                        p_entry = Path(entry.path)
+                        # Omitir si ya visitado o inseguro según lista blanca/negra
                         if p_entry in visited_paths or not is_safe_to_modify(p_entry):
                             continue
                         
@@ -250,17 +251,18 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                                 _scan_dir(p_entry)
                             continue
                         
+                        # Usar st de os.DirEntry (cached) para evitar llamadas a stat()
                         st = entry.stat(follow_symlinks=False)
                         if st.st_size < min_size:
                             continue
-                        if (skip_protected and is_protected_path(p_entry)):
+                        if skip_protected and is_protected_path(p_entry):
                             continue
-                        if not _is_valid_candidate(p_entry, st.st_size):
+                        if is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
                             continue
                         
                         size_to_paths_map[st.st_size].append(p_entry)
                         visited_paths.add(p_entry)
-                    except (OSError, PermissionError, TypeError):
+                    except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
             pass

@@ -1116,3 +1116,44 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-27T00:32:30` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimizé `draw_gradient_bar` para reducir drásticamente el número de llamadas a `create_line` mediante el uso de `_get_grouped_segments`, evitando el dibujado pixel a pixel cuando hay colores repetidos o degradados sutiles, lo cual alivia la carga del motor gráfico (Canvas) en la interfaz principal.
 - `2026-09-27T00:32:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T00:32:30` Corrida terminada. Total usado hoy: 16.
+- `2026-09-27T00:40:47` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-09-27T00:41:15` Tests FALLARON:
+```
+tect_profiles_never_rep0/Perfil/Cookies'),
+E         +         size_bytes=7,
+E         +     ),
+E         + ]
+
+evolve/tests/test_modules.py:755: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:244: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - AssertionError: assert [BrowserCache...size_bytes=7)] == []
+  
+  Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+  
+  Full diff:
+  - []
+  + [
+  +     BrowserCache(
+  +         browser='Chrome',
+  +         path=PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0/Perfil/Cookies'),
+  +         size_bytes=7,
+  +     ),
+  + ]
+1 failed, 298 passed, 4 warnings in 1.46s
+
+```
+- `2026-09-27T00:41:15` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Optimizé el cálculo de `directory_size` y `detect_profiles` reemplazando la recursión manual por una lógica de iteración más eficiente, reduciendo el uso de memoria de la pila y eliminando llamadas redundantes a `os.stat` dentro del bucle de escaneo.
+- `2026-09-27T00:41:41` 🛑 Propuesta bloqueada por la guardia en diskreport.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: ExtStats, ExtStats.__init__
+- `2026-09-27T00:42:09` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` para obtener metadatos (tamaño y tipo) directamente del sistema operativo, eliminando llamadas innecesarias a `Path.stat()` y múltiples resoluciones de ruta redundantes dentro del bucle de escaneo.
+- `2026-09-27T00:42:18` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: HealthResult.is_healthy
+- `2026-09-27T00:42:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T00:42:18` Corrida terminada. Total usado hoy: 20.
