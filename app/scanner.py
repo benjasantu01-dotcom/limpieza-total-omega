@@ -72,7 +72,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     Returns:
         os.stat_result si es accesible, None en caso de error de permisos o acceso.
     """
-    if entry is None:
+    if entry is None or (entry.is_symlink() or _get_file_attributes(entry) & LIMITS.reparse_point_attr_mask):
         return None
     try:
         return entry.stat(follow_symlinks=False)
@@ -86,10 +86,10 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
     Returns:
         Bitmask de atributos o 0 si no es posible determinar atributos.
     """
-    stats = _safe_stat(entry)
-    if stats and hasattr(stats, 'st_file_attributes'):
-        return int(stats.st_file_attributes)
-    return 0
+    try:
+        return entry.stat(follow_symlinks=False).st_file_attributes # type: ignore
+    except (AttributeError, OSError):
+        return 0
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """
@@ -179,8 +179,7 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Detecta si una entrada es un punto de reanálisis mediante atributos Win32."""
-        attributes = _get_file_attributes(entry)
-        return bool(attributes & LIMITS.reparse_point_attr_mask)
+        return bool(_get_file_attributes(entry) & LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
@@ -192,8 +191,9 @@ class Scanner:
             return False
         if not self._is_inside_base_root(entry.path.lower()):
             return False
+        if self._is_reparse_point(entry) or entry.is_symlink():
+            return False
         
-        # Comprobar accesibilidad inmediata ante bloqueos de sistema o archivos en uso
         try:
             if not os.access(entry.path, os.R_OK):
                 return False
@@ -201,7 +201,6 @@ class Scanner:
             return False
         
         try:
-            # Usar ruta absoluta resuelta para el chequeo de seguridad
             abs_path = Path(entry.path).resolve()
             parent_abs_path = abs_path.parent
             parent_str = str(parent_abs_path).lower()
@@ -212,7 +211,7 @@ class Scanner:
         except (OSError, RuntimeError):
             return False
             
-        return not (self._is_reparse_point(entry) or entry.is_symlink())
+        return True
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Gestiona el descenso recursivo de directorios."""

@@ -398,7 +398,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     except (OSError, IOError, PermissionError, AttributeError): 
         return None
     finally:
-        if temp_path.exists():
+        if temp_path.exists() and is_safe_to_modify(str(temp_path)):
             try: os.remove(temp_path)
             except (OSError, PermissionError): pass
 
