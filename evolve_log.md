@@ -929,3 +929,42 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-27T08:20:51` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: SystemMetrics.is_finite, SystemMetrics.validate
 - `2026-09-27T08:20:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T08:20:51` Corrida terminada. Total usado hoy: 200.
+- `2026-09-27T08:29:26` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-09-27T08:30:39` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se reforzó el manejo de errores en `_setup_application` y se agregó una validación de seguridad adicional en `_ensure_path_writable_and_clean` para detectar caracteres de control (potencialmente peligrosos en rutas de Windows) antes de cualquier operación, aplicando el enfoque de validación defensiva exigido.
+- `2026-09-27T08:31:07` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `parse_windows_process_csv` añadiendo validación explícita para evitar errores de tipo al procesar entradas malformadas, asegurando que `pid` y `ws` sean valores numéricos positivos antes de intentar convertirlos, previniendo posibles excepciones en tiempo de ejecución.
+- `2026-09-27T08:31:30` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-27T08:31:55` Tests FALLARON:
+```
+_text("importante")
+    
+        origen = tmp_path / "cualquiera.txt"
+        origen.write_text("x")
+        item = quarantine.quarantine_file(origen, base=cuarentena)
+    
+        # Manifiesto manipulado para apuntar afuera de la cuarentena.
+        items = quarantine.load_manifest(cuarentena)
+        items[0].stored_name = "../no-tocar.txt"
+        quarantine.save_manifest(items, cuarentena)
+    
+>       with pytest.raises(safety.UnsafePathError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE UnsafePathError
+
+evolve/tests/test_safety.py:255: Failed
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:244: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+1 failed, 298 passed, 4 warnings in 0.84s
+
+```
+- `2026-09-27T08:31:55` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `load_manifest` para prevenir fallos al encontrar archivos corrompidos o bloqueados, sustituyendo el `except` genérico por bloques específicos y validando la existencia de la ruta de almacenamiento antes de procesarla para evitar errores de E/S innecesarios.
+- `2026-09-27T08:31:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T08:31:55` Corrida terminada. Total usado hoy: 204.
