@@ -166,7 +166,7 @@ class ProblemCriterion(NamedTuple):
         try:
             msg: str = self.message_format.format(val)[:_MAX_MSG_CHUNK]
             return msg if _ensure_safe_text(msg) else None
-        except (ValueError, TypeError, AttributeError, KeyError):
+        except (ValueError, TypeError, KeyError):
             return None
 
 class AreaExplanation(NamedTuple):

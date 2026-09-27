@@ -1480,3 +1480,15 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-27T03:38:11` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-27T03:38:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T03:38:11` Corrida terminada. Total usado hoy: 88.
+- `2026-09-27T03:44:14` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-09-27T03:44:17` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-27T03:44:17` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-27T03:44:37` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-27T03:44:37` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-27T03:45:07` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-27T03:45:07` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-27T03:46:06` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ProblemCriterion.format_if_triggered` capturando excepciones específicas durante el formateo y asegurando que `_ensure_safe_text` valide el resultado, evitando que un fallo en el formateo del mensaje interrumpa el flujo del asistente.
+- `2026-09-27T03:46:40` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-27T03:46:50` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-27T03:46:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T03:46:50` Corrida terminada. Total usado hoy: 92.
