@@ -680,3 +680,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-27T06:39:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-27T06:39:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T06:39:04` Corrida terminada. Total usado hoy: 160.
+- `2026-09-27T06:47:36` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-09-27T06:48:19` ➖ Sin cambios en safety.py (enfoque: seguridad defensiva). Motivo: Se ha añadido una validación estricta en `_validate_boundary_conditions` para prevenir el acceso a unidades de red y extraíbles mediante la resolución de la ruta (`path.anchor`), asegurando que incluso rutas que superen validaciones previas sean bloqueadas si pertenecen a volúmenes inseguros, reforzando la seguridad defensiva contra manipulación de dispositivos externos.
+- `2026-09-27T06:48:46` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-27T06:49:16` ➖ Sin cambios en settings.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad de la persistencia mediante la implementación de `os.replace` atómico dentro de un bloque `try-finally` que garantiza la limpieza de archivos temporales y se añadió una validación estricta de permisos de escritura (`os.access`) antes de cualquier operación de I/O en la ruta de configuración para prevenir intentos de manipulación en directorios no autorizados.
+- `2026-09-27T06:49:29` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-09-27T06:49:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T06:49:29` Corrida terminada. Total usado hoy: 164.
