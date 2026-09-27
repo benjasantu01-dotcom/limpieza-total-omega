@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 25
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 243
+- Sin respuesta de la IA (error o límite): 244
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 93 | 8 | 18 | 9 | 136 |
-| 2026-09-27 | 80 | 17 | 24 | 12 | 107 |
+| 2026-09-26 | 91 | 8 | 17 | 9 | 135 |
+| 2026-09-27 | 82 | 17 | 24 | 12 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
-- seguridad defensiva: **35**
 - manejo de errores y validación de entradas: **35**
+- seguridad defensiva: **33**
 - rendimiento: **31**
-- robustez ante casos límite: **21**
+- robustez ante casos límite: **23**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
 - `safety.py`: **18**
 - `browser.py`: **16**
-- `quarantine.py`: **15**
+- `duplicates.py`: **16**
 - `settings.py`: **15**
-- `duplicates.py`: **15**
 - `scanner.py`: **14**
+- `quarantine.py`: **14**
 - `healthscore.py`: **13**
-- `memory.py`: **12**
 - `assistant.py`: **12**
+- `memory.py`: **11**
 - `organizer.py`: **10**
 - `startup.py`: **7**
+- `branding.py`: **5**
 - `main.py`: **4**
-- `branding.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T10:12:47` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `suggest_keeper` y `format_group` ante casos límite donde los archivos pueden haber desaparecido del sistema de archivos entre el análisis y la visualización, asegurando que el proceso no colapse por excepciones de acceso y maneje correctamente las rutas comparadas.
+- `2026-09-27T10:11:47` **branding.py** (robustez ante casos límite): Se ha robustecido el manejo de rutas en `save_logo_svg` y `_validate_destination` para prevenir errores de concurrencia o permisos al verificar la existencia y el estado de los directorios antes de la escritura, alineándose con el enfoque de robustez ante casos límite.
 - `2026-09-27T10:01:38` **scanner.py** (rendimiento): Optimicé el rendimiento de `_is_safe_entry` eliminando la creación repetitiva de objetos `Path` y reduciendo las llamadas a `is_protected_path` mediante la validación directa del string normalizado, evitando así el overhead de resolución de rutas en cada iteración del bucle.
 - `2026-09-27T09:53:03` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_attrs` y otras verificaciones de estado reemplazando llamadas repetidas al sistema de archivos por una cache LRU de mayor capacidad y evitando el cálculo redundante de rutas UNC en cada iteración del bucle de validación.
 - `2026-09-27T09:52:06` **quarantine.py** (rendimiento): Optimicé el rendimiento de `restore_item` y `purge_item` reemplazando la búsqueda lineal por indexación mediante diccionarios, evitando O(N^2) en operaciones frecuentes y mejorando la eficiencia al manejar listas de cuarentena grandes.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T09:10:39` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `MemorySnapshot` y sus métodos mediante docstrings más precisos y la adición de Type Hints en la estructura `MEMORYSTATUSEX`, asegurando que el código sea autodocumentado y consistente con los estándares de mantenimiento exigidos.
 - `2026-09-27T09:01:21` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints explícitos en la función `compute_score` y `_evaluate_rules`, además de simplificar la lógica de validación de métricas mediante una reestructuración del flujo en `compute_score` para mejorar la legibilidad y evitar redundancias en el manejo de errores.
 - `2026-09-27T09:00:54` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de hashing y el pipeline de procesamiento, clarificando las precondiciones, el flujo de datos y las excepciones manejadas, lo cual facilita el mantenimiento y la auditoría del código.
-- `2026-09-27T09:00:27` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad de `_collect_summary_data` y `walk_files` mediante Type Hints más precisos, un docstring explicativo sobre el uso del heap, y la consolidación de la lógica de extensión para evitar redundancias.
-- `2026-09-27T08:51:59` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave y se ha optimizado el uso de type hints y estructuras de datos para clarificar el flujo de control y las responsabilidades en el escaneo recursivo.

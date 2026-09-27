@@ -347,8 +347,7 @@ def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     (mtime, longitud_de_la_ruta). Se prefiere el archivo más antiguo.
     """
     try:
-        if not path.is_file() or not _safe_path_check(path):
-            return None
+        # Usamos lstat/stat sin resolver para no disparar errores de acceso en symlinks rotos
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
     except (OSError, PermissionError, ValueError, AttributeError):
@@ -389,11 +388,12 @@ def format_group(group: DuplicateGroup) -> List[str]:
         if not isinstance(path, Path):
             continue
         try:
-            if not _safe_path_check(path):
+            if not path.exists():
+                lines.append(f"   [desaparecido] {path}")
+            elif not _safe_path_check(path):
                 lines.append(f"   [inaccesible] {path}")
             else:
-                # Comparamos rutas absolutas normalizadas si el archivo aún existe
-                is_keeper = (keeper is not None and path.absolute() == keeper.absolute())
+                is_keeper = (keeper is not None and path.resolve() == keeper.resolve())
                 label = 'conservar' if is_keeper else 'duplicado'
                 lines.append(f"   [{label}] {path}")
         except (OSError, RuntimeError):

@@ -374,11 +374,14 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     """Guarda el logo SVG en disco tras validar la seguridad de la ruta destino."""
     try:
         path = _validate_destination(destination)
-        if not path:
-            return None
+        if not path: return None
         
+        # Pre-creación defensiva de directorios y chequeo de escritura
+        dest_dir = path.parent
+        if not dest_dir.exists():
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            
         safe_size = max(16, min(1024, int(size)))
-        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(logo_svg(safe_size), encoding="utf-8")
         return path if path.is_file() else None
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError):
@@ -386,13 +389,15 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
 
 def _validate_destination(dest: Any) -> Optional[Path]:
     """Valida que la ruta sea segura para escritura mediante protocolos de seguridad."""
-    if not isinstance(dest, (str, Path)):
+    if not isinstance(dest, (str, Path)): return None
+    try:
+        path = Path(dest).resolve()
+        if is_protected_path(path) or not is_safe_to_modify(path):
+            return None
+        ensure_safe_to_modify(path)
+        return path
+    except (OSError, RuntimeError):
         return None
-    path = Path(dest).resolve()
-    if is_protected_path(path) or not is_safe_to_modify(path):
-        return None
-    ensure_safe_to_modify(path)
-    return path
 
 def logo_ascii() -> str:
     """Retorna una representación ASCII del logo para logs de consola."""
