@@ -968,3 +968,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-27T08:31:55` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `load_manifest` para prevenir fallos al encontrar archivos corrompidos o bloqueados, sustituyendo el `except` genérico por bloques específicos y validando la existencia de la ruta de almacenamiento antes de procesarla para evitar errores de E/S innecesarios.
 - `2026-09-27T08:31:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T08:31:55` Corrida terminada. Total usado hoy: 204.
+- `2026-09-27T08:39:38` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-09-27T08:40:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-27T08:40:53` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_get_path_stat_robust` agregando una validación específica para detectar archivos de dispositivo (device files) antes de intentar acceder a sus metadatos, evitando posibles bloqueos o lecturas erróneas de bajo nivel en el sistema de archivos.
+- `2026-09-27T08:41:19` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-27T08:41:33` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-09-27T08:41:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T08:41:33` Corrida terminada. Total usado hoy: 208.

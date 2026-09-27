@@ -372,6 +372,8 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     """
     Intenta obtener metadatos (stat) del sistema de archivos con validación.
     """
+    if _is_device_file(path):
+        raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
     if not path.exists():
         raise UnsafePathError(f"Ruta inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     try:

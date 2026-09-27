@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 244
 
@@ -16,22 +16,22 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 115 | 9 | 22 | 10 | 144 |
-| 2026-09-27 | 62 | 13 | 17 | 12 | 100 |
+| 2026-09-26 | 112 | 9 | 22 | 10 | 143 |
+| 2026-09-27 | 63 | 13 | 19 | 12 | 101 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **41**
 - legibilidad y documentación: **40**
-- manejo de errores y validación de entradas: **34**
-- rendimiento: **31**
+- manejo de errores y validación de entradas: **35**
 - robustez ante casos límite: **31**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
-- `duplicates.py`: **17**
-- `safety.py`: **17**
+- `safety.py`: **18**
+- `diskreport.py`: **18**
+- `duplicates.py`: **16**
 - `settings.py`: **16**
 - `browser.py`: **15**
 - `quarantine.py`: **14**
@@ -42,10 +42,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **9**
 - `startup.py`: **8**
 - `main.py`: **6**
-- `branding.py`: **5**
+- `branding.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T08:40:53` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` agregando una validación específica para detectar archivos de dispositivo (device files) antes de intentar acceder a sus metadatos, evitando posibles bloqueos o lecturas erróneas de bajo nivel en el sistema de archivos.
 - `2026-09-27T08:31:07` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_windows_process_csv` añadiendo validación explícita para evitar errores de tipo al procesar entradas malformadas, asegurando que `pid` y `ws` sean valores numéricos positivos antes de intentar convertirlos, previniendo posibles excepciones en tiempo de ejecución.
 - `2026-09-27T08:30:39` **main.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_setup_application` y se agregó una validación de seguridad adicional en `_ensure_path_writable_and_clean` para detectar caracteres de control (potencialmente peligrosos en rutas de Windows) antes de cualquier operación, aplicando el enfoque de validación defensiva exigido.
 - `2026-09-27T08:20:41` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` eliminando su dependencia implícita de la existencia física del archivo para la comparación (mediante `.resolve(strict=True)`), lo cual fallaba si el archivo era borrado o movido durante la ejecución, y agregué una validación de `None` para prevenir excepciones al manipular rutas potencialmente inexistentes.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T06:09:08` **settings.py** (robustez ante casos límite): Se introdujo una validación robusta contra la manipulación de enlaces simbólicos o puntos de reparse durante la lectura del archivo de configuración, asegurando que la función `_load_impl` verifique explícitamente la integridad física del archivo mediante `os.lstat` antes de abrirlo, previniendo posibles ataques de redirección de archivos.
 - `2026-09-27T05:47:49` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `path.exists()` dentro del bucle de recolección en `_collect_candidates` para manejar la condición de carrera (race condition) donde un archivo podría ser eliminado o renombrado por otro proceso inmediatamente después de ser listado por `os.scandir` pero antes de ser verificado por `stat()`.
 - `2026-09-27T05:46:57` **browser.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar ciclos infinitos en el sistema de archivos (a través de la detección de inodes duplicados mediante un `memo` compartido) y se reforzó la robustez frente a directorios inaccesibles en `_sum_directory_recursive` mediante el uso de `os.scandir` como iterador seguro para manejar permisos denegados de forma silenciosa sin abortar el escaneo total.
-- `2026-09-27T05:28:07` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner moviendo la validación de seguridad de carpetas (`is_protected_path`) de una operación repetitiva por archivo a una comprobación única por directorio, utilizando un conjunto de caché (`protected_cache`) para evitar llamadas redundantes a funciones de sistema en el mismo nivel de jerarquía.
