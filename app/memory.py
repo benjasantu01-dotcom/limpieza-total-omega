@@ -296,7 +296,11 @@ def _is_system_process(pid: int) -> bool:
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _get_process_path(pid: int) -> Optional[Path]:
-    """Resuelve la ruta del ejecutable de un proceso mediante GetModuleFileNameExW."""
+    """
+    Resuelve la ruta absoluta del ejecutable de un proceso mediante la API de PSAPI.
+    Utiliza una máscara de acceso limitada para seguridad y valida que la ruta
+    no pertenezca a directorios protegidos.
+    """
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
     if not handle: return None
@@ -322,7 +326,12 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Libera el Working Set de un proceso si este pasa los chequeos de seguridad."""
+    """
+    Intenta liberar el working set de un proceso. Realiza validaciones estrictas:
+    1. Verifica que el proceso no sea del sistema.
+    2. Comprueba mediante la ruta de acceso que el proceso esté en una ubicación segura.
+    3. Requiere privilegios de proceso (SeIncreaseQuotaPrivilege implícito).
+    """
     if not _is_windows: return False, "Solo soportado en Windows."
     try: 
         target_pid = int(pid)

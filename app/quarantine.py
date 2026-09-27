@@ -682,6 +682,16 @@ def _validate_source_for_quarantine(source: Path) -> Path:
         raise IOError("Archivo origen bloqueado por el sistema.")
     return source
 
+def _cleanup_orphaned_destination(destination: Path) -> None:
+    """Intenta limpiar un destino fallido de forma segura."""
+    if destination.exists():
+        _safe_unlink(destination)
+
+def _verify_transaction_integrity(item: QuarantineItem, destination: Path) -> None:
+    """Confirma que el archivo final cumple con los estándares de integridad."""
+    if not item.verify_integrity(destination):
+        raise RuntimeError("Integridad post-registro fallida.")
+
 def quarantine_file(
     source: PathLike,
     reason: str = "Marcado como sospechoso",
@@ -742,13 +752,11 @@ def quarantine_file(
                     raise RuntimeError("El archivo origen sigue bloqueado por el sistema.")
         
         item = _register_quarantine_item(destination, source_path, file_hash, reason, original_size, base)
-        if not item.verify_integrity(destination):
-            raise RuntimeError("Integridad post-registro fallida.")
+        _verify_transaction_integrity(item, destination)
             
         return item
     except Exception as e:
-        if destination.exists():
-            _safe_unlink(destination)
+        _cleanup_orphaned_destination(destination)
         raise RuntimeError(f"Error durante aislamiento: {e}")
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
