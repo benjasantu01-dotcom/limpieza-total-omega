@@ -288,7 +288,7 @@ def validate(raw_values: Any) -> AppSettings:
                 validated_val = validators[key_enum].func(key_enum, raw_val)
                 if validated_val is not None:
                     config[key_enum.value] = validated_val
-    except Exception:
+    except (TypeError, ValueError, AttributeError):
         return DEFAULTS.copy()
     return config
 
@@ -319,7 +319,7 @@ def _load_impl(ruta: Path) -> AppSettings:
                         validated_data[key] = default_val
                 return _coerce_and_verify(validated_data)
         return DEFAULTS.copy()
-    except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError, Exception):
+    except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError):
         return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
@@ -340,7 +340,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             mtime = r.stat().st_mtime if r.exists() else 0.0
             _MANAGER.cache[cache_key] = (mtime, settings)
             return settings.copy()
-        except Exception:
+        except (OSError, PermissionError):
             continue
     return DEFAULTS.copy()
 
