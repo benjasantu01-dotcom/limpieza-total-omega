@@ -182,7 +182,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     """Transforma el CSV generado por PowerShell a una lista de objetos ProcessMemory."""
     if not raw_csv_text: return []
     
-    results = []
+    results: List[ProcessMemory] = []
     seen_pids: Set[int] = set()
 
     for line in raw_csv_text.splitlines():
@@ -279,8 +279,10 @@ def _is_system_process(pid: int) -> bool:
 def _get_process_path(pid: int) -> Optional[Path]:
     """
     Resuelve la ruta absoluta del ejecutable de un proceso mediante GetModuleFileNameExW.
-    Utiliza un handle con privilegios limitados para obtener metadatos y asegura la liberación 
-    del handle mediante el bloque finally. Valida que la ruta no sea protegida antes de retornar.
+    
+    Utiliza un handle de Win32 abierto con `SAFE_VALIDATION_MASK` (privilegios mínimos 
+    necesarios). La validación de la ruta se realiza mediante `is_protected_path` 
+    para garantizar que solo operamos sobre ejecutables no sensibles.
     """
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
@@ -299,7 +301,7 @@ def _get_process_path(pid: int) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
-    """Valida si la ruta del proceso es un candidato seguro para modificar mediante is_safe_to_modify."""
+    """Valida si el proceso es un candidato seguro consultando su ruta ejecutable."""
     exec_path = _get_process_path(pid)
     if not exec_path or not is_safe_to_modify(str(exec_path)):
         return False, "Acceso no autorizado o ruta protegida."
@@ -307,11 +309,13 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Libera el working set de un proceso. 
-    1. Valida el PID (no sistema).
-    2. Verifica permisos de ruta mediante _is_safe_to_trim.
-    3. Abre el proceso con los privilegios mínimos necesarios (TRIM_ACCESS_MASK).
-    4. Ejecuta la función del sistema y asegura el cierre del handle.
+    Libera el working set de un proceso mediante la API `psapi.EmptyWorkingSet`.
+    
+    Flujo de ejecución:
+    1. Validar PID y exclusión de procesos críticos.
+    2. Verificar seguridad de la ruta mediante `_is_safe_to_trim`.
+    3. Abrir handle de proceso con privilegios `TRIM_ACCESS_MASK`.
+    4. Solicitar liberación al sistema y cerrar handle.
     """
     if not _is_windows: return False, "Solo soportado en Windows."
     try: 

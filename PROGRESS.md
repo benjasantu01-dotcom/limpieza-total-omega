@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 240
+- Rechazadas por guardia de seguridad: 39
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 239
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 17 | 1 | 4 | 0 | 24 |
+| 2026-09-25 | 15 | 1 | 3 | 0 | 23 |
 | 2026-09-26 | 137 | 12 | 24 | 11 | 166 |
-| 2026-09-27 | 34 | 5 | 12 | 7 | 50 |
+| 2026-09-27 | 37 | 5 | 12 | 8 | 50 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **43**
+- legibilidad y documentación: **46**
 - seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **36**
-- rendimiento: **29**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `safety.py`: **19**
-- `settings.py`: **18**
+- `settings.py`: **17**
 - `browser.py`: **16**
-- `scanner.py`: **15**
 - `assistant.py`: **15**
+- `healthscore.py`: **15**
 - `quarantine.py`: **15**
-- `healthscore.py`: **14**
-- `duplicates.py`: **14**
-- `memory.py`: **10**
+- `duplicates.py`: **15**
+- `scanner.py`: **14**
+- `memory.py`: **11**
 - `organizer.py`: **9**
 - `startup.py`: **9**
 - `branding.py`: **8**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T04:37:40` **memory.py** (legibilidad y documentación): Mejoré la documentación de `memory.py` mediante type hints explícitos, docstrings técnicos que detallan la lógica de los handle de Win32 y la eliminación de la ambigüedad en la validación de rutas, asegurando que el flujo de seguridad sea autoexplicativo para futuros desarrolladores.
+- `2026-09-27T04:36:14` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en la clase `SystemMetrics` y docstrings precisos en las funciones de cálculo, facilitando la comprensión del flujo de datos en el motor de scoring.
+- `2026-09-27T04:35:46` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, explicando el razonamiento técnico detrás de la lógica de hashing y validación, y se añadieron type hints consistentes en funciones internas que carecían de ellos para asegurar la robustez del código.
 - `2026-09-27T04:27:02` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad de `walk_files` y `_is_excluded_path` mediante la clarificación de los docstrings (explicando el PORQUÉ de las decisiones de seguridad) y la adición de Type Hints detallados, garantizando mayor legibilidad y cumplimiento estricto de las normas del proyecto.
 - `2026-09-27T04:26:47` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados en funciones críticas, aclarando el propósito y el manejo de excepciones de los helpers de bajo nivel para facilitar auditorías de seguridad futuras.
 - `2026-09-27T04:26:21` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos, se extrajo la lógica de normalización de argumentos de `save_logo_svg` para mayor claridad y se refinaron los comentarios críticos en las funciones de dibujo para mejorar la legibilidad del código.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T02:23:38` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` eliminando el uso de `os.remove` en caso de fallo, reemplazándolo por un chequeo explícito de `is_safe_to_modify` antes de cualquier manipulación, garantizando que ninguna operación sobre archivos del sistema o puntos de reparse pueda ocurrir incluso si el flujo de control se ve comprometido.
 - `2026-09-27T02:23:07` **scanner.py** (seguridad defensiva): Se ha restringido el acceso a la lectura de metadatos mediante `_safe_stat` al añadir un chequeo explícito de si el archivo es un punto de reanálisis antes de intentar cualquier operación, evitando así que funciones auxiliares o heurísticas intenten acceder a rutas externas a la estructura del sistema de archivos local y reforzando la seguridad defensiva contra enlaces simbólicos maliciosos.
 - `2026-09-27T02:14:24` **safety.py** (seguridad defensiva): Se introdujo una verificación proactiva contra el uso de `DEVICE_FILE` y `ADS` durante la etapa de normalización en `normalize`, asegurando que cualquier ruta manipulada por el sistema sea validada estructuralmente antes de cualquier resolución de sistema de archivos.
-- `2026-09-27T02:13:34` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` reforzando la validación de integridad y el control de acceso en `_check_isolation_safety` al verificar explícitamente que la ruta destino no sea una sub-ruta del origen, previniendo ataques de recursividad o bloqueo de sistemas de archivos.
-- `2026-09-27T02:03:11` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del `SystemMetrics` mediante la implementación de un método de validación `post_init` más estricto que garantiza que los valores numéricos no solo sean positivos, sino también finitos, evitando inyecciones de valores `inf` o `nan` que podrían romper los cálculos del pipeline.
-- `2026-09-27T01:53:59` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación estricta de rutas en `_sum_directory_recursive` para evitar que, ante errores inesperados durante el escaneo, se procesen rutas que hayan escapado del control de seguridad inicial o que superen los límites de longitud permitidos antes de realizar operaciones de I/O.

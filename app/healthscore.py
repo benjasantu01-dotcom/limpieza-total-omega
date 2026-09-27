@@ -128,7 +128,7 @@ if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Normaliza el volumen de basura: puntaje decreciente linealmente según el umbral."""
+    """Calcula la salud relativa a la basura: decremento lineal ante mayor volumen."""
     return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
@@ -137,19 +137,19 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
     return _clamp(1.0 - _clamp(penalization, 0.0, 1.0))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Normaliza salud de memoria: puntaje basado en porcentaje de RAM libre disponible."""
+    """Calcula salud de memoria: normaliza el porcentaje de RAM disponible frente a umbral."""
     return _clamp(float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Normaliza salud de disco: puntaje basado en el porcentaje de espacio libre disponible."""
+    """Calcula salud de disco: normaliza el espacio libre disponible frente a umbral."""
     return _clamp(float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Normaliza salud de duplicados: penaliza el almacenamiento redundante detectado."""
+    """Calcula salud de duplicados: decremento lineal según volumen de redundancia."""
     return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
-    """Normaliza salud de arranque: penaliza linealmente el número de programas en inicio."""
+    """Calcula salud de arranque: decremento lineal según cantidad de apps iniciadas."""
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
 _PIPELINE: Final[List[PipelineEntry]] = [
@@ -174,6 +174,16 @@ if len(_PIPELINE) != len(WEIGHTS):
 class SystemMetrics:
     """
     Contenedor de datos crudos (inputs) para el motor de salud.
+    
+    Attributes:
+        junk_mb: Tamaño en MB de archivos basura.
+        suspicious_count: Cantidad de archivos sospechosos.
+        suspicious_warnings: Cantidad de advertencias de seguridad.
+        memory_available_percent: RAM disponible como porcentaje.
+        disk_free_percent: Espacio libre en disco como porcentaje.
+        duplicate_mb: Tamaño en MB de archivos duplicados.
+        startup_count: Cantidad de procesos en inicio.
+        quarantined_count: Cantidad de archivos en cuarentena.
     """
     junk_mb: float = 0.0
     suspicious_count: int = 0
