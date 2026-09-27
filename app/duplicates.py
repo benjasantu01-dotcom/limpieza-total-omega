@@ -143,8 +143,14 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo del archivo en bloques para mantener 
-    bajo el uso de memoria. Retorna el digest hexadecimal o None si falla.
+    Calcula el hash SHA256 completo del archivo en bloques para memoria eficiente.
+    
+    Args:
+        path: Ruta al archivo a procesar.
+        chunk_size: Tamaño de lectura por iteración.
+        
+    Returns:
+        Hexadecimal del hash si tiene éxito, None en caso de error de I/O.
     """
     if chunk_size <= 0:
         return None
@@ -168,9 +174,13 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Calcula un hash heurístico inicial sobre los primeros N bytes.
-    Útil para descartar rápidamente archivos con encabezados distintos 
-    sin necesidad de leer el archivo completo.
+    Calcula un hash heurístico sobre los primeros N bytes del archivo.
+    
+    Permite descartar archivos distintos rápidamente basándose en sus encabezados.
+    Si el archivo es menor a read_bytes, se hashlea el archivo completo.
+    
+    Returns:
+        Hexadecimal del hash si tiene éxito, None si ocurre error de acceso.
     """
     if read_bytes <= 0:
         return None
@@ -291,8 +301,15 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Pipeline de hashing jerárquico: utiliza hash parcial para archivos grandes
-    y reduce la carga de I/O antes de calcular el hash final (SHA256).
+    Implementa un pipeline jerárquico de hashing:
+    
+    1. Si el tamaño es <= PARTIAL_READ_BYTES, utiliza hash completo directamente.
+    2. Si es mayor, aplica hash parcial para descartar candidatos y solo
+       aplica hash completo (SHA256) a los que mantienen colisión parcial.
+       
+    Args:
+        size: Tamaño en bytes común entre archivos candidatos.
+        paths: Lista de archivos con el mismo tamaño.
     """
     if not paths or size <= 0:
         return []

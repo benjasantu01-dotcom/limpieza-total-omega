@@ -174,16 +174,6 @@ if len(_PIPELINE) != len(WEIGHTS):
 class SystemMetrics:
     """
     Contenedor de datos crudos (inputs) para el motor de salud.
-    
-    Attributes:
-        junk_mb: Tamaño en MB de archivos basura.
-        suspicious_count: Cantidad de archivos sospechosos.
-        suspicious_warnings: Cantidad de advertencias de seguridad.
-        memory_available_percent: RAM disponible como porcentaje.
-        disk_free_percent: Espacio libre en disco como porcentaje.
-        duplicate_mb: Tamaño en MB de archivos duplicados.
-        startup_count: Cantidad de procesos en inicio.
-        quarantined_count: Cantidad de archivos en cuarentena.
     """
     junk_mb: float = 0.0
     suspicious_count: int = 0
@@ -236,13 +226,6 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     if not math.isfinite(val) or math.isnan(val): return min_val
     return max(min_val, min(val, max_val))
 
-def _to_float(value: Any, default: float = 0.0) -> float:
-    """Conversor defensivo a float, retornando default ante entradas corruptas."""
-    try:
-        val = float(value)
-        return val if (math.isfinite(val) and not math.isnan(val)) else default
-    except (TypeError, ValueError, OverflowError): return default
-
 def grade_for_score(score: float | int) -> str:
     """Helper para obtener el grado alfabético mediante la clase Grade."""
     return Grade.from_score(score)
@@ -250,56 +233,44 @@ def grade_for_score(score: float | int) -> str:
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], ratio: NormalizedRatio, findings: List[str]) -> None:
     """
     Ejecuta reglas de recomendación para un área, sanitizando los mensajes resultantes.
-    
-    Args:
-        metrics: Datos de entrada para las reglas.
-        rules: Tuple de reglas a evaluar.
-        ratio: Valor de salud del dominio.
-        findings: Lista acumulativa de mensajes de recomendación.
     """
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
-                raw_msg = rule.message_factory(metrics)
-                if isinstance(raw_msg, str):
-                    clean_msg = "".join(c for c in raw_msg if c.isprintable()).strip()
-                    if clean_msg:
-                        findings.append(clean_msg[:200])
+                raw_msg: str = rule.message_factory(metrics)
+                clean_msg: str = "".join(c for c in raw_msg if c.isprintable()).strip()
+                if clean_msg:
+                    findings.append(clean_msg[:200])
         except (AttributeError, TypeError, ValueError, ZeroDivisionError, ArithmeticError):
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Ejecuta el Pipeline de salud sobre las métricas y devuelve el resultado unificado.
-    
-    Returns:
-        Objeto HealthResult con los indicadores analizados.
     """
-    if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
     
     recommendations: List[str] = []
-    metric_breakdown: Dict[MetricKey, int] = {k: 0 for k in WEIGHTS}
-    accumulated_score: int = 0
+    metric_breakdown: Dict[MetricKey, int] = {}
+    accumulated_score: float = 0.0
     
     for entry in _PIPELINE:
         try:
-            area_ratio = _clamp(entry.scorer(metrics), 0.0, 1.0)
+            area_ratio: NormalizedRatio = _clamp(entry.scorer(metrics))
+            if entry.rules:
+                _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
+            
+            points: int = int(round(area_ratio * entry.weight))
+            metric_breakdown[entry.area] = points
+            accumulated_score += points
         except (ValueError, TypeError, ZeroDivisionError, ArithmeticError):
-            area_ratio = 0.0
+            metric_breakdown[entry.area] = 0
             
-        if entry.rules:
-            _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
-        
-        weighted_points = int(round(area_ratio * entry.weight))
-        metric_breakdown[entry.area] = weighted_points
-        accumulated_score += weighted_points
-            
-    final_score = int(_clamp(float(accumulated_score), 0.0, 100.0))
-    
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")
     
+    final_score: int = int(_clamp(accumulated_score, 0.0, 100.0))
     return HealthResult(
         score=final_score, 
         grade=grade_for_score(final_score), 
@@ -319,9 +290,8 @@ def summarize(result: HealthResult | None) -> List[str]:
         return ["Error: Informe de salud no disponible."]
     
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-    bd = result.breakdown
     for area, maximo in WEIGHTS.items():
-        points = bd.get(area, 0)
+        points = result.breakdown.get(area, 0)
         lines.append(f"  {area.capitalize():<12} {points:>2}/{maximo:<2} [{_render_bar(points, maximo)}]")
     
     recs = result.recommendations or ["Sin recomendaciones."]

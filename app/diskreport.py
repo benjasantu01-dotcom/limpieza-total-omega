@@ -247,8 +247,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Generador que recorre el sistema de archivos (DFS) usando `os.scandir`.
     
-    Técnica de seguridad: Implementa un registro de inodos visitados (visited_inodes)
-    para detectar ciclos en el FS (hard links/reparse points) y prevenir bucles infinitos.
+    Utiliza un set `visited_inodes` para detectar ciclos causados por enlaces duros 
+    o puntos de reanálisis, evitando la recursión infinita.
     
     Yields:
         Tuple[Path, int]: Ruta absoluta del archivo y su tamaño en bytes.
@@ -261,7 +261,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
-        
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -287,7 +286,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                     yield full_path, st.st_size
                             except (OSError, PermissionError):
                                 continue
-                            
                     except (PermissionError, OSError, ValueError, TypeError):
                         continue
         except (PermissionError, OSError, ValueError, TypeError):
@@ -316,12 +314,10 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root = _validate_root(directory)
     if not root: return []
     
-    # Usamos un dict para la agregación in-place evitando recorridos múltiples
-    stats: Dict[Path, List[int]] = defaultdict(lambda: [0, 0]) # [bytes, count]
+    stats: Dict[Path, List[int]] = defaultdict(lambda: [0, 0])
     
     for path, size_bytes in walk_files(root, skip_protected):
         try:
-            # Determinamos el ancestro inmediato al root
             rel = path.relative_to(root)
             if rel.parts:
                 top_level = root / rel.parts[0]
@@ -345,11 +341,11 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Motor interno de escaneo: realiza un recorrido único sobre el sistema de archivos.
+    Motor interno de escaneo: realiza un recorrido único (DFS) sobre el sistema de archivos.
 
-    Procesa las estadísticas de forma agregada utilizando:
-    - defaultdict: para clasificar bytes y conteos por extensión de archivo.
-    - min-heap: para mantener un Top N eficiente de archivos más pesados en O(N log K).
+    Utiliza:
+    - defaultdict: para clasificar bytes y conteos por extensión.
+    - Min-heap (top_heap): mantiene el Top N de archivos más grandes en tiempo O(N log K).
     """
     if not isinstance(directory, Path) or not directory.is_dir():
         return SummaryData(0, 0, {}, [])
@@ -364,12 +360,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             total_bytes += size_bytes
             total_files += 1
             
-            try:
-                ext = path.suffix.lower() or "(sin extensión)"
-            except (AttributeError, ValueError):
-                ext = "(sin extensión)"
-                
-            stats_obj: ExtStats = ext_stats[ext]
+            ext = path.suffix.lower() if path.suffix else "(sin extensión)"
+            stats_obj = ext_stats[ext]
             stats_obj.total_bytes += size_bytes
             stats_obj.count += 1
             
