@@ -188,11 +188,10 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        """Asegura la integridad de los datos, forzando rangos positivos y sanitización."""
-        for field_name in self.__dict__:
-            val = getattr(self, field_name)
-            if not isinstance(val, (int, float)):
-                setattr(self, field_name, 0.0)
+        """Asegura la integridad de los datos, forzando rangos positivos y sanitizando valores no finitos."""
+        for name, value in self.__dict__.items():
+            if not isinstance(value, (int, float)) or not math.isfinite(float(value)):
+                setattr(self, name, 0.0)
         
         self.junk_mb = max(0.0, float(self.junk_mb))
         self.duplicate_mb = max(0.0, float(self.duplicate_mb))
@@ -206,9 +205,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que todos los campos numéricos sean números finitos y válidos."""
-        return all(math.isfinite(v) for v in (self.junk_mb, self.suspicious_count, self.suspicious_warnings, 
-                  self.memory_available_percent, self.disk_free_percent, self.duplicate_mb, 
-                  self.startup_count, self.quarantined_count))
+        return all(math.isfinite(float(v)) for v in self.__dict__.values())
 
 @dataclass
 class HealthResult:
