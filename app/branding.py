@@ -21,6 +21,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List, Optional, Union, TypedDict, Protocol, NamedTuple
+from enum import Enum, auto
 from types import MappingProxyType
 from functools import lru_cache
 from safety import ensure_safe_to_modify, is_safe_to_modify, is_protected_path
@@ -28,10 +29,16 @@ import math
 
 # Definición de tipos para mejorar la semántica del código
 ColorHex: TypeAlias = str  
-SeverityLevel: TypeAlias = Literal["ok", "info", "warning", "danger"]
 GradeKey: TypeAlias = Literal["A", "B", "C", "D", "F"]
 SeverityStyle: TypeAlias = Tuple[ColorHex, str]  
 RGBTuple: TypeAlias = Tuple[int, int, int]  
+
+class SeverityType(Enum):
+    """Categorías estándar de severidad de riesgo para la aplicación."""
+    OK = "ok"
+    INFO = "info"
+    WARNING = "warning"
+    DANGER = "danger"
 
 # Caché local para evitar recálculo de gradientes en cada frame.
 _GRADIENT_CACHE: dict[Tuple[int, Tuple[ColorHex, ...]], Tuple[ColorHex, ...]] = {}
@@ -139,11 +146,11 @@ FONT_SIZES: Final[Mapping[str, int]] = MappingProxyType({
     "body": UI_FONT_BODY_SIZE, "mono": 11, "caption": 10,
 })
 
-SEVERITY_STYLES: Final[Mapping[SeverityLevel, SeverityStyle]] = MappingProxyType({
-    "ok": (C_SUCCESS, "Correcto"),
-    "info": (C_INFO, "Informativo"),
-    "warning": (C_WARNING, "Advertencia"),
-    "danger": (C_DANGER, "Peligro"),
+SEVERITY_STYLES: Final[Mapping[SeverityType, SeverityStyle]] = MappingProxyType({
+    SeverityType.OK: (C_SUCCESS, "Correcto"),
+    SeverityType.INFO: (C_INFO, "Informativo"),
+    SeverityType.WARNING: (C_WARNING, "Advertencia"),
+    SeverityType.DANGER: (C_DANGER, "Peligro"),
 })
 
 GRADE_COLORS: Final[Mapping[str, ColorHex]] = MappingProxyType({
@@ -163,7 +170,12 @@ SCORE_THRESHOLDS: Final[Tuple[Tuple[float, ColorHex], ...]] = (
     (90.0, C_SUCCESS), (80.0, C_INFO), (65.0, C_WARNING), (50.0, "#ff7b39")
 )
 
-SEVERITY_MAP: Final[Mapping[str, str]] = MappingProxyType({"ok": "\u2713", "info": "\u2139", "warning": "\u26a0", "danger": "\u2716"})
+SEVERITY_MAP: Final[Mapping[SeverityType, str]] = MappingProxyType({
+    SeverityType.OK: "\u2713", 
+    SeverityType.INFO: "\u2139", 
+    SeverityType.WARNING: "\u26a0", 
+    SeverityType.DANGER: "\u2716"
+})
 
 def app_title() -> str:
     """Retorna el título completo de la aplicación incluyendo la versión actual."""
@@ -191,29 +203,37 @@ def tab_label(section: Optional[str]) -> str:
     if not isinstance(section, str): return f"\u2022  Desconocido"
     return f"{icon(section)}  {section}"
 
+def _parse_severity(severity: Optional[str]) -> Optional[SeverityType]:
+    """Helper interno para convertir strings de entrada a SeverityType."""
+    if isinstance(severity, str):
+        try:
+            return SeverityType(severity.lower())
+        except ValueError:
+            pass
+    return None
+
 @lru_cache(maxsize=16)
-def _get_severity_style(severity: Optional[str]) -> Tuple[ColorHex, str]:
+def _get_severity_style(severity_key: Optional[SeverityType]) -> Tuple[ColorHex, str]:
     """Helper interno para recuperar la tupla (color, label) basada en nivel de severidad."""
-    if isinstance(severity, str) and (style := SEVERITY_STYLES.get(severity.lower())):
+    if severity_key and (style := SEVERITY_STYLES.get(severity_key)):
         return style
     return (C_TEXT_MUTED, "Desconocido")
 
 def severity_color(severity: Optional[str]) -> ColorHex:
     """Retorna el código de color hexadecimal asociado a una severidad dada."""
-    return _get_severity_style(severity)[0]
+    return _get_severity_style(_parse_severity(severity))[0]
 
 def severity_label(severity: Optional[str]) -> str:
     """Retorna la etiqueta descriptiva legible para una severidad dada."""
-    if isinstance(severity, str):
-        style = SEVERITY_STYLES.get(severity.lower())
-        return style[1] if style else severity.capitalize()
-    return "Desconocido"
+    sev = _parse_severity(severity)
+    if sev:
+        return SEVERITY_STYLES[sev][1]
+    return severity.capitalize() if isinstance(severity, str) else "Desconocido"
 
 def severity_icon(severity: Optional[str]) -> str:
     """Retorna el glifo unicode representativo para una severidad dada."""
-    if not isinstance(severity, str):
-        return "\u2022"
-    return SEVERITY_MAP.get(severity.lower(), "\u2022")
+    sev = _parse_severity(severity)
+    return SEVERITY_MAP.get(sev, "\u2022") if sev else "\u2022"
 
 def grade_color(grade: Optional[str]) -> ColorHex:
     """Resuelve el color del grado de calificación de salud (A-F)."""

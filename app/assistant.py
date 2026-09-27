@@ -75,16 +75,16 @@ DEFAULT_METRIC_VAL: Final[float] = -1.0
 DEFAULT_RAM_PCT: Final[float] = 50.0
 
 def _is_safe_key(key: str) -> bool:
-    """Verifica que la clave no sea un método interno o propiedad sensible."""
+    """Valida que una clave de diccionario o atributo no sea privada o interna."""
     return isinstance(key, str) and not (key.startswith("__") or key.startswith("_") or key == "ingest")
 
 def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
     """
-    Decorador que estandariza el manejo de errores en las consultas de usuario.
+    Decorador protector para handlers de consulta.
     
-    Asegura que cualquier `SystemContext` sea válido antes de procesar y que 
-    la ejecución no interrumpa la interfaz en caso de excepciones inesperadas,
-    garantizando siempre un objeto `Answer` como retorno.
+    Asegura que el `SystemContext` esté inicializado y encapsula errores de
+    ejecución para evitar caídas en el hilo principal de la UI, retornando
+    siempre una respuesta válida de respaldo.
     """
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
@@ -116,18 +116,19 @@ class AssistantConfig(NamedTuple):
 @dataclass(frozen=True)
 class MetricSpec:
     """
-    Define un contrato para métricas numéricas.
+    Define un contrato de validación para métricas numéricas.
     
-    Validaciones:
-        - Tipo (int/float, no booleano).
-        - Rango lógico definido por min_val/max_val.
+    Attributes:
+        cast_func: Función de conversión (int/float).
+        min_val: Cota inferior inclusiva (debe ser finita).
+        max_val: Cota superior inclusiva (debe ser finita).
     """
     cast_func: Callable[[Any], Any]
     min_val: float
     max_val: float
 
     def is_valid_type(self, val: Any) -> bool:
-        """Valida que el valor sea un número real; excluye explícitamente booleanos."""
+        """Verifica tipos numéricos, excluyendo explícitamente booleanos."""
         return isinstance(val, (int, float)) and not isinstance(val, bool)
 
 class ProblemCriterion(NamedTuple):
@@ -135,7 +136,6 @@ class ProblemCriterion(NamedTuple):
     Regla de negocio para determinar si una métrica representa un problema.
     
     Ejemplo: {disk_free_percent, 10.0, "<", "X% de disco libre"}
-    Si el valor es < 10, dispara la alerta.
     """
     metric_key: str
     threshold: float
@@ -155,7 +155,7 @@ class ProblemCriterion(NamedTuple):
 
     def format_if_triggered(self, ctx: SystemContext) -> Optional[str]:
         """
-        Formatea el mensaje de advertencia. Retorna None si el valor es seguro.
+        Formatea el mensaje de advertencia si la métrica excede el umbral.
         Realiza saneamiento del string resultante antes de retornar.
         """
         val: float = ctx.get_metric(self.metric_key, DEFAULT_METRIC_VAL)

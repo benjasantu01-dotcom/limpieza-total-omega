@@ -92,6 +92,7 @@ MAX_PATH_LEN: int = 260
 
 @dataclass
 class BrowserCache:
+    """Representa un hallazgo de caché de navegador con su ubicación y tamaño."""
     browser: str
     path: Path
     size_bytes: int
@@ -153,8 +154,8 @@ def _is_path_inside_base(target_abs: str, base_abs: str) -> bool:
     """
     Verifica que target_abs esté contenido jerárquicamente dentro de base_abs.
     
-    Utiliza normalización de rutas para detectar intentos de escape mediante 
-    referencias '..' o ataques de path traversal.
+    Normaliza ambas rutas para prevenir ataques de path traversal o escapes
+    a través de referencias relativas.
     """
     if not isinstance(target_abs, str) or not isinstance(base_abs, str):
         return False
@@ -194,7 +195,7 @@ def _should_skip_entry(
     is_junction_fn: JunctionChecker
 ) -> bool:
     """
-    Aplica políticas de filtrado de sistema de archivos antes de procesar una entrada.
+    Aplica políticas de filtrado antes de procesar una entrada de sistema de archivos.
     
     Ignora archivos en blacklist, rutas UNC, longitudes excesivas, enlaces simbólicos,
     junctions o archivos con atributos de sistema/ocultos.
@@ -215,10 +216,8 @@ def _should_skip_entry(
 
 def _get_entry_size(entry: os.DirEntry) -> int:
     """
-    Retorna el tamaño de una entrada ignorando resolución de enlaces.
-    
-    Captura excepciones de acceso para permitir escaneos continuos en caso 
-    de archivos bloqueados por el sistema operativo.
+    Retorna el tamaño en bytes de un archivo, ignorando resolución de enlaces.
+    Captura excepciones de acceso (ej. archivo bloqueado) para evitar abortos.
     """
     try:
         return int(entry.stat(follow_symlinks=False).st_size)
@@ -234,14 +233,17 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Motor recursivo para cálculo de tamaño con detección de ciclos y robustez.
+    Recorre el árbol de directorios para sumar el tamaño de archivos.
+    
+    Implementa un mecanismo de memoización basado en números de inodo (st_ino)
+    para evitar conteos duplicados en presencia de hard links o ciclos.
     """
     if depth > MAX_SCAN_DEPTH:
         return 0
     
     try:
         root_abs = root_path.resolve(strict=True)
-        # Validación de seguridad defensiva en cada nodo de la recursión
+        # Validación defensiva de seguridad antes de cada acceso
         if not is_safe_to_modify(root_abs) or is_protected_path(root_abs):
             return 0
         
@@ -274,8 +276,7 @@ def _sum_directory_recursive(
 
 def directory_size(path: Optional[OSPath]) -> int:
     """
-    Punto de entrada para calcular el tamaño de una ruta.
-    
+    Punto de entrada público para calcular el tamaño de una ruta.
     Valida la integridad de seguridad del directorio antes de iniciar la recursión.
     """
     if not path: return 0
@@ -318,15 +319,15 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
     """
-    Escaneo principal de cachés: detecta, valida y calcula el tamaño de los directorios 
-    definidos en BROWSER_CACHE_PATHS para las bases de datos proporcionadas.
+    Escaneo principal: detecta, valida y calcula el tamaño de los directorios 
+    de caché definidos.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     k32 = _get_kernel32()
     found: List[BrowserCache] = []
     
-    # Memo compartido para todo el proceso de detección para evitar procesar la misma ruta dos veces
+    # Memo compartido global para evitar procesar la misma ruta dos veces en el ciclo
     global_memo: Dict[int, int] = {}
     
     for base in raw_bases:
@@ -356,7 +357,7 @@ def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
 
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """Genera un resumen textual formateado con los resultados obtenidos."""
+    """Genera un reporte textual formateado con los resultados obtenidos."""
     current_caches = caches if caches is not None else detect_profiles()
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]

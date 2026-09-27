@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 41
-- Sin cambios (nada sustancial que mejorar): 22
+- Rechazadas por guardia de seguridad: 40
+- Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 244
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 112 | 9 | 22 | 10 | 143 |
-| 2026-09-27 | 63 | 13 | 19 | 12 | 101 |
+| 2026-09-26 | 111 | 9 | 21 | 9 | 142 |
+| 2026-09-27 | 66 | 13 | 19 | 12 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **43**
 - seguridad defensiva: **41**
-- legibilidad y documentación: **40**
 - manejo de errores y validación de entradas: **35**
 - robustez ante casos límite: **31**
-- rendimiento: **28**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,19 +33,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **18**
 - `duplicates.py`: **16**
 - `settings.py`: **16**
-- `browser.py`: **15**
+- `browser.py`: **16**
+- `assistant.py`: **14**
 - `quarantine.py`: **14**
-- `healthscore.py`: **13**
-- `assistant.py`: **13**
 - `scanner.py`: **13**
 - `memory.py`: **12**
+- `healthscore.py`: **12**
 - `organizer.py`: **9**
 - `startup.py`: **8**
 - `main.py`: **6**
-- `branding.py`: **4**
+- `branding.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T08:51:59` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave y se ha optimizado el uso de type hints y estructuras de datos para clarificar el flujo de control y las responsabilidades en el escaneo recursivo.
+- `2026-09-27T08:51:37` **branding.py** (legibilidad y documentación): Se introdujo un `Enum` llamado `SeverityType` para reemplazar los literales de string en `SeverityLevel`, mejorando la seguridad de tipos, la autocompletado y eliminando la necesidad de múltiples validaciones manuales de strings en funciones de acceso.
+- `2026-09-27T08:51:00` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de manipulación de datos y la estructuración mediante docstrings descriptivos, asegurando que el contrato de cada función (entradas esperadas, transformaciones y garantías de seguridad) sea evidente para futuros desarrolladores.
 - `2026-09-27T08:40:53` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` agregando una validación específica para detectar archivos de dispositivo (device files) antes de intentar acceder a sus metadatos, evitando posibles bloqueos o lecturas erróneas de bajo nivel en el sistema de archivos.
 - `2026-09-27T08:31:07` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_windows_process_csv` añadiendo validación explícita para evitar errores de tipo al procesar entradas malformadas, asegurando que `pid` y `ws` sean valores numéricos positivos antes de intentar convertirlos, previniendo posibles excepciones en tiempo de ejecución.
 - `2026-09-27T08:30:39` **main.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_setup_application` y se agregó una validación de seguridad adicional en `_ensure_path_writable_and_clean` para detectar caracteres de control (potencialmente peligrosos en rutas de Windows) antes de cualquier operación, aplicando el enfoque de validación defensiva exigido.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T06:27:47` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `_collect_summary_data` envolviendo el acceso a `entry.path` con una normalización y verificación explícita, previniendo que rutas malformadas o inconsistentes causen errores silenciosos o accesos fuera de los límites permitidos.
 - `2026-09-27T06:20:16` **browser.py** (seguridad defensiva): He mejorado la seguridad defensiva al reemplazar el uso de `str(path)` para verificaciones de seguridad por objetos `Path` normalizados en `_sum_directory_recursive`, evitando riesgos de path traversal, y añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del nodo actual antes de profundizar en cada directorio.
 - `2026-09-27T06:18:56` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_safe_text_structure` implementando una lista de verificación explícita de caracteres prohibidos y normalizando el texto antes de la validación, evitando que caracteres Unicode (como los RTL) o secuencias de escape sean usados para ofuscar rutas o comandos.
-- `2026-09-27T06:09:08` **settings.py** (robustez ante casos límite): Se introdujo una validación robusta contra la manipulación de enlaces simbólicos o puntos de reparse durante la lectura del archivo de configuración, asegurando que la función `_load_impl` verifique explícitamente la integridad física del archivo mediante `os.lstat` antes de abrirlo, previniendo posibles ataques de redirección de archivos.
-- `2026-09-27T05:47:49` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `path.exists()` dentro del bucle de recolección en `_collect_candidates` para manejar la condición de carrera (race condition) donde un archivo podría ser eliminado o renombrado por otro proceso inmediatamente después de ser listado por `os.scandir` pero antes de ser verificado por `stat()`.
-- `2026-09-27T05:46:57` **browser.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar ciclos infinitos en el sistema de archivos (a través de la detección de inodes duplicados mediante un `memo` compartido) y se reforzó la robustez frente a directorios inaccesibles en `_sum_directory_recursive` mediante el uso de `os.scandir` como iterador seguro para manejar permisos denegados de forma silenciosa sin abortar el escaneo total.
