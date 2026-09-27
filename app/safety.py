@@ -388,7 +388,8 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     """
     Verifica metadatos en disco y compara con el estado inicial capturado.
     Implementa protección contra ataques TOCTOU (Time-of-Check to Time-of-Use)
-    asegurando que el descriptor de archivo no haya sido cambiado tras la inspección.
+    comparando los identificadores únicos del inodo o índice para asegurar que
+    el objeto en disco no haya sido reemplazado por otro tras la inspección inicial.
     """
     if not os.access(path, os.R_OK):
         raise UnsafePathError(f"Acceso de lectura denegado a {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)

@@ -223,26 +223,27 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
     """
     Elimina un archivo tras validar seguridad y opcionalmente su integridad.
-    Retorna True solo si la eliminación física fue exitosa.
+    
+    Verifica que la ruta sea segura, no protegida y que el hash coincida
+    con el registro de cuarentena antes de realizar el unlink físico.
+    
+    Returns:
+        True solo si la eliminación física fue exitosa.
     """
     try:
         if not path.exists():
             return False
             
-        # Validación: solo operar sobre rutas resueltas y seguras
         resolved = path.resolve()
-        
         if not is_safe_to_modify(resolved) or is_protected_path(resolved):
             return False
             
         if not resolved.is_file() or resolved.is_symlink():
             return False
             
-        # Validación de integridad si se proporciona hash
         if expected_hash and _get_sha256(resolved) != expected_hash:
             return False
 
-        # Verificación de bloqueo y borrado atómico
         if not _is_file_locked(resolved):
             resolved.unlink()
             return True

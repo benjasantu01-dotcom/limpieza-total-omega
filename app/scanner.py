@@ -162,7 +162,7 @@ class Scanner:
     jerarquías complejas y asegura que todo acceso sea validado vía _is_safe_entry.
     """
     def __init__(self, base_root: Path) -> None:
-        self.results: ScanResult = []
+        self.results: List[Suspicion] = []
         self.seen: set[str] = set()
         self.protected_cache: set[str] = set()
         self.base_root: Path = base_root.resolve()
@@ -242,19 +242,14 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Itera todas las funciones de heurística y acumula hallazgos sin detener el escaneo."""
-        try:
-            if not entry.is_file(): return
-        except OSError: return
-
+        """Itera todas las funciones de heurística y acumula hallazgos encontrados."""
         for check_fn in ALL_CHECKS:
             try:
-                res = check_fn(path, entry, self.now_ts)
-                if isinstance(res, Suspicion):
-                    self.results.append(res)
-            except (Exception) as e:
+                finding = check_fn(path, entry, self.now_ts)
+                if finding is not None:
+                    self.results.append(finding)
+            except Exception as e:
                 logger.debug(f"Error en heurística {check_fn.__name__} para {path}: {e}")
-                continue
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un archivo puntual contra todas las heurísticas definidas."""
@@ -269,9 +264,9 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     for check_fn in ALL_CHECKS:
         try:
             res = check_fn(path, entry, now_ts)
-            if isinstance(res, Suspicion):
+            if res is not None:
                 findings.append(res)
-        except (Exception):
+        except Exception:
             continue
     return findings
 
