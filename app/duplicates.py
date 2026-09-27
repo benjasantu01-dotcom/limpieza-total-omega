@@ -247,7 +247,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 for entry in iterator:
                     try:
                         p_entry = Path(entry.path)
-                        if p_entry in visited_paths or not is_safe_to_modify(p_entry):
+                        # Comprobación de existencia para prevenir race conditions post-scandir
+                        if p_entry in visited_paths or not p_entry.exists() or not is_safe_to_modify(p_entry):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):

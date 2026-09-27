@@ -234,10 +234,7 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Motor recursivo para cálculo de tamaño.
-    
-    Utiliza memoización (st_ino) para evitar redundancias y bucles infinitos,
-    respetando los límites de profundidad y longitud de ruta configurados.
+    Motor recursivo para cálculo de tamaño con detección de ciclos y robustez.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
@@ -324,7 +321,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     k32 = _get_kernel32()
     found: List[BrowserCache] = []
     
-    # Memo compartido para todo el proceso de detección
+    # Memo compartido para todo el proceso de detección para evitar procesar la misma ruta dos veces
     global_memo: Dict[int, int] = {}
     
     for base in raw_bases:

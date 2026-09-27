@@ -631,3 +631,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-27T05:39:04` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-09-27T05:39:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T05:39:04` Corrida terminada. Total usado hoy: 136.
+- `2026-09-27T05:46:28` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-09-27T05:46:57` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar ciclos infinitos en el sistema de archivos (a través de la detección de inodes duplicados mediante un `memo` compartido) y se reforzó la robustez frente a directorios inaccesibles en `_sum_directory_recursive` mediante el uso de `os.scandir` como iterador seguro para manejar permisos denegados de forma silenciosa sin abortar el escaneo total.
+- `2026-09-27T05:47:22` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-09-27T05:47:49` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita de `path.exists()` dentro del bucle de recolección en `_collect_candidates` para manejar la condición de carrera (race condition) donde un archivo podría ser eliminado o renombrado por otro proceso inmediatamente después de ser listado por `os.scandir` pero antes de ser verificado por `stat()`.
+- `2026-09-27T05:48:01` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-09-27T05:48:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T05:48:01` Corrida terminada. Total usado hoy: 140.
