@@ -224,8 +224,11 @@ def _read_windows_snapshot() -> MemorySnapshot:
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
     mem_status = _create_mem_status_ex()
-    if kernel32.GlobalMemoryStatusEx(ctypes.byref(mem_status)) != 0 and mem_status.ullTotalPhys > 0:
-        return MemorySnapshot(total=BytesValue(mem_status.ullTotalPhys), available=BytesValue(mem_status.ullAvailPhys))
+    try:
+        if kernel32.GlobalMemoryStatusEx(ctypes.byref(mem_status)) != 0 and mem_status.ullTotalPhys > 0:
+            return MemorySnapshot(total=BytesValue(mem_status.ullTotalPhys), available=BytesValue(mem_status.ullAvailPhys))
+    except (ctypes.ArgumentError, OSError):
+        pass
     return _EMPTY_SNAPSHOT
 
 @lru_cache(maxsize=1)
@@ -347,5 +350,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not psapi.EmptyWorkingSet(proc_handle):
             return False, "Operación denegada por el sistema."
         return True, f"Working set liberado. {TRIM_WARNING}"
+    except (ctypes.ArgumentError, OSError):
+        return False, "Error fatal al intentar modificar el proceso."
     finally: 
         kernel32.CloseHandle(proc_handle)

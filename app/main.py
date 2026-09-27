@@ -1137,12 +1137,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _worker_thread_logic(self, fn: AsyncCallback, tab: str) -> None:
         """Lógica de ejecución en hilos de fondo."""
-        if self._closing: return
         try:
-            self._safe_run(fn, tab)
-        except Exception as e:
             if not self._closing:
-                self._validate_and_log_error(e, tab)
+                self._safe_run(fn, tab)
         finally:
             if not self._closing:
                 self._safe_run_ui_callback(lambda: (self._set_busy(False), self.set_status("Listo.")))

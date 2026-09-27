@@ -250,11 +250,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Ejecuta el Pipeline de salud sobre las métricas y devuelve el resultado unificado.
     """
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+    if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Configuración o métricas no válidas."])
     
     recommendations: List[str] = []
-    metric_breakdown: Dict[MetricKey, int] = {}
+    metric_breakdown: Dict[MetricKey, int] = {k: 0 for k in WEIGHTS}
     accumulated_score: float = 0.0
     
     for entry in _PIPELINE:
