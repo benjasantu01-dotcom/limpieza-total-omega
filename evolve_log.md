@@ -1109,3 +1109,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-27T00:22:27` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (como `Scanner.results` y `directory_stack`) y se refactorizó la lógica de acumulación en `_run_file_heuristics` para mejorar la legibilidad y mantenimiento, asegurando que las reglas de estilo y seguridad se mantengan estrictas.
 - `2026-09-27T00:22:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T00:22:27` Corrida terminada. Total usado hoy: 12.
+- `2026-09-27T00:30:34` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-09-27T00:31:08` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujo una clase `_SettingsManager` para encapsular la lógica de persistencia y estado en memoria, mejorando la legibilidad al evitar el uso excesivo de variables globales (`_CACHED_SETTINGS`, `_PATH_CACHE`) y centralizando la complejidad en un objeto único y coherente.
+- `2026-09-27T00:31:33` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-27T00:32:11` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext._apply_field
+- `2026-09-27T00:32:30` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimizé `draw_gradient_bar` para reducir drásticamente el número de llamadas a `create_line` mediante el uso de `_get_grouped_segments`, evitando el dibujado pixel a pixel cuando hay colores repetidos o degradados sutiles, lo cual alivia la carga del motor gráfico (Canvas) en la interfaz principal.
+- `2026-09-27T00:32:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T00:32:30` Corrida terminada. Total usado hoy: 16.

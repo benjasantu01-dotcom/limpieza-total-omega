@@ -12,7 +12,6 @@ from __future__ import annotations
 import json
 import os
 import stat
-import time
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -96,8 +95,6 @@ SETTINGS_FILE: Final = "config.json"
 MAX_SETTINGS_SIZE: Final = 1024 * 64
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
-_PATH_CACHE: dict[Path, Path] = {}
-_CACHED_SETTINGS: dict[str, tuple[float, AppSettings]] = {}
 _BOOL_TRUE_SET: Final = frozenset(("1", "true", "si", "sí", "yes"))
 _BOOL_FALSE_SET: Final = frozenset(("0", "false", "no", "none"))
 
@@ -137,6 +134,17 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
     ConfigKey.ACENTO: VALID_ACCENTS,
     ConfigKey.ASISTENTE_MODELO: VALID_MODELS
 })
+
+class _SettingsManager:
+    """Clase singleton para gestionar el estado en memoria y la persistencia de settings."""
+    def __init__(self) -> None:
+        self.cache: dict[str, tuple[float, AppSettings]] = {}
+        self.path_cache: dict[Path, Path] = {}
+
+    def clear(self) -> None:
+        self.cache.clear()
+
+_MANAGER = _SettingsManager()
 
 def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
     """Decorador: Captura errores de conversión para asegurar que los validadores retornen None en vez de fallar."""
@@ -256,14 +264,14 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     if custom_base is None: base_path = SETTINGS_DIR
     else: base_path = Path(custom_base).expanduser().resolve()
     
-    if base_path in _PATH_CACHE: return _PATH_CACHE[base_path]
+    if base_path in _MANAGER.path_cache: return _MANAGER.path_cache[base_path]
     
     try:
         if _Validators._is_safe_path(str(base_path)) and not _Validators._is_reparse_point(base_path):
             if not base_path.exists(): base_path.mkdir(parents=True, exist_ok=True)
             if os.access(base_path, os.R_OK | os.W_OK):
-                _PATH_CACHE[base_path] = base_path / SETTINGS_FILE
-                return _PATH_CACHE[base_path]
+                _MANAGER.path_cache[base_path] = base_path / SETTINGS_FILE
+                return _MANAGER.path_cache[base_path]
     except (OSError, RuntimeError, PermissionError):
         pass
     return SETTINGS_DIR / SETTINGS_FILE
@@ -321,8 +329,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     
     try:
         mtime = ruta.stat().st_mtime if ruta.exists() else 0.0
-        if cache_key in _CACHED_SETTINGS:
-            cached_mtime, cached_val = _CACHED_SETTINGS[cache_key]
+        if cache_key in _MANAGER.cache:
+            cached_mtime, cached_val = _MANAGER.cache[cache_key]
             if cached_mtime == mtime: return cached_val.copy()
     except OSError: pass
     
@@ -330,7 +338,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         try:
             settings = _load_impl(r)
             mtime = r.stat().st_mtime if r.exists() else 0.0
-            _CACHED_SETTINGS[cache_key] = (mtime, settings)
+            _MANAGER.cache[cache_key] = (mtime, settings)
             return settings.copy()
         except Exception:
             continue
@@ -385,7 +393,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not _is_file_secure_to_read(ruta):
             raise PermissionError("Error de integridad final.")
             
-        _CACHED_SETTINGS.clear()
+        _MANAGER.clear()
         return ruta
     except (OSError, IOError, PermissionError, AttributeError): 
         return None
@@ -411,7 +419,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
 def reset(custom_base: PathLike | None = None) -> AppSettings:
     """Restaura los valores predeterminados y limpia la caché."""
     save(DEFAULTS, custom_base)
-    _CACHED_SETTINGS.clear()
+    _MANAGER.clear()
     return DEFAULTS.copy()
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:

@@ -434,13 +434,15 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una barra horizontal decorativa con gradiente lineal sobre el lienzo."""
+    """Dibuja una barra horizontal decorativa con gradiente lineal sobre el lienzo optimizando el número de llamadas."""
     try:
         w_val = max(1, int(width))
         h_val = max(1, int(height))
         colors = gradient_colors(w_val, stops)
-        for i, hex_color in enumerate(colors):
-            canvas.create_line(canvas_x + i, canvas_y, canvas_x + i + 1, canvas_y, fill=hex_color, width=h_val)
+        for segment in _get_grouped_segments(colors):
+            canvas.create_line(canvas_x + segment.start_index, canvas_y, 
+                               canvas_x + segment.end_index, canvas_y, 
+                               fill=segment.hex_color, width=h_val)
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, 

@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 13
+- Rechazadas por guardia de seguridad: 38
+- Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 51 | 4 | 10 | 2 | 75 |
+| 2026-09-25 | 48 | 4 | 10 | 1 | 75 |
 | 2026-09-26 | 137 | 12 | 24 | 11 | 166 |
-| 2026-09-27 | 9 | 0 | 2 | 0 | 1 |
+| 2026-09-27 | 11 | 0 | 4 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **47**
+- legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **38**
 - seguridad defensiva: **36**
-- rendimiento: **30**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `settings.py`: **19**
+- `settings.py`: **20**
 - `safety.py`: **18**
-- `healthscore.py`: **17**
-- `duplicates.py`: **16**
 - `scanner.py`: **16**
+- `healthscore.py`: **16**
 - `quarantine.py`: **15**
 - `assistant.py`: **15**
-- `memory.py`: **14**
+- `duplicates.py`: **15**
+- `memory.py`: **13**
 - `browser.py`: **13**
 - `organizer.py`: **11**
+- `branding.py`: **8**
 - `startup.py`: **8**
-- `branding.py`: **7**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T00:32:30` **branding.py** (rendimiento): Optimizé `draw_gradient_bar` para reducir drásticamente el número de llamadas a `create_line` mediante el uso de `_get_grouped_segments`, evitando el dibujado pixel a pixel cuando hay colores repetidos o degradados sutiles, lo cual alivia la carga del motor gráfico (Canvas) en la interfaz principal.
+- `2026-09-27T00:31:08` **settings.py** (legibilidad y documentación): Se introdujo una clase `_SettingsManager` para encapsular la lógica de persistencia y estado en memoria, mejorando la legibilidad al evitar el uso excesivo de variables globales (`_CACHED_SETTINGS`, `_PATH_CACHE`) y centralizando la complejidad en un objeto único y coherente.
 - `2026-09-27T00:22:27` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos (como `Scanner.results` y `directory_stack`) y se refactorizó la lógica de acumulación en `_run_file_heuristics` para mejorar la legibilidad y mantenimiento, asegurando que las reglas de estilo y seguridad se mantengan estrictas.
 - `2026-09-27T00:22:14` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de los validadores internos en `safety.py` mediante docstrings detallados que explican el "porqué" de las comprobaciones (particularmente en las protecciones contra TOCTOU y redirecciones de sistemas de archivos), facilitando el mantenimiento y la auditoría del código.
 - `2026-09-27T00:21:10` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la implementación de *Type Aliasing* más preciso, la adición de docstrings técnicos detallados en las funciones de manipulación de archivos y la consolidación de validaciones redundantes para clarificar el flujo de control de seguridad.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-26T17:54:45` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` agregando una validación explícita de `os.stat_result` y un manejo más granular de excepciones (FileNotFoundError y PermissionError), evitando que `UnsafePathError` se propague con mensajes genéricos.
 - `2026-09-26T17:46:10` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y `_get_process_path` validando explícitamente el valor de los handles y los resultados de las APIs, asegurando que los recursos se liberen siempre mediante bloques `try...finally` y evitando el uso de llamadas con punteros no validados.
 - `2026-09-26T17:45:43` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `on_restore_quarantine` mediante una validación estricta y declarativa de la entrada del usuario antes de procesar el archivo, asegurando que solo IDs con formato alfanumérico sean aceptados y que cualquier ruta restaurada sea validada previamente por `is_safe_path`, evitando así el potencial uso de IDs malformados para inyectar rutas de sistema.
-- `2026-09-26T17:34:40` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos, encapsulando la lógica de apertura en un bloque `try-except` más preciso y validando explícitamente el estado del descriptor de archivo para evitar fugas de recursos y excepciones no controladas.
-- `2026-09-26T17:34:09` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_bytes_to_mb` y `_validate_limit` añadiendo validaciones estrictas y manejo de excepciones que aseguren que los cálculos no se vean afectados por entradas de datos inesperadas, manteniendo la integridad del reporte.
