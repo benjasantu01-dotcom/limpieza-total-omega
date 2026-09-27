@@ -143,7 +143,13 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo del archivo en bloques para memoria eficiente.
+    Calcula el hash SHA256 completo del archivo leyendo por bloques.
+    
+    Args:
+        path: Ruta al archivo a procesar.
+        chunk_size: Tamaño de lectura por iteración para control de memoria.
+    Returns:
+        String hexadecimal del hash o None si la lectura es insegura o falla.
     """
     if chunk_size <= 0:
         return None
@@ -167,7 +173,10 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Calcula un hash heurístico sobre los primeros N bytes del archivo.
+    Calcula un hash SHA256 rápido usando solo el inicio del archivo.
+    
+    Útil para descartar candidatos de forma eficiente antes de realizar 
+    lecturas completas de archivos pesados.
     """
     if read_bytes <= 0:
         return None
@@ -232,8 +241,10 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Escaneo recursivo mediante os.scandir. Mantiene un conjunto de rutas 
-    visitadas para evitar procesar la misma ruta dos veces (bucles o symlinks).
+    Escaneo recursivo profundo usando os.scandir para listar archivos candidatos.
+    
+    Mantiene un conjunto 'visited_paths' para garantizar que cada inodo sea 
+    procesado exactamente una vez, evitando bucles cíclicos.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     visited_paths: set[Path] = set()
@@ -288,15 +299,11 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Implementa un pipeline jerárquico de hashing:
+    Pipeline de hashing jerárquico para optimizar el rendimiento:
     
-    1. Si el tamaño es <= PARTIAL_READ_BYTES, utiliza hash completo directamente.
-    2. Si es mayor, aplica hash parcial para descartar candidatos y solo
-       aplica hash completo (SHA256) a los que mantienen colisión parcial.
-       
-    Args:
-        size: Tamaño en bytes común entre archivos candidatos.
-        paths: Lista de archivos con el mismo tamaño.
+    1. Si size <= PARTIAL_READ_BYTES: Usa hash completo directo.
+    2. Si size > PARTIAL_READ_BYTES: Usa hash parcial y luego hash completo
+       solo en las colisiones detectadas (reduciendo drásticamente el I/O).
     """
     if not paths or size <= 0:
         return []

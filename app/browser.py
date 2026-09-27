@@ -211,6 +211,24 @@ def _should_skip_entry(
         return True
     return False
 
+def _process_file_entry(
+    entry: os.DirEntry,
+    is_junction_fn: JunctionChecker,
+    kernel32: Optional[ctypes.WinDLL],
+    memo: Dict[int, int],
+    depth: int
+) -> int:
+    """Procesa una entrada de directorio: recurre si es carpeta o suma bytes si es archivo."""
+    try:
+        if entry.is_dir(follow_symlinks=False):
+            child_path = Path(entry.path)
+            if is_safe_to_modify(child_path) and not is_protected_path(child_path):
+                return _sum_directory_recursive(child_path, is_junction_fn, kernel32, memo, depth + 1)
+        else:
+            return entry.stat(follow_symlinks=False).st_size
+    except (OSError, PermissionError):
+        return 0
+    return 0
 
 def _sum_directory_recursive(
     root_path: Path, 
@@ -240,17 +258,7 @@ def _sum_directory_recursive(
             for entry in it:
                 if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue
-                        
-                try:
-                    if entry.is_dir(follow_symlinks=False):
-                        child_path = Path(entry.path)
-                        if is_safe_to_modify(child_path) and not is_protected_path(child_path):
-                            total_bytes += _sum_directory_recursive(child_path, is_junction_fn, kernel32, memo, depth + 1)
-                    else:
-                        # Obtenemos stat sin llamadas extras si ya está disponible en el DirEntry
-                        total_bytes += entry.stat(follow_symlinks=False).st_size
-                except (OSError, PermissionError):
-                    continue
+                total_bytes += _process_file_entry(entry, is_junction_fn, kernel32, memo, depth)
     except (OSError, PermissionError):
         pass
         

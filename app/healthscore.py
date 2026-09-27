@@ -55,10 +55,10 @@ class RecommendationRule(NamedTuple):
     Define una regla lógica para generar advertencias al usuario.
     
     Attributes:
-        area: Dominio afectado (seguridad, disco, etc.).
-        threshold: Ratio debajo del cual la regla se vuelve activa.
-        message_factory: Callable que recibe las métricas y retorna el string de aviso.
-        check: Predicado (metrics, ratio) que determina si la regla debe aplicarse.
+        area: Identificador del dominio (ej: 'disco', 'seguridad').
+        threshold: Valor límite (0.0-1.0) debajo del cual se activa la regla.
+        message_factory: Función que genera un mensaje humano según el contexto actual.
+        check: Lógica booleana que determina si las métricas disparan la advertencia.
     """
     area: MetricKey
     threshold: float
@@ -70,10 +70,10 @@ class PipelineEntry(NamedTuple):
     Representa una etapa de procesamiento dentro del motor de salud.
     
     Attributes:
-        area: Identificador del tipo de métrica.
-        weight: Peso porcentual en el puntaje total (suma debe ser 100).
-        scorer: Función de normalización aplicada a este dominio.
-        rules: Colección de reglas de recomendación a evaluar.
+        area: Nombre de la categoría de métrica analizada.
+        weight: Peso porcentual relativo (0-100) en el puntaje total.
+        scorer: Función de normalización que calcula el estado de esta categoría.
+        rules: Conjunto de reglas de recomendación asociadas a esta categoría.
     """
     area: MetricKey
     weight: int
