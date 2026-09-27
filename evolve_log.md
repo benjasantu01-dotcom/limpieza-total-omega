@@ -922,3 +922,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-27T08:12:20` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `save_logo_svg` y `_validate_destination` implementando una validación de tipo más estricta y evitando la ejecución de lógica de archivos con rutas no resueltas o mal formadas antes de las comprobaciones de seguridad.
 - `2026-09-27T08:12:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T08:12:20` Corrida terminada. Total usado hoy: 196.
+- `2026-09-27T08:19:18` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-09-27T08:19:46` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-27T08:20:14` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-27T08:20:41` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `format_group` eliminando su dependencia implícita de la existencia física del archivo para la comparación (mediante `.resolve(strict=True)`), lo cual fallaba si el archivo era borrado o movido durante la ejecución, y agregué una validación de `None` para prevenir excepciones al manipular rutas potencialmente inexistentes.
+- `2026-09-27T08:20:51` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: SystemMetrics.is_finite, SystemMetrics.validate
+- `2026-09-27T08:20:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T08:20:51` Corrida terminada. Total usado hoy: 200.

@@ -364,12 +364,6 @@ def format_group(group: DuplicateGroup) -> List[str]:
         return ["Error: Grupo inválido o vacío"]
         
     keeper = suggest_keeper(group)
-    keeper_resolved = None
-    if keeper:
-        try:
-            keeper_resolved = keeper.resolve(strict=True)
-        except (OSError, RuntimeError):
-            pass
     
     mb_t, mb_w = round(group.size_bytes / 1048576, 2), round(group.wasted_bytes / 1048576, 2)
     lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
@@ -381,8 +375,8 @@ def format_group(group: DuplicateGroup) -> List[str]:
             if not _safe_path_check(path):
                 lines.append(f"   [inaccesible] {path}")
             else:
-                path_resolved = path.resolve(strict=True)
-                is_keeper = (keeper_resolved is not None and path_resolved == keeper_resolved)
+                # Comparamos rutas absolutas normalizadas si el archivo aún existe
+                is_keeper = (keeper is not None and path.absolute() == keeper.absolute())
                 label = 'conservar' if is_keeper else 'duplicado'
                 lines.append(f"   [{label}] {path}")
         except (OSError, RuntimeError):
