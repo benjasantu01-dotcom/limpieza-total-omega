@@ -550,10 +550,16 @@ def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> 
             if not (stat_src.st_mode & 0o100000):
                 raise OSError("El archivo origen no es un archivo regular.")
 
-            with open(temp_dest, "wb") as f_dst:
-                shutil.copyfileobj(f_src, f_dst)
-                f_dst.flush()
-                os.fsync(f_dst.fileno())
+            # Crear destino temporal con permisos restringidos 0600
+            dst_fd = os.open(str(temp_dest), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            try:
+                with os.fdopen(dst_fd, "wb") as f_dst:
+                    shutil.copyfileobj(f_src, f_dst)
+                    f_dst.flush()
+                    os.fsync(f_dst.fileno())
+            except Exception:
+                os.close(dst_fd)
+                raise
                 
         if temp_dest.stat().st_size != stat_src.st_size:
             raise OSError("Falla de integridad: tamaño mismatch tras copia.")

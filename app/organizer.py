@@ -154,7 +154,9 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """Realiza una validación exhaustiva de seguridad antes de ejecutar operaciones de E/S."""
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
-        if not src.exists() or not src.is_file() or not is_safe_to_modify(src): return False
+        # Validación estricta: debe ser archivo y no un reparse point/symlink
+        if not src.exists() or not src.is_file() or src.is_symlink(): return False
+        if not is_safe_to_modify(src): return False
         if not _validate_path_security(src, dest): return False
         target_dir = dest.parent if dest.exists() else dest
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False

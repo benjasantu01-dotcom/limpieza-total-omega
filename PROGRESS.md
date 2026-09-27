@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 137 | 12 | 24 | 11 | 164 |
-| 2026-09-27 | 56 | 11 | 15 | 9 | 65 |
+| 2026-09-26 | 137 | 12 | 24 | 11 | 160 |
+| 2026-09-27 | 59 | 11 | 16 | 9 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
+- seguridad defensiva: **41**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **38**
 - rendimiento: **32**
 - robustez ante casos límite: **31**
 
@@ -33,19 +33,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **19**
 - `settings.py`: **18**
 - `browser.py`: **17**
+- `quarantine.py`: **16**
 - `duplicates.py`: **16**
-- `quarantine.py`: **15**
 - `scanner.py`: **15**
 - `assistant.py`: **15**
 - `healthscore.py`: **14**
-- `memory.py`: **11**
+- `memory.py`: **12**
+- `organizer.py`: **10**
 - `startup.py`: **9**
-- `organizer.py`: **9**
 - `branding.py`: **7**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T06:39:00` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_write_temp_to_final` al asegurar que el archivo temporal sea creado con permisos restrictivos (usando `os.open` con `mode=0o600`) y bloqueado para otros procesos durante la copia, evitando posibles condiciones de carrera (Race Conditions) o acceso indebido mientras el archivo está en estado transitorio.
+- `2026-09-27T06:38:19` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` añadiendo una validación explícita para asegurar que el archivo fuente no sea un directorio o un enlace simbólico (reparse point), previniendo así posibles errores de manipulación de estructuras de sistema durante la preparación de la operación de movimiento.
+- `2026-09-27T06:37:54` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_get_process_path` para prevenir la resolución de rutas de procesos que podrían ser enlaces simbólicos o puntos de reparse, mitigando el riesgo de seguir rutas fuera de las áreas permitidas.
 - `2026-09-27T06:30:41` **main.py** (seguridad defensiva): Se ha implementado un filtrado de rutas más robusto al añadir una validación de caracteres de control (no imprimibles) en `_is_safe_disk_operation` y métodos auxiliares, previniendo inyecciones o rutas malformadas antes de cualquier llamada al sistema, y se ha consolidado la lógica de validación de seguridad de rutas en los puntos críticos de entrada (diálogos de usuario y callbacks).
 - `2026-09-27T06:28:14` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_collect_candidates` integrando el chequeo de `is_protected_path` directamente en la lógica de filtrado de directorios, evitando que el escáner intente ingresar o listar recursivamente carpetas protegidas desde el inicio.
 - `2026-09-27T06:27:47` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `_collect_summary_data` envolviendo el acceso a `entry.path` con una normalización y verificación explícita, previniendo que rutas malformadas o inconsistentes causen errores silenciosos o accesos fuera de los límites permitidos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T05:26:54` **quarantine.py** (rendimiento): Optimicé el método `list_items` y `purge_all` para evitar lecturas redundantes del disco y mejorar la eficiencia algorítmica al procesar el manifiesto y los archivos físicos usando conjuntos (`set`) para O(1) en las búsquedas.
 - `2026-09-27T05:16:33` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` convirtiendo el `_PIPELINE` de una `List` a una `tuple` para asegurar tiempo de acceso constante (O(1)) e inmutabilidad, y eliminé la recreación innecesaria de objetos en cada iteración del bucle, reduciendo la carga del recolector de basura.
 - `2026-09-27T05:07:22` **diskreport.py** (rendimiento): Optimizé el método `largest_folders` reemplazando la lógica de agregación actual por una que utiliza un generador para evitar múltiples recorridos innecesarios y reducir el uso de memoria al procesar subdirectorios.
-- `2026-09-27T04:57:30` **assistant.py** (rendimiento): Optimicé el método `ingest` de `SystemContext` para evitar la creación innecesaria de objetos intermedios y mejorar la eficiencia del proceso de actualización de estado mediante el uso de `__dict__` y `setattr` de forma directa tras la validación, reduciendo la carga de memoria en cada iteración del bucle principal.
-- `2026-09-27T04:57:05` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de la clase `StartupEntry` mediante docstrings que detallan los requisitos de seguridad y las razones detrás de las validaciones, facilitando el mantenimiento y la comprensión de las restricciones impuestas sobre las rutas del sistema.
-- `2026-09-27T04:56:36` **settings.py** (legibilidad y documentación): Se introdujo una clase `ValidationResult` (utilizando `NamedTuple`) para explicitar los resultados de validación en lugar de retornar solo `None`, mejorando la legibilidad de la lógica en `_Validators` y aclarando el propósito de cada etapa del filtrado.

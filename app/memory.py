@@ -282,7 +282,8 @@ def _get_process_path(pid: int) -> Optional[Path]:
     
     Utiliza un handle de Win32 abierto con `SAFE_VALIDATION_MASK` (privilegios mínimos 
     necesarios). La validación de la ruta se realiza mediante `is_protected_path` 
-    para garantizar que solo operamos sobre ejecutables no sensibles.
+    para garantizar que solo operamos sobre ejecutables no sensibles, rechazando
+    explícitamente rutas que contengan symlinks o puntos de reparse.
     """
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
@@ -291,9 +292,11 @@ def _get_process_path(pid: int) -> Optional[Path]:
         psapi = ctypes.windll.psapi
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
-            p = Path(buf.value).resolve(strict=False)
-            if p.is_file() and p.is_absolute() and not is_protected_path(str(p)) and not p.is_symlink():
-                return p
+            p = Path(buf.value)
+            # resolved_path evita seguir puntos de reparse o symlinks maliciosos
+            resolved_p = p.resolve(strict=False)
+            if resolved_p.is_file() and resolved_p.is_absolute() and not is_protected_path(str(resolved_p)):
+                return resolved_p
     except (ctypes.ArgumentError, OSError, ValueError, TypeError):
         pass
     finally:
