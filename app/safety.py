@@ -466,14 +466,13 @@ def is_drive_root(path: PathLike) -> bool:
 def _is_system_path_raw(path_str: str) -> bool:
     """
     Verifica si una ruta normalizada y en minúsculas es parte del sistema.
-    Optimizado mediante el uso de conjuntos para evitar bucles.
+    Optimizado mediante el uso de conjuntos y verificación de prefijo directa.
     """
     path_lower = path_str.lower()
-    # Verifica si es parte de las rutas raíces prohibidas
-    if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_TUPLE): return True
-    # Extraer componentes del path para verificar contra PROTECTED_DIR_NAMES
-    components = frozenset(path_lower.split(os.sep))
-    return not PROTECTED_DIR_NAMES.isdisjoint(components)
+    for root in _SYSTEM_ROOT_PATHS_TUPLE:
+        if path_lower.startswith(root):
+            return True
+    return not PROTECTED_DIR_NAMES.isdisjoint(path_lower.split(os.sep))
 
 @lru_cache(maxsize=4096)
 def is_protected_path(path: PathLike) -> TypeGuard[str]:

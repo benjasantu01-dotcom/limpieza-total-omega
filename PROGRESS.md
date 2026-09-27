@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 13
+- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 41
+- Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 43 | 4 | 9 | 1 | 73 |
+| 2026-09-25 | 41 | 3 | 9 | 1 | 72 |
 | 2026-09-26 | 137 | 12 | 24 | 11 | 166 |
-| 2026-09-27 | 13 | 2 | 7 | 1 | 1 |
+| 2026-09-27 | 14 | 2 | 8 | 2 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **36**
-- rendimiento: **33**
+- seguridad defensiva: **34**
+- rendimiento: **34**
 - robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **20**
 - `settings.py`: **19**
-- `safety.py`: **17**
+- `safety.py`: **18**
 - `duplicates.py`: **16**
 - `healthscore.py`: **16**
 - `assistant.py`: **15**
@@ -41,12 +41,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **13**
 - `browser.py`: **13**
 - `organizer.py`: **10**
-- `branding.py`: **8**
 - `startup.py`: **8**
 - `main.py`: **7**
+- `branding.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T01:02:15` **safety.py** (rendimiento): Se ha optimizado `_is_system_path_raw` eliminando la recreación innecesaria de objetos en cada iteración y sustituyendo `any()` con una verificación directa más eficiente, además de aprovechar `lru_cache` para evitar recalculaciones costosas de rutas ya normalizadas.
 - `2026-09-27T00:55:40` **quarantine.py** (rendimiento): Optimicé `list_items` y `purge_all` transformando la búsqueda de archivos y la validación de integridad en operaciones de conjunto (set) para reducir la complejidad algorítmica de O(N*M) a O(N+M), evitando iteraciones anidadas innecesarias sobre el sistema de archivos.
 - `2026-09-27T00:42:09` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` para obtener metadatos (tamaño y tipo) directamente del sistema operativo, eliminando llamadas innecesarias a `Path.stat()` y múltiples resoluciones de ruta redundantes dentro del bucle de escaneo.
 - `2026-09-27T00:32:30` **branding.py** (rendimiento): Optimizé `draw_gradient_bar` para reducir drásticamente el número de llamadas a `create_line` mediante el uso de `_get_grouped_segments`, evitando el dibujado pixel a pixel cuando hay colores repetidos o degradados sutiles, lo cual alivia la carga del motor gráfico (Canvas) en la interfaz principal.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T00:01:31` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` documentando explícitamente el uso de `os.scandir` y la estrategia de filtrado, además de añadir type hints en el `_collect_summary_data` para clarificar la manipulación del heap y las estructuras de datos, facilitando la comprensión del flujo de datos en el escaneo.
 - `2026-09-27T00:01:04` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) en las funciones clave, clarificando las precondiciones, argumentos y el propósito específico de las validaciones de seguridad, facilitando así el mantenimiento a largo plazo.
 - `2026-09-26T17:55:30` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_load_impl()` incorporando validación explícita mediante `ensure_safe_to_modify` antes de operaciones críticas de disco, cumpliendo con la jerarquía de seguridad exigida para evitar manipulaciones inseguras de rutas, y añadí bloques `try-except` más granulares al manipular `os.replace` y archivos temporales para evitar estados corruptos si el filesystem falla.
-- `2026-09-26T17:54:45` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` agregando una validación explícita de `os.stat_result` y un manejo más granular de excepciones (FileNotFoundError y PermissionError), evitando que `UnsafePathError` se propague con mensajes genéricos.
