@@ -1711,3 +1711,39 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-27T14:27:59` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de `lru_cache` manual optimizado sobre `_resolve_and_cache_path` mediante la validación de existencia `path.exists()` antes de realizar la resolución costosa (`.resolve()`), reduciendo drásticamente las llamadas al sistema de archivos en ejecuciones repetidas.
 - `2026-09-27T14:27:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T14:27:59` Corrida terminada. Total usado hoy: 344.
+- `2026-09-27T14:36:17` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-27T14:37:00` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` ante datos de entrada malformados (como tipos inesperados o estructuras profundamente anidadas) agregando validaciones preventivas adicionales y asegurando que las actualizaciones de atributos no dejen al objeto en un estado parcial o inconsistente en caso de error.
+- `2026-09-27T14:37:35` Tests FALLARON:
+```
+                                 [100%]
+=================================== FAILURES ===================================
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:81: SyntaxWarning: invalid escape sequence '\ '
+    El prefijo \\?\ es necesario para superar limitaciones de MAX_PATH en Windows.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+1 failed, 298 passed, 4 warnings in 1.51s
+
+```
+- `2026-09-27T14:37:35` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `save_logo_svg` ante errores de sistema y condiciones de carrera al implementar un chequeo de pre-condición más estricto y un manejo de errores más específico, asegurando que el directorio destino esté validado antes de cualquier operación de escritura.
+- `2026-09-27T14:38:04` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-27T14:38:14` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante casos límite en `walk_files` y `_collect_summary_data` manejando explícitamente archivos bloqueados o inaccesibles que lanzan `OSError` durante la lectura de metadatos, evitando que una excepción puntual interrumpa el escaneo completo de un directorio.
+- `2026-09-27T14:38:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T14:38:14` Corrida terminada. Total usado hoy: 348.

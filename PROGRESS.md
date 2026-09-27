@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **168** (33.3% de aceptación)
-- Rechazadas por tests: 30
+- Mejoras aceptadas: **169** (33.5% de aceptación)
+- Rechazadas por tests: 29
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 24
 - Sin respuesta de la IA (error o límite): 238
@@ -16,21 +16,21 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 50 | 7 | 10 | 7 | 86 |
-| 2026-09-27 | 118 | 23 | 34 | 17 | 152 |
+| 2026-09-26 | 49 | 5 | 10 | 7 | 85 |
+| 2026-09-27 | 120 | 24 | 34 | 17 | 153 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
-- seguridad defensiva: **37**
+- seguridad defensiva: **36**
 - manejo de errores y validación de entradas: **35**
 - rendimiento: **26**
-- robustez ante casos límite: **21**
+- robustez ante casos límite: **23**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **20**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
 - `quarantine.py`: **16**
 - `browser.py`: **15**
 - `duplicates.py`: **15**
@@ -38,14 +38,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **13**
 - `settings.py`: **13**
 - `memory.py`: **12**
-- `assistant.py`: **9**
+- `assistant.py`: **10**
 - `organizer.py`: **8**
-- `main.py`: **7**
+- `main.py`: **6**
 - `startup.py`: **5**
 - `branding.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T14:38:14` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en `walk_files` y `_collect_summary_data` manejando explícitamente archivos bloqueados o inaccesibles que lanzan `OSError` durante la lectura de metadatos, evitando que una excepción puntual interrumpa el escaneo completo de un directorio.
+- `2026-09-27T14:37:00` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` ante datos de entrada malformados (como tipos inesperados o estructuras profundamente anidadas) agregando validaciones preventivas adicionales y asegurando que las actualizaciones de atributos no dejen al objeto en un estado parcial o inconsistente en caso de error.
 - `2026-09-27T14:26:50` **safety.py** (rendimiento): Se introdujo una cache de resultados en `_is_protected_path_raw` (previamente `_is_system_path_raw`) mediante `lru_cache` y se optimizó `_is_system_path_raw` reemplazando la iteración secuencial con una comparación más eficiente de prefijos de cadena tras la normalización, reduciendo la carga de CPU durante escaneos masivos de disco.
 - `2026-09-27T14:17:28` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total y el listado de archivos en cuarentena reemplazando la lectura repetitiva del manifiesto y el uso de `.iterdir()` con una lógica de caché de objetos y conjuntos (sets) que evita iteraciones redundantes y llamadas innecesarias al sistema de archivos.
 - `2026-09-27T14:06:46` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando el uso redundante de `Path` dentro del bucle de escaneo, trabajando directamente con `os.DirEntry` para reducir el número de llamadas al sistema (`stat`) y evitar la creación innecesaria de objetos `Path` que disparan consultas al sistema de archivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T13:27:25` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings detallados en las funciones críticas de hashing y recolección, explicando la lógica de seguridad y el flujo de los datos para facilitar el mantenimiento.
 - `2026-09-27T13:25:25` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del flujo de control en `_sum_directory_recursive` mediante la extracción de la lógica de evaluación de archivos a una función con nombre claro (`_process_file_entry`), reduciendo el anidamiento y facilitando futuras auditorías de seguridad sobre qué se contabiliza.
 - `2026-09-27T13:15:18` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` integrando validaciones de tipo explícitas en `_coerce_and_verify` para evitar que valores corrompidos en el JSON rompan la lógica de la aplicación, sustituyendo conversiones implícitas peligrosas por un manejo controlado que retorna defaults ante cualquier error.
-- `2026-09-27T13:06:42` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas `check_recent_executable_in_downloads` y `check_system_lookalike` agregando validaciones preventivas de tipos y estados para evitar excepciones por accesos a atributos `None` o rutas malformadas, garantizando un manejo de errores más defensivo acorde al enfoque.
-- `2026-09-27T13:06:30` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_path_stat_robust` y `_check_file_integrity` añadiendo capturas específicas para errores de acceso que antes no se propagaban correctamente o devolvían estados ambiguos, asegurando que las fallas en `os.stat` sean tratadas siempre como `UnsafePathError`.

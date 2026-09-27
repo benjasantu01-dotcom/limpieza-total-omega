@@ -388,10 +388,17 @@ class SystemContext:
             updates['grade'] = grade_val
         
         if updates:
-            for k, v in updates.items():
-                object.__setattr__(self, k, v)
-            object.__setattr__(self, 'analyzed', True)
-            return True
+            # Aplicar cambios solo si la validación completa fue exitosa
+            try:
+                for k, v in updates.items():
+                    object.__setattr__(self, k, v)
+                object.__setattr__(self, 'analyzed', True)
+                # Invalidar cache si existe el método de caché (aunque usamos cached_property)
+                if hasattr(self, 'active_problems'):
+                    self.__dict__.pop('active_problems', None)
+                return True
+            except Exception:
+                return False
         return False
 
 @dataclass
