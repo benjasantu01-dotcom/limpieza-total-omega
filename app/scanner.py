@@ -190,13 +190,12 @@ class Scanner:
             if not os.access(entry.path, os.R_OK):
                 return False
             
-            # Cacheamos la seguridad de los directorios padres para evitar llamadas repetitivas
-            parent_path = Path(entry.path).parent
-            parent_str = str(parent_path).lower()
-            if parent_str not in self.protected_cache:
-                if is_protected_path(parent_path):
+            # Cacheamos la seguridad del directorio padre
+            parent_dir = os.path.dirname(entry.path)
+            if parent_dir not in self.protected_cache:
+                if is_protected_path(Path(parent_dir)):
                     return False
-                self.protected_cache.add(parent_str)
+                self.protected_cache.add(parent_dir)
         except (OSError, RuntimeError):
             return False
             

@@ -1077,3 +1077,94 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-27T09:53:03` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_file_attrs` y otras verificaciones de estado reemplazando llamadas repetidas al sistema de archivos por una cache LRU de mayor capacidad y evitando el cálculo redundante de rutas UNC en cada iteración del bucle de validación.
 - `2026-09-27T09:53:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T09:53:03` Corrida terminada. Total usado hoy: 236.
+- `2026-09-27T10:01:02` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-09-27T10:01:38` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `_is_safe_entry` eliminando la creación repetitiva de objetos `Path` y reduciendo las llamadas a `is_protected_path` mediante la validación directa del string normalizado, evitando así el overhead de resolución de rutas en cada iteración del bucle.
+- `2026-09-27T10:01:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-27T10:01:44` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-27T10:01:50` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-27T10:02:46` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting evolve/tests/test_assistant.py ________________
+evolve/tests/test_assistant.py:25: in <module>
+    import assistant  # noqa: E402
+    ^^^^^^^^^^^^^^^^
+app/assistant.py:55: in <module>
+    import settings
+app/settings.py:163: in <module>
+    _MANAGER = _SettingsManager()
+               ^^^^^^^^^^^^^^^^^^
+app/settings.py:148: in __init__
+    self.validators: MappingProxyType[ConfigKey, _ValidatorEntry] = self._build_map()
+                                                                    ^^^^^^^^^^^^^^^^^
+app/settings.py:153: in _build_map
+    if key in BOOL_KEYS: validator = _Validators.bool
+              ^^^^^^^^^
+E   NameError: name 'BOOL_KEYS' is not defined
+=========================== short test summary info ============================
+ERROR evolve/tests/test_assistant.py - NameError: name 'BOOL_KEYS' is not defined
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.26s
+
+```
+- `2026-09-27T10:02:46` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimizé `_build_validator_map` y `_SettingsManager` implementando una cache de nivel de clase más persistente y eliminando la reconstrucción del mapa de validadores en cada llamada a `validate`, reduciendo el uso de CPU y memoria en operaciones frecuentes.
+- `2026-09-27T10:02:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-27T10:02:59` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-27T10:03:37` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.26s
+
+```
+- `2026-09-27T10:03:37` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó `_resolve_and_cache_path` y `_resolve_path_from_command` para reducir llamadas redundantes al sistema de archivos mediante el uso eficiente de la caché, evitando procesar rutas inexistentes o ya validadas más de una vez.
+- `2026-09-27T10:04:10` Tests FALLARON:
+```
+^^^^^^^^^^^
+E       NameError: name '_format_problem_message' is not defined
+
+app/assistant.py:617: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_answers_are_never_empty - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_garbage_questions_still_get_an_answer - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_low_disk_is_reported_as_the_top_priority - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - NameError: name '_format_problem_message' is not defined
+9 failed, 290 passed in 1.42s
+
+```
+- `2026-09-27T10:04:10` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `SystemContext.ingest` ante datos de entrada malformados (como tipos inesperados o estructuras profundamente anidadas) que podrían causar excepciones no controladas o ataques DoS, asegurando que el proceso de ingesta sea siempre seguro y predecible.
+- `2026-09-27T10:04:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T10:04:10` Corrida terminada. Total usado hoy: 240.
