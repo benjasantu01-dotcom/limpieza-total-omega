@@ -302,7 +302,7 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
-    """Convierte la salida CSV de PowerShell en objetos de datos seguros."""
+    """Convierte la salida CSV de PowerShell en objetos de datos seguros mediante dict parsing."""
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
@@ -310,27 +310,28 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
     seen_commands: Set[str] = set()
     
     try:
-        f = io.StringIO(csv_text.strip())
-        reader = csv.DictReader(f)
+        f: io.StringIO = io.StringIO(csv_text.strip())
+        reader: csv.DictReader = csv.DictReader(f)
         
         if not reader or not reader.fieldnames or len(reader.fieldnames) < 2:
             return []
             
-        f_name, f_cmd = reader.fieldnames[0], reader.fieldnames[1]
+        f_name: str = reader.fieldnames[0]
+        f_cmd: str = reader.fieldnames[1]
             
         for row in reader:
             # Validación robusta: evitar errores ante filas incompletas o nulas
             if not isinstance(row, dict):
                 continue
             
-            val_name = row.get(f_name)
-            val_cmd = row.get(f_cmd)
+            val_name: Optional[str] = row.get(f_name)
+            val_cmd: Optional[str] = row.get(f_cmd)
             
             if val_name is None or val_cmd is None:
                 continue
             
-            name = "".join(c for c in str(val_name) if ord(c) >= 32).strip()
-            cmd = "".join(c for c in str(val_cmd) if ord(c) >= 32).strip()
+            name: str = "".join(c for c in str(val_name) if ord(c) >= 32).strip()
+            cmd: str = "".join(c for c in str(val_cmd) if ord(c) >= 32).strip()
             
             if _is_valid_registry_entry(name, cmd, seen_commands):
                 seen_commands.add(cmd)
@@ -350,12 +351,12 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
     ps_cmd: str = f"Get-ItemProperty {targets} -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation"
     
     try:
-        result = subprocess.run(
+        result: subprocess.CompletedProcess = subprocess.run(
             ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_cmd],
             capture_output=True, text=True, timeout=30, check=False
         )
         if result.returncode == 0 and result.stdout:
-            clean_out = "".join(c for c in result.stdout if ord(c) >= 32 or c in "\r\n")
+            clean_out: str = "".join(c for c in result.stdout if ord(c) >= 32 or c in "\r\n")
             return parse_registry_csv(clean_out)
     except (OSError, subprocess.SubprocessError):
         pass

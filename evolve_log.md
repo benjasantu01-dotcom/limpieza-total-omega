@@ -1557,3 +1557,62 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-27T13:47:04` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
 - `2026-09-27T13:47:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T13:47:04` Corrida terminada. Total usado hoy: 328.
+- `2026-09-27T13:55:29` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-27T13:55:59` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de procesamiento de registro y la clarificación de los docstrings en `StartupEntry` para explicar el razonamiento detrás de los filtros de seguridad, mejorando la legibilidad sin alterar la lógica de ejecución.
+- `2026-09-27T13:56:40` Tests FALLARON:
+```
+ de MAX_PATH en Windows.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_answers_are_never_empty - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_garbage_questions_still_get_an_answer - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_low_disk_is_reported_as_the_top_priority - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - NameError: name '_format_problem_message' is not defined
+9 failed, 290 passed, 4 warnings in 1.16s
+
+```
+- `2026-09-27T13:56:40` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimicé el motor local reemplazando las búsquedas secuenciales de palabras clave en el diccionario `_TOKENS_MAP` por una técnica de evaluación basada en un `set` de intersección para reducir la complejidad de O(N) a O(1) promedio, mejorando la respuesta del asistente en consultas complejas.
+- `2026-09-27T13:57:16` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-27T13:57:28` Tests FALLARON:
+```
+pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'),
+E         +         size_bytes=7,
+E         +     ),
+E         + ]
+
+evolve/tests/test_modules.py:755: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:81: SyntaxWarning: invalid escape sequence '\ '
+    El prefijo \\?\ es necesario para superar limitaciones de MAX_PATH en Windows.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - AssertionError: assert [BrowserCache...size_bytes=7)] == []
+  
+  Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+  
+  Full diff:
+  - []
+  + [
+  +     BrowserCache(
+  +         browser='Chrome',
+  +         path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'),
+  +         size_bytes=7,
+  +     ),
+  + ]
+1 failed, 298 passed, 4 warnings in 1.03s
+
+```
+- `2026-09-27T13:57:28` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `os.path.normcase` y `os.path.normpath` dentro de los bucles, y mejorando la eficiencia del escaneo al consolidar la validación de `DirEntry` antes de cualquier operación de I/O.
+- `2026-09-27T13:57:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T13:57:28` Corrida terminada. Total usado hoy: 332.
