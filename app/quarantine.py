@@ -200,7 +200,7 @@ def _is_file_locked(path: Path) -> bool:
     Determina si un archivo está siendo bloqueado por otro proceso usando I/O nativo.
     """
     if not path.exists():
-        return True
+        return False
     try:
         if os.name == 'nt':
             import msvcrt
@@ -231,7 +231,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
         True solo si la eliminación física fue exitosa.
     """
     try:
-        if not path.exists():
+        if not path.exists() or not path.is_absolute():
             return False
             
         resolved = path.resolve()

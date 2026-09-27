@@ -1240,3 +1240,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-27T01:26:03` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `on_target_choice_changed` añadiendo una validación explícita para evitar que la UI quede en un estado inconsistente si el usuario selecciona una ruta que `safety.py` identifica como insegura, evitando así bloqueos silenciosos o excepciones en operaciones de archivo posteriores.
 - `2026-09-27T01:26:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T01:26:03` Corrida terminada. Total usado hoy: 36.
+- `2026-09-27T01:31:45` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-09-27T01:32:15` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-27T01:32:46` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-27T01:33:25` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_file_locked` para que maneje correctamente archivos inexistentes y errores de acceso inesperados, evitando excepciones no capturadas que podrían detener un análisis completo del sistema, y agregué una validación de `Path` en `_safe_unlink` para asegurar que las rutas sean absolutas antes de cualquier operación destructiva.
+- `2026-09-27T01:33:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-09-27T01:33:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T01:33:29` Corrida terminada. Total usado hoy: 40.
