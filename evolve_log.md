@@ -1231,3 +1231,12 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-27T01:13:25` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una verificación de integridad ante archivos bloqueados o en uso en `_sum_directory_recursive` para evitar excepciones de `OSError` no capturadas al acceder a atributos de archivos específicos mediante `os.scandir`, mejorando la robustez ante entornos donde el navegador mantiene locks agresivos sobre su caché.
 - `2026-09-27T01:13:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T01:13:25` Corrida terminada. Total usado hoy: 32.
+- `2026-09-27T01:21:33` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-09-27T01:22:03` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la resiliencia del motor `_collect_summary_data` ante archivos "en uso" o bloqueados por el sistema, añadiendo un manejo de excepciones más granular para evitar que una falla puntual en la lectura de atributos de un archivo o la resolución de rutas (debida a cambios concurrentes en el disco durante el escaneo) detenga el análisis completo.
+- `2026-09-27T01:22:31` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-27T01:22:56` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-09-27T01:23:56` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-27T01:24:59` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-27T01:26:03` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `on_target_choice_changed` añadiendo una validación explícita para evitar que la UI quede en un estado inconsistente si el usuario selecciona una ruta que `safety.py` identifica como insegura, evitando así bloqueos silenciosos o excepciones en operaciones de archivo posteriores.
+- `2026-09-27T01:26:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T01:26:03` Corrida terminada. Total usado hoy: 36.

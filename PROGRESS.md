@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 239
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 237
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 40 | 2 | 9 | 1 | 70 |
+| 2026-09-25 | 40 | 2 | 9 | 1 | 66 |
 | 2026-09-26 | 137 | 12 | 24 | 11 | 166 |
-| 2026-09-27 | 15 | 3 | 9 | 2 | 3 |
+| 2026-09-27 | 16 | 3 | 9 | 3 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **43**
+- robustez ante casos límite: **35**
 - rendimiento: **34**
-- robustez ante casos límite: **34**
 - seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
 - `settings.py`: **19**
 - `safety.py`: **18**
 - `duplicates.py`: **16**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T01:22:03` **diskreport.py** (robustez ante casos límite): Se reforzó la resiliencia del motor `_collect_summary_data` ante archivos "en uso" o bloqueados por el sistema, añadiendo un manejo de excepciones más granular para evitar que una falla puntual en la lectura de atributos de un archivo o la resolución de rutas (debida a cambios concurrentes en el disco durante el escaneo) detenga el análisis completo.
 - `2026-09-27T01:13:25` **browser.py** (robustez ante casos límite): Se introdujo una verificación de integridad ante archivos bloqueados o en uso en `_sum_directory_recursive` para evitar excepciones de `OSError` no capturadas al acceder a atributos de archivos específicos mediante `os.scandir`, mejorando la robustez ante entornos donde el navegador mantiene locks agresivos sobre su caché.
 - `2026-09-27T01:02:15` **safety.py** (rendimiento): Se ha optimizado `_is_system_path_raw` eliminando la recreación innecesaria de objetos en cada iteración y sustituyendo `any()` con una verificación directa más eficiente, además de aprovechar `lru_cache` para evitar recalculaciones costosas de rutas ya normalizadas.
 - `2026-09-27T00:55:40` **quarantine.py** (rendimiento): Optimicé `list_items` y `purge_all` transformando la búsqueda de archivos y la validación de integridad en operaciones de conjunto (set) para reducir la complejidad algorítmica de O(N*M) a O(N+M), evitando iteraciones anidadas innecesarias sobre el sistema de archivos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T00:10:40` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados en los métodos críticos y definí el tipo de retorno en funciones clave, eliminando ambigüedades sobre el contrato de datos.
 - `2026-09-27T00:01:42` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints detallados, normalización de docstrings y la clarificación de las responsabilidades de las funciones internas para facilitar la mantenibilidad del pipeline de hashing.
 - `2026-09-27T00:01:31` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` documentando explícitamente el uso de `os.scandir` y la estrategia de filtrado, además de añadir type hints en el `_collect_summary_data` para clarificar la manipulación del heap y las estructuras de datos, facilitando la comprensión del flujo de datos en el escaneo.
-- `2026-09-27T00:01:04` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) en las funciones clave, clarificando las precondiciones, argumentos y el propósito específico de las validaciones de seguridad, facilitando así el mantenimiento a largo plazo.

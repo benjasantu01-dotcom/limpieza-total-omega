@@ -358,7 +358,11 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             total_files += 1
             
             # Clasificación por extensión
-            ext = path.suffix.lower() or "(sin extensión)"
+            try:
+                ext = path.suffix.lower() or "(sin extensión)"
+            except (AttributeError, ValueError):
+                ext = "(sin extensión)"
+                
             stats_obj: ExtStats = ext_stats[ext]
             stats_obj.total_bytes += size_bytes
             stats_obj.count += 1
@@ -371,6 +375,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                     # Reemplaza el menor elemento del heap (el tope) si encontramos uno mayor
                     heapq.heapreplace(top_heap, (size_bytes, path))
         except (OSError, RuntimeError, Exception):
+            # Ignorar fallas puntuales en el procesamiento de archivos individuales
             continue
     
     return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)
