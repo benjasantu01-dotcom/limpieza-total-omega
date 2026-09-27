@@ -246,6 +246,8 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre el árbol de directorios de forma segura.
+    Utiliza `os.scandir` para obtener acceso eficiente a atributos de archivos y
+    evitar llamadas redundantes a `os.stat`.
     
     Yields:
         Tuple[Path, int]: Ruta del archivo y su tamaño en bytes.
@@ -347,6 +349,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
+    # top_heap almacena tuplas de (tamaño_bytes, ruta_archivo)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
@@ -365,6 +368,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (size_bytes, path))
                 elif size_bytes > top_heap[0][0]:
+                    # Reemplaza el menor elemento del heap (el tope) si encontramos uno mayor
                     heapq.heapreplace(top_heap, (size_bytes, path))
         except (OSError, RuntimeError, Exception):
             continue

@@ -103,7 +103,7 @@ class DuplicateGroup:
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está bloqueado por otro proceso intentando 
-    abrirlo en modo lectura exclusiva (si falla, asumimos uso activo).
+    abrirlo en modo lectura exclusiva. Si falla, se asume uso activo.
     """
     if not is_safe_to_modify(path):
         return True
@@ -116,7 +116,7 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def _safe_path_check(path: Path) -> bool:
-    """Valida que la ruta no esté protegida y sea segura para leer."""
+    """Valida que la ruta sea transitable, no protegida y no una unión o symlink."""
     return is_safe_to_modify(path) and not is_protected_path(path) and not is_junction(path) and not path.is_symlink()
 
 
@@ -139,8 +139,8 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo del archivo. Utiliza un búfer de lectura
-    para manejar archivos grandes sin saturar la memoria RAM.
+    Calcula el hash SHA256 completo del archivo mediante un búfer de lectura.
+    Retorna el digest en formato hex o None si falla el acceso.
     """
     if chunk_size <= 0:
         return None
@@ -285,24 +285,19 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Ejecuta el pipeline de hashing jerárquico. 
-    1. Si el archivo es pequeño, hash completo directo.
-    2. Si es grande, hash parcial (64KB) para descartar, y luego hash completo
-       solo sobre los colisionadores de hash parcial.
+    Pipeline de hashing jerárquico: utiliza hash parcial para archivos grandes
+    y reduce la carga de I/O antes de calcular el hash final (SHA256).
     """
     if not paths or size <= 0:
         return []
 
-    # Estrategia de optimización: evitar I/O pesado innecesario en archivos grandes.
     if size <= PARTIAL_READ_BYTES:
-        final_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, hash_file)
+        final_groups = _group_paths_by_hash(paths, hash_file)
     else:
-        # Primero filtramos por hash parcial: O(M)
-        partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
+        partial_groups = _group_paths_by_hash(paths, partial_hash)
         final_groups = {}
-        # Luego confirmamos solo colisiones: O(K)
         for candidate_subset in partial_groups.values():
-            full_hash_groups: Dict[str, List[Path]] = _group_paths_by_hash(candidate_subset, hash_file)
+            full_hash_groups = _group_paths_by_hash(candidate_subset, hash_file)
             final_groups.update(full_hash_groups)
             
     return [DuplicateGroup(d, size, sorted(p)) for d, p in final_groups.items()]

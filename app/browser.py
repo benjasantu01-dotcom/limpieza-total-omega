@@ -105,7 +105,10 @@ class BrowserCache:
 def _get_kernel32() -> Optional[ctypes.WinDLL]:
     """
     Inicializa la interfaz a la API de Windows mediante ctypes.
-    Retorna la DLL kernel32 cargada o None si el SO no es Windows o la API no está disponible.
+    
+    Returns:
+        La DLL kernel32 cargada o None si el SO no es Windows, 
+        o si no es posible acceder a GetFileAttributesW.
     """
     if os.name != 'nt':
         return None
@@ -123,8 +126,13 @@ def _is_unc_path(path_str: Optional[str]) -> bool:
 
 def base_directories() -> List[Path]:
     """
-    Identifica la raíz LOCALAPPDATA del usuario.
-    Verifica que la ruta sea segura (no UNC) y no esté en la lista negra protegida.
+    Identifica la raíz LOCALAPPDATA del sistema actual.
+    
+    Verifica que la variable de entorno sea válida, no sea una ruta UNC 
+    y que la carpeta sea accesible y no esté en la lista negra protegida.
+    
+    Returns:
+        Lista conteniendo el path de LOCALAPPDATA si es seguro, vacío si no.
     """
     local_env = os.environ.get("LOCALAPPDATA")
     if not isinstance(local_env, str) or not local_env or _is_unc_path(local_env):
@@ -143,8 +151,14 @@ def base_directories() -> List[Path]:
 
 def _is_path_inside_base(target_abs: str, base_abs: str) -> bool:
     """
-    Asegura que 'target_abs' sea un subdirectorio de 'base_abs' tras normalización.
-    Previene intentos de escape mediante '..' y rutas con caracteres nulos.
+    Asegura que 'target_abs' sea subdirectorio de 'base_abs' (evita escape con '..').
+    
+    Args:
+        target_abs: Ruta absoluta candidata.
+        base_abs: Ruta base de referencia.
+        
+    Returns:
+        True si la ruta está contenida dentro de la base, False en otro caso.
     """
     if not isinstance(target_abs, str) or not isinstance(base_abs, str):
         return False
@@ -168,7 +182,9 @@ def _is_excluded_file(name: Optional[str]) -> bool:
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """
     Consulta atributos de Windows mediante GetFileAttributesW.
-    Determina si un archivo tiene atributos de sistema, ocultos o es un punto de reparse.
+    
+    Determina si un archivo tiene atributos de sistema, ocultos o es punto de reparse
+    utilizando el bitmask definido en SYSTEM_HIDDEN_FLAGS.
     """
     if kernel32 is None: return False
     try:
@@ -185,7 +201,12 @@ def _should_skip_entry(
 ) -> bool:
     """
     Filtra entradas del sistema de archivos según políticas de seguridad.
-    Salta archivos en NEVER_TOUCH, rutas UNC, archivos ocultos y enlaces simbólicos/junctions.
+    
+    Evalúa:
+        - Archivos en la blacklist (NEVER_TOUCH).
+        - Rutas UNC o excesivamente largas.
+        - Enlaces simbólicos y Junctions.
+        - Archivos con flags de sistema u ocultos.
     """
     if entry.name is None or _is_excluded_file(entry.name):
         return True
@@ -202,12 +223,8 @@ def _should_skip_entry(
 
 
 def _get_entry_size(entry: os.DirEntry) -> int:
-    """
-    Retorna el tamaño en bytes de una entrada.
-    Valida la seguridad del path y no sigue enlaces simbólicos para evitar bucles.
-    """
+    """Obtiene el tamaño en bytes, evitando resolución de enlaces simbólicos."""
     try:
-        # Usar lstat evita resolver enlaces simbólicos internamente
         return int(entry.stat(follow_symlinks=False).st_size)
     except (OSError, PermissionError):
         return 0
@@ -221,7 +238,10 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Recorre un árbol de directorios con memoización de inodos para evitar bucles y re-escaneo.
+    Recorre un árbol de directorios calculando el tamaño total.
+    
+    Utiliza memoización basada en inodos (st_ino) para prevenir bucles infinitos
+    por enlaces simbólicos y evita el re-escaneo de rutas ya procesadas.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
@@ -257,7 +277,9 @@ def _sum_directory_recursive(
 def directory_size(path: Optional[OSPath]) -> int:
     """
     API pública para obtener el tamaño de una carpeta.
-    Realiza validaciones de seguridad previas a la inicialización del escaneo.
+    
+    Valida la existencia del path, permisos y seguridad contra inyección de rutas
+    antes de delegar el cálculo al motor recursivo.
     """
     if not path: return 0
     try:
