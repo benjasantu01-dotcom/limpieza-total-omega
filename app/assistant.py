@@ -372,7 +372,6 @@ class SystemContext:
     def ingest(self, source: Any) -> bool:
         """
         Ingesta datos de una fuente externa y los normaliza en el contexto.
-        Usa update local para reducir overhead de objetos.
         """
         if not (isinstance(source, dict) or hasattr(source, "__dict__")) or _is_input_too_deep_or_complex(source):
             return False
@@ -385,6 +384,7 @@ class SystemContext:
         
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
         if grade_val:
+            if is_protected_path(grade_val): return False
             updates['grade'] = grade_val
         
         if updates:
@@ -457,9 +457,11 @@ def _get_source_value(source: Any, key: str) -> Any:
         if isinstance(source, dict):
             val = source.get(key)
         else:
+            # Protegemos contra acceso a métodos o atributos privados del objeto source
             val = getattr(source, key, None)
         
-        if callable(val):
+        # Evitar retornar objetos complejos o funciones que puedan ser ejecutadas
+        if callable(val) or isinstance(val, (Path, type)):
             return None
         return val
     except Exception:

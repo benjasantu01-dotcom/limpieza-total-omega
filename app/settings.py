@@ -337,13 +337,14 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         if cache_key in _MANAGER.cache:
             cached_mtime, cached_val = _MANAGER.cache[cache_key]
             if cached_mtime == mtime: return cached_val.copy()
-    except OSError: pass
+    except OSError:
+        mtime = 0.0
     
     for r in [ruta, ruta.with_suffix(".bak")]:
         try:
             settings = _load_impl(r)
-            mtime = r.stat().st_mtime if r.exists() else 0.0
-            _MANAGER.cache[cache_key] = (mtime, settings)
+            current_mtime = r.stat().st_mtime if r.exists() else 0.0
+            _MANAGER.cache[cache_key] = (current_mtime, settings)
             return settings.copy()
         except (OSError, PermissionError):
             continue

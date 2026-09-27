@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
-- Rechazadas por tests: 25
+- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Rechazadas por tests: 27
 - Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 240
+- Sin respuesta de la IA (error o límite): 236
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 89 | 8 | 17 | 9 | 129 |
-| 2026-09-27 | 87 | 17 | 25 | 12 | 111 |
+| 2026-09-26 | 89 | 8 | 17 | 9 | 125 |
+| 2026-09-27 | 89 | 19 | 25 | 12 | 111 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **35**
+- seguridad defensiva: **32**
 - rendimiento: **31**
-- seguridad defensiva: **31**
-- robustez ante casos límite: **28**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,10 +34,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **16**
 - `duplicates.py`: **16**
 - `scanner.py`: **15**
-- `settings.py`: **14**
+- `settings.py`: **15**
 - `healthscore.py`: **14**
 - `quarantine.py`: **14**
-- `assistant.py`: **12**
+- `assistant.py`: **13**
 - `memory.py`: **12**
 - `organizer.py`: **10**
 - `startup.py`: **6**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T10:43:27` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al inyectar una validación de rutas mediante `is_protected_path` en el método `ingest` de `SystemContext` y restringir el acceso a atributos internos en `_get_source_value`, evitando que la inyección de objetos maliciosos pueda manipular el estado interno del asistente a través de métodos mágicos.
+- `2026-09-27T10:42:18` **settings.py** (robustez ante casos límite): Se ha robustecido el método `load` para manejar correctamente casos donde `ruta.stat()` falla debido a condiciones de carrera o permisos denegados, evitando excepciones no controladas y asegurando que la app siempre recupere un estado consistente.
 - `2026-09-27T10:33:30` **scanner.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `is_file()` en `_is_safe_entry` y una validación de existencia persistente en `_run_file_heuristics` para prevenir fallos durante el procesamiento de archivos que son eliminados o bloqueados por otros procesos entre la iteración de `os.scandir` y el análisis de la heurística (condición de carrera).
 - `2026-09-27T10:33:20` **safety.py** (robustez ante casos límite): Se añade `_is_path_empty_or_whitespace` y se integra en `normalize` para prevenir ataques o errores causados por rutas mal formadas (espacios en blanco, caracteres de control), mejorando la robustez ante entradas inesperadas.
 - `2026-09-27T10:24:48` **memory.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores y validación de tipos en `_read_windows_snapshot` y `trim_working_set` para asegurar que el uso de punteros y handles de Win32 no genere excepciones fatales ante estados inesperados de la API o del sistema (como procesos desapareciendo instantáneamente).
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T09:41:46` **healthscore.py** (rendimiento): Optimicé el método `validate` de `SystemMetrics` eliminando la iteración dinámica por `self.__dict__` (que utiliza reflexión costosa) y reemplazándola por una asignación directa de los campos clave, mejorando el rendimiento en cada actualización de métricas.
 - `2026-09-27T09:32:53` **diskreport.py** (rendimiento): Se optimizó el motor de escaneo `_collect_summary_data` y el uso de `walk_files` para evitar el re-procesamiento redundante de rutas, consolidando el escaneo en una pasada única eficiente que minimiza la creación innecesaria de objetos `Path` y reduce las llamadas a `os.path` al aprovechar `os.DirEntry`.
 - `2026-09-27T09:32:35` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `Path.resolve()` y `Path.stat()` en cada iteración del bucle, confiando en `os.scandir` para obtener la información necesaria de forma directa y eficiente.
-- `2026-09-27T09:21:44` **scanner.py** (legibilidad y documentación): He mejorado la documentación interna y la legibilidad de `scanner.py` unificando la lógica de validación de extensiones y aclarando el propósito de las funciones auxiliares de bajo nivel mediante docstrings estandarizados y type hints explícitos.
-- `2026-09-27T09:21:15` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructurados (tipo Google/NumPy) en funciones críticas, aclarando el propósito y la lógica de validación, además de estandarizar la nomenclatura interna de las reglas de integridad para facilitar su mantenimiento.

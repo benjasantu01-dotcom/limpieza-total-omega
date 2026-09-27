@@ -1190,3 +1190,89 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-27T10:33:30` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita de `is_file()` en `_is_safe_entry` y una validación de existencia persistente en `_run_file_heuristics` para prevenir fallos durante el procesamiento de archivos que son eliminados o bloqueados por otros procesos entre la iteración de `os.scandir` y el análisis de la heurística (condición de carrera).
 - `2026-09-27T10:33:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T10:33:30` Corrida terminada. Total usado hoy: 252.
+- `2026-09-27T10:41:44` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-09-27T10:42:18` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha robustecido el método `load` para manejar correctamente casos donde `ruta.stat()` falla debido a condiciones de carrera o permisos denegados, evitando excepciones no controladas y asegurando que la app siempre recupere un estado consistente.
+- `2026-09-27T10:42:47` Tests FALLARON:
+```
+e="HKCU")
+>       assert [e.name for e in entradas] == ["MiApp", "Otra"]
+E       AssertionError: assert [] == ['MiApp', 'Otra']
+E         
+E         Right contains 2 more items, first extra item: 'MiApp'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'MiApp',
+E         -     'Otra',
+E         - ]
+
+evolve/tests/test_modules.py:645: AssertionError
+________________ test_parse_registry_csv_skips_powershell_noise ________________
+
+    def test_parse_registry_csv_skips_powershell_noise():
+        csv = '"Name","Value"\n"PSPath","algo"\n"Real","C:\\\\r.exe"\n'
+>       assert [e.name for e in startup.parse_registry_csv(csv)] == ["Real"]
+E       AssertionError: assert [] == ['Real']
+E         
+E         Right contains one more item: 'Real'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'Real',
+E         - ]
+
+evolve/tests/test_modules.py:651: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff:
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff:
+  + []
+  - [
+  -     'Real',
+  - ]
+2 failed, 297 passed in 1.49s
+
+```
+- `2026-09-27T10:42:47` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `_is_valid_registry_entry` añadiendo una verificación de existencia de archivo mediante `os.path.exists` antes de aceptar la entrada, evitando que el reporte incluya ejecutables "huérfanos" que ya no existen en el disco, lo cual es un caso límite frecuente tras desinstalaciones incompletas.
+- `2026-09-27T10:43:27` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al inyectar una validación de rutas mediante `is_protected_path` en el método `ingest` de `SystemContext` y restringir el acceso a atributos internos en `_get_source_value`, evitando que la inyección de objetos maliciosos pueda manipular el estado interno del asistente a través de métodos mágicos.
+- `2026-09-27T10:43:49` Tests FALLARON:
+```
+........................................................................ [ 24%]
+.........................F.............................................. [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-4/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+1 failed, 298 passed in 1.51s
+
+```
+- `2026-09-27T10:43:49` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `save_logo_svg` y `_validate_destination` para garantizar que la operación de escritura no solo valide la ruta, sino que también asegure la integridad del directorio mediante un manejo de errores más específico y preventivo, alineado con las reglas de seguridad defensiva.
+- `2026-09-27T10:43:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T10:43:49` Corrida terminada. Total usado hoy: 256.
