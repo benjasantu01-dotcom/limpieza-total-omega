@@ -1747,3 +1747,9 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-27T14:38:14` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante casos límite en `walk_files` y `_collect_summary_data` manejando explícitamente archivos bloqueados o inaccesibles que lanzan `OSError` durante la lectura de metadatos, evitando que una excepción puntual interrumpa el escaneo completo de un directorio.
 - `2026-09-27T14:38:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T14:38:14` Corrida terminada. Total usado hoy: 348.
+- `2026-09-27T14:46:28` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-27T14:46:57` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una comprobación robusta mediante `try-except` en `_is_file_locked` y `_validate_and_resolve_path` para manejar situaciones donde el acceso a archivos falla debido a condiciones de carrera (archivos que desaparecen durante el escaneo), evitando que el bucle de procesamiento se detenga inesperadamente.
+- `2026-09-27T14:47:28` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se introdujo una validación defensiva en la función `_evaluate_rules` para manejar posibles fallos en `message_factory` mediante un bloque `try-except` más robusto, asegurando que el motor de puntuación nunca colapse ante un error inesperado al generar texto de recomendación.
+- `2026-09-27T14:47:28` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-09-27T14:47:28` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T14:47:28` Corrida terminada. Total usado hoy: 350.

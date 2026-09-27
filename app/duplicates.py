@@ -155,7 +155,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         return None
         
     p = _validate_and_resolve_path(path)
-    if not p or not p.exists() or not _safe_path_check(p):
+    if not p:
         return None
             
     try:
@@ -182,7 +182,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
         return None
 
     p = _validate_and_resolve_path(path)
-    if not p or not p.exists() or not _safe_path_check(p):
+    if not p:
         return None
 
     try:
@@ -235,8 +235,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
         if root.is_dir() and _safe_path_check(root):
             return root
     except (OSError, ValueError, RuntimeError, TypeError):
-        pass
-    return None
+        return None
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
