@@ -1616,3 +1616,13 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-09-27T13:57:28` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `os.path.normcase` y `os.path.normpath` dentro de los bucles, y mejorando la eficiencia del escaneo al consolidar la validación de `DirEntry` antes de cualquier operación de I/O.
 - `2026-09-27T13:57:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T13:57:28` Corrida terminada. Total usado hoy: 332.
+- `2026-09-27T14:05:40` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-27T14:06:12` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-27T14:06:46` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` eliminando el uso redundante de `Path` dentro del bucle de escaneo, trabajando directamente con `os.DirEntry` para reducir el número de llamadas al sistema (`stat`) y evitar la creación innecesaria de objetos `Path` que disparan consultas al sistema de archivos.
+- `2026-09-27T14:07:15` ➖ Sin cambios en healthscore.py (enfoque: rendimiento). Motivo: Se pre-calculan las constantes normalizadas como factores multiplicativos (`_INV_JUNK`, etc.) en lugar de realizar divisiones dentro del bucle principal de `compute_score`, optimizando el rendimiento de la evaluación en cada iteración del pipeline.
+- `2026-09-27T14:08:16` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-27T14:09:19` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-27T14:10:25` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-27T14:11:37` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-27T14:11:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T14:11:37` Corrida terminada. Total usado hoy: 336.

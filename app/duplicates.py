@@ -242,38 +242,38 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Escaneo recursivo profundo usando os.scandir para listar archivos candidatos.
-    
-    Mantiene un conjunto 'visited_paths' para garantizar que cada inodo sea 
-    procesado exactamente una vez, evitando bucles cíclicos.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
-    visited_paths: set[Path] = set()
+    visited_paths: set[str] = set()
 
-    def _scan_dir(current_dir: Path) -> None:
+    def _scan_dir(current_dir: str) -> None:
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    try:
-                        p_entry = Path(entry.path)
-                        if p_entry in visited_paths or not p_entry.exists() or not is_safe_to_modify(p_entry):
-                            continue
+                    path_str = entry.path
+                    if path_str in visited_paths:
+                        continue
                         
+                    try:
                         if entry.is_dir(follow_symlinks=False):
+                            p_entry = Path(path_str)
                             if _safe_path_check(p_entry) and not (skip_protected and is_protected_path(p_entry)):
-                                visited_paths.add(p_entry)
-                                _scan_dir(p_entry)
+                                visited_paths.add(path_str)
+                                _scan_dir(path_str)
                             continue
                         
                         st = entry.stat(follow_symlinks=False)
                         if st.st_size < min_size:
                             continue
+                            
+                        p_entry = Path(path_str)
                         if skip_protected and is_protected_path(p_entry):
                             continue
                         if is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
                             continue
                         
                         size_to_paths_map[st.st_size].append(p_entry)
-                        visited_paths.add(p_entry)
+                        visited_paths.add(path_str)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -281,9 +281,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
     for item in directories:
         if (root := _resolve_and_verify_root(item)):
-            if root not in visited_paths:
-                visited_paths.add(root)
-                _scan_dir(root)
+            root_str = str(root)
+            if root_str not in visited_paths:
+                visited_paths.add(root_str)
+                _scan_dir(root_str)
             
     return {sz: files for sz, files in size_to_paths_map.items() if len(files) > 1}
 
