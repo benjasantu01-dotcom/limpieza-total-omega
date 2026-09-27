@@ -1492,3 +1492,13 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-27T03:46:50` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-27T03:46:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T03:46:50` Corrida terminada. Total usado hoy: 92.
+- `2026-09-27T03:54:26` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-09-27T03:54:58` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de entrada en la función `_collect_summary_data` y se introdujo un manejo más robusto ante posibles inconsistencias de metadatos en el sistema de archivos durante la iteración, previniendo excepciones no controladas durante el procesamiento masivo.
+- `2026-09-27T03:55:23` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-27T03:55:51` ➖ Sin cambios en healthscore.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `compute_score` asegurando que el desglose de métricas siempre contenga todas las claves definidas en `WEIGHTS`, incluso si ocurren errores inesperados durante el cálculo de una etapa del pipeline, evitando así posibles `KeyError` al renderizar el informe.
+- `2026-09-27T03:56:51` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-27T03:57:54` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-27T03:59:00` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-27T04:00:12` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-27T04:00:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T04:00:12` Corrida terminada. Total usado hoy: 96.

@@ -346,10 +346,12 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     - defaultdict: para clasificar bytes y conteos por extensión de archivo.
     - min-heap: para mantener un Top N eficiente de archivos más pesados en O(N log K).
     """
+    if not isinstance(directory, Path) or not directory.is_dir():
+        return SummaryData(0, 0, {}, [])
+
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
-    # top_heap almacena tuplas de (tamaño_bytes, ruta_archivo)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
@@ -372,10 +374,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (size_bytes, path))
                 elif size_bytes > top_heap[0][0]:
-                    # Reemplaza el menor elemento del heap (el tope) si encontramos uno mayor
                     heapq.heapreplace(top_heap, (size_bytes, path))
-        except (OSError, RuntimeError, Exception):
-            # Ignorar fallas puntuales en el procesamiento de archivos individuales
+        except (OSError, RuntimeError, TypeError, Exception):
             continue
     
     return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)
