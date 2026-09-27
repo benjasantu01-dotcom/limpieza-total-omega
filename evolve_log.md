@@ -532,3 +532,102 @@ FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason
 - `2026-09-27T05:28:07` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escáner moviendo la validación de seguridad de carpetas (`is_protected_path`) de una operación repetitiva por archivo a una comprobación única por directorio, utilizando un conjunto de caché (`protected_cache`) para evitar llamadas redundantes a funciones de sistema en el mismo nivel de jerarquía.
 - `2026-09-27T05:28:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T05:28:07` Corrida terminada. Total usado hoy: 132.
+- `2026-09-27T05:36:21` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-09-27T05:36:58` Tests FALLARON:
+```
+.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:244: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - AssertionError: assert {'tema': 'cla...s': True, ...} == {'tema': 'osc...s': True, ...}
+  
+  Omitting 14 identical items, use -vv to show
+  Differing items:
+  {'tema': 'claro'} != {'tema': 'oscuro'}
+  {'top_archivos': 99} != {'top_archivos': 15}
+  
+  Full diff:
+    {
+  -     'tema': 'oscuro',
+  ?              -- ^
+  +     'tema': 'claro',
+  ?               ^^
+        'acento': 'menta',
+        'mostrar_barras': True,
+        'animaciones': True,
+        'confirmar_siempre': True,
+        'abrir_en': 'Salud',
+        'recordar_ultima_carpeta': True,
+        'ultima_carpeta': '',
+        'duplicados_tamano_minimo_kb': 64,
+  -     'top_archivos': 15,
+  ?                     ^^
+  +     'top_archivos': 99,
+  ?                     ^^
+        'top_procesos': 15,
+        'analisis_en_paralelo': True,
+        'asistente_activado': False,
+        'asistente_clave_api': '',
+        'asistente_enviar_metricas': True,
+        'asistente_modelo': 'gemini-3.1-flash-lite',
+    }
+1 failed, 298 passed, 4 warnings in 0.80s
+
+```
+- `2026-09-27T05:36:58` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `load()` evitando la lectura recursiva de archivos de respaldo (.bak) si el archivo principal es válido, y eliminé redundancias en el cálculo de `mtime` moviendo la lógica de estado del archivo fuera de los bloques `try` innecesarios.
+- `2026-09-27T05:38:06` Tests FALLARON:
+```
+tionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:244: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 4 warnings in 0.82s
+
+```
+- `2026-09-27T05:38:06` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha optimizado `_resolve_and_cache_path` para evitar llamadas redundantes a `Path.resolve(strict=False)` y validaciones de seguridad mediante el uso del diccionario `_EXISTS_CACHE` antes de realizar operaciones de I/O, reduciendo significativamente el tiempo de ejecución en sistemas con muchos programas de inicio.
+- `2026-09-27T05:38:45` Tests FALLARON:
+```
+) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_answers_are_never_empty - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_garbage_questions_still_get_an_answer - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_low_disk_is_reported_as_the_top_priority - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - NameError: name '_format_problem_message' is not defined
+9 failed, 290 passed, 4 warnings in 0.93s
+
+```
+- `2026-09-27T05:38:45` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Reforcé la robustez del motor local ante entradas corruptas o inesperadas al agregar validaciones de tipo explícitas en `local_answer` y `handle_score`, asegurando que `active_problems` siempre devuelva una tupla segura y manejable incluso si las métricas en `SystemContext` han sido alteradas o no inicializadas correctamente.
+- `2026-09-27T05:39:04` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-27T05:39:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T05:39:04` Corrida terminada. Total usado hoy: 136.
