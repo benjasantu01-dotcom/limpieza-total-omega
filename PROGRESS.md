@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 27
 - Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 236
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 89 | 8 | 17 | 9 | 125 |
-| 2026-09-27 | 89 | 19 | 25 | 12 | 111 |
+| 2026-09-26 | 89 | 8 | 17 | 9 | 121 |
+| 2026-09-27 | 92 | 19 | 25 | 13 | 111 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **35**
-- seguridad defensiva: **32**
+- seguridad defensiva: **35**
 - rendimiento: **31**
 - robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **19**
 - `safety.py`: **19**
-- `diskreport.py`: **18**
-- `browser.py`: **16**
-- `duplicates.py`: **16**
+- `browser.py`: **17**
+- `duplicates.py`: **17**
 - `scanner.py`: **15**
 - `settings.py`: **15**
 - `healthscore.py`: **14**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T10:53:13` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `hash_file` y `partial_hash` implementando una validación estricta de la ruta antes de intentar abrir el archivo, asegurando que el archivo no haya sido modificado o eliminado entre la validación inicial y la apertura (Time-of-check to time-of-use), además de encapsular la apertura en un bloque `try` robusto que maneja específicamente errores de acceso.
+- `2026-09-27T10:52:46` **diskreport.py** (seguridad defensiva): Reforcé la seguridad en `walk_files` y `_is_excluded_path` para prevenir ataques de escape de directorio mediante rutas relativas (`..`) o enlaces simbólicos maliciosos, asegurando que cada `DirEntry` sea validado estrictamente contra la raíz (`root_path`) antes de ser procesado.
+- `2026-09-27T10:52:21` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la validación explícita de `is_safe_to_modify` para cada sub-directorio antes de ingresar en él, evitando así posibles escapes de contexto o recursión en rutas protegidas que podrían ser alcanzadas durante el escaneo profundo.
 - `2026-09-27T10:43:27` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al inyectar una validación de rutas mediante `is_protected_path` en el método `ingest` de `SystemContext` y restringir el acceso a atributos internos en `_get_source_value`, evitando que la inyección de objetos maliciosos pueda manipular el estado interno del asistente a través de métodos mágicos.
 - `2026-09-27T10:42:18` **settings.py** (robustez ante casos límite): Se ha robustecido el método `load` para manejar correctamente casos donde `ruta.stat()` falla debido a condiciones de carrera o permisos denegados, evitando excepciones no controladas y asegurando que la app siempre recupere un estado consistente.
 - `2026-09-27T10:33:30` **scanner.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `is_file()` en `_is_safe_entry` y una validación de existencia persistente en `_run_file_heuristics` para prevenir fallos durante el procesamiento de archivos que son eliminados o bloqueados por otros procesos entre la iteración de `os.scandir` y el análisis de la heurística (condición de carrera).
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T10:01:38` **scanner.py** (rendimiento): Optimicé el rendimiento de `_is_safe_entry` eliminando la creación repetitiva de objetos `Path` y reduciendo las llamadas a `is_protected_path` mediante la validación directa del string normalizado, evitando así el overhead de resolución de rutas en cada iteración del bucle.
 - `2026-09-27T09:53:03` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_attrs` y otras verificaciones de estado reemplazando llamadas repetidas al sistema de archivos por una cache LRU de mayor capacidad y evitando el cálculo redundante de rutas UNC en cada iteración del bucle de validación.
 - `2026-09-27T09:52:06` **quarantine.py** (rendimiento): Optimicé el rendimiento de `restore_item` y `purge_item` reemplazando la búsqueda lineal por indexación mediante diccionarios, evitando O(N^2) en operaciones frecuentes y mejorando la eficiencia al manejar listas de cuarentena grandes.
-- `2026-09-27T09:41:46` **healthscore.py** (rendimiento): Optimicé el método `validate` de `SystemMetrics` eliminando la iteración dinámica por `self.__dict__` (que utiliza reflexión costosa) y reemplazándola por una asignación directa de los campos clave, mejorando el rendimiento en cada actualización de métricas.
-- `2026-09-27T09:32:53` **diskreport.py** (rendimiento): Se optimizó el motor de escaneo `_collect_summary_data` y el uso de `walk_files` para evitar el re-procesamiento redundante de rutas, consolidando el escaneo en una pasada única eficiente que minimiza la creación innecesaria de objetos `Path` y reduce las llamadas a `os.path` al aprovechar `os.DirEntry`.
-- `2026-09-27T09:32:35` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `Path.resolve()` y `Path.stat()` en cada iteración del bucle, confiando en `os.scandir` para obtener la información necesaria de forma directa y eficiente.

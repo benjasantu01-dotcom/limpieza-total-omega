@@ -103,12 +103,17 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     try:
         if any(c in entry.name for c in SUSPICIOUS_CHARS):
             return True
-        if entry.is_symlink() or (os.name == 'nt' and entry.is_dir() and entry.stat().st_file_attributes & 0x400):
+        if entry.is_symlink():
             return True
+        
         entry_path = Path(entry.path).resolve()
+        # Impedir escape de directorio mediante rutas maliciosas
         if not entry_path.is_relative_to(root_path):
             return True
+            
         if is_protected_path(entry_path):
+            return True
+        if os.name == 'nt' and entry.is_dir() and entry.stat().st_file_attributes & 0x400:
             return True
     except (OSError, PermissionError, AttributeError, RuntimeError, ValueError, TypeError):
         return True

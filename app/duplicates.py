@@ -144,19 +144,12 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo en bloques para memoria eficiente.
-    
-    Args:
-        path: Ruta al archivo a procesar.
-        chunk_size: Tamaño de lectura por iteración.
-        
-    Returns:
-        Hexadecimal del hash si tiene éxito, None en caso de error de I/O.
     """
     if chunk_size <= 0:
         return None
         
     p = _validate_and_resolve_path(path)
-    if not p or not p.exists():
+    if not p or not p.exists() or not _safe_path_check(p):
         return None
             
     try:
@@ -175,18 +168,12 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Calcula un hash heurístico sobre los primeros N bytes del archivo.
-    
-    Permite descartar archivos distintos rápidamente basándose en sus encabezados.
-    Si el archivo es menor a read_bytes, se hashlea el archivo completo.
-    
-    Returns:
-        Hexadecimal del hash si tiene éxito, None si ocurre error de acceso.
     """
     if read_bytes <= 0:
         return None
 
     p = _validate_and_resolve_path(path)
-    if not p or not p.exists():
+    if not p or not p.exists() or not _safe_path_check(p):
         return None
 
     try:
@@ -347,7 +334,6 @@ def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     (mtime, longitud_de_la_ruta). Se prefiere el archivo más antiguo.
     """
     try:
-        # Usamos lstat/stat sin resolver para no disparar errores de acceso en symlinks rotos
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
     except (OSError, PermissionError, ValueError, AttributeError):

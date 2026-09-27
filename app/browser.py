@@ -243,7 +243,9 @@ def _sum_directory_recursive(
                         
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        total_bytes += _sum_directory_recursive(Path(entry.path), is_junction_fn, kernel32, memo, depth + 1)
+                        child_path = Path(entry.path)
+                        if is_safe_to_modify(child_path) and not is_protected_path(child_path):
+                            total_bytes += _sum_directory_recursive(child_path, is_junction_fn, kernel32, memo, depth + 1)
                     else:
                         # Obtenemos stat sin llamadas extras si ya está disponible en el DirEntry
                         total_bytes += entry.stat(follow_symlinks=False).st_size
