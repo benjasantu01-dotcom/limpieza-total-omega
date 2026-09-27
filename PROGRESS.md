@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 42
+- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Rechazadas por tests: 22
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 242
+- Sin respuesta de la IA (error o límite): 244
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 102 | 8 | 19 | 9 | 138 |
-| 2026-09-27 | 76 | 13 | 23 | 12 | 104 |
+| 2026-09-26 | 99 | 8 | 18 | 9 | 138 |
+| 2026-09-27 | 77 | 14 | 23 | 12 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - seguridad defensiva: **41**
 - manejo de errores y validación de entradas: **35**
-- rendimiento: **27**
-- robustez ante casos límite: **24**
+- rendimiento: **28**
+- robustez ante casos límite: **21**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `safety.py`: **18**
 - `browser.py`: **17**
-- `settings.py`: **16**
+- `safety.py`: **17**
 - `duplicates.py`: **16**
-- `scanner.py`: **14**
+- `settings.py`: **15**
+- `healthscore.py`: **14**
 - `quarantine.py`: **14**
 - `assistant.py`: **13**
-- `healthscore.py`: **13**
+- `scanner.py`: **13**
 - `memory.py`: **12**
 - `organizer.py`: **10**
 - `startup.py`: **7**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T09:41:46` **healthscore.py** (rendimiento): Optimicé el método `validate` de `SystemMetrics` eliminando la iteración dinámica por `self.__dict__` (que utiliza reflexión costosa) y reemplazándola por una asignación directa de los campos clave, mejorando el rendimiento en cada actualización de métricas.
 - `2026-09-27T09:32:53` **diskreport.py** (rendimiento): Se optimizó el motor de escaneo `_collect_summary_data` y el uso de `walk_files` para evitar el re-procesamiento redundante de rutas, consolidando el escaneo en una pasada única eficiente que minimiza la creación innecesaria de objetos `Path` y reduce las llamadas a `os.path` al aprovechar `os.DirEntry`.
 - `2026-09-27T09:32:35` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `Path.resolve()` y `Path.stat()` en cada iteración del bucle, confiando en `os.scandir` para obtener la información necesaria de forma directa y eficiente.
 - `2026-09-27T09:21:44` **scanner.py** (legibilidad y documentación): He mejorado la documentación interna y la legibilidad de `scanner.py` unificando la lógica de validación de extensiones y aclarando el propósito de las funciones auxiliares de bajo nivel mediante docstrings estandarizados y type hints explícitos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T08:51:37` **branding.py** (legibilidad y documentación): Se introdujo un `Enum` llamado `SeverityType` para reemplazar los literales de string en `SeverityLevel`, mejorando la seguridad de tipos, la autocompletado y eliminando la necesidad de múltiples validaciones manuales de strings en funciones de acceso.
 - `2026-09-27T08:51:00` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de manipulación de datos y la estructuración mediante docstrings descriptivos, asegurando que el contrato de cada función (entradas esperadas, transformaciones y garantías de seguridad) sea evidente para futuros desarrolladores.
 - `2026-09-27T08:40:53` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` agregando una validación específica para detectar archivos de dispositivo (device files) antes de intentar acceder a sus metadatos, evitando posibles bloqueos o lecturas erróneas de bajo nivel en el sistema de archivos.
-- `2026-09-27T08:31:07` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_windows_process_csv` añadiendo validación explícita para evitar errores de tipo al procesar entradas malformadas, asegurando que `pid` y `ws` sean valores numéricos positivos antes de intentar convertirlos, previniendo posibles excepciones en tiempo de ejecución.

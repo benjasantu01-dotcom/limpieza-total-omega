@@ -1012,3 +1012,60 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-27T09:32:53` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Se optimizó el motor de escaneo `_collect_summary_data` y el uso de `walk_files` para evitar el re-procesamiento redundante de rutas, consolidando el escaneo en una pasada única eficiente que minimiza la creación innecesaria de objetos `Path` y reduce las llamadas a `os.path` al aprovechar `os.DirEntry`.
 - `2026-09-27T09:32:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T09:32:54` Corrida terminada. Total usado hoy: 228.
+- `2026-09-27T09:40:42` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-09-27T09:41:11` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-27T09:41:46` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el método `validate` de `SystemMetrics` eliminando la iteración dinámica por `self.__dict__` (que utiliza reflexión costosa) y reemplazándola por una asignación directa de los campos clave, mejorando el rendimiento en cada actualización de métricas.
+- `2026-09-27T09:42:46` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-27T09:43:49` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-27T09:44:55` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-27T09:46:07` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-27T09:46:46` Tests FALLARON:
+```
+          '"grande","11","104857600"\n'
+            '"medio","12","10485760"\n'
+        )
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.15s
+
+```
+- `2026-09-27T09:46:46` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la iteración manual con filtrado de caracteres por una búsqueda optimizada de índices y reduje la sobrecarga de `top_memory_processes` aplicando la lógica de filtro directamente en el comando de PowerShell para evitar procesar líneas innecesarias en Python.
+- `2026-09-27T09:46:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T09:46:46` Corrida terminada. Total usado hoy: 232.

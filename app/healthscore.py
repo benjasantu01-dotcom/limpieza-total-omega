@@ -189,23 +189,25 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura la integridad de los datos, forzando rangos positivos y sanitizando valores no finitos."""
-        for name, value in self.__dict__.items():
-            if not isinstance(value, (int, float)) or not math.isfinite(float(value)):
-                setattr(self, name, 0.0)
+        def _v(v: Any) -> float: return float(v) if isinstance(v, (int, float)) and math.isfinite(v) else 0.0
         
-        self.junk_mb = max(0.0, float(self.junk_mb))
-        self.duplicate_mb = max(0.0, float(self.duplicate_mb))
-        self.suspicious_count = int(max(0, int(self.suspicious_count)))
-        self.suspicious_warnings = int(max(0, int(self.suspicious_warnings)))
-        self.startup_count = int(max(0, int(self.startup_count)))
-        self.quarantined_count = int(max(0, int(self.quarantined_count)))
-        self.memory_available_percent = _clamp(float(self.memory_available_percent), 0.0, 100.0)
-        self.disk_free_percent = _clamp(float(self.disk_free_percent), 0.0, 100.0)
+        self.junk_mb = max(0.0, _v(self.junk_mb))
+        self.duplicate_mb = max(0.0, _v(self.duplicate_mb))
+        self.suspicious_count = int(max(0, int(_v(self.suspicious_count))))
+        self.suspicious_warnings = int(max(0, int(_v(self.suspicious_warnings))))
+        self.startup_count = int(max(0, int(_v(self.startup_count))))
+        self.quarantined_count = int(max(0, int(_v(self.quarantined_count))))
+        self.memory_available_percent = _clamp(_v(self.memory_available_percent), 0.0, 100.0)
+        self.disk_free_percent = _clamp(_v(self.disk_free_percent), 0.0, 100.0)
 
     @property
     def is_finite(self) -> bool:
         """Verifica que todos los campos numéricos sean números finitos y válidos."""
-        return all(math.isfinite(float(v)) for v in self.__dict__.values())
+        return all(math.isfinite(float(v)) for v in (
+            self.junk_mb, self.suspicious_count, self.suspicious_warnings,
+            self.memory_available_percent, self.disk_free_percent,
+            self.duplicate_mb, self.startup_count, self.quarantined_count
+        ))
 
 @dataclass
 class HealthResult:
