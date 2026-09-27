@@ -226,6 +226,10 @@ def _has_invalid_chars(path_str: Optional[str]) -> bool:
     if not isinstance(path_str, str) or not path_str: return True
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str))
 
+def _is_path_empty_or_whitespace(path_str: str) -> bool:
+    """Valida si la cadena está vacía o solo contiene espacios en blanco."""
+    return not path_str or path_str.isspace()
+
 def _is_unc_path(path_str: str) -> bool:
     """Verifica si la ruta corresponde a un recurso de red (UNC)."""
     return path_str.startswith(("\\\\", "//"))
@@ -414,7 +418,7 @@ def normalize(path: PathLike) -> Path:
     """
     if path is None: raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
     path_str = str(path).strip()
-    if not path_str: raise UnsafePathError("Entrada de ruta vacía.", SafetyValidationErrorCode.GENERIC)
+    if _is_path_empty_or_whitespace(path_str): raise UnsafePathError("Entrada de ruta vacía o inválida.", SafetyValidationErrorCode.GENERIC)
     if _is_path_too_long(path_str):
         raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG)
     if unicodedata.normalize('NFKC', path_str) != path_str:

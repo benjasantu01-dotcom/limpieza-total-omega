@@ -1183,3 +1183,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-27T10:24:58` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-09-27T10:24:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T10:24:58` Corrida terminada. Total usado hoy: 248.
+- `2026-09-27T10:31:32` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-09-27T10:32:19` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-09-27T10:32:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-27T10:33:20` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se añade `_is_path_empty_or_whitespace` y se integra en `normalize` para prevenir ataques o errores causados por rutas mal formadas (espacios en blanco, caracteres de control), mejorando la robustez ante entradas inesperadas.
+- `2026-09-27T10:33:30` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita de `is_file()` en `_is_safe_entry` y una validación de existencia persistente en `_run_file_heuristics` para prevenir fallos durante el procesamiento de archivos que son eliminados o bloqueados por otros procesos entre la iteración de `os.scandir` y el análisis de la heurística (condición de carrera).
+- `2026-09-27T10:33:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T10:33:30` Corrida terminada. Total usado hoy: 252.

@@ -185,6 +185,8 @@ class Scanner:
             return False
         if self._is_reparse_point(entry) or entry.is_symlink():
             return False
+        if not is_dir and not entry.is_file():
+            return False
         
         try:
             if not os.access(entry.path, os.R_OK):
@@ -230,6 +232,8 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre el archivo indicado."""
+        if not path.exists():
+            return
         for check_fn in ALL_CHECKS:
             try:
                 finding = check_fn(path, entry, self.now_ts)
