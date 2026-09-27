@@ -350,7 +350,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        if isinstance(p, Path):
+        if isinstance(p, Path) and p.exists():
             if score := _calculate_keeper_heuristic(p):
                 candidates.append((score, p))
             
@@ -379,7 +379,12 @@ def format_group(group: DuplicateGroup) -> List[str]:
             elif not _safe_path_check(path):
                 lines.append(f"   [inaccesible] {path}")
             else:
-                is_keeper = (keeper is not None and path.resolve() == keeper.resolve())
+                is_keeper = False
+                if keeper:
+                    try:
+                        is_keeper = (path.resolve() == keeper.resolve())
+                    except OSError:
+                        pass
                 label = 'conservar' if is_keeper else 'duplicado'
                 lines.append(f"   [{label}] {path}")
         except (OSError, RuntimeError):

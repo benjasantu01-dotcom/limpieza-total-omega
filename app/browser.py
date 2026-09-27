@@ -176,12 +176,12 @@ def _is_excluded_file(name: Optional[str]) -> bool:
     return name is not None and name.lower() in NEVER_TOUCH
 
 
-def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
+def _is_system_hidden(entry_path: Optional[str], kernel32: Optional[ctypes.WinDLL]) -> bool:
     """
     Determina si un archivo tiene atributos de sistema, ocultos o es punto de reparse
     utilizando el bitmask definido en SYSTEM_HIDDEN_FLAGS vía API de Win32.
     """
-    if kernel32 is None: return False
+    if kernel32 is None or not entry_path: return False
     try:
         attrs = kernel32.GetFileAttributesW(entry_path)
         return False if attrs == 0xFFFFFFFF else bool(attrs & SYSTEM_HIDDEN_FLAGS)
@@ -202,7 +202,7 @@ def _should_skip_entry(
     
     try:
         path = entry.path
-        if len(path) >= MAX_PATH_LEN or _is_unc_path(path):
+        if not path or len(path) >= MAX_PATH_LEN or _is_unc_path(path):
             return True
         # Usamos los métodos de DirEntry que no requieren llamadas adicionales a stat()
         if entry.is_symlink() or is_junction_fn(path) or _is_system_hidden(path, kernel32):

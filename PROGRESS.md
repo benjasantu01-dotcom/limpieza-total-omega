@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **172** (34.1% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 241
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 75 | 8 | 15 | 8 | 98 |
-| 2026-09-27 | 97 | 19 | 27 | 14 | 143 |
+| 2026-09-26 | 72 | 8 | 14 | 8 | 98 |
+| 2026-09-27 | 100 | 19 | 27 | 14 | 144 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **43**
 - seguridad defensiva: **40**
 - rendimiento: **31**
 - robustez ante casos límite: **29**
-- manejo de errores y validación de entradas: **26**
+- manejo de errores y validación de entradas: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **19**
-- `diskreport.py`: **17**
-- `quarantine.py`: **15**
+- `diskreport.py`: **18**
+- `duplicates.py`: **16**
+- `browser.py`: **16**
 - `scanner.py`: **15**
 - `settings.py`: **15**
-- `duplicates.py`: **15**
-- `browser.py`: **15**
+- `quarantine.py`: **14**
 - `healthscore.py`: **13**
-- `memory.py`: **12**
 - `assistant.py`: **11**
-- `organizer.py`: **9**
+- `memory.py`: **11**
+- `organizer.py`: **8**
 - `main.py`: **6**
 - `startup.py`: **5**
 - `branding.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T12:45:48` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante la validación explícita de `group.paths`, asegurando que `suggest_keeper` no falle ante un grupo parcialmente inválido y que `format_group` maneje adecuadamente situaciones donde la comparación de rutas pueda fallar por errores de sistema de archivos.
+- `2026-09-27T12:45:36` **diskreport.py** (manejo de errores y validación de entradas): Reforcé el manejo de errores en `walk_files` y `largest_folders` para capturar explícitamente excepciones de sistema (`OSError`, `PermissionError`) durante la iteración y el cálculo de rutas relativas, evitando que una ruta mal formada o con permisos restringidos interrumpa el análisis global.
+- `2026-09-27T12:45:08` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_system_hidden` y `_should_skip_entry` validando explícitamente que las entradas de `os.scandir` no sean `None` antes de acceder a sus atributos, previniendo excepciones innecesarias durante la iteración en sistemas con permisos restrictivos.
 - `2026-09-27T11:14:12` **settings.py** (seguridad defensiva): He fortalecido la integridad del sistema de archivos al añadir una validación estricta de `os.fsync` y permisos en `save()`, y al encapsular la lógica de `_is_file_secure_to_read` para prevenir que manipulaciones externas del archivo (como la sustitución por un enlace simbólico o un archivo de dispositivo) comprometan la seguridad durante la carga.
 - `2026-09-27T11:13:53` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `Scanner._is_safe_entry` añadiendo una validación explícita para evitar procesar rutas que, aunque nominalmente pertenezcan a la raíz, fueron modificadas fuera del control de la aplicación mediante enlaces simbólicos o junctions que podrían apuntar fuera de `base_root`.
 - `2026-09-27T11:13:21` **safety.py** (seguridad defensiva): Se introdujo una verificación adicional en `ensure_safe_to_modify` para detectar si el archivo es un "Hard Link" hacia una ruta protegida o fuera del alcance esperado, impidiendo modificaciones indirectas a través de alias del sistema de archivos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T10:42:18` **settings.py** (robustez ante casos límite): Se ha robustecido el método `load` para manejar correctamente casos donde `ruta.stat()` falla debido a condiciones de carrera o permisos denegados, evitando excepciones no controladas y asegurando que la app siempre recupere un estado consistente.
 - `2026-09-27T10:33:30` **scanner.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `is_file()` en `_is_safe_entry` y una validación de existencia persistente en `_run_file_heuristics` para prevenir fallos durante el procesamiento de archivos que son eliminados o bloqueados por otros procesos entre la iteración de `os.scandir` y el análisis de la heurística (condición de carrera).
 - `2026-09-27T10:33:20` **safety.py** (robustez ante casos límite): Se añade `_is_path_empty_or_whitespace` y se integra en `normalize` para prevenir ataques o errores causados por rutas mal formadas (espacios en blanco, caracteres de control), mejorando la robustez ante entradas inesperadas.
-- `2026-09-27T10:24:48` **memory.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores y validación de tipos en `_read_windows_snapshot` y `trim_working_set` para asegurar que el uso de punteros y handles de Win32 no genere excepciones fatales ante estados inesperados de la API o del sistema (como procesos desapareciendo instantáneamente).
-- `2026-09-27T10:24:17` **main.py** (robustez ante casos límite): Se ha implementado un mecanismo de "graceful shutdown" en los procesos asíncronos mediante la verificación de `self._closing` y un `try-finally` robusto, además de asegurar que las operaciones críticas del sistema utilicen el estado compartido del `executor` de manera protegida para evitar condiciones de carrera durante el cierre de la app.
-- `2026-09-27T10:21:59` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `compute_score` frente a casos donde las métricas podrían ser válidas pero los pesos o cálculos del pipeline derivarían en estados inconsistentes, añadiendo un chequeo preventivo de métricas nulas y garantizando que el desglose de áreas siempre contenga todas las claves definidas en `WEIGHTS` incluso ante excepciones durante el procesamiento.
