@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 23
 - Rechazadas por guardia de seguridad: 39
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 233
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 0 | 0 | 0 | 0 | 2 |
-| 2026-09-26 | 137 | 12 | 24 | 11 | 166 |
-| 2026-09-27 | 53 | 11 | 15 | 8 | 65 |
+| 2026-09-26 | 137 | 12 | 24 | 11 | 164 |
+| 2026-09-27 | 56 | 11 | 15 | 9 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **35**
+- seguridad defensiva: **38**
 - rendimiento: **32**
 - robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
 - `safety.py`: **19**
 - `settings.py`: **18**
 - `browser.py`: **17**
+- `duplicates.py`: **16**
 - `quarantine.py`: **15**
 - `scanner.py`: **15**
 - `assistant.py`: **15**
-- `duplicates.py`: **15**
 - `healthscore.py`: **14**
 - `memory.py`: **11**
 - `startup.py`: **9**
 - `organizer.py`: **9**
 - `branding.py`: **7**
-- `main.py`: **6**
+- `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T06:30:41` **main.py** (seguridad defensiva): Se ha implementado un filtrado de rutas más robusto al añadir una validación de caracteres de control (no imprimibles) en `_is_safe_disk_operation` y métodos auxiliares, previniendo inyecciones o rutas malformadas antes de cualquier llamada al sistema, y se ha consolidado la lógica de validación de seguridad de rutas en los puntos críticos de entrada (diálogos de usuario y callbacks).
+- `2026-09-27T06:28:14` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_collect_candidates` integrando el chequeo de `is_protected_path` directamente en la lógica de filtrado de directorios, evitando que el escáner intente ingresar o listar recursivamente carpetas protegidas desde el inicio.
+- `2026-09-27T06:27:47` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `_collect_summary_data` envolviendo el acceso a `entry.path` con una normalización y verificación explícita, previniendo que rutas malformadas o inconsistentes causen errores silenciosos o accesos fuera de los límites permitidos.
 - `2026-09-27T06:20:16` **browser.py** (seguridad defensiva): He mejorado la seguridad defensiva al reemplazar el uso de `str(path)` para verificaciones de seguridad por objetos `Path` normalizados en `_sum_directory_recursive`, evitando riesgos de path traversal, y añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del nodo actual antes de profundizar en cada directorio.
 - `2026-09-27T06:18:56` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_safe_text_structure` implementando una lista de verificación explícita de caracteres prohibidos y normalizando el texto antes de la validación, evitando que caracteres Unicode (como los RTL) o secuencias de escape sean usados para ofuscar rutas o comandos.
 - `2026-09-27T06:09:08` **settings.py** (robustez ante casos límite): Se introdujo una validación robusta contra la manipulación de enlaces simbólicos o puntos de reparse durante la lectura del archivo de configuración, asegurando que la función `_load_impl` verifique explícitamente la integridad física del archivo mediante `os.lstat` antes de abrirlo, previniendo posibles ataques de redirección de archivos.
@@ -59,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T04:57:30` **assistant.py** (rendimiento): Optimicé el método `ingest` de `SystemContext` para evitar la creación innecesaria de objetos intermedios y mejorar la eficiencia del proceso de actualización de estado mediante el uso de `__dict__` y `setattr` de forma directa tras la validación, reduciendo la carga de memoria en cada iteración del bucle principal.
 - `2026-09-27T04:57:05` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de la clase `StartupEntry` mediante docstrings que detallan los requisitos de seguridad y las razones detrás de las validaciones, facilitando el mantenimiento y la comprensión de las restricciones impuestas sobre las rutas del sistema.
 - `2026-09-27T04:56:36` **settings.py** (legibilidad y documentación): Se introdujo una clase `ValidationResult` (utilizando `NamedTuple`) para explicitar los resultados de validación en lugar de retornar solo `None`, mejorando la legibilidad de la lógica en `_Validators` y aclarando el propósito de cada etapa del filtrado.
-- `2026-09-27T04:56:04` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos (ej. `list[Suspicion]` en lugar de `ScanResult` para claridad) y docstrings estructurados en los métodos de la clase `Scanner` para documentar la lógica de filtrado de archivos y seguridad, facilitando la comprensión del flujo de datos sin alterar la funcionalidad.
-- `2026-09-27T04:47:14` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de validación de integridad transformando `_VALIDATORS` en una estructura más descriptiva y centralizada, utilizando una función factory simple para reducir la carga cognitiva al leer las reglas.
-- `2026-09-27T04:46:29` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `quarantine.py` mediante la refactorización de `_is_file_locked`, eliminando el bloque `__import__` dentro de una función de alta frecuencia y sustituyéndolo por un helper explícito, además de añadir docstrings detallados en las funciones de manipulación de bajo nivel para aclarar las precondiciones de seguridad.

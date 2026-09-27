@@ -316,7 +316,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _ensure_path_writable_and_clean(self, path: Union[str, Path]) -> None:
         """Verifica que la ruta sea un directorio existente, seguro y sin puntos de reparse."""
-        p = Path(path).resolve(strict=True)
+        path_str = str(path)
+        if any(ord(c) < 32 for c in path_str):
+            raise safety.UnsafePathError("Ruta contiene caracteres inválidos.")
+        p = Path(path_str).resolve(strict=True)
         # Verificar que no sea punto de reparse (junctions/symlinks) para prevenir recursión incontrolada
         if p.is_symlink() or (os.path.isdir(p) and p.is_mount() and not p.exists()):
             raise safety.UnsafePathError("Ruta no permitida: punto de reparse o enlace detectado.")
