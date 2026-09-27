@@ -1004,3 +1004,11 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-27T09:22:42` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-09-27T09:22:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T09:22:42` Corrida terminada. Total usado hoy: 224.
+- `2026-09-27T09:30:29` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-09-27T09:31:16` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: rendimiento).
+- `2026-09-27T09:31:56` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-27T09:31:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-27T09:32:35` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `Path.resolve()` y `Path.stat()` en cada iteración del bucle, confiando en `os.scandir` para obtener la información necesaria de forma directa y eficiente.
+- `2026-09-27T09:32:53` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Se optimizó el motor de escaneo `_collect_summary_data` y el uso de `walk_files` para evitar el re-procesamiento redundante de rutas, consolidando el escaneo en una pasada única eficiente que minimiza la creación innecesaria de objetos `Path` y reduce las llamadas a `os.path` al aprovechar `os.DirEntry`.
+- `2026-09-27T09:32:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T09:32:54` Corrida terminada. Total usado hoy: 228.

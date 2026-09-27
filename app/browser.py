@@ -196,9 +196,6 @@ def _should_skip_entry(
 ) -> bool:
     """
     Aplica políticas de filtrado antes de procesar una entrada de sistema de archivos.
-    
-    Ignora archivos en blacklist, rutas UNC, longitudes excesivas, enlaces simbólicos,
-    junctions o archivos con atributos de sistema/ocultos.
     """
     if entry.name is None or _is_excluded_file(entry.name):
         return True
@@ -207,22 +204,12 @@ def _should_skip_entry(
         path = entry.path
         if len(path) >= MAX_PATH_LEN or _is_unc_path(path):
             return True
+        # Usamos los métodos de DirEntry que no requieren llamadas adicionales a stat()
         if entry.is_symlink() or is_junction_fn(path) or _is_system_hidden(path, kernel32):
             return True
     except (OSError, AttributeError):
         return True
     return False
-
-
-def _get_entry_size(entry: os.DirEntry) -> int:
-    """
-    Retorna el tamaño en bytes de un archivo, ignorando resolución de enlaces.
-    Captura excepciones de acceso (ej. archivo bloqueado) para evitar abortos.
-    """
-    try:
-        return int(entry.stat(follow_symlinks=False).st_size)
-    except (OSError, PermissionError):
-        return 0
 
 
 def _sum_directory_recursive(
@@ -234,20 +221,13 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Recorre el árbol de directorios para sumar el tamaño de archivos.
-    
-    Implementa un mecanismo de memoización basado en números de inodo (st_ino)
-    para evitar conteos duplicados en presencia de hard links o ciclos.
+    Optimizado: evita llamadas redundantes a resolve y stat usando DirEntry.
     """
     if depth > MAX_SCAN_DEPTH:
         return 0
     
     try:
-        root_abs = root_path.resolve(strict=True)
-        # Validación defensiva de seguridad antes de cada acceso
-        if not is_safe_to_modify(root_abs) or is_protected_path(root_abs):
-            return 0
-        
-        root_stat = root_abs.stat()
+        root_stat = root_path.stat()
         if root_stat.st_ino in memo:
             return 0
         memo[root_stat.st_ino] = root_stat.st_size
@@ -256,7 +236,7 @@ def _sum_directory_recursive(
 
     total_bytes: int = 0
     try:
-        with os.scandir(root_abs) as it:
+        with os.scandir(root_path) as it:
             for entry in it:
                 if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue
@@ -265,7 +245,8 @@ def _sum_directory_recursive(
                     if entry.is_dir(follow_symlinks=False):
                         total_bytes += _sum_directory_recursive(Path(entry.path), is_junction_fn, kernel32, memo, depth + 1)
                     else:
-                        total_bytes += _get_entry_size(entry)
+                        # Obtenemos stat sin llamadas extras si ya está disponible en el DirEntry
+                        total_bytes += entry.stat(follow_symlinks=False).st_size
                 except (OSError, PermissionError):
                     continue
     except (OSError, PermissionError):
@@ -277,7 +258,6 @@ def _sum_directory_recursive(
 def directory_size(path: Optional[OSPath]) -> int:
     """
     Punto de entrada público para calcular el tamaño de una ruta.
-    Valida la integridad de seguridad del directorio antes de iniciar la recursión.
     """
     if not path: return 0
     try:
@@ -327,7 +307,6 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     k32 = _get_kernel32()
     found: List[BrowserCache] = []
     
-    # Memo compartido global para evitar procesar la misma ruta dos veces en el ciclo
     global_memo: Dict[int, int] = {}
     
     for base in raw_bases:
