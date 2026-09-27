@@ -1518,3 +1518,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-27T12:57:47` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-27T12:57:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T12:57:47` Corrida terminada. Total usado hoy: 308.
+- `2026-09-27T13:04:33` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-27T13:05:20` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `quarantine_file` validando el estado del sistema de archivos mediante `path.exists()` y `path.is_file()` de forma explícita antes de realizar operaciones de I/O, evitando excepciones innecesarias y mejorando el manejo de errores.
+- `2026-09-27T13:05:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
+- `2026-09-27T13:06:30` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_path_stat_robust` y `_check_file_integrity` añadiendo capturas específicas para errores de acceso que antes no se propagaban correctamente o devolvían estados ambiguos, asegurando que las fallas en `os.stat` sean tratadas siempre como `UnsafePathError`.
+- `2026-09-27T13:06:42` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las heurísticas `check_recent_executable_in_downloads` y `check_system_lookalike` agregando validaciones preventivas de tipos y estados para evitar excepciones por accesos a atributos `None` o rutas malformadas, garantizando un manejo de errores más defensivo acorde al enfoque.
+- `2026-09-27T13:06:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T13:06:42` Corrida terminada. Total usado hoy: 312.

@@ -369,13 +369,9 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError(f"Ruta inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     try:
         st = path.stat()
-        if not hasattr(st, 'st_mode'):
-            raise UnsafePathError("Metadatos corruptos o inaccesibles.", SafetyValidationErrorCode.IO_ERROR)
         return st
     except PermissionError:
         raise UnsafePathError(f"Acceso denegado a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-    except FileNotFoundError:
-        raise UnsafePathError(f"Archivo desaparecido durante validación: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     except OSError as e:
         raise UnsafePathError(f"Error de sistema al leer {path.name}: {e.strerror}", SafetyValidationErrorCode.IO_ERROR)
 

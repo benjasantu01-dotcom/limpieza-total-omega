@@ -108,7 +108,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Heurística: Alerta sobre ejecutables descargados recientemente en directorios de riesgo."""
-    if not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
+    if not path or not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     stats = _safe_stat(entry) if entry else None
     if stats:
@@ -163,8 +163,11 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica que la entrada pertenezca al árbol de directorios raíz definido."""
-        abs_path = Path(entry_path).resolve()
-        return str(abs_path).lower().startswith(self.base_root_str)
+        try:
+            abs_path = Path(entry_path).resolve()
+            return str(abs_path).lower().startswith(self.base_root_str)
+        except OSError:
+            return False
 
     def _has_invalid_name(self, name: str) -> bool:
         """Valida nombres reservados del sistema operativo o caracteres finales no permitidos."""
@@ -182,7 +185,6 @@ class Scanner:
             return False
         if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
             return False
-        # Validar ruta resuelta contra el root para prevenir escapes vía symlinks
         if not self._is_inside_base_root(entry.path):
             return False
         if self._is_reparse_point(entry) or entry.is_symlink():
@@ -194,7 +196,6 @@ class Scanner:
             if not os.access(entry.path, os.R_OK):
                 return False
             
-            # Cacheamos la seguridad del directorio padre
             parent_dir = os.path.dirname(entry.path)
             if parent_dir not in self.protected_cache:
                 if is_protected_path(Path(parent_dir)):
@@ -248,7 +249,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """Escaneo puntual de un archivo individual contra las reglas heurísticas."""
     if not isinstance(path, Path): return []
     try:
-        if not os.access(path, os.R_OK): return []
+        if not path.exists() or not os.access(path, os.R_OK): return []
         if is_protected_path(path.resolve()): return []
         if not path.is_file(): return []
     except (OSError, PermissionError): return []
