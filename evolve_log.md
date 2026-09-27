@@ -1673,3 +1673,41 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-09-27T14:17:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-09-27T14:17:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T14:17:33` Corrida terminada. Total usado hoy: 340.
+- `2026-09-27T14:26:06` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-27T14:26:50` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se introdujo una cache de resultados en `_is_protected_path_raw` (previamente `_is_system_path_raw`) mediante `lru_cache` y se optimizó `_is_system_path_raw` reemplazando la iteración secuencial con una comparación más eficiente de prefijos de cadena tras la normalización, reduciendo la carga de CPU durante escaneos masivos de disco.
+- `2026-09-27T14:27:14` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._is_relevant_extension, Scanner._is_reparse_point
+- `2026-09-27T14:27:45` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-09-27T14:27:59` Tests FALLARON:
+```
+es.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:81: SyntaxWarning: invalid escape sequence '\ '
+    El prefijo \\?\ es necesario para superar limitaciones de MAX_PATH en Windows.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 4 warnings in 1.18s
+
+```
+- `2026-09-27T14:27:59` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de `lru_cache` manual optimizado sobre `_resolve_and_cache_path` mediante la validación de existencia `path.exists()` antes de realizar la resolución costosa (`.resolve()`), reduciendo drásticamente las llamadas al sistema de archivos en ejecuciones repetidas.
+- `2026-09-27T14:27:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T14:27:59` Corrida terminada. Total usado hoy: 344.

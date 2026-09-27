@@ -466,9 +466,8 @@ def is_drive_root(path: PathLike) -> bool:
 def _is_system_path_raw(path_str: str) -> bool:
     """Comprueba si la ruta reside en directorios de sistema conocidos."""
     path_lower = path_str.lower()
-    for root in _SYSTEM_ROOT_PATHS_TUPLE:
-        if path_lower.startswith(root):
-            return True
+    if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_TUPLE):
+        return True
     return not PROTECTED_DIR_NAMES.isdisjoint(path_lower.split(os.sep))
 
 @lru_cache(maxsize=4096)
