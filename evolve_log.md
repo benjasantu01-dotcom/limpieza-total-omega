@@ -1209,3 +1209,25 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-27T01:02:53` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `settings.py` implementando una caché de `AppSettings` basada en el tiempo de modificación (`mtime`) del archivo, reduciendo drásticamente las operaciones redundantes de I/O y parsing durante llamadas sucesivas a `load()` en el mismo ciclo de ejecución.
 - `2026-09-27T01:02:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T01:02:53` Corrida terminada. Total usado hoy: 28.
+- `2026-09-27T01:11:22` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-09-27T01:11:49` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-27T01:12:28` Tests FALLARON:
+```
+spicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+FAILED evolve/tests/test_assistant.py::test_answers_are_never_empty - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_garbage_questions_still_get_an_answer - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_low_disk_is_reported_as_the_top_priority - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - NameError: name '_format_problem_message' is not defined
+11 failed, 288 passed, 4 warnings in 1.64s
+
+```
+- `2026-09-27T01:12:28` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `SystemContext.ingest` ante datos corruptos o maliciosos utilizando una validación atómica: ahora el estado interno del objeto solo se actualiza si el 100% de los campos obligatorios y opcionales procesados pasan las validaciones de tipo, rango y seguridad, evitando estados intermedios parcialmente cargados o inconsistentes.
+- `2026-09-27T01:13:00` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-27T01:13:25` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una verificación de integridad ante archivos bloqueados o en uso en `_sum_directory_recursive` para evitar excepciones de `OSError` no capturadas al acceder a atributos de archivos específicos mediante `os.scandir`, mejorando la robustez ante entornos donde el navegador mantiene locks agresivos sobre su caché.
+- `2026-09-27T01:13:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T01:13:25` Corrida terminada. Total usado hoy: 32.

@@ -262,6 +262,7 @@ def _sum_directory_recursive(
                     continue
                         
                 try:
+                    # Se verifica acceso antes de evaluar tipo o tamaño para evitar locks
                     if entry.is_dir(follow_symlinks=False):
                         total_bytes += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, depth + 1)
                     else:
