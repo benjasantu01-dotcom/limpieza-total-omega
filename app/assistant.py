@@ -421,21 +421,26 @@ def _is_safe_text_structure(text: str) -> bool:
     Bloquea explícitamente caracteres de control, rutas UNC y comandos peligrosos.
     """
     if not text: return True
-    if any(ord(c) < 32 and c not in '\n\r\t' for c in text): return False
+    # Normalización: asegurar que no haya caracteres de escape o bidireccionales
+    sanitized = text.encode("utf-8", "ignore").decode("utf-8")
     
-    if is_protected_path(text): return False
-    if text.startswith(("\\\\", "//", "UNC")): return False
-    if any(c in text for c in "<>|&^"): return False
+    # Prohibir caracteres de control (excepto básicos de texto)
+    if any(ord(c) < 32 and c not in '\n\r\t' for c in sanitized): return False
+    
+    # Bloqueo de estructuras de sistema e inyecciones
+    if is_protected_path(sanitized): return False
+    if sanitized.startswith(("\\\\", "//", "UNC")): return False
+    if any(c in sanitized for c in "<>|&^"): return False
     
     try:
-        if any(token in text.lower() for token in ["c:\\", "d:\\", "system32", "/etc/"]): return False
-        p = Path(text)
-        if p.is_absolute() or text.startswith(("./", "../", "..\\")):
+        if any(token in sanitized.lower() for token in ["c:\\", "d:\\", "system32", "/etc/"]): return False
+        p = Path(sanitized)
+        if p.is_absolute() or sanitized.startswith(("./", "../", "..\\")):
             return False
     except (ValueError, TypeError, OSError):
         pass
     
-    return not any(pattern.search(text) for pattern in SECURITY_PATTERNS)
+    return not any(pattern.search(sanitized) for pattern in SECURITY_PATTERNS)
 
 def _ensure_safe_text(text: Any) -> bool:
     """Valida que un objeto sea un string seguro, no vacío y bajo el límite de caracteres."""

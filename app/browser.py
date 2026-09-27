@@ -227,7 +227,7 @@ def _get_entry_size(entry: os.DirEntry) -> int:
 
 
 def _sum_directory_recursive(
-    root_abs: str, 
+    root_path: Path, 
     is_junction_fn: JunctionChecker, 
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[int, int],
@@ -236,11 +236,16 @@ def _sum_directory_recursive(
     """
     Motor recursivo para cálculo de tamaño con detección de ciclos y robustez.
     """
-    if not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
+    if depth > MAX_SCAN_DEPTH:
         return 0
-
+    
     try:
-        root_stat = os.stat(root_abs)
+        root_abs = root_path.resolve(strict=True)
+        # Validación de seguridad defensiva en cada nodo de la recursión
+        if not is_safe_to_modify(root_abs) or is_protected_path(root_abs):
+            return 0
+        
+        root_stat = root_abs.stat()
         if root_stat.st_ino in memo:
             return 0
         memo[root_stat.st_ino] = root_stat.st_size
@@ -256,7 +261,7 @@ def _sum_directory_recursive(
                         
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        total_bytes += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, depth + 1)
+                        total_bytes += _sum_directory_recursive(Path(entry.path), is_junction_fn, kernel32, memo, depth + 1)
                     else:
                         total_bytes += _get_entry_size(entry)
                 except (OSError, PermissionError):
@@ -278,7 +283,7 @@ def directory_size(path: Optional[OSPath]) -> int:
         p = Path(path).resolve(strict=True)
         if not p.is_dir() or not is_safe_to_modify(p) or is_protected_path(p):
             return 0
-        return _sum_directory_recursive(str(p), _IS_JUNCTION_FN, _get_kernel32(), {})
+        return _sum_directory_recursive(p, _IS_JUNCTION_FN, _get_kernel32(), {})
     except (OSError, RuntimeError, PermissionError):
         return 0
 
@@ -333,7 +338,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
                     if not candidate or not _is_valid_cache_path(candidate, str(real_base), _IS_JUNCTION_FN):
                         continue
                     
-                    size = _sum_directory_recursive(str(candidate), _IS_JUNCTION_FN, k32, global_memo)
+                    size = _sum_directory_recursive(candidate, _IS_JUNCTION_FN, k32, global_memo)
                     if size > 0:
                         found.append(BrowserCache(str(browser_name), candidate, size))
                 except (OSError, RuntimeError, PermissionError):

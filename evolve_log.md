@@ -656,3 +656,12 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-27T06:09:08` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra la manipulación de enlaces simbólicos o puntos de reparse durante la lectura del archivo de configuración, asegurando que la función `_load_impl` verifique explícitamente la integridad física del archivo mediante `os.lstat` antes de abrirlo, previniendo posibles ataques de redirección de archivos.
 - `2026-09-27T06:09:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T06:09:08` Corrida terminada. Total usado hoy: 148.
+- `2026-09-27T06:17:06` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-09-27T06:17:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-27T06:18:00` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-27T06:18:56` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_is_safe_text_structure` implementando una lista de verificación explícita de caracteres prohibidos y normalizando el texto antes de la validación, evitando que caracteres Unicode (como los RTL) o secuencias de escape sean usados para ofuscar rutas o comandos.
+- `2026-09-27T06:19:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-27T06:19:52` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-27T06:20:16` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). He mejorado la seguridad defensiva al reemplazar el uso de `str(path)` para verificaciones de seguridad por objetos `Path` normalizados en `_sum_directory_recursive`, evitando riesgos de path traversal, y añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del nodo actual antes de profundizar en cada directorio.
+- `2026-09-27T06:20:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T06:20:16` Corrida terminada. Total usado hoy: 152.
