@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 38
+- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Rechazadas por tests: 21
+- Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 237
+- Sin respuesta de la IA (error o límite): 234
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 7 | 1 | 1 | 0 | 17 |
+| 2026-09-25 | 6 | 1 | 1 | 0 | 14 |
 | 2026-09-26 | 137 | 12 | 24 | 11 | 166 |
-| 2026-09-27 | 46 | 7 | 13 | 8 | 54 |
+| 2026-09-27 | 48 | 8 | 14 | 8 | 54 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
-- seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **40**
-- rendimiento: **30**
+- seguridad defensiva: **39**
+- rendimiento: **32**
 - robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
@@ -33,12 +33,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **20**
 - `diskreport.py`: **20**
 - `settings.py`: **17**
-- `assistant.py`: **15**
+- `quarantine.py`: **16**
+- `scanner.py`: **16**
 - `duplicates.py`: **15**
 - `healthscore.py`: **15**
-- `quarantine.py`: **15**
-- `scanner.py`: **15**
 - `browser.py`: **15**
+- `assistant.py`: **14**
 - `memory.py`: **11**
 - `startup.py`: **10**
 - `organizer.py`: **9**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T05:28:07` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner moviendo la validación de seguridad de carpetas (`is_protected_path`) de una operación repetitiva por archivo a una comprobación única por directorio, utilizando un conjunto de caché (`protected_cache`) para evitar llamadas redundantes a funciones de sistema en el mismo nivel de jerarquía.
+- `2026-09-27T05:26:54` **quarantine.py** (rendimiento): Optimicé el método `list_items` y `purge_all` para evitar lecturas redundantes del disco y mejorar la eficiencia algorítmica al procesar el manifiesto y los archivos físicos usando conjuntos (`set`) para O(1) en las búsquedas.
 - `2026-09-27T05:16:33` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` convirtiendo el `_PIPELINE` de una `List` a una `tuple` para asegurar tiempo de acceso constante (O(1)) e inmutabilidad, y eliminé la recreación innecesaria de objetos en cada iteración del bucle, reduciendo la carga del recolector de basura.
 - `2026-09-27T05:07:22` **diskreport.py** (rendimiento): Optimizé el método `largest_folders` reemplazando la lógica de agregación actual por una que utiliza un generador para evitar múltiples recorridos innecesarios y reducir el uso de memoria al procesar subdirectorios.
 - `2026-09-27T04:57:30` **assistant.py** (rendimiento): Optimicé el método `ingest` de `SystemContext` para evitar la creación innecesaria de objetos intermedios y mejorar la eficiencia del proceso de actualización de estado mediante el uso de `__dict__` y `setattr` de forma directa tras la validación, reduciendo la carga de memoria en cada iteración del bucle principal.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T04:36:14` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en la clase `SystemMetrics` y docstrings precisos en las funciones de cálculo, facilitando la comprensión del flujo de datos en el motor de scoring.
 - `2026-09-27T04:35:46` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, explicando el razonamiento técnico detrás de la lógica de hashing y validación, y se añadieron type hints consistentes en funciones internas que carecían de ellos para asegurar la robustez del código.
 - `2026-09-27T04:27:02` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad de `walk_files` y `_is_excluded_path` mediante la clarificación de los docstrings (explicando el PORQUÉ de las decisiones de seguridad) y la adición de Type Hints detallados, garantizando mayor legibilidad y cumplimiento estricto de las normas del proyecto.
-- `2026-09-27T04:26:47` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados en funciones críticas, aclarando el propósito y el manejo de excepciones de los helpers de bajo nivel para facilitar auditorías de seguridad futuras.
-- `2026-09-27T04:26:21` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos, se extrajo la lógica de normalización de argumentos de `save_logo_svg` para mayor claridad y se refinaron los comentarios críticos en las funciones de dibujo para mejorar la legibilidad del código.

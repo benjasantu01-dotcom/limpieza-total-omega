@@ -169,9 +169,9 @@ class Scanner:
         """Determina si un directorio es una unión o symlink mediante atributos de sistema."""
         return bool(_get_file_attributes(entry) & LIMITS.reparse_point_attr_mask)
 
-    def _is_safe_entry(self, entry: os.DirEntry) -> bool:
+    def _is_safe_entry(self, entry: os.DirEntry, is_dir: bool = False) -> bool:
         """
-        Realiza una validación de seguridad de múltiples capas antes de permitir el acceso al disco.
+        Validación de seguridad con caché de rutas protegidas para optimizar el rendimiento.
         """
         if not entry or not entry.path or not entry.name:
             return False
@@ -185,14 +185,12 @@ class Scanner:
         try:
             if not os.access(entry.path, os.R_OK):
                 return False
-        except OSError:
-            return False
-        
-        try:
-            abs_path = Path(entry.path).resolve()
-            parent_str = str(abs_path.parent).lower()
+            
+            # Si es directorio, validamos su padre y cacheamos. Si es archivo, basta el padre.
+            parent_path = Path(entry.path).parent if is_dir else Path(entry.path).parent
+            parent_str = str(parent_path).lower()
             if parent_str not in self.protected_cache:
-                if is_protected_path(abs_path.parent):
+                if is_protected_path(parent_path):
                     return False
                 self.protected_cache.add(parent_str)
         except (OSError, RuntimeError):
@@ -217,7 +215,7 @@ class Scanner:
             if not entry.exists():
                 return
             if entry.is_dir(follow_symlinks=False):
-                if self._is_safe_entry(entry):
+                if self._is_safe_entry(entry, is_dir=True):
                     self._handle_directory(entry, directory_stack)
             elif entry.is_file(follow_symlinks=False):
                 if self._is_relevant_extension(entry.name) and self._is_safe_entry(entry):

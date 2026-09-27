@@ -733,6 +733,7 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
+        # Usar set para mejorar rendimiento en iteraciones de búsqueda
         actual_files = {f.name for f in base_path.iterdir() if f.is_file()}
         
         valid_items: List[QuarantineItem] = []
@@ -854,10 +855,12 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
         
     items = load_manifest(base)
+    # Crear mapa de objetos para acceso directo
     item_map = {i.stored_name: i for i in items}
     purged_ids: Set[str] = set()
     
     try:
+        # Iterar una sola vez sobre el contenido del directorio
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue

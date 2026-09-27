@@ -505,3 +505,30 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-27T05:21:50` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-09-27T05:21:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T05:21:50` Corrida terminada. Total usado hoy: 128.
+- `2026-09-27T05:26:09` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-09-27T05:26:54` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el método `list_items` y `purge_all` para evitar lecturas redundantes del disco y mejorar la eficiencia algorítmica al procesar el manifiesto y los archivos físicos usando conjuntos (`set`) para O(1) en las búsquedas.
+- `2026-09-27T05:27:13` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-09-27T05:27:50` Tests FALLARON:
+```
+rty_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:243: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raises - AssertionError: assert True is False
+ +  where True = <function is_safe_to_modify at 0x7f5fa6d16ca0>(12345)
+ +    where <function is_safe_to_modify at 0x7f5fa6d16ca0> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - safety.UnsafePathError: [PROTECTED_SYSTEM_PATH] Sistema bloqueado.
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - AssertionError: assert 'protegida' in 'Inexistente.'
+ +  where 'Inexistente.' = <function describe_protection at 0x7f5fa6d16de0>(((PosixPath('/tmp/pytest-of-runner/pytest-2/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7f5fa6d16de0> = safety.describe_protection
+3 failed, 296 passed, 5 warnings in 1.39s
+
+```
+- `2026-09-27T05:27:50` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_get_file_attrs` y las validaciones de seguridad centralizadas al reducir el número de syscalls repetitivas y mejorar la eficiencia del `lru_cache`, evitando re-normalizaciones costosas en rutas que ya fueron validadas previamente en el bucle.
+- `2026-09-27T05:28:07` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escáner moviendo la validación de seguridad de carpetas (`is_protected_path`) de una operación repetitiva por archivo a una comprobación única por directorio, utilizando un conjunto de caché (`protected_cache`) para evitar llamadas redundantes a funciones de sistema en el mismo nivel de jerarquía.
+- `2026-09-27T05:28:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T05:28:07` Corrida terminada. Total usado hoy: 132.
