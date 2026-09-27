@@ -26,7 +26,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 SortKey: TypeAlias = Union[int, datetime]
 
-# Constantes de atributos de Windows (Win32 API)
+# Constantes de atributos de Windows (Win32 API) utilizadas para filtrar archivos del sistema
 WIN_ATTR_JUNCTION: Final[int] = 0x400  # Reparse Point (Junction)
 WIN_ATTR_SYSTEM: Final[int] = 0x04     # FILE_ATTRIBUTE_SYSTEM
 WIN_ATTR_HIDDEN: Final[int] = 0x02     # FILE_ATTRIBUTE_HIDDEN
@@ -122,7 +122,10 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
-    """Intenta abrir el archivo en modo exclusivo para verificar si está siendo usado por otro proceso."""
+    """
+    Intenta abrir el archivo en modo exclusivo.
+    Si falla, se asume que está siendo utilizado por otro proceso (bloqueado).
+    """
     if not path.is_file():
         return True
     try:
@@ -132,7 +135,7 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Verifica que el destino no sea un subdirectorio del origen."""
+    """Verifica si el destino es un subdirectorio del origen para evitar bucles o corrupción."""
     try:
         s, d = str(src.resolve()), str(dest.resolve())
         return os.path.commonpath([s, d]) == s
@@ -140,7 +143,7 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
         return True
 
 def _has_forbidden_chars(path: Path) -> bool:
-    """Detecta caracteres que no deben formar parte de una ruta segura."""
+    """Detecta caracteres inválidos o potencialmente peligrosos en rutas de Windows."""
     path_str = str(path).lower()
     return any(c in path_str for c in ["<", ">", "|", "\0"])
 
@@ -226,7 +229,10 @@ def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = Tru
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Mueve archivos validados a cuarentena tras asegurar su integridad."""
+    """
+    Prepara los archivos para revisión moviéndolos a un directorio seguro.
+    Utiliza `ensure_safe_to_modify` para verificar la integridad del destino antes de operar.
+    """
     if not files: return None
     try:
         dest_base = Path(review_dir).expanduser()

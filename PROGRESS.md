@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **179** (35.5% de aceptación)
-- Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por tests: 21
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 243
 
@@ -16,16 +16,16 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 110 | 9 | 19 | 9 | 141 |
-| 2026-09-27 | 69 | 13 | 20 | 12 | 102 |
+| 2026-09-26 | 107 | 8 | 19 | 9 | 141 |
+| 2026-09-27 | 72 | 13 | 21 | 12 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **49**
 - seguridad defensiva: **41**
 - manejo de errores y validación de entradas: **35**
-- robustez ante casos límite: **31**
-- rendimiento: **26**
+- robustez ante casos límite: **29**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,18 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **17**
 - `settings.py`: **16**
 - `browser.py`: **16**
-- `assistant.py`: **14**
-- `quarantine.py`: **14**
+- `quarantine.py`: **15**
+- `memory.py`: **13**
 - `scanner.py`: **13**
+- `assistant.py`: **13**
 - `healthscore.py`: **13**
-- `memory.py`: **12**
-- `organizer.py`: **9**
-- `startup.py`: **8**
+- `organizer.py`: **10**
+- `startup.py`: **7**
 - `main.py`: **6**
-- `branding.py`: **5**
+- `branding.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T09:11:48` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_write_temp_to_final`, extrayendo la lógica de creación del archivo temporal a una función dedicada (`_create_temp_file`) y documentando con docstrings claros las precondiciones de seguridad de las funciones de transferencia, facilitando así la auditoría de integridad del flujo de aislamiento.
+- `2026-09-27T09:11:09` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a funciones críticas y aclarando el propósito de constantes complejas para facilitar el mantenimiento y la auditoría.
+- `2026-09-27T09:10:39` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `MemorySnapshot` y sus métodos mediante docstrings más precisos y la adición de Type Hints en la estructura `MEMORYSTATUSEX`, asegurando que el código sea autodocumentado y consistente con los estándares de mantenimiento exigidos.
 - `2026-09-27T09:01:21` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints explícitos en la función `compute_score` y `_evaluate_rules`, además de simplificar la lógica de validación de métricas mediante una reestructuración del flujo en `compute_score` para mejorar la legibilidad y evitar redundancias en el manejo de errores.
 - `2026-09-27T09:00:54` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de hashing y el pipeline de procesamiento, clarificando las precondiciones, el flujo de datos y las excepciones manejadas, lo cual facilita el mantenimiento y la auditoría del código.
 - `2026-09-27T09:00:27` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad de `_collect_summary_data` y `walk_files` mediante Type Hints más precisos, un docstring explicativo sobre el uso del heap, y la consolidación de la lógica de extensión para evitar redundancias.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T08:20:41` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` eliminando su dependencia implícita de la existencia física del archivo para la comparación (mediante `.resolve(strict=True)`), lo cual fallaba si el archivo era borrado o movido durante la ejecución, y agregué una validación de `None` para prevenir excepciones al manipular rutas potencialmente inexistentes.
 - `2026-09-27T06:39:00` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_write_temp_to_final` al asegurar que el archivo temporal sea creado con permisos restrictivos (usando `os.open` con `mode=0o600`) y bloqueado para otros procesos durante la copia, evitando posibles condiciones de carrera (Race Conditions) o acceso indebido mientras el archivo está en estado transitorio.
 - `2026-09-27T06:38:19` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` añadiendo una validación explícita para asegurar que el archivo fuente no sea un directorio o un enlace simbólico (reparse point), previniendo así posibles errores de manipulación de estructuras de sistema durante la preparación de la operación de movimiento.
-- `2026-09-27T06:37:54` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_get_process_path` para prevenir la resolución de rutas de procesos que podrían ser enlaces simbólicos o puntos de reparse, mitigando el riesgo de seguir rutas fuera de las áreas permitidas.
-- `2026-09-27T06:30:41` **main.py** (seguridad defensiva): Se ha implementado un filtrado de rutas más robusto al añadir una validación de caracteres de control (no imprimibles) en `_is_safe_disk_operation` y métodos auxiliares, previniendo inyecciones o rutas malformadas antes de cualquier llamada al sistema, y se ha consolidado la lógica de validación de seguridad de rutas en los puntos críticos de entrada (diálogos de usuario y callbacks).
-- `2026-09-27T06:28:14` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_collect_candidates` integrando el chequeo de `is_protected_path` directamente en la lógica de filtrado de directorios, evitando que el escáner intente ingresar o listar recursivamente carpetas protegidas desde el inicio.

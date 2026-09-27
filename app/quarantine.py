@@ -537,6 +537,17 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
         raise FileExistsError(f"El destino ya existe: {destination}")
 
 
+def _create_temp_file(source: Path, destination: Path) -> Path:
+    """
+    Crea un archivo temporal único para la transferencia segura.
+    
+    Args:
+        source: Ruta origen para obtener metadatos.
+        destination: Ruta final deseada para derivar el temporal.
+    """
+    return destination.parent / f".{destination.name}.{uuid.uuid4().hex[:8]}.tmp"
+
+
 def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> None:
     """Ejecuta la copia binaria y verifica la integridad del archivo resultante."""
     try:
@@ -590,7 +601,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
     ensure_safe_to_modify(destination.parent)
 
     source_hash = _get_sha256(source)
-    temp_dest = destination.with_suffix(f".{uuid.uuid4().hex[:8]}.tmp")
+    temp_dest = _create_temp_file(source, destination)
     
     try:
         _copy_with_verification(source, temp_dest, source_hash)
