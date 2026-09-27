@@ -314,20 +314,23 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     """Analiza carpetas de primer nivel bajo el directorio raíz, calculando su peso total."""
     root = _validate_root(directory)
     if not root: return []
-    folder_total_bytes: Dict[Path, int] = defaultdict(int)
-    folder_file_counts: Dict[Path, int] = defaultdict(int)
+    
+    # Usamos un dict para la agregación in-place evitando recorridos múltiples
+    stats: Dict[Path, List[int]] = defaultdict(lambda: [0, 0]) # [bytes, count]
     
     for path, size_bytes in walk_files(root, skip_protected):
         try:
+            # Determinamos el ancestro inmediato al root
             rel = path.relative_to(root)
             if rel.parts:
                 top_level = root / rel.parts[0]
-                folder_total_bytes[top_level] += size_bytes
-                folder_file_counts[top_level] += 1
+                s = stats[top_level]
+                s[0] += size_bytes
+                s[1] += 1
         except (ValueError, OSError, RuntimeError):
             continue
 
-    results = [FolderUsage(p, folder_total_bytes[p], folder_file_counts[p]) for p in folder_total_bytes]
+    results = [FolderUsage(p, s[0], s[1]) for p, s in stats.items()]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
 
 

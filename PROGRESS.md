@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 39
+- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 237
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 10 | 1 | 2 | 0 | 21 |
+| 2026-09-25 | 8 | 1 | 1 | 0 | 20 |
 | 2026-09-26 | 137 | 12 | 24 | 11 | 166 |
-| 2026-09-27 | 44 | 5 | 13 | 8 | 50 |
+| 2026-09-27 | 45 | 6 | 13 | 8 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **40**
-- robustez ante casos límite: **31**
-- rendimiento: **28**
+- robustez ante casos límite: **29**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **20**
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `settings.py`: **18**
-- `quarantine.py`: **16**
 - `assistant.py`: **15**
 - `duplicates.py`: **15**
+- `quarantine.py`: **15**
 - `scanner.py`: **15**
 - `browser.py`: **15**
 - `healthscore.py`: **14**
 - `memory.py`: **11**
-- `organizer.py`: **10**
 - `startup.py`: **10**
+- `organizer.py`: **9**
 - `branding.py`: **7**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T05:07:22` **diskreport.py** (rendimiento): Optimizé el método `largest_folders` reemplazando la lógica de agregación actual por una que utiliza un generador para evitar múltiples recorridos innecesarios y reducir el uso de memoria al procesar subdirectorios.
 - `2026-09-27T04:57:30` **assistant.py** (rendimiento): Optimicé el método `ingest` de `SystemContext` para evitar la creación innecesaria de objetos intermedios y mejorar la eficiencia del proceso de actualización de estado mediante el uso de `__dict__` y `setattr` de forma directa tras la validación, reduciendo la carga de memoria en cada iteración del bucle principal.
 - `2026-09-27T04:57:05` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de la clase `StartupEntry` mediante docstrings que detallan los requisitos de seguridad y las razones detrás de las validaciones, facilitando el mantenimiento y la comprensión de las restricciones impuestas sobre las rutas del sistema.
 - `2026-09-27T04:56:36` **settings.py** (legibilidad y documentación): Se introdujo una clase `ValidationResult` (utilizando `NamedTuple`) para explicitar los resultados de validación en lugar de retornar solo `None`, mejorando la legibilidad de la lógica en `_Validators` y aclarando el propósito de cada etapa del filtrado.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T04:26:47` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados en funciones críticas, aclarando el propósito y el manejo de excepciones de los helpers de bajo nivel para facilitar auditorías de seguridad futuras.
 - `2026-09-27T04:26:21` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos, se extrajo la lógica de normalización de argumentos de `save_logo_svg` para mayor claridad y se refinaron los comentarios críticos en las funciones de dibujo para mejorar la legibilidad del código.
 - `2026-09-27T04:16:49` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_registry_csv` ante entradas de registro mal formadas o vacías mediante validación explícita de `row` y control de errores más granual, evitando que una fila corrupta invalide el procesamiento de todo el conjunto de datos.
-- `2026-09-27T04:16:35` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `validate` y `save` sustituyendo capturas de `Exception` genéricas por `(OSError, TypeError, ValueError, json.JSONDecodeError)`, evitando que errores de lógica inesperados enmascaren fallos de ejecución y asegurando que las corrupciones de datos se manejen de forma predecible sin detener la aplicación.

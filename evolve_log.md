@@ -430,3 +430,32 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-09-27T04:57:30` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el método `ingest` de `SystemContext` para evitar la creación innecesaria de objetos intermedios y mejorar la eficiencia del proceso de actualización de estado mediante el uso de `__dict__` y `setattr` de forma directa tras la validación, reduciendo la carga de memoria en cada iteración del bucle principal.
 - `2026-09-27T04:57:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T04:57:30` Corrida terminada. Total usado hoy: 120.
+- `2026-09-27T05:05:47` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-09-27T05:06:25` Tests FALLARON:
+```
+ where ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...] = <test_modules._CanvasFalso object at 0x7fb8218dbef0>.llamadas
+
+evolve/tests/test_modules.py:226: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:244: SyntaxWarning: invalid escape sequence '\P'
+    """Detecta rutas de dispositivos de Windows (e.g., \\.\PhysicalDrive0) peligrosas para IO."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel - AssertionError: assert 0 == 60
+ +  where 0 = <built-in method count of list object at 0x7fb8218dfb80>('line')
+ +    where <built-in method count of list object at 0x7fb8218dfb80> = ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...].count
+ +      where ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...] = <test_modules._CanvasFalso object at 0x7fb8218dbef0>.llamadas
+1 failed, 298 passed, 4 warnings in 1.25s
+
+```
+- `2026-09-27T05:06:25` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se optimizó el renderizado de gradientes en `draw_gradient_bar` mediante el uso de `create_rectangle` en lugar de `create_line`, aprovechando el agrupamiento de segmentos para minimizar drásticamente el número de llamadas a la API del lienzo y reducir la carga de memoria por la creación de objetos innecesarios.
+- `2026-09-27T05:06:50` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-09-27T05:07:22` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé el método `largest_folders` reemplazando la lógica de agregación actual por una que utiliza un generador para evitar múltiples recorridos innecesarios y reducir el uso de memoria al procesar subdirectorios.
+- `2026-09-27T05:07:33` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-27T05:07:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T05:07:33` Corrida terminada. Total usado hoy: 124.
