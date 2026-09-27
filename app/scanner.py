@@ -92,7 +92,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """
-    Valida que la ruta cumpla con estándares de seguridad y longitud de Windows.
+    Valida que la cadena de ruta cumpla con estándares de seguridad y longitud de Windows.
     """
     if not path_str or len(path_str) > LIMITS.max_path:
         return False
@@ -152,6 +152,7 @@ ALL_CHECKS: Final[List[SuspicionCheck]] = [
 class Scanner:
     """
     Coordinador de escaneo recursivo basado en pila para recorrer el sistema de archivos.
+    Mantiene el estado de rutas visitadas y resultados encontrados durante el ciclo.
     """
     def __init__(self, base_root: Path) -> None:
         self.results: List[Suspicion] = []
@@ -179,7 +180,8 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry, is_dir: bool = False) -> bool:
         """
-        Validación de seguridad con caché de rutas protegidas para optimizar el rendimiento.
+        Realiza una validación de seguridad de la entrada con caché de directorios protegidos.
+        Retorna True si la entrada puede ser analizada o descendida.
         """
         if not entry or not entry.path or not entry.name:
             return False
@@ -207,19 +209,20 @@ class Scanner:
         return True
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
-        """Registra una carpeta válida en la pila para procesamiento recursivo posterior."""
+        """Registra una carpeta válida en la pila de procesamiento si no ha sido visitada."""
         if entry.path and entry.path.lower() not in self.seen:
             self.seen.add(entry.path.lower())
             directory_stack.append(entry.path)
 
     def _is_relevant_extension(self, name: str) -> bool:
-        """Determina si el archivo es un objetivo relevante para las heurísticas configuradas."""
+        """Filtra archivos de interés basándose en las extensiones heurísticas definidas."""
         _, ext = os.path.splitext(name)
         return ext.lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """
-        Procesa una entrada del directorio, decidiendo si continuar el descenso o analizar.
+        Procesa una entrada detectada durante el escaneo: si es carpeta, la apila;
+        si es archivo relevante, aplica heurísticas.
         """
         try:
             if not entry.exists():
@@ -234,7 +237,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta toda la suite de heurísticas sobre el archivo indicado."""
+        """Ejecuta toda la suite de heurísticas sobre el archivo especificado."""
         if not path.exists():
             return
         for check_fn in ALL_CHECKS:
@@ -246,7 +249,7 @@ class Scanner:
                 logger.debug(f"Error en heurística {check_fn.__name__} para {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> List[Suspicion]:
-    """Escaneo puntual de un archivo individual contra las reglas heurísticas."""
+    """Escaneo puntual de un archivo individual contra todas las reglas heurísticas."""
     if not isinstance(path, Path): return []
     try:
         if not path.exists() or not os.access(path, os.R_OK): return []
@@ -265,7 +268,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
-    """Coordina el recorrido recursivo del árbol de directorios para escaneo."""
+    """Coordina el recorrido recursivo (basado en pila) del árbol de directorios para escaneo."""
     if directory is None: return []
     path_str = str(directory).strip()
     if not path_str or not _is_valid_path_structure(path_str): return []

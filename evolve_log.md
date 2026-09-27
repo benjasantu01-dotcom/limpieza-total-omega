@@ -1550,3 +1550,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-27T13:41:09` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del módulo `quarantine.py` mediante la refactorización de `quarantine_file`, extrayendo la lógica transaccional de limpieza y confirmación de integridad en subfunciones claras (`_cleanup_orphaned_destination` y `_verify_transaction_integrity`), lo que reduce la carga cognitiva del método principal y asegura que el manejo de errores siga siendo robusto.
 - `2026-09-27T13:41:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T13:41:09` Corrida terminada. Total usado hoy: 324.
+- `2026-09-27T13:45:17` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-27T13:45:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-27T13:46:24` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna agregando docstrings explicativos en los validadores críticos y clarificando las responsabilidades de los chequeos de integridad, facilitando la comprensión del flujo de seguridad para futuros desarrolladores sin alterar la lógica de ejecución.
+- `2026-09-27T13:46:50` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings explicativos para aclarar las responsabilidades de los métodos críticos del escáner y la naturaleza de las heurísticas, facilitando la comprensión del flujo de datos en el análisis de seguridad sin alterar el comportamiento.
+- `2026-09-27T13:47:04` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-09-27T13:47:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T13:47:04` Corrida terminada. Total usado hoy: 328.

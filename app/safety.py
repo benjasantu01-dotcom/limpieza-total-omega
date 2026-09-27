@@ -78,6 +78,7 @@ DRIVE_RAMDISK: Final[int] = 6   # Discos virtuales en memoria
 def _to_long_path(path_str: str) -> str:
     """
     Convierte una ruta estándar en una ruta Win32 de formato largo (UNC).
+    El prefijo \\?\ es necesario para superar limitaciones de MAX_PATH en Windows.
     """
     if os.name == 'nt' and not path_str.startswith("\\\\?\\"):
         if path_str.startswith("\\\\"): return "\\\\?\\UNC" + path_str[1:]
@@ -92,6 +93,7 @@ def _is_path_too_long(path_str: str) -> bool:
 def _get_file_attrs(path_str: Optional[str]) -> int:
     """
     Consulta los atributos de archivo mediante la API Win32 GetFileAttributesW.
+    Retorna 0 en caso de error o ruta inválida.
     """
     if os.name != 'nt' or not path_str or _is_path_too_long(path_str): return 0
     try:
@@ -355,14 +357,20 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 }
 
 def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
-    """Ejecuta los validadores de seguridad y lanza excepción si falla alguno."""
+    """
+    Ejecuta la secuencia de validadores de seguridad definidos en _VALIDATORS.
+    Lanza UnsafePathError si alguna regla falla.
+    """
     for rule in _VALIDATORS:
         if rule.predicate(path, current_stat):
             code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
             raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
-    """Obtiene metadatos del archivo asegurando que no sea un dispositivo."""
+    """
+    Obtiene metadatos del archivo usando `stat()`. 
+    Verifica previamente que la ruta no sea un archivo de dispositivo especial.
+    """
     if _is_device_file(path):
         raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
     if not path.exists():
@@ -376,12 +384,16 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError(f"Error de sistema al leer {path.name}: {e.strerror}", SafetyValidationErrorCode.IO_ERROR)
 
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
-    """Verifica consistencia ante ataques TOCTOU y valida integridad del archivo."""
+    """
+    Verifica consistencia entre el estado inicial y actual del archivo.
+    Previene ataques TOCTOU (Time-of-check to time-of-use) comparando números de inodo/dev.
+    """
     if not os.access(path, os.R_OK):
         raise UnsafePathError(f"Acceso de lectura denegado a {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     
     current_stat = _get_path_stat_robust(path)
     
+    # Detección de TOCTOU: Si el inodo o dispositivo cambió, el archivo fue reemplazado.
     if current_stat.st_dev != initial_stat.st_dev or current_stat.st_ino != initial_stat.st_ino:
         raise UnsafePathError(f"Consistencia fallida (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
     
@@ -411,6 +423,7 @@ def _validate_access_permissions(path: Path) -> None:
 def normalize(path: PathLike) -> Path:
     """
     Normaliza rutas, resuelve enlaces relativos y valida codificación NFKC.
+    Evita la inyección de rutas mediante `path traversal` y validación de componentes.
     """
     if path is None: raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
     path_str = str(path).strip()
@@ -597,6 +610,8 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
     Valida si es seguro modificar un archivo o directorio.
+    Realiza una secuencia estricta de validaciones: estructural, límites de sandbox,
+    permisos y finalmente integridad (anti-TOCTOU).
     """
     if path is None:
         raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
