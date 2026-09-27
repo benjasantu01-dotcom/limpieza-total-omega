@@ -352,19 +352,16 @@ class SystemContext:
         """Valida que la información de grado no contenga inyecciones de comandos."""
         return _ensure_safe_text(self.grade) if self.grade else True
 
-    def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> bool:
-        """Valida y asigna un valor a una métrica, aplicando casting seguro y registro."""
+    def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
+        """Valida un valor; retorna el valor procesado si es válido, sino None."""
         val = _get_source_value(source, key)
-        if val is None or not spec.is_valid_type(val): return False
-        
+        if val is None or not spec.is_valid_type(val): return None
         try:
             float_val = float(val)
-            if not _is_metric_within_bounds(float_val, spec): return False
-            converted = spec.cast_func(float_val)
-            object.__setattr__(self, key, converted)
-            return True
+            if not _is_metric_within_bounds(float_val, spec): return None
+            return spec.cast_func(float_val)
         except (TypeError, ValueError):
-            return False
+            return None
 
     def _clean_grade(self, val: Any) -> str:
         """Limpia el string de calificación eliminando caracteres de control."""
@@ -375,32 +372,24 @@ class SystemContext:
     def ingest(self, source: Any) -> bool:
         """
         Ingesta datos de una fuente externa y los normaliza en el contexto.
-        
-        Realiza una copia temporal o validación atómica para asegurar que 
-        solo se actualice el estado si el conjunto de métricas es íntegro.
+        Usa update local para reducir overhead de objetos.
         """
-        if not (isinstance(source, dict) or hasattr(source, "__dict__")):
-            return False
-        if _is_input_too_deep_or_complex(source):
+        if not (isinstance(source, dict) or hasattr(source, "__dict__")) or _is_input_too_deep_or_complex(source):
             return False
         
-        temp_ctx = SystemContext()
-        found_data = False
+        updates = {}
         for key, spec in _VALIDATORS.items():
-            if temp_ctx._apply_field(source, key, spec):
-                found_data = True
+            val = self._apply_field(source, key, spec)
+            if val is not None:
+                updates[key] = val
         
-        grade_val = _get_source_value(source, "grade")
-        if isinstance(grade_val, str):
-            clean_grade = temp_ctx._clean_grade(grade_val)
-            if clean_grade:
-                object.__setattr__(temp_ctx, 'grade', clean_grade)
-                found_data = True
+        grade_val = self._clean_grade(_get_source_value(source, "grade"))
+        if grade_val:
+            updates['grade'] = grade_val
         
-        if found_data and _validate_context_integrity(temp_ctx):
-            for field_name in _VALIDATORS.keys():
-                object.__setattr__(self, field_name, getattr(temp_ctx, field_name))
-            object.__setattr__(self, 'grade', temp_ctx.grade)
+        if updates:
+            for k, v in updates.items():
+                object.__setattr__(self, k, v)
             object.__setattr__(self, 'analyzed', True)
             return True
         return False

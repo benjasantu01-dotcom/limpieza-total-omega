@@ -72,6 +72,11 @@ class _ValidatorEntry(NamedTuple):
     """Contenedor para la función de validación asociada a una clave."""
     func: Callable[[ConfigKey, Any], Any]
 
+class _ValidationResult(NamedTuple):
+    """Contenedor para determinar si un valor es válido y su forma normalizada."""
+    is_valid: bool
+    value: Any
+
 def _is_dict(val: Any) -> TypeGuard[SettingsDict]:
     """Verifica si el objeto es un diccionario para ser procesado como settings."""
     return isinstance(val, dict)
