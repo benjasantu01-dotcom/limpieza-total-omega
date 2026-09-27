@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 38
+- Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 237
+- Sin respuesta de la IA (error o límite): 235
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 0 | 0 | 0 | 0 | 10 |
+| 2026-09-25 | 0 | 0 | 0 | 0 | 6 |
 | 2026-09-26 | 137 | 12 | 24 | 11 | 166 |
-| 2026-09-27 | 50 | 11 | 14 | 8 | 61 |
+| 2026-09-27 | 51 | 11 | 15 | 8 | 63 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,13 +26,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **40**
 - seguridad defensiva: **33**
 - rendimiento: **32**
-- robustez ante casos límite: **30**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `safety.py`: **19**
-- `settings.py`: **17**
+- `settings.py`: **18**
 - `browser.py`: **16**
 - `quarantine.py`: **15**
 - `scanner.py`: **15**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T06:09:08` **settings.py** (robustez ante casos límite): Se introdujo una validación robusta contra la manipulación de enlaces simbólicos o puntos de reparse durante la lectura del archivo de configuración, asegurando que la función `_load_impl` verifique explícitamente la integridad física del archivo mediante `os.lstat` antes de abrirlo, previniendo posibles ataques de redirección de archivos.
 - `2026-09-27T05:47:49` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `path.exists()` dentro del bucle de recolección en `_collect_candidates` para manejar la condición de carrera (race condition) donde un archivo podría ser eliminado o renombrado por otro proceso inmediatamente después de ser listado por `os.scandir` pero antes de ser verificado por `stat()`.
 - `2026-09-27T05:46:57` **browser.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar ciclos infinitos en el sistema de archivos (a través de la detección de inodes duplicados mediante un `memo` compartido) y se reforzó la robustez frente a directorios inaccesibles en `_sum_directory_recursive` mediante el uso de `os.scandir` como iterador seguro para manejar permisos denegados de forma silenciosa sin abortar el escaneo total.
 - `2026-09-27T05:28:07` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner moviendo la validación de seguridad de carpetas (`is_protected_path`) de una operación repetitiva por archivo a una comprobación única por directorio, utilizando un conjunto de caché (`protected_cache`) para evitar llamadas redundantes a funciones de sistema en el mismo nivel de jerarquía.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T04:46:29` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `quarantine.py` mediante la refactorización de `_is_file_locked`, eliminando el bloque `__import__` dentro de una función de alta frecuencia y sustituyéndolo por un helper explícito, además de añadir docstrings detallados en las funciones de manipulación de bajo nivel para aclarar las precondiciones de seguridad.
 - `2026-09-27T04:45:51` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `organizer.py` añadiendo docstrings descriptivos a los parámetros, tipos de retorno y excepciones, eliminando ambigüedades en las funciones de validación de seguridad para que el flujo de trabajo sea auditable por futuros colaboradores.
 - `2026-09-27T04:37:40` **memory.py** (legibilidad y documentación): Mejoré la documentación de `memory.py` mediante type hints explícitos, docstrings técnicos que detallan la lógica de los handle de Win32 y la eliminación de la ambigüedad en la validación de rutas, asegurando que el flujo de seguridad sea autoexplicativo para futuros desarrolladores.
-- `2026-09-27T04:36:14` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en la clase `SystemMetrics` y docstrings precisos en las funciones de cálculo, facilitando la comprensión del flujo de datos en el motor de scoring.

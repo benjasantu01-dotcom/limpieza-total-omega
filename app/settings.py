@@ -301,8 +301,8 @@ def _is_file_secure_to_read(ruta: Path) -> bool:
     """Garantiza que el archivo de configuración existente sea seguro y no un enlace o archivo crítico."""
     try:
         if not ruta.is_absolute(): return False
-        if not ruta.exists() or not ruta.is_file(): return False
-        st = ruta.stat()
+        if not ruta.exists() and not ruta.is_symlink(): return False
+        st = ruta.lstat()
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
         if not is_safe_to_modify(str(ruta)): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False

@@ -648,3 +648,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-27T06:02:45` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
 - `2026-09-27T06:02:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T06:02:45` Corrida terminada. Total usado hoy: 144.
+- `2026-09-27T06:06:50` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-09-27T06:07:13` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-27T06:08:01` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-09-27T06:08:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-27T06:08:36` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-27T06:09:08` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra la manipulación de enlaces simbólicos o puntos de reparse durante la lectura del archivo de configuración, asegurando que la función `_load_impl` verifique explícitamente la integridad física del archivo mediante `os.lstat` antes de abrirlo, previniendo posibles ataques de redirección de archivos.
+- `2026-09-27T06:09:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T06:09:08` Corrida terminada. Total usado hoy: 148.
