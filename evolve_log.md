@@ -996,3 +996,11 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-27T09:11:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-09-27T09:11:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T09:11:52` Corrida terminada. Total usado hoy: 220.
+- `2026-09-27T09:20:19` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-09-27T09:21:15` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructurados (tipo Google/NumPy) en funciones críticas, aclarando el propósito y la lógica de validación, además de estandarizar la nomenclatura interna de las reglas de integridad para facilitar su mantenimiento.
+- `2026-09-27T09:21:44` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). He mejorado la documentación interna y la legibilidad de `scanner.py` unificando la lógica de validación de extensiones y aclarando el propósito de las funciones auxiliares de bajo nivel mediante docstrings estandarizados y type hints explícitos.
+- `2026-09-27T09:22:24` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-09-27T09:22:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-27T09:22:42` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-27T09:22:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T09:22:42` Corrida terminada. Total usado hoy: 224.
