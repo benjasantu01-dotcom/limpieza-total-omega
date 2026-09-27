@@ -74,6 +74,10 @@ __all__ = [
 DEFAULT_METRIC_VAL: Final[float] = -1.0
 DEFAULT_RAM_PCT: Final[float] = 50.0
 
+def _is_safe_key(key: str) -> bool:
+    """Verifica que la clave no sea un método interno o propiedad sensible."""
+    return isinstance(key, str) and not (key.startswith("__") or key.startswith("_") or key == "ingest")
+
 def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
     """
     Decorador que estandariza el manejo de errores en las consultas de usuario.
@@ -454,17 +458,14 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def _get_source_value(source: Any, key: str) -> Any:
     """Acceso controlado a atributos para evitar la ejecución de métodos o acceso privado."""
-    if not isinstance(key, str) or key.startswith("_"): return None
+    if not _is_safe_key(key): return None
     try:
         if isinstance(source, dict):
             val = source.get(key)
         else:
-            if hasattr(source, key):
-                val = getattr(source, key)
-            else:
-                return None
+            val = getattr(source, key, None)
         
-        if callable(val) or (isinstance(key, str) and (key.startswith("__") or key.startswith("_"))):
+        if callable(val):
             return None
         return val
     except Exception:

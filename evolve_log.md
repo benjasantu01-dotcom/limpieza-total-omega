@@ -1256,3 +1256,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-27T01:44:13` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
 - `2026-09-27T01:44:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-27T01:44:13` Corrida terminada. Total usado hoy: 44.
+- `2026-09-27T01:52:06` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-09-27T01:52:49` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad en el manejo de configuraciones y datos de entrada en `assistant.py` mediante la implementación de `_is_safe_key`, una función auxiliar estricta que previene la manipulación de atributos internos (inyección de propiedades) en `SystemContext`, fortaleciendo el aislamiento del estado del asistente.
+- `2026-09-27T01:53:30` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado `save_logo_svg` para prevenir ataques de *path traversal* y desbordamientos de permisos, asegurando que la resolución de la ruta `destination` se valide estrictamente mediante `is_safe_to_modify` antes de intentar cualquier operación de sistema de archivos, reemplazando el chequeo laxo anterior por uno que garantiza la integridad de los directorios raíz protegidos.
+- `2026-09-27T01:53:59` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la validación estricta de rutas en `_sum_directory_recursive` para evitar que, ante errores inesperados durante el escaneo, se procesen rutas que hayan escapado del control de seguridad inicial o que superen los límites de longitud permitidos antes de realizar operaciones de I/O.
+- `2026-09-27T01:54:09` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-09-27T01:54:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-27T01:54:09` Corrida terminada. Total usado hoy: 48.

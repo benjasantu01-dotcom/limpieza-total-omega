@@ -359,8 +359,8 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
             return None
             
         path = Path(destination).resolve()
-        
-        # Validaciones de seguridad pre-operativas
+            
+        # Validación defensiva estricta antes de operar
         if is_protected_path(path) or not is_safe_to_modify(path):
             return None
             

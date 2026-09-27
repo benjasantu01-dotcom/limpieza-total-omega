@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 235
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 39 | 2 | 9 | 1 | 59 |
+| 2026-09-25 | 39 | 2 | 9 | 1 | 55 |
 | 2026-09-26 | 137 | 12 | 24 | 11 | 166 |
-| 2026-09-27 | 17 | 3 | 10 | 4 | 10 |
+| 2026-09-27 | 20 | 3 | 10 | 4 | 11 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **36**
+- seguridad defensiva: **35**
 - rendimiento: **34**
-- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `safety.py`: **18**
 - `settings.py`: **18**
+- `assistant.py`: **16**
 - `duplicates.py`: **16**
 - `healthscore.py`: **16**
 - `quarantine.py`: **16**
-- `assistant.py`: **15**
 - `scanner.py`: **15**
-- `browser.py`: **14**
+- `browser.py`: **15**
 - `memory.py`: **12**
 - `organizer.py`: **10**
+- `branding.py`: **8**
 - `startup.py`: **8**
 - `main.py`: **7**
-- `branding.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T01:53:59` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación estricta de rutas en `_sum_directory_recursive` para evitar que, ante errores inesperados durante el escaneo, se procesen rutas que hayan escapado del control de seguridad inicial o que superen los límites de longitud permitidos antes de realizar operaciones de I/O.
+- `2026-09-27T01:53:30` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir ataques de *path traversal* y desbordamientos de permisos, asegurando que la resolución de la ruta `destination` se valide estrictamente mediante `is_safe_to_modify` antes de intentar cualquier operación de sistema de archivos, reemplazando el chequeo laxo anterior por uno que garantiza la integridad de los directorios raíz protegidos.
+- `2026-09-27T01:52:49` **assistant.py** (seguridad defensiva): Mejoré la seguridad en el manejo de configuraciones y datos de entrada en `assistant.py` mediante la implementación de `_is_safe_key`, una función auxiliar estricta que previene la manipulación de atributos internos (inyección de propiedades) en `SystemContext`, fortaleciendo el aislamiento del estado del asistente.
 - `2026-09-27T01:33:25` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para que maneje correctamente archivos inexistentes y errores de acceso inesperados, evitando excepciones no capturadas que podrían detener un análisis completo del sistema, y agregué una validación de `Path` en `_safe_unlink` para asegurar que las rutas sean absolutas antes de cualquier operación destructiva.
 - `2026-09-27T01:22:03` **diskreport.py** (robustez ante casos límite): Se reforzó la resiliencia del motor `_collect_summary_data` ante archivos "en uso" o bloqueados por el sistema, añadiendo un manejo de excepciones más granular para evitar que una falla puntual en la lectura de atributos de un archivo o la resolución de rutas (debida a cambios concurrentes en el disco durante el escaneo) detenga el análisis completo.
 - `2026-09-27T01:13:25` **browser.py** (robustez ante casos límite): Se introdujo una verificación de integridad ante archivos bloqueados o en uso en `_sum_directory_recursive` para evitar excepciones de `OSError` no capturadas al acceder a atributos de archivos específicos mediante `os.scandir`, mejorando la robustez ante entornos donde el navegador mantiene locks agresivos sobre su caché.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T00:22:14` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de los validadores internos en `safety.py` mediante docstrings detallados que explican el "porqué" de las comprobaciones (particularmente en las protecciones contra TOCTOU y redirecciones de sistemas de archivos), facilitando el mantenimiento y la auditoría del código.
 - `2026-09-27T00:21:10` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la implementación de *Type Aliasing* más preciso, la adición de docstrings técnicos detallados en las funciones de manipulación de archivos y la consolidación de validaciones redundantes para clarificar el flujo de control de seguridad.
 - `2026-09-27T00:12:16` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y precisos en las funciones de validación crítica y operaciones de disco, clarificando las precondiciones de seguridad y el manejo de excepciones para facilitar el mantenimiento y la auditoría del código.
-- `2026-09-27T00:12:05` **memory.py** (legibilidad y documentación): He añadido type hints faltantes y mejorado la documentación de funciones clave (`_get_process_path` y `trim_working_set`) para clarificar el manejo de recursos Win32 y las implicaciones de seguridad, garantizando que el flujo de trabajo sea transparente para futuros colaboradores.
-- `2026-09-27T00:10:40` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados en los métodos críticos y definí el tipo de retorno en funciones clave, eliminando ambigüedades sobre el contrato de datos.
-- `2026-09-27T00:01:42` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints detallados, normalización de docstrings y la clarificación de las responsabilidades de las funciones internas para facilitar la mantenibilidad del pipeline de hashing.

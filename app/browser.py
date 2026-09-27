@@ -243,7 +243,7 @@ def _sum_directory_recursive(
     Utiliza memoización basada en inodos (st_ino) para prevenir bucles infinitos
     por enlaces simbólicos y evita el re-escaneo de rutas ya procesadas.
     """
-    if not root_abs or depth > MAX_SCAN_DEPTH:
+    if not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
 
     try:
@@ -262,7 +262,6 @@ def _sum_directory_recursive(
                     continue
                         
                 try:
-                    # Se verifica acceso antes de evaluar tipo o tamaño para evitar locks
                     if entry.is_dir(follow_symlinks=False):
                         total_bytes += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, depth + 1)
                     else:
