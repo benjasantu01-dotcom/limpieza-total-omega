@@ -114,29 +114,29 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """
     Evalúa mediante heurística de seguridad si una entrada de sistema debe omitirse.
     
-    Retorna True si el archivo/carpeta debe ser ignorado por razones de seguridad
-    (ofuscación, enlaces externos, o rutas protegidas).
+    Decisiones de seguridad:
+    - Ofuscación: Bloquea caracteres bidireccionales (RTL) para prevenir spoofing.
+    - Reparse Points: Saltea junctions y symlinks para evitar bucles infinitos o escaneo fuera de límites.
+    - Traversal: Verifica que la ruta resuelta esté contenida en root_path para evitar escapes de directorio.
+    
+    Retorna True si el elemento debe ser ignorado.
     """
     try:
-        # 1. Detección de ofuscación
         if any(c in entry.name for c in SUSPICIOUS_CHARS):
             return True
             
-        # 2. Detección de enlaces y escapes de ruta
-        # Se verifica explícitamente reparse points/junctions para seguridad defensiva
+        # Detección de enlaces: st_file_attributes 0x400 es el indicador de reparse point en Win32
         if entry.is_symlink() or (os.name == 'nt' and entry.is_dir() and entry.stat().st_file_attributes & 0x400):
             return True
         
         entry_path = Path(entry.path).resolve()
         
-        # Prevenir Directory Traversal fuera de la raíz de análisis
         if not entry_path.is_relative_to(root_path):
             return True
 
         if not entry_path.exists():
             return True
         
-        # 3. Verificación de exclusión definida por seguridad
         if is_protected_path(entry_path):
             return True
     except (OSError, PermissionError, AttributeError, RuntimeError, ValueError, TypeError):
@@ -245,12 +245,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador iterativo que recorre el árbol de directorios de forma segura.
-    Utiliza `os.scandir` para obtener acceso eficiente a atributos de archivos y
-    evitar llamadas redundantes a `os.stat`.
+    Generador que recorre el sistema de archivos (DFS) usando `os.scandir`.
+    
+    Técnica de seguridad: Implementa un registro de inodos visitados (visited_inodes)
+    para detectar ciclos en el FS (hard links/reparse points) y prevenir bucles infinitos.
     
     Yields:
-        Tuple[Path, int]: Ruta del archivo y su tamaño en bytes.
+        Tuple[Path, int]: Ruta absoluta del archivo y su tamaño en bytes.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -359,7 +360,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             total_bytes += size_bytes
             total_files += 1
             
-            # Clasificación por extensión
             try:
                 ext = path.suffix.lower() or "(sin extensión)"
             except (AttributeError, ValueError):
@@ -369,7 +369,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             stats_obj.total_bytes += size_bytes
             stats_obj.count += 1
             
-            # Actualización del Min-Heap para los archivos más grandes
             if limit > 0:
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (size_bytes, path))

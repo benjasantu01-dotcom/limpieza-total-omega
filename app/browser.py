@@ -151,14 +151,10 @@ def base_directories() -> List[Path]:
 
 def _is_path_inside_base(target_abs: str, base_abs: str) -> bool:
     """
-    Asegura que 'target_abs' sea subdirectorio de 'base_abs' (evita escape con '..').
+    Verifica que target_abs esté contenido jerárquicamente dentro de base_abs.
     
-    Args:
-        target_abs: Ruta absoluta candidata.
-        base_abs: Ruta base de referencia.
-        
-    Returns:
-        True si la ruta está contenida dentro de la base, False en otro caso.
+    Utiliza normalización de rutas para detectar intentos de escape mediante 
+    referencias '..' o ataques de path traversal.
     """
     if not isinstance(target_abs, str) or not isinstance(base_abs, str):
         return False
@@ -175,16 +171,14 @@ def _is_path_inside_base(target_abs: str, base_abs: str) -> bool:
 
 
 def _is_excluded_file(name: Optional[str]) -> bool:
-    """Verifica si un nombre de archivo está en la lista de archivos prohibidos (NEVER_TOUCH)."""
+    """Valida si un nombre de archivo está explícitamente en NEVER_TOUCH."""
     return name is not None and name.lower() in NEVER_TOUCH
 
 
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """
-    Consulta atributos de Windows mediante GetFileAttributesW.
-    
     Determina si un archivo tiene atributos de sistema, ocultos o es punto de reparse
-    utilizando el bitmask definido en SYSTEM_HIDDEN_FLAGS.
+    utilizando el bitmask definido en SYSTEM_HIDDEN_FLAGS vía API de Win32.
     """
     if kernel32 is None: return False
     try:
@@ -200,13 +194,10 @@ def _should_skip_entry(
     is_junction_fn: JunctionChecker
 ) -> bool:
     """
-    Filtra entradas del sistema de archivos según políticas de seguridad.
+    Aplica políticas de filtrado de sistema de archivos antes de procesar una entrada.
     
-    Evalúa:
-        - Archivos en la blacklist (NEVER_TOUCH).
-        - Rutas UNC o excesivamente largas.
-        - Enlaces simbólicos y Junctions.
-        - Archivos con flags de sistema u ocultos.
+    Ignora archivos en blacklist, rutas UNC, longitudes excesivas, enlaces simbólicos,
+    junctions o archivos con atributos de sistema/ocultos.
     """
     if entry.name is None or _is_excluded_file(entry.name):
         return True
@@ -223,7 +214,12 @@ def _should_skip_entry(
 
 
 def _get_entry_size(entry: os.DirEntry) -> int:
-    """Obtiene el tamaño en bytes, evitando resolución de enlaces simbólicos."""
+    """
+    Retorna el tamaño de una entrada ignorando resolución de enlaces.
+    
+    Captura excepciones de acceso para permitir escaneos continuos en caso 
+    de archivos bloqueados por el sistema operativo.
+    """
     try:
         return int(entry.stat(follow_symlinks=False).st_size)
     except (OSError, PermissionError):
@@ -238,10 +234,10 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Recorre un árbol de directorios calculando el tamaño total.
+    Motor recursivo para cálculo de tamaño.
     
-    Utiliza memoización basada en inodos (st_ino) para prevenir bucles infinitos
-    por enlaces simbólicos y evita el re-escaneo de rutas ya procesadas.
+    Utiliza memoización (st_ino) para evitar redundancias y bucles infinitos,
+    respetando los límites de profundidad y longitud de ruta configurados.
     """
     if not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
@@ -276,10 +272,9 @@ def _sum_directory_recursive(
 
 def directory_size(path: Optional[OSPath]) -> int:
     """
-    API pública para obtener el tamaño de una carpeta.
+    Punto de entrada para calcular el tamaño de una ruta.
     
-    Valida la existencia del path, permisos y seguridad contra inyección de rutas
-    antes de delegar el cálculo al motor recursivo.
+    Valida la integridad de seguridad del directorio antes de iniciar la recursión.
     """
     if not path: return 0
     try:

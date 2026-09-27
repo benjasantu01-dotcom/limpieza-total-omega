@@ -351,20 +351,11 @@ def logo_svg(size: int = 128) -> str:
 </svg>"""
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
-    """
-    Guarda el logo SVG en disco tras validar la seguridad de la ruta destino.
-    """
+    """Guarda el logo SVG en disco tras validar la seguridad de la ruta destino."""
     try:
-        if not isinstance(destination, (str, Path)):
+        path = _validate_destination(destination)
+        if not path:
             return None
-            
-        path = Path(destination).resolve()
-            
-        # Validación defensiva estricta antes de operar
-        if is_protected_path(path) or not is_safe_to_modify(path):
-            return None
-            
-        ensure_safe_to_modify(path)
         
         safe_size = max(16, min(1024, int(size)))
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -372,6 +363,16 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         return path if path.is_file() else None
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError):
         return None
+
+def _validate_destination(dest: Any) -> Optional[Path]:
+    """Valida que la ruta sea segura para escritura mediante protocolos de seguridad."""
+    if not isinstance(dest, (str, Path)):
+        return None
+    path = Path(dest).resolve()
+    if is_protected_path(path) or not is_safe_to_modify(path):
+        return None
+    ensure_safe_to_modify(path)
+    return path
 
 def logo_ascii() -> str:
     """Retorna una representación ASCII del logo para logs de consola."""
@@ -385,7 +386,7 @@ def _get_stripe_params(scale: float, franjas_count: int) -> Tuple[Tuple[float, f
                   (i + 1) * (92.0 * scale / franjas_count)) for i in range(franjas_count))
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza franjas decorativas graduadas en el interior del escudo."""
+    """Renderiza franjas decorativas graduadas dentro del escudo usando renderizado por segmentos."""
     try:
         if not math.isfinite(scale) or scale <= 0: return
         franjas_count = max(6, int(28 * scale))
@@ -402,7 +403,7 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
     except (TypeError, ValueError, ZeroDivisionError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza los elementos visuales sobre el escudo (corte y letra Omega)."""
+    """Renderiza sobreimpresión decorativa (corte estilizado y símbolo Omega) sobre el escudo."""
     try:
         if not math.isfinite(scale) or scale <= 0: return
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, 
@@ -417,7 +418,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Dibuja el escudo corporativo de Omega sobre el lienzo provisto."""
+    """Dibuja el escudo corporativo de Omega mediante primitivas vectoriales en el lienzo provisto."""
     try:
         s = float(size)
         if not math.isfinite(s) or s <= 0: return
@@ -434,7 +435,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una barra horizontal decorativa con gradiente lineal sobre el lienzo optimizando el número de llamadas."""
+    """Dibuja una barra horizontal decorativa optimizando el número de llamadas a la API de dibujo."""
     try:
         w_val = max(1, int(width))
         h_val = max(1, int(height))
@@ -448,7 +449,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, 
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, 
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Renderiza un gráfico circular de progreso (anillo) en las coordenadas especificadas."""
+    """Renderiza un gráfico circular de progreso (anillo) basado en métricas de salud."""
     if percent is None or not isinstance(percent, (int, float)): return
     try:
         val = float(percent)

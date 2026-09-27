@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 242
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 19 | 1 | 4 | 0 | 26 |
+| 2026-09-25 | 17 | 1 | 4 | 0 | 24 |
 | 2026-09-26 | 137 | 12 | 24 | 11 | 166 |
-| 2026-09-27 | 31 | 5 | 12 | 6 | 50 |
+| 2026-09-27 | 34 | 5 | 12 | 7 | 50 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **43**
 - seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **40**
-- legibilidad y documentación: **40**
 - robustez ante casos límite: **36**
-- rendimiento: **31**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `safety.py`: **19**
 - `settings.py`: **18**
-- `quarantine.py`: **16**
+- `browser.py`: **16**
 - `scanner.py`: **15**
 - `assistant.py`: **15**
-- `browser.py`: **15**
+- `quarantine.py`: **15**
 - `healthscore.py`: **14**
 - `duplicates.py`: **14**
-- `organizer.py`: **10**
 - `memory.py`: **10**
+- `organizer.py`: **9**
 - `startup.py`: **9**
-- `branding.py`: **7**
+- `branding.py`: **8**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T04:27:02` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad de `walk_files` y `_is_excluded_path` mediante la clarificación de los docstrings (explicando el PORQUÉ de las decisiones de seguridad) y la adición de Type Hints detallados, garantizando mayor legibilidad y cumplimiento estricto de las normas del proyecto.
+- `2026-09-27T04:26:47` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados en funciones críticas, aclarando el propósito y el manejo de excepciones de los helpers de bajo nivel para facilitar auditorías de seguridad futuras.
+- `2026-09-27T04:26:21` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos, se extrajo la lógica de normalización de argumentos de `save_logo_svg` para mayor claridad y se refinaron los comentarios críticos en las funciones de dibujo para mejorar la legibilidad del código.
 - `2026-09-27T04:16:49` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_registry_csv` ante entradas de registro mal formadas o vacías mediante validación explícita de `row` y control de errores más granual, evitando que una fila corrupta invalide el procesamiento de todo el conjunto de datos.
 - `2026-09-27T04:16:35` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `validate` y `save` sustituyendo capturas de `Exception` genéricas por `(OSError, TypeError, ValueError, json.JSONDecodeError)`, evitando que errores de lógica inesperados enmascaren fallos de ejecución y asegurando que las corrupciones de datos se manejen de forma predecible sin detener la aplicación.
 - `2026-09-27T04:15:36` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_volume_readonly` y `_is_file_locked_by_other_process` agregando validaciones de tipo explícitas y manejo de errores más específico para prevenir excepciones inesperadas durante la inspección de metadatos, siguiendo el enfoque de mejora de manejo de errores y validación de entradas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T02:13:34` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` reforzando la validación de integridad y el control de acceso en `_check_isolation_safety` al verificar explícitamente que la ruta destino no sea una sub-ruta del origen, previniendo ataques de recursividad o bloqueo de sistemas de archivos.
 - `2026-09-27T02:03:11` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del `SystemMetrics` mediante la implementación de un método de validación `post_init` más estricto que garantiza que los valores numéricos no solo sean positivos, sino también finitos, evitando inyecciones de valores `inf` o `nan` que podrían romper los cálculos del pipeline.
 - `2026-09-27T01:53:59` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación estricta de rutas en `_sum_directory_recursive` para evitar que, ante errores inesperados durante el escaneo, se procesen rutas que hayan escapado del control de seguridad inicial o que superen los límites de longitud permitidos antes de realizar operaciones de I/O.
-- `2026-09-27T01:53:30` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir ataques de *path traversal* y desbordamientos de permisos, asegurando que la resolución de la ruta `destination` se valide estrictamente mediante `is_safe_to_modify` antes de intentar cualquier operación de sistema de archivos, reemplazando el chequeo laxo anterior por uno que garantiza la integridad de los directorios raíz protegidos.
-- `2026-09-27T01:52:49` **assistant.py** (seguridad defensiva): Mejoré la seguridad en el manejo de configuraciones y datos de entrada en `assistant.py` mediante la implementación de `_is_safe_key`, una función auxiliar estricta que previene la manipulación de atributos internos (inyección de propiedades) en `SystemContext`, fortaleciendo el aislamiento del estado del asistente.
-- `2026-09-27T01:33:25` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para que maneje correctamente archivos inexistentes y errores de acceso inesperados, evitando excepciones no capturadas que podrían detener un análisis completo del sistema, y agregué una validación de `Path` en `_safe_unlink` para asegurar que las rutas sean absolutas antes de cualquier operación destructiva.
