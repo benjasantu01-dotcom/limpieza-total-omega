@@ -163,7 +163,8 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica que la entrada pertenezca al árbol de directorios raíz definido."""
-        return entry_path.lower().startswith(self.base_root_str)
+        abs_path = Path(entry_path).resolve()
+        return str(abs_path).lower().startswith(self.base_root_str)
 
     def _has_invalid_name(self, name: str) -> bool:
         """Valida nombres reservados del sistema operativo o caracteres finales no permitidos."""
@@ -181,7 +182,8 @@ class Scanner:
             return False
         if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
             return False
-        if not self._is_inside_base_root(entry.path.lower()):
+        # Validar ruta resuelta contra el root para prevenir escapes vía symlinks
+        if not self._is_inside_base_root(entry.path):
             return False
         if self._is_reparse_point(entry) or entry.is_symlink():
             return False

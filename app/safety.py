@@ -615,6 +615,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         initial_stat = _get_path_stat_robust(p)
         if not bool(initial_stat.st_mode & stat.S_IWRITE):
             raise UnsafePathError(f"Acceso de escritura denegado: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+        if initial_stat.st_nlink > 1:
+            # Validación adicional: impedir modificaciones si el archivo es un hard link vinculado a rutas protegidas
+            if is_protected_path(str(p.resolve())):
+                raise UnsafePathError("Modificación denegada: hard link hacia sistema.", SafetyValidationErrorCode.HARD_LINK_DETECTED)
         if os.name == 'nt': 
             _validate_ntfs_reparse_redirection(p)
             if not os.access(p.parent, os.W_OK):

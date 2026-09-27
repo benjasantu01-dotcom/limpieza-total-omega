@@ -298,7 +298,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def _is_file_secure_to_read(ruta: Path) -> bool:
-    """Garantiza que el archivo de configuración existente sea seguro y no un enlace o archivo crítico."""
+    """Garantiza que el archivo sea un archivo regular, sin ser enlace, y propiedad del usuario."""
     try:
         if not ruta.is_absolute(): return False
         if not ruta.exists() and not ruta.is_symlink(): return False
