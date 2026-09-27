@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-25 | 39 | 2 | 9 | 1 | 51 |
+| 2026-09-25 | 39 | 2 | 9 | 1 | 47 |
 | 2026-09-26 | 137 | 12 | 24 | 11 | 166 |
-| 2026-09-27 | 21 | 3 | 10 | 5 | 13 |
+| 2026-09-27 | 23 | 3 | 11 | 5 | 14 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **43**
+- seguridad defensiva: **38**
 - robustez ante casos límite: **36**
-- seguridad defensiva: **36**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `safety.py`: **18**
+- `safety.py`: **19**
 - `settings.py`: **18**
 - `healthscore.py`: **17**
+- `quarantine.py`: **17**
 - `assistant.py`: **16**
 - `duplicates.py`: **16**
-- `quarantine.py`: **16**
 - `scanner.py`: **15**
 - `browser.py`: **15**
 - `memory.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-27T02:14:24` **safety.py** (seguridad defensiva): Se introdujo una verificación proactiva contra el uso de `DEVICE_FILE` y `ADS` durante la etapa de normalización en `normalize`, asegurando que cualquier ruta manipulada por el sistema sea validada estructuralmente antes de cualquier resolución de sistema de archivos.
+- `2026-09-27T02:13:34` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` reforzando la validación de integridad y el control de acceso en `_check_isolation_safety` al verificar explícitamente que la ruta destino no sea una sub-ruta del origen, previniendo ataques de recursividad o bloqueo de sistemas de archivos.
 - `2026-09-27T02:03:11` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del `SystemMetrics` mediante la implementación de un método de validación `post_init` más estricto que garantiza que los valores numéricos no solo sean positivos, sino también finitos, evitando inyecciones de valores `inf` o `nan` que podrían romper los cálculos del pipeline.
 - `2026-09-27T01:53:59` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación estricta de rutas en `_sum_directory_recursive` para evitar que, ante errores inesperados durante el escaneo, se procesen rutas que hayan escapado del control de seguridad inicial o que superen los límites de longitud permitidos antes de realizar operaciones de I/O.
 - `2026-09-27T01:53:30` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir ataques de *path traversal* y desbordamientos de permisos, asegurando que la resolución de la ruta `destination` se valide estrictamente mediante `is_safe_to_modify` antes de intentar cualquier operación de sistema de archivos, reemplazando el chequeo laxo anterior por uno que garantiza la integridad de los directorios raíz protegidos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T00:32:30` **branding.py** (rendimiento): Optimizé `draw_gradient_bar` para reducir drásticamente el número de llamadas a `create_line` mediante el uso de `_get_grouped_segments`, evitando el dibujado pixel a pixel cuando hay colores repetidos o degradados sutiles, lo cual alivia la carga del motor gráfico (Canvas) en la interfaz principal.
 - `2026-09-27T00:31:08` **settings.py** (legibilidad y documentación): Se introdujo una clase `_SettingsManager` para encapsular la lógica de persistencia y estado en memoria, mejorando la legibilidad al evitar el uso excesivo de variables globales (`_CACHED_SETTINGS`, `_PATH_CACHE`) y centralizando la complejidad en un objeto único y coherente.
 - `2026-09-27T00:22:27` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos (como `Scanner.results` y `directory_stack`) y se refactorizó la lógica de acumulación en `_run_file_heuristics` para mejorar la legibilidad y mantenimiento, asegurando que las reglas de estilo y seguridad se mantengan estrictas.
-- `2026-09-27T00:22:14` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de los validadores internos en `safety.py` mediante docstrings detallados que explican el "porqué" de las comprobaciones (particularmente en las protecciones contra TOCTOU y redirecciones de sistemas de archivos), facilitando el mantenimiento y la auditoría del código.
-- `2026-09-27T00:21:10` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la implementación de *Type Aliasing* más preciso, la adición de docstrings técnicos detallados en las funciones de manipulación de archivos y la consolidación de validaciones redundantes para clarificar el flujo de control de seguridad.

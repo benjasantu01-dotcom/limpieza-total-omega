@@ -391,6 +391,9 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     except OSError:
         pass
 
+    if is_within_directory(resolved_dest_dir, resolved_source):
+        raise UnsafePathError("Operación recursiva prohibida: destino dentro de origen.")
+        
     if resolved_source.parent == resolved_dest_dir:
         raise UnsafePathError("Operación circular detectada.")
     if is_protected_path(resolved_source):

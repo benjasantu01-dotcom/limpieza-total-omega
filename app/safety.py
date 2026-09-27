@@ -441,6 +441,11 @@ def normalize(path: PathLike) -> Path:
         for part in p.parts:
             if part and os.path.exists(str(p.parent / part)) and _is_reparse_point(str(p.parent / part)):
                 raise UnsafePathError("Segmento de ruta contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+        
+        # Validaciones estructurales precoces
+        if _is_device_file(p): raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
+        if _has_alternate_data_stream(p.name): raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED)
+        
         resolved = p.resolve()
         # Verificar si hay traversal comparando componentes originales resueltos
         if ".." in p.parts: raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
