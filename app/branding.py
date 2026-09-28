@@ -396,7 +396,7 @@ def _validate_destination(dest: Any) -> Optional[Path]:
             return None
         ensure_safe_to_modify(path)
         return path
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, TypeError, ValueError):
         return None
 
 def logo_ascii() -> str:
