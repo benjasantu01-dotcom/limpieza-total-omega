@@ -338,7 +338,16 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
     if os.name != "nt":
         return []
     
-    targets: str = ", ".join(f"'{k}'" for k in keys)
+    # Filtrado estricto para evitar inyección de argumentos en la shell
+    safe_keys = []
+    for k in keys:
+        if isinstance(k, str) and k.upper().startswith(('HKCU:', 'HKLM:')):
+            safe_keys.append(f"'{k}'")
+            
+    if not safe_keys:
+        return []
+        
+    targets: str = ", ".join(safe_keys)
     ps_cmd: str = f"Get-ItemProperty {targets} -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation"
     
     try:

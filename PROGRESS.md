@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 28
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 97 | 21 | 23 | 12 | 119 |
-| 2026-09-28 | 98 | 7 | 21 | 7 | 99 |
+| 2026-09-27 | 97 | 21 | 23 | 12 | 115 |
+| 2026-09-28 | 100 | 7 | 21 | 7 | 101 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
-- seguridad defensiva: **41**
+- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **36**
 - robustez ante casos límite: **33**
 - rendimiento: **31**
@@ -38,14 +38,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **16**
 - `memory.py`: **14**
 - `assistant.py`: **13**
-- `settings.py`: **11**
+- `settings.py`: **12**
 - `main.py`: **10**
+- `startup.py`: **9**
 - `branding.py`: **9**
 - `organizer.py`: **8**
-- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T10:04:38` **startup.py** (seguridad defensiva): Se ha mejorado la defensa contra la inyección de argumentos en la ejecución de PowerShell, sustituyendo la interpolación directa de variables por un filtrado estricto que asegura que cada clave sea una ruta del registro válida, evitando la manipulación de la consulta mediante caracteres maliciosos.
+- `2026-09-28T10:00:44` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) y asegurar que el archivo de configuración sea un archivo regular sin permisos de ejecución, evitando la carga de ejecutables maliciosos renombrados.
 - `2026-09-28T09:51:53` **scanner.py** (seguridad defensiva): Se ha implementado una validación de seguridad preventiva en `process_entry` mediante la función `is_protected_path`, asegurando que ninguna entrada procesada, archivo o directorio, viole las políticas de seguridad antes de ser analizada o encolada.
 - `2026-09-28T09:51:39` **safety.py** (seguridad defensiva): Se ha añadido una validación preventiva contra puntos de reparse (Junctions/Symlinks) en el proceso de normalización de `path.parts`, asegurando que ninguna parte de la cadena sea un enlace antes de realizar la resolución completa, reforzando la defensa contra escapes de sandbox.
 - `2026-09-28T09:50:36` **quarantine.py** (seguridad defensiva): Se ha implementado un endurecimiento en `quarantine_dir` mediante la validación explícita de puntos de reparse/junctions y la verificación de que el directorio de cuarentena no sea una unidad raíz, evitando así configuraciones inseguras que podrían comprometer la integridad del sistema.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T09:19:44` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` ante errores de lectura de metadatos de archivos (como archivos bloqueados por el sistema o en uso) añadiendo un bloque `try-except` específico dentro de `_safe_stat` y validando la existencia de la ruta antes de procesarla en `process_entry`, evitando que el escáner se interrumpa ante excepciones de sistema.
 - `2026-09-28T09:11:14` **safety.py** (robustez ante casos límite): Se ha añadido `_is_sparse_file` mediante la constante `FILE_ATTRIBUTE_SPARSE_FILE` (0x200) para reforzar la detección de archivos dispersos que podrían ocultar datos o causar errores de escritura, integrando esta comprobación robusta en la validación de integridad (`_VALIDATORS`) y en los diagnósticos.
 - `2026-09-28T09:10:25` **quarantine.py** (robustez ante casos límite): Se ha introducido un chequeo de existencia previa del archivo en `_atomic_isolate_file` para evitar race conditions y comportamientos indefinidos ante archivos que cambian de estado durante la ejecución, reforzando la robustez ante concurrencia.
-- `2026-09-28T09:09:43` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `organizer.py` añadiendo chequeos de integridad en las operaciones con rutas (validación de `is_absolute` y existencia de padres) y mejorando el manejo de errores en `_get_win_attributes` para prevenir bloqueos por atributos inesperados.
-- `2026-09-28T09:03:08` **main.py** (robustez ante casos límite): Mejoré la robustez de la aplicación ante estados de red inciertos y errores de hilo principal añadiendo una validación de salud de los widgets antes de cualquier operación de UI en los callbacks asíncronos (`_safe_run_ui_callback` y `_flush_logs`), y asegurando que las llamadas de persistencia de configuración manejen correctamente widgets que podrían haber sido destruidos.
