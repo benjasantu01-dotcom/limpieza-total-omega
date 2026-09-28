@@ -126,8 +126,8 @@ def _safe_path_check(path: Path) -> bool:
 
 def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
     """
-    Normaliza y valida rutas. Garantiza que el archivo exista, no esté 
-    bloqueado y tenga un tamaño mayor a cero antes de cualquier operación de hash.
+    Normaliza, resuelve y valida rutas. Garantiza que el objeto apunte a un 
+    archivo real, no bloqueado y con tamaño positivo.
     """
     if not path:
         return None
@@ -258,7 +258,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                     
                     try:
                         p_entry = Path(path_str)
-                        # Chequeo de seguridad defensivo en cada nodo
                         if not is_safe_to_modify(p_entry):
                             continue
                             

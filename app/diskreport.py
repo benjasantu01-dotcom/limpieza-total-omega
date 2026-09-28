@@ -46,6 +46,7 @@ MB_SIZE: int = 1024 * 1024
 SUSPICIOUS_CHARS: Tuple[str, ...] = ('\u202E', '\u202D', '\u200E', '\u200F')
 
 Inode: TypeAlias = Tuple[int, int]
+# Representa (total_bytes, total_files)
 SizeReport: TypeAlias = Tuple[int, int]
 
 
@@ -66,7 +67,7 @@ class SummaryData(NamedTuple):
 
 
 def _bytes_to_mb(size_bytes: int | float | None) -> float:
-    """Convierte bytes a megabytes redondeados, retornando 0.0 ante entradas inválidas."""
+    """Convierte bytes a megabytes redondeados a 2 decimales; retorna 0.0 si es inválido."""
     try:
         if size_bytes is None or not isinstance(size_bytes, (int, float)) or size_bytes < 0:
             return 0.0
@@ -76,7 +77,7 @@ def _bytes_to_mb(size_bytes: int | float | None) -> float:
 
 
 def _validate_limit(limit: Any) -> int:
-    """Asegura que el límite de resultados sea un entero no negativo."""
+    """Filtra y normaliza el límite de resultados para asegurar un entero >= 0."""
     try:
         if isinstance(limit, int) and not isinstance(limit, bool):
             return max(0, limit)
@@ -86,7 +87,7 @@ def _validate_limit(limit: Any) -> int:
 
 
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
-    """Valida que el directorio de inicio exista, sea accesible y no esté protegido."""
+    """Valida la existencia, accesibilidad y seguridad de la ruta raíz proporcionada."""
     if directory is None:
         return None
     try:
@@ -101,39 +102,32 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
-    """
-    Evalúa si una entrada debe omitirse (archivos con caracteres sospechosos,
-    enlaces simbólicos, fuera del árbol raíz o carpetas protegidas).
-    """
+    """Determina si una entrada debe omitirse según heurísticas de seguridad y protección."""
     try:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        # Verificar enlaces simbólicos y puntos de reparse (reparse points)
         try:
-            # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT (Junctions, Mount Points, etc.)
+            # 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) identifica Junctions y puntos de montaje
             if entry.is_symlink() or (os.name == 'nt' and entry.is_dir() and (entry.stat().st_file_attributes & 0x400)):
                 return True
         except (OSError, PermissionError):
             return True
         
         entry_path = Path(entry.path).resolve()
-        # Impedir escape de directorio mediante rutas maliciosas
         try:
             if not entry_path.is_relative_to(root_path):
                 return True
         except (ValueError, AttributeError):
             return True
             
-        if is_protected_path(entry_path):
-            return True
+        return is_protected_path(entry_path)
     except (OSError, PermissionError, AttributeError, RuntimeError, TypeError):
         return True
-    return False
 
 
 def _get_local_windows_drives() -> List[str]:
-    """Identifica unidades locales disponibles en Windows mediante letras de unidad."""
+    """Escanea las letras de unidad disponibles en Windows excluyendo rutas protegidas."""
     import string
     drives: List[str] = []
     for letter in string.ascii_uppercase:
@@ -154,7 +148,6 @@ class FileEntry:
 
     @property
     def size_mb(self) -> float:
-        """Devuelve el tamaño del archivo convertido a megabytes."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -166,7 +159,6 @@ class ExtensionUsage:
 
     @property
     def size_mb(self) -> float:
-        """Devuelve el tamaño total de la extensión en megabytes."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -178,7 +170,6 @@ class FolderUsage:
 
     @property
     def size_mb(self) -> float:
-        """Devuelve el tamaño total de la carpeta en megabytes."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -191,19 +182,17 @@ class DriveUsage:
 
     @property
     def used_percent(self) -> float:
-        """Calcula el porcentaje de uso evitando división por cero."""
         if not isinstance(self.total, (int, float)) or self.total <= 0:
             return 0.0
         return round(self.used / self.total * 100, 1)
 
     @property
     def is_almost_full(self) -> bool:
-        """Retorna True si el espacio libre es menor al 10% del total."""
         return self.total > 0 and (self.free / self.total) < 0.10
 
 
 def format_size(num: Union[int, float, None]) -> str:
-    """Formatea bytes en unidades legibles (B, KB, MB, GB, TB)."""
+    """Convierte un tamaño en bytes a una representación legible por humanos (ej: 1.5 GB)."""
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     value = float(num)
@@ -216,7 +205,7 @@ def format_size(num: Union[int, float, None]) -> str:
 
 
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
-    """Obtiene el uso de disco de una ruta de montaje dada."""
+    """Calcula el espacio ocupado en una unidad específica."""
     if mount is None:
         return None
     try:
@@ -230,16 +219,13 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 
 
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
-    """Obtiene el uso de disco de todas las unidades configuradas o detectadas."""
+    """Obtiene el reporte de uso de todas las unidades montadas."""
     targets = mounts if mounts is not None else (_get_local_windows_drives() if os.name == "nt" else ["/"])
     return [d for m in targets if (d := drive_usage(m)) is not None]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """
-    Generador iterativo que recorre directorios, detectando ciclos mediante inodos
-    y omitiendo rutas protegidas o protegidas por lógica de seguridad.
-    """
+    """Generador que recorre recursivamente el sistema de archivos, omitiendo ciclos y rutas protegidas."""
     root_path = _validate_root(directory)
     if root_path is None: return
     visited_inodes: set[Inode] = set()
@@ -270,7 +256,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Retorna una lista ordenada de los archivos más grandes encontrados."""
+    """Lista los 'n' archivos más grandes encontrados en la ruta."""
     root = _validate_root(directory)
     if not root: return []
     data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
@@ -278,7 +264,7 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
-    """Retorna un reporte del uso de espacio agrupado por extensión de archivo."""
+    """Agrupa métricas de uso de disco según la extensión de los archivos."""
     root = _validate_root(directory)
     if not root: return []
     data = _collect_summary_data(root, skip_protected, limit=0)
@@ -287,7 +273,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Calcula las subcarpetas de primer nivel que ocupan más espacio."""
+    """Identifica las subcarpetas de primer nivel con mayor consumo de espacio."""
     root = _validate_root(directory)
     if not root: return []
     stats: Dict[Path, List[int]] = defaultdict(lambda: [0, 0])
@@ -296,7 +282,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             rel = path.relative_to(root)
             if rel.parts:
                 top_level = root / rel.parts[0]
-                # Validar que sea una ruta absoluta válida y manejable
                 if top_level.exists():
                     s = stats[top_level]
                     s[0] += max(0, size_bytes)
@@ -307,7 +292,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> SizeReport:
-    """Calcula el peso total y cantidad de archivos en un directorio."""
+    """Calcula el peso total en bytes y el conteo de archivos accesibles."""
     root = _validate_root(directory)
     if not root: return (0, 0)
     data = _collect_summary_data(root, skip_protected, limit=0)
@@ -315,7 +300,10 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Función de utilidad central que consolida métricas durante una sola pasada de escaneo."""
+    """
+    Escanea el sistema de archivos una única vez para consolidar métricas totales, 
+    por extensión y mantener un heap de archivos pesados.
+    """
     total_bytes, total_files = 0, 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
     top_heap: List[Tuple[int, Path]] = []
@@ -339,14 +327,16 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
-    """Genera un reporte legible en texto sobre el estado de uso del disco."""
+    """Genera un reporte textual resumido del uso de disco en la ruta especificada."""
     root = _validate_root(directory)
     if root is None: return ["Error: Ruta no válida o inaccesible."]
     data = _collect_summary_data(root, skip_protected, limit=20)
     if data.total_files == 0: return ["Aviso: No hay archivos accesibles."]
+    
     lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} en {data.total_files} archivos", "", "Por tipo:"]
     for ext, stats in heapq.nlargest(8, data.ext_stats.items(), key=lambda x: x[1].total_bytes):
         lines.append(f"  {ext:<18} {format_size(stats.total_bytes):>10}  ({stats.count} archivos)")
+    
     if data.top_files:
         lines.extend(["", "Mayores archivos:"])
         for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
