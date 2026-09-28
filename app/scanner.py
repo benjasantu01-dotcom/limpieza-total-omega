@@ -46,7 +46,7 @@ class Suspicion:
     severity: str
 
 # Definición de tipos para el sistema de heurísticas
-# SuspicionCheck recibe: ruta, entrada de directorio opcional y timestamp actual de referencia.
+# SuspicionCheck: (Ruta, Entrada opcional de dir, Timestamp actual) -> Objeto de hallazgo o None
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 ScanResult: TypeAlias = List[Suspicion]
 
