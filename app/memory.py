@@ -28,6 +28,7 @@ import subprocess
 import math
 import ctypes
 import time
+import heapq
 from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
@@ -132,6 +133,9 @@ class ProcessMemory:
     def working_set_mb(self) -> MegabytesValue:
         return MegabytesValue(round(self.working_set / BYTES_IN_MB, 1))
 
+    def __lt__(self, other: ProcessMemory) -> bool:
+        return self.working_set < other.working_set
+
 def format_bytes(num: Optional[int | float]) -> str:
     """Convierte un valor numérico de bytes a una cadena legible humanamente usando prefijos binarios."""
     if not isinstance(num, (int, float)) or num <= 0:
@@ -150,15 +154,6 @@ def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValu
     if not value: return BytesValue(0)
     clean_val = "".join(c for c in value if c.isdigit())
     return BytesValue(max(0, int(clean_val)) * multiplier) if clean_val else BytesValue(0)
-
-def _extract_process_data(pid_raw: str, ws_raw: str) -> Optional[Tuple[int, int]]:
-    """Valida y extrae el PID y el WorkingSet del output crudo de PowerShell."""
-    try:
-        pid = int(''.join(filter(str.isdigit, pid_raw)))
-        ws = int(''.join(filter(str.isdigit, ws_raw)))
-        return (pid, max(0, ws))
-    except (ValueError, TypeError):
-        return None
 
 _is_windows: bool = os.name == "nt"
 _linux_mem_path: Path = Path("/proc/meminfo")
@@ -188,23 +183,27 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """Procesa el output CSV de PowerShell de procesos Windows y retorna los top consumidores."""
     if not raw_csv_text: return []
-    
-    results: List[ProcessMemory] = []
+    top_heap: List[ProcessMemory] = []
     seen_pids: Set[int] = set()
 
     for line in raw_csv_text.splitlines():
         line = line.strip()
         if not line: continue
         parts = line.split(",", 2)
-        if len(parts) == 3:
-            data = _extract_process_data(parts[1], parts[2])
-            if data:
-                pid, ws = data
-                if pid > 0 and pid not in seen_pids and ws < MAX_VALID_PROCESS_MEM:
-                    seen_pids.add(pid)
-                    results.append(ProcessMemory(parts[0].strip("'\" "), pid, BytesValue(ws)))
+        if len(parts) != 3: continue
+        try:
+            pid = int(''.join(filter(str.isdigit, parts[1])))
+            ws = int(''.join(filter(str.isdigit, parts[2])))
+            if pid > 0 and pid not in seen_pids and ws < MAX_VALID_PROCESS_MEM:
+                seen_pids.add(pid)
+                proc = ProcessMemory(parts[0].strip("'\" "), pid, BytesValue(ws))
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, proc)
+                elif proc.working_set > top_heap[0].working_set:
+                    heapq.heapreplace(top_heap, proc)
+        except (ValueError, TypeError): continue
             
-    return sorted(results, key=lambda p: p.working_set, reverse=True)[:limit]
+    return sorted(top_heap, key=lambda p: p.working_set, reverse=True)
 
 def _read_windows_snapshot() -> MemorySnapshot:
     kernel32 = ctypes.windll.kernel32

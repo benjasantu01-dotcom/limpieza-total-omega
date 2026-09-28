@@ -422,3 +422,13 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-28T12:46:10` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score evitando la creación innecesaria de objetos `SystemMetrics` mediante la validación in-situ y reemplacé la iteración sobre `_PIPELINE` por una búsqueda directa mediante un diccionario, reduciendo la complejidad de búsqueda de O(N) a O(1) durante el procesamiento.
 - `2026-09-28T12:46:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T12:46:10` Corrida terminada. Total usado hoy: 300.
+- `2026-09-28T12:54:20` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-28T12:55:22` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-28T12:55:26` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-28T12:55:33` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-28T12:56:45` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-28T12:57:31` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de memoria de los procesos (top_memory_processes) reemplazando la lógica de parseo basada en iteración de strings por una pre-compilación de la lógica de extracción y evitando el cálculo redundante de `sorted()` mediante una estructura de datos más eficiente (un `heapq` para mantener solo el top N en lugar de ordenar toda la lista).
+- `2026-09-28T12:57:56` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-28T12:58:21` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé el acceso al manifiesto en `purge_all` y `restore_item` usando un diccionario (`dict`) en lugar de listas para búsquedas, evitando iteraciones redundantes y mejorando el rendimiento en escenarios con múltiples archivos en cuarentena.
+- `2026-09-28T12:58:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T12:58:21` Corrida terminada. Total usado hoy: 304.
