@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Mejoras aceptadas: **171** (33.9% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 241
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 34 | 3 | 7 | 3 | 51 |
+| 2026-09-26 | 32 | 3 | 5 | 3 | 51 |
 | 2026-09-27 | 122 | 24 | 34 | 17 | 153 |
-| 2026-09-28 | 14 | 0 | 3 | 2 | 37 |
+| 2026-09-28 | 17 | 0 | 3 | 2 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **45**
+- legibilidad y documentación: **43**
 - seguridad defensiva: **42**
+- manejo de errores y validación de entradas: **31**
 - robustez ante casos límite: **29**
-- manejo de errores y validación de entradas: **28**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **19**
-- `duplicates.py`: **17**
+- `duplicates.py`: **18**
+- `safety.py`: **18**
+- `diskreport.py`: **17**
 - `quarantine.py`: **17**
-- `diskreport.py`: **16**
 - `browser.py`: **15**
 - `settings.py`: **14**
+- `healthscore.py`: **14**
 - `scanner.py`: **14**
-- `healthscore.py`: **13**
 - `memory.py`: **11**
 - `assistant.py`: **10**
-- `organizer.py`: **7**
 - `main.py`: **6**
+- `organizer.py`: **6**
 - `branding.py`: **6**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T02:32:55` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` reemplazando chequeos tipo `isinstance` por una validación más estricta mediante el método `is_finite` de `SystemMetrics` y capturando excepciones de forma granular durante la ejecución del pipeline para evitar el colapso del informe ante datos malformados.
+- `2026-09-28T02:32:40` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores al reemplazar comparaciones de rutas implícitas y propensas a `OSError` en `format_group` por comparaciones directas de objetos `Path` normalizados, y asegura que la función `_is_file_locked` capture `ValueError` (posible al cerrar descriptores inválidos), evitando que excepciones inesperadas detengan el escaneo.
+- `2026-09-28T02:32:13` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` y `walk_files` capturando posibles fallos de `os.stat` y `suffix` al procesar archivos cuyo nombre o metadatos causan errores de sistema, evitando que una iteración abortada corrompa la recolección de estadísticas o la recursión.
 - `2026-09-28T02:24:20` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_validate_destination` capturando explícitamente excepciones de `Path.resolve()` y `is_protected_path` para garantizar que la función sea totalmente resiliente ante entradas malformadas o rutas que causen errores de sistema.
 - `2026-09-28T01:00:55` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva al integrar `is_safe_to_modify` en `entries_from_folders` para filtrar archivos antes de procesarlos, asegurando que se cumpla el principio de no interactuar con rutas protegidas durante el escaneo de directorios.
 - `2026-09-28T01:00:41` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de "Time-of-check to time-of-use" (TOCTOU) y asegurar que el archivo de configuración sea estrictamente un archivo plano sin permisos de ejecución, evitando vectores de inyección de código mediante archivos de configuración maliciosos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T00:29:47` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la ingesta de datos en `SystemContext` aplicando `is_protected_path` sobre el contenido de `grade`, evitando que una inyección en los ajustes del usuario pueda ser interpretada como una ruta de sistema si la lógica de la UI intenta procesarla posteriormente.
 - `2026-09-28T00:29:00` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas de registro mal formadas o corruptas en `_is_valid_registry_entry`, añadiendo una validación explícita para evitar que `Path(clean_path)` lance excepciones ante cadenas que no son rutas válidas de Windows, garantizando que el bucle continúe procesando entradas legítimas en lugar de abortar silenciosamente.
 - `2026-09-28T00:22:54` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante escenarios de corrupción o archivos inaccesibles, asegurando que `_load_impl` verifique explícitamente el tamaño del archivo y el estado de los permisos antes de intentar cualquier operación de lectura, y centralizando la lógica de recuperación ante errores de disco.
-- `2026-09-28T00:22:29` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes o eliminados durante el recorrido (race conditions comunes en escaneos de disco) mediante el uso de bloques `try-except` granulares en `_safe_stat` y la adición de una validación de existencia explícita antes de invocar `entry.stat()` en `_safe_stat`, evitando así excepciones no controladas cuando un archivo desaparece justo después de ser listado por `os.scandir`.
-- `2026-09-28T00:21:59` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inexistentes o mal formadas en `_is_system_or_hidden` y `_is_volume_readonly` añadiendo validaciones de existencia física y manejo de excepciones, evitando errores inesperados en el bucle de escaneo.
-- `2026-09-27T14:47:28` **healthscore.py** (robustez ante casos límite): Se introdujo una validación defensiva en la función `_evaluate_rules` para manejar posibles fallos en `message_factory` mediante un bloque `try-except` más robusto, asegurando que el motor de puntuación nunca colapse ante un error inesperado al generar texto de recomendación.

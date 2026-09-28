@@ -112,7 +112,7 @@ def _is_file_locked(path: Path) -> bool:
         fd = os.open(path, os.O_RDONLY)
         os.close(fd)
         return False
-    except (PermissionError, OSError):
+    except (PermissionError, OSError, ValueError):
         return True
 
 
@@ -391,12 +391,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
             elif not _safe_path_check(path):
                 lines.append(f"   [inaccesible] {path}")
             else:
-                is_keeper = False
-                if keeper:
-                    try:
-                        is_keeper = (path.resolve() == keeper.resolve())
-                    except OSError:
-                        pass
+                is_keeper = (path == keeper)
                 label = 'conservar' if is_keeper else 'duplicado'
                 lines.append(f"   [{label}] {path}")
         except (OSError, RuntimeError):
