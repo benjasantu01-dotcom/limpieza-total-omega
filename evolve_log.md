@@ -1807,3 +1807,13 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-27T23:37:33` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-27T23:47:44` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-27T23:57:55` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-28T00:08:04` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-09-28T00:09:06` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-28T00:10:09` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-28T00:11:15` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-28T00:12:27` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-28T00:13:09` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-28T00:13:36` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-28T00:14:01` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se ha añadido un chequeo de integridad en `restore_item` para verificar que el espacio libre sea suficiente antes de realizar la operación de restauración, previniendo errores de sistema de archivos (como discos llenos a mitad de proceso) mediante `_ensure_disk_space`.
+- `2026-09-28T00:14:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T00:14:01` Corrida terminada. Total usado hoy: 4.
