@@ -189,7 +189,8 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura la integridad de los datos, forzando rangos positivos y sanitizando valores no finitos."""
-        def _v(v: Any) -> float: return float(v) if isinstance(v, (int, float)) and math.isfinite(v) else 0.0
+        def _v(v: Any) -> float: 
+            return float(v) if isinstance(v, (int, float)) and math.isfinite(v) else 0.0
         
         self.junk_mb = max(0.0, _v(self.junk_mb))
         self.duplicate_mb = max(0.0, _v(self.duplicate_mb))
@@ -240,9 +241,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
         try:
             if rule.check(metrics, ratio):
                 try:
-                    raw_msg: str = rule.message_factory(metrics)
+                    raw_msg: str = str(rule.message_factory(metrics))
                 except Exception:
                     continue
+                # Sanitización: mantener solo caracteres imprimibles y limitar longitud
                 clean_msg: str = "".join(c for c in raw_msg if c.isprintable()).strip()
                 if clean_msg:
                     findings.append(clean_msg[:200])

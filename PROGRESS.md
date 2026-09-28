@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 28
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 46 | 4 | 9 | 7 | 76 |
+| 2026-09-26 | 46 | 4 | 9 | 7 | 72 |
 | 2026-09-27 | 122 | 24 | 34 | 17 | 153 |
-| 2026-09-28 | 6 | 0 | 1 | 1 | 4 |
+| 2026-09-28 | 9 | 0 | 2 | 1 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
+- seguridad defensiva: **38**
 - manejo de errores y validación de entradas: **35**
-- seguridad defensiva: **35**
 - robustez ante casos límite: **29**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **20**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
+- `duplicates.py`: **17**
 - `browser.py`: **16**
-- `duplicates.py`: **16**
 - `quarantine.py`: **16**
-- `healthscore.py`: **14**
+- `healthscore.py`: **15**
 - `settings.py`: **14**
 - `scanner.py`: **14**
 - `memory.py`: **12**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T00:40:04` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor `healthscore.py` ante datos de entrada maliciosos o corruptos, aplicando una validación más estricta en `SystemMetrics` y sanitizando las recomendaciones para prevenir inyecciones de texto que pudieran corromper la interfaz.
+- `2026-09-28T00:39:36` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para asegurar que el escaneo no siga enlaces simbólicos, previniendo así posibles escapes de la carpeta raíz analizada (traversal) y recursiones infinitas, alineándose estrictamente con la política de seguridad requerida.
+- `2026-09-28T00:39:09` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` asegurando que el chequeo de rutas se realice de manera más robusta frente a errores de resolución de nombres y verificando explícitamente que los archivos no sean puntos de reparse (reparse points) además de enlaces simbólicos, evitando así recursiones infinitas o acceso a volúmenes montados fuera del alcance esperado.
 - `2026-09-28T00:30:42` **browser.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_process_file_entry` añadiendo una comprobación explícita mediante `is_safe_to_modify` para los archivos individuales, no solo para los directorios, asegurando que cada nodo recorrido cumpla con las políticas de seguridad antes de realizar cualquier operación de acceso o cálculo.
 - `2026-09-28T00:29:47` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la ingesta de datos en `SystemContext` aplicando `is_protected_path` sobre el contenido de `grade`, evitando que una inyección en los ajustes del usuario pueda ser interpretada como una ruta de sistema si la lógica de la UI intenta procesarla posteriormente.
 - `2026-09-28T00:29:00` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas de registro mal formadas o corruptas en `_is_valid_registry_entry`, añadiendo una validación explícita para evitar que `Path(clean_path)` lance excepciones ante cadenas que no son rutas válidas de Windows, garantizando que el bucle continúe procesando entradas legítimas en lugar de abortar silenciosamente.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T14:37:00` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` ante datos de entrada malformados (como tipos inesperados o estructuras profundamente anidadas) agregando validaciones preventivas adicionales y asegurando que las actualizaciones de atributos no dejen al objeto en un estado parcial o inconsistente en caso de error.
 - `2026-09-27T14:26:50` **safety.py** (rendimiento): Se introdujo una cache de resultados en `_is_protected_path_raw` (previamente `_is_system_path_raw`) mediante `lru_cache` y se optimizó `_is_system_path_raw` reemplazando la iteración secuencial con una comparación más eficiente de prefijos de cadena tras la normalización, reduciendo la carga de CPU durante escaneos masivos de disco.
 - `2026-09-27T14:17:28` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total y el listado de archivos en cuarentena reemplazando la lectura repetitiva del manifiesto y el uso de `.iterdir()` con una lógica de caché de objetos y conjuntos (sets) que evita iteraciones redundantes y llamadas innecesarias al sistema de archivos.
-- `2026-09-27T14:06:46` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando el uso redundante de `Path` dentro del bucle de escaneo, trabajando directamente con `os.DirEntry` para reducir el número de llamadas al sistema (`stat`) y evitar la creación innecesaria de objetos `Path` que disparan consultas al sistema de archivos.
-- `2026-09-27T13:55:59` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de procesamiento de registro y la clarificación de los docstrings en `StartupEntry` para explicar el razonamiento detrás de los filtros de seguridad, mejorando la legibilidad sin alterar la lógica de ejecución.
-- `2026-09-27T13:46:50` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos para aclarar las responsabilidades de los métodos críticos del escáner y la naturaleza de las heurísticas, facilitando la comprensión del flujo de datos en el análisis de seguridad sin alterar el comportamiento.

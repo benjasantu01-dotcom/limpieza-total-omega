@@ -247,14 +247,19 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
     def _scan_dir(current_dir: str) -> None:
         try:
+            # Usar scandir para mayor control de seguridad
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
+                    # Validar si es enlace simbólico o unión para evitar escapes
+                    if entry.is_symlink() or (entry.is_dir() and is_junction(Path(entry.path))):
+                        continue
+                        
                     path_str = entry.path
                     if path_str in visited_paths:
                         continue
                         
                     try:
-                        if entry.is_dir(follow_symlinks=False):
+                        if entry.is_dir():
                             p_entry = Path(path_str)
                             if _safe_path_check(p_entry) and not (skip_protected and is_protected_path(p_entry)):
                                 visited_paths.add(path_str)
