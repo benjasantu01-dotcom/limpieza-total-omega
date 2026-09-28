@@ -257,24 +257,22 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         continue
                     
                     try:
-                        # Identificar tipo de entrada
+                        # 1. Chequeo de seguridad preventivo
+                        p_entry = Path(path_str)
+                        if skip_protected and is_protected_path(p_entry):
+                            continue
+                            
                         if entry.is_dir(follow_symlinks=False):
-                            if entry.is_symlink() or is_junction(Path(path_str)):
-                                continue
-                            p_entry = Path(path_str)
-                            if _safe_path_check(p_entry) and not (skip_protected and is_protected_path(p_entry)):
+                            if not entry.is_symlink() and not is_junction(p_entry):
                                 visited_paths.add(path_str)
                                 _scan_dir(path_str)
                             continue
                         
-                        # Es archivo
+                        # 2. Filtrado rápido antes del acceso total
                         stat_info = entry.stat(follow_symlinks=False)
                         if stat_info.st_size < min_size:
                             continue
                             
-                        p_entry = Path(path_str)
-                        if skip_protected and is_protected_path(p_entry):
-                            continue
                         if is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
                             continue
                         

@@ -1164,3 +1164,13 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-28T08:09:51` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `directory_size` y `detect_profiles` evitando cálculos redundantes mediante la consolidación del `memo` (para detectar archivos ya contados) y utilizando una única instancia de `kernel32` compartida entre los procesos recursivos, reduciendo la sobrecarga de llamadas a la API de Windows.
 - `2026-09-28T08:09:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T08:09:51` Corrida terminada. Total usado hoy: 192.
+- `2026-09-28T08:17:58` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-09-28T08:18:24` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-28T08:18:50` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente al consolidar los filtros de seguridad y atributos antes de realizar llamadas costosas al sistema de archivos (`stat`), reduciendo drásticamente la latencia en directorios con gran cantidad de archivos.
+- `2026-09-28T08:19:14` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score evitando la creación innecesaria de objetos `NamedTuple` y funciones `lambda` en tiempo de ejecución, además de reemplazar la re-instanciación del diccionario de desglose por una pre-asignación eficiente.
+- `2026-09-28T08:20:15` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-28T08:21:18` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-28T08:21:25` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-28T08:22:37` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-28T08:22:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T08:22:37` Corrida terminada. Total usado hoy: 196.
