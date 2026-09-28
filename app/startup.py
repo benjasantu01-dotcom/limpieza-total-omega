@@ -95,7 +95,7 @@ class StartupEntry:
         return True
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
-        """Verifica si la cadena intenta acceder a alias de dispositivos legados (ej. NUL, CON) que pueden bloquear el acceso a archivos."""
+        """Verifica si la cadena intenta acceder a alias de dispositivos legados (ej. NUL, CON)."""
         try:
             if "\0" in path_str:
                 return True
@@ -104,29 +104,24 @@ class StartupEntry:
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:
-        """Verifica la presencia de caracteres no permitidos en el sistema de archivos de Windows o rutas de red peligrosas."""
+        """Verifica la presencia de caracteres no permitidos en Windows o rutas de red peligrosas."""
         return any(c in path_string for c in SUSPICIOUS_CHARS) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Valida que el archivo posea una extensión ejecutable permitida y descarte enlaces simbólicos para evitar bucles o redirecciones inesperadas."""
+        """Valida que el archivo posea una extensión ejecutable permitida y no sea symlink."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Limpia la cadena de comando eliminando caracteres de control no imprimibles que podrían ofuscar la ruta real."""
+        """Limpia la cadena de comando eliminando caracteres de control no imprimibles."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """
-        Extrae y valida la ruta de un ejecutable encapsulado entre comillas.
-        
-        Asegura que el contenido entre comillas pase los filtros de seguridad de `is_protected_path` 
-        antes de ser aceptado como una ruta válida.
-        """
+        """Extrae y valida la ruta de un ejecutable encapsulado entre comillas."""
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
         
@@ -151,7 +146,7 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Verifica que el archivo exista, sea un archivo regular y no infrinja las políticas de protección de rutas (safety.py)."""
+        """Verifica que el archivo exista, sea ejecutable regular y no esté protegido."""
         try:
             if not p.exists():
                 return False
@@ -162,9 +157,7 @@ class StartupEntry:
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """
-        Resuelve una ruta a su forma absoluta, normaliza la longitud y verifica accesibilidad, utilizando una caché para minimizar el I/O.
-        """
+        """Resuelve una ruta a su forma absoluta y verifica accesibilidad, usando caché."""
         if not isinstance(path_string, str) or not self.is_valid:
             return ""
         
@@ -198,7 +191,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Analiza la línea de comando para aislar la ruta del ejecutable principal considerando si viene entre comillas o como argumento directo."""
+        """Analiza la línea de comando para aislar la ruta del ejecutable principal."""
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -221,11 +214,7 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """
-        Retorna la ruta absoluta del ejecutable tras procesar y validar el comando original.
-        
-        Usa memoización interna para evitar repetir la resolución de rutas costosa en cada acceso a la propiedad.
-        """
+        """Retorna la ruta absoluta del ejecutable tras procesar y validar."""
         if self._checked_exists:
             return self._exec_cache or ""
             
@@ -270,7 +259,14 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
                     if entry.is_file(follow_symlinks=False):
                         _, ext = os.path.splitext(entry.name)
                         p = Path(entry.path)
-                        if ext.lower() in EXECUTABLE_EXTS and not is_protected_path(p) and is_safe_to_modify(p):
+                        
+                        is_valid_file = (
+                            ext.lower() in EXECUTABLE_EXTS and 
+                            not is_protected_path(p) and 
+                            is_safe_to_modify(p)
+                        )
+                        
+                        if is_valid_file:
                             name = "".join(c for c in os.path.splitext(entry.name)[0] if ord(c) >= 32)
                             found_entries.append(StartupEntry(
                                 name=name,
@@ -283,21 +279,18 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 
 def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
-    """Valida si una entrada del registro debe ser procesada y almacenada, descartando rutas inseguras o sospechosas."""
+    """Valida si una entrada del registro debe ser procesada y almacenada."""
     if not name or not cmd or cmd.startswith(r"\\") or cmd in seen or name.upper().startswith("PS"):
         return False
     try:
         if not isinstance(cmd, str):
             return False
-        # Removemos quotes para validar la ruta
         clean_path = cmd.strip('"')
         if not clean_path:
             return False
-        # Validación defensiva ante caracteres que impiden la instanciación de un Path
         if any(c in clean_path for c in SUSPICIOUS_CHARS):
             return False
         p_candidate = Path(clean_path)
-        # Validación de seguridad defensiva: no procesar rutas fuera del ámbito permitido
         if is_protected_path(p_candidate) or ".." in str(p_candidate):
             return False
         return True
@@ -324,7 +317,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f_cmd: str = reader.fieldnames[1]
             
         for row in reader:
-            # Validación robusta: evitar errores ante filas incompletas o nulas
             if not isinstance(row, dict):
                 continue
             

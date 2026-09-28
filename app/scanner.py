@@ -46,6 +46,7 @@ class Suspicion:
     severity: str
 
 # Definición de tipos para el sistema de heurísticas
+# SuspicionCheck recibe: ruta, entrada de directorio opcional y timestamp actual de referencia.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 ScanResult: TypeAlias = List[Suspicion]
 
@@ -68,6 +69,7 @@ SYSTEM32_LOWER: Final[str] = "system32"
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
     Obtiene metadatos del archivo sin seguir enlaces simbólicos (evita escapes del sandbox).
+    Retorna None si la entrada es un enlace simbólico o un punto de reanálisis.
     """
     if entry is None:
         return None
@@ -84,6 +86,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
 def _get_file_attributes(entry: os.DirEntry) -> int:
     """
     Extrae la máscara de bits de atributos (Windows File Attributes) del archivo.
+    Retorna 0 en caso de error de acceso.
     """
     try:
         # st_file_attributes es específico de Windows y puede no estar presente en toda entrada
@@ -95,6 +98,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """
     Valida que la cadena de ruta cumpla con estándares de seguridad y longitud de Windows.
+    Comprueba límites de MAX_PATH, rutas UNC prohibidas y caracteres de ofuscación RTL.
     """
     if not path_str or len(path_str) > LIMITS.max_path:
         return False
@@ -154,6 +158,7 @@ ALL_CHECKS: Final[List[SuspicionCheck]] = [
 class Scanner:
     """
     Coordinador de escaneo recursivo basado en pila para recorrer el sistema de archivos.
+    Mantiene el estado de rutas visitadas y caché de seguridad para optimización.
     """
     def __init__(self, base_root: Path) -> None:
         self.results: List[Suspicion] = []
@@ -182,6 +187,7 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry, is_dir: bool = False) -> bool:
         """
         Realiza una validación de seguridad de la entrada con caché de directorios protegidos.
+        Retorna True solo si la ruta es segura, accesible y no es un punto de reanálisis.
         """
         if not entry or not entry.path or not entry.name:
             return False
@@ -220,7 +226,7 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """
-        Procesa una entrada detectada durante el escaneo.
+        Clasifica una entrada detectada y la deriva a procesamiento de directorio o de archivos.
         """
         try:
             if entry.is_dir(follow_symlinks=False):

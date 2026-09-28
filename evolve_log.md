@@ -693,3 +693,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-28T03:23:55` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 114): unterminated string literal (detected at line 114)
 - `2026-09-28T03:23:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T03:23:55` Corrida terminada. Total usado hoy: 80.
+- `2026-09-28T03:32:27` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-09-28T03:33:09` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ValidationContext
+- `2026-09-28T03:33:37` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y se enriqueció la documentación (docstrings) para aclarar la responsabilidad de los métodos, facilitando la comprensión del flujo de datos en el recorrido recursivo y las heurísticas sin alterar la lógica funcional.
+- `2026-09-28T03:34:06` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-09-28T03:34:20` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `startup.py` añadiendo type hints faltantes, normalizando los docstrings siguiendo convenciones de estilo profesional, y extrayendo una lógica de filtrado compleja en `entries_from_folders` a una variable booleana descriptiva, clarificando la intención sin modificar la funcionalidad.
+- `2026-09-28T03:34:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T03:34:20` Corrida terminada. Total usado hoy: 84.
